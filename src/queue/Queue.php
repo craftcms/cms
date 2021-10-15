@@ -53,7 +53,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
-    public $mutexTimeout = 3;
+    public $mutexTimeout = 5;
 
     /**
      * @var string The table name the queue is stored in.

@@ -1233,6 +1233,8 @@ class Elements extends Component
             static::$duplicatedElementIds[$element->id] = $mainClone->id;
             static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
 
+            $mainClone->newSiteIds = [];
+
             // Propagate it
             foreach ($supportedSites as $siteInfo) {
                 if ($siteInfo['siteId'] != $mainClone->siteId) {
@@ -1309,6 +1311,10 @@ class Elements extends Component
 
                     if (!$this->_saveElementInternal($siteClone, false, false)) {
                         throw new InvalidElementException($siteClone, "Element {$element->id} could not be duplicated for site {$siteInfo['siteId']}: " . implode(', ', $siteClone->getFirstErrors()));
+                    }
+
+                    if ($siteClone->isNewForSite) {
+                        $mainClone->newSiteIds[] = $siteClone->siteId;
                     }
                 }
             }
@@ -1815,6 +1821,9 @@ class Elements extends Component
                 foreach ($siteElements as $siteElement) {
                     $searchService->indexElementAttributes($siteElement);
                 }
+
+                // Invalidate caches
+                $this->invalidateCachesForElement($element);
             }
 
             // Fire "after" events
@@ -2628,7 +2637,7 @@ class Elements extends Component
                 ]);
             }
 
-            if ($isNewSiteElement = empty($siteSettingsRecord)) {
+            if ($element->isNewForSite = empty($siteSettingsRecord)) {
                 // First time we've saved the element for this site
                 $siteSettingsRecord = new Element_SiteSettingsRecord();
                 $siteSettingsRecord->elementId = $element->id;
@@ -2645,7 +2654,7 @@ class Elements extends Component
             }
 
             // Update our list of dirty attributes
-            if ($trackChanges && !$isNewSiteElement) {
+            if ($trackChanges && !$element->isNewForSite) {
                 ArrayHelper::append($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
                     'slug',
                     'uri',

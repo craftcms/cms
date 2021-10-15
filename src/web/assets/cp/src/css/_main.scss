@@ -753,7 +753,7 @@ td.right {
 
 .icon.move:before {
   content: 'move';
-  color: $darkHairlineColor;
+  color: $mediumTextColor;
 }
 
 .icon.move:not(.disabled):hover:before {
@@ -1242,6 +1242,7 @@ ul.icons {
 }
 
 .btn[data-icon-after]:not(:empty):after,
+.menu-toggle:not(:empty):after,
 .menubtn:not(:empty):after,
 .menubtn.icon:after {
   @include margin-left(6px);
@@ -1428,6 +1429,7 @@ ul.icons {
 }
 
 /* menu buttons */
+.menu-toggle,
 .menubtn {
   display: inline-flex;
   align-items: center;
@@ -1474,7 +1476,7 @@ ul.icons {
   &:not(.btn):not(.icon) {
     height: 17px;
     &:after {
-      top: 1px;
+      top: -2px;
       border-color: $linkColor;
     }
   }
@@ -2941,7 +2943,7 @@ table.editable {
       display: block;
       width: 100%;
 
-      .text:placeholder-shown + div[data-icon] {
+      .text + div[data-icon] {
         top: 6px;
         @include left(10px);
       }
@@ -3478,7 +3480,7 @@ ul.tree,
         & > .datetimewrapper > .datewrapper,
         & > .datetimewrapper > .timewrapper {
           background-color: transparent;
-          .text:placeholder-shown + div[data-icon] {
+          .text + div[data-icon] {
             @include left(0);
           }
         }
@@ -3656,6 +3658,11 @@ ul.tree,
         margin-bottom: 0;
       }
     }
+  }
+
+  &.so-mobile > .pane-header {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   & > .ee-body {
@@ -4394,8 +4401,8 @@ ul.tree,
   }
 }
 
-.menu ul li a:not(.sel):not(.disabled):hover,
-.menu:not(:hover) ul li a:not(.disabled).hover {
+.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
+.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
 
   --text-color: #{$white};
@@ -4415,6 +4422,17 @@ ul.tree,
   hr.padded,
   h6.padded {
     @include margin-left(10px);
+  }
+}
+
+.menu--disclosure ul li > a {
+  &:hover {
+    @include disclosure-link-hover-styles;
+  }
+
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
   }
 }
 
@@ -4544,16 +4562,9 @@ table.editable {
     @include input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include input-focused-styles;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    @include input-focused-styles;
   }
 }
 
@@ -5017,16 +5028,9 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include input-focused-styles;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    @include input-focused-styles;
   }
 
   option {
@@ -5140,8 +5144,9 @@ body.reduce-focus-visibility {
     color: $linkColor;
     position: absolute;
     top: 0;
-    @include right(0);
+    @include right(9px);
     bottom: 0;
+    cursor: pointer;
 
     &:hover {
       text-decoration: underline;
@@ -5191,51 +5196,41 @@ body.reduce-focus-visibility {
     z-index: 1;
     width: 100%;
 
-    &:placeholder-shown + div[data-icon] {
-      display: block;
-      position: absolute;
-      top: calc(50% - 10px);
-      @include left(14px);
-      z-index: 0;
-      color: $lightTextColor;
-
-      &,
-      &:before {
-        user-select: none;
-        pointer-events: none;
-        z-index: 1;
-      }
-
-      #details & {
-        color: $darkHairlineColor;
-      }
+    & + div[data-icon] {
+      display: none;
     }
 
-    &:not(:placeholder-shown) + div[data-icon] {
-      display: none;
+    &:placeholder-shown,
+    &.empty-value {
+      & + div[data-icon] {
+        display: block;
+        position: absolute;
+        top: calc(50% - 12px);
+        @include left(14px);
+        z-index: 0;
+        color: $lightTextColor;
+
+        &,
+        &:before {
+          user-select: none;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        #details & {
+          color: $darkHairlineColor;
+        }
+      }
     }
   }
 }
 
 .datewrapper {
   width: 8em;
-
-  .text:before {
-    top: calc(50% - 7px);
-    @include left(7px);
-    content: 'date';
-  }
 }
 
 .timewrapper {
   width: 7em;
-
-  .text:before {
-    top: calc(50% - 5px);
-    @include left(7px);
-    font-size: 11px;
-    content: 'time';
-  }
 }
 
 @include placeholder-styles($grey300);
@@ -5278,16 +5273,9 @@ body.reduce-focus-visibility {
     @include select-input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include select-input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include select-input-focused-styles;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    @include select-input-focused-styles;
   }
 }
 
@@ -5930,12 +5918,30 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     align-items: center;
     position: absolute;
     z-index: 1;
-    top: 4px;
+    top: 5px;
     @include right(14px);
     cursor: default;
 
     & > * {
-      @include margin(0, 0, 0, 10px);
+      @include margin(0, 0, 0, 5px);
+    }
+
+    & > .settings {
+      padding: 0 8px;
+      height: 20px;
+      color: $mediumTextColor;
+
+      &:before {
+        @include margin-right(0 !important);
+      }
+
+      &:not(:hover):not(:active) {
+        background-color: transparent;
+      }
+    }
+
+    & > .move {
+      margin-top: -3px !important;
     }
 
     & > .status {

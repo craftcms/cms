@@ -304,18 +304,21 @@ class ElementHelper
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
                 $site = [
-                    'siteId' => $site,
+                    'siteId' => (int)$site,
                 ];
-            } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
+            } else {
+                if (!isset($site['siteId'])) {
+                    throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
+                }
+                $site['siteId'] = (int)$site['siteId'];
             }
 
             $site['siteUid'] = $siteUidMap[$site['siteId']];
 
-            $site = array_merge([
+            $site += [
                 'propagate' => true,
                 'enabledByDefault' => true,
-            ], $site);
+            ];
 
             if ($withUnpropagatedSites || $site['propagate']) {
                 $sites[] = $site;
@@ -443,6 +446,32 @@ class ElementHelper
     {
         $root = static::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a canonical element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.17
+     */
+    public static function isCanonical(ElementInterface $element): bool
+    {
+        $root = static::rootElement($element);
+        return $root->getIsCanonical();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a derivative of another element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.17
+     */
+    public static function isDerivative(ElementInterface $element): bool
+    {
+        $root = static::rootElement($element);
+        return $root->getIsDerivative();
     }
 
     /**
