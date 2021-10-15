@@ -7,6 +7,9 @@ Craft.CP = Garnish.Base.extend({
     authManager: null,
 
     $nav: null,
+    $navToggle: null,
+    $globalSidebar: null,
+    $globalContainer: null,
     $mainContainer: null,
     $alerts: null,
     $crumbs: null,
@@ -49,6 +52,8 @@ Craft.CP = Garnish.Base.extend({
     includingDetailsOnUpdatesCheck: false,
     checkForUpdatesCallbacks: null,
 
+    resizeTimeout: null,
+
     init: function() {
         // Is this session going to expire?
         if (Craft.remainingSessionTime !== 0) {
@@ -57,6 +62,9 @@ Craft.CP = Garnish.Base.extend({
 
         // Find all the key elements
         this.$nav = $('#nav');
+        this.$navToggle = $('#nav-toggle');
+        this.$globalSidebar = $('#global-sidebar');
+        this.$globalContainer = $('#global-container');
         this.$mainContainer = $('#main-container');
         this.$alerts = $('#alerts');
         this.$crumbs = $('#crumbs');
@@ -102,9 +110,16 @@ Craft.CP = Garnish.Base.extend({
                 // Ignore element resizes
                 if (ev.target === window) {
                     this.handleWindowResize();
+
+                    clearTimeout(this.resizeTimeout);
+                    var cp = this;
+                    this.resizeTimeout = setTimeout(function() {
+                        cp.setSidebarNavAttributes();
+                    }, 100);
                 }
             });
             this.handleWindowResize();
+            this.setSidebarNavAttributes();
 
             // Fade the notification out two seconds after page load
             var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -124,7 +139,7 @@ Craft.CP = Garnish.Base.extend({
         }
 
         // Toggles
-        this.addListener($('#nav-toggle'), 'click', 'toggleNav');
+        this.addListener(this.$navToggle, 'click', 'toggleNav');
         this.addListener($('#sidebar-toggle'), 'click', 'toggleSidebar');
 
         // Does this page have a primary form?
@@ -366,7 +381,61 @@ Craft.CP = Garnish.Base.extend({
     },
 
     toggleNav: function() {
-        Garnish.$bod.toggleClass('showing-nav');
+        const isExpanded = this.navIsExpanded();
+
+        if (isExpanded) {
+            this.disableGlobalSidebarLinks();
+            this.$navToggle.focus();
+            this.$navToggle.attr('aria-expanded', 'false');
+            Garnish.$bod.removeClass('showing-nav');
+        } else {
+            this.enableGlobalSidebarLinks();
+            this.$globalSidebar.find(':focusable')[0].focus();
+            this.$navToggle.attr('aria-expanded', 'true');
+            Garnish.$bod.addClass('showing-nav');
+        }
+    },
+
+    globalSidebarIsOffscreen: function() {
+        const styles = getComputedStyle(this.$globalContainer[0]);
+        const leftPosition = parseInt(styles.left, 10);
+        const rightPosition = parseInt(styles.right, 10);
+
+        return (leftPosition < 0 || rightPosition < 0);
+    },
+
+    enableGlobalSidebarLinks: function() {
+        const focusableItems = this.$globalSidebar.find(':focusable');
+        
+        $(focusableItems).each(function() {
+            $(this).attr('tabindex', '0');
+        });
+    },
+
+    disableGlobalSidebarLinks: function() {
+        const focusableItems = this.$globalSidebar.find(':focusable');
+        
+        $(focusableItems).each(function() {
+            $(this).attr('tabindex', '-1');
+        });
+    },
+
+    setSidebarNavAttributes: function() {
+        const isExpanded = this.navIsExpanded();
+
+        if (!isExpanded) {
+            this.disableGlobalSidebarLinks();
+        } else {
+            this.enableGlobalSidebarLinks();
+        }
+    },
+
+    navIsExpanded: function() {
+        const isAlwaysVisible = getComputedStyle(this.$globalSidebar[0]).getPropertyValue('--is-always-visible');
+
+        return this.$navToggle.attr('aria-expanded') === 'true' 
+            || !this.globalSidebarIsOffscreen()
+            || isAlwaysVisible === 'true';
     },
 
     toggleSidebar: function() {

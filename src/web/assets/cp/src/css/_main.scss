@@ -888,7 +888,8 @@ td.right {
       transition: opacity linear 100ms;
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
       color: $mediumTextColor !important;
       text-decoration: none;
 
@@ -4090,8 +4091,11 @@ ul.tree,
     }
   }
 
-  &:hover .buttons {
-    opacity: 1;
+  &:hover,
+  &:focus-within {
+    .buttons {
+      opacity: 1;
+    }
   }
 }
 

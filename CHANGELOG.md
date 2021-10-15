@@ -13,6 +13,8 @@
 ### Changed
 - Improved the accessibility of overflowing breadcrumbs and the “My account” menu. ([#9945](https://github.com/craftcms/cms/pull/9945))
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
+- It’s now possible to modify Entries fields to relate entry drafts. ([#9963](https://github.com/craftcms/cms/issues/9963))
+- It’s now possible to set Matrix block queries’ `field` and `owner` params via config arrays. ([#9968](https://github.com/craftcms/cms/issues/9968))
 - Updated Garnish to 0.1.47.
 
 ### Fixed
@@ -25,6 +27,7 @@
 - Fixed a bug where Assets fields weren’t respecting their dynamic folder path settings for unpublished drafts. ([#9619](https://github.com/craftcms/cms/issues/9619))
 - Fixed a bug where deprecation warnings weren’t getting logged if `craft\services\Deprecator::$logTarget` was set to `'logs'`.
 - Fixed a bug where escaped quotes (`\"`) in element export data were causing CSV cell values to end prematurely. ([#9958](https://github.com/craftcms/cms/issues/9958))
+- Fixed a bug where HTML entities within nested field values weren’t getting encoded for Matrix block previews. ([#9964](https://github.com/craftcms/cms/issues/9964))
 
 ## 3.7.16 - 2021-10-06
 
