@@ -492,13 +492,13 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Figure out what we're working with and set up some initial variables.
-        $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+        $isCanonical = $element->id && ElementHelper::isCanonical($element);
         $query = $element->getFieldValue($this->handle);
         $assetsService = Craft::$app->getAssets();
 
-        $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+        $getTargetFolderId = function() use ($element, $isCanonical): int {
             static $targetFolderId;
-            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, $isCanonical);
         };
 
         // Folder creation and file uploads have been handles for propagating elements already.
@@ -560,8 +560,8 @@ class Assets extends BaseRelationField
         $assets = $query->all();
 
         if (!empty($assets)) {
-            // Only enforce the single upload folder setting if this isn't a draft or revision
-            if ($this->useSingleFolder && !$isDraftOrRevision) {
+            // Only enforce the single upload folder setting for canonical elements
+            if ($this->useSingleFolder && $isCanonical) {
                 $targetFolderId = $getTargetFolderId();
                 $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
                     return $asset->folderId != $targetFolderId;

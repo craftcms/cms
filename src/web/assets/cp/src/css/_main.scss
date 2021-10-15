@@ -1243,6 +1243,7 @@ ul.icons {
 }
 
 .btn[data-icon-after]:not(:empty):after,
+.menu-toggle:not(:empty):after,
 .menubtn:not(:empty):after,
 .menubtn.icon:after {
   @include margin-left(6px);
@@ -1429,6 +1430,7 @@ ul.icons {
 }
 
 /* menu buttons */
+.menu-toggle,
 .menubtn {
   display: inline-flex;
   align-items: center;
@@ -4403,8 +4405,8 @@ ul.tree,
   }
 }
 
-.menu ul li a:not(.sel):not(.disabled):hover,
-.menu:not(:hover) ul li a:not(.disabled).hover {
+.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
+.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
 
   --text-color: #{$white};
@@ -4424,6 +4426,17 @@ ul.tree,
   hr.padded,
   h6.padded {
     @include margin-left(10px);
+  }
+}
+
+.menu--disclosure ul li > a {
+  &:hover {
+    @include disclosure-link-hover-styles;
+  }
+
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
   }
 }
 
@@ -4553,16 +4566,9 @@ table.editable {
     @include input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include input-focused-styles;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    @include input-focused-styles;
   }
 }
 
@@ -5026,16 +5032,9 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include input-focused-styles;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    @include input-focused-styles;
   }
 
   option {
@@ -5278,16 +5277,9 @@ body.reduce-focus-visibility {
     @include select-input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include select-input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include select-input-focused-styles;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    @include select-input-focused-styles;
   }
 }
 

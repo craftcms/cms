@@ -2,9 +2,29 @@
 
 ## Unreleased
 
+### Added
+- Added the `provisional` argument for the remaining draft mutations via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
+- Added the `notes` and `name` arguments to the create draft mutation via GraphQL.
+- Added the `is countable` Twig test.
+- Added the `is object` Twig test.
+- Added `craft\helpers\ElementHelper::isCanonical()`.
+- Added `craft\helpers\ElementHelper::isDerivative()`.
+
 ### Changed
+- Improved the accessibility of overflowing breadcrumbs and the “My account” menu. ([#9945](https://github.com/craftcms/cms/pull/9945))
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
-- Reverted [#9806](https://github.com/craftcms/cms/discussions/9806) from Craft 3.7.12 because it causes performance issues in some scenarios.
+- Updated Garnish to 0.1.47.
+
+### Fixed
+- Fixed a bug where it wasn’t possible to create or publish a provisional draft via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
+- Fixed a bug where entry drafts weren’t getting propagated to other sites automatically after a section’s Propagation Method setting was changed. ([#9944](https://github.com/craftcms/cms/issues/9944))
+- Fixed a bug where element indexes weren’t immediately showing changes after an element was restored.
+- Fixed a bug where user indexes weren’t immediately showing changes to users’ activation/suspension states. ([#9947](https://github.com/craftcms/cms/issues/9947))
+- Fixed an element query performance issue. ([#9806](https://github.com/craftcms/cms/discussions/9806))
+- Fixed a bug where front-end action requests could resolve to disabled sites.
+- Fixed a bug where Assets fields weren’t respecting their dynamic folder path settings for unpublished drafts. ([#9619](https://github.com/craftcms/cms/issues/9619))
+- Fixed a bug where deprecation warnings weren’t getting logged if `craft\services\Deprecator::$logTarget` was set to `'logs'`.
+- Fixed a bug where escaped quotes (`\"`) in element export data were causing CSV cell values to end prematurely. ([#9958](https://github.com/craftcms/cms/issues/9958))
 
 ## 3.7.16 - 2021-10-06
 
