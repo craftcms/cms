@@ -530,6 +530,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function modifyElementIndexQuery(ElementQueryInterface $query)
     {
         $criteria = [
+            'drafts' => null,
             'status' => null,
         ];
 
@@ -1105,6 +1106,7 @@ JS;
     {
         $clone = clone $query;
         $clone
+            ->drafts(null)
             ->anyStatus()
             ->siteId('*')
             ->limit(null)
