@@ -26,6 +26,7 @@
 - Fixed a bug where Assets fields weren’t respecting their dynamic folder path settings for unpublished drafts. ([#9619](https://github.com/craftcms/cms/issues/9619))
 - Fixed a bug where deprecation warnings weren’t getting logged if `craft\services\Deprecator::$logTarget` was set to `'logs'`.
 - Fixed a bug where escaped quotes (`\"`) in element export data were causing CSV cell values to end prematurely. ([#9958](https://github.com/craftcms/cms/issues/9958))
+- Fixed a bug where HTML entities within nested field values weren’t getting encoded for Matrix block previews. ([#9964](https://github.com/craftcms/cms/issues/9964))
 
 ## 3.7.16 - 2021-10-06
 
