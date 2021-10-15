@@ -1763,8 +1763,8 @@ class Asset extends Element
                 ]) .
                 Html::tag(
                     'div',
-                    ($previewable ? Html::tag('div', Craft::t('app', 'Preview'), ['class' => 'btn preview-btn', 'id' => 'preview-btn']) : '') .
-                    ($editable ? Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn edit-btn', 'id' => 'edit-btn']) : ''),
+                    ($previewable ? Html::tag('button', Craft::t('app', 'Preview'), ['class' => 'btn preview-btn', 'id' => 'preview-btn', 'type' => 'button']) : '') .
+                    ($editable ? Html::tag('button', Craft::t('app', 'Edit'), ['class' => 'btn edit-btn', 'id' => 'edit-btn', 'type' => 'button']) : ''),
                     ['class' => 'buttons']
                 ),
                 [
