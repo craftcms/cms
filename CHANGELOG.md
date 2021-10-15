@@ -11,7 +11,9 @@
 - Added `craft\helpers\ElementHelper::isDerivative()`.
 
 ### Changed
+- Improved the accessibility of overflowing breadcrumbs and the “My account” menu. ([#9945](https://github.com/craftcms/cms/pull/9945))
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
+- Updated Garnish to 0.1.47.
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to create or publish a provisional draft via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
