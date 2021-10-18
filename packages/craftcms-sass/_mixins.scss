@@ -725,3 +725,19 @@ $radioSize: 16px;
     }
   }
 }
+
+@mixin element-focus-styles() {
+  :focus {
+    @content;
+  }
+
+  body.reduce-focus-visibility & {
+    :focus:not(:focus-visible) {
+      box-shadow: none;
+    }
+
+    :focus-visible {
+      @content;
+    }
+  }
+}

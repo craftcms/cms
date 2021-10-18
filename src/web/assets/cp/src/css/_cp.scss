@@ -28,9 +28,13 @@ body {
   :focus {
     outline-style: solid;
     outline-color: transparent;
+    box-shadow: $darkFocusRing;
   }
 
-  &:not(.reduce-focus-visibility) :focus,
+  &.reduce-focus-visibility :focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+
   &.reduce-focus-visibility :focus-visible {
     box-shadow: $darkFocusRing;
   }
@@ -87,8 +91,7 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  @include element-focus-styles() {
     box-shadow: $lightFocusRing;
   }
 
