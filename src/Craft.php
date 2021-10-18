@@ -114,7 +114,7 @@ class Craft extends Yii
      * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd($var, int $depth = 10, bool $highlight = true)
+    public static function dd($var, int $depth = 10, bool $highlight = null)
     {
         // Turn off output buffering and discard OB contents
         while (ob_get_length() !== false) {
@@ -125,6 +125,10 @@ class Craft extends Yii
             }
         }
 
+        if ($highlight === null) {
+            $highlight = !static::$app->getRequest()->getIsConsoleRequest();
+        }
+        
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }
