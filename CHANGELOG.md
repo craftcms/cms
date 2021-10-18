@@ -34,6 +34,7 @@
 - Fixed an error that could occur on element edit pages if there weren’t any alternate form actions. ([#9969](https://github.com/craftcms/cms/issues/9969))
 - Fixed a bug where it wasn’t possible to upload an asset via a data URL if its MIME type contained a period. ([#9632](https://github.com/craftcms/cms/issues/9632))
 - Fixed a bug where the characters-left indicator was right-aligned for RTL Plain Text fields, for users with an LTR formatting locale. ([#9967](https://github.com/craftcms/cms/issues/9967))
+- Fixed a bug where `craft\web\ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION` wasn’t getting triggered for requests that accepted a JSON response. ([#9973](https://github.com/craftcms/cms/issues/9973))
 
 ## 3.7.16 - 2021-10-06
 
