@@ -38,6 +38,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
@@ -2227,6 +2228,26 @@ class Asset extends Element
         if ($this->tempFilePath === null && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
             $oldVolume->renameFile($oldPath, $newPath);
         } else {
+            $allowedFolders = [
+                Craft::$app->getPath()->getTempPath(),
+                sys_get_temp_dir(),
+            ];
+
+            $realLocation = realpath($this->tempFilePath);
+            $validPath = false;
+
+            foreach ($allowedFolders as $allowedFolder) {
+                if (StringHelper::startsWith($realLocation, $allowedFolder)) {
+                    $validPath = true;
+                    break;
+                }
+            }
+
+            if (!$validPath) {
+                Craft::warning('Prevented saving ' . $realLocation . ' as an asset. The origin was not in the allowed list.');
+                $this->tempFilePath = null;
+            }
+
             // Get the temp path
             if ($this->tempFilePath !== null) {
                 $tempPath = $this->tempFilePath;
