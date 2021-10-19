@@ -34,7 +34,6 @@ use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -997,11 +996,59 @@ class Asset extends Element
      */
     public function getSrcset(array $sizes, $transform = null)
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        $urls = $this->getUrlsBySize($sizes, $transform);
+
+        if (empty($urls)) {
             return false;
         }
 
         $srcset = [];
+
+        foreach ($urls as $size => $url) {
+            if ($size === '1x') {
+                $srcset[] = $url;
+            } else {
+                $srcset[] = "$url $size";
+            }
+        }
+
+        return implode(', ', $srcset);
+    }
+
+    /**
+     * Returns an array of image transform URLs based on the given widths or x-descriptors.
+     *
+     * For example, if you pass `['100w', '200w']`, you will get:
+     *
+     * ```php
+     * [
+     *     '100w' => 'image-url@100w.ext',
+     *     '200w' => 'image-url@200w.ext'
+     * ]
+     * ```
+     *
+     * If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.
+     * So if you pass `['1x', '2x']` on an image with a 100px-wide transform applied, you will get:
+     *
+     * ```php
+     * [
+     *     '1x' => 'image-url@100w.ext',
+     *     '2x' => 'image-url@200w.ext'
+     * ]
+     * ```
+     *
+     * @param string[] $sizes
+     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @return array
+     * @since 3.7.16
+     */
+    public function getUrlsBySize(array $sizes, $transform = null): array
+    {
+        if ($this->kind !== self::KIND_IMAGE) {
+            return [];
+        }
+
+        $urls = [];
 
         if (
             ($transform !== null || $this->_transform) &&
@@ -1015,12 +1062,12 @@ class Asset extends Element
         [$currentWidth, $currentHeight] = $this->_dimensions($transform);
 
         if (!$currentWidth || !$currentHeight) {
-            return false;
+            return [];
         }
 
         foreach ($sizes as $size) {
             if ($size === '1x') {
-                $srcset[] = $this->getUrl($transform);
+                $urls[$size] = $this->getUrl($transform);
                 continue;
             }
 
@@ -1046,10 +1093,10 @@ class Asset extends Element
                 }
             }
 
-            $srcset[] = $this->getUrl($sizeTransform) . " $value$unit";
+            $urls["$value$unit"] = $this->getUrl($sizeTransform);
         }
 
-        return implode(', ', $srcset);
+        return $urls;
     }
 
     /**
@@ -1207,7 +1254,7 @@ class Asset extends Element
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return AssetsHelper::generateUrl($volume, $this);
+            return Assets::generateUrl($volume, $this);
         }
 
         // Normalize empty transform values
@@ -1641,7 +1688,7 @@ class Asset extends Element
                 ]);
 
             case 'kind':
-                return AssetsHelper::getFileKindLabel($this->kind);
+                return Assets::getFileKindLabel($this->kind);
 
             case 'size':
                 if (!isset($this->size)) {
@@ -1865,7 +1912,7 @@ class Asset extends Element
 
         // Get the (new?) folder ID
         if (isset($this->newLocation)) {
-            [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId] = Assets::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
         }
@@ -1883,12 +1930,12 @@ class Asset extends Element
 
         // Set the kind based on filename, if not set already
         if (!isset($this->kind) && isset($this->_filename)) {
-            $this->kind = AssetsHelper::getFileKindByExtension($this->_filename);
+            $this->kind = Assets::getFileKindByExtension($this->_filename);
         }
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && !$this->title) {
-            $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
+            $this->title = Assets::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
         // Set the field layout
@@ -1913,7 +1960,7 @@ class Asset extends Element
 
             if (
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
@@ -2130,7 +2177,7 @@ class Asset extends Element
 
         // Get the (new?) folder ID & filename
         if (isset($this->newLocation)) {
-            [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId, $filename] = Assets::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
             $filename = $this->_filename;
@@ -2209,7 +2256,7 @@ class Asset extends Element
 
         // If there was a new file involved, update file data.
         if ($tempPath) {
-            $this->kind = AssetsHelper::getFileKindByExtension($filename);
+            $this->kind = Assets::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {
                 [$this->_width, $this->_height] = Image::imageSize($tempPath);

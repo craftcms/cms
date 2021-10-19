@@ -179,7 +179,7 @@ gulp.task('cp', ['cp-sass', 'cp-js']);
 gulp.task('watch', function() {
     gulp.watch(cpSassGlob, ['cp-sass']);
     gulp.watch(cpTypeScriptGlob, ['cp-ts']);
-    gulp.watch(cpGlobalAssetPath, ['cp-global-js']);
+    gulp.watch(cpGlobalJsGlob, ['cp-global-js']);
     gulp.watch(cpOtherJsGlob, ['cp-other-js']);
 });
 

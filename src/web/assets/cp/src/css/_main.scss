@@ -753,7 +753,7 @@ td.right {
 
 .icon.move:before {
   content: 'move';
-  color: $darkHairlineColor;
+  color: $mediumTextColor;
 }
 
 .icon.move:not(.disabled):hover:before {
@@ -1479,7 +1479,7 @@ ul.icons {
   &:not(.btn):not(.icon) {
     height: 17px;
     &:after {
-      top: 1px;
+      top: -2px;
       border-color: $linkColor;
     }
   }
@@ -2946,7 +2946,7 @@ table.editable {
       display: block;
       width: 100%;
 
-      .text:placeholder-shown + div[data-icon] {
+      .text + div[data-icon] {
         top: 6px;
         @include left(10px);
       }
@@ -3519,7 +3519,7 @@ ul.tree,
         & > .datetimewrapper > .datewrapper,
         & > .datetimewrapper > .timewrapper {
           background-color: transparent;
-          .text:placeholder-shown + div[data-icon] {
+          .text + div[data-icon] {
             @include left(0);
           }
         }
@@ -3697,6 +3697,11 @@ ul.tree,
         margin-bottom: 0;
       }
     }
+  }
+
+  &.so-mobile > .pane-header {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   & > .ee-body {
@@ -5239,8 +5244,9 @@ body.reduce-focus-visibility {
     color: $linkColor;
     position: absolute;
     top: 0;
-    @include right(0);
+    @include right(9px);
     bottom: 0;
+    cursor: pointer;
 
     &:hover {
       text-decoration: underline;
@@ -5290,51 +5296,41 @@ body.reduce-focus-visibility {
     z-index: 1;
     width: 100%;
 
-    &:placeholder-shown + div[data-icon] {
-      display: block;
-      position: absolute;
-      top: calc(50% - 10px);
-      @include left(14px);
-      z-index: 0;
-      color: $lightTextColor;
-
-      &,
-      &:before {
-        user-select: none;
-        pointer-events: none;
-        z-index: 1;
-      }
-
-      #details & {
-        color: $darkHairlineColor;
-      }
+    & + div[data-icon] {
+      display: none;
     }
 
-    &:not(:placeholder-shown) + div[data-icon] {
-      display: none;
+    &:placeholder-shown,
+    &.empty-value {
+      & + div[data-icon] {
+        display: block;
+        position: absolute;
+        top: calc(50% - 12px);
+        @include left(14px);
+        z-index: 0;
+        color: $lightTextColor;
+
+        &,
+        &:before {
+          user-select: none;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        #details & {
+          color: $darkHairlineColor;
+        }
+      }
     }
   }
 }
 
 .datewrapper {
   width: 8em;
-
-  .text:before {
-    top: calc(50% - 7px);
-    @include left(7px);
-    content: 'date';
-  }
 }
 
 .timewrapper {
   width: 7em;
-
-  .text:before {
-    top: calc(50% - 5px);
-    @include left(7px);
-    font-size: 11px;
-    content: 'time';
-  }
 }
 
 @include placeholder-styles($grey300);
@@ -6054,12 +6050,30 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     align-items: center;
     position: absolute;
     z-index: 1;
-    top: 4px;
+    top: 5px;
     @include right(14px);
     cursor: default;
 
     & > * {
-      @include margin(0, 0, 0, 10px);
+      @include margin(0, 0, 0, 5px);
+    }
+
+    & > .settings {
+      padding: 0 8px;
+      height: 20px;
+      color: $mediumTextColor;
+
+      &:before {
+        @include margin-right(0 !important);
+      }
+
+      &:not(:hover):not(:active) {
+        background-color: transparent;
+      }
+    }
+
+    & > .move {
+      margin-top: -3px !important;
     }
 
     & > .status {

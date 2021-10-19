@@ -494,7 +494,22 @@ class EntryRevisionsController extends BaseEntriesController
             }
 
             // Apply the draft (finally!)
-            $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
+            $isDerivative = $draft->getIsDerivative();
+            if ($isDerivative) {
+                $lockKey = "entry:$draft->canonicalId";
+                $mutex = Craft::$app->getMutex();
+                if (!$mutex->acquire($lockKey, 15)) {
+                    throw new Exception('Could not acquire a lock to save the entry.');
+                }
+            }
+
+            try {
+                $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
+            } finally {
+                if ($isDerivative) {
+                    $mutex->release($lockKey);
+                }
+            }
         } catch (InvalidElementException $e) {
             if ($draft->getIsUnpublishedDraft()) {
                 $this->setFailFlash(Craft::t('app', 'Couldn’t create entry.'));

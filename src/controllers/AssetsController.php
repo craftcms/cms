@@ -1035,6 +1035,8 @@ class AssetsController extends Controller
                 $image->saveAs($imageCopy);
             }
 
+            $output = [];
+
             if ($replace) {
                 $oldFocal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
                 $focalChanged = $focal !== $oldFocal;
@@ -1065,12 +1067,15 @@ class AssetsController extends Controller
 
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
+
+                $output['elementId'] = $newAsset->id;
             }
         } catch (Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
-        return $this->asJson(['success' => true]);
+        $output['success'] = true;
+        return $this->asJson($output);
     }
 
     /**
