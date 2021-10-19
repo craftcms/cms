@@ -118,8 +118,12 @@ class Entry extends ElementMutationResolver
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
+        $draftName = $arguments['name'] ?? '';
+        $draftNotes = $arguments['notes'] ?? '';
+        $provisional = $arguments['provisional'] ?? false;
+
         /** @var Entry $draft */
-        $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId);
+        $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId, $draftName, $draftNotes, [], $provisional);
 
         return $draft->draftId;
     }
@@ -136,7 +140,11 @@ class Entry extends ElementMutationResolver
      */
     public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $draft = Craft::$app->getElements()->createElementQuery(EntryElement::class)->anyStatus()->draftId($arguments['id'])->one();
+        $draft = Craft::$app->getElements()
+            ->createElementQuery(EntryElement::class)
+            ->anyStatus()
+            ->provisionalDrafts($arguments['provisional'] ?? false)
+            ->draftId($arguments['id'])->one();
 
         if (!$draft) {
             throw new Error('Unable to perform the action.');

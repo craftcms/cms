@@ -1821,6 +1821,9 @@ class Elements extends Component
                 foreach ($siteElements as $siteElement) {
                     $searchService->indexElementAttributes($siteElement);
                 }
+
+                // Invalidate caches
+                $this->invalidateCachesForElement($element);
             }
 
             // Fire "after" events

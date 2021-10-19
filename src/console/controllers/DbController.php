@@ -61,7 +61,7 @@ class DbController extends Controller
      * - A full file path
      * - A folder path (backup will be saved in there with a dynamically-generated name)
      * - A filename (backup will be saved in the working directory with the given name)
-     * - Blank (backup will be saved to the `config/backups/` folder with a dynamically-generated name)
+     * - Blank (backup will be saved to the `storage/backups/` folder with a dynamically-generated name)
      *
      * @return int
      */

@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\Path;
 use craft\helpers\Template;
 use craft\web\Controller;
 use craft\web\View;
@@ -87,6 +88,7 @@ class TemplatesController extends Controller
                 Craft::$app->getConfig()->getGeneral()->headlessMode &&
                 $this->request->getIsSiteRequest()
             ) ||
+            !Path::ensurePathIsContained($template) || // avoid the Craft::warning() from View::_validateTemplateName()
             !$this->getView()->doesTemplateExist($template)
         ) {
             throw new NotFoundHttpException('Template not found: ' . $template);

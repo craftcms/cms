@@ -83,8 +83,22 @@ trait LogTargetTrait
      */
     protected function getContextMessage(): string
     {
-        $context = ArrayHelper::filter($GLOBALS, $this->logVars);
         $result = [];
+
+        if (
+            ($postPos = array_search('_POST', $this->logVars)) !== false &&
+            empty($GLOBALS['_POST']) &&
+            !empty($body = file_get_contents('php://input'))
+        ) {
+            // Log the raw request body instead
+            $logVars = array_merge($this->logVars);
+            array_splice($logVars, $postPos, 1);
+            $result[] = "Request body: $body";
+        } else {
+            $logVars = $this->logVars;
+        }
+
+        $context = ArrayHelper::filter($GLOBALS, $logVars);
 
         // Workaround for codeception testing until these gets addressed:
         // https://github.com/yiisoft/yii-core/issues/49

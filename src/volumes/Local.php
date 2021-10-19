@@ -85,23 +85,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
             return;
         }
 
-        $pathService = Craft::$app->getPath();
-        $systemDirs = [
-            Craft::getAlias('@contentMigrations'),
-            Craft::getAlias('@lib'),
-            $pathService->getComposerBackupsPath(false),
-            $pathService->getConfigBackupPath(false),
-            $pathService->getConfigDeltaPath(false),
-            $pathService->getConfigPath(),
-            $pathService->getDbBackupPath(false),
-            $pathService->getLogPath(false),
-            $pathService->getRebrandPath(false),
-            $pathService->getRuntimePath(false),
-            $pathService->getSiteTemplatesPath(),
-            $pathService->getSiteTranslationsPath(),
-            $pathService->getTestsPath(),
-            $pathService->getVendorPath(),
-        ];
+        $systemDirs = Craft::$app->getPath()->getSystemPaths();
 
         foreach ($systemDirs as $dir) {
             $dir = realpath($dir);
