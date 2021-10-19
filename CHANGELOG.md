@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.17 - 2021-10-19
 
 ### Added
 - Added the `provisional` argument for the remaining draft mutations via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
