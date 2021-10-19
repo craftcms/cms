@@ -1745,7 +1745,7 @@ class Asset extends Element
                 ),
                 [
                     'class' => array_filter([
-                        'preview-thumb-container',
+                        'preview-thumb-container button-fade',
                         $this->getHasCheckeredThumb() ? 'checkered' : null,
                     ]),
                 ]

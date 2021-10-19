@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Asset image preview now allow updating the focal point.
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
@@ -99,6 +100,7 @@
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
+- Added the `assets/update-focal-point` action.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.

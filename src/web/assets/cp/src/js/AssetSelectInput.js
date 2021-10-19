@@ -27,19 +27,30 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
      */
     _onKeyDown: function(ev) {
         if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
-            if (Craft.PreviewFileModal.openInstance) {
-                Craft.PreviewFileModal.openInstance.selfDestruct();
-            } else {
-                var $element = this.elementSelect.$focusedItem;
-
-                if ($element.length) {
-                    this._loadPreview($element);
-                }
-            }
-
+            this.openPreview();
             ev.stopPropagation();
-
             return false;
+        }
+    },
+    
+    onAddElements: function () {
+        this.$elements.find('.elementthumb').addClass('open-preview').on('mousedown touchstart', (ev) => {
+            this.elementSelect.focusItem($(ev.target).parent());
+            this.openPreview();
+            ev.stopPropagation();
+        });
+        this.base();
+    },
+
+    openPreview: function() {
+        if (Craft.PreviewFileModal.openInstance) {
+            Craft.PreviewFileModal.openInstance.selfDestruct();
+        } else {
+            var $element = this.elementSelect.$focusedItem;
+
+            if ($element.length) {
+                this._loadPreview($element);
+            }
         }
     },
 
@@ -60,7 +71,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
      * @private
      */
     _loadPreview: function($element) {
-        var settings = {};
+        var settings = {
+            minGutter: 50
+        };
 
         if ($element.data('image-width')) {
             settings.startingWidth = $element.data('image-width');

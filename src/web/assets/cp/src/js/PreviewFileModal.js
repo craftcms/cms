@@ -79,6 +79,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend({
         instance.destroy();
 
         Craft.PreviewFileModal.openInstance = null;
+        Craft.focalPoint.destruct();
+        Craft.focalPoint = null;
 
         return true;
     },
