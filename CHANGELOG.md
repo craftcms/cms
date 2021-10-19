@@ -9,6 +9,7 @@
 - Added the `is object` Twig test.
 - Added `craft\helpers\ElementHelper::isCanonical()`.
 - Added `craft\helpers\ElementHelper::isDerivative()`.
+- Added `craft\services\Path::getSystemPaths()`.
 
 ### Changed
 - Improved the accessibility of overflowing breadcrumbs and the “My account” menu. ([#9945](https://github.com/craftcms/cms/pull/9945))
@@ -37,7 +38,7 @@
 - Fixed a bug where `craft\web\ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION` wasn’t getting triggered for requests that accepted a JSON response. ([#9973](https://github.com/craftcms/cms/issues/9973))
 
 ### Security
-- Assets fields now require temporary files to reside in temporary folders.
+- Assets fields now require temporary files to reside in temporary folders or somewhere within the project root, excluding system directories.
 
 ## 3.7.16 - 2021-10-06
 

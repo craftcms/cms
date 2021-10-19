@@ -2228,23 +2228,8 @@ class Asset extends Element
         if ($this->tempFilePath === null && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
             $oldVolume->renameFile($oldPath, $newPath);
         } else {
-            $allowedFolders = [
-                Craft::$app->getPath()->getTempPath(),
-                sys_get_temp_dir(),
-            ];
-
-            $realLocation = realpath($this->tempFilePath);
-            $validPath = false;
-
-            foreach ($allowedFolders as $allowedFolder) {
-                if (StringHelper::startsWith($realLocation, $allowedFolder)) {
-                    $validPath = true;
-                    break;
-                }
-            }
-
-            if (!$validPath) {
-                Craft::warning('Prevented saving ' . $realLocation . ' as an asset. The origin was not in the allowed list.');
+            if (!$this->_validateTempFilePath()) {
+                Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
                 $this->tempFilePath = null;
             }
 
@@ -2312,5 +2297,51 @@ class Asset extends Element
         // Clear out the temp location properties
         $this->newLocation = null;
         $this->tempFilePath = null;
+    }
+
+    /**
+     * Validates that the temp file path exists and is someplace safe.
+     *
+     * @return bool
+     */
+    private function _validateTempFilePath(): bool
+    {
+        $tempFilePath = realpath($this->tempFilePath);
+
+        if ($tempFilePath === false || !is_file($tempFilePath)) {
+            return false;
+        }
+
+        $tempFilePath = FileHelper::normalizePath($tempFilePath);
+
+        // Is it within one of our temp directories?
+        $pathService = Craft::$app->getPath();
+        $tempDirs = [
+            FileHelper::normalizePath($pathService->getTempPath()) . DIRECTORY_SEPARATOR,
+            FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR,
+        ];
+
+        foreach ($tempDirs as $allowedFolder) {
+            if (StringHelper::startsWith($tempFilePath, $allowedFolder)) {
+                return true;
+            }
+        }
+
+        // Make sure it's within the project root somewhere
+        $projectRoot = FileHelper::normalizePath(Craft::getAlias('@root')) . DIRECTORY_SEPARATOR;
+        if (!StringHelper::startsWith($tempFilePath, $projectRoot)) {
+            return false;
+        }
+
+        // Make sure it's not within a system directory
+        $systemDirs = $pathService->getSystemPaths();
+        foreach ($systemDirs as $dir) {
+            $dir = FileHelper::normalizePath($dir) . DIRECTORY_SEPARATOR;
+            if (StringHelper::startsWith($tempFilePath, $dir)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
