@@ -87,6 +87,10 @@ class Deprecator extends Component
             return;
         }
 
+        if ($this->logTarget === 'logs') {
+            Craft::warning($message, 'deprecation-error');
+        }
+
         // Get the debug backtrace
         $traces = debug_backtrace();
 

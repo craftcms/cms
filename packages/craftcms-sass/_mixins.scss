@@ -520,6 +520,11 @@ $radioSize: 16px;
   background-color: $menuOptionActiveBackgroundColor;
 }
 
+@mixin disclosure-link-hover-styles {
+  color: $menuOptionColor;
+  background-color: $grey050;
+}
+
 @mixin input-styles {
   border-radius: $smallBorderRadius;
   border: 1px solid transparentize($inputColor, 0.75);

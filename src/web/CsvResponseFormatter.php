@@ -51,7 +51,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
     /**
      * @var string the escape character (one character only)
      */
-    public $escapeChar = "\\";
+    public $escapeChar = '';
 
     /**
      * Formats the specified response.

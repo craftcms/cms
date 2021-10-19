@@ -9,13 +9,16 @@ namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
+use craft\helpers\Json;
 use craft\log\Dispatcher;
+use GuzzleHttp\Exception\ClientException;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
 use yii\base\Exception;
+use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -125,19 +128,56 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
-        // Set the response format back to HTML if it's still set to raw
-        if (Craft::$app->has('response')) {
-            $response = Craft::$app->getResponse();
-            if ($response->format === Response::FORMAT_RAW) {
-                $response->format = Response::FORMAT_HTML;
+        $request = Craft::$app->has('request', true) ? Craft::$app->getRequest() : null;
+        $response = Craft::$app->getResponse();
+
+        // Return JSON for JSON requests
+        if ($request && $request->getAcceptsJson()) {
+            $response->format = Response::FORMAT_JSON;
+            if ($this->_showExceptionView()) {
+                $response->data = [
+                    'error' => $exception->getMessage(),
+                    'exception' => get_class($exception),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine(),
+                    'trace' => array_map(function($step) {
+                        unset($step['args']);
+                        return $step;
+                    }, $exception->getTrace()),
+                ];
+            } else {
+                $response->data = [
+                    'error' => $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.'),
+                ];
             }
+
+            // Override the status code and error message if this is a Guzzle client exception
+            if ($exception instanceof ClientException) {
+                $response->setStatusCode($exception->getCode());
+                if (($guzzleResponse = $exception->getResponse()) !== null) {
+                    $body = Json::decodeIfJson((string)$guzzleResponse->getBody());
+                    if (isset($body['message'])) {
+                        $response->data['error'] = $body['message'];
+                    }
+                }
+            } else {
+                $response->setStatusCodeByException($exception);
+            }
+
+            $response->send();
+            return;
+        }
+
+        // Set the response format to HTML if it's still set to raw
+        if ($response->format === Response::FORMAT_RAW) {
+            $response->format = Response::FORMAT_HTML;
         }
 
         // Show a broken image for image requests
         if (
             $exception instanceof NotFoundHttpException &&
-            Craft::$app->has('request') &&
-            Craft::$app->getRequest()->getAcceptsImage() &&
+            $request &&
+            $request->getAcceptsImage() &&
             Craft::$app->getConfig()->getGeneral()->brokenImagePath
         ) {
             $this->errorAction = 'app/broken-image';

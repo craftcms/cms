@@ -669,6 +669,9 @@ class Users extends Component
             ]));
         }
 
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
+
         return true;
     }
 
@@ -753,6 +756,9 @@ class Users extends Component
             ]));
         }
 
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
+
         return true;
     }
 
@@ -794,6 +800,9 @@ class Users extends Component
                 'user' => $user,
             ]));
         }
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
 
         return true;
     }
@@ -840,6 +849,9 @@ class Users extends Component
                 'user' => $user,
             ]));
         }
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
 
         return true;
     }
