@@ -17,7 +17,6 @@
 - It’s now possible to set Matrix block queries’ `field` and `owner` params via config arrays. ([#9968](https://github.com/craftcms/cms/issues/9968))
 - The `_includes/forms/text.html` control panel template now supports an `orientation` config value, which defines the `dir` input attribute.
 - Craft no longer logs a warning when the request path attempts to break out of the `templates/` folder. ([#9929](https://github.com/craftcms/cms/issues/9929))
-- Craft now requires temporary files to reside in temporary folders, before they can be used as assets.
 - Updated Composer to 2.1.9.
 - Updated Garnish to 0.1.47.
 
@@ -36,6 +35,9 @@
 - Fixed a bug where it wasn’t possible to upload an asset via a data URL if its MIME type contained a period. ([#9632](https://github.com/craftcms/cms/issues/9632))
 - Fixed a bug where the characters-left indicator was right-aligned for RTL Plain Text fields, for users with an LTR formatting locale. ([#9967](https://github.com/craftcms/cms/issues/9967))
 - Fixed a bug where `craft\web\ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION` wasn’t getting triggered for requests that accepted a JSON response. ([#9973](https://github.com/craftcms/cms/issues/9973))
+
+### Security
+- Assets fields now require temporary files to reside in temporary folders.
 
 ## 3.7.16 - 2021-10-06
 
