@@ -152,7 +152,7 @@ class UserElementTest extends TestCase
         ]);
         self::assertTrue(
             $this->activeUser->validateAuthKey(
-                '["EXAMPLE_TOKEN",null,"' . $validUserAgent . '"]'
+                '["EXAMPLE_TOKEN",null,"' . md5($validUserAgent) . '"]'
             )
         );
     }
