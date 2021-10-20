@@ -98,7 +98,7 @@ class UserElementTest extends TestCase
         ]);
 
         self::assertSame(
-            '["TOKEN",null,"Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)"]',
+            '["TOKEN",null,"' . md5('Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)') . '"]',
             $this->activeUser->getAuthKey()
         );
 
