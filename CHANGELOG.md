@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where database backups could error on some Windows servers.
+
 ## 3.7.17 - 2021-10-19
 
 ### Added
