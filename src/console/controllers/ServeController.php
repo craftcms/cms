@@ -27,6 +27,12 @@ class ServeController extends BaseServeController
      * @var string path or [path alias](https://craftcms.com/docs/3.x/config/#aliases) of the directory to serve.
      */
     public $docroot = '@webroot';
+    
+    /**
+      * @var string path or [path alias](guide:concept-aliases) to router script.
+      * See https://secure.php.net/manual/en/features.commandline.webserver.php
+      */
+    public $router = '@webroot/index.php';
 
     /**
      * @inheritdoc
