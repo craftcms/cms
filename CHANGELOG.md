@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.17.1 - 2021-10-20
+
+### Fixed
+- Fixed an error that could occur when creating database backups on Windows. ([#9978](https://github.com/craftcms/cms/issues/9978))
+- Fixed a bug where it wasn’t possible to upload assets if the `storage/` folder was symlinked. ([#9980](https://github.com/craftcms/cms/issues/9980))
+
 ## 3.7.17 - 2021-10-19
 
 ### Added
