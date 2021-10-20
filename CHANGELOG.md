@@ -3,7 +3,8 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where database backups could error on some Windows servers.
+- Fixed a bug where database backups could error on some Windows servers. ([#9978](https://github.com/craftcms/cms/issues/9978))
+- Fixed a bug where you couldn’t upload assets if your storage folder was symlinked. ([#9980](https://github.com/craftcms/cms/issues/9980))
 
 ## 3.7.17 - 2021-10-19
 

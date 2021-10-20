@@ -2317,9 +2317,13 @@ class Asset extends Element
         // Is it within one of our temp directories?
         $pathService = Craft::$app->getPath();
         $tempDirs = [
-            FileHelper::normalizePath($pathService->getTempPath()) . DIRECTORY_SEPARATOR,
-            FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR,
+            $this->_normalizeTempPath($pathService->getTempPath()),
+            $this->_normalizeTempPath(sys_get_temp_dir()),
         ];
+
+        $tempDirs = array_filter($tempDirs, function($value) {
+            return ($value !== false);
+        });
 
         foreach ($tempDirs as $allowedFolder) {
             if (StringHelper::startsWith($tempFilePath, $allowedFolder)) {
@@ -2328,20 +2332,41 @@ class Asset extends Element
         }
 
         // Make sure it's within the project root somewhere
-        $projectRoot = FileHelper::normalizePath(Craft::getAlias('@root')) . DIRECTORY_SEPARATOR;
+        $projectRoot = $this->_normalizeTempPath(Craft::getAlias('@root'));
         if (!StringHelper::startsWith($tempFilePath, $projectRoot)) {
             return false;
         }
 
         // Make sure it's not within a system directory
         $systemDirs = $pathService->getSystemPaths();
+
+        $systemDirs = array_map("_normalizeTempPath", $systemDirs);
+        $systemDirs = array_filter($systemDirs, function($value) {
+            return ($value !== false);
+        });
+
         foreach ($systemDirs as $dir) {
-            $dir = FileHelper::normalizePath($dir) . DIRECTORY_SEPARATOR;
             if (StringHelper::startsWith($tempFilePath, $dir)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * Returns a normalized temp path or false, if realpath fails.
+     *
+     * @param string $path
+     * @return false|string
+     */
+    private function _normalizeTempPath(string $path)
+    {
+        $path = realpath($path);
+        if (!$path) {
+            return false;
+        }
+
+        return FileHelper::normalizePath($path) . DIRECTORY_SEPARATOR;
     }
 }
