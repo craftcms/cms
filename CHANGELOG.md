@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `Craft::dd()` no longer defaults to including syntax highlighting in its output for console requests. ([#9972](https://github.com/craftcms/cms/pull/9972))
+
 ### Fixed
 - Fixed a PHP error that could occur when uploading assets on some environments.
 

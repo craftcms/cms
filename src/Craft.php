@@ -111,7 +111,8 @@ class Craft extends Yii
      *
      * @param mixed $var The variable to be dumped.
      * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param bool|null $highlight Whether the result should be syntax-highlighted.
+     * Defaults to `true` for web requests and `false` for console requests.
      * @throws ExitException if the application is in testing mode
      */
     public static function dd($var, int $depth = 10, bool $highlight = null)
