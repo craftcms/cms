@@ -115,7 +115,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.showStatusHud(this.$statusIcon);
         });
 
-        if (BroadcastChannel && !this.settings.revisionId) {
+        if (typeof BroadcastChannel !== 'undefined' && !this.settings.revisionId) {
             this.bc = new BroadcastChannel('DraftEditor');
             this.bc.onmessage = ev => {
                 if (
