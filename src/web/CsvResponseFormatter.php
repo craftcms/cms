@@ -85,6 +85,11 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
 
         $suspectCharacters = ['=', '-', '+', '@'];
 
+        $escapeChar = $this->escapeChar;
+        if ($escapeChar === '' && PHP_VERSION_ID < 70400) {
+            $escapeChar = '\\';
+        }
+
         foreach ($data as $row) {
             foreach ($row as &$field) {
                 if (is_scalar($field)) {
@@ -100,7 +105,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
                 }
             }
             unset($field);
-            fputcsv($fp, $row, $this->delimiter, $this->enclosure, $this->escapeChar);
+            fputcsv($fp, $row, $this->delimiter, $this->enclosure, $escapeChar);
         }
 
         fclose($fp);

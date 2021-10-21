@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a PHP error that could occur when uploading assets on some environments.
+- Fixed a PHP error that occurred when exporting elements on PHP 7.2 or 7.3. ([#9958](https://github.com/craftcms/cms/issues/9958))
 - Fixed a JavaScript error that occurred in Safari. ([#9976](https://github.com/craftcms/cms/issues/9976))
 
 ## 3.7.17.1 - 2021-10-20
