@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.17.2 - 2021-10-21
 
 ### Changed
 - `Craft::dd()` no longer defaults to including syntax highlighting in its output for console requests. ([#9972](https://github.com/craftcms/cms/pull/9972))
