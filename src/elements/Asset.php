@@ -2340,7 +2340,7 @@ class Asset extends Element
         // Make sure it's not within a system directory
         $systemDirs = $pathService->getSystemPaths();
 
-        $systemDirs = array_map("_normalizeTempPath", $systemDirs);
+        $systemDirs = array_map(array($this, "_normalizeTempPath"), $systemDirs);
         $systemDirs = array_filter($systemDirs, function($value) {
             return ($value !== false);
         });
