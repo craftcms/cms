@@ -348,8 +348,9 @@ class Html extends \yii\helpers\Html
 
         // Does the tag have an explicit value?
         $offset += strlen($match[0][0]);
-        if (isset($html[$offset]) && $html[$offset] === '=') {
-            $offset++;
+        
+        if (preg_match('/=\s*/A', $html, $m, 0, $offset)) {
+            $offset += strlen($m[0]);
 
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
