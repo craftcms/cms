@@ -330,7 +330,7 @@ class Html extends \yii\helpers\Html
      * @param int|null $end The end position of the attribute in the given HTML
      * @return array|null The name and value of the attribute, or `false` if no complete attribute was found
      * @throws InvalidArgumentException if `$html` doesn't begin with a valid HTML attribute
-     * @since 3.6.12
+     * @since 3.7.0
      */
     public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
     {
