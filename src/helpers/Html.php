@@ -334,7 +334,7 @@ class Html extends \yii\helpers\Html
      */
     public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
     {
-        if (!preg_match('/\s*([^=\/>\s]+)/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
+        if (!preg_match('/\s*([^=\/>\s]+)\s*/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
             if (!preg_match('/(\s*)\/?>/A', $html, $m, 0, $offset)) {
                 // No `>`
                 throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
