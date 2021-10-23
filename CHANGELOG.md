@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Updated Axios to 0.21.4. 
+
 ## 3.7.17.2 - 2021-10-21
 
 ### Changed
