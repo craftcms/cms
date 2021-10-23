@@ -334,7 +334,7 @@ class Html extends \yii\helpers\Html
      */
     public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
     {
-        if (!preg_match('/\s*([^=\/>\s]+)\s*/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
+        if (!preg_match('/\s*([^=\/>\s]+)/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
             if (!preg_match('/(\s*)\/?>/A', $html, $m, 0, $offset)) {
                 // No `>`
                 throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
@@ -348,8 +348,8 @@ class Html extends \yii\helpers\Html
 
         // Does the tag have an explicit value?
         $offset += strlen($match[0][0]);
-        
-        if (preg_match('/=\s*/A', $html, $m, 0, $offset)) {
+
+        if (preg_match('/\s*=\s*/A', $html, $m, 0, $offset)) {
             $offset += strlen($m[0]);
 
             // Wrapped in quotes?
@@ -364,7 +364,7 @@ class Html extends \yii\helpers\Html
                 if (isset($m[1]) && $m[1] !== '') {
                     $value = $m[1];
                 }
-            } elseif (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
+            } else if (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
                 $value = $m[0];
             }
