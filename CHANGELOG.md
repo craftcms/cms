@@ -3,11 +3,13 @@
 ## Unreleased
 
 ### Changed
+- Craft no longer writes out informational log messages when it’s not installed yet or an update is pending, if Dev Mode is disabled.
 - Updated Axios to 0.21.4. 
 
 ### Fixed
 - Fixed a bug where `craft\helpers\Html::parseTagAttributes()` was ignoring tag attribute values if there was any whitespace surrounding the `=` character. ([#9997](https://github.com/craftcms/cms/pull/9997))
 - Fixed a bug where `craft\helpers\Html::parseTagAttributes()` was including trailing tabs, newlines, and other non-space whitespace characters in the parsed values of unquoted attributes. ([#9997](https://github.com/craftcms/cms/pull/9997))
+- Fixed an error that could occur if the `log` component was configured with a custom log target and `flushInterval` set to `1`.
 
 ## 3.7.17.2 - 2021-10-21
 
