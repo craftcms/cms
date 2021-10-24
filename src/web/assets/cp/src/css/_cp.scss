@@ -38,6 +38,19 @@ body {
   &.reduce-focus-visibility :focus-visible {
     box-shadow: $darkFocusRing;
   }
+
+  /* Safari fallback */
+  .js-focus-visible & {
+    &.reduce-focus-visibility {
+      :focus:not(.focus-visible) {
+        box-shadow: none;
+      }
+  
+      .focus-visible {
+        box-shadow: $darkFocusRing;
+      }
+    }
+  }
 }
 
 .skip-link {

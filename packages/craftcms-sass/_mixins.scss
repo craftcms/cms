@@ -740,4 +740,15 @@ $radioSize: 16px;
       @content;
     }
   }
+
+  /* Polyfill fallback for Safari using focus-visible dependency */
+  .js-focus-visible body.reduce-focus-visibility & {
+    :focus:not(.focus-visible) {
+      outline: none;
+    }
+
+    .focus-visible {
+      @content;
+    }
+  }
 }

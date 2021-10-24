@@ -4434,8 +4434,7 @@ ul.tree,
     @include disclosure-link-hover-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  @include element-focus-styles() {
     box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
   }
 }
