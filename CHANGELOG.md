@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft no longer writes out informational log messages when it’s not installed yet or an update is pending, if Dev Mode is disabled.
+- Dropdown fields now prepend a blank option to their menu when the current value is invalid. ([#9989](https://github.com/craftcms/cms/issues/9989))
 - Updated Axios to 0.21.4. 
 
 ### Fixed
