@@ -5,6 +5,7 @@
 ### Changed
 - Craft no longer writes out informational log messages when it’s not installed yet or an update is pending, if Dev Mode is disabled.
 - Dropdown fields now prepend a blank option to their menu when the current value is invalid. ([#9989](https://github.com/craftcms/cms/issues/9989))
+- Some control panel POST requests no longer disable database replica connections. ([#9996](https://github.com/craftcms/cms/discussions/9996))
 - Updated Axios to 0.21.4. 
 
 ### Fixed
