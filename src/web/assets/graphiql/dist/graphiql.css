@@ -1518,7 +1518,7 @@ body,
   #graphiql .docExplorerWrap,
   #graphiql .historyPaneWrap {
     background: #fff;
-    box-shadow: 0 0 0 1px rgba(154, 165, 177, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5);
+    box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5);
     overflow: hidden; }
     #graphiql .queryWrap:focus,
     #graphiql .docExplorerWrap:focus,
@@ -1585,8 +1585,8 @@ body,
       padding-left: 24px;
       max-width: unset; }
       #graphiql .graphiql-container .execute-options li:hover, #graphiql .graphiql-container .toolbar-menu-items li:hover {
-        color: #3f4d5a;
-        background-color: #f3f7fc; }
+        color: #fff;
+        background-color: #8b96a2; }
       #graphiql .graphiql-container .execute-options li.selected-schema, #graphiql .graphiql-container .toolbar-menu-items li.selected-schema {
         cursor: default;
         background: none; }
