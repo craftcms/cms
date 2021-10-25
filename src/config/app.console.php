@@ -8,6 +8,9 @@ return [
         'queue',
     ],
     'components' => [
+        'errorHandler' => [
+            'class' => craft\console\ErrorHandler::class,
+        ],
         'request' => [
             'class' => craft\console\Request::class,
             'isConsoleRequest' => true,
