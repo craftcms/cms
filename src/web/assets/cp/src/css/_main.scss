@@ -4565,8 +4565,7 @@ table.editable {
     @include input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  @include element-focus-styles($applyToSelf: true) {
     @include input-focused-styles;
   }
 }
@@ -5031,8 +5030,7 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  @include element-focus-styles($applyToSelf: true) {
     @include input-focused-styles;
   }
 
