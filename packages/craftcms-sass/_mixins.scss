@@ -727,8 +727,14 @@ $radioSize: 16px;
 }
 
 @mixin element-focus-styles($applyToSelf: false) {
-  :focus {
-    @content;
+  @if $applyToSelf {
+    &:focus {
+      @content;
+    }
+  } @else {
+    :focus {
+      @content;
+    }
   }
 
   body.reduce-focus-visibility & {
