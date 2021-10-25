@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\console\ErrorHandler`. ([#10006](https://github.com/craftcms/cms/pull/10006))
+
 ### Changed
 - Craft no longer writes out informational log messages when it’s not installed yet or an update is pending, if Dev Mode is disabled.
 - Dropdown fields now prepend a blank option to their menu when the current value is invalid. ([#9989](https://github.com/craftcms/cms/issues/9989))

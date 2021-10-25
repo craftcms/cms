@@ -13,7 +13,7 @@ use craft\events\ExceptionEvent;
  * Class ErrorHandler
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.7.17.2
+ * @since 3.7.18
  */
 class ErrorHandler extends \yii\console\ErrorHandler
 {
