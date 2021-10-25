@@ -864,7 +864,7 @@ class User extends Element implements IdentityInterface
         return json_encode([
             $token,
             null,
-            $userAgent,
+            md5($userAgent),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
@@ -1679,7 +1679,7 @@ class User extends Element implements IdentityInterface
 
         $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
-        if ($userAgent !== $requestUserAgent) {
+        if (!hash_equals($userAgent, md5($requestUserAgent))) {
             Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
             return false;
         }

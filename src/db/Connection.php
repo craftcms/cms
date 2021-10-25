@@ -201,10 +201,10 @@ class Connection extends \yii\db\Connection
         ]));
         $filename = ($systemName ? $systemName . '--' : '') . gmdate('Y-m-d-His') . '--v' . Craft::$app->getVersion();
         $backupPath = Craft::$app->getPath()->getDbBackupPath();
-        $path = $backupPath . '/' . $filename . '.sql';
+        $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '.sql';
         $i = 0;
         while (file_exists($path)) {
-            $path = $backupPath . '/' . $filename . '--' . ++$i . '.sql';
+            $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '--' . ++$i . '.sql';
         }
         return $path;
     }
