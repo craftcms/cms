@@ -39,6 +39,18 @@ class SlugConditionRule extends BaseTextOperatorConditionRule implements QueryCo
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQueryInterface $query */
-        $query->slug($this->operator . ' ' . Db::escapeParam($this->value));
+        switch ($this->operator) {
+            case self::OPERATOR_CONTAINS:
+                $query->slug('= %' . Db::escapeParam($this->value) . '%');
+                break;
+            case self::OPERATOR_BEGINS_WITH:
+                $query->slug('= ' . Db::escapeParam($this->value) . '%');
+                break;
+            case self::OPERATOR_ENDS_WITH:
+                $query->slug('= %' . Db::escapeParam($this->value));
+                break;
+            default:
+                $query->slug($this->operator . ' ' . Db::escapeParam($this->value)); //
+        }
     }
 }

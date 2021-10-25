@@ -8,7 +8,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 
 /**
- * The BaseTextOperatorConditionRule class provides a condition rule with a single input with operator.
+ * The BaseTextOperatorConditionRule class provides a condition rule with a single text input with operator.
  *
  * @property-read array $inputAttributes
  * @property-read string $inputHtml
@@ -18,6 +18,9 @@ use craft\helpers\UrlHelper;
  */
 abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
 {
+    public const OPERATOR_CONTAINS = 'contains';
+    public const OPERATOR_BEGINS_WITH = 'begins_with';
+    public const OPERATOR_ENDS_WITH = 'ends_with';
     /**
      * @var string
      */
@@ -27,6 +30,18 @@ abstract class BaseTextOperatorConditionRule extends BaseOperatorConditionRule
      * @inheritdoc
      */
     protected bool $showOperator = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected function operators(): array
+    {
+        return array_merge(parent::operators(), [
+            static::OPERATOR_CONTAINS => Craft::t('app', 'contains'),
+            static::OPERATOR_BEGINS_WITH => Craft::t('app', 'begins with'),
+            static::OPERATOR_ENDS_WITH => Craft::t('app', 'ends with'),
+        ]);
+    }
 
     /**
      * @inheritdoc

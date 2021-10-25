@@ -16,6 +16,8 @@ use craft\helpers\Html;
  */
 abstract class BaseOperatorConditionRule extends BaseConditionRule
 {
+    public const OPERATOR_EQUALS = '=';
+
     /**
      * @var bool
      */
@@ -24,7 +26,7 @@ abstract class BaseOperatorConditionRule extends BaseConditionRule
     /**
      * @var string
      */
-    public string $operator = '=';
+    public string $operator = self::OPERATOR_EQUALS;
 
     /**
      * @inheritdoc
@@ -42,12 +44,7 @@ abstract class BaseOperatorConditionRule extends BaseConditionRule
     protected function operators(): array
     {
         return [
-            '=' => Craft::t('app', 'equals'),
-            '!=' => Craft::t('app', 'does not equal'),
-            '<' => Craft::t('app', 'is less than'),
-            '<=' => Craft::t('app', 'is less than or equals'),
-            '>' => Craft::t('app', 'is greater than'),
-            '>=' => Craft::t('app', 'is greater than or equals'),
+            self::OPERATOR_EQUALS => Craft::t('app', 'equals')
         ];
     }
 
