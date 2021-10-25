@@ -726,29 +726,49 @@ $radioSize: 16px;
   }
 }
 
-@mixin element-focus-styles() {
+@mixin element-focus-styles($applyToSelf: false) {
   :focus {
     @content;
   }
 
   body.reduce-focus-visibility & {
-    :focus:not(:focus-visible) {
-      box-shadow: none;
-    }
-
-    :focus-visible {
-      @content;
+    @if $applyToSelf {
+      &:focus:not(:focus-visible) {
+        box-shadow: none;
+      }
+  
+      &:focus-visible {
+        @content;
+      }
+    } @else {
+      :focus:not(:focus-visible) {
+        box-shadow: none;
+      }
+  
+      :focus-visible {
+        @content;
+      }
     }
   }
 
   /* Polyfill fallback for Safari using focus-visible dependency */
   .js-focus-visible body.reduce-focus-visibility & {
-    :focus:not(.focus-visible) {
-      outline: none;
-    }
-
-    .focus-visible {
-      @content;
+    @if $applyToSelf {
+      &:focus:not(.focus-visible) {
+        box-shadow: none;
+      }
+  
+      &.focus-visible {
+        @content;
+      }
+    } @else {
+      :focus:not(.focus-visible) {
+        box-shadow: none;
+      }
+  
+      .focus-visible {
+        @content;
+      }
     }
   }
 }

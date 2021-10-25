@@ -2196,13 +2196,13 @@ body.rtl .menu hr.padded, body.rtl .menu h6.padded { margin-right: 10px; }
 
 .menu--disclosure ul li > a :focus { box-shadow: inset 0 0 0 3px rgba(18, 127, 191, 0.7); }
 
-body.reduce-focus-visibility .menu--disclosure ul li > a :focus:not(:focus-visible) { box-shadow: none; }
+body.reduce-focus-visibility .menu--disclosure ul li > a:focus:not(:focus-visible) { box-shadow: none; }
 
-body.reduce-focus-visibility .menu--disclosure ul li > a :focus-visible { box-shadow: inset 0 0 0 3px rgba(18, 127, 191, 0.7); }
+body.reduce-focus-visibility .menu--disclosure ul li > a:focus-visible { box-shadow: inset 0 0 0 3px rgba(18, 127, 191, 0.7); }
 
-.js-focus-visible body.reduce-focus-visibility .menu--disclosure ul li > a :focus:not(.focus-visible) { outline: none; }
+.js-focus-visible body.reduce-focus-visibility .menu--disclosure ul li > a:focus:not(.focus-visible) { box-shadow: none; }
 
-.js-focus-visible body.reduce-focus-visibility .menu--disclosure ul li > a .focus-visible { box-shadow: inset 0 0 0 3px rgba(18, 127, 191, 0.7); }
+.js-focus-visible body.reduce-focus-visibility .menu--disclosure ul li > a.focus-visible { box-shadow: inset 0 0 0 3px rgba(18, 127, 191, 0.7); }
 
 /* tag select fields */
 .tagselect .elements { display: inline; }
@@ -3102,7 +3102,7 @@ body.reduce-focus-visibility #global-sidebar :focus:not(:focus-visible) { box-sh
 
 body.reduce-focus-visibility #global-sidebar :focus-visible { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
 
-.js-focus-visible body.reduce-focus-visibility #global-sidebar :focus:not(.focus-visible) { outline: none; }
+.js-focus-visible body.reduce-focus-visibility #global-sidebar :focus:not(.focus-visible) { box-shadow: none; }
 
 .js-focus-visible body.reduce-focus-visibility #global-sidebar .focus-visible { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
 
