@@ -39,6 +39,9 @@ class FocalPoint {
         $(window).on('mousemove touchmove', this.handleMove.bind(this));
     }
     destruct() {
+        if (this.debounceTimer) {
+            this.storeFocalPosition();
+        }
         this.$focal.off('mousedown touchstart', this.handleDragStart.bind(this));
         $(window).off('mouseup touchend', this.handleDragEnd.bind(this));
         $(window).off('mousemove touchmove', this.handleMove.bind(this));
