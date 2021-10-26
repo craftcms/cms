@@ -10,6 +10,7 @@
 - Dropdown fields now prepend a blank option to their menu when the current value is invalid. ([#9989](https://github.com/craftcms/cms/issues/9989))
 - Some control panel POST requests no longer disable database replica connections. ([#9996](https://github.com/craftcms/cms/discussions/9996))
 - Updated Axios to 0.21.4. 
+- Updated jQuery UI to 1.13.0.
 
 ### Fixed
 - Fixed a bug where `craft\helpers\Html::parseTagAttributes()` was ignoring tag attribute values if there were any whitespace characters surrounding the `=` character. ([#9997](https://github.com/craftcms/cms/pull/9997))
