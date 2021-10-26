@@ -1,5 +1,27 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.18 - 2021-10-26
+
+### Added
+- Added `craft\console\ErrorHandler`. ([#10006](https://github.com/craftcms/cms/pull/10006))
+
+### Changed
+- Craft no longer writes out informational log messages when it’s not installed yet or an update is pending, if Dev Mode is disabled.
+- Dropdown fields now prepend a blank option to their menu when the current value is invalid. ([#9989](https://github.com/craftcms/cms/issues/9989))
+- Some control panel POST requests no longer disable database replica connections. ([#9996](https://github.com/craftcms/cms/discussions/9996))
+- Updated Axios to 0.21.4. 
+- Updated jQuery UI to 1.13.0.
+
+### Fixed
+- Fixed a bug where `craft\helpers\Html::parseTagAttributes()` was ignoring tag attribute values if there were any whitespace characters surrounding the `=` character. ([#9997](https://github.com/craftcms/cms/pull/9997))
+- Fixed a bug where `craft\helpers\Html::parseTagAttributes()` was including trailing tabs, newlines, and other non-space whitespace characters in the parsed values of unquoted attributes. ([#9997](https://github.com/craftcms/cms/pull/9997))
+- Fixed an error that could occur if the `log` component was configured with a custom log target and `flushInterval` set to `1`.
+- Fixed a bug where `plugin/*` commands weren’t always handling failures properly. ([#9984](https://github.com/craftcms/cms/issues/9984))
+- Fixed a bug where entry title changes could be overlooked when merging upstream changes into a draft. ([#9966](https://github.com/craftcms/cms/issues/9966))
+- Fixed a bug where focus rings weren’t ever visible on Safari, unless the “Always show focus rings” accessibility preference was enabled. ([#10009](https://github.com/craftcms/cms/pull/10009))
+- Fixed a bug where it wasn’t possible to query for draft or revision creators via GraphQL. ([craftcms/gatsby-source-craft#56](https://github.com/craftcms/gatsby-source-craft/issues/56))
+- Fixed a bug where Super Table blocks could go missing when a draft was created, if their block type ID matched another Matrix/Super Table/Neo block’s ID on the same page.
+
 ## 3.7.17.2 - 2021-10-21
 
 ### Changed
