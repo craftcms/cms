@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.18 - 2021-10-26
 
 ### Added
 - Added `craft\console\ErrorHandler`. ([#10006](https://github.com/craftcms/cms/pull/10006))
