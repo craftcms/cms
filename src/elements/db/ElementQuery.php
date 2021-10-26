@@ -1335,7 +1335,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
             ->andWhere($this->where)
-            ->andWhere(['elements.type' => $this->elementType])
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params);

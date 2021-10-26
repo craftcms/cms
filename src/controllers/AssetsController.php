@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
@@ -1239,11 +1240,25 @@ class AssetsController extends Controller
 
         $previewHtml = null;
 
-        // todo: we should be passing the asset into getPreviewHtml(), not the constructor
         $previewHandler = Craft::$app->getAssets()->getAssetPreviewHandler($asset);
+        $variables = [];
+
+        if ($previewHandler instanceof ImagePreview) {
+            if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
+                $variables['editFocal'] = true;
+
+                try {
+                    $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
+                    $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
+                } catch (ForbiddenHttpException $exception) {
+                    $variables['editFocal'] = false;
+                }
+            }
+        }
+
         if ($previewHandler) {
             try {
-                $previewHtml = $previewHandler->getPreviewHtml();
+                $previewHtml = $previewHandler->getPreviewHtml($variables);
             } catch (NotSupportedException $e) {
                 // No big deal
             }
@@ -1260,6 +1275,37 @@ class AssetsController extends Controller
         ]);
     }
 
+    /**
+     * Update an asset's focal point position.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
+     */
+    public function actionUpdateFocalPosition(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $assetUid = Craft::$app->getRequest()->getRequiredBodyParam('assetUid');
+        $focalData = Craft::$app->getRequest()->getRequiredBodyParam('focal');
+
+        $asset = Asset::find()->uid($assetUid)->one();
+
+        if (!$asset) {
+            throw new BadRequestHttpException("Invalid asset UID: $assetUid");
+        }
+
+        $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
+
+        $asset->setFocalPoint($focalData);
+        Craft::$app->getElements()->saveElement($asset);
+
+        return $this->asJson(['success' => true]);
+    }
     /**
      * Sends a broken image response based on a given exception.
      *

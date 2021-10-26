@@ -52,6 +52,8 @@ class ApplyNewPropagationMethod extends BaseJob
             ->siteId('*')
             ->unique()
             ->status(null);
+            ->drafts(null)
+            ->provisionalDrafts(null);
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
@@ -97,6 +99,8 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->siteId($otherSiteIds)
                     ->structureId($element->structureId)
                     ->status(null)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->orderBy(null)
                     ->indexBy('siteId')
                     ->all();
@@ -143,6 +147,8 @@ class ApplyNewPropagationMethod extends BaseJob
                                 ->siteId('*')
                                 ->unique()
                                 ->anyStatus()
+                                ->drafts(null)
+                                ->provisionalDrafts(null)
                                 ->scalar();
 
                             if ($parentId !== false) {

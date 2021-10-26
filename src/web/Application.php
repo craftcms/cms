@@ -150,7 +150,17 @@ class Application extends \yii\web\Application
             $this->_processResourceRequest($request);
 
             // Disable read/write splitting for POST requests
-            if ($this->getRequest()->getIsPost()) {
+            if (
+                $request->getIsPost() &&
+                !in_array($request->getActionSegments(), [
+                    ['element-indexes', 'count-elements'],
+                    ['element-indexes', 'data'],
+                    ['element-indexes', 'export'],
+                    ['element-indexes', 'get-elements'],
+                    ['element-indexes', 'get-more-elements'],
+                    ['element-indexes', 'get-source-tree-html'],
+                ])
+            ) {
                 $this->getDb()->enableReplicas = false;
             }
 

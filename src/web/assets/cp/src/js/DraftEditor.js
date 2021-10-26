@@ -115,7 +115,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.showStatusHud(this.$statusIcon);
         });
 
-        if (BroadcastChannel && !this.settings.revisionId) {
+        if (typeof BroadcastChannel !== 'undefined' && !this.settings.revisionId) {
             this.bc = new BroadcastChannel('DraftEditor');
             this.bc.onmessage = ev => {
                 if (
@@ -980,8 +980,13 @@ Craft.DraftEditor = Garnish.Base.extend({
                         return pre + this.duplicatedElements[id] + post;
                     })
                     // &fields[...=X
-                    .replace(new RegExp(`(&fields${lb}[^=]+=)(${idsRE})\\b`, 'g'), (m, pre, id) => {
-                        return pre + this.duplicatedElements[id];
+                    .replace(new RegExp(`&(fields${lb}[^=]+)=(${idsRE})\\b`, 'g'), (m, name, id) => {
+                        // Ignore param names that end in `[enabled]`, `[type]`, etc.
+                        // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
+                        if (name.match(new RegExp(`${lb}(enabled|sordOrder|type|typeId)${rb}$`))) {
+                            return m;
+                        }
+                        return `&${name}=${this.duplicatedElements[id]}`;
                     })
             )) {
                 break;

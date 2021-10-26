@@ -22,7 +22,7 @@ class Pdf extends AssetPreviewHandler
     /**
      * @inheritdoc
      */
-    public function getPreviewHtml(): string
+    public function getPreviewHtml(array $variables = []): string
     {
         $url = $this->asset->getUrl();
 

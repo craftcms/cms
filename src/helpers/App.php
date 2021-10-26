@@ -612,6 +612,10 @@ class App
      */
     public static function defaultLogTargets(): array
     {
+        // Warning - Don't do anything that could cause something to get logged from here!
+        // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
+        // targets haven’t been instantiated yet.
+
         $targets = [];
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
@@ -635,15 +639,7 @@ class App
                 $fileTargetConfig['logFile'] = '@storage/logs/web.log';
             }
 
-            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-            // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-            $onlyLogErrors = (
-                !Craft::$app->getConfig()->getGeneral()->devMode &&
-                Craft::$app->getIsInstalled() &&
-                !Craft::$app->getUpdates()->getIsCraftUpdatePending()
-            );
-
-            if ($onlyLogErrors) {
+            if (!YII_DEBUG) {
                 $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
 

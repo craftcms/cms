@@ -888,7 +888,8 @@ td.right {
       transition: opacity linear 100ms;
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
       color: $mediumTextColor !important;
       text-decoration: none;
 
@@ -1247,6 +1248,7 @@ ul.icons {
 }
 
 .btn[data-icon-after]:not(:empty):after,
+.menu-toggle:not(:empty):after,
 .menubtn:not(:empty):after,
 .menubtn.icon:after {
   @include margin-left(6px);
@@ -1433,6 +1435,7 @@ ul.icons {
 }
 
 /* menu buttons */
+.menu-toggle,
 .menubtn {
   display: inline-flex;
   align-items: center;
@@ -2290,6 +2293,9 @@ $elementInnerSpacing: 5px;
       &.rounded img {
         border-radius: 50%;
       }
+    }
+    .elementthumb.open-preview {
+      cursor: pointer;
     }
   }
 
@@ -4095,7 +4101,8 @@ ul.tree,
       max-height: 190px;
     }
   }
-
+}
+.button-fade {
   .buttons {
     opacity: 0;
     position: absolute;
@@ -4129,8 +4136,11 @@ ul.tree,
     }
   }
 
-  &:hover .buttons {
-    opacity: 1;
+  &:hover,
+  &:focus-within {
+    .buttons {
+      opacity: 1;
+    }
   }
 }
 
@@ -4450,8 +4460,8 @@ ul.tree,
   }
 }
 
-.menu ul li a:not(.sel):not(.disabled):hover,
-.menu:not(:hover) ul li a:not(.disabled).hover {
+.menu:not(.menu--disclosure) ul li a:not(.sel):not(.disabled):hover,
+.menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
 
   --text-color: #{$white};
@@ -4471,6 +4481,16 @@ ul.tree,
   hr.padded,
   h6.padded {
     @include margin-left(10px);
+  }
+}
+
+.menu--disclosure ul li > a {
+  &:hover {
+    @include disclosure-link-hover-styles;
+  }
+
+  @include element-focus-styles($applyToSelf: true) {
+    box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
   }
 }
 
@@ -4600,16 +4620,8 @@ table.editable {
     @include input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include input-focused-styles;
-    }
+  @include element-focus-styles($applyToSelf: true) {
+    @include input-focused-styles;
   }
 }
 
@@ -4708,6 +4720,16 @@ textarea.text.fullwidth {
   @include floatright;
   @include margin(-27px, 7px, 0, 0);
   color: $lightTextColor;
+
+  .input.ltr > & {
+    float: right !important;
+    margin-right: 7px !important;
+  }
+
+  .input.rtl > & {
+    float: left !important;
+    margin-left: 7px !important;
+  }
 
   &.negative-chars-left {
     color: $errorColor;
@@ -5073,16 +5095,8 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include input-focused-styles;
-    }
+  @include element-focus-styles($applyToSelf: true) {
+    @include input-focused-styles;
   }
 
   option {
@@ -5398,16 +5412,9 @@ tr.indexingSession td.progress div.progressContainer  div.progressInfo {
     @include select-input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) & {
-    &:focus {
-      @include select-input-focused-styles;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    &:focus-visible {
-      @include select-input-focused-styles;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
+    @include select-input-focused-styles;
   }
 }
 

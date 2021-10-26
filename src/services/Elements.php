@@ -1816,6 +1816,9 @@ class Elements extends Component
                 foreach ($siteElements as $siteElement) {
                     $searchService->indexElementAttributes($siteElement);
                 }
+
+                // Invalidate caches
+                $this->invalidateCachesForElement($element);
             }
 
             // Fire "after" events
@@ -2856,8 +2859,10 @@ class Elements extends Component
             $siteElement->title = $element->title;
         }
 
-        // Copy the dirty attributes
-        $siteElement->setDirtyAttributes($element->getDirtyAttributes());
+        // Copy the dirty attributes (except title, which may be translatable)
+        $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), function(string $attribute): bool {
+            return $attribute !== 'title';
+        }));
 
         // Copy any non-translatable field values
         if ($element::hasContent()) {

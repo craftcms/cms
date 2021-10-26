@@ -1844,7 +1844,7 @@ JS;
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            Craft::error('Someone tried to load a template outside the templates folder: ' . $name);
+            Craft::warning('Someone tried to load a template outside the templates folder: ' . $name);
             throw new TwigLoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
         }
     }

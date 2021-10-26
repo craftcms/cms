@@ -221,6 +221,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
+            'orientation' => $this->getOrientation($element),
         ]);
     }
 

@@ -30,10 +30,10 @@
         </nav>
 
         {% if customizableSources %}
-            <a class="customize-sources">
+            <button class="customize-sources" type="button">
                 <span class="settings icon"></span>
                 <span class="label">{{ 'Customize'|t('app') }}</span>
-            </a>
+            </button>
         {% endif %}
     {% endif %}
 {% endblock %}

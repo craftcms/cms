@@ -1570,7 +1570,8 @@ $.extend(Craft,
             $('.lightswitch', $container).lightswitch();
             $('.nicetext', $container).nicetext();
             $('.formsubmit', $container).formsubmit();
-            $('.menubtn', $container).menubtn();
+            $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
+            $('[data-disclosure-trigger]', $container).disclosureMenu();
             $('.datetimewrapper', $container).datetime();
             $('.datewrapper > input[type="date"], .timewrapper > input[type="time"]', $container).datetimeinput();
 
@@ -2148,6 +2149,20 @@ $.extend($.fn,
                     }
 
                     new Garnish.MenuBtn($btn, settings);
+                }
+            });
+        },
+
+        disclosureMenu: function() {
+            return this.each(function() {
+                var $trigger = $(this);
+                var $disclosureId = $trigger.attr('aria-controls');
+
+                // Only instantiate element if there is a reference to disclosure content
+                if ($disclosureId) {
+                    var settings = {};
+
+                    new Garnish.DisclosureMenu($trigger, settings);
                 }
             });
         },
