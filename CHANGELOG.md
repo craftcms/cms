@@ -17,6 +17,7 @@
 - Fixed an error that could occur if the `log` component was configured with a custom log target and `flushInterval` set to `1`.
 - Fixed a bug where `plugin/*` commands weren’t always handling failures properly. ([#9984](https://github.com/craftcms/cms/issues/9984))
 - Fixed a bug where entry title changes could be overlooked when merging upstream changes into a draft. ([#9966](https://github.com/craftcms/cms/issues/9966))
+- Fixed a bug where focus rings weren’t ever visible on Safari, unless the “Always show focus rings” accessibility preference was enabled. ([#10009](https://github.com/craftcms/cms/pull/10009))
 
 ## 3.7.17.2 - 2021-10-21
 
