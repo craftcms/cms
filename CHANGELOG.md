@@ -19,6 +19,7 @@
 - Fixed a bug where entry title changes could be overlooked when merging upstream changes into a draft. ([#9966](https://github.com/craftcms/cms/issues/9966))
 - Fixed a bug where focus rings weren’t ever visible on Safari, unless the “Always show focus rings” accessibility preference was enabled. ([#10009](https://github.com/craftcms/cms/pull/10009))
 - Fixed a bug where it wasn’t possible to query for draft or revision creators via GraphQL. ([craftcms/gatsby-source-craft#56](https://github.com/craftcms/gatsby-source-craft/issues/56))
+- Fixed a bug where Super Table blocks could go missing when a draft was created, if their block type ID matched another Matrix/Super Table/Neo block’s ID on the same page.
 
 ## 3.7.17.2 - 2021-10-21
 
