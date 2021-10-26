@@ -159,7 +159,7 @@ class Asset extends Element
                 'args' => [
                     'sizes' => [
                         'name' => 'sizes',
-                        'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.',
+                        'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the intended 1x width.',
                         'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
                     ],
                 ],
