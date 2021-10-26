@@ -139,7 +139,7 @@ class InstallController extends BaseUpdaterController
         $licenseKey = $this->request->getBodyParam('licenseKey');
 
         if (
-            ($returnUrl = $this->request->getBodyParam('return')) !== null &&
+            ($returnUrl = $this->findReturnUrl()) !== null &&
             !in_array($returnUrl, ['plugin-store', 'settings/plugins'], true)
         ) {
             $returnUrl = null;

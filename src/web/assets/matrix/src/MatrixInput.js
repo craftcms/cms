@@ -512,7 +512,7 @@
                     }
 
                     if (value) {
-                        value = Craft.trim(value);
+                        value = Craft.trim(Craft.escapeHtml(value));
 
                         if (value) {
                             if (inputPreviewText) {

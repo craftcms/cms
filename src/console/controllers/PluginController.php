@@ -64,10 +64,14 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            Craft::$app->plugins->installPlugin($handle);
+            $success = Craft::$app->plugins->installPlugin($handle);
         } catch (Throwable $e) {
-            $this->stderr("*** failed to install $handle: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+            $success = false;
+        } finally {
+            if (!$success) {
+                $this->stderr("*** failed to install $handle" . (isset($e) ? ": {$e->getMessage()}" : '.') . PHP_EOL . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
@@ -87,14 +91,18 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            Craft::$app->plugins->uninstallPlugin($handle, $this->force);
+            $success = Craft::$app->plugins->uninstallPlugin($handle, $this->force);
         } catch (Throwable $e) {
-            $this->stderr("*** failed to uninstall $handle: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
-            if (!$this->force) {
-                $this->stderr('Try again with --force.' . PHP_EOL);
+            $success = false;
+        } finally {
+            if (!$success) {
+                $this->stderr("*** failed to uninstall $handle" . (isset($e) ? ": {$e->getMessage()}" : '.') . PHP_EOL, Console::FG_RED);
+                if (!$this->force) {
+                    $this->stderr('Try again with --force.' . PHP_EOL);
+                }
+                $this->stderr(PHP_EOL);
+                return ExitCode::UNSPECIFIED_ERROR;
             }
-            $this->stderr(PHP_EOL);
-            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
@@ -114,10 +122,14 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            Craft::$app->plugins->enablePlugin($handle);
+            $success = Craft::$app->plugins->enablePlugin($handle);
         } catch (Throwable $e) {
-            $this->stderr("*** failed to enable $handle: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+            $success = false;
+        } finally {
+            if (!$success) {
+                $this->stderr("*** failed to enable $handle" . (isset($e) ? ": {$e->getMessage()}" : '.') . PHP_EOL . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
@@ -137,10 +149,14 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            Craft::$app->plugins->disablePlugin($handle);
+            $success = Craft::$app->plugins->disablePlugin($handle);
         } catch (Throwable $e) {
-            $this->stderr("*** failed to disable $handle: {$e->getMessage()}" . PHP_EOL . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+            $success = false;
+        } finally {
+            if (!$success) {
+                $this->stderr("*** failed to disable $handle" . (isset($e) ? ": {$e->getMessage()}" : '.') . PHP_EOL . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);

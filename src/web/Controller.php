@@ -9,18 +9,13 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
-use GuzzleHttp\Exception\ClientException;
-use Throwable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\HttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
@@ -179,57 +174,6 @@ abstract class Controller extends \yii\web\Controller
         }
 
         return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function runAction($id, $params = [])
-    {
-        try {
-            return parent::runAction($id, $params);
-        } catch (Throwable $e) {
-            if ($this->request->getAcceptsJson()) {
-                Craft::$app->getErrorHandler()->logException($e);
-                if (!YII_DEBUG && !$e instanceof UserException) {
-                    $message = Craft::t('app', 'A server error occurred.');
-                } else {
-                    $message = $e->getMessage();
-                }
-                if ($e instanceof ClientException) {
-                    $statusCode = $e->getCode();
-                    if (($response = $e->getResponse()) !== null) {
-                        $body = Json::decodeIfJson((string)$response->getBody());
-                        if (isset($body['message'])) {
-                            $message = $body['message'];
-                        }
-                    }
-                } else if ($e instanceof HttpException) {
-                    $statusCode = $e->statusCode;
-                } else {
-                    $statusCode = 500;
-                }
-
-                if (YII_DEBUG) {
-                    $response = $this->asJson([
-                        'error' => $message,
-                        'exception' => get_class($e),
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine(),
-                        'trace' => array_map(function($step) {
-                            unset($step['args']);
-                            return $step;
-                        }, $e->getTrace()),
-                    ]);
-                } else {
-                    $response = $this->asErrorJson($message);
-                }
-
-                return $response
-                    ->setStatusCode($statusCode);
-            }
-            throw $e;
-        }
     }
 
     /**

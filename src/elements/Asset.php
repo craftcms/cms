@@ -40,6 +40,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
@@ -1739,8 +1740,8 @@ class Asset extends Element
                 ]) .
                 Html::tag(
                     'div',
-                    ($previewable ? Html::tag('div', Craft::t('app', 'Preview'), ['class' => 'btn preview-btn', 'id' => 'preview-btn']) : '') .
-                    ($editable ? Html::tag('div', Craft::t('app', 'Edit'), ['class' => 'btn edit-btn', 'id' => 'edit-btn']) : ''),
+                    ($previewable ? Html::tag('button', Craft::t('app', 'Preview'), ['class' => 'btn preview-btn', 'id' => 'preview-btn', 'type' => 'button']) : '') .
+                    ($editable ? Html::tag('button', Craft::t('app', 'Edit'), ['class' => 'btn edit-btn', 'id' => 'edit-btn', 'type' => 'button']) : ''),
                     ['class' => 'buttons']
                 ),
                 [
@@ -2200,6 +2201,11 @@ class Asset extends Element
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
             $oldVolume->renameFile($oldPath, $newPath);
         } else {
+            if (!$this->_validateTempFilePath()) {
+                Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
+                $this->tempFilePath = null;
+            }
+
             // Get the temp path
             if (isset($this->tempFilePath)) {
                 $tempPath = $this->tempFilePath;
@@ -2276,5 +2282,76 @@ class Asset extends Element
         // Clear out the temp location properties
         $this->newLocation = null;
         $this->tempFilePath = null;
+    }
+
+    /**
+     * Validates that the temp file path exists and is someplace safe.
+     *
+     * @return bool
+     */
+    private function _validateTempFilePath(): bool
+    {
+        $tempFilePath = realpath($this->tempFilePath);
+
+        if ($tempFilePath === false || !is_file($tempFilePath)) {
+            return false;
+        }
+
+        $tempFilePath = FileHelper::normalizePath($tempFilePath);
+
+        // Is it within one of our temp directories?
+        $pathService = Craft::$app->getPath();
+        $tempDirs = [
+            $this->_normalizeTempPath($pathService->getTempPath()),
+            $this->_normalizeTempPath(sys_get_temp_dir()),
+        ];
+
+        $tempDirs = array_filter($tempDirs, function($value) {
+            return ($value !== false);
+        });
+
+        foreach ($tempDirs as $allowedFolder) {
+            if (StringHelper::startsWith($tempFilePath, $allowedFolder)) {
+                return true;
+            }
+        }
+
+        // Make sure it's within the project root somewhere
+        $projectRoot = $this->_normalizeTempPath(Craft::getAlias('@root'));
+        if (!StringHelper::startsWith($tempFilePath, $projectRoot)) {
+            return false;
+        }
+
+        // Make sure it's not within a system directory
+        $systemDirs = $pathService->getSystemPaths();
+
+        $systemDirs = array_map([$this, '_normalizeTempPath'], $systemDirs);
+        $systemDirs = array_filter($systemDirs, function($value) {
+            return ($value !== false);
+        });
+
+        foreach ($systemDirs as $dir) {
+            if (StringHelper::startsWith($tempFilePath, $dir)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns a normalized temp path or false, if realpath fails.
+     *
+     * @param string $path
+     * @return false|string
+     */
+    private function _normalizeTempPath(string $path)
+    {
+        $path = realpath($path);
+        if (!$path) {
+            return false;
+        }
+
+        return FileHelper::normalizePath($path) . DIRECTORY_SEPARATOR;
     }
 }

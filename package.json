@@ -12,7 +12,7 @@
     "@babel/core": "^7.14.0",
     "@babel/preset-env": "^7.14.1",
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
     "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^10.31.0",
     "d3": "^4.11.0",
@@ -21,7 +21,8 @@
     "element-resize-detector": "^1.2.2",
     "event-stream": "3.3.4",
     "fabric": "^1.7.19",
-    "garnishjs": "^0.1.46",
+    "focus-visible": "^5.2.0",
+    "garnishjs": "^0.1.47",
     "graphiql": "^0.14.2",
     "graphiql-explorer": "^0.6.3",
     "graphql": "^14.6.0",
@@ -35,11 +36,12 @@
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.1.0",
     "gulp-sourcemaps": "^2.6.5",
+    "gulp-typescript": "^6.0.0-alpha.1",
     "gulp-uglify-es": "^2.0.0",
     "iframe-resizer": "^4.3.2",
     "inputmask": "~3.2.2 || ~3.3.5",
     "jquery": "^3.6.0",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.0",
     "jquery.payment": "^3.0.0",
     "lerna": "^4.0.0",
     "picturefill": "^3.0.3",
@@ -61,8 +63,5 @@
     "whatwg-fetch": "^0.9.0",
     "xregexp": "^3.2.0",
     "yii2-pjax": "~2.0.1"
-  },
-  "dependencies": {
-    "gulp-typescript": "^6.0.0-alpha.1"
   }
 }

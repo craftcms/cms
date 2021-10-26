@@ -331,7 +331,7 @@ class Html extends \yii\helpers\Html
      * @param int|null $end The end position of the attribute in the given HTML
      * @return array|null The name and value of the attribute, or `false` if no complete attribute was found
      * @throws InvalidArgumentException if `$html` doesn't begin with a valid HTML attribute
-     * @since 3.6.12
+     * @since 3.7.0
      */
     public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
     {
@@ -349,8 +349,9 @@ class Html extends \yii\helpers\Html
 
         // Does the tag have an explicit value?
         $offset += strlen($match[0][0]);
-        if (isset($html[$offset]) && $html[$offset] === '=') {
-            $offset++;
+
+        if (preg_match('/\s*=\s*/A', $html, $m, 0, $offset)) {
+            $offset += strlen($m[0]);
 
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
@@ -364,7 +365,7 @@ class Html extends \yii\helpers\Html
                 if (isset($m[1]) && $m[1] !== '') {
                     $value = $m[1];
                 }
-            } else if (preg_match('/[^ >]+/A', $html, $m, 0, $offset)) {
+            } else if (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
                 $value = $m[0];
             }

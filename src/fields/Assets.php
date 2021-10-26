@@ -502,13 +502,13 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // Figure out what we're working with and set up some initial variables.
-        $isDraftOrRevision = $element && $element->id && ElementHelper::isDraftOrRevision($element);
+        $isCanonical = $element->id && ElementHelper::isCanonical($element);
         $query = $element->getFieldValue($this->handle);
         $assetsService = Craft::$app->getAssets();
 
-        $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+        $getTargetFolderId = function() use ($element, $isCanonical): int {
             static $targetFolderId;
-            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
+            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, $isCanonical);
         };
 
         // Folder creation and file uploads have been handles for propagating elements already.
@@ -570,8 +570,8 @@ class Assets extends BaseRelationField
         $assets = $query->all();
 
         if (!empty($assets)) {
-            // Only enforce the single upload folder setting if this isn't a draft or revision
-            if ($this->useSingleFolder && !$isDraftOrRevision) {
+            // Only enforce the single upload folder setting for canonical elements
+            if ($this->useSingleFolder && $isCanonical) {
                 $targetFolderId = $getTargetFolderId();
                 $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
                     return $asset->folderId != $targetFolderId;
@@ -738,7 +738,7 @@ class Assets extends BaseRelationField
         // Grab data strings
         if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
             foreach ($this->_uploadedDataFiles['data'] as $index => $dataString) {
-                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+\-]+);base64,(?<data>.+)/i', $dataString, $matches)) {
+                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+\-\.]+);base64,(?<data>.+)/i', $dataString, $matches)) {
                     $type = $matches['type'];
                     $data = base64_decode($matches['data']);
 

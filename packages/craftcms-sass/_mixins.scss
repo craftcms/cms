@@ -520,6 +520,11 @@ $radioSize: 16px;
   background-color: $menuOptionActiveBackgroundColor;
 }
 
+@mixin disclosure-link-hover-styles {
+  color: $menuOptionColor;
+  background-color: $grey050;
+}
+
 @mixin input-styles {
   border-radius: $smallBorderRadius;
   border: 1px solid transparentize($inputColor, 0.75);
@@ -716,6 +721,59 @@ $radioSize: 16px;
         @include left(16px);
         font-size: 30px;
         width: 24px;
+      }
+    }
+  }
+}
+
+@mixin element-focus-styles($applyToSelf: false) {
+  @if $applyToSelf {
+    &:focus {
+      @content;
+    }
+  } @else {
+    :focus {
+      @content;
+    }
+  }
+
+  body.reduce-focus-visibility & {
+    @if $applyToSelf {
+      &:focus:not(:focus-visible) {
+        box-shadow: none;
+      }
+  
+      &:focus-visible {
+        @content;
+      }
+    } @else {
+      :focus:not(:focus-visible) {
+        box-shadow: none;
+      }
+  
+      :focus-visible {
+        @content;
+      }
+    }
+  }
+
+  /* Polyfill fallback for Safari using focus-visible dependency */
+  .js-focus-visible body.reduce-focus-visibility & {
+    @if $applyToSelf {
+      &:focus:not(.focus-visible) {
+        box-shadow: none;
+      }
+  
+      &.focus-visible {
+        @content;
+      }
+    } @else {
+      :focus:not(.focus-visible) {
+        box-shadow: none;
+      }
+  
+      .focus-visible {
+        @content;
       }
     }
   }
