@@ -325,7 +325,7 @@ class MigrateController extends BaseMigrateController
         $plugins = $pluginsService->getAllPlugins();
         foreach ($plugins as $plugin) {
             $pluginMigrations = $plugin->getMigrator()->getNewMigrations();
-            if (!empty($pluginMigrations) || $pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if (!empty($pluginMigrations) || $pluginsService->isPluginUpdatePending($plugin)) {
                 $migrationsByTrack["plugin:$plugin->id"] = $pluginMigrations;
             }
         }
