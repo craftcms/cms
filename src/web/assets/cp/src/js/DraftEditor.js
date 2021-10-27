@@ -1138,7 +1138,8 @@ Craft.DraftEditor = Garnish.Base.extend({
             !this.settings.isUnpublishedDraft &&
             !this.settings.isProvisionalDraft &&
             (typeof ev.autosave === 'undefined' || ev.autosave) &&
-            (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction))
+            (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction)) &&
+            this.enableAutosave
         ) {
             this.checkForm(true);
             return;
