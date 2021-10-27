@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.18.2 - 2021-10-27
 
 ### Fixed
 - Fixed an error that could occur if the `CRAFT_STREAM_LOG` PHP constant was set to `true`.
