@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use Exception;
+use Throwable;
 use yii\base\Event;
 
 /**
@@ -19,7 +19,7 @@ use yii\base\Event;
 class ExceptionEvent extends Event
 {
     /**
-     * @var Exception The uncaught exception that was thrown
+     * @var Throwable The uncaught exception that was thrown
      */
-    public Exception $exception;
+    public Throwable $exception;
 }
