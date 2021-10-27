@@ -273,7 +273,7 @@ class EntryRevisionsController extends BaseEntriesController
                         ->draftOf($entryId)
                         ->draftCreator($userId)
                         ->site('*')
-                        ->anyStatus()
+                        ->status(null)
                         ->exists();
 
                     if ($provisionalExists) {

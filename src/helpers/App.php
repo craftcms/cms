@@ -542,32 +542,6 @@ class App
     }
 
     /**
-     * Returns a file-based `mutex` component config.
-     *
-     * ::: tip
-     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that you
-     * can safely remove your custom `mutex` component config for Craft 3.5.0 and later. Craft now uses a
-     * database-based mutex component by default (see [[dbMutexConfig()]]), which doesn’t care which type of
-     * file system is used.
-     * :::
-     *
-     * @return array
-     * @since 3.0.18
-     * @deprecated in 3.5.0.
-     *
-     */
-    public static function mutexConfig(): array
-    {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        return [
-            'class' => FileMutex::class,
-            'fileMode' => $generalConfig->defaultFileMode,
-            'dirMode' => $generalConfig->defaultDirMode,
-        ];
-    }
-
-    /**
      * Returns the `mutex` component config.
      *
      * @return array
@@ -576,7 +550,13 @@ class App
     public static function dbMutexConfig(): array
     {
         if (!Craft::$app->getIsInstalled()) {
-            return App::mutexConfig();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+            return [
+                'class' => FileMutex::class,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+            ];
         }
 
         $db = Craft::$app->getDb();
@@ -653,7 +633,7 @@ class App
                     'includeUserIp' => $generalConfig->storeUserIps,
                 ]);
 
-                if (!$onlyLogErrors) {
+                if (YII_DEBUG) {
                     $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject([
                         'class' => StreamLogTarget::class,
                         'url' => 'php://stdout',

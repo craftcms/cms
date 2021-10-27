@@ -93,8 +93,8 @@ class Diff
                 return static::_buildLinesForValue($from, $indent, $level);
             } else {
                 $lines = [];
-                ArrayHelper::append($lines, ...static::_buildLinesForValue($from, $indent, $level, '-'));
-                ArrayHelper::append($lines, ...static::_buildLinesForValue($to, $indent, $level, '+'));
+                array_push($lines, ...static::_buildLinesForValue($from, $indent, $level, '-'));
+                array_push($lines, ...static::_buildLinesForValue($to, $indent, $level, '+'));
                 return $lines;
             }
         }
@@ -111,21 +111,21 @@ class Diff
                 // Output any keys in $to that come before this one
                 if ($toPos > $toCursor) {
                     $newKeys = array_slice($toKeys, $toCursor, $toPos - $toCursor);
-                    ArrayHelper::append($lines, ...static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
+                    array_push($lines, ...static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
                 }
 
                 $lines[] = static::_buildLine("$key:", $indent, $level);
-                ArrayHelper::append($lines, ...static::_diff($value, $to[$key], $indent, $level + 1));
+                array_push($lines, ...static::_diff($value, $to[$key], $indent, $level + 1));
                 $toCursor = $toPos + 1;
             } else {
-                ArrayHelper::append($lines, ...static::_buildLinesForValue([$key => $value], $indent, $level, '-'));
+                array_push($lines, ...static::_buildLinesForValue([$key => $value], $indent, $level, '-'));
             }
         }
 
         // Output any remaining $to keys
         $newKeys = array_slice($toKeys, $toCursor);
         if (!empty($newKeys)) {
-            ArrayHelper::append($lines, ...static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
+            array_push($lines, ...static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
         }
 
         return $lines;
