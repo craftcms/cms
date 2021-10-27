@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where creating a new entry via a GraphQL mutation would return null instead of the created entry. ([#10016](https://github.com/craftcms/cms/issues/10016))
+
 ## 3.7.18 - 2021-10-26
 
 ### Added
