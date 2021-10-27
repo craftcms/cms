@@ -317,7 +317,7 @@ class MigrateController extends BaseMigrateController
         $updatesService = Craft::$app->getUpdates();
 
         $craftMigrations = Craft::$app->getMigrator()->getNewMigrations();
-        if (!empty($craftMigrations) || $updatesService->getIsCraftDbMigrationNeeded()) {
+        if (!empty($craftMigrations) || $updatesService->getIsCraftUpdatePending()) {
             $migrationsByTrack[MigrationManager::TRACK_CRAFT] = $craftMigrations;
         }
 
