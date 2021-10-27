@@ -361,6 +361,7 @@
 - Removed `craft\gql\base\Resolver::extractEagerLoadCondition()`.
 - Removed `craft\gql\base\Resolver::getArrayableArguments()`.
 - Removed `craft\gql\base\Resolver::prepareArguments()`.
+- Removed `craft\helpers\App::mutexConfig()`. `dbMutexConfig()` can be used instead.
 - Removed `craft\helpers\ArrayHelper::filterByValue()`. `where()` can be used instead.
 - Removed `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` can be used instead.
 - Removed `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` can be used instead.
