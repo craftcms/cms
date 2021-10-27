@@ -4489,7 +4489,8 @@ ul.tree,
     @include disclosure-link-hover-styles;
   }
 
-  @include element-focus-styles($applyToSelf: true) {
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
     box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
   }
 }
@@ -4620,7 +4621,8 @@ table.editable {
     @include input-focused-styles;
   }
 
-  @include element-focus-styles($applyToSelf: true) {
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
     @include input-focused-styles;
   }
 }
@@ -5095,7 +5097,8 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  @include element-focus-styles($applyToSelf: true) {
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &:focus-visible {
     @include input-focused-styles;
   }
 
