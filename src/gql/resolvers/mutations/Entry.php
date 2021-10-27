@@ -52,16 +52,25 @@ class Entry extends ElementMutationResolver
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         }
 
+        $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
+
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
         $entry = $this->saveElement($entry);
         $this->performStructureOperations($entry, $arguments);
 
+        /** @var EntryQuery $query */
         $query = Craft::$app->getElements()->createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
             ->anyStatus();
 
-        return $this->identifyEntry($query, $arguments)
-            ->one();
+        // Refresh data from the DB
+        if ($canIdentify) {
+            $query = $this->identifyEntry($query, $arguments);
+        } else {
+            $query->id($entry->id);
+        }
+
+        return $query->one();
     }
 
     /**

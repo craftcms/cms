@@ -7,6 +7,7 @@
 
 namespace craftunit\gql\mutations;
 
+use Codeception\Stub\Expected;
 use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
@@ -45,12 +46,51 @@ class EntryMutationResolverTest extends TestCase
         $this->assertSame($scenario, $entry->scenario);
     }
 
+    /**
+     * Test that saving new entries does not attemtp to identify them in DB.
+     *
+     * @param $arguments
+     * @param $scenario
+     * @throws \Throwable
+     * @dataProvider saveNewEntryDataProvider
+     */
+    public function testSavingNewEntryDoesNotSearchForIt($arguments, $identifyCalled)
+    {
+        $entry = new Entry();
+        $query  = $this->make(EntryQuery::class, [
+            'one' => $entry
+        ]);
+
+        $resolver = $this->make(EntryMutationResolver::class, [
+            'getEntryElement' => $entry,
+            'recursivelyNormalizeArgumentValues' => $arguments,
+            'identifyEntry' => $identifyCalled ? Expected::atLeastOnce($query) : Expected::never($query),
+        ]);
+
+        \Craft::$app->set('elements', $this->make(Elements::class, [
+            'saveElement' => true,
+            'createElementQuery' => $query
+        ]));
+
+        $entry = $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
+        $this->assertIsObject($entry);
+    }
+
     public function saveEntryDataProvider()
     {
         return [
             [['draftId' => 5], Element::SCENARIO_ESSENTIALS],
             [['id' => 5, 'enabled' => true], Element::SCENARIO_LIVE],
             [['id' => 5, 'enabled' => false], Element::SCENARIO_DEFAULT],
+        ];
+    }
+    public function saveNewEntryDataProvider()
+    {
+        return [
+            [['draftId' => 5], true],
+            [['id' => 5, 'enabled' => true], true],
+            [['id' => 5, 'enabled' => false], true],
+            [['title' => 'Chet Faker', 'enabled' => false], false],
         ];
     }
 }
