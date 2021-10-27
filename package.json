@@ -21,7 +21,6 @@
     "element-resize-detector": "^1.2.2",
     "event-stream": "3.3.4",
     "fabric": "^1.7.19",
-    "focus-visible": "^5.2.0",
     "garnishjs": "^0.1.47",
     "graphiql": "^0.14.2",
     "graphiql-explorer": "^0.6.3",
