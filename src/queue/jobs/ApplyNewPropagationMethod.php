@@ -146,7 +146,7 @@ class ApplyNewPropagationMethod extends BaseJob
                                 ->select(['elements.id'])
                                 ->siteId('*')
                                 ->unique()
-                                ->anyStatus()
+                                ->status(null)
                                 ->drafts(null)
                                 ->provisionalDrafts(null)
                                 ->scalar();
