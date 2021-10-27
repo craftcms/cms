@@ -152,7 +152,6 @@ class MigrateController extends BaseMigrateController
             $options[] = 'noBackup';
             $options[] = 'noContent';
         } else {
-            $options[] = 'type';
             $options[] = 'track';
             $options[] = 'plugin';
         }
@@ -166,7 +165,6 @@ class MigrateController extends BaseMigrateController
     public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
-        $aliases['t'] = 'type';
         $aliases['p'] = 'plugin';
 
         return $aliases;
@@ -183,29 +181,6 @@ class MigrateController extends BaseMigrateController
         }
 
         if ($action->id !== 'all') {
-            // Validate $type
-            if ($this->type) {
-                switch ($this->type) {
-                    case 'app':
-                        $this->track = MigrationManager::TRACK_CRAFT;
-                        $new = "--track=$this->track";
-                        break;
-                    case 'content':
-                        $this->track = MigrationManager::TRACK_CONTENT;
-                        $new = "--track=$this->track";
-                        break;
-                    case 'plugin':
-                        $this->track = null;
-                        $new = "--plugin=$this->plugin";
-                        break;
-                    default:
-                        $this->stderr("Invalid --type option. Allowed values are 'app', 'plugin', or 'content'." . PHP_EOL, Console::FG_RED);
-                        return false;
-                }
-
-                $this->stdout("The --type option has been deprecated. Use $new instead." . PHP_EOL, Console::FG_YELLOW);
-            }
-
             if ($this->plugin) {
                 $this->track = "plugin:$this->plugin";
             } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
