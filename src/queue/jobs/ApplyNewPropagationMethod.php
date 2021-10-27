@@ -51,7 +51,7 @@ class ApplyNewPropagationMethod extends BaseJob
         $query = $elementType::find()
             ->siteId('*')
             ->unique()
-            ->status(null);
+            ->status(null)
             ->drafts(null)
             ->provisionalDrafts(null);
 
