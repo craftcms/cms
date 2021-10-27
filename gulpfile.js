@@ -73,7 +73,6 @@ const jsDeps = [
     {srcGlob: 'node_modules/velocity-animate/velocity.js', dest: `${libPath}/velocity`},
     {srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: `${libPath}/xregexp`},
     {srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: `${libPath}/yii2-pjax`},
-    {srcGlob: 'node_modules/focus-visible/dist/focus-visible.js', dest: `${libPath}/focus-visible`},
 ];
 
 const jquiGlob = [
