@@ -47,10 +47,10 @@ class EntryMutationResolverTest extends TestCase
     }
 
     /**
-     * Test that saving new entries does not attemtp to identify them in DB.
+     * Test that saving new entries does not attempt to identify them in the database.
      *
      * @param $arguments
-     * @param $scenario
+     * @param $identifyCalled
      * @throws \Throwable
      * @dataProvider saveNewEntryDataProvider
      */

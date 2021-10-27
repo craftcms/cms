@@ -207,6 +207,7 @@
     {% if saveDraftAction %}
         {% set formActions = formActions|push({
             label: 'Save and continue editing'|t('app'),
+            redirect: hashedCpEditUrl,
             action: saveDraftAction,
             shortcut: true,
             retainScroll: true,

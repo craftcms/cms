@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.18.2 - 2021-10-27
+
+### Fixed
+- Fixed an error that could occur if the `CRAFT_STREAM_LOG` PHP constant was set to `true`.
+- Fixed a bug where the “Save and continue editing” action and its <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keybord shortcut weren’t working for entry drafts, if the `autosaveDrafts` config setting was disabled. ([#10029](https://github.com/craftcms/cms/issues/10029))
+
 ## 3.7.18.1 - 2021-10-27
 
 ### Fixed
