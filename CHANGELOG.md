@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The `utils/repair/section-structure` command now appends entries to the structure root if they don’t have any supported sites in common with their parent.
+
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.7.17+ from the control panel. ([#9990](https://github.com/craftcms/cms/issues/9990))
 - Fixed a bug where Structure section entries would forget who their parent entry was, if it was an unpublished draft.
