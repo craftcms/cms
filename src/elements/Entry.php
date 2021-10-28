@@ -1569,6 +1569,8 @@ EOD;
                     if ($this->newParentId) {
                         $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
                             'preferSites' => [$this->siteId],
+                            'drafts' => null,
+                            'draftOf' => false,
                         ]);
 
                         if (!$parentEntry) {
