@@ -1786,6 +1786,10 @@ class GeneralConfig extends BaseObject
      */
     public function __isset($name)
     {
+        if (isset(self::$renamedSettings[$name])) {
+            return isset($this->{self::$renamedSettings[$name]});
+        }
+
         if (array_key_exists($name, $this->_customSettings)) {
             return $this->_customSettings[$name] !== null;
         }

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where `isset()` checks on renamed config settings were always returning `false`.
+
 ## 3.7.18.2 - 2021-10-27
 
 ### Fixed
