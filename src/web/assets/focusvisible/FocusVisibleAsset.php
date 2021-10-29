@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\axios;
+namespace craft\web\assets\focusvisible;
 
 use craft\web\AssetBundle;
 
