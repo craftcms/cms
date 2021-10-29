@@ -382,6 +382,7 @@ Craft.CP = Garnish.Base.extend({
 
     toggleNav: function() {
         const isExpanded = this.navIsExpanded();
+        console.log("🚀 ~ file: CP.js ~ line 385 ~ toggleNav() ~ isExpanded", isExpanded)
 
         if (isExpanded === null) return;
 
@@ -430,6 +431,8 @@ Craft.CP = Garnish.Base.extend({
         if (!this.$globalSidebar[0]) return null;
 
         const isAlwaysVisible = getComputedStyle(this.$globalSidebar[0]).getPropertyValue('--is-always-visible').trim();
+        console.log("🚀 ~ file: CP.js ~ line 433 ~ navIsExpanded() ~ isAlwaysVisible", isAlwaysVisible)
+        console.log("🚀 ~ file: CP.js ~ line 433 ~ navIsExpanded() ~ typeof isAlwaysVisible", typeof isAlwaysVisible)
 
         return this.$navToggle.attr('aria-expanded') === 'true'
             || isAlwaysVisible === 'true';
