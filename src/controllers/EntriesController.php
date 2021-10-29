@@ -59,9 +59,14 @@ class EntriesController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      * @throws ForbiddenHttpException
+     * @throws BadRequestHttpException
      */
     public function actionEditEntry(string $section, int $entryId = null, int $draftId = null, int $revisionId = null, string $site = null, Entry $entry = null): Response
     {
+        if ($draftId && $revisionId) {
+            throw new BadRequestHttpException('Only a draftId or revisionId can be specified.');
+        }
+
         $variables = [
             'sectionHandle' => $section,
             'entryId' => $entryId,
@@ -747,15 +752,9 @@ class EntriesController extends BaseEntriesController
      */
     private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null)
     {
-        if ($draftId) {
+        if ($draftId || $revisionId) {
             $entry = Entry::find()
                 ->draftId($draftId)
-                ->structureId($section->structureId)
-                ->siteId($site->id)
-                ->anyStatus()
-                ->one();
-        } else if ($revisionId) {
-            $entry = Entry::find()
                 ->revisionId($revisionId)
                 ->structureId($section->structureId)
                 ->siteId($site->id)
