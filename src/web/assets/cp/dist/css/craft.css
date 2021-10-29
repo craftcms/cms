@@ -3063,9 +3063,11 @@ html { -webkit-text-size-adjust: 100%; min-height: 100vh; }
 
 body { min-height: 100vh; }
 
-body :focus { outline-style: solid; outline-color: transparent; }
+body :focus { outline-color: #127FBF; outline-style: solid; }
 
-body:not(.reduce-focus-visibility) :focus, body.reduce-focus-visibility :focus-visible { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
+body.reduce-focus-visibility :focus:not(:focus-visible) { outline-color: transparent; }
+
+body.reduce-focus-visibility :focus-visible { box-shadow: 0 0 0 1px #127FBF, 0 0 0 3px rgba(18, 127, 191, 0.5); }
 
 .skip-link { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 101; }
 
