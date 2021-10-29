@@ -67,12 +67,12 @@ class GlobalSet extends Element
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'name' => [
                 'name' => 'name',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The name of the global set.',
             ],
             'handle' => [
                 'name' => 'handle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the global set.',
             ],
         ]), self::getName());

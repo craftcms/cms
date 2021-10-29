@@ -79,12 +79,12 @@ class User extends Element
             ],
             'name' => [
                 'name' => 'name',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The user\'s full name or username.',
             ],
             'preferences' => [
                 'name' => 'preferences',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The user’s preferences.',
                 'complexity' => Gql::nPlus1Complexity(),
             ],

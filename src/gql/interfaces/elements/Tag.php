@@ -69,12 +69,12 @@ class Tag extends Element
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the group that contains the tag.',
             ],
             'groupHandle' => [
                 'name' => 'groupHandle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the group that contains the tag.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],

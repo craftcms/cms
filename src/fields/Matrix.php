@@ -888,7 +888,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(Gql::getUnionType($typeName, $typeArray, $resolver)),
+            'type' => Type::nonNull(Type::listOf(Gql::getUnionType($typeName, $typeArray, $resolver))),
             'args' => MatrixBlockArguments::getArguments(),
             'resolve' => MatrixBlockResolver::class . '::resolve',
             'complexity' => Gql::eagerLoadComplexity(),

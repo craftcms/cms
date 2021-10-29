@@ -229,6 +229,7 @@
 - `craft\services\Updates::getIsPluginDbUpdateNeeded()` has been renamed to `getIsPluginUpdatePending()`.
 - `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
 - Local volumes no longer use Flysystem.
+- GraphQL field types that can never be null now specify so in their type declaration.
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
 
