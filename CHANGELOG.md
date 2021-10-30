@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.7.17+ from the control panel. ([#9990](https://github.com/craftcms/cms/issues/9990))
 - Fixed a bug where Structure section entries would forget who their parent entry was, if it was an unpublished draft.
+- Fixed a bug where Structure sections’ structure data wasn’t getting soft-deleted when the section type was changed.
 - Fixed a bug where `isset()` checks on renamed config settings were always returning `false`.
 
 ## 3.7.18.2 - 2021-10-27
