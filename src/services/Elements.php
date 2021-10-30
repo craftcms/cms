@@ -1112,7 +1112,8 @@ class Elements extends Component
      *
      * @param ElementInterface $element the element to duplicate
      * @param array $newAttributes any attributes to apply to the duplicate
-     * @param bool $placeInStructure whether to position the cloned element after the original one in its structure
+     * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
+     * (This will only happen if the duplicated element is canonical.)
      * @return ElementInterface the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1222,6 +1223,7 @@ class Elements extends Component
                 $placeInStructure &&
                 $element->structureId &&
                 $element->root &&
+                $mainClone->getIsCanonical() &&
                 !$mainClone->root &&
                 $mainClone->structureId == $element->structureId
             ) {
