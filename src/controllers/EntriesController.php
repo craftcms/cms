@@ -139,6 +139,8 @@ class EntriesController extends BaseEntriesController
             // Prevent the current entry, or any of its descendants, from being options
             $excludeIds = Entry::find()
                 ->descendantOf($entry)
+                ->drafts(null)
+                ->draftOf(false)
                 ->anyStatus()
                 ->ids();
             $excludeIds[] = $entry->getCanonicalId();
