@@ -2433,7 +2433,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         return (
             !$this->trashed &&
-            ($this->withStructure || ($this->withStructure !== false && $this->structureId))
+            ($this->withStructure ?? (bool)$this->structureId)
         );
     }
 
@@ -2645,13 +2645,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         $useCanonicalId = $db->columnExists(Table::ELEMENTS, 'canonicalId');
 
         if ($this->drafts !== false) {
-            if ($this->drafts === true) {
-                $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-                $this->query->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            } else {
-                $this->subQuery->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-                $this->query->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            }
+            $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
 
             $this->query->addSelect([
                 'elements.draftId',
@@ -2696,7 +2692,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['drafts.provisional' => $this->provisionalDrafts],
                 ]);
             }
-
 
             if ($this->savedDraftsOnly) {
                 // todo: remove this check after the next breakpoint
@@ -2775,6 +2770,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeStructureParamValue(string $property, string $class): ElementInterface
     {
+        /** @var string|ElementInterface $class */
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
             $this->$property = $class::find()
                 ->id($this->$property)

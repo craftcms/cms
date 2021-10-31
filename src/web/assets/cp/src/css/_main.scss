@@ -888,7 +888,8 @@ td.right {
       transition: opacity linear 100ms;
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
       color: $mediumTextColor !important;
       text-decoration: none;
 
@@ -4090,8 +4091,11 @@ ul.tree,
     }
   }
 
-  &:hover .buttons {
-    opacity: 1;
+  &:hover,
+  &:focus-within {
+    .buttons {
+      opacity: 1;
+    }
   }
 }
 
@@ -4663,6 +4667,16 @@ textarea.text.fullwidth {
   @include floatright;
   @include margin(-27px, 7px, 0, 0);
   color: $lightTextColor;
+
+  .input.ltr > & {
+    float: right !important;
+    margin-right: 7px !important;
+  }
+
+  .input.rtl > & {
+    float: left !important;
+    margin-left: 7px !important;
+  }
 
   &.negative-chars-left {
     color: $errorColor;

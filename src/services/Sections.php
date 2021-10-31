@@ -606,13 +606,13 @@ class Sections extends Component
                 Craft::$app->getStructures()->saveStructure($structure);
                 $sectionRecord->structureId = $structure->id;
             } else {
-                $sectionRecord->structureId = null;
-                $isNewStructure = false;
-
                 if ($sectionRecord->structureId) {
                     // Delete the old one
                     Craft::$app->getStructures()->deleteStructureById($sectionRecord->structureId);
                 }
+
+                $sectionRecord->structureId = null;
+                $isNewStructure = false;
             }
 
             $resaveEntries = (

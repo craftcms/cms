@@ -1569,6 +1569,8 @@ EOD;
                     if ($this->newParentId) {
                         $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
                             'preferSites' => [$this->siteId],
+                            'drafts' => null,
+                            'draftOf' => false,
                         ]);
 
                         if (!$parentEntry) {
@@ -1815,13 +1817,13 @@ EOD;
         }
 
         // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentQuery = self::find();
-        $oldParentQuery->ancestorOf($this);
-        $oldParentQuery->ancestorDist(1);
-        $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->anyStatus();
-        $oldParentQuery->select('elements.id');
-        $oldParentId = $oldParentQuery->scalar();
+        $oldParentId = self::find()
+            ->ancestorOf($this)
+            ->ancestorDist(1)
+            ->siteId($this->siteId)
+            ->anyStatus()
+            ->select('elements.id')
+            ->scalar();
 
         return $this->newParentId != $oldParentId;
     }

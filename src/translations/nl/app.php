@@ -1050,7 +1050,7 @@ return [
     'Project Config Sync' => 'Projectconfiguratie synchroniseren',
     'Project Config' => 'Projectconfiguratie',
     'Project config YAML changes discarded.' => 'Wijzigingen YAML-projectconfiguratie geannuleerd.',
-    'Project config rebuilt successfully.' => 'De projectoconfiguratie is heropgebouwd.',
+    'Project config rebuilt successfully.' => 'De projectconfiguratie is heropgebouwd.',
     'Propagating {type}' => '{type} propageren',
     'Propagation Key Format' => 'Indeling propagatiesleutel',
     'Propagation Method' => 'Propagatiemethode',

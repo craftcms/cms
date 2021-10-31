@@ -74,6 +74,7 @@ $sidebarLinkStaticColor: $grey100;
 $sidebarLinkSecondaryColor: $grey200;
 
 #global-sidebar {
+  --is-always-visible: true;
   position: fixed;
   z-index: $sidebarZIndex;
   display: flex;
@@ -135,6 +136,10 @@ $sidebarLinkSecondaryColor: $grey200;
 
   .light {
     color: $grey400;
+  }
+
+  @media only screen and (max-width: $minFullUiWidth - 1px) {
+    --is-always-visible: false;
   }
 }
 

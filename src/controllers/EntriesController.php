@@ -59,9 +59,14 @@ class EntriesController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      * @throws ForbiddenHttpException
+     * @throws BadRequestHttpException
      */
     public function actionEditEntry(string $section, int $entryId = null, int $draftId = null, int $revisionId = null, string $site = null, Entry $entry = null): Response
     {
+        if ($draftId && $revisionId) {
+            throw new BadRequestHttpException('Only a draftId or revisionId can be specified.');
+        }
+
         $variables = [
             'sectionHandle' => $section,
             'entryId' => $entryId,
@@ -134,6 +139,8 @@ class EntriesController extends BaseEntriesController
             // Prevent the current entry, or any of its descendants, from being options
             $excludeIds = Entry::find()
                 ->descendantOf($entry)
+                ->drafts(null)
+                ->draftOf(false)
                 ->anyStatus()
                 ->ids();
             $excludeIds[] = $entry->getCanonicalId();
@@ -143,6 +150,8 @@ class EntriesController extends BaseEntriesController
                 'sectionId' => $section->id,
                 'status' => null,
                 'where' => ['not in', 'elements.id', $excludeIds],
+                'drafts' => null,
+                'draftOf' => false,
             ];
 
             if ($section->maxLevels) {
@@ -171,6 +180,8 @@ class EntriesController extends BaseEntriesController
                     $parentId = $entry->newParentId;
                 } else {
                     $parentId = $entry->getAncestors(1)
+                        ->drafts(null)
+                        ->draftOf(false)
                         ->anyStatus()
                         ->ids();
                 }
@@ -181,7 +192,10 @@ class EntriesController extends BaseEntriesController
             }
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $site->id);
+                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $site->id, [
+                    'drafts' => null,
+                    'draftOf' => false,
+                ]);
             }
         }
 
@@ -740,15 +754,9 @@ class EntriesController extends BaseEntriesController
      */
     private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null)
     {
-        if ($draftId) {
+        if ($draftId || $revisionId) {
             $entry = Entry::find()
                 ->draftId($draftId)
-                ->structureId($section->structureId)
-                ->siteId($site->id)
-                ->anyStatus()
-                ->one();
-        } else if ($revisionId) {
-            $entry = Entry::find()
                 ->revisionId($revisionId)
                 ->structureId($section->structureId)
                 ->siteId($site->id)

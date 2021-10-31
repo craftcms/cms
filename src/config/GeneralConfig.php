@@ -1631,7 +1631,7 @@ class GeneralConfig extends BaseObject
      * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
      * than the visible portion of the iframe.
      *
-     * If you have a [decoupled front-end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * If you have a [decoupled front end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
      * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
      * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
      * `x-craft-live-preview` query string parameter.
@@ -1751,8 +1751,7 @@ class GeneralConfig extends BaseObject
     public function __get($name)
     {
         if (isset(self::$renamedSettings[$name])) {
-            $newName = self::$renamedSettings[$name];
-            return $this->$newName;
+            return $this->{self::$renamedSettings[$name]};
         }
 
         if (array_key_exists($name, $this->_customSettings)) {
@@ -1787,6 +1786,10 @@ class GeneralConfig extends BaseObject
      */
     public function __isset($name)
     {
+        if (isset(self::$renamedSettings[$name])) {
+            return isset($this->{self::$renamedSettings[$name]});
+        }
+
         if (array_key_exists($name, $this->_customSettings)) {
             return $this->_customSettings[$name] !== null;
         }
