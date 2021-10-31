@@ -219,7 +219,7 @@ class EntriesController extends BaseEntriesController
 
             if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @var Entry $ancestor */
-                foreach ($entry->getAncestors()->all() as $ancestor) {
+                foreach ($entry->getCanonical(true)->getAncestors()->all() as $ancestor) {
                     $variables['crumbs'][] = [
                         'label' => $ancestor->title,
                         'url' => $ancestor->getCpEditUrl(),
