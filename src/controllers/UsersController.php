@@ -1440,7 +1440,7 @@ class UsersController extends Controller
                 'html' => $this->_renderPhotoTemplate($user),
             ]);
         } catch (\Throwable $exception) {
-            if (isset($fileLocation)) {
+            if (isset($fileLocation) && file_exists($fileLocation)) {
                 FileHelper::unlink($fileLocation);
             }
 
