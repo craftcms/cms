@@ -68,22 +68,22 @@ class MatrixBlock extends Element
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the field that owns the matrix block.',
             ],
             'ownerId' => [
                 'name' => 'ownerId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the element that owns the matrix block.',
             ],
             'typeId' => [
                 'name' => 'typeId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the matrix block\'s type.',
             ],
             'typeHandle' => [
                 'name' => 'typeHandle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the matrix block\'s type.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],

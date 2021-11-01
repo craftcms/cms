@@ -478,7 +478,7 @@ class Assets extends BaseRelationField
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(AssetInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(AssetInterface::getType())),
             'args' => AssetArguments::getArguments(),
             'resolve' => AssetResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
