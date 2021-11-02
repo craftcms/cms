@@ -1,8 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.19 - 2021-11-02
 
-> {tip} After updating, run the `utils/repair/section-structure` command for each Structure section, to prune unneeded structure data for drafts and revisions.
+> {tip} After updating, run the following command for each Structure section, to prune unneeded structure data for drafts and revisions.
+>
+> ```
+> php craft utils/repair/section-structure <sectionHandle>
+> ```
 
 ### Added
 - Added `craft\services\Structures::remove()`.
