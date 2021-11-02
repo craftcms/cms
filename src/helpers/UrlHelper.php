@@ -474,9 +474,9 @@ class UrlHelper
         if ($generalConfig->baseCpUrl) {
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
-
-        // Use the request's base URL as a fallback
-        return static::baseRequestUrl();
+        
+        // Use @web as a fallback
+        return Craft::getAlias('@web');        
     }
 
     /**
