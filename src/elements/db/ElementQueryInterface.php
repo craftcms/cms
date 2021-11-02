@@ -1121,7 +1121,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function level($value = null);
 
     /**
-     * Narrows the query results based on whether the {elements} have any descendants.
+     * Narrows the query results based on whether the {elements} have any descendants in their structure.
      *
      * (This has the opposite effect of calling [[leaves()]].)
      *
@@ -1174,7 +1174,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function leaves(bool $value = true);
 
     /**
-     * Narrows the query results to only {elements} that are ancestors of another {element}.
+     * Narrows the query results to only {elements} that are ancestors of another {element} in its structure.
      *
      * Possible values include:
      *
@@ -1237,7 +1237,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function ancestorDist(int $value = null);
 
     /**
-     * Narrows the query results to only {elements} that are descendants of another {element}.
+     * Narrows the query results to only {elements} that are descendants of another {element} in its structure.
      *
      * Possible values include:
      *
@@ -1300,7 +1300,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function descendantDist(int $value = null);
 
     /**
-     * Narrows the query results to only {elements} that are siblings of another {element}.
+     * Narrows the query results to only {elements} that are siblings of another {element} in its structure.
      *
      * Possible values include:
      *
@@ -1331,7 +1331,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function siblingOf($value);
 
     /**
-     * Narrows the query results to only the {element} that comes immediately before another {element}.
+     * Narrows the query results to only the {element} that comes immediately before another {element} in its structure.
      *
      * Possible values include:
      *
@@ -1362,7 +1362,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function prevSiblingOf($value);
 
     /**
-     * Narrows the query results to only the {element} that comes immediately after another {element}.
+     * Narrows the query results to only the {element} that comes immediately after another {element} in its structure.
      *
      * Possible values include:
      *
@@ -1393,7 +1393,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function nextSiblingOf($value);
 
     /**
-     * Narrows the query results to only {elements} that are positioned before another {element}.
+     * Narrows the query results to only {elements} that are positioned before another {element} in its structure.
      *
      * Possible values include:
      *
@@ -1424,7 +1424,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function positionedBefore($value);
 
     /**
-     * Narrows the query results to only {elements} that are positioned after another {element}.
+     * Narrows the query results to only {elements} that are positioned after another {element} in its structure.
      *
      * Possible values include:
      *
