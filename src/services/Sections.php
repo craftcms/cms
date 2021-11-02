@@ -1557,6 +1557,8 @@ class Sections extends Component
     {
         // Add all of the entries to the structure
         $query = Entry::find()
+            ->drafts(null)
+            ->draftOf(false)
             ->sectionId($sectionRecord->id)
             ->siteId('*')
             ->unique()
