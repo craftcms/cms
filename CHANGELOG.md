@@ -13,6 +13,7 @@
 - Fixed a bug where `isset()` checks on renamed config settings were always returning `false`.
 - Fixed an error that could occur when deleting image transforms. ([#9957](https://github.com/craftcms/cms/issues/9957))
 - Fixed a bug where some Matrix sub-field changes could be discarded when applying a draft. ([#10034](https://github.com/craftcms/cms/issues/10034))
+- Fixed an incompatibility with the Overflow plugin. ([#10044](https://github.com/craftcms/cms/issues/10044))
 
 ### Security
 - Fixed an XSS vulnerability.
