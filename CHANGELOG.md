@@ -116,6 +116,7 @@
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
+- GraphQL field types that can’t be null now specify so in their type declaration.
 - Elements’ `searchScore` GraphQL fields are now returned as integers.
 - Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
 - Plugins’ `$description` properties must now have a `?string` type declaration.
@@ -229,7 +230,6 @@
 - `craft\services\Updates::getIsPluginDbUpdateNeeded()` has been renamed to `getIsPluginUpdatePending()`.
 - `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
 - Local volumes no longer use Flysystem.
-- GraphQL field types that can never be null now specify so in their type declaration.
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
 
