@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- `craft\elements\Entry::setAuthor()` now sets the entry’s `$authorId` property.
+
 ## 3.7.19 - 2021-11-02
 
 > {tip} After updating, run the following command for each Structure section, to prune unneeded structure data for drafts and revisions.
