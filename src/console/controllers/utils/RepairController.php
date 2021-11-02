@@ -130,7 +130,7 @@ class RepairController extends Controller
                 'or',
                 ['elements.draftId' => null],
                 ['elements.canonicalId' => null],
-                ['and', ['drafts.provisional' => 1], ['not', ['structureelements.lft' => null]]],
+                ['and', ['drafts.provisional' => true], ['not', ['structureelements.lft' => null]]],
             ])
             ->orderBy([
                 new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
