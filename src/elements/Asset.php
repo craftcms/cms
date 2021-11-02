@@ -2244,7 +2244,9 @@ class Asset extends Element
 
             // Try to open a file stream
             if (($stream = fopen($tempPath, 'rb')) === false) {
-                FileHelper::unlink($tempPath);
+                if (file_exists($tempPath)) {
+                    FileHelper::unlink($tempPath);
+                }
                 throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
@@ -2277,7 +2279,7 @@ class Asset extends Element
         $this->_volume = $newVolume;
 
         // If there was a new file involved, update file data.
-        if ($tempPath) {
+        if ($tempPath && file_exists($tempPath)) {
             $this->kind = Assets::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {

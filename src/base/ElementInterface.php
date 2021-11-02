@@ -1190,19 +1190,21 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the field handles that have changed for this element.
      *
+     * @param bool $anySite Whether to check for fields that have changed across any site
      * @return string[]
      * @since 3.7.0
      */
-    public function getModifiedFields(): array;
+    public function getModifiedFields(bool $anySite = false): array;
 
     /**
      * Returns whether a field value has changed for this element.
      *
      * @param string $fieldHandle
+     * @param bool $anySite Whether to check if the field has changed across any site
      * @return bool
      * @since 3.7.0
      */
-    public function isFieldModified(string $fieldHandle): bool;
+    public function isFieldModified(string $fieldHandle, bool $anySite = false): bool;
 
     /**
      * Returns whether a custom field value has changed since the element was first loaded.
