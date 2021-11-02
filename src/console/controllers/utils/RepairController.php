@@ -15,7 +15,9 @@ use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\ElementHelper;
 use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
@@ -123,6 +125,13 @@ class RepairController extends Controller
                 '[[structureelements.elementId]] = [[elements.id]]',
                 ['structureelements.structureId' => $structureId],
             ])
+            // Only include unpublished and provisional drafts
+            ->andWhere([
+                'or',
+                ['elements.draftId' => null],
+                ['elements.canonicalId' => null],
+                ['and', ['drafts.provisional' => true], ['not', ['structureelements.lft' => null]]],
+            ])
             ->orderBy([
                 new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
                 'structureelements.lft' => SORT_ASC,
@@ -141,6 +150,7 @@ class RepairController extends Controller
 
         $this->stdout('Processing ' . count($elements) . " $displayName" . ($this->dryRun ? ' (dry run)' : '') . ' ...' . PHP_EOL);
 
+        /** @var ElementInterface[] $ancestors */
         $ancestors = [];
         $level = 0;
 
@@ -160,65 +170,87 @@ class RepairController extends Controller
                 /** @var ElementInterface $element */
                 if (!$element->level) {
                     $issue = 'was missing from structure';
-                    if (!$this->dryRun) {
-                        $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
-                    }
+                    $newLevel = 1;
                 } else if ($element->level < 1) {
                     $issue = "had unexpected level ($element->level)";
-                    if (!$this->dryRun) {
-                        $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
-                    }
+                    $newLevel = 1;
                 } else if ($element->level > $level + 1 && (!$structure->maxLevels || $level < $structure->maxLevels)) {
                     $issue = "had unexpected level ($element->level)";
-                    if (!empty($ancestors)) {
-                        if (!$this->dryRun) {
-                            $structuresService->append($structureId, $element, end($ancestors), Structures::MODE_INSERT);
-                        }
-                    } else {
-                        if (!$this->dryRun) {
-                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
-                        }
-                    }
+                    $newLevel = !empty($ancestors) ? $level + 1 : 1;
                 } else if ($structure->maxLevels && $element->level > $structure->maxLevels) {
                     $issue = "exceeded the max level ($structure->maxLevels)";
-                    if (isset($ancestors[$level - 2])) {
-                        if (!$this->dryRun) {
-                            $structuresService->append($structureId, $element, $ancestors[$level - 2], Structures::MODE_INSERT);
-                        }
-                    } else {
-                        if (!$this->dryRun) {
-                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
-                        }
-                    }
+                    $newLevel = isset($ancestors[$level - 2]) ? $level : 1;
                 } else {
-                    $issue = false;
-                    if ($element->level == 1) {
-                        if (!$this->dryRun) {
-                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
-                        }
-                    } else {
-                        if (!$this->dryRun) {
-                            $structuresService->append($structureId, $element, $ancestors[$element->level - 2], Structures::MODE_INSERT);
-                        }
-                    }
+                    $issue = null;
+                    $newLevel = $element->level;
                 }
 
+                // Skip provisional drafts if they exist directly after their canonical element
+                if (
+                    $element->isProvisionalDraft &&
+                    isset($ancestors[$newLevel - 1]) &&
+                    $element->getCanonicalId() == $ancestors[$newLevel - 1]->id
+                ) {
+                    $removed = true;
+                } else {
+                    if ($newLevel == 1) {
+                        if (!$this->dryRun) {
+                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                        }
+                    } else {
+                        // Make sure that the element has at least one site in common with the parent
+                        $parentElement = $ancestors[$newLevel - 2];
+                        $elementSites = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                        $parentSites = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($parentElement), 'siteId');
+
+                        if (!array_intersect($elementSites, $parentSites)) {
+                            $issue = 'no supported sites in common with parent';
+                            if (!$this->dryRun) {
+                                $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                            }
+                        } else if (!$this->dryRun) {
+                            $structuresService->append($structureId, $element, $parentElement, Structures::MODE_INSERT);
+                        }
+                    }
+
+                    $removed = false;
+                }
+
+                $this->stdout(' ');
+
                 $space = $element->level > 1 ? str_repeat(' ', ($element->level - 1) * 4 - 2) : '';
-                $this->stdout(' ' . ($issue ? '✖' : '✔') . ' ' . $space, $issue ? Console::FG_RED : Console::FG_GREEN);
-                $this->stdout(($element->level > 1 ? '∟ ' : '') . $element->title);
+
+                if ($removed) {
+                    $this->stdout('*', Console::FG_YELLOW);
+                } else if ($issue) {
+                    $this->stdout('✖', Console::FG_RED);
+                } else {
+                    $this->stdout('✔', Console::FG_GREEN);
+                }
+
+                $this->stdout(" $space" . ($element->level > 1 ? '∟ ' : '') . $element->title);
+
                 if ($element->getIsDraft() || $element->getIsRevision()) {
-                    if ($element->getIsDraft()) {
+                    if ($element->isProvisionalDraft) {
+                        $revLabel = 'provisional draft';
+                    } else if ($element->getIsUnpublishedDraft()) {
+                        $revLabel = 'unpublished draft';
+                    } else if ($element->getIsDraft()) {
                         /** @var DraftBehavior|ElementInterface $element */
-                        $revLabel = $element->draftName ?: 'Draft';
+                        $revLabel = 'draft' . ($element->draftName ? ": $element->draftName" : '');
                     } else {
                         /** @var RevisionBehavior|ElementInterface $element */
-                        $revLabel = $element->revisionNum ? "Revision $element->revisionNum" : 'Revision';
+                        $revLabel = 'revision' . ($element->revisionNum ? " $element->revisionNum" : '');
                     }
                     $this->stdout(" ($revLabel)", Console::FG_GREY);
                 }
-                if ($issue) {
+
+                if ($removed) {
+                    $this->stdout(' - removed', Console::FG_YELLOW);
+                } else if ($issue) {
                     $this->stdout(" - $issue", Console::FG_RED);
                 }
+
                 $this->stdout(PHP_EOL);
 
                 // Prepare for the next element

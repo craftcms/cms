@@ -155,6 +155,13 @@ class Categories extends BaseRelationField
         return $variables;
     }
 
+    public function getEagerLoadingMap(array $sourceElements)
+    {
+        $map = parent::getEagerLoadingMap($sourceElements);
+        $map['criteria']['orderBy'] = ['structureelements.lft' => SORT_ASC];
+        return $map;
+    }
+
     /**
      * @inheritdoc
      */
