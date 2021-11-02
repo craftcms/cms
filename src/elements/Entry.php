@@ -1570,6 +1570,8 @@ EOD;
                     if ($this->newParentId) {
                         $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
                             'preferSites' => [$this->siteId],
+                            'drafts' => null,
+                            'draftOf' => false,
                         ]);
 
                         if (!$parentEntry) {
@@ -1637,20 +1639,7 @@ EOD;
             if (!$this->duplicateOf && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->_hasNewParent()) {
-                    $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
-                    if (!$this->newParentId) {
-                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
-                            Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
-                        } else {
-                            Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
-                        }
-                    } else {
-                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
-                            Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
-                        } else {
-                            Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
-                        }
-                    }
+                    $this->_placeInStructure($isNew, $section);
                 }
 
                 // Update the entry's descendants, who may be using this entry's URI in their own URIs
@@ -1663,6 +1652,40 @@ EOD;
         }
 
         parent::afterSave($isNew);
+    }
+
+    private function _placeInStructure(bool $isNew, Section $section): void
+    {
+        // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
+        if ($this->isProvisionalDraft) {
+            $canonicalParentId = Entry::find()
+                ->select(['elements.id'])
+                ->ancestorOf($this->getCanonicalId())
+                ->ancestorDist(1)
+                ->anyStatus()
+                ->scalar();
+
+            if ($this->newParentId == $canonicalParentId) {
+                Craft::$app->getStructures()->remove($this->structureId, $this);
+                return;
+            }
+        }
+
+        $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
+
+        if (!$this->newParentId) {
+            if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+            } else {
+                Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+            }
+        } else {
+            if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+            } else {
+                Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+            }
+        }
     }
 
     /**
@@ -1790,13 +1813,16 @@ EOD;
      */
     private function _checkForNewParent(): bool
     {
-        // Make sure this is a Structure section
-        if ($this->getSection()->type != Section::TYPE_STRUCTURE) {
+        // Make sure this is a Structure section, and that it’s either a canonical entry or provisional drafT
+        if (!(
+            $this->getSection()->type === Section::TYPE_STRUCTURE &&
+            ($this->getIsCanonical() || $this->isProvisionalDraft)
+        )) {
             return false;
         }
 
-        // Is it a brand new entry?
-        if (!isset($this->id)) {
+        // Is it a brand new (non-provisional) entry?
+        if (!isset($this->id) && !$this->isProvisionalDraft) {
             return true;
         }
 
@@ -1805,24 +1831,31 @@ EOD;
             return false;
         }
 
+        // If this is a provisional draft, but doesn't actually exist in the structure yet, check based on the canonical entry
+        if ($this->isProvisionalDraft && !$this->lft) {
+            $entry = $this->getCanonical(true);
+        } else {
+            $entry = $this;
+        }
+
         // Is it set to the top level now, but it hadn't been before?
-        if (!$this->newParentId && $this->level != 1) {
+        if (!$this->newParentId && $entry->level != 1) {
             return true;
         }
 
         // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId && $this->level == 1) {
+        if ($this->newParentId && $entry->level == 1) {
             return true;
         }
 
         // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentQuery = self::find();
-        $oldParentQuery->ancestorOf($this);
-        $oldParentQuery->ancestorDist(1);
-        $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->status(null);
-        $oldParentQuery->select('elements.id');
-        $oldParentId = $oldParentQuery->scalar();
+        $oldParentId = self::find()
+            ->ancestorOf($entry)
+            ->ancestorDist(1)
+            ->siteId($entry->siteId)
+            ->status(null)
+            ->select('elements.id')
+            ->scalar();
 
         return $this->newParentId != $oldParentId;
     }

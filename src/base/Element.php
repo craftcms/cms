@@ -3312,17 +3312,17 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getModifiedFields(): array
+    public function getModifiedFields(bool $anySite = false): array
     {
-        return array_keys($this->_modifiedFields());
+        return array_keys($this->_modifiedFields($anySite));
     }
 
     /**
      * @inheritdoc
      */
-    public function isFieldModified(string $fieldHandle): bool
+    public function isFieldModified(string $fieldHandle, bool $anySite = false): bool
     {
-        return isset($this->_modifiedFields()[$fieldHandle]);
+        return isset($this->_modifiedFields($anySite)[$fieldHandle]);
     }
 
     /**
@@ -3357,27 +3357,32 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @param bool $anySite
      * @return array The field handles that have been modified for this element
      */
-    private function _modifiedFields(): array
+    private function _modifiedFields(bool $anySite): array
     {
         if (!static::trackChanges() || $this->getIsCanonical()) {
             return [];
         }
 
-        if (!isset($this->_modifiedFields)) {
-            $this->_modifiedFields = array_flip((new Query())
+        $key = $anySite ? 'any' : 'this';
+
+        if (!isset($this->_modifiedFields[$key])) {
+            $query = (new Query())
                 ->select(['f.handle'])
                 ->from(['f' => Table::FIELDS])
                 ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
-                ->where([
-                    'cf.elementId' => $this->id,
-                    'cf.siteId' => $this->siteId,
-                ])
-                ->column());
+                ->where(['cf.elementId' => $this->id]);
+
+            if (!$anySite) {
+                $query->andWhere(['cf.siteId' => $this->siteId]);
+            }
+
+            $this->_modifiedFields[$key] = array_flip($query->column());
         }
 
-        return $this->_modifiedFields;
+        return $this->_modifiedFields[$key];
     }
 
     /**

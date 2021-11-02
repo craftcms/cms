@@ -398,6 +398,31 @@ class Structures extends Component
     }
 
     /**
+     * Removes an element from a given structure.
+     *
+     * @param int $structureId
+     * @param ElementInterface $element
+     * @return bool
+     * @throws Exception
+     * @since 3.7.19
+     */
+    public function remove(int $structureId, ElementInterface $element): bool
+    {
+        $elementRecord = $this->_getElementRecord($structureId, $element);
+
+        if ($elementRecord && !$elementRecord->delete()) {
+            return false;
+        }
+
+        $element->root = null;
+        $element->lft = null;
+        $element->rgt = null;
+        $element->level = null;
+
+        return true;
+    }
+
+    /**
      * Returns a structure element record from given structure and element IDs.
      *
      * @param int $structureId

@@ -2212,7 +2212,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         return (
             !$this->trashed &&
-            ($this->withStructure || ($this->withStructure !== false && $this->structureId))
+            !$this->revisions &&
+            ($this->withStructure ?? (bool)$this->structureId)
         );
     }
 
@@ -2255,12 +2256,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
         if ($this->structureId) {
-            $this->query->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            $this->query->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[subquery.elementsId]]',
                 ['structureelements.structureId' => $this->structureId],
             ]);
-            $this->subQuery->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            $this->subQuery->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
                 ['structureelements.structureId' => $this->structureId],
@@ -2407,13 +2408,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams(): void
     {
         if ($this->drafts !== false) {
-            if ($this->drafts === true) {
-                $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-                $this->query->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            } else {
-                $this->subQuery->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-                $this->query->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            }
+            $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
 
             $this->query->addSelect([
                 'elements.draftId',
@@ -2444,7 +2441,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['drafts.provisional' => $this->provisionalDrafts],
                 ]);
             }
-
 
             if ($this->savedDraftsOnly) {
                 $this->subQuery->andWhere([
@@ -2508,25 +2504,43 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeStructureParamValue(string $property, string $class): ElementInterface
     {
+        $element = $this->$property;
+
+        if ($element === false) {
+            throw new QueryAbortedException();
+        }
+
         /** @var string|ElementInterface $class */
-        if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
-            $this->$property = $class::find()
-                ->id($this->$property)
+        if ($element instanceof ElementInterface && !$element->lft) {
+            $element = $element->id;
+        }
+
+        if (!$element instanceof ElementInterface) {
+            $element = $class::find()
+                ->id($element)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
                 ->status(null)
                 ->one();
 
-            if ($this->$property === null) {
+            if ($element === null) {
                 $this->$property = false;
+                throw new QueryAbortedException();
             }
         }
 
-        if ($this->$property === false) {
-            throw new QueryAbortedException();
+        if (!$element->lft) {
+            if ($element->getIsDerivative()) {
+                $element = $element->getCanonical(true);
+            }
+
+            if (!$element->lft) {
+                $this->$property = false;
+                throw new QueryAbortedException();
+            }
         }
 
-        return $this->$property;
+        return $this->$property = $element;
     }
 
     /**
