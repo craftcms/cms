@@ -4,14 +4,16 @@
 
 ### Changed
 - The `utils/repair/section-structure` command now appends entries to the structure root if they don’t have any supported sites in common with their parent.
-- Craft now checks whether a file exists before attempting to delete it. ([#9957](https://github.com/craftcms/cms/issues/9957))
 
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.7.17+ from the control panel. ([#9990](https://github.com/craftcms/cms/issues/9990))
 - Fixed a bug where Structure section entries would forget who their parent entry was, if it was an unpublished draft.
 - Fixed a bug where Structure sections’ structure data wasn’t getting soft-deleted when the section type was changed.
 - Fixed a bug where `isset()` checks on renamed config settings were always returning `false`.
-- Fixed an XSS vulnerability with the Plugin Store.
+- Fixed an error that could occur when deleting image transforms. ([#9957](https://github.com/craftcms/cms/issues/9957))
+
+### Security
+- Fixed an XSS vulnerability.
 
 ## 3.7.18.2 - 2021-10-27
 
