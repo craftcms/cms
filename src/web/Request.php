@@ -1733,6 +1733,9 @@ class Request extends \yii\web\Request
             return $this->_utf8Value($params[$name]);
         }
 
+        // Normalize foo[bar][baz] => foo.bar.baz
+        $name = $this->_normalizeParam($name);
+
         // Maybe they're looking for a nested param?
         if (StringHelper::contains($name, '.')) {
             $path = explode('.', $name);
@@ -1750,6 +1753,20 @@ class Request extends \yii\web\Request
         }
 
         return $defaultValue;
+    }
+
+    /**
+     * Normalizes a nested param name into dot notation.
+     *
+     * @param string $name
+     * @return string
+     */
+    private function _normalizeParam(string $name): string
+    {
+        if (preg_match('/^\w+(?:\[\w+\])+$/', $name)) {
+            $name = rtrim(preg_replace('/[\[\]]+/', '.', $name), '.');
+        }
+        return $name;
     }
 
     /**
