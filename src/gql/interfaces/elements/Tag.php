@@ -34,7 +34,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;

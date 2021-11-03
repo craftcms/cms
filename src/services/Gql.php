@@ -24,6 +24,7 @@ use craft\gql\ArgumentManager;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\InterfaceType;
+use craft\gql\base\NonGeneratedTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\ParseRefs;
@@ -1297,7 +1298,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var InterfaceType $type */
+            /** @var NonGeneratedTypeInterface $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
 
