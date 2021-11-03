@@ -8,6 +8,7 @@
 namespace craft\gql\interfaces;
 
 use craft\gql\base\InterfaceType;
+use craft\gql\base\NonGeneratedTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
@@ -23,7 +24,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class Element extends InterfaceType
+class Element extends InterfaceType implements NonGeneratedTypeInterface
 {
     /**
      * @inheritdoc
@@ -36,7 +37,7 @@ class Element extends InterfaceType
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;

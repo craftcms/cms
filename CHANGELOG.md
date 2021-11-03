@@ -32,6 +32,7 @@
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
+- Added `craft\gql\base\NonGeneratedTypeInterface`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
 - Added `craft\helpers\Cp::dateHtml()`.
