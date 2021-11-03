@@ -3270,6 +3270,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getFieldValue(string $fieldHandle)
     {
+        // Was this field’s value eager-loaded?
+        if ($this->hasEagerLoadedElements($fieldHandle)) {
+            return $this->getEagerLoadedElements($fieldHandle);
+        }
+
         // Make sure the value has been normalized
         $this->normalizeFieldValue($fieldHandle);
 
