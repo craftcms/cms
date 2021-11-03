@@ -86,7 +86,7 @@ abstract class ElementResolver extends Resolver
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
         // If that's already preloaded, then, uhh, skip the preloading?
-        if (is_array($query)) {
+        if (!$query instanceof ElementQuery) {
             return $query;
         }
 
