@@ -65,20 +65,4 @@
             </div>
         {% endfor %}
     </div>
-
-
-    <div class="pane">
-        {% set config = {
-            "type": "craft\\conditions\\elements\\entry\\EntryQueryCondition",
-            "conditionRules": []
-        } %}
-        {% set options = {
-            'mainTag' : 'div',
-        } %}
-
-        {% namespace 'foo' %}
-            {{ craft.app.conditions.createCondition(config).withConditionRuleTypes(['craft\\conditions\\elements\\entry\\TypeConditionRule']).getBuilderHtml(options)|raw }}
-        {% endnamespace %}
-    </div>
-
 {% endblock %}
