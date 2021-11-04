@@ -157,7 +157,7 @@ class EntryRevisions extends Component
     {
         return Entry::find()
             ->revisionOf($entryId)
-            ->siteId('*')
+            ->site('*')
             ->anyStatus()
             ->exists();
     }

@@ -1645,7 +1645,7 @@ class User extends Element implements IdentityInterface
             } else {
                 // Delete the entries
                 $entryQuery = Entry::find()
-                    ->siteId('*')
+                    ->site('*')
                     ->unique()
                     ->authorId($this->id)
                     ->anyStatus();
