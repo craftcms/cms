@@ -108,7 +108,7 @@ class RepairController extends Controller
 
         // Get all the elements that match the query, including ones that may not be part of the structure
         $elements = $query
-            ->siteId('*')
+            ->site('*')
             ->unique()
             ->drafts(null)
             ->provisionalDrafts(null)

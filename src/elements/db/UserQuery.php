@@ -19,7 +19,7 @@ use yii\db\Connection;
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
- * @property string|string[]|UserGroup $group The handle(s) of the tag group(s) that resulting users must belong to.
+ * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, Connection $db = null)

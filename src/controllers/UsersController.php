@@ -1619,7 +1619,7 @@ class UsersController extends Controller
             $entryCount = Entry::find()
                 ->sectionId($section->id)
                 ->authorId($userIds)
-                ->siteId('*')
+                ->site('*')
                 ->unique()
                 ->anyStatus()
                 ->count();
