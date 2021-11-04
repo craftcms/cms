@@ -273,11 +273,18 @@ class Gql
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
-     * @param callable $resolveFunction The resolver function to use to resolve a specific type.
+     * @param ?callable $resolveFunction The resolver function to use to resolve a specific type. If not provided,
+     * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
-    public static function getUnionType(string $typeName, array $includedTypes, callable $resolveFunction)
+    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null)
     {
+        if (!$resolveFunction) {
+            $resolveFunction = function(ElementInterface $value) {
+                return $value->getGqlTypeName();
+            };
+        }
+
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
             'name' => $typeName,
             'types' => $includedTypes,
