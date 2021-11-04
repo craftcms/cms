@@ -183,6 +183,7 @@ class EntriesController extends BaseEntriesController
                 // If the entry already has structure data, use it.
                 // Otherwise, use its canonical entry
                 $variables['parent'] = Entry::find()
+                    ->siteId($entry->siteId)
                     ->ancestorOf($entry->lft ? $entry : ($entry->getIsCanonical() ? $entry->id : $entry->getCanonical(true)))
                     ->ancestorDist(1)
                     ->drafts(null)

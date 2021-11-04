@@ -5,6 +5,9 @@
 ### Changed
 - `craft\elements\Entry::setAuthor()` now sets the entry’s `$authorId` property.
 
+### Fixed
+- Fixed a bug where Edit Entry pages weren’t preselecting the entry’s parent, if it didn’t exist on the primary site. ([#10050](https://github.com/craftcms/cms/issues/10050))
+
 ## 3.7.19 - 2021-11-02
 
 > {tip} After updating, run the following command for each Structure section, to prune unneeded structure data for drafts and revisions.
