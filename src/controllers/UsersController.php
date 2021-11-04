@@ -1207,18 +1207,21 @@ class UsersController extends Controller
             $user->pending = true;
         }
 
-        // There are some things only admins can change
-        if ($currentUser && $currentUser->admin) {
+        if ($canAdministrateUsers) {
             $user->passwordResetRequired = (bool)$this->request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
+        }
 
-            // Is their admin status changing?
-            if (($adminParam = $this->request->getBodyParam('admin', $user->admin)) != $user->admin) {
-                // Making someone an admin requires an elevated session
-                if ($adminParam) {
-                    $this->requireElevatedSession();
-                }
-
-                $user->admin = (bool)$adminParam;
+        // Is their admin status changing?
+        if (
+            $currentUser &&
+            $currentUser->admin &&
+            ($adminParam = $this->request->getBodyParam('admin', $user->admin)) != $user->admin
+        ) {
+            if ($adminParam) {
+                $this->requireElevatedSession();
+                $user->admin = true;
+            } else {
+                $user->admin = false;
             }
         }
 

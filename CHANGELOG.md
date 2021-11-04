@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Non-admin users with permission to administrate other users can now require password resets for other users. ([#10057](https://github.com/craftcms/cms/issues/10057))
+
 ## 3.7.19.1 - 2021-11-04
 
 ### Changed
