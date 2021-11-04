@@ -207,6 +207,7 @@
     {% if saveDraftAction %}
         {% set formActions = formActions|push({
             label: 'Save and continue editing'|t('app'),
+            redirect: hashedCpEditUrl,
             action: saveDraftAction,
             shortcut: true,
             retainScroll: true,
@@ -286,7 +287,7 @@
                     },
                 }) }}
                 {% if not (canUpdateSource and saveSourceAction) %}
-                    {% if formActions|length %}
+                    {% if formActions is not empty %}
                         <button type="button" class="btn menubtn" data-icon="settings" aria-label="{{ actionButtonLabel }}"></button>
                         {% include '_layouts/components/form-action-menu' %}
                     {% endif %}
@@ -300,14 +301,18 @@
                         type: element.lowerDisplayName(),
                     }) : 'Save'|t('app') }}
                 </button>
-                <button type="button" class="btn submit menubtn" aria-label="{{ actionButtonLabel }}"></button>
-                {% include '_layouts/components/form-action-menu' %}
+                {% if formActions is not empty %}
+                    <button type="button" class="btn submit menubtn" aria-label="{{ actionButtonLabel }}"></button>
+                    {% include '_layouts/components/form-action-menu' %}
+                {% endif %}
             </div>
         {% elseif isUnpublishedDraft %}
             <div id="save-btn-container" class="btngroup submit">
                 <button type="submit" class="btn submit formsubmit" data-action="{{ saveDraftAction }}" data-redirect="{{ (redirectUrl ~ '#')|hash }}">{{ 'Save draft'|t('app') }}</button>
-                <button type="button" class="btn submit menubtn" aria-label="{{ actionButtonLabel }}"></button>
-                {% include '_layouts/components/form-action-menu' %}
+                {% if formActions is not empty %}
+                    <button type="button" class="btn submit menubtn" aria-label="{{ actionButtonLabel }}"></button>
+                    {% include '_layouts/components/form-action-menu' %}
+                {% endif %}
             </div>
         {% endif %}
     {% elseif isDraft %}
@@ -327,7 +332,7 @@
         {% endif %}
         <div id="save-btn-container" class="btngroup submit">
             <button type="submit" class="btn submit">{{ 'Save draft'|t('app') }}</button>
-            {% if canDeleteDraft %}
+            {% if canDeleteDraft and formActions is not empty %}
                 <button type="button" class="btn submit menubtn" aria-label="{{ actionButtonLabel }}"></button>
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}

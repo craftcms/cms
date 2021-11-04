@@ -143,6 +143,8 @@ class EntriesController extends BaseEntriesController
                 'sectionId' => $section->id,
                 'status' => null,
                 'where' => ['not in', 'elements.id', $excludeIds],
+                'drafts' => null,
+                'draftOf' => false,
             ];
 
             if ($section->maxLevels) {
@@ -171,6 +173,8 @@ class EntriesController extends BaseEntriesController
                     $parentId = $entry->newParentId;
                 } else {
                     $parentId = $entry->getAncestors(1)
+                        ->drafts(null)
+                        ->draftOf(false)
                         ->anyStatus()
                         ->ids();
                 }
@@ -181,7 +185,10 @@ class EntriesController extends BaseEntriesController
             }
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $site->id);
+                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $site->id, [
+                    'drafts' => null,
+                    'draftOf' => false,
+                ]);
             }
         }
 

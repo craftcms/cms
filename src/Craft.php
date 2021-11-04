@@ -111,10 +111,11 @@ class Craft extends Yii
      *
      * @param mixed $var The variable to be dumped.
      * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param bool|null $highlight Whether the result should be syntax-highlighted.
+     * Defaults to `true` for web requests and `false` for console requests.
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd($var, int $depth = 10, bool $highlight = true)
+    public static function dd($var, int $depth = 10, bool $highlight = null)
     {
         // Turn off output buffering and discard OB contents
         while (ob_get_length() !== false) {
@@ -125,6 +126,10 @@ class Craft extends Yii
             }
         }
 
+        if ($highlight === null) {
+            $highlight = !static::$app->getRequest()->getIsConsoleRequest();
+        }
+        
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }

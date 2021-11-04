@@ -139,7 +139,7 @@ class ConfigSyncController extends BaseUpdaterController
         $data['uninstallPlugins'] = array_diff($loadedConfigPlugins, $yamlPlugins);
 
         // Set the return URL, if any
-        if (($returnUrl = $this->request->getBodyParam('return')) !== null) {
+        if (($returnUrl = $this->findReturnUrl()) !== null) {
             $data['returnUrl'] = strip_tags($returnUrl);
         }
 

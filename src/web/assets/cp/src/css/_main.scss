@@ -4668,6 +4668,16 @@ textarea.text.fullwidth {
   @include margin(-27px, 7px, 0, 0);
   color: $lightTextColor;
 
+  .input.ltr > & {
+    float: right !important;
+    margin-right: 7px !important;
+  }
+
+  .input.rtl > & {
+    float: left !important;
+    margin-left: 7px !important;
+  }
+
   &.negative-chars-left {
     color: $errorColor;
   }

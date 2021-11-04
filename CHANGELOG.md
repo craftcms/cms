@@ -2,6 +2,66 @@
 
 ## Unreleased
 
+### Changed
+- The `utils/repair/section-structure` command now appends entries to the structure root if they don’t have any supported sites in common with their parent.
+
+### Fixed
+- Fixed an error that occurred when updating to Craft 3.7.17+ from the control panel. ([#9990](https://github.com/craftcms/cms/issues/9990))
+- Fixed a bug where Structure section entries would forget who their parent entry was, if it was an unpublished draft.
+- Fixed a bug where `isset()` checks on renamed config settings were always returning `false`.
+
+## 3.7.18.2 - 2021-10-27
+
+### Fixed
+- Fixed an error that could occur if the `CRAFT_STREAM_LOG` PHP constant was set to `true`.
+- Fixed a bug where the “Save and continue editing” action and its <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keybord shortcut weren’t working for entry drafts, if the `autosaveDrafts` config setting was disabled. ([#10029](https://github.com/craftcms/cms/issues/10029))
+
+## 3.7.18.1 - 2021-10-27
+
+### Fixed
+- Fixed a bug where GraphQL mutations to create new entries were returning `null`. ([#10016](https://github.com/craftcms/cms/issues/10016))
+- Fixed a couple focus ring styling issues. ([#10017](https://github.com/craftcms/cms/issues/10017), [#10018](https://github.com/craftcms/cms/issues/10018))
+
+## 3.7.18 - 2021-10-26
+
+### Added
+- Added `craft\console\ErrorHandler`. ([#10006](https://github.com/craftcms/cms/pull/10006))
+
+### Changed
+- Craft no longer writes out informational log messages when it’s not installed yet or an update is pending, if Dev Mode is disabled.
+- Dropdown fields now prepend a blank option to their menu when the current value is invalid. ([#9989](https://github.com/craftcms/cms/issues/9989))
+- Some control panel POST requests no longer disable database replica connections. ([#9996](https://github.com/craftcms/cms/discussions/9996))
+- Updated Axios to 0.21.4. 
+- Updated jQuery UI to 1.13.0.
+
+### Fixed
+- Fixed a bug where `craft\helpers\Html::parseTagAttributes()` was ignoring tag attribute values if there were any whitespace characters surrounding the `=` character. ([#9997](https://github.com/craftcms/cms/pull/9997))
+- Fixed a bug where `craft\helpers\Html::parseTagAttributes()` was including trailing tabs, newlines, and other non-space whitespace characters in the parsed values of unquoted attributes. ([#9997](https://github.com/craftcms/cms/pull/9997))
+- Fixed an error that could occur if the `log` component was configured with a custom log target and `flushInterval` set to `1`.
+- Fixed a bug where `plugin/*` commands weren’t always handling failures properly. ([#9984](https://github.com/craftcms/cms/issues/9984))
+- Fixed a bug where entry title changes could be overlooked when merging upstream changes into a draft. ([#9966](https://github.com/craftcms/cms/issues/9966))
+- Fixed a bug where focus rings weren’t ever visible on Safari, unless the “Always show focus rings” accessibility preference was enabled. ([#10009](https://github.com/craftcms/cms/pull/10009))
+- Fixed a bug where it wasn’t possible to query for draft or revision creators via GraphQL. ([craftcms/gatsby-source-craft#56](https://github.com/craftcms/gatsby-source-craft/issues/56))
+- Fixed a bug where Super Table blocks could go missing when a draft was created, if their block type ID matched another Matrix/Super Table/Neo block’s ID on the same page.
+
+## 3.7.17.2 - 2021-10-21
+
+### Changed
+- `Craft::dd()` no longer defaults to including syntax highlighting in its output for console requests. ([#9972](https://github.com/craftcms/cms/pull/9972))
+
+### Fixed
+- Fixed a PHP error that could occur when uploading assets on some environments. ([#9995](https://github.com/craftcms/cms/issues/9995))
+- Fixed a PHP error that occurred when exporting elements on PHP 7.2 or 7.3. ([#9958](https://github.com/craftcms/cms/issues/9958))
+- Fixed a JavaScript error that occurred in Safari. ([#9976](https://github.com/craftcms/cms/issues/9976))
+
+## 3.7.17.1 - 2021-10-20
+
+### Fixed
+- Fixed an error that could occur when creating database backups on Windows. ([#9978](https://github.com/craftcms/cms/issues/9978))
+- Fixed a bug where it wasn’t possible to upload assets if the `storage/` folder was symlinked. ([#9980](https://github.com/craftcms/cms/issues/9980))
+
+## 3.7.17 - 2021-10-19
+
 ### Added
 - Added the `provisional` argument for the remaining draft mutations via GraphQL. ([#9946](https://github.com/craftcms/cms/issues/9946))
 - Added the `notes` and `name` arguments to the create draft mutation via GraphQL.
@@ -9,12 +69,16 @@
 - Added the `is object` Twig test.
 - Added `craft\helpers\ElementHelper::isCanonical()`.
 - Added `craft\helpers\ElementHelper::isDerivative()`.
+- Added `craft\services\Path::getSystemPaths()`.
 
 ### Changed
 - Improved the accessibility of overflowing breadcrumbs and the “My account” menu. ([#9945](https://github.com/craftcms/cms/pull/9945))
 - Logs now include the raw request body in place of the `$_POST` array, if the `$_POST` array is empty. ([#9941](https://github.com/craftcms/cms/discussions/9941))
 - It’s now possible to modify Entries fields to relate entry drafts. ([#9963](https://github.com/craftcms/cms/issues/9963))
 - It’s now possible to set Matrix block queries’ `field` and `owner` params via config arrays. ([#9968](https://github.com/craftcms/cms/issues/9968))
+- The `_includes/forms/text.html` control panel template now supports an `orientation` config value, which defines the `dir` input attribute.
+- Craft no longer logs a warning when the request path attempts to break out of the `templates/` folder. ([#9929](https://github.com/craftcms/cms/issues/9929))
+- Updated Composer to 2.1.9.
 - Updated Garnish to 0.1.47.
 
 ### Fixed
@@ -28,6 +92,14 @@
 - Fixed a bug where deprecation warnings weren’t getting logged if `craft\services\Deprecator::$logTarget` was set to `'logs'`.
 - Fixed a bug where escaped quotes (`\"`) in element export data were causing CSV cell values to end prematurely. ([#9958](https://github.com/craftcms/cms/issues/9958))
 - Fixed a bug where HTML entities within nested field values weren’t getting encoded for Matrix block previews. ([#9964](https://github.com/craftcms/cms/issues/9964))
+- Fixed an error that could occur on element edit pages if there weren’t any alternate form actions. ([#9969](https://github.com/craftcms/cms/issues/9969))
+- Fixed a bug where it wasn’t possible to upload an asset via a data URL if its MIME type contained a period. ([#9632](https://github.com/craftcms/cms/issues/9632))
+- Fixed a bug where the characters-left indicator was right-aligned for RTL Plain Text fields, for users with an LTR formatting locale. ([#9967](https://github.com/craftcms/cms/issues/9967))
+- Fixed a bug where `craft\web\ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION` wasn’t getting triggered for requests that accepted a JSON response. ([#9973](https://github.com/craftcms/cms/issues/9973))
+
+### Security
+- Assets fields now require temporary files to reside in temporary folders or somewhere within the project root, excluding system directories.
+- Fixed a potential RCE vulnerability.
 
 ## 3.7.16 - 2021-10-06
 

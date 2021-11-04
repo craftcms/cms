@@ -7,6 +7,8 @@
     not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
+{%- set orientation = orientation ?? inputAttributes.dir ?? craft.app.locale.getOrientation() %}
+
 {%- set inputAttributes = {
     class: class,
     type: type,
@@ -27,6 +29,7 @@
     step: step ?? false,
     min: min ?? false,
     max: max ?? false,
+    dir: orientation,
     aria: {
         describedby: instructionsId ?? false,
         required: (required ?? false) ? 'true' : false,
@@ -43,7 +46,7 @@
             'show-chars-left': showCharsLeft,
         },
         style: {
-            ("padding-#{craft.app.locale.getOrientation() == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
+            ("padding-#{orientation == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
         },
     }, recursive=true) %}
 {%- endif %}

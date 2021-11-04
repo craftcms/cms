@@ -15,7 +15,9 @@ use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\ElementHelper;
 use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
@@ -172,7 +174,7 @@ class RepairController extends Controller
                     $issue = "had unexpected level ($element->level)";
                     if (!empty($ancestors)) {
                         if (!$this->dryRun) {
-                            $structuresService->append($structureId, $element, end($ancestors), Structures::MODE_INSERT);
+                            $this->_append($structureId, $element, end($ancestors), $structuresService, $issue);
                         }
                     } else {
                         if (!$this->dryRun) {
@@ -183,7 +185,7 @@ class RepairController extends Controller
                     $issue = "exceeded the max level ($structure->maxLevels)";
                     if (isset($ancestors[$level - 2])) {
                         if (!$this->dryRun) {
-                            $structuresService->append($structureId, $element, $ancestors[$level - 2], Structures::MODE_INSERT);
+                            $this->_append($structureId, $element, $ancestors[$level - 2], $structuresService, $issue);
                         }
                     } else {
                         if (!$this->dryRun) {
@@ -191,14 +193,14 @@ class RepairController extends Controller
                         }
                     }
                 } else {
-                    $issue = false;
+                    $issue = null;
                     if ($element->level == 1) {
                         if (!$this->dryRun) {
                             $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
                         }
                     } else {
                         if (!$this->dryRun) {
-                            $structuresService->append($structureId, $element, $ancestors[$element->level - 2], Structures::MODE_INSERT);
+                            $this->_append($structureId, $element, $ancestors[$element->level - 2], $structuresService, $issue);
                         }
                     }
                 }
@@ -240,6 +242,20 @@ class RepairController extends Controller
         $this->stdout("Finished processing $displayName" . ($this->dryRun ? ' (dry run)' : '') . PHP_EOL);
 
         return ExitCode::OK;
+    }
+
+    private function _append(int $structureId, ElementInterface $element, $parentElement, Structures $structuresService, ?string &$issue): void
+    {
+        // Make sure that the element has at least one site in common with the parent
+        $elementSites = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $parentSites = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($parentElement), 'siteId');
+
+        if (!array_intersect($elementSites, $parentSites)) {
+            $issue = 'no supported sites in common with parent';
+            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+        } else {
+            $structuresService->append($structureId, $element, $parentElement, Structures::MODE_INSERT);
+        }
     }
 
     /**
