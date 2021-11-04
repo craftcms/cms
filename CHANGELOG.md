@@ -50,6 +50,7 @@
 - Added `craft\helpers\Db::findIndex()`.
 - Added `craft\helpers\Db::parseNumericParam()`.
 - Added `craft\helpers\Db::renameTable()`.
+- Added `craft\helpers\Gql::getSchemaContainedEntryTypes)()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\i18n\Translation`.
@@ -219,6 +220,7 @@
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
 - `craft\helpers\Db::truncateTable()` now returns `void` rather than `int`.
+- `craft\helpers\Gql::getUnionType()` no longer requires a resolver function to be passed, if the union contains only element GraphQL types.
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.

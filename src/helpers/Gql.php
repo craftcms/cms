@@ -9,10 +9,12 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
+use craft\models\EntryType as EntryTypeModel;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
@@ -556,6 +558,19 @@ class Gql
         return static function($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
         };
+    }
+
+    /**
+     * Return all entry types a given (or loaded) schema contains.
+     *
+     * @return EntryTypeModel[]
+     */
+    public static function getSchemaContainedEntryTypes(?GqlSchema $schema = null): array
+    {
+        return array_filter(
+            Craft::$app->getSections()->getAllEntryTypes(),
+            static fn($entryType) => self::isSchemaAwareOf(EntryElement::gqlScopesByContext($entryType), $schema)
+        );
     }
 
     /**
