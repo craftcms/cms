@@ -2192,7 +2192,7 @@ body.rtl .menu hr.padded, body.rtl .menu h6.padded { margin-right: 10px; }
 
 .menu--disclosure ul li > a:hover { color: #3f4d5a; background-color: #f3f7fc; }
 
-body:not(.reduce-focus-visibility) .menu--disclosure ul li > a:focus, body.reduce-focus-visibility .menu--disclosure ul li > a:focus-visible { box-shadow: inset 0 0 0 3px rgba(18, 127, 191, 0.7); }
+body:not(.reduce-focus-visibility) .menu--disclosure ul li > a:focus, body.reduce-focus-visibility .menu--disclosure ul li > a.focus-visible { box-shadow: inset 0 0 0 3px rgba(18, 127, 191, 0.7); }
 
 /* tag select fields */
 .tagselect .elements { display: inline; }
