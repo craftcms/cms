@@ -45,7 +45,7 @@ class ApplyMatrixPropagationMethod extends BaseJob
     {
         $query = MatrixBlock::find()
             ->fieldId($this->fieldId)
-            ->siteId('*')
+            ->site('*')
             ->unique()
             ->anyStatus();
 

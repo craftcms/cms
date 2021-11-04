@@ -223,7 +223,7 @@ class ProjectConfig extends Component
     public $folderName = 'project';
 
     /**
-     * @var int The maximum number of project.yaml deltas to store in storage/config-backups/
+     * @var int The maximum number of project.yaml deltas to store in storage/config-deltas/
      * @since 3.4.0
      */
     public $maxDeltas = 50;
