@@ -12,6 +12,7 @@
     "@babel/core": "^7.14.0",
     "@babel/preset-env": "^7.14.1",
     "@benmajor/jquery-touch-events": "^2.0.3",
+    "@types/jquery": "^3.5.7",
     "axios": "^0.21.4",
     "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^10.31.0",
