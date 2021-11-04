@@ -3086,7 +3086,7 @@ body.rtl #global-container { -o-transition: right 250ms ease-out; transition: ri
 /* global sidebar */
 #global-sidebar { --is-always-visible: true; position: fixed; z-index: 100; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; height: 100vh; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; background-color: #33404d; }
 
-body:not(.reduce-focus-visibility) #global-sidebar:focus, body.reduce-focus-visibility #global-sidebar:focus-visible { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
+body:not(.reduce-focus-visibility) #global-sidebar:focus, body.reduce-focus-visibility #global-sidebar.focus-visible { box-shadow: 0 0 0 1px #1992D4, 0 0 0 3px rgba(25, 146, 212, 0.5); }
 
 #global-sidebar a { color: #e4edf6; -o-transition: color linear 100ms; transition: color linear 100ms; text-decoration: none; }
 
