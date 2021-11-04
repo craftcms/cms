@@ -25,6 +25,7 @@
         @selected="onSelected"
         @focus="updateFilteredOptions"
         @blur="onBlur"
+        v-model="inputProps.initialValue"
     >
         <template slot-scope="{suggestion}">
             {{suggestion.item.name || suggestion.item}}

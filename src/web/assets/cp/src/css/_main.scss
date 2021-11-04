@@ -5666,16 +5666,16 @@ ul.errors li {
   @include sans-serif-font;
   font-size: 1em !important;
 
-  .autosuggest__results_title {
+  .autosuggest__results-before {
     @include h6-styles;
     margin-top: 14px !important;
   }
 
-  .autosuggest__results_item {
+  .autosuggest__results-item {
     @include menu-option-styles;
 
     &:hover,
-    &.autosuggest__results_item-highlighted {
+    &.autosuggest__results-item-highlighted {
       @include menu-option-active-styles;
       cursor: pointer;
     }
