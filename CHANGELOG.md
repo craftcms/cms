@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.19.1 - 2021-11-04
 
 ### Changed
 - `craft\elements\Entry::setAuthor()` now sets the entry’s `$authorId` property.
