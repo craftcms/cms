@@ -42,7 +42,6 @@ use yii\db\ExpressionInterface;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
- * @property string|Site $site The site or site handle that the elements should be returned in
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
