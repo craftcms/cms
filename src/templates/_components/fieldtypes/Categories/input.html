@@ -1,5 +1,4 @@
 {{ hiddenInput(name, '') }}
-
 <div id="{{ id }}" class="categoriesfield">
     <ul class="elements structure">
         {% nav category in elements %}
@@ -19,7 +18,7 @@
     </ul>
 
     <div class="flex">
-        <button type="button" class="btn add icon dashed">{{ selectionLabel }}</button>
+        <button type="button" class="btn add icon dashed" aria-label="{{ selectionLabel }}">{{ selectionLabel }}</button>
     </div>
 </div>
 
