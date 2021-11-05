@@ -62,6 +62,8 @@ class PluginStoreController extends Controller
             ],
             'cmsLicenseKey' => App::licenseKey(),
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
+            'phpVersion' => App::phpVersion(),
+            'composerPhpVersion' => Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null,
         ];
 
         foreach ($variables as $name => $value) {

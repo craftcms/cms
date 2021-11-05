@@ -4,6 +4,7 @@
 
 ### Changed
 - Non-admin users with permission to administrate other users can now require password resets for other users. ([#10057](https://github.com/craftcms/cms/issues/10057))
+- The Plugin Store will now prevent installation of plugins that require a greater PHP version than what’s allowed by the environment.
 
 ## 3.7.19.1 - 2021-11-04
 
