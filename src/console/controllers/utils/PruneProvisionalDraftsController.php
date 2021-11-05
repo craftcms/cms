@@ -92,7 +92,7 @@ class PruneProvisionalDraftsController extends Controller
                 ->provisionalDrafts()
                 ->draftOf($element['id'])
                 ->draftCreator($element['creatorId'])
-                ->siteId('*')
+                ->site('*')
                 ->unique()
                 ->anyStatus()
                 ->orderBy(['dateUpdated' => SORT_DESC])

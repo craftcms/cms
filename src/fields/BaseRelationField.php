@@ -1108,7 +1108,7 @@ JS;
         $clone
             ->drafts(null)
             ->anyStatus()
-            ->siteId('*')
+            ->site('*')
             ->limit(null)
             ->unique();
         if ($element !== null) {

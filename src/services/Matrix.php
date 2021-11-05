@@ -859,7 +859,7 @@ class Matrix extends Component
                     $target->updatingFromDerivative &&
                     $block->getCanonical() !== $block // in case the canonical block is soft-deleted
                 ) {
-                    if (!empty($target->newSiteIds) || $source->isFieldModified($field->handle)) {
+                    if (!empty($target->newSiteIds) || $source->isFieldModified($field->handle, true)) {
                         /** @var MatrixBlock $newBlock */
                         $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
                         $newBlockId = $newBlock->id;

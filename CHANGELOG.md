@@ -3,12 +3,48 @@
 ## Unreleased
 
 ### Changed
+- Non-admin users with permission to administrate other users can now require password resets for other users. ([#10057](https://github.com/craftcms/cms/issues/10057))
+- The Plugin Store will now prevent installation of plugins that require a greater PHP version than what’s allowed by the environment.
+
+## 3.7.19.1 - 2021-11-04
+
+### Changed
+- `craft\elements\Entry::setAuthor()` now sets the entry’s `$authorId` property.
+
+### Fixed
+- Fixed a bug where Edit Entry pages weren’t preselecting the entry’s parent, if it didn’t exist on the primary site. ([#10050](https://github.com/craftcms/cms/issues/10050))
+
+## 3.7.19 - 2021-11-02
+
+> {tip} After updating, run the following command for each Structure section, to prune unneeded structure data for drafts and revisions.
+>
+> ```
+> php craft utils/repair/section-structure <sectionHandle>
+> ```
+
+### Added
+- Added `craft\services\Structures::remove()`.
+
+### Changed
+- Entry drafts and revisions are no longer placed within the section’s structure (with the exception of unpublished drafts, and provisional drafts which have been assigned a new parent entry). ([#9977](https://github.com/craftcms/cms/issues/9977), [#9999](https://github.com/craftcms/cms/issues/9999))
+- The `utils/repair/section-structure` command now prunes unneeded structure data for drafts and revisions.
 - The `utils/repair/section-structure` command now appends entries to the structure root if they don’t have any supported sites in common with their parent.
+- `craft\base\Elementinterface::getModifiedFields()` and `isFieldModified()` now have `$anySite` attributes.
+- `craft\services\Elements::duplicateElement()` no longer places derivative elements in the structure.
 
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.7.17+ from the control panel. ([#9990](https://github.com/craftcms/cms/issues/9990))
 - Fixed a bug where Structure section entries would forget who their parent entry was, if it was an unpublished draft.
+- Fixed a bug where Structure sections’ structure data wasn’t getting soft-deleted when the section type was changed.
+- Fixed a bug where provisional drafts weren’t given a position within the structure when converting a Channel section to a Structure.
 - Fixed a bug where `isset()` checks on renamed config settings were always returning `false`.
+- Fixed an error that could occur when deleting image transforms. ([#9957](https://github.com/craftcms/cms/issues/9957))
+- Fixed a bug where some Matrix sub-field changes could be discarded when applying a draft. ([#10034](https://github.com/craftcms/cms/issues/10034))
+- Fixed an incompatibility with the Overflow plugin. ([#10044](https://github.com/craftcms/cms/issues/10044))
+- Fixed a bug where Categories fields weren’t eager-loading their relations in the structure-defined order. ([#10042](https://github.com/craftcms/cms/issues/10042))
+
+### Security
+- Fixed an XSS vulnerability.
 
 ## 3.7.18.2 - 2021-10-27
 
