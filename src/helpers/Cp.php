@@ -530,9 +530,9 @@ class Cp
                 ? Html::tag('div', '', [
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
-                    'aria' => [
-                        'label' => $status[1],
-                    ],
+                ]) .
+                Html::tag('span', $status[1], [
+                    'class' => 'visually-hidden',
                 ])
                 : '') .
             (($label || $showAttribute)
