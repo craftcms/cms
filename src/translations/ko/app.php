@@ -1430,6 +1430,8 @@ return [
     'This month' => '이번 달',
     'This plugin is no longer maintained.' => '이 플러그인은 더 이상 유지 관리되지 않습니다.',
     'This plugin isn’t compatible with your version of Craft.' => '이 플러그인은 해당 버전의 Craft와 호환되지 않습니다.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => '이 사이트에는 자체의 기준 URL이 있습니다',
     'This tab contains errors' => '이 탭에 오류가 포함되어 있습니다',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => '이 업데이트에는 PHP {v1}이(가) 필요하지만, 해당 composer.json 파일은 PHP {v2}(으)로 현재 설정되어 있습니다.',
