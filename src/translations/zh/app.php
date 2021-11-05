@@ -1430,6 +1430,8 @@ return [
     'This month' => '本月',
     'This plugin is no longer maintained.' => '此插件已不再维护。',
     'This plugin isn’t compatible with your version of Craft.' => '此插件与您使用的 Craft 版本不兼容。',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => '该站点有它自己的根 URL',
     'This tab contains errors' => '此选项卡包含错误',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => '此更新需要 PHP {v1}，但您的 composer.json 文件当前设置为 PHP {v2}。',
