@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where focus rings weren’t visible on Safari. ([#10058](https://github.com/craftcms/cms/pull/10058))
+- Fixed a 403 error that occurred when executing pending migrations from the control panel while logged out. ([#9990](https://github.com/craftcms/cms/issues/9990))
 
 ## 3.7.19.1 - 2021-11-04
 
