@@ -24,7 +24,9 @@ use yii\db\Connection;
 /**
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
- * @property string|string[]|MatrixBlockType $type The handle(s) of the block type(s) that resulting Matrix blocks must have
+ * @property-write ElementInterface $owner The owner element the Matrix blocks must belong to
+ * @property-write string|string[]|MatrixBlockType|null $type The block type(s) that resulting Matrix blocks must have
+ * @property-write string|string[]|MatrixField|null $field The field the Matrix blocks must belong to
  * @method MatrixBlock[]|array all($db = null)
  * @method MatrixBlock|array|null one($db = null)
  * @method MatrixBlock|array|null nth(int $n, ?Connection $db = null)

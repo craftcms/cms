@@ -1436,6 +1436,8 @@ return [
     'This month' => 'E hónap',
     'This plugin is no longer maintained.' => 'Ez a beépülő modul már nincs karbantartva.',
     'This plugin isn’t compatible with your version of Craft.' => 'Ez a beépülő modul nem kompatibilis az ön Craft verziójával.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'A webhelynek saját alap URL-címe van.',
     'This tab contains errors' => 'A lap hibákat tartalmaz',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'Ehhez a frissítéshez PHP {v1} szükséges, de a composer.json fájlja jelenleg a PHP {v2} verziójára van beállítva.',

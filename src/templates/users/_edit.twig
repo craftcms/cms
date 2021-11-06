@@ -135,7 +135,7 @@
                     {% endjs %}
                 {% endif %}
 
-                {% if currentUser.admin and (user.pending or user.active) %}
+                {% if canAdministrateUsers and (user.pending or user.active) %}
                     {{ forms.checkboxField({
                         label: "Require a password reset on next login"|t('app'),
                         name: 'passwordResetRequired',

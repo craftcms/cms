@@ -110,6 +110,12 @@ abstract class Api
             $versions[$package->getName()] = $package->getPrettyVersion();
         }
 
+        // Also include the Composer PHP requirement
+        $composerConfig = Craft::$app->getComposer()->getConfig();
+        if (isset($composerConfig['config']['platform']['php'])) {
+            $versions['composer-php'] = $composerConfig['config']['platform']['php'];
+        }
+
         // Also include the DB driver/version
         $db = Craft::$app->getDb();
         $versions[$db->getDriverName()] = App::normalizeVersion($db->getSchema()->getServerVersion());

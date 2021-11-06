@@ -22,7 +22,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Site;
-use craft\services\Structures;
 use craft\web\assets\editentry\EditEntryAsset;
 use Throwable;
 use yii\base\Exception;
@@ -54,9 +53,14 @@ class EntriesController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      * @throws ForbiddenHttpException
+     * @throws BadRequestHttpException
      */
     public function actionEditEntry(string $section, ?int $entryId = null, ?int $draftId = null, ?int $revisionId = null, ?string $site = null, ?Entry $entry = null): Response
     {
+        if ($draftId && $revisionId) {
+            throw new BadRequestHttpException('Only a draftId or revisionId can be specified.');
+        }
+
         $variables = [
             'sectionHandle' => $section,
             'entryId' => $entryId,
@@ -129,6 +133,8 @@ class EntriesController extends BaseEntriesController
             // Prevent the current entry, or any of its descendants, from being options
             $excludeIds = Entry::find()
                 ->descendantOf($entry)
+                ->drafts(null)
+                ->draftOf(false)
                 ->status(null)
                 ->ids();
             $excludeIds[] = $entry->getCanonicalId();
@@ -138,6 +144,8 @@ class EntriesController extends BaseEntriesController
                 'sectionId' => $section->id,
                 'status' => null,
                 'where' => ['not in', 'elements.id', $excludeIds],
+                'drafts' => null,
+                'draftOf' => false,
             ];
 
             if ($section->maxLevels) {
@@ -158,25 +166,25 @@ class EntriesController extends BaseEntriesController
             }
 
             // Get the initially selected parent
-            $parentId = $this->request->getParam('parentId');
-
-            if ($parentId === null) {
-                // Is it already set on the model (e.g. if we're loading a draft)?
-                if ($entry->newParentId !== null) {
-                    $parentId = $entry->newParentId;
-                } else {
-                    $parentId = $entry->getAncestors(1)
-                        ->status(null)
-                        ->ids();
-                }
-            }
-
-            if (is_array($parentId)) {
-                $parentId = reset($parentId) ?: null;
-            }
+            $parentId = $this->request->getParam('parentId') ?? $entry->newParentId;
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $site->id);
+                $variables['parent'] = Craft::$app->getEntries()->getEntryById(
+                    is_array($parentId) ? reset($parentId) : $parentId,
+                    $site->id,
+                    ['drafts' => null, 'draftOf' => false]
+                );
+            } else {
+                // If the entry already has structure data, use it.
+                // Otherwise, use its canonical entry
+                $variables['parent'] = Entry::find()
+                    ->siteId($entry->siteId)
+                    ->ancestorOf($entry->lft ? $entry : ($entry->getIsCanonical() ? $entry->id : $entry->getCanonical(true)))
+                    ->ancestorDist(1)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->one();
             }
         }
 
@@ -207,7 +215,7 @@ class EntriesController extends BaseEntriesController
 
             if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @var Entry $ancestor */
-                foreach ($entry->getAncestors()->all() as $ancestor) {
+                foreach ($entry->getCanonical(true)->getAncestors()->all() as $ancestor) {
                     $variables['crumbs'][] = [
                         'label' => $ancestor->title,
                         'url' => $ancestor->getCpEditUrl(),
@@ -735,15 +743,9 @@ class EntriesController extends BaseEntriesController
      */
     private function _loadEntry(Site $site, Section $section, int $entryId, ?int $draftId = null, ?int $revisionId = null): ?Entry
     {
-        if ($draftId) {
+        if ($draftId || $revisionId) {
             $entry = Entry::find()
                 ->draftId($draftId)
-                ->structureId($section->structureId)
-                ->siteId($site->id)
-                ->status(null)
-                ->one();
-        } else if ($revisionId) {
-            $entry = Entry::find()
                 ->revisionId($revisionId)
                 ->structureId($section->structureId)
                 ->siteId($site->id)
@@ -755,6 +757,7 @@ class EntriesController extends BaseEntriesController
                 ->provisionalDrafts()
                 ->draftOf($entryId)
                 ->draftCreator(Craft::$app->getUser()->getIdentity())
+                ->structureId($section->structureId)
                 ->siteId($site->id)
                 ->status(null)
                 ->one();
@@ -770,42 +773,8 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        if ($entry) {
-            return $entry;
-        }
 
-        // If a draft or revision was requested in a Structure section, see if it's just missing a `structureelements` record
-        if ($section->structureId) {
-            if ($draftId) {
-                $entry = Entry::find()
-                    ->draftId($draftId)
-                    ->siteId($site->id)
-                    ->status(null)
-                    ->one();
-            } else if ($revisionId) {
-                $entry = Entry::find()
-                    ->revisionId($revisionId)
-                    ->siteId($site->id)
-                    ->status(null)
-                    ->one();
-            }
-
-            if ($entry) {
-                // Get the source entry
-                $sourceEntry = Entry::find()
-                    ->id($entryId)
-                    ->siteId($site->id)
-                    ->status(null)
-                    ->one();
-                if ($sourceEntry) {
-                    // Insert the draft/revision alongside the source entry
-                    Craft::$app->getStructures()->moveAfter($section->structureId, $entry, $sourceEntry, Structures::MODE_INSERT);
-                    return $entry;
-                }
-            }
-        }
-
-        return null;
+        return $entry;
     }
 
     /**

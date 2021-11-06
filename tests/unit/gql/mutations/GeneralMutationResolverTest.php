@@ -292,6 +292,15 @@ class GeneralMutationResolverTest extends TestCase
             'normalizeValue' => $normalizer
         ]));
 
+        $query  = $this->make(EntryQuery::class, [
+            'one' => $entry
+        ]);
+
+        \Craft::$app->set('elements', $this->make(Elements::class, [
+            'saveElement' => true,
+            'createElementQuery' => $query
+        ]));
+
         // Set up the mutation resolve to return our mock entry and pretend to save the entry, when asked to
         // Also mock our input type definitions
         $mutationResolver = $this->make(EntryMutationResolver::class, [
@@ -303,9 +312,7 @@ class GeneralMutationResolverTest extends TestCase
             'argumentTypeDefsByName' => [
                 'parentField' => $parentObjectType
             ],
-            'identifyEntry' => $this->make(EntryQuery::class, [
-                'one' => $entry
-            ])
+            'identifyEntry' => $query
         ]);
 
         // Finish setting up for the test

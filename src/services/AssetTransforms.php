@@ -1111,7 +1111,7 @@ class AssetTransforms extends Component
                     AssetsHelper::downloadFile($volume, $asset->getPath(), $tempFilePath);
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
-                        if (!FileHelper::unlink($tempFilePath)) {
+                        if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
                             Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
                         }
                         throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
@@ -1175,7 +1175,9 @@ class AssetTransforms extends Component
     {
         $this->_sourcesToBeDeleted = array_unique($this->_sourcesToBeDeleted);
         foreach ($this->_sourcesToBeDeleted as $source) {
-            FileHelper::unlink($source);
+            if (file_exists($source)) {
+                FileHelper::unlink($source);
+            }
         }
     }
 
@@ -1335,8 +1337,8 @@ class AssetTransforms extends Component
 
         $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->getFilename(), PATHINFO_EXTENSION);
 
-        if (!FileHelper::unlink($file)) {
-            Craft::warning("Unable to delete the file \"$file\".", __METHOD__);
+        if (file_exists($file)) {
+            FileHelper::unlink($file);
         }
     }
 

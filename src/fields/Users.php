@@ -77,7 +77,7 @@ class Users extends BaseRelationField
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(UserInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(UserInterface::getType())),
             'args' => UserArguments::getArguments(),
             'resolve' => UserResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),

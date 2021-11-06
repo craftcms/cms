@@ -1436,6 +1436,8 @@ return [
     'This month' => 'این ماه',
     'This plugin is no longer maintained.' => 'This plugin is no longer maintained.',
     'This plugin isn’t compatible with your version of Craft.' => 'این پلاگین با نسخه کرافت شما سازگار نیست.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'این سایت آدرس اینترنتی پایه خودش را دارد',
     'This tab contains errors' => 'This tab contains errors',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'این به‌روزرسانی نیازمند PHP {v1} است، اما فایل شما در حال حاضر روی PHP {v2} تنظیم شده است.',

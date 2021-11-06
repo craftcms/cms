@@ -24,14 +24,22 @@ html {
 
 body {
   min-height: 100vh;
+}
 
+body {
   :focus {
     outline-style: solid;
     outline-color: transparent;
+    box-shadow: $darkFocusRing;
+  }
+}
+
+.reduce-focus-visibility {
+  :focus:not(.focus-visible) {
+    box-shadow: none;
   }
 
-  &:not(.reduce-focus-visibility) :focus,
-  &.reduce-focus-visibility :focus-visible {
+  .focus-visible {
     box-shadow: $darkFocusRing;
   }
 }
@@ -88,7 +96,7 @@ $sidebarLinkSecondaryColor: $grey200;
   background-color: $grey800;
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  body.reduce-focus-visibility &.focus-visible {
     box-shadow: $lightFocusRing;
   }
 

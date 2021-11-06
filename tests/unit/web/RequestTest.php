@@ -13,6 +13,7 @@ use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use crafttests\fixtures\SitesFixture;
+use ReflectionClass;
 use ReflectionException;
 use UnitTester;
 use yii\web\BadRequestHttpException;
@@ -458,6 +459,16 @@ class RequestTest extends TestCase
     }
 
     /**
+     * @dataProvider normalizeParamDataProvider
+     */
+    public function testNormalizeParam(string $expected, string $name)
+    {
+        $method = (new ReflectionClass(Request::class))->getMethod('_normalizeParam');
+        $method->setAccessible(true);
+        $this->assertSame($expected, $method->invokeArgs(Craft::$app->getRequest(), [$name]));
+    }
+
+    /**
      *
      */
     public function checkRequestAndAssertIsSingleAction()
@@ -621,5 +632,16 @@ class RequestTest extends TestCase
             Craft::$app->getUsers()->getUserById('1')
         );
         Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
+    }
+
+    public function normalizeParamDataProvider(): array
+    {
+        return [
+            ['foo', 'foo'],
+            ['foo.bar', 'foo[bar]'],
+            ['foo.bar.baz', 'foo[bar][baz]'],
+            ['foo[bar', 'foo[bar'],
+            ['foo[bar][]', 'foo[bar][]'],
+        ];
     }
 }

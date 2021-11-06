@@ -370,7 +370,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft = Entry::find()
             ->draftId($draftId)
             ->provisionalDrafts($provisional)
-            ->siteId('*')
+            ->site('*')
             ->preferSites([$siteId])
             ->unique()
             ->status(null)
@@ -558,7 +558,7 @@ class EntryRevisionsController extends BaseEntriesController
         $revisionId = $this->request->getBodyParam('revisionId');
         $revision = Entry::find()
             ->revisionId($revisionId)
-            ->siteId('*')
+            ->site('*')
             ->unique()
             ->status(null)
             ->one();

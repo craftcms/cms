@@ -1436,6 +1436,8 @@ return [
     'This month' => 'Denna månad',
     'This plugin is no longer maintained.' => 'Denna plugin underhålls inte längre.',
     'This plugin isn’t compatible with your version of Craft.' => 'Denna plugin är inte kompatibel med din version av Craft.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'Den här webbplatsen har en egen bas-URL',
     'This tab contains errors' => 'Denna flik innehåller fel',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'Denna uppdatering kräver PHP {v1} men din composer.json-fil är för närvarande inställd på PHP {v2}.',

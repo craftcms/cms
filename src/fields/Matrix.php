@@ -882,13 +882,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_MatrixField';
-        $resolver = function(MatrixBlock $value) {
-            return $value->getGqlTypeName();
-        };
 
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(Gql::getUnionType($typeName, $typeArray, $resolver)),
+            'type' => Type::nonNull(Type::listOf(Gql::getUnionType($typeName, $typeArray))),
             'args' => MatrixBlockArguments::getArguments(),
             'resolve' => MatrixBlockResolver::class . '::resolve',
             'complexity' => Gql::eagerLoadComplexity(),

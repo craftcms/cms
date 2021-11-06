@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,6 +9,7 @@
 namespace craft\gql\types;
 
 use craft\errors\GqlException;
+use craft\gql\base\NonGeneratedTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\FloatValueNode;
 use GraphQL\Language\AST\IntValueNode;
@@ -16,12 +18,12 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 /**
- * Class Number
+ * Class Number implements the Number scalar type for GraphQL.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-class Number extends ScalarType
+class Number extends ScalarType implements NonGeneratedTypeInterface
 {
     /**
      * @var string
@@ -33,23 +35,17 @@ class Number extends ScalarType
      */
     public $description = 'The `Number` scalar type represents a number that can be a float, an integer or a null value.';
 
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-    }
-
     /**
      * Returns a singleton instance to ensure one type per schema.
      *
-     * @return self
+     * @return Number
      */
-    public static function getType(): self
+    public static function getType(): Number
     {
-        return GqlEntityRegistry::getEntity(self::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
+        return GqlEntityRegistry::getEntity(static::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
     }
 
     /**
-     *
      * @return string
      */
     public static function getName(): string

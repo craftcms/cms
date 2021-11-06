@@ -401,7 +401,7 @@ class Drafts extends Component
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])
                 ->status(null)
-                ->siteId('*')
+                ->site('*')
                 ->one();
 
             if ($draft) {

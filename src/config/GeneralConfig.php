@@ -1669,22 +1669,12 @@ class GeneralConfig extends BaseObject
     public $verifyEmailSuccessPath = '';
 
     /**
-     * @var array Stores any custom config settings
-     */
-    private array $_customSettings = [];
-
-    /**
      * @inheritdoc
      */
     public function __get($name)
     {
         if (isset(self::$renamedSettings[$name])) {
-            $newName = self::$renamedSettings[$name];
-            return $this->$newName;
-        }
-
-        if (array_key_exists($name, $this->_customSettings)) {
-            return $this->_customSettings[$name];
+            return $this->{self::$renamedSettings[$name]};
         }
 
         return parent::__get($name);
@@ -1703,11 +1693,7 @@ class GeneralConfig extends BaseObject
             return;
         }
 
-        try {
-            parent::__set($name, $value);
-        } catch (UnknownPropertyException $e) {
-            $this->_customSettings[$name] = $value;
-        }
+        parent::__set($name, $value);
     }
 
     /**
@@ -1715,8 +1701,8 @@ class GeneralConfig extends BaseObject
      */
     public function __isset($name)
     {
-        if (array_key_exists($name, $this->_customSettings)) {
-            return $this->_customSettings[$name] !== null;
+        if (isset(self::$renamedSettings[$name])) {
+            return isset($this->{self::$renamedSettings[$name]});
         }
 
         return parent::__isset($name);

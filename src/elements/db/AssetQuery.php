@@ -24,7 +24,7 @@ use yii\db\Schema;
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
- * @property string|string[]|VolumeInterface $volume The handle(s) of the volume(s) that resulting assets must belong to.
+ * @property-write string|string[]|VolumeInterface|null $volume The volume(s) that resulting assets must belong to
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
  * @method Asset|array|null nth(int $n, ?Connection $db = null)

@@ -384,6 +384,8 @@ Craft.CP = Garnish.Base.extend({
     toggleNav: function() {
         const isExpanded = this.navIsExpanded();
 
+        if (isExpanded === null) return;
+
         if (isExpanded) {
             this.disableGlobalSidebarLinks();
             this.$navToggle.focus();
@@ -395,14 +397,6 @@ Craft.CP = Garnish.Base.extend({
             this.$navToggle.attr('aria-expanded', 'true');
             Garnish.$bod.addClass('showing-nav');
         }
-    },
-
-    globalSidebarIsOffscreen: function() {
-        const styles = getComputedStyle(this.$globalContainer[0]);
-        const leftPosition = parseInt(styles.left, 10);
-        const rightPosition = parseInt(styles.right, 10);
-
-        return (leftPosition < 0 || rightPosition < 0);
     },
 
     enableGlobalSidebarLinks: function() {
@@ -424,6 +418,8 @@ Craft.CP = Garnish.Base.extend({
     setSidebarNavAttributes: function() {
         const isExpanded = this.navIsExpanded();
 
+        if (isExpanded === null) return;
+
         if (!isExpanded) {
             this.disableGlobalSidebarLinks();
         } else {
@@ -432,10 +428,11 @@ Craft.CP = Garnish.Base.extend({
     },
 
     navIsExpanded: function() {
-        const isAlwaysVisible = getComputedStyle(this.$globalSidebar[0]).getPropertyValue('--is-always-visible');
+        if (!this.$globalSidebar[0]) return null;
 
-        return this.$navToggle.attr('aria-expanded') === 'true' 
-            || !this.globalSidebarIsOffscreen()
+        const isAlwaysVisible = getComputedStyle(this.$globalSidebar[0]).getPropertyValue('--is-always-visible').trim();
+
+        return this.$navToggle.attr('aria-expanded') === 'true'
             || isAlwaysVisible === 'true';
     },
 
