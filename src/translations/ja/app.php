@@ -1436,6 +1436,8 @@ return [
     'This month' => '今月',
     'This plugin is no longer maintained.' => 'このプラグインは保守されなくなりました。',
     'This plugin isn’t compatible with your version of Craft.' => 'このプラグインは使用しているCraftのバージョンと互換性がありません。',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'このサイトには独自の基本 URL があります',
     'This tab contains errors' => 'このタブはエラーを含んでいます',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'このアップデートにはPHP {v1}が必要ですが、ご利用のcomposer.jsonファイルは現在PHP {v2}に設定されています。',
