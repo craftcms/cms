@@ -1436,6 +1436,8 @@ return [
     'This month' => 'Tento mesiac',
     'This plugin is no longer maintained.' => 'Plugin už nie je udržovaný.',
     'This plugin isn’t compatible with your version of Craft.' => 'Tento plugin nie je kompatibilný s vašou verziou Craft.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'Tento web má vlastnú základnú adresu URL',
     'This tab contains errors' => 'Táto karta obsahuje chyby',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'Táto aktualizácia vyžaduje PHP {v1}, ale váš súbor composer.json je momentálne nastavený na PHP {v2}.',

@@ -54,22 +54,25 @@ class PluginStoreController extends Controller
      */
     public function actionIndex(): Response
     {
-        $pluginStoreAppBaseUrl = $this->_getVueAppBaseUrl();
-
-        $cmsInfo = [
-            'version' => Craft::$app->getVersion(),
-            'edition' => strtolower(Craft::$app->getEditionName()),
-        ];
-
-        $craftIdAccessToken = $this->getCraftIdAccessToken();
-
         $view = $this->getView();
         $view->registerJsFile('https://js.stripe.com/v2/');
-        $view->registerJs('window.craftApiEndpoint = "' . Craft::$app->getPluginStore()->craftApiEndpoint . '";', View::POS_BEGIN);
-        $view->registerJs('window.pluginStoreAppBaseUrl = "' . $pluginStoreAppBaseUrl . '";', View::POS_BEGIN);
-        $view->registerJs('window.cmsInfo = ' . Json::encode($cmsInfo) . ';', View::POS_BEGIN);
-        $view->registerJs('window.cmsLicenseKey = ' . Json::encode(App::licenseKey()) . ';', View::POS_BEGIN);
-        $view->registerJs('window.craftIdAccessToken = ' . Json::encode($craftIdAccessToken) . ';', View::POS_BEGIN);
+
+        $variables = [
+            'craftApiEndpoint' => Craft::$app->getPluginStore()->craftApiEndpoint,
+            'pluginStoreAppBaseUrl' => $this->_getVueAppBaseUrl(),
+            'cmsInfo' => [
+                'version' => Craft::$app->getVersion(),
+                'edition' => strtolower(Craft::$app->getEditionName()),
+            ],
+            'cmsLicenseKey' => App::licenseKey(),
+            'craftIdAccessToken' => $this->getCraftIdAccessToken(),
+            'phpVersion' => App::phpVersion(),
+            'composerPhpVersion' => Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null,
+        ];
+
+        foreach ($variables as $name => $value) {
+            $view->registerJs("window.$name = " . Json::encode($value) . ';', View::POS_BEGIN);
+        }
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 

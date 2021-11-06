@@ -848,7 +848,7 @@ class Entry extends Element
                 $currentSites = static::find()
                     ->status(null)
                     ->id($this->id)
-                    ->siteId('*')
+                    ->site('*')
                     ->select('elements_sites.siteId')
                     ->drafts(null)
                     ->provisionalDrafts(null)
@@ -863,7 +863,7 @@ class Entry extends Element
                 array_push($currentSites, ...static::find()
                     ->status(null)
                     ->id($this->duplicateOf->id)
-                    ->siteId('*')
+                    ->site('*')
                     ->select('elements_sites.siteId')
                     ->drafts(null)
                     ->provisionalDrafts(null)
@@ -1179,6 +1179,7 @@ class Entry extends Element
     public function setAuthor(?User $author = null): void
     {
         $this->_author = $author;
+        $this->authorId = $author->id;
     }
 
     /**
@@ -1542,13 +1543,13 @@ EOD;
         if ($this->_shouldSaveRevision()) {
             $hasRevisions = self::find()
                 ->revisionOf($this)
-                ->siteId('*')
+                ->site('*')
                 ->status(null)
                 ->exists();
             if (!$hasRevisions) {
                 $currentEntry = self::find()
                     ->id($this->id)
-                    ->siteId('*')
+                    ->site('*')
                     ->status(null)
                     ->one();
 
@@ -1773,7 +1774,7 @@ EOD;
                 $drafts = static::find()
                     ->draftOf($this)
                     ->status(null)
-                    ->siteId('*')
+                    ->site('*')
                     ->unique()
                     ->all();
                 $structuresService = Craft::$app->getStructures();

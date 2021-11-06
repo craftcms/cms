@@ -1436,6 +1436,8 @@ return [
     'This month' => 'החודש',
     'This plugin is no longer maintained.' => 'התוסף אינו מתוחזק יותר.',
     'This plugin isn’t compatible with your version of Craft.' => 'תוסף זה אינו תואם לגרסת Craft שלך.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'לאתר זה יש כתובת URL בסיסית משלו',
     'This tab contains errors' => 'כרטיסייה זו מכילה שגיאות',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'עדכון זה דורש PHP {v1}, אך קובץ ה-composer.json שלך מוגדר כעת כ-PHP {v2}.',

@@ -1174,7 +1174,7 @@ class Sections extends Component
                 ->typeId($entryTypeRecord->id)
                 ->status(null)
                 ->trashed()
-                ->siteId('*')
+                ->site('*')
                 ->unique()
                 ->andWhere(['entries.deletedWithEntryType' => true])
                 ->all();
@@ -1487,7 +1487,7 @@ class Sections extends Component
             ->drafts(null)
             ->provisionalDrafts(null)
             ->sectionId($section->id)
-            ->siteId('*')
+            ->site('*')
             ->unique()
             ->id(['not', $entry->id])
             ->status(null);
@@ -1513,7 +1513,7 @@ class Sections extends Component
             ->drafts(null)
             ->draftOf(false)
             ->sectionId($sectionRecord->id)
-            ->siteId('*')
+            ->site('*')
             ->unique()
             ->status(null)
             ->orderBy(['elements.id' => SORT_ASC])

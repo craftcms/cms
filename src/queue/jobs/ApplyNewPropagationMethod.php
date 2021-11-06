@@ -49,7 +49,7 @@ class ApplyNewPropagationMethod extends BaseJob
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
-            ->siteId('*')
+            ->site('*')
             ->unique()
             ->status(null)
             ->drafts(null)
@@ -144,7 +144,7 @@ class ApplyNewPropagationMethod extends BaseJob
                                 ->ancestorOf($element->id)
                                 ->ancestorDist(1)
                                 ->select(['elements.id'])
-                                ->siteId('*')
+                                ->site('*')
                                 ->unique()
                                 ->status(null)
                                 ->drafts(null)

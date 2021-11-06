@@ -2277,7 +2277,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_canonicalUid = static::find()
                 ->select(['elements.uid'])
                 ->id($this->_canonicalId)
-                ->siteId('*')
+                ->site('*')
                 ->status(null)
                 ->ignorePlaceholders()
                 ->scalar();

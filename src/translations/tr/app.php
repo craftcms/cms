@@ -1436,6 +1436,8 @@ return [
     'This month' => 'Bu ay',
     'This plugin is no longer maintained.' => 'Bu eklenti artık kullanılmıyor.',
     'This plugin isn’t compatible with your version of Craft.' => 'Bu eklenti Craft sürümünüzle uyumlu değil.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'Bu sitenin kendi temel URL\'si var',
     'This tab contains errors' => 'Bu sekme hatalar içeriyor',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'Bu güncelleme için PHP {v1} gerekiyor, ancak composer.json dosyanız şu anda PHP {v2} olarak ayarlanmış.',
