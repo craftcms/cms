@@ -1430,6 +1430,8 @@ return [
     'This month' => 'Текущий месяц',
     'This plugin is no longer maintained.' => 'Данный плагин больше не поддерживается.',
     'This plugin isn’t compatible with your version of Craft.' => 'Этот плагин несовместим с вашей версией Craft.',
+    'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.' => 'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+    'This plugin requires PHP {v1}, but your environment is currently running {v2}.' => 'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
     'This site has its own base URL' => 'У этого сайта собственный базовый URL',
     'This tab contains errors' => 'На данной вкладке есть ошибки',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'Для данного обновления требуется PHP {v1}, однако в настройках файла composer.json указан PHP {v2}.',

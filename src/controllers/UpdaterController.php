@@ -40,7 +40,7 @@ class UpdaterController extends BaseUpdaterController
             return false;
         }
 
-        if ($action->id === 'index') {
+        if ($action->id === 'index' && $this->request->getBodyParam('install') !== null) {
             // Only users with performUpdates permission can install new versions
             $this->requirePermission('performUpdates');
         }
