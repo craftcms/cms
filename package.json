@@ -2,11 +2,7 @@
   "private": true,
   "main": "gulpfile.js",
   "scripts": {
-    "gulp:cp": "gulp cp",
-    "gulp:cp-sass": "gulp cp-sass",
-    "gulp:cp-js": "gulp cp-js",
-    "gulp:deps": "gulp deps",
-    "watch": "gulp watch"
+    "build": "NODE_ENV=production NODE_PATH=\"./packages/craftcms-webpack/node_modules\":\"node_modules\" webpack --progress --config $INIT_CWD/webpack.config.js\n"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
@@ -27,16 +23,6 @@
     "graphiql-explorer": "^0.6.3",
     "graphql": "^14.6.0",
     "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^7.0.1",
-    "gulp-babel": "^8.0.0",
-    "gulp-concat": "^2.6.1",
-    "gulp-footer": "^2.0.2",
-    "gulp-header": "^2.0.9",
-    "gulp-json-minify": "^1.2.0",
-    "gulp-rename": "^1.4.0",
-    "gulp-sass": "^4.1.0",
-    "gulp-sourcemaps": "^2.6.5",
-    "gulp-uglify-es": "^2.0.0",
     "iframe-resizer": "^4.3.2",
     "inputmask": "~3.2.2 || ~3.3.5",
     "jquery": "^3.6.0",
@@ -56,8 +42,6 @@
     "vue-lodash": "^1.0.3",
     "vue-router": "^3.5.1",
     "vuex": "^3.6.2",
-    "webpack": "^4.46.0",
-    "webpack-stream": "^5.2.1",
     "whatwg-fetch": "^0.9.0",
     "xregexp": "^3.2.0",
     "yii2-pjax": "~2.0.1"
