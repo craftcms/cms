@@ -1,3 +1,5 @@
+import '../../craftsupport/src/CraftSupportWidget.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */
