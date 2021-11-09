@@ -290,18 +290,21 @@ class CraftWebpackConfig {
                         ],
                     },
                     {
-                        test: /\.(jpg|gif|png|svg|ico)$/,
-                        loader: 'file-loader',
-                        options: {
-                            name: 'images/[name].[ext]',
-                            publicPath: '../',
-                        }
-                    },
-                    {
                         test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
                         loader: 'file-loader',
                         options: {
                             name: 'fonts/[name].[ext]',
+                            publicPath: '../',
+                        }
+                    },
+                    {
+                        test: /\.(jpg|gif|png|svg|ico)$/,
+                        loader: 'file-loader',
+                        exclude: [
+                            path.resolve(this.srcPath, './fonts'),
+                        ],
+                        options: {
+                            name: '[path][name].[ext]',
                             publicPath: '../',
                         }
                     },
