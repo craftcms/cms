@@ -39,6 +39,7 @@
     "parallel-webpack": "^2.6.0",
     "postcss": "^8.2.8",
     "postcss-loader": "^4.2.0",
+    "remove-files-webpack-plugin": "^1.4.5",
     "sass": "^1.26.8",
     "sass-loader": "^8.0.2",
     "style-loader": "^1.2.1",

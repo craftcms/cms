@@ -16,6 +16,7 @@ const TerserWebpackPlugin = require('terser-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const RemovePlugin = require('remove-files-webpack-plugin');
 
 /**
  * CraftWebpackConfig class
@@ -83,6 +84,7 @@ class CraftWebpackConfig {
         this.type = options.type || 'asset';
         this.config = options.config || {};
         this.postCssConfig = options.postCssConfig || path.resolve(__dirname, 'postcss.config.js');
+        this.removeFiles = options.removeFiles || null;
 
         if (this.types.indexOf(this.type) === -1) {
             throw 'Type "' + this.type + '" is not a valid config type.';
@@ -130,6 +132,26 @@ class CraftWebpackConfig {
         // Only load dotenv plugin if there is a .env file
         if (this.envPath) {
             plugins.push(new Dotenv());
+        }
+
+        if (this.removeFiles && Array.isArray(this.removeFiles) && !this.isDevServerRunning) {
+            let removeRegExpTests = [];
+            this.removeFiles.forEach(regExp => {
+                removeRegExpTests.push({
+                    folder: '.',
+                    method: (absPath) => {
+                        return new RegExp(regExp, 'm').test(absPath);
+                    }
+                });
+            });
+
+            plugins.push(new RemovePlugin({
+                after: {
+                    root: this.distPath,
+                    test: removeRegExpTests,
+                    logDebug: true,
+                }
+            }));
         }
 
         if (!this.isDevServerRunning) {
