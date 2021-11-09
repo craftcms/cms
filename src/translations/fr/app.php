@@ -690,7 +690,7 @@ return [
     'How should this field’s values be translated?' => 'Comment les valeurs de ce champ devraient-elles être traduites ?',
     'How should {type} titles be translated?' => 'Comment les titres {type} devraient-ils être traduits ?',
     'How the field should be presented in the control panel.' => 'La façon dont ce champ sera présenté dans le panneau de contrôle.',
-    'How the related {type} should be displayed within element indexes.' => 'Comment le {type} apparenté doit être affiché dans les index des éléments.',
+    'How the related {type} should be displayed within element indexes.' => 'Comment le {type} apparenté doit être affiché dans les index d‘éléments.',
     'How you’ll refer to this block type in the templates.' => 'La façon dont vous allez faire référence à ce type de bloc dans les templates.',
     'How you’ll refer to this category group in the templates.' => 'La façon dont vous allez faire référence à ce groupe de catégories dans les templates.',
     'How you’ll refer to this entry type in the templates.' => 'La façon dont vous allez faire référence à ce type d’entrée dans les templates.',
