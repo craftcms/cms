@@ -6,5 +6,5 @@ module.exports = new CraftWebpackConfig({
     config: {
         entry: {'utilities': './utilities.js'},
     },
-    removeFiles: [/\.js(\.map)*$/],
+    removeFiles: { test: [/\.js(\.map)*$/] },
 });
