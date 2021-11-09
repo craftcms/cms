@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\conditions\ConditionInterface;
+use craft\conditions\ConditionRuleInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\web\Controller;
@@ -78,9 +79,15 @@ class ConditionsController extends Controller
      */
     public function actionAddRule(): string
     {
-        $conditionRuleTypes = $this->_condition->getConditionRuleTypes();
-        if (!empty($conditionRuleTypes)) {
-            $rule = Craft::$app->getConditions()->createConditionRule(reset($conditionRuleTypes));
+        $conditionsService = Craft::$app->getConditions();
+
+        /** @var ConditionRuleInterface|null $rule */
+        $rule = collect($this->_condition->getConditionRuleTypes())
+            ->map(fn($type) => $conditionsService->createConditionRule($type))
+            ->sortBy(fn(ConditionRuleInterface $rule) => $rule->getLabel())
+            ->first();
+
+        if ($rule) {
             $rule->setCondition($this->_condition);
             $this->_condition->addConditionRule($rule);
         }
