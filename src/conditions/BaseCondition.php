@@ -292,7 +292,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
                 ArrayHelper::multisort($ruleTypeOptions, 'label');
 
-                // Add rule type selector and uid hidden field
+                // Add rule type selector
                 $switcherHtml = Cp::selectHtml([
                     'name' => 'type',
                     'options' => $ruleTypeOptions,
@@ -303,7 +303,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         ],
                     ],
                 ]);
-                $switcherHtml .= Html::hiddenInput('uid', $rule->uid);
 
                 $ruleHtml .= Html::tag('div', $switcherHtml, [
                     'class' => ['rule-switcher'],
@@ -321,7 +320,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Delete'),
                     'hx' => [
-                        'vals' => '{"uid": "' . $rule->uid . '"}',
                         'post' => UrlHelper::actionUrl('conditions/remove-rule'),
                     ],
                 ];
