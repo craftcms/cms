@@ -124,22 +124,31 @@ class CraftWebpackConfig {
             plugins.push(new Dotenv());
         }
 
-        if (this.removeFiles && Array.isArray(this.removeFiles) && !this.isDevServerRunning) {
-            let removeRegExpTests = [];
-            this.removeFiles.forEach(regExp => {
-                removeRegExpTests.push({
-                    folder: '.',
-                    method: (absPath) => {
-                        return new RegExp(regExp, 'm').test(absPath);
-                    }
+        if (this.removeFiles && typeof this.removeFiles === 'object' && !this.isDevServerRunning) {
+            let after = {
+                root: this.removeFiles.root || this.distPath,
+            };
+
+            if (this.removeFiles.test !== undefined) {
+                let removeRegExpTests = [];
+                this.removeFiles.forEach(regExp => {
+                    removeRegExpTests.push({
+                        folder: '.',
+                        method: (absPath) => {
+                            return new RegExp(regExp, 'm').test(absPath);
+                        }
+                    });
                 });
-            });
+
+                after.test = removeRegExpTests;
+            }
+
+            if (this.removeFiles.include !== undefined) {
+                after.include = this.removeFiles.include;
+            }
 
             plugins.push(new RemovePlugin({
-                after: {
-                    root: this.distPath,
-                    test: removeRegExpTests,
-                }
+                after: after
             }));
         }
 
@@ -281,6 +290,14 @@ class CraftWebpackConfig {
                         ],
                     },
                     {
+                        test: /\.(jpg|gif|png|svg|ico)$/,
+                        loader: 'file-loader',
+                        options: {
+                            name: 'images/[name].[ext]',
+                            publicPath: '../',
+                        }
+                    },
+                    {
                         test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
                         loader: 'file-loader',
                         options: {
@@ -288,14 +305,6 @@ class CraftWebpackConfig {
                             publicPath: '../',
                         }
                     },
-                    {
-                        test: /\.(jpg|gif|png|svg|ico)$/,
-                        loader: 'file-loader',
-                        options: {
-                            name: 'images/[name].[ext]',
-                            publicPath: '../',
-                        }
-                    }
                 ],
             },
             plugins: [
