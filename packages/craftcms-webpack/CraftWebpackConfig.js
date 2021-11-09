@@ -149,7 +149,6 @@ class CraftWebpackConfig {
                 after: {
                     root: this.distPath,
                     test: removeRegExpTests,
-                    logDebug: true,
                 }
             }));
         }
