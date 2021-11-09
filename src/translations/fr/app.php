@@ -294,7 +294,7 @@ return [
     'Continue' => 'Continuer',
     'Control panel resources' => 'Ressources du panneau de contrôle',
     'Cookies must be enabled to access the Craft CMS control panel.' => 'Les cookies doivent être activés afin d’accéder au panneau de contrôle de Craft CMS.',
-    'Cooldown Time Remaining' => 'Temps de sécurité restant',
+    'Cooldown Time Remaining' => 'Délai de sécurité restant',
     'Copied to clipboard.' => 'Copié dans le presse-papiers.',
     'Copy URL' => 'Copier l’URL',
     'Copy activation URL' => 'Copiez le lien URL d’activation',
