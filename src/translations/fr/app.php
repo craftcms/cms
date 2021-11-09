@@ -521,7 +521,7 @@ return [
     'Edit assets in the “{volume}” volume' => 'Modifier les ressources dans le volume « {volume} »',
     'Edit categories in the “{categoryGroup}” category group' => 'Modifier les catégories dans le groupe de catégories « {categoryGroup} »',
     'Edit category' => 'Modifier la catégorie',
-    'Edit draft settings' => 'Modifier les paramètres des brouillons',
+    'Edit draft settings' => 'Modifier les paramètres du brouillon',
     'Edit entries with the “{entryType}” entry type' => 'Modifier les entrées dans le type d’entrée « {entryType} »',
     'Edit entries' => 'Modifier les entrées',
     'Edit entry type' => 'Modifier le type d’entrée',
