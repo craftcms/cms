@@ -129,9 +129,9 @@ class CraftWebpackConfig {
                 root: this.removeFiles.root || this.distPath,
             };
 
-            if (this.removeFiles.test !== undefined) {
+            if (this.removeFiles.test !== undefined && this.removeFiles.test !== null && Array.isArray(this.removeFiles.test)) {
                 let removeRegExpTests = [];
-                this.removeFiles.forEach(regExp => {
+                this.removeFiles.test.forEach(regExp => {
                     removeRegExpTests.push({
                         folder: '.',
                         method: (absPath) => {
