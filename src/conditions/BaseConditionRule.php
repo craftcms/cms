@@ -18,9 +18,26 @@ use craft\helpers\StringHelper;
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {
     /**
+     * @var string UUID
+     */
+    public string $uid;
+
+    /**
      * @var ConditionInterface
      */
     private ConditionInterface $_condition;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+    }
 
     /**
      * @inheritdoc
@@ -29,6 +46,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         return [
             'class' => get_class($this),
+            'uid' => $this->uid,
         ];
     }
 
@@ -52,4 +70,14 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      * @inheritdoc
      */
     abstract public function getHtml(array $options = []): string;
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return [
+            [['uid'], 'safe'],
+        ];
+    }
 }
