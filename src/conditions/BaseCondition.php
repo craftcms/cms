@@ -266,8 +266,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         foreach ($this->getConditionRules() as $rule) {
             /** @var ConditionRuleInterface $rule */
-            $ruleCount++;
-            $ruleHtml = $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions) {
+            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions) {
                 $ruleHtml = '';
 
                 if ($options['sortable']) {
@@ -336,9 +335,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'id' => 'condition-rule',
                     'class' => ['condition-rule', 'flex', 'draggable'],
                 ]);
-            }, "conditionRules[$ruleCount]");
-
-            $allRulesHtml .= $ruleHtml;
+            }, 'conditionRules[' . ++$ruleCount . ']');
         }
 
         $rulesJs = $view->clearJsBuffer(false);
