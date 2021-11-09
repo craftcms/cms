@@ -315,7 +315,7 @@ return [
     'Could not find a suitable replacement filename for “{filename}”.' => 'Impossible de trouver un nom de fichier de remplacement adapté pour “{filename}”.',
     'Could not generate a unique URI based on the URI format.' => 'Impossible de générer une URI unique basée sur le format d’URI.',
     'Could not open file for streaming at {path}' => 'Impossible d’ouvrir le fichier pour le streaming dans le chemin {path}',
-    'Could not read SVG contents.' => 'Impossible de lire les contenus SVG.',
+    'Could not read SVG contents.' => 'Impossible de lire le contenu du fichier SVG.',
     'Could not rename the group:' => 'Impossible de renommer le groupe :',
     'Could not update status due to a validation error.' => 'Impossible de mettre à jour le statut en raison d’une erreur de validation.',
     'Could not update statuses due to validation errors.' => 'Impossible de mettre à jour les statuts en raison d’erreurs de validation.',
