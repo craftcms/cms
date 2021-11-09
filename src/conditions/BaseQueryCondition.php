@@ -22,4 +22,14 @@ abstract class BaseQueryCondition extends BaseCondition implements QueryConditio
             $conditionRule->modifyQuery($query);
         }
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultBuilderOptions(): array
+    {
+        return [
+            'sortable' => false,
+        ];
+    }
 }

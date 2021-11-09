@@ -207,9 +207,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $view = Craft::$app->getView();
         $view->registerAssetBundle(ConditionBuilderAsset::class);
 
-        $options += [
-            'sortable' => true,
-        ];
+        $options += $this->defaultBuilderOptions() + [
+                'sortable' => true,
+            ];
 
         $conditionRuleTypes = $this->getConditionRuleTypes();
         $conditionsService = Craft::$app->getConditions();
@@ -386,6 +386,16 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $html .= Html::endTag('div'); //condition-main
 
         return $html;
+    }
+
+    /**
+     * Returns the default builder options.
+     *
+     * @return array
+     */
+    protected function defaultBuilderOptions(): array
+    {
+        return [];
     }
 
     /**
