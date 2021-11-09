@@ -253,7 +253,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
         foreach ($this->getConditionRules() as $rule) {
             /** @var ConditionRuleInterface $rule */
             $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions, $ruleLabels) {
-                $ruleHtml = Html::hiddenInput('class', get_class($rule));
+                $ruleHtml = Html::hiddenInput('uid', $rule->uid) .
+                    Html::hiddenInput('class', get_class($rule));
 
                 if ($options['sortable']) {
                     $ruleHtml .= Html::tag('div',
@@ -281,7 +282,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
                 ArrayHelper::multisort($ruleTypeOptions, 'label');
 
-                // Add rule type selector and uid hidden field
+                // Add rule type selector
                 $switcherHtml = Cp::selectHtml([
                     'name' => 'type',
                     'options' => $ruleTypeOptions,
@@ -292,7 +293,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         ],
                     ],
                 ]);
-                $switcherHtml .= Html::hiddenInput('uid', $rule->uid);
 
                 $ruleHtml .= Html::tag('div', $switcherHtml, [
                     'class' => ['rule-switcher'],
