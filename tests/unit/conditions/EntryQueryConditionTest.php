@@ -36,7 +36,7 @@ class EntryQueryConditionTest extends Unit
         $rule1 = \Craft::$app->getConditions()->createConditionRule($ruleConfig);
         $condition->addConditionRule($rule1);
 
-        self::assertCount(1, $condition->getConditionRules()->all());
+        self::assertCount(1, $condition->getConditionRules());
 
         $ruleConfig2 = [
             'type' => AuthorGroupConditionRule::class,
@@ -44,6 +44,6 @@ class EntryQueryConditionTest extends Unit
         $rule1 = \Craft::$app->getConditions()->createConditionRule($ruleConfig2);
         $condition->addConditionRule($rule1);
 
-        self::assertCount(2, $condition->getConditionRules()->all());
+        self::assertCount(2, $condition->getConditionRules());
     }
 }

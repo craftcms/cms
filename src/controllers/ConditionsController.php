@@ -80,7 +80,7 @@ class ConditionsController extends Controller
     public function actionAddRule(): string
     {
         $conditionsService = Craft::$app->getConditions();
-        $ruleLabels = $this->_condition->getConditionRules()
+        $ruleLabels = collect($this->_condition->getConditionRules())
             ->map(fn(ConditionRuleInterface $rule) => $rule->getLabel())
             ->flip()
             ->all();
@@ -94,7 +94,6 @@ class ConditionsController extends Controller
             });
 
         if ($rule) {
-            $rule->setCondition($this->_condition);
             $this->_condition->addConditionRule($rule);
         }
 
@@ -107,14 +106,10 @@ class ConditionsController extends Controller
     public function actionRemoveRule(): string
     {
         $ruleUid = $this->request->getRequiredBodyParam('uid');
-
-        $conditionRules = $this->_condition->getConditionRules()->filter(function($rule) use ($ruleUid) {
-            $uid = $rule->uid;
-            return $uid != $ruleUid;
-        })->all();
-
+        $conditionRules = collect($this->_condition->getConditionRules())
+            ->filter(fn(ConditionRuleInterface $rule) => $rule->uid !== $ruleUid)
+            ->all();
         $this->_condition->setConditionRules($conditionRules);
-
         return $this->renderBuilderHtml();
     }
 

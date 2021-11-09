@@ -17,8 +17,8 @@ use yii\base\InvalidArgumentException;
 /**
  * BaseCondition provides a base implementation for conditions.
  *
- * @property Collection $conditionRules The rules this condition is configured with
- * @property string[] $conditionRuleTypes The available rule types for this condition
+ * @property ConditionRuleInterface[] $conditionRules The rules this condition is configured with
+ * @property string[]|array{class: string}[] $conditionRuleTypes The available rule types for this condition
  * @property-read array $config The condition’s portable config
  * @property-read string $builderHtml The HTML for the condition builder, including its outer container element
  * @property-read string $builderInnerHtml The inner HTML for the condition builder, excluding its outer container element
@@ -34,7 +34,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
 
     /**
-     * @var Collection|ConditionRuleInterface[]
+     * @var Collection
+     * @see getConditionRules()
+     * @see setConditionRules()
      */
     private Collection $_conditionRules;
 
@@ -110,9 +112,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getConditionRules(): Collection
+    public function getConditionRules(): array
     {
-        return $this->_conditionRules;
+        return $this->_conditionRules->all();
     }
 
     /**
@@ -141,7 +143,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
             throw new InvalidArgumentException('Invalid condition rule');
         }
 
-        $this->getConditionRules()->add($rule);
+        $rule->setCondition($this);
+        $this->_conditionRules->add($rule);
     }
 
     /**
@@ -173,13 +176,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getConfig(): array
     {
-        $conditionRules = $this->getConditionRules()
-            ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
-            ->all();
-
         return [
             'class' => get_class($this),
-            'conditionRules' => array_values($conditionRules)
+            'conditionRules' => $this->_conditionRules
+                ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
+                ->values()
+                ->all(),
         ];
     }
 
@@ -220,7 +222,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             return [$value, $conditionsService->createConditionRule($type)->getLabel()];
         }, $conditionRuleTypes);
 
-        $ruleLabels = $this->getConditionRules()
+        $ruleLabels = $this->_conditionRules
             ->map(fn(ConditionRuleInterface $rule) => $rule->getLabel())
             ->flip()
             ->all();
@@ -251,7 +253,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $ruleCount = 0;
 
         foreach ($this->getConditionRules() as $rule) {
-            /** @var ConditionRuleInterface $rule */
             $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions, $ruleLabels) {
                 $ruleHtml = Html::hiddenInput('uid', $rule->uid) .
                     Html::hiddenInput('class', get_class($rule));

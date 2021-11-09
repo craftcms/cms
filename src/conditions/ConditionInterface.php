@@ -57,9 +57,9 @@ interface ConditionInterface
     /**
      * Returns the rules this condition is configured with.
      *
-     * @return Collection
+     * @return ConditionRuleInterface[]
      */
-    public function getConditionRules(): Collection;
+    public function getConditionRules(): array;
 
     /**
      * Sets the rules this condition should be configured with.

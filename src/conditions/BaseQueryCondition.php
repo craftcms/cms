@@ -17,7 +17,6 @@ abstract class BaseQueryCondition extends BaseCondition implements QueryConditio
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var QueryConditionRuleInterface $conditionRule */
         foreach ($this->getConditionRules() as $conditionRule) {
             $conditionRule->modifyQuery($query);
         }
