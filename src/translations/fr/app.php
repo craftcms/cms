@@ -742,7 +742,7 @@ return [
     'Invalidate caches' => 'Invalider les caches',
     'Invalidating cache tag:' => 'Invalidation des étiquettes de cache :',
     'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Il semblerait que quelqu’un procède actuellement à une mise à jour du système.<br>Continuez UNIQUEMENT si vous êtes sûr que cela n’est pas le cas.',
-    'It looks like these settings are being overridden by {paths}.' => 'Il semblerait que ces paramètres sont remplacés par des {paths}.',
+    'It looks like these settings are being overridden by {paths}.' => 'Il semble que ces paramètres sont remplacés par {paths}.',
     'Item' => 'Article',
     'Items in your cart' => 'Articles dans votre panier',
     'It’s not possible to rename the top folder of a Volume.' => 'Il n’est pas possible de renommer le dossier de niveau supérieur d’un volume.',
