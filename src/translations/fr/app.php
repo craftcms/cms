@@ -352,7 +352,7 @@ return [
     'Couldn’t save new route order.' => 'Impossible d’enregistrer le nouvel ordre des routes.',
     'Couldn’t save plugin settings.' => 'Impossible d’enregistrer les paramètres du plugin.',
     'Couldn’t save public schema settings.' => 'Impossible d’enregistrer les paramètres du schéma public.',
-    'Couldn’t save route.' => 'Impossible d’enregister la route.',
+    'Couldn’t save route.' => 'Impossible d’enregistrer la route.',
     'Couldn’t save schema.' => 'Impossible d’enregistrer le schéma.',
     'Couldn’t save section.' => 'Impossible d’enregistrer la section.',
     'Couldn’t save the category group.' => 'Impossible d’enregistrer le groupe de catégories.',
