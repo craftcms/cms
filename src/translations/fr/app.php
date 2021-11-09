@@ -391,7 +391,7 @@ return [
     'Create a new tag group' => 'Créer un nouveau groupe d’étiquettes',
     'Create a new user group' => 'Créer un nouveau groupe d’utilisateurs',
     'Create a new {section} entry type' => 'Créer un nouveau type d’entrée {section}',
-    'Create a new {type}' => 'Créer un nouvel {type}',
+    'Create a new {type}' => 'Créer un(e) {type}',
     'Create and add another' => 'Créer puis ajouter une autre',
     'Create and continue editing' => 'Créer et continuer l’édition',
     'Create assets in the “{volume}” volume' => 'Créer des ressources dans le volume « {volume} »',
