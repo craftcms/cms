@@ -740,7 +740,7 @@ return [
     'Invalid verification code. Please login or reset your password.' => 'Code de vérification erroné. Veuillez vous connecter ou réinitialiser votre mot de passe.',
     'Invalidate Data Caches' => 'Invalider les caches de données',
     'Invalidate caches' => 'Invalider les caches',
-    'Invalidating cache tag:' => 'Étiquette d’invalidation du cache :',
+    'Invalidating cache tag:' => 'Invalidation des étiquettes de cache :',
     'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Il semblerait que quelqu’un procède actuellement à une mise à jour du système.<br>Continuez UNIQUEMENT si vous êtes sûr que cela n’est pas le cas.',
     'It looks like these settings are being overridden by {paths}.' => 'Il semblerait que ces paramètres sont remplacés par des {paths}.',
     'Item' => 'Article',
