@@ -12,6 +12,8 @@ use craft\conditions\ConditionInterface;
 use craft\conditions\ConditionRuleInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use ReflectionException;
+use ReflectionProperty;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -66,16 +68,35 @@ class Conditions extends Component
             $class = $config;
             $config = [];
         } else {
+            $class = ArrayHelper::remove($config, 'class');
+
             // Merge `type` in, if this is coming from a condition builder
             if (isset($config['type'])) {
-                $type = Json::decodeIfJson(ArrayHelper::remove($config, 'type'));
-                if (is_string($type)) {
-                    $type = ['class' => $type];
+                $newConfig = Json::decodeIfJson(ArrayHelper::remove($config, 'type'));
+                if (is_string($newConfig)) {
+                    $newClass = $newConfig;
+                    $newConfig = [];
+                } else {
+                    $newClass = ArrayHelper::remove($newConfig, 'class');
                 }
-                $config += $type;
-            }
 
-            $class = ArrayHelper::remove($config, 'class');
+                // Is the type changing?
+                if ($class !== null && $newClass !== $class) {
+                    // Remove any config attributes that aren't defined by the same class between both types
+                    $config = array_filter($config, function($attribute) use ($class, $newClass) {
+                        try {
+                            $r1 = new ReflectionProperty($class, $attribute);
+                            $r2 = new ReflectionProperty($newClass, $attribute);
+                            return $r1->getDeclaringClass()->name === $r2->getDeclaringClass()->name;
+                        } catch (ReflectionException $e) {
+                            return false;
+                        }
+                    }, ARRAY_FILTER_USE_KEY);
+                }
+
+                $class = $newClass;
+                $config += $newConfig;
+            }
         }
 
         if (!is_subclass_of($class, ConditionRuleInterface::class)) {

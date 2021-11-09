@@ -267,7 +267,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         foreach ($this->getConditionRules() as $rule) {
             /** @var ConditionRuleInterface $rule */
             $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions) {
-                $ruleHtml = '';
+                $ruleHtml = Html::hiddenInput('class', get_class($rule));
 
                 if ($options['sortable']) {
                     $ruleHtml .= Html::tag('div',
