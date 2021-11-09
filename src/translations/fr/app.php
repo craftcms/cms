@@ -595,7 +595,7 @@ return [
     'Failed to generate transform with id of {id}.' => 'Impossible de générer la transformation d’image d’ID {id}.',
     'Failed to load the SVG string.' => 'Impossible de charger la chaîne SVG.',
     'Failed to save the asset:' => 'Enregistrement impossible de la ressource :',
-    'Failed to save the image.' => 'Echec de l’enregistrement de l’image.',
+    'Failed to save the image.' => 'Échec de l’enregistrement de l’image.',
     'Failed' => 'Échec',
     'Features' => 'Fonctionnalités',
     'Feed' => 'Diffusion',
