@@ -260,7 +260,7 @@ return [
     'Close' => 'Fermer',
     'Cloud Storage Integration' => 'Intégration dans le stockage dans le Cloud',
     'Collapse' => 'Réduire',
-    'Color hex value' => 'Valeur hexagone chromatique',
+    'Color hex value' => 'Code hexadécimal de la couleur',
     'Color picker' => 'Sélecteur de couleurs',
     'Color' => 'Couleur',
     'Column Heading' => 'Titre de colonne',
