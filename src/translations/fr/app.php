@@ -730,7 +730,7 @@ return [
     'Interlace' => 'Entrelacer',
     'Interlacing' => 'Entrelacement',
     'Internal Server Error' => 'Erreur interne du serveur',
-    'Invalid email or password.' => 'Adresse mail ou mot de passe invalide.',
+    'Invalid email or password.' => 'Adresse email ou mot de passe invalide.',
     'Invalid email.' => 'E-mail invalide.',
     'Invalid password.' => 'Mot de passe incorrect.',
     'Invalid transform handle: {handle}' => 'Identificateur de transformation d’image invalide : {handle}',
