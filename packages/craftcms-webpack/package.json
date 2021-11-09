@@ -34,6 +34,7 @@
     "dotenv-webpack": "^2.0.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "file-loader": "^6.2.0",
     "mini-css-extract-plugin": "^0.7.0",
     "parallel-webpack": "^2.6.0",
     "postcss": "^8.2.8",
