@@ -75,7 +75,7 @@ trait FieldConditionRuleTrait
         $param = $this->elementQueryParam();
         if ($param !== null) {
             /** @var ElementQueryInterface $query */
-            $query->{$this->_field->handle}();
+            $query->{$this->_field->handle}($param);
         }
     }
 
