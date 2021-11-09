@@ -1,3 +1,5 @@
+import '../../plugins/src/plugins.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */
