@@ -489,7 +489,7 @@ return [
     'Download backup' => 'Télécharger la sauvegarde',
     'Download' => 'Télécharger',
     'Draft Name' => 'Nom du brouillon',
-    'Draft applied.' => 'Projet appliqué.',
+    'Draft applied.' => 'Brouillon appliqué.',
     'Draft deleted for site.' => 'Brouillon supprimé pour le site.',
     'Draft deleted' => 'Brouillon supprimé',
     'Draft saved.' => 'Brouillon enregistré.',
