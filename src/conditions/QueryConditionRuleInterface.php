@@ -12,6 +12,7 @@ use yii\db\QueryInterface;
 /**
  * QueryConditionRuleInterface defines the common interface to be implemented by query condition rule classes.
  *
+ * @property-read string[] $exclusiveQueryParams The query param names that this rule should have exclusive control over
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -22,13 +23,12 @@ interface QueryConditionRuleInterface extends ConditionRuleInterface
      *
      * @return string[]
      */
-    public static function exclusiveQueryParams(): array;
+    public function getExclusiveQueryParams(): array;
 
     /**
      * Modifies the given query with the condition rule.
      *
      * @param QueryInterface $query
-     * @return void
      */
     public function modifyQuery(QueryInterface $query): void;
 }

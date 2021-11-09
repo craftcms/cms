@@ -8,13 +8,10 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 
 /**
- * The BaseDateRangeConditionRule class provides a condition rule with two dates inputs for after and before dates.
+ * BaseDateRangeConditionRule provides a base implementation for condition rules that are composed of date range inputs.
  *
  * @property string|null $startDate
  * @property string|null $endDate
- * @property-read array $inputAttributes
- * @property-read string $inputHtml
- * @property-read string $settingsHtml
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -88,24 +85,23 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
-        $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
-        $html .= Html::tag('div', Html::tag('p', Craft::t('app', 'From')));
-        $html .= Html::tag('div',
-            Cp::dateHtml([
-                'name' => 'startDate',
-                'value' => $this->getStartDate(),
-            ])
-        );
-        $html .= Html::tag('div', Html::tag('p', Craft::t('app', 'To')));
-        $html .= Html::tag('div',
-            Cp::dateHtml([
-                'name' => 'endDate',
-                'value' => $this->getEndDate(),
-            ])
-        );
-        $html .= Html::endTag('div');
-
-        return $html;
+        return
+            Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]) .
+            Html::tag('div', Html::tag('p', Craft::t('app', 'From'))) .
+            Html::tag('div',
+                Cp::dateHtml([
+                    'name' => 'startDate',
+                    'value' => $this->getStartDate(),
+                ])
+            ) .
+            Html::tag('div', Html::tag('p', Craft::t('app', 'To'))) .
+            Html::tag('div',
+                Cp::dateHtml([
+                    'name' => 'endDate',
+                    'value' => $this->getEndDate(),
+                ])
+            ) .
+            Html::endTag('div');
     }
 
     /**
@@ -115,6 +111,24 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     {
         return array_merge(parent::defineRules(), [
             [['startDate', 'endDate'], 'safe'],
+        ]);
+    }
+
+    /**
+     * Returns the rule’s value, prepped for [[\craft\helpers\Db::parseDateParam()]].
+     *
+     * @return array|null
+     */
+    protected function paramValue(): ?array
+    {
+        if (!$this->_startDate && !$this->_endDate) {
+            return null;
+        }
+
+        return array_filter([
+            'and',
+            $this->_startDate ? ">= $this->_startDate" : null,
+            $this->_endDate ? "< $this->_endDate" : null,
         ]);
     }
 }

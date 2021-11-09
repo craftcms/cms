@@ -4,9 +4,8 @@ namespace craft\conditions\elements\entry;
 
 use Craft;
 use craft\conditions\BaseDateRangeConditionRule;
-use craft\conditions\ConditionInterface;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\ElementQuery;
+use craft\elements\db\EntryQuery;
 use yii\db\QueryInterface;
 
 /**
@@ -20,7 +19,7 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements QueryC
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Post Date');
     }
@@ -28,9 +27,9 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements QueryC
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
-        return ['after', 'before'];
+        return ['postDate', 'after', 'before'];
     }
 
     /**
@@ -38,13 +37,7 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements QueryC
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var ElementQuery $query */
-        if ($this->startDate) {
-            $query->after($this->startDate);
-        }
-
-        if ($this->endDate) {
-            $query->before($this->endDate);
-        }
+        /** @var EntryQuery $query */
+        $query->postDate($this->paramValue());
     }
 }

@@ -4,7 +4,6 @@ namespace craft\conditions\elements\entry;
 
 use Craft;
 use craft\conditions\BaseLightswitchConditionRule;
-use craft\conditions\ConditionInterface;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use yii\db\QueryInterface;
@@ -20,7 +19,7 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements QueryC
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Has URL');
     }
@@ -28,7 +27,7 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements QueryC
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['uri'];
     }

@@ -8,9 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use craft\conditions\BaseConditionRule;
 use craft\conditions\ConditionInterface;
+use craft\conditions\ConditionRuleInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -26,46 +27,64 @@ use yii\base\InvalidConfigException;
 class Conditions extends Component
 {
     /**
-     * Creates a condition instance from its config.
+     * Creates a condition instance.
      *
-     * @param array $config
+     * @param string|array{class: string} $config The condition class or configuration array
      * @return ConditionInterface
-     * @throws InvalidArgumentException|InvalidConfigException if `$config['type']` does not implement [[BaseCondition]]
+     * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      * @throws InvalidConfigException
      */
-    public function createCondition(array $config): ConditionInterface
+    public function createCondition($config): ConditionInterface
     {
-        $type = ArrayHelper::remove($config, 'type');
-
-        if (!$type || !is_subclass_of($type, ConditionInterface::class)) {
-            throw new InvalidArgumentException("Invalid condition class: $type");
+        if (is_string($config)) {
+            $class = $config;
+            $config = [];
+        } else {
+            $class = ArrayHelper::remove($config, 'class');
         }
 
-        $config['class'] = $type;
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::createObject($config);
+        if (!is_subclass_of($class, ConditionInterface::class)) {
+            throw new InvalidArgumentException("Invalid condition class: $class");
+        }
+
+        /** @var ConditionInterface $condition */
+        $condition = Craft::createObject($class);
+        $condition->setAttributes($config);
+        return $condition;
     }
 
     /**
-     * Creates a condition rule instance from its config.
+     * Creates a condition rule instance.
      *
-     * @param array $config
-     * @return BaseConditionRule
-     * @throws InvalidArgumentException|InvalidConfigException if `$config['type']` does not implement [[BaseConditionRule]]
+     * @param string|array{class: string}|array{type: string} $config The condition class or configuration array
+     * @return ConditionRuleInterface
+     * @throws InvalidArgumentException if the condition rule does not implement [[ConditionRuleInterface]]
      */
-    public function createConditionRule(array $config): BaseConditionRule
+    public function createConditionRule($config): ConditionRuleInterface
     {
-        $type = ArrayHelper::remove($config, 'type');
+        if (is_string($config)) {
+            $class = $config;
+            $config = [];
+        } else {
+            // Merge `type` in, if this is coming from a condition builder
+            if (isset($config['type'])) {
+                $type = Json::decodeIfJson(ArrayHelper::remove($config, 'type'));
+                if (is_string($type)) {
+                    $type = ['class' => $type];
+                }
+                $config += $type;
+            }
 
-        if (!$type || !is_subclass_of($type, BaseConditionRule::class)) {
-            throw new InvalidArgumentException("Invalid condition rule class: $type");
+            $class = ArrayHelper::remove($config, 'class');
         }
 
-        $config['class'] = $type;
-        /** @var BaseConditionRule $conditionRule */
-        $conditionRule = Craft::createObject($type);
-        $conditionRule->setAttributes($config);
+        if (!is_subclass_of($class, ConditionRuleInterface::class)) {
+            throw new InvalidArgumentException("Invalid condition rule class: $class");
+        }
 
-        return $conditionRule;
+        /** @var ConditionRuleInterface $rule */
+        $rule = Craft::createObject($class);
+        $rule->setAttributes($config);
+        return $rule;
     }
 }

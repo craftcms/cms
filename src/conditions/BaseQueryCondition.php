@@ -5,7 +5,7 @@ namespace craft\conditions;
 use yii\db\QueryInterface;
 
 /**
- * BaseQueryCondition defines base query condition to be extended by query condition classes.
+ * BaseQueryCondition provides a base implementation for conditions that modify a database query.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

@@ -3,10 +3,9 @@
 namespace craft\conditions\elements\user;
 
 use Craft;
-use craft\conditions\BaseTextOperatorConditionRule;
+use craft\conditions\BaseTextConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\UserQuery;
-use craft\helpers\Db;
 use yii\db\QueryInterface;
 
 /**
@@ -15,12 +14,12 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Email extends BaseTextOperatorConditionRule implements QueryConditionRuleInterface
+class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Email');
     }
@@ -28,7 +27,7 @@ class Email extends BaseTextOperatorConditionRule implements QueryConditionRuleI
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['email'];
     }
@@ -39,6 +38,6 @@ class Email extends BaseTextOperatorConditionRule implements QueryConditionRuleI
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->email(Db::escapeParam($this->value));
+        $query->email($this->paramValue());
     }
 }

@@ -6,10 +6,12 @@ use craft\base\Component;
 use craft\helpers\StringHelper;
 
 /**
- * @property ConditionInterface $condition
- * @property-read array $config
- * @property-read string|null $html
+ * BaseConditionRule provides a base implementation for condition rules.
  *
+ * @property ConditionInterface $condition
+ * @property-read array $config The rule’s portable config
+ * @property-read string $html The rule’s HTML for a condition builder
+ * @property-read string $uiLabel The rule’s option label
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -38,12 +40,12 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @return array
+     * @inheritdoc
      */
     public function getConfig(): array
     {
         return [
-            'type' => get_class($this),
+            'class' => get_class($this),
             'uid' => $this->uid,
         ];
     }
@@ -63,7 +65,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         return $this->_condition;
     }
-    
+
     /**
      * @inheritdoc
      */

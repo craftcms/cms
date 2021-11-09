@@ -2,16 +2,12 @@
 
 namespace craft\conditions;
 
-use Craft;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
- * The BaseTextOperatorConditionRule class provides a condition rule with a single input with operator.
+ * BaseLightswitchConditionRule provides a base implementation for condition rules that are composed of a lightswitch input.
  *
- * @property-read array $inputAttributes
- * @property-read string $inputHtml
- * @property-read string $settingsHtml
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */

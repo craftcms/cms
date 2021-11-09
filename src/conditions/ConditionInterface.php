@@ -7,6 +7,8 @@ use Illuminate\Support\Collection;
 /**
  * ConditionInterface defines the common interface to be implemented by condition classes.
  *
+ * A base implementation is provided by [[BaseCondition]].
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -29,7 +31,7 @@ interface ConditionInterface
     public function getBuilderInnerHtml(array $options = []): string;
 
     /**
-     * Returns the config for this condition.
+     * Returns the condition’s portable config.
      *
      * @return array
      */
@@ -38,14 +40,16 @@ interface ConditionInterface
     /**
      * Returns the available rule types for this condition.
      *
-     * @return string[]
+     * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
+     *
+     * @return string[]|array{class: string}[]|array{type: string}[]
      */
     public function getConditionRuleTypes(): array;
 
     /**
      * Sets the available rule types for this condition.
      *
-     * @param string[] $conditionRuleTypes
+     * @param string[]|array{class: string}[]|array{type: string}[] $conditionRuleTypes
      */
     public function setConditionRuleTypes(array $conditionRuleTypes = []): void;
 

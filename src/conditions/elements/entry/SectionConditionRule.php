@@ -3,7 +3,7 @@
 namespace craft\conditions\elements\entry;
 
 use Craft;
-use craft\conditions\BaseSelectOperatorConditionRule;
+use craft\conditions\BaseSelectConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
@@ -15,12 +15,12 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class SectionConditionRule extends BaseSelectOperatorConditionRule implements QueryConditionRuleInterface
+class SectionConditionRule extends BaseSelectConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Section');
     }
@@ -28,7 +28,7 @@ class SectionConditionRule extends BaseSelectOperatorConditionRule implements Qu
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['section', 'sectionId'];
     }
@@ -36,7 +36,7 @@ class SectionConditionRule extends BaseSelectOperatorConditionRule implements Qu
     /**
      * @inheritdoc
      */
-    public function getSelectOptions(): array
+    protected function options(): array
     {
         $sections = Craft::$app->getSections()->getAllSections();
         return ArrayHelper::map($sections, 'uid', 'name');
@@ -47,10 +47,10 @@ class SectionConditionRule extends BaseSelectOperatorConditionRule implements Qu
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var EntryQuery $query */
-        $section = Craft::$app->getSections()->getSectionByUid($this->optionValue);
+        $section = Craft::$app->getSections()->getSectionByUid($this->value);
 
         if ($section) {
+            /** @var EntryQuery $query */
             $query->section($section);
         }
     }

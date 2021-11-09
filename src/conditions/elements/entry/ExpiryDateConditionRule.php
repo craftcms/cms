@@ -4,7 +4,6 @@ namespace craft\conditions\elements\entry;
 
 use Craft;
 use craft\conditions\BaseDateRangeConditionRule;
-use craft\conditions\ConditionInterface;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\EntryQuery;
 use yii\db\QueryInterface;
@@ -20,7 +19,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Quer
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Expiry Date');
     }
@@ -28,7 +27,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Quer
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['expiryDate'];
     }
@@ -39,15 +38,6 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Quer
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $startDate = $this->getStartDate();
-        $endDate = $this->getEndDate();
-
-        if ($startDate || $endDate) {
-            $query->expiryDate(array_filter([
-                'and',
-                $startDate ? ">= $startDate" : null,
-                $endDate ? "< $endDate" : null,
-            ]));
-        }
+        $query->expiryDate($this->paramValue());
     }
 }

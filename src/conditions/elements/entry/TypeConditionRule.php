@@ -26,7 +26,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Type');
     }
@@ -34,7 +34,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['type', 'typeId'];
     }
@@ -133,8 +133,6 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
 
     /**
      * Ensures an entry type is set correctly based on the section selected.
-     *
-     * @return void
      */
     private function _ensureEntryType(): void
     {

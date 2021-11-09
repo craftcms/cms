@@ -3,7 +3,7 @@
 namespace craft\conditions\elements\entry;
 
 use Craft;
-use craft\conditions\BaseMultiSelectOperatorConditionRule;
+use craft\conditions\BaseMultiSelectConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
@@ -15,12 +15,12 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule implements QueryConditionRuleInterface
+class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Author Group');
     }
@@ -28,7 +28,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectOperatorConditionRule impl
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['authorGroup', 'authorGroupId'];
     }

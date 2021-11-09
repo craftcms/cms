@@ -78,11 +78,10 @@ class ConditionsController extends Controller
      */
     public function actionAddRule(): string
     {
-        $ruleType = collect($this->_condition->getConditionRuleTypes())->first();
-        if ($ruleType) {
-            $rule = Craft::$app->getConditions()->createConditionRule(['type' => $ruleType]);
+        $conditionRuleTypes = $this->_condition->getConditionRuleTypes();
+        if (!empty($conditionRuleTypes)) {
+            $rule = Craft::$app->getConditions()->createConditionRule(reset($conditionRuleTypes));
             $rule->setCondition($this->_condition);
-
             $this->_condition->addConditionRule($rule);
         }
 

@@ -19,7 +19,7 @@ class TrashedConditionRule extends BaseLightswitchConditionRule implements Query
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Trashed');
     }
@@ -27,7 +27,7 @@ class TrashedConditionRule extends BaseLightswitchConditionRule implements Query
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['trashed'];
     }

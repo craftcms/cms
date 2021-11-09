@@ -398,14 +398,17 @@ class ElementIndexesController extends BaseElementsController
             $params = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var QueryConditionRuleInterface $rule */
-                foreach ($rule::exclusiveQueryParams() as $param) {
+                foreach ($rule->getExclusiveQueryParams() as $param) {
                     $params[$param] = true;
                 }
             }
         }
-        $condition->setConditionRuleTypes(array_filter($condition->getConditionRuleTypes(), function(string $rule) use ($params) {
-            /** @var string|QueryConditionRuleInterface $rule */
-            foreach ($rule::exclusiveQueryParams() as $param) {
+
+        $conditionsService = Craft::$app->getConditions();
+        $condition->setConditionRuleTypes(array_filter($condition->getConditionRuleTypes(), function($type) use ($params, $conditionsService) {
+            /** @var QueryConditionRuleInterface $rule */
+            $rule = $conditionsService->createConditionRule($type);
+            foreach ($rule->getExclusiveQueryParams() as $param) {
                 if (isset($params[$param])) {
                     return false;
                 }

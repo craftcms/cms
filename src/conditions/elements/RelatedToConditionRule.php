@@ -36,7 +36,7 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Related to');
     }
@@ -44,7 +44,7 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return [];
     }

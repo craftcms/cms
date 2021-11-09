@@ -3,10 +3,9 @@
 namespace craft\conditions\elements;
 
 use Craft;
-use craft\conditions\BaseTextOperatorConditionRule;
+use craft\conditions\BaseTextConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Db;
 use yii\db\QueryInterface;
 
 /**
@@ -15,12 +14,12 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class SlugConditionRule extends BaseTextOperatorConditionRule implements QueryConditionRuleInterface
+class SlugConditionRule extends BaseTextConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
-    public static function displayName(): string
+    public function getLabel(): string
     {
         return Craft::t('app', 'Slug');
     }
@@ -28,7 +27,7 @@ class SlugConditionRule extends BaseTextOperatorConditionRule implements QueryCo
     /**
      * @inheritdoc
      */
-    public static function exclusiveQueryParams(): array
+    public function getExclusiveQueryParams(): array
     {
         return ['slug'];
     }
@@ -39,18 +38,6 @@ class SlugConditionRule extends BaseTextOperatorConditionRule implements QueryCo
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQueryInterface $query */
-        switch ($this->operator) {
-            case self::OPERATOR_CONTAINS:
-                $query->slug('= %' . Db::escapeParam($this->value) . '%');
-                break;
-            case self::OPERATOR_BEGINS_WITH:
-                $query->slug('= ' . Db::escapeParam($this->value) . '%');
-                break;
-            case self::OPERATOR_ENDS_WITH:
-                $query->slug('= %' . Db::escapeParam($this->value));
-                break;
-            default:
-                $query->slug($this->operator . ' ' . Db::escapeParam($this->value)); //
-        }
+        $query->slug($this->paramValue());
     }
 }

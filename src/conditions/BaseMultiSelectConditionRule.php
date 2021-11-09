@@ -7,12 +7,12 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 
 /**
- * The BaseMultiSelectOperatorConditionRule class provides a base implementation for condition rules with a multi-select input.
+ * BaseMultiSelectConditionRule provides a base implementation for condition rules that are composed of a multi-select input.
  *
- * @property array $values
+ * @property string[] $values
  * @since 4.0.0
  */
-abstract class BaseMultiSelectOperatorConditionRule extends BaseConditionRule
+abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
     /**
      * @var string[]
