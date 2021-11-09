@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\conditions\QueryConditionRuleInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldGroup;
@@ -366,6 +367,15 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.7.0
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void;
+
+    /**
+     * Returns the condition rule class that should be used for this field.
+     *
+     * The rule class must be an instance of [[\craft\conditions\elements\fields\FieldConditionRuleInterface]].
+     *
+     * @return string|null
+     */
+    public function getQueryConditionRuleType(): ?string;
 
     /**
      * Modifies an element query.

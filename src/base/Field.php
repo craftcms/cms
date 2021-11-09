@@ -586,6 +586,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getQueryConditionRuleType(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
