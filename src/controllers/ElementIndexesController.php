@@ -12,7 +12,6 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\conditions\ConditionRuleInterface;
 use craft\conditions\QueryConditionInterface;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\actions\DeleteActionInterface;
@@ -405,16 +404,20 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $conditionsService = Craft::$app->getConditions();
-        $condition->setConditionRuleTypes(array_filter($condition->getConditionRuleTypes(), function($type) use ($params, $conditionsService) {
-            /** @var QueryConditionRuleInterface $rule */
-            $rule = $conditionsService->createConditionRule($type);
-            foreach ($rule->getExclusiveQueryParams() as $param) {
-                if (isset($params[$param])) {
-                    return false;
-                }
-            }
-            return true;
-        }));
+        $condition->setConditionRuleTypes(
+            collect($condition->getConditionRuleTypes())
+                ->filter(function($type) use ($params, $conditionsService) {
+                    /** @var QueryConditionRuleInterface $rule */
+                    $rule = $conditionsService->createConditionRule($type);
+                    foreach ($rule->getExclusiveQueryParams() as $param) {
+                        if (isset($params[$param])) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                ->all()
+        );
 
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',

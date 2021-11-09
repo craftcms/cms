@@ -214,18 +214,21 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 'singleUseTypes' => false,
             ];
 
+        // Get all the available condition rules as type/rule pairs
         $conditionRuleTypes = $this->getConditionRuleTypes();
         $conditionsService = Craft::$app->getConditions();
-        /** @var array<string, string>[] $conditionRuleOptions */
-        $conditionRuleOptions = array_map(function($type) use ($conditionsService) {
-            $value = is_string($type) ? $type : Json::encode($type);
-            return [$value, $conditionsService->createConditionRule($type)->getLabel()];
-        }, $conditionRuleTypes);
+        $availableRules = collect($conditionRuleTypes)
+            ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
+            ->map(fn($type) => $conditionsService->createConditionRule($type));
 
-        $ruleLabels = $this->_conditionRules
-            ->map(fn(ConditionRuleInterface $rule) => $rule->getLabel())
-            ->flip()
-            ->all();
+        if ($options['singleUseTypes']) {
+            $ruleLabels = $this->_conditionRules
+                ->map(fn(ConditionRuleInterface $rule) => $rule->getLabel())
+                ->flip()
+                ->all();
+            $availableRules = $availableRules
+                ->filter(fn(ConditionRuleInterface $rule) => !isset($ruleLabels[$rule->getLabel()]));
+        }
 
         $namespace = $view->getNamespace();
         $namespacedId = Html::namespaceId($options['id'], $namespace);
@@ -253,7 +256,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $ruleCount = 0;
 
         foreach ($this->getConditionRules() as $rule) {
-            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions, $ruleLabels) {
+            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $availableRules) {
                 $ruleHtml = Html::hiddenInput('uid', $rule->uid) .
                     Html::hiddenInput('class', get_class($rule));
 
@@ -271,11 +274,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $ruleTypeOptions = [];
                 $ruleValue = Json::encode($rule->getConfig());
                 $ruleLabel = $rule->getLabel();
-                foreach ($conditionRuleOptions as [$value, $label]) {
-                    if (
-                        $label !== $ruleLabel &&
-                        (empty($options['singleUseTypes']) || !isset($ruleLabels[$label]))
-                    ) {
+                foreach ($availableRules as $value => $rule) {
+                    /** @var ConditionRuleInterface $rule */
+                    $label = $rule->getLabel();
+                    if ($label !== $ruleLabel) {
                         $ruleTypeOptions[] = compact('value', 'label');
                     }
                 }
