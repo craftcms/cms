@@ -304,7 +304,7 @@ return [
     'Copy the URL' => 'Copier l’URL',
     'Copy the activation URL' => 'Copier l’URL d’activation',
     'Copy the impersonation URL, and open it in a new private window.' => 'Copiez l’URL d’imitation, et ouvrez-la dans une nouvelle fenêtre de navigation privée.',
-    'Copy the package’s name for this plugin.' => 'Copier le nom de package pour ce plug-in.',
+    'Copy the package’s name for this plugin.' => 'Copier le nom de paquet pour ce plug-in.',
     'Copy the reference tag' => 'Copier l’étiquette de référence',
     'Copy to clipboard' => 'Copier dans le presse-papiers',
     'Could not create a preview token.' => 'Impossible de créer un jeton d’aperçu.',
