@@ -752,7 +752,7 @@ return [
     'Job Data' => 'Données de la tâche',
     'Job released.' => 'Tâche annulée.',
     'Job restarted.' => 'Tâche relancée.',
-    'Job retried.' => 'Tâche relancée.',
+    'Job retried.' => 'Tâche réessayée.',
     'Job' => 'Tâche',
     'Keep both' => 'Conserver les deux',
     'Keep me logged in' => 'Rester connecté',
