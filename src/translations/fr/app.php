@@ -771,7 +771,7 @@ return [
     'Last Week' => 'La semaine dernière',
     'Last login fail' => 'Dernier échec de connexion',
     'Last login' => 'Dernière connexion',
-    'Last saved {timestamp}' => 'Dernier enregistrement le {timestamp}',
+    'Last saved {timestamp}' => 'Dernier enregistrement {timestamp}',
     'Last update' => 'Dernière mise à jour',
     'Last {num, number} {num, plural, =1{day} other{days}}' => '{num, plural, =0{Dernier jour} =1{Dernier jour} other{{num, number} derniers jours}}',
     'Layout element types' => 'Types d’éléments de mise en page',
