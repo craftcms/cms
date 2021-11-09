@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use Illuminate\Support\Collection;
+use yii\base\InvalidArgumentException;
 
 /**
  * ConditionInterface defines the common interface to be implemented by condition classes.
@@ -42,14 +43,14 @@ interface ConditionInterface
      *
      * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
      *
-     * @return string[]|array{class: string}[]|array{type: string}[]
+     * @return string[]|array{class: string}[]
      */
     public function getConditionRuleTypes(): array;
 
     /**
      * Sets the available rule types for this condition.
      *
-     * @param string[]|array{class: string}[]|array{type: string}[] $conditionRuleTypes
+     * @param string[]|array{class: string}[] $conditionRuleTypes
      */
     public function setConditionRuleTypes(array $conditionRuleTypes = []): void;
 
@@ -59,4 +60,20 @@ interface ConditionInterface
      * @return Collection
      */
     public function getConditionRules(): Collection;
+
+    /**
+     * Sets the rules this condition should be configured with.
+     *
+     * @param ConditionRuleInterface[]|array[] $rules
+     * @throws InvalidArgumentException if any of the rules are not selectable
+     */
+    public function setConditionRules(array $rules): void;
+
+    /**
+     * Adds a rule to the condition.
+     *
+     * @param ConditionRuleInterface $rule
+     * @throws InvalidArgumentException if the rule is not selectable
+     */
+    public function addConditionRule(ConditionRuleInterface $rule): void;
 }

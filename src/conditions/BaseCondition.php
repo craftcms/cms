@@ -96,20 +96,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Sets the available rule types and returns self
-     *
-     * @param string[] $conditionRuleTypes
-     * @return self
-     * @see setConditionRuleTypes()
-     */
-    public function withConditionRuleTypes(array $conditionRuleTypes = []): self
-    {
-        $this->setConditionRuleTypes($conditionRuleTypes);
-
-        return $this;
-    }
-
-    /**
      * Returns the rule types for this condition.
      *
      * Conditions should override this method instead of [[getConditionRuleTypes()]]
@@ -117,7 +103,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      *
      * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
      *
-     * @return string[]|array{class: string}[]|array{type: string}[]
+     * @return string[]|array{class: string}[]
      */
     abstract protected function conditionRuleTypes(): array;
 
@@ -130,10 +116,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Sets the rules this condition should be configured with.
-     *
-     * @param ConditionRuleInterface[]|array[] $rules
-     * @throws InvalidArgumentException if any of the rules are not selectable
+     * @inheritdoc
      */
     public function setConditionRules(array $rules): void
     {
@@ -150,10 +133,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Adds a rule to the condition.
-     *
-     * @param ConditionRuleInterface $rule
-     * @throws InvalidArgumentException if the rule is not selectable
+     * @inheritdoc
      */
     public function addConditionRule(ConditionRuleInterface $rule): void
     {
