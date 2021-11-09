@@ -757,7 +757,7 @@ return [
     'Keep both' => 'Conserver les deux',
     'Keep me logged in' => 'Rester connecté',
     'Keep them' => 'Les garder',
-    'Knowledge Base' => 'Knowledge Base',
+    'Knowledge Base' => 'Base de connaissance',
     'Label' => 'Étiquette',
     'Language' => 'Langue',
     'Large Thumbnails' => 'Grande vignette',
