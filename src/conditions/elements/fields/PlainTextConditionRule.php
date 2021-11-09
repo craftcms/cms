@@ -19,7 +19,7 @@ class PlainTextConditionRule extends BaseTextConditionRule implements FieldCondi
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): string
+    protected function elementQueryParam(): ?string
     {
         return $this->paramValue();
     }

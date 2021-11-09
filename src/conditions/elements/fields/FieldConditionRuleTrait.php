@@ -72,8 +72,11 @@ trait FieldConditionRuleTrait
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var ElementQueryInterface $query */
-        $query->{$this->_field->handle}($this->elementQueryParam());
+        $param = $this->elementQueryParam();
+        if ($param !== null) {
+            /** @var ElementQueryInterface $query */
+            $query->{$this->_field->handle}();
+        }
     }
 
     /**
