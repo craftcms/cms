@@ -30,6 +30,7 @@ abstract class BaseQueryCondition extends BaseCondition implements QueryConditio
     {
         return [
             'sortable' => false,
+            'singleUseTypes' => true,
         ];
     }
 }

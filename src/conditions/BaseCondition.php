@@ -209,6 +209,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $options += $this->defaultBuilderOptions() + [
                 'sortable' => true,
+                'singleUseTypes' => false,
             ];
 
         $conditionRuleTypes = $this->getConditionRuleTypes();
@@ -218,6 +219,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $value = is_string($type) ? $type : Json::encode($type);
             return [$value, $conditionsService->createConditionRule($type)->getLabel()];
         }, $conditionRuleTypes);
+
+        $ruleLabels = $this->getConditionRules()
+            ->map(fn(ConditionRuleInterface $rule) => $rule->getLabel())
+            ->flip()
+            ->all();
 
         $namespace = $view->getNamespace();
         $namespacedId = Html::namespaceId($options['id'], $namespace);
@@ -246,7 +252,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         foreach ($this->getConditionRules() as $rule) {
             /** @var ConditionRuleInterface $rule */
-            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions) {
+            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $conditionRuleOptions, $ruleLabels) {
                 $ruleHtml = Html::hiddenInput('class', get_class($rule));
 
                 if ($options['sortable']) {
@@ -264,7 +270,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $ruleValue = Json::encode($rule->getConfig());
                 $ruleLabel = $rule->getLabel();
                 foreach ($conditionRuleOptions as [$value, $label]) {
-                    if ($label !== $ruleLabel) {
+                    if (
+                        $label !== $ruleLabel &&
+                        (empty($options['singleUseTypes']) || !isset($ruleLabels[$label]))
+                    ) {
                         $ruleTypeOptions[] = compact('value', 'label');
                     }
                 }
