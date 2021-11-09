@@ -526,6 +526,10 @@ class Cp
             : '';
 
         return Html::tag($fieldset ? 'fieldset' : 'div',
+            (($label && $fieldset)
+                ? Html::tag('legend', $label, [
+                    'class' => $required ? ['required', 'visually-hidden'] : ['visually-hidden'],
+                ]) : '') .
             ($status
                 ? Html::tag('div', '', [
                     'class' => ['status-badge', $status[0]],
@@ -542,6 +546,9 @@ class Cp
                             'id' => $labelId,
                             'class' => $required ? ['required'] : [],
                             'for' => !$fieldset ? $id : null,
+                            'aria' => [
+                                'hidden' => $fieldset ? 'true' : null,
+                            ],
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
