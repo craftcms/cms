@@ -26,7 +26,6 @@ class CraftWebpackConfig {
         this.types = [
             'asset',
             'base',
-            'lib',
             'vue',
         ];
 
@@ -89,15 +88,6 @@ class CraftWebpackConfig {
         if (this.types.indexOf(this.type) === -1) {
             throw 'Type "' + this.type + '" is not a valid config type.';
         }
-
-        // Prevent dependents from running when building from the root
-        // if (this.nodeEnv === 'production' && process.env.INIT_CWD != path.resolve(__dirname) && this.type != 'lib' && this.basePath.replace(path.resolve(__dirname, 'src/web/assets'), '') != '/tailwindcss') {
-        //     let TailwindWebpackConfig = require(path.resolve(__dirname, './src/web/assets/tailwindcss/webpack.config.js'));
-        //     return [
-        //         merge(this[this.type](), this.config),
-        //         TailwindWebpackConfig
-        //     ];
-        // }
 
         return merge(this[this.type](), this.config);
     }
@@ -317,10 +307,6 @@ class CraftWebpackConfig {
         };
 
         return merge(this.base(), assetConfig);
-    }
-
-    lib() {
-        return this.asset();
     }
 
     /**
