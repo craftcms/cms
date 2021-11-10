@@ -1098,7 +1098,7 @@ return [
     'Rename folder' => 'Renommer le dossier',
     'Rename selected group' => 'Renommer le groupe sélectionné',
     'Rename' => 'Renommer',
-    'Renew for {price}' => 'Renouveller pour {price}',
+    'Renew for {price}' => 'Renouveler pour {price}',
     'Renewal price' => 'Prix de renouvellement',
     'Reorder' => 'Réorganiser',
     'Replace Text' => 'Remplacer par ce texte',
