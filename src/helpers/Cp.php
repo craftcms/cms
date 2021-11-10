@@ -525,11 +525,24 @@ class Cp
             ])
             : '';
 
+        $requiredHtml = $required ?
+            Html::tag('div', '', [
+                'class' => ['required'],
+                'aria' => [
+                    'hidden' => 'true',
+                ]
+            ]) .
+            Html::tag('span', Craft::t('app', 'Required'), [
+                'class' => ['visually-hidden'],
+            ])
+            : '';
+
+        $labelHtml = $label . $requiredHtml;
+
         return Html::tag($fieldset ? 'fieldset' : 'div',
             (($label && $fieldset)
-                ? Html::tag('legend', $label, [
-                    'class' => $required ? ['required', 'visually-hidden'] : ['visually-hidden'],
-                ]) : '') .
+                ? Html::tag('legend', $labelHtml, []) 
+                : '') .
             ($status
                 ? Html::tag('div', '', [
                     'class' => ['status-badge', $status[0]],
@@ -542,9 +555,8 @@ class Cp
             (($label || $showAttribute)
                 ? Html::tag('div',
                     ($label
-                        ? Html::tag($fieldset ? 'legend' : 'label', $label, ArrayHelper::merge([
+                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
                             'id' => $labelId,
-                            'class' => $required ? ['required'] : [],
                             'for' => !$fieldset ? $id : null,
                             'aria' => [
                                 'hidden' => $fieldset ? 'true' : null,
