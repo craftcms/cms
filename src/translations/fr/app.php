@@ -809,7 +809,7 @@ return [
     'Log out now' => 'Déconnectez-vous maintenant',
     'Login Page Logo' => 'Logo de la page de connexion',
     'Login as {user}' => 'Vous connecter en tant que {user}',
-    'Login fail count' => 'Compteur des échecs de connexion',
+    'Login fail count' => 'Compteur de connexions échouées',
     'Login' => 'Connexion',
     'Looks like you are trying to load a template outside the template folder.' => 'On dirait que vous essayez de charger un template en dehors du dossier des templates.',
     'Low' => 'Basse',
