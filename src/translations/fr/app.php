@@ -1084,7 +1084,7 @@ return [
     'Register a new user' => 'Inscrire un nouvel utilisateur',
     'Register users' => 'Inscrire des utilisateurs',
     'Registered at' => 'Enregistré à',
-    'Relate {type} from a specific site?' => 'Relier {type} à partir d’un site spécifique ?',
+    'Relate {type} from a specific site?' => 'Relier les {type} à partir d’un site spécifique ?',
     'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.' => 'Les relations ne stockent pas le site sélectionné, ce paramètre ne devrait donc être activé que si certains {type} ne sont pas propagés à tous les sites.',
     'Release all jobs' => 'Annuler toutes les tâches',
     'Release job' => 'Annuler la tâche',
