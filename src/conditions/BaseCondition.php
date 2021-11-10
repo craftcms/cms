@@ -341,7 +341,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
         // Sortable rules div
         $html .= Html::tag('div', $allRulesHtml, [
                 'id' => 'condition-rules',
-                'class' => ['condition', 'sortable'],
+                'class' => array_filter([
+                    'condition',
+                    $options['sortable'] ? 'sortable' : null,
+                ]),
                 'hx' => [
                     'post' => UrlHelper::actionUrl('conditions/render'),
                     'trigger' => 'end', // sortable library triggers this event
