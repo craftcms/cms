@@ -36,6 +36,7 @@
     "eslint-plugin-vue": "^6.2.2",
     "file-loader": "^6.2.0",
     "mini-css-extract-plugin": "^0.7.0",
+    "node-json-minify": "^1.0.0",
     "parallel-webpack": "^2.6.0",
     "postcss": "^8.2.8",
     "postcss-loader": "^4.2.0",
