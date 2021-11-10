@@ -12,7 +12,7 @@ module.exports = new CraftWebpackConfig({
         plugins: [
             new MergeIntoSingleFilePlugin({
                 files: {
-                    'jquery-ui.min.js': [
+                    'jquery-ui.js': [
                         NODE_MODULES + '/jquery-ui/ui/version.js',
                         NODE_MODULES + '/jquery-ui/ui/widget.js',
                         NODE_MODULES + '/jquery-ui/ui/position.js',
@@ -24,7 +24,7 @@ module.exports = new CraftWebpackConfig({
                     ],
                 },
                 transform: {
-                    'jquery-ui.min.js': code => require("uglify-js").minify(code).code
+                    'jquery-ui.js': code => require("uglify-js").minify(code).code
                 }
             }),
         ]

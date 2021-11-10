@@ -14,7 +14,7 @@ module.exports = new CraftWebpackConfig({
                     {
                         context: NODE_MODULES + '/@benmajor/jquery-touch-events/src',
                         from: 'jquery.mobile-events.min.js',
-                        to: '.',
+                        to: 'jquery.mobile-events.js',
                     },
                 ],
             }),
