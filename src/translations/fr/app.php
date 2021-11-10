@@ -964,7 +964,7 @@ return [
     'One update available!' => 'Une mise à jour est disponible !',
     'Online' => 'En ligne',
     'Only save blocks to the site they were created in' => 'N’enregistrer les blocs que sur le site où ils ont été créés',
-    'Only save entries to the site they were created in' => 'N’enregistrer les saisies que sur le site où elles ont été créées',
+    'Only save entries to the site they were created in' => 'N’enregistrer les entrées que sur le site où elles ont été créées',
     'Only up to {version} is compatible with your version of Craft.' => 'Il n’est compatible avec votre version de Craft que jusqu’à la version {version}.',
     'Oops!' => 'Oups !',
     'Open the full edit page in a new tab' => 'Ouvrir la page d’édition complète dans un nouvel onglet',
