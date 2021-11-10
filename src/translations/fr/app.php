@@ -958,7 +958,7 @@ return [
     'OFF Label' => 'Étiquette OFF',
     'OK' => 'OK',
     'ON Label' => 'Étiquette ON',
-    'Of the enabled sites above, which sites should entries in this section be saved to?' => 'Parmi les sites activés ci-dessus, sur quels sites les entrées de cette section doivent-elles être enregistrées ?',
+    'Of the enabled sites above, which sites should entries in this section be saved to?' => 'Parmi les sites activés ci-dessus, sur quels sites les entrées de cette section doivent-ils être enregistrées ?',
     'Offline' => 'Hors-ligne',
     'One of {name}’s migrations failed.' => 'Une des migrations de {name} a échoué.',
     'One update available!' => 'Une mise à jour est disponible !',
