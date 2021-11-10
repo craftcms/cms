@@ -18,7 +18,6 @@
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
 - Added `craft\controllers\AssetIndexesController`.
-- Added `craft\db\Migration::convertColumnToJson()`.
 - Added `craft\db\Migration::dropAllForeignKeysToTable()`.
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::dropIndexIfExists()`.
