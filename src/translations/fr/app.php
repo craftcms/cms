@@ -1176,7 +1176,7 @@ return [
     'Schema saved.' => 'Schéma enregistré.',
     'Schemas' => 'Schémas',
     'Score' => 'Score',
-    'Screenshots' => 'Copies écran',
+    'Screenshots' => 'Captures d’écran',
     'Search in subfolders' => 'Chercher dans les sous-dossiers',
     'Search plugins' => 'Rechercher des plugins',
     'Search' => 'Rechercher',
