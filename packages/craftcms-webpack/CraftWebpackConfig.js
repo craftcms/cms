@@ -26,6 +26,7 @@ class CraftWebpackConfig {
         this.types = [
             'asset',
             'base',
+            'lib',
             'vue',
         ];
 
@@ -319,6 +320,19 @@ class CraftWebpackConfig {
         };
 
         return merge(this.base(), assetConfig);
+    }
+
+    lib() {
+        // Remove placeholder entry file for lib assets
+        if (!this.removeFiles) {
+            this.removeFiles = {test: []};
+        } else if (this.removeFiles && typeof this.removeFiles === 'object' && this.removeFiles.test === undefined) {
+            this.removeFiles.test = [];
+        }
+
+        this.removeFiles.test.push(/entry/);
+
+        return this.asset();
     }
 
     /**
