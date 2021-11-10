@@ -6,6 +6,5 @@
   "chunk-vendors.css": "/css/chunk-vendors.css",
   "chunk-vendors.js": "/js/chunk-vendors.js",
   "chunk-vendors.css.map": "/css/chunk-vendors.css.map",
-  "chunk-vendors.js.map": "/js/chunk-vendors.js.map",
-  "index.html": "/index.html"
+  "chunk-vendors.js.map": "/js/chunk-vendors.js.map"
 }
