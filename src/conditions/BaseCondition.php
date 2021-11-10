@@ -212,6 +212,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $options += $this->defaultBuilderOptions() + [
                 'sortable' => true,
                 'singleUseTypes' => false,
+                'projectConfigTypes' => false,
             ];
 
         // Get all the available condition rules as type/rule pairs
@@ -228,6 +229,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 ->all();
             $availableRules = $availableRules
                 ->filter(fn(ConditionRuleInterface $rule) => !isset($ruleLabels[$rule->getLabel()]));
+        }
+
+        if ($options['projectConfigTypes']) {
+            $availableRules = $availableRules
+                ->filter(fn(ConditionRuleInterface $rule) => $rule::supportsProjectConfig());
         }
 
         $namespace = $view->getNamespace();

@@ -77,6 +77,7 @@ class ElementIndexSettingsController extends BaseElementsController
                 $conditionBuilderHtml = $view->namespaceInputs(function() use ($condition) {
                     return $condition->getBuilderHtml([
                         'mainTag' => 'div',
+                        'projectConfigTypes' => true,
                     ]);
                 }, "sources[{$source['key']}][condition]");
                 $conditionBuilderJs = $view->clearJsBuffer();
@@ -97,6 +98,7 @@ class ElementIndexSettingsController extends BaseElementsController
             return $elementType::createCondition()->getBuilderHtml([
                 'id' => '__ID__',
                 'mainTag' => 'div',
+                'projectConfigTypes' => true,
             ]);
         }, 'sources[__SOURCE_KEY__][condition]');
         $conditionBuilderJs = $view->clearJsBuffer();

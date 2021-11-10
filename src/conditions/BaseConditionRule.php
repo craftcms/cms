@@ -18,6 +18,14 @@ use craft\helpers\StringHelper;
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {
     /**
+     * @inheritdoc
+     */
+    public static function supportsProjectConfig(): bool
+    {
+        return true;
+    }
+
+    /**
      * @var string UUID
      */
     public string $uid;

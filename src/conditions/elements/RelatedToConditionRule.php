@@ -24,6 +24,14 @@ use yii\db\QueryInterface;
 class RelatedToConditionRule extends BaseConditionRule implements QueryConditionRuleInterface
 {
     /**
+     * @inheritdoc
+     */
+    public static function supportsProjectConfig(): bool
+    {
+        return false;
+    }
+
+    /**
      * @var string
      */
     public string $elementType = Entry::class;
