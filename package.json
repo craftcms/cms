@@ -2,7 +2,7 @@
   "private": true,
   "main": "gulpfile.js",
   "scripts": {
-    "build": "NODE_ENV=production NODE_PATH=\"./packages/craftcms-webpack/node_modules\":\"node_modules\" webpack --progress --config $INIT_CWD/webpack.config.js\n"
+    "build": "webpack --node-env=production --progress"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
@@ -11,6 +11,7 @@
     "axios": "^0.21.4",
     "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^10.31.0",
+    "@craftcms/webpack": "./packages/craftcms-webpack",
     "d3": "^4.11.0",
     "d3-format": "^1.4.4",
     "d3-time-format": "^2.2.3",
@@ -45,6 +46,7 @@
     "vue-router": "^3.5.1",
     "vuetable-2": "^1.7.5",
     "vuex": "^3.6.2",
+    "webpack-cli": "^4.9.1",
     "whatwg-fetch": "^0.9.0",
     "xregexp": "^3.2.0",
     "yii2-pjax": "~2.0.1"
