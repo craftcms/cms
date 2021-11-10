@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft now also displays dimensions (if any are set) for video assets, as opposed to image assets only. ([#9038](https://github.com/craftcms/cms/discussions/9038))
+
 ## 3.7.20 - 2021-11-06
 
 ### Changed
