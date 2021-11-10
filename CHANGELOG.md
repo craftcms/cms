@@ -1,12 +1,5 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
-
-### Added
-- Added `craft\web\assets\inputmask\InputMaskAsset`.
-- Added `craft\web\assets\jquery\JqueryAsset`.
-- Added `craft\web\assets\punycode\PunycodeAsset`.
-
 ## 3.7.20 - 2021-11-06
 
 ### Changed
