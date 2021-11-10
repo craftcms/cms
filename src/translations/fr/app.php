@@ -807,7 +807,7 @@ return [
     'Locations that should be available for previewing entries in this section.' => 'Emplacements à proposer pour la prévisualisation des entrées de cette section.',
     'Locked' => 'Verrouillé',
     'Log out now' => 'Déconnectez-vous maintenant',
-    'Login Page Logo' => 'Logo page de connexion',
+    'Login Page Logo' => 'Logo de la page de connexion',
     'Login as {user}' => 'Vous connecter en tant que {user}',
     'Login fail count' => 'Compteur des échecs de connexion',
     'Login' => 'Connexion',
