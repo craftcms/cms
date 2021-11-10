@@ -852,7 +852,7 @@ return [
     'Minute Increment' => 'Incrément d’une minute',
     'Minutes' => 'Minutes',
     'Missing {items}' => 'Il manque : {items}',
-    'Missing' => 'Il manque',
+    'Missing' => 'Manquant',
     'Mode' => 'Mode',
     'Moderate users' => 'Modérer les utilisateurs',
     'Modify assets in the “{volume}” volume' => 'Modifier les ressources dans le volume « {volume} »',
