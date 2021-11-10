@@ -128,12 +128,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
                     'name' => 'value',
                     'value' => $this->value,
                     'autocomplete' => false,
-                    'inputAttributes' => [
-                        'hx' => [
-                            'post' => UrlHelper::actionUrl('conditions/render'),
-                            'trigger' => 'keyup changed delay:750ms',
-                        ],
-                    ]
                 ])
             ) .
             Html::endTag('div');
