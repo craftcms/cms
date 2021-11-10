@@ -280,9 +280,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $ruleTypeOptions = [];
                 $ruleValue = Json::encode($rule->getConfig());
                 $ruleLabel = $rule->getLabel();
-                foreach ($availableRules as $value => $rule) {
-                    /** @var ConditionRuleInterface $rule */
-                    $label = $rule->getLabel();
+                foreach ($availableRules as $value => $availableRule) {
+                    /** @var ConditionRuleInterface $availableRule */
+                    $label = $availableRule->getLabel();
                     if ($label !== $ruleLabel) {
                         $ruleTypeOptions[] = compact('value', 'label');
                     }
