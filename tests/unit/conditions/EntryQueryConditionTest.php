@@ -25,13 +25,13 @@ class EntryQueryConditionTest extends Unit
     public function testCanAddRules()
     {
         $config = [
-            'type' => EntryQueryCondition::class,
+            'class' => EntryQueryCondition::class,
         ];
         /** @var EntryQueryCondition $condition */
         $condition = \Craft::$app->getConditions()->createCondition($config);
 
         $ruleConfig = [
-            'type' => SlugConditionRule::class,
+            'class' => SlugConditionRule::class,
         ];
         $rule1 = \Craft::$app->getConditions()->createConditionRule($ruleConfig);
         $condition->addConditionRule($rule1);
@@ -39,7 +39,7 @@ class EntryQueryConditionTest extends Unit
         self::assertCount(1, $condition->getConditionRules());
 
         $ruleConfig2 = [
-            'type' => AuthorGroupConditionRule::class,
+            'class' => AuthorGroupConditionRule::class,
         ];
         $rule1 = \Craft::$app->getConditions()->createConditionRule($ruleConfig2);
         $condition->addConditionRule($rule1);
