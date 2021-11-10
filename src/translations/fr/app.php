@@ -1163,7 +1163,7 @@ return [
     'Save entries to all sites enabled for this section' => 'Enregistrer les entrées sur tous les sites activés pour cette section',
     'Save entries to other sites in the same site group' => 'Enregistrer les entrées sur les autres sites du même groupe de sites',
     'Save entries to other sites with the same language' => 'Enregistrer les entrées sur les autres sites ayant la même langue',
-    'Save entries with the “{entryType}” entry type' => 'Enregistrer des entrées dans le type d’entrée « {entryType} »',
+    'Save entries with the “{entryType}” entry type' => 'Enregistrer les entrées dans le type d’entrée « {entryType} »',
     'Save tags in the “{tagGroup}” tag group' => 'Enregistrer les étiquettes du groupe d’étiquettes « {tagGroup} »',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Enregistrer les données de configuration du projet chargé dans les fichiers YAML dans votre dossier <code>{folder}</code>.',
     'Save' => 'Enregistrer',
