@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\web\assets\inputmask\InputMaskAsset`.
 - Added `craft\web\assets\jquery\JqueryAsset`.
+- Added `craft\web\assets\punycode\PunycodeAsset`.
 
 ## 3.7.20 - 2021-11-06
 

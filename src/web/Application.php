@@ -323,7 +323,7 @@ class Application extends \yii\web\Application
         $assetsPath = Craft::getAlias('@craft') . '/web/assets';
         Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
         Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
-        Craft::setAlias('@bower/punycode', $libPath . '/punycode');
+        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
         Craft::setAlias('@bower/yii2-pjax', $libPath . '/yii2-pjax');
     }
 
