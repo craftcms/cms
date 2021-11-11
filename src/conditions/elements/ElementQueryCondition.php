@@ -55,7 +55,6 @@ class ElementQueryCondition extends BaseQueryCondition
         $types = [
             RelatedToConditionRule::class,
             SlugConditionRule::class,
-            TrashedConditionRule::class,
         ];
 
         if ($this->elementType !== null) {
