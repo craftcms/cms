@@ -9,6 +9,9 @@
 - Craft now also displays dimensions (if any are set) for video assets, as opposed to image assets only. ([#9038](https://github.com/craftcms/cms/discussions/9038))
 - Craft no longer automatically updates the URL when editing queries in GraphiQL. ([#10064](https://github.com/craftcms/cms/issues/10064))
 
+### Fixed
+- Fixed a bug where `craft\base\FieldTrait::$required` wasn’t getting set before custom fields’ `getInputHtml()` methods were called.
+
 ## 3.7.20 - 2021-11-06
 
 ### Changed
