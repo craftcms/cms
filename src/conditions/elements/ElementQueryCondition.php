@@ -53,6 +53,9 @@ class ElementQueryCondition extends BaseQueryCondition
     protected function conditionRuleTypes(): array
     {
         $types = [
+            DateCreatedConditionRule::class,
+            DateUpdatedConditionRule::class,
+            IdConditionRule::class,
             RelatedToConditionRule::class,
             SlugConditionRule::class,
         ];
@@ -63,6 +66,7 @@ class ElementQueryCondition extends BaseQueryCondition
 
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;
+                $types[] = UriConditionRule::class;
             }
         }
 
