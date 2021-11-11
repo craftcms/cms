@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\RelationalFieldConditionRule;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
@@ -455,6 +456,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         /** @var ElementQueryInterface $value */
         return $this->_all($value, $element)->ids();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return [
+            'class' => RelationalFieldConditionRule::class,
+            'elementType' => static::elementType(),
+            'sources' => (array)$this->inputSources(),
+            'criteria' => $this->inputSelectionCriteria(),
+        ];
     }
 
     /**

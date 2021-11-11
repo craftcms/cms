@@ -18,6 +18,7 @@ use yii\db\QueryInterface;
 /**
  * Relation condition rule.
  *
+ * @property int[] $elementIds
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -35,6 +36,16 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
      * @var string
      */
     public string $elementType = Entry::class;
+
+    /**
+     * @var string[]|null
+     */
+    public ?array $sources = null;
+
+    /**
+     * @var array|null
+     */
+    public ?array $criteria = null;
 
     /**
      * @var array
@@ -58,9 +69,9 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     }
 
     /**
-     * @return array
+     * @return int[]
      */
-    public function getElementIds()
+    public function getElementIds(): array
     {
         return $this->_elementIds;
     }
@@ -115,16 +126,28 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
                     ],
                 ],
             ]) .
-            Cp::elementSelectHtml([
-                'name' => 'elementIds',
-                'elements' => $this->_elements(),
-                'elementType' => $this->elementType,
-                'single' => true,
-            ]),
+            $this->elementSelectHtml(),
             [
                 'class' => ['flex', 'flex-nowrap'],
             ]
         );
+    }
+
+    /**
+     * Returns the element selector HTML.
+     *
+     * @return string
+     */
+    protected function elementSelectHtml(): string
+    {
+        return Cp::elementSelectHtml([
+            'name' => 'elementIds',
+            'elements' => $this->_elements(),
+            'elementType' => $this->elementType,
+            'sources' => $this->sources,
+            'criteria' => $this->criteria,
+            'single' => true,
+        ]);
     }
 
     /**
@@ -165,10 +188,10 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     /**
      * @inheritdoc
      */
-    public function defineRules(): array
+    protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['elementType', 'elementIds'], 'safe'],
+            [['elementType', 'sources', 'criteria', 'elementIds'], 'safe'],
         ]);
     }
 }

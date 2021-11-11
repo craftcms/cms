@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\conditions\elements\fields\DateFieldConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\gql\directives\FormatDateTime;
@@ -373,6 +374,14 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'date' => Db::prepareDateForDb($value),
             'tz' => $value->getTimezone()->getName(),
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return DateFieldConditionRule::class;
     }
 
     /**
