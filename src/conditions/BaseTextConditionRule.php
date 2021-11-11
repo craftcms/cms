@@ -128,7 +128,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
                     'name' => 'value',
                     'value' => $this->value,
                     'autocomplete' => false,
-                ])
+                ]), [
+                    'class' => 'fullwidth',
+                ]
             ) .
             Html::endTag('div');
     }
