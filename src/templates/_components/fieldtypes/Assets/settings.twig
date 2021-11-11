@@ -32,15 +32,15 @@
 
 
 {% block fieldSettings %}
-    {{ forms.checkboxField({
-        label: 'Restrict assets to a single folder'|t('app'),
-        id: 'useSingleFolder-toggle',
-        name: 'useSingleFolder',
-        class: 'use-single-folder-cb',
-        value: 1,
-        checked: field.useSingleFolder,
-        toggle: 'single-folder-settings',
-        reverseToggle: 'multi-folder-settings'
+    {{ forms.selectField({
+        label: 'Field mode'|t('app'),
+        id: 'fieldMode',
+        name: 'fieldMode',
+        class: 'assets-field-mode',
+        value: field.fieldMode,
+        options: fieldModeOptions,
+        toggle: true,
+        targetPrefix: 'field-mode-'
     }) }}
 
     {% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t('app') %}
@@ -51,7 +51,15 @@
         }) %}
     {% endif %}
 
-    <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
+    <div id="field-mode-singleFolder" {% if field.fieldMode != 'singleFolder' %}class="hidden"{% endif %}>
+        {{ forms.field({
+            label: 'Asset Location'|t('app'),
+            instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
+            errors: field.getErrors('singleUploadLocationSubpath')
+        }, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
+    </div>
+
+    <div id="field-mode-normal" {% if field.fieldMode != 'normal' %}class="hidden"{% endif %}>
         {{ block('sourcesField') }}
 
         {{ forms.field({
@@ -61,12 +69,22 @@
         }, uploadLocationInput('defaultUploadLocation', field, sourceOptions)) }}
     </div>
 
-    <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
+    <div id="field-mode-subtree" {% if field.fieldMode != 'subtree' %}class="hidden"{% endif %}>
         {{ forms.field({
-            label: 'Asset Location'|t('app'),
-            instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
-            errors: field.getErrors('singleUploadLocationSubpath')
-        }, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
+            label: 'Asset subtree'|t('app'),
+            instructions: 'Assets in this field will be contained to this path and its subfolders.'|t('app') ~' '~ uploadLocationNote,
+            errors: field.getErrors('subtree')
+        }, uploadLocationInput('subtree', field, sourceOptions)) }}
+
+        {{ forms.textField({
+            id: 'subtreeDefaultLocation',
+            class: 'ltr',
+            name: 'subtreeDefaultLocation',
+            label: 'Default Asset Location'|t('app'),
+            value: field.subtreeDefaultLocation,
+            instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form. This setting is applied on top of the selected subtree.'|t('app') ~' '~ uploadLocationNote,
+            placeholder: "path/to/subfolder"|t('app')
+        }) }}
     </div>
 
     {{ forms.checkboxField({
@@ -140,3 +158,11 @@
 
     {{ block('advancedSettings') }}
 {% endblock %}
+
+{% js %}
+    const prefix = 'folder-settings-';
+
+    $('.assets-field-mode').change(ev => {
+        $('.folder-settings').addClass('hidden').filter('.mode-' + ev.target.value).removeClass('hidden');
+    });
+{% endjs %}
