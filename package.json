@@ -1,15 +1,14 @@
 {
+  "name": "craftcms",
   "private": true,
-  "main": "gulpfile.js",
+  "main": "webpack.config.js",
   "scripts": {
-    "build": "NODE_ENV=production NODE_PATH=\"./packages/craftcms-webpack/node_modules\":\"node_modules\" webpack --progress --config $INIT_CWD/webpack.config.js\n"
+    "build": "webpack --node-env=production --progress --config $INIT_CWD/webpack.config.js"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.0",
-    "@babel/preset-env": "^7.14.1",
     "@benmajor/jquery-touch-events": "^2.0.3",
+    "@craftcms/webpack": "./packages/craftcms-webpack",
     "axios": "^0.21.4",
-    "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^10.31.0",
     "d3": "^4.11.0",
     "d3-format": "^1.4.4",
@@ -22,7 +21,6 @@
     "graphiql": "^0.14.2",
     "graphiql-explorer": "^0.6.3",
     "graphql": "^14.6.0",
-    "gulp": "^3.9.1",
     "iframe-resizer": "^4.3.2",
     "inputmask": "~3.2.2 || ~3.3.5",
     "jquery": "^3.6.0",

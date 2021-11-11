@@ -1,11 +1,12 @@
 {
-  "name": "craftcms-webpack",
+  "name": "@craftcms/webpack",
   "version": "1.0.0",
   "description": "Webpack build tools for Craft CMS",
   "keywords": [
     "craftcms",
     "webpack"
   ],
+  "main": "webpack.config.js",
   "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
   "homepage": "https://craftcms.com",
   "license": "MIT",
@@ -16,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/craftcms/cms/issues"
   },
-  "devDependencies": {
+  "dependencies": {
     "@babel/core": "^7.14.0",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-env": "^7.14.1",
