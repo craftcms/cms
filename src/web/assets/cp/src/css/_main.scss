@@ -4252,6 +4252,11 @@ ul.tree,
     align-items: center;
     justify-content: center;
   }
+
+  .body,
+  .main {
+    overflow: visible;
+  }
 }
 
 /* logout warning/login/elevated session modals */
