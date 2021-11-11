@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace craft\gql\types;
 
 use craft\errors\GqlException;
-use craft\gql\base\NonGeneratedTypeInterface;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\StringValueNode;
@@ -21,7 +21,7 @@ use GraphQL\Type\Definition\ScalarType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class DateTime extends ScalarType implements NonGeneratedTypeInterface
+class DateTime extends ScalarType implements SingularTypeInterface
 {
     /**
      * @var string
