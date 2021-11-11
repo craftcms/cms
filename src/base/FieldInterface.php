@@ -373,9 +373,9 @@ interface FieldInterface extends SavableComponentInterface
      *
      * The rule class must be an instance of [[\craft\conditions\elements\fields\FieldConditionRuleInterface]].
      *
-     * @return string|null
+     * @return string|array{class: string}|null
      */
-    public function getQueryConditionRuleType(): ?string;
+    public function getQueryConditionRuleType();
 
     /**
      * Modifies an element query.

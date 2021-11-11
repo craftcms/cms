@@ -42,15 +42,15 @@ class ElementQueryCondition extends BaseQueryCondition
         ];
 
         foreach (Craft::$app->getFields()->getAllFields($this->fieldContext) as $field) {
-            if (($class = $field->getQueryConditionRuleType()) !== null) {
-                if (!is_subclass_of($class, FieldConditionRuleInterface::class)) {
-                    throw new InvalidTypeException($class, FieldConditionRuleInterface::class);
+            if (($type = $field->getQueryConditionRuleType()) !== null) {
+                if (is_string($type)) {
+                    $type = ['class' => $type];
                 }
-
-                $types[] = [
-                    'class' => $class,
-                    'fieldUid' => $field->uid,
-                ];
+                if (!is_subclass_of($type['class'], FieldConditionRuleInterface::class)) {
+                    throw new InvalidTypeException($type['class'], FieldConditionRuleInterface::class);
+                }
+                $type['fieldUid'] = $field->uid;
+                $types[] = $type;
             }
         }
 
