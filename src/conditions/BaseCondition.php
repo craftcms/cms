@@ -192,20 +192,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getConfig(): array
-    {
-        return [
-            'class' => get_class($this),
-            'conditionRules' => $this->_conditionRules
-                ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
-                ->values()
-                ->all(),
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getBuilderHtml(array $options = []): string
     {
         $tagName = ArrayHelper::remove($options, 'mainTag', 'form');
@@ -426,6 +412,20 @@ abstract class BaseCondition extends Component implements ConditionInterface
     {
         return [
             [['conditionRules'], 'safe'],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfig(): array
+    {
+        return [
+            'class' => get_class($this),
+            'conditionRules' => $this->_conditionRules
+                ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
+                ->values()
+                ->all(),
         ];
     }
 }

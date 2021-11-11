@@ -86,21 +86,21 @@ class ElementQueryCondition extends BaseQueryCondition
     /**
      * @inheritdoc
      */
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = [['elementType', 'fieldContext'], 'safe'];
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getConfig(): array
     {
         $config = parent::getConfig();
         $config['elementType'] = $this->elementType;
         $config['fieldContext'] = $this->fieldContext;
         return $config;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['elementType', 'fieldContext'], 'safe'];
-        return $rules;
     }
 }
