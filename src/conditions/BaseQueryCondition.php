@@ -15,21 +15,21 @@ abstract class BaseQueryCondition extends BaseCondition implements QueryConditio
     /**
      * @inheritdoc
      */
-    public function modifyQuery(QueryInterface $query): void
-    {
-        foreach ($this->getConditionRules() as $conditionRule) {
-            $conditionRule->modifyQuery($query);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defaultBuilderOptions(): array
     {
         return [
             'sortable' => false,
             'singleUseTypes' => true,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyQuery(QueryInterface $query): void
+    {
+        foreach ($this->getConditionRules() as $conditionRule) {
+            $conditionRule->modifyQuery($query);
+        }
     }
 }
