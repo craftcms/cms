@@ -29,30 +29,22 @@ if (parameters.variables) {
     }
 }
 
-// When the query and variables string is edited, update the URL bar so
-// that it can be easily shared
+// Keep track of changing parameters.
 function onEditQuery(newQuery) {
     parameters.query = newQuery;
-    updateURL();
 }
 
 function onEditVariables(newVariables) {
     parameters.variables = newVariables;
-    updateURL();
 }
 
-function onEditOperationName(newOperationName) {
-    parameters.operationName = newOperationName;
-    updateURL();
-}
-
-function updateURL() {
-    var newSearch = '?' + Object.keys(parameters).filter(function(key) {
+function getShareableURL() {
+    const prefix = location.href.split('?')[0];
+    return prefix + '?' + Object.keys(parameters).filter(function(key) {
         return Boolean(parameters[key]);
     }).map(function(key) {
         return encodeURIComponent(key) + '=' + encodeURIComponent(parameters[key]);
     }).join('&');
-    history.replaceState(null, null, newSearch);
 }
 
 function setSchema(uid) {
@@ -115,6 +107,9 @@ export class CraftGraphiQL extends React.Component {
         // Make sure we're aware of the query.
         this.state.query = this.graphiql.current.state.query;
 
+        parameters.query = this.graphiql.current.getQueryEditor().options.value;
+        parameters.variables = this.graphiql.current.getVariableEditor().options.value;
+
         this.props
             .fetcher({
                 query: getIntrospectionQuery(),
@@ -147,6 +142,13 @@ export class CraftGraphiQL extends React.Component {
         });
     }
 
+    handleClickShare(event) {
+        window.Craft.ui.createCopyTextPrompt({
+            label: Craft.t('app', 'Share query'),
+            value: getShareableURL(),
+        });
+    }
+
     // Create the schema dropdown selector
     _makeSchemaSelector(gqlSchemas, selectedSchema) {
         let menuItems = [];
@@ -165,6 +167,7 @@ export class CraftGraphiQL extends React.Component {
     }
 
     render() {
+
         let logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API");
 
         // Set up the toolbar.
@@ -188,6 +191,13 @@ export class CraftGraphiQL extends React.Component {
                 title: "Toggle explorer",
                 key: "explore"
             }),
+            elem(GraphiQL.Button, {
+                onClick: this.handleClickShare.bind(this),
+                label: "Share query",
+                title: "Share query",
+                key: "shareQuery"
+            }),
+
         ];
 
         let toolBar = elem(GraphiQL.Toolbar, {}, toolbarElements);
@@ -210,7 +220,6 @@ export class CraftGraphiQL extends React.Component {
                 operationName: parameters.operationName,
                 onEditQuery: this.handleEditQuery.bind(this),
                 onEditVariables: onEditVariables,
-                onEditOperationName: onEditOperationName,
                 ref: this.graphiql,
             }, logoElement, toolBar)
         );

@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added a “Share query” button to the GraphiQL editor for sharing queries. ([#10064](https://github.com/craftcms/cms/issues/10064))
+
 ### Changed
 - Craft now also displays dimensions (if any are set) for video assets, as opposed to image assets only. ([#9038](https://github.com/craftcms/cms/discussions/9038))
+- Craft no longer automatically updates the URL when editing queries in GraphiQL. ([#10064](https://github.com/craftcms/cms/issues/10064))
 
 ## 3.7.20 - 2021-11-06
 
