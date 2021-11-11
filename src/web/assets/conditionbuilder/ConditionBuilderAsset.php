@@ -8,7 +8,6 @@
 namespace craft\web\assets\conditionbuilder;
 
 use craft\web\assets\cphtmx\CpHtmxAsset;
-use craft\web\assets\sortable\SortableAsset;
 use yii\web\AssetBundle;
 
 /**
@@ -26,7 +25,6 @@ class ConditionBuilderAsset extends AssetBundle
      */
     public $depends = [
         CpHtmxAsset::class,
-        SortableAsset::class
     ];
 
     /**

@@ -1,13 +1,12 @@
 htmx.on('htmx:load', function(evt) {
-    const content = evt.detail.elt;
-    const sortables = content.querySelectorAll(".sortable");
-    for (let i = 0; i < sortables.length; i++) {
-        const sortable = sortables[i];
-        new Sortable(sortable, {
-            animation: 150,
-            draggable: '.draggable',
-            handle: '.draggable-handle',
-            direction: 'vertical',
-        });
+    const container = evt.detail.elt.querySelector('.condition');
+    if (container && container.classList.contains('sortable')) {
+        const sortItems = container.querySelectorAll(".condition-rule");
+        if (sortItems.length) {
+            new Garnish.DragSort(sortItems, {
+                axis: Garnish.Y_AXIS,
+                handle: '.draggable-handle',
+            });
+        }
     }
 });

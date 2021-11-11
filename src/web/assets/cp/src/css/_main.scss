@@ -3102,27 +3102,10 @@ ul.tree,
 /*  Condition builders
 /* ----------------------------------------*/
 
-.condition {
-  .condition-rule {
-    padding: 7px 7px 0;
-    border: 1px solid $hairlineColor;
-    background-color: $grey050;
-
-    &:first-child {
-      border-top-left-radius: $largeBorderRadius;
-      border-top-right-radius: $largeBorderRadius;
-    }
-
-    & + .condition-rule {
-      border-top-width: 0;
-    }
-  }
-
-  &:not(:empty) + .condition-footer .btn.add {
-    border-top-width: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-  }
+.condition:not(:empty) + .condition-footer .btn.add {
+  border-top-width: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .condition-footer {
@@ -3131,6 +3114,21 @@ ul.tree,
   }
   .spinner {
     @include margin-left(7px);
+  }
+}
+
+.condition-rule {
+  padding: 7px 7px 0;
+  border: 1px solid $hairlineColor;
+  background-color: $grey050;
+
+  &:first-child {
+    border-top-left-radius: $largeBorderRadius;
+    border-top-right-radius: $largeBorderRadius;
+  }
+
+  & + .condition-rule {
+    border-top-width: 0;
   }
 }
 

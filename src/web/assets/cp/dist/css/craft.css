@@ -1582,12 +1582,6 @@ body.use-shapes .status.off, body.use-shapes .status.suspended, body.use-shapes 
 /* ----------------------------------------
 /*  Condition builders
 /* ----------------------------------------*/
-.condition .condition-rule { padding: 7px 7px 0; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; }
-
-.condition .condition-rule:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
-
-.condition .condition-rule + .condition-rule { border-top-width: 0; }
-
 .condition:not(:empty) + .condition-footer .btn.add { border-top-width: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
 
 .condition-footer .btn.add { height: 48px; }
@@ -1595,6 +1589,12 @@ body.use-shapes .status.off, body.use-shapes .status.suspended, body.use-shapes 
 body.ltr .condition-footer .spinner { margin-left: 7px; }
 
 body.rtl .condition-footer .spinner { margin-right: 7px; }
+
+.condition-rule { padding: 7px 7px 0; border: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; }
+
+.condition-rule:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
+
+.condition-rule + .condition-rule { border-top-width: 0; }
 
 /* ----------------------------------------
 /*  Progress bar

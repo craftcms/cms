@@ -75,7 +75,6 @@ const jsDeps = [
     {srcGlob: 'node_modules/picturefill/dist/picturefill.js', dest: `${libPath}/picturefill`},
     {srcGlob: 'node_modules/punycode/punycode.js', dest: `${libPath}/punycode`},
     {srcGlob: 'node_modules/selectize/dist/js/standalone/selectize.js', dest: `${libPath}/selectize`},
-    {srcGlob: 'node_modules/sortablejs/Sortable.js', dest: `${libPath}/sortable`},
     {srcGlob: 'node_modules/timepicker/jquery.timepicker.js', dest: `${libPath}/timepicker`},
     {srcGlob: 'node_modules/velocity-animate/velocity.js', dest: `${libPath}/velocity`},
     {srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: `${libPath}/xregexp`},
