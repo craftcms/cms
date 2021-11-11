@@ -2,7 +2,7 @@
   "private": true,
   "main": "gulpfile.js",
   "scripts": {
-    "build": "webpack --node-env=production --progress"
+    "build": "webpack --node-env=production --progress --config $INIT_CWD/webpack.config.js"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
