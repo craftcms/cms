@@ -112,6 +112,33 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
+    public function getSelectableConditionRules(array $options): array
+    {
+        $conditionsService = Craft::$app->getConditions();
+        return collect($this->getConditionRuleTypes())
+            ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
+            ->map(fn($type) => $conditionsService->createConditionRule($type))
+            ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule, $options))
+            ->all();
+    }
+
+    /**
+     * Returns whether the given rule should be selectable by the condition builder.
+     *
+     * @param ConditionRuleInterface $rule The rule in question
+     * @param array $options The builder options
+     */
+    protected function isConditionRuleSelectable(ConditionRuleInterface $rule, array $options): bool
+    {
+        return (
+            $rule->isSelectable() &&
+            !$options['projectConfigTypes'] || $rule::supportsProjectConfig()
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getConditionRules(): array
     {
         return $this->_conditionRules->all();
@@ -211,30 +238,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $options += $this->defaultBuilderOptions() + [
                 'sortable' => true,
-                'singleUseTypes' => false,
                 'projectConfigTypes' => false,
             ];
 
-        // Get all the available condition rules as type/rule pairs
-        $conditionRuleTypes = $this->getConditionRuleTypes();
-        $conditionsService = Craft::$app->getConditions();
-        $availableRules = collect($conditionRuleTypes)
-            ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
-            ->map(fn($type) => $conditionsService->createConditionRule($type));
-
-        if ($options['singleUseTypes']) {
-            $ruleLabels = $this->_conditionRules
-                ->map(fn(ConditionRuleInterface $rule) => $rule->getLabel())
-                ->flip()
-                ->all();
-            $availableRules = $availableRules
-                ->filter(fn(ConditionRuleInterface $rule) => !isset($ruleLabels[$rule->getLabel()]));
-        }
-
-        if ($options['projectConfigTypes']) {
-            $availableRules = $availableRules
-                ->filter(fn(ConditionRuleInterface $rule) => $rule::supportsProjectConfig());
-        }
+        // Get all the selectable condition rules as type/rule pairs
+        $selectableRules = $this->getSelectableConditionRules($options);
 
         $namespace = $view->getNamespace();
         $namespacedId = Html::namespaceId($options['id'], $namespace);
@@ -248,7 +256,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 'vals' => array_filter([
                     'namespace' => $namespace,
                     'options' => Json::encode($options),
-                    'conditionRuleTypes' => Json::encode($conditionRuleTypes),
+                    'conditionRuleTypes' => Json::encode($this->getConditionRuleTypes()),
                 ]),
             ],
         ]);
@@ -262,7 +270,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $ruleCount = 0;
 
         foreach ($this->getConditionRules() as $rule) {
-            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $availableRules) {
+            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $selectableRules) {
                 $ruleHtml = Html::hiddenInput('uid', $rule->uid) .
                     Html::hiddenInput('class', get_class($rule));
 
@@ -280,9 +288,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $ruleTypeOptions = [];
                 $ruleValue = Json::encode($rule->getConfig());
                 $ruleLabel = $rule->getLabel();
-                foreach ($availableRules as $value => $availableRule) {
-                    /** @var ConditionRuleInterface $availableRule */
-                    $label = $availableRule->getLabel();
+                foreach ($selectableRules as $value => $selectableRule) {
+                    /** @var ConditionRuleInterface $selectableRule */
+                    $label = $selectableRule->getLabel();
                     if ($label !== $ruleLabel) {
                         $ruleTypeOptions[] = compact('value', 'label');
                     }
@@ -366,7 +374,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         'icon',
                         'fullwidth',
                         'dashed',
-                        empty($conditionRuleTypes) ? 'disabled' : null,
+                        empty($selectableRules) ? 'disabled' : null,
                     ]),
                     'hx' => [
                         'post' => UrlHelper::actionUrl('conditions/add-rule'),

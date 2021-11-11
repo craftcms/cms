@@ -55,6 +55,14 @@ interface ConditionInterface
     public function setConditionRuleTypes(array $conditionRuleTypes = []): void;
 
     /**
+     * Returns the selectable rules for the condition, indexed by type.
+     *
+     * @param array The builder options
+     * @return ConditionRuleInterface[]
+     */
+    public function getSelectableConditionRules(array $options): array;
+
+    /**
      * Returns the rules this condition is configured with.
      *
      * @return ConditionRuleInterface[]

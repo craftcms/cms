@@ -79,19 +79,10 @@ class ConditionsController extends Controller
      */
     public function actionAddRule(): string
     {
-        $conditionsService = Craft::$app->getConditions();
-        $ruleLabels = collect($this->_condition->getConditionRules())
-            ->map(fn(ConditionRuleInterface $rule) => $rule->getLabel())
-            ->flip()
-            ->all();
-
         /** @var ConditionRuleInterface|null $rule */
-        $rule = collect($this->_condition->getConditionRuleTypes())
-            ->map(fn($type) => $conditionsService->createConditionRule($type))
+        $rule = collect($this->_condition->getSelectableConditionRules($this->_options))
             ->sortBy(fn(ConditionRuleInterface $rule) => $rule->getLabel())
-            ->first(function(ConditionRuleInterface $rule) use ($ruleLabels) {
-                return empty($this->_options['singleUseTypes']) || !isset($ruleLabels[$rule->getLabel()]);
-            });
+            ->first();
 
         if ($rule) {
             $this->_condition->addConditionRule($rule);

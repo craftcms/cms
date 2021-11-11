@@ -390,38 +390,23 @@ class ElementIndexesController extends BaseElementsController
         // Filter out any condition rules that touch the same query params as the source criteria
         $source = $this->source();
         if ($source['type'] === ElementSources::TYPE_NATIVE) {
-            $params = $source['criteria'] ?? [];
+            $queryParams = array_keys($source['criteria'] ?? []);
         } else {
             /** @var QueryConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
-            $params = [];
+            $queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var QueryConditionRuleInterface $rule */
                 foreach ($rule->getExclusiveQueryParams() as $param) {
-                    $params[$param] = true;
+                    $queryParams[] = $param;
                 }
             }
         }
 
-        $conditionsService = Craft::$app->getConditions();
-        $condition->setConditionRuleTypes(
-            collect($condition->getConditionRuleTypes())
-                ->filter(function($type) use ($params, $conditionsService) {
-                    /** @var QueryConditionRuleInterface $rule */
-                    $rule = $conditionsService->createConditionRule($type);
-                    foreach ($rule->getExclusiveQueryParams() as $param) {
-                        if (isset($params[$param])) {
-                            return false;
-                        }
-                    }
-                    return true;
-                })
-                ->all()
-        );
-
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',
             'id' => $id,
+            'queryParams' => $queryParams,
         ]);
 
         $view = Craft::$app->getView();
