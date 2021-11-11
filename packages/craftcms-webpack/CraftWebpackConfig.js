@@ -3,12 +3,12 @@
 
 // Libs
 const webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const path = require('path');
 const fs = require('fs');
 
 // Plugins
-const ManifestPlugin = require('webpack-manifest-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ParentModule = require('parent-module');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
@@ -244,7 +244,6 @@ class CraftWebpackConfig {
                             {
                                 loader: MiniCssExtractPlugin.loader,
                                 options: {
-                                    hmr: (this.nodeEnv === 'development'),
                                     publicPath: '../',
                                 }
                             },
@@ -356,7 +355,7 @@ class CraftWebpackConfig {
             plugins: [
                 new VueLoaderPlugin(),
                 new webpack.HotModuleReplacementPlugin(),
-                new ManifestPlugin({
+                new WebpackManifestPlugin({
                     publicPath: '/'
                 }),
             ],
