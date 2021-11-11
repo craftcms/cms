@@ -49,6 +49,14 @@ class Conditions extends Component
             throw new InvalidArgumentException("Invalid condition class: $class");
         }
 
+        // The base config will be JSON-encoded within a `config` key if this came from a condition builder
+        if (isset($config['config']) && Json::isJsonObject($config['config'])) {
+            $config = array_merge(
+                Json::decode(ArrayHelper::remove($config, 'config')),
+                $config
+            );
+        }
+
         /** @var ConditionInterface $condition */
         $condition = Craft::createObject($class);
         $condition->setAttributes($config);

@@ -238,6 +238,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         ]);
 
         $html .= Html::hiddenInput('class', get_class($this));
+        $html .= Html::hiddenInput('config', Json::encode($this->config()));
 
         // Start rule js buffer
         $view->startJsBuffer();
@@ -420,12 +421,22 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getConfig(): array
     {
-        return [
+        return array_merge($this->config(), [
             'class' => get_class($this),
             'conditionRules' => $this->_conditionRules
                 ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
                 ->values()
                 ->all(),
-        ];
+        ]);
+    }
+
+    /**
+     * Returns the condition’s portable config.
+     *
+     * @return array
+     */
+    protected function config(): array
+    {
+        return [];
     }
 }

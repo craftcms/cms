@@ -96,11 +96,8 @@ class ElementQueryCondition extends BaseQueryCondition
     /**
      * @inheritdoc
      */
-    public function getConfig(): array
+    protected function config(): array
     {
-        $config = parent::getConfig();
-        $config['elementType'] = $this->elementType;
-        $config['fieldContext'] = $this->fieldContext;
-        return $config;
+        return $this->toArray(['elementType', 'fieldContext']);
     }
 }
