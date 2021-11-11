@@ -47,13 +47,10 @@ class ConditionsController extends Controller
         $this->_options = Json::decodeIfJson($this->request->getBodyParam('options')) ?? [];
 
         if ($this->_namespace) {
-            $baseInputNamePath = str_replace(['[', ']'], ['.', ''], $this->_namespace);
-            $config = $this->request->getBodyParam($baseInputNamePath);
+            $config = $this->request->getBodyParam($this->_namespace);
         } else {
             $config = $this->request->getBodyParams();
-            ArrayHelper::remove($config, 'namespace');
-            ArrayHelper::remove($config, 'options');
-            ArrayHelper::remove($config, 'uid');
+            unset($config['namespace'], $config['options'], $config['uid']);
         }
 
         $this->_condition = Craft::$app->getConditions()->createCondition($config);
