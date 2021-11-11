@@ -155,7 +155,7 @@ class ElementsController extends BaseElementsController
         // Normalize the DateTime attributes
         foreach ($element->datetimeAttributes() as $attribute) {
             if (isset($params[$attribute])) {
-                $params[$attribute] = DateTimeHelper::toDateTime($params[$attribute]);
+                $params[$attribute] = DateTimeHelper::toDateTime($params[$attribute]) ?: null;
             }
         }
 
