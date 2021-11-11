@@ -18,6 +18,7 @@ class EntryQueryCondition extends ElementQueryCondition
     protected function conditionRuleTypes(): array
     {
         return array_merge(parent::conditionRuleTypes(), [
+            AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
             ExpiryDateConditionRule::class,
             PostDateConditionRule::class,
