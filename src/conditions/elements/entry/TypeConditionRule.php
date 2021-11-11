@@ -27,7 +27,7 @@ class TypeConditionRule extends BaseConditionRule implements QueryConditionRuleI
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Type');
+        return Craft::t('app', 'Entry Type');
     }
 
     /**
