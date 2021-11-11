@@ -140,16 +140,21 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function setConditionRules(array $rules): void
     {
-        $this->_conditionRules = new Collection(array_map(function($rule) {
-            if (is_array($rule)) {
-                $rule = Craft::$app->getConditions()->createConditionRule($rule);
-            }
-            if (!$this->validateConditionRule($rule)) {
-                throw new InvalidArgumentException('Invalid condition rule');
-            }
-            $rule->setCondition($this);
-            return $rule;
-        }, $rules));
+        $conditionsService = Craft::$app->getConditions();
+        $this->_conditionRules = collect($rules)
+            ->map(function($rule) use ($conditionsService) {
+                if ($rule instanceof ConditionRuleInterface) {
+                    return $rule;
+                }
+                try {
+                    return $conditionsService->createConditionRule($rule);
+                } catch (InvalidArgumentException $e) {
+                    Craft::warning("Invalid condition rule: {$e->getMessage()}");
+                    return null;
+                }
+            })
+            ->filter(fn(?ConditionRuleInterface $rule) => $rule && $this->validateConditionRule($rule))
+            ->each(fn(ConditionRuleInterface $rule) => $rule->setCondition($this));
     }
 
     /**
