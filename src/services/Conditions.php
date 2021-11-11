@@ -57,9 +57,13 @@ class Conditions extends Component
             );
         }
 
+        // Set condition rules last, in case any available rules are dependent on the condition config
+        $rules = ArrayHelper::remove($config, 'conditionRules', []);
+
         /** @var ConditionInterface $condition */
         $condition = Craft::createObject($class);
         $condition->setAttributes($config);
+        $condition->setConditionRules($rules);
         return $condition;
     }
 
