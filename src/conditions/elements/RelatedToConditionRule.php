@@ -7,7 +7,7 @@ use craft\base\BlockElementInterface;
 use craft\base\ElementInterface;
 use craft\conditions\BaseConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -94,7 +94,7 @@ class RelatedToConditionRule extends BaseConditionRule implements QueryCondition
     public function modifyQuery(QueryInterface $query): void
     {
         if (!empty($this->_elementIds)) {
-            /** @var ElementQuery $query */
+            /** @var ElementQueryInterface $query */
             $query->andRelatedTo($this->_elementIds);
         }
     }

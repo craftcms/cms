@@ -6,7 +6,6 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 
 /**
  * BaseTextConditionRule provides a base implementation for condition rules that are composed of an operator menu and text input.

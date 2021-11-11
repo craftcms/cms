@@ -3,8 +3,6 @@
 namespace craft\conditions\elements\fields;
 
 use craft\conditions\BaseTextConditionRule;
-use craft\conditions\elements\fields\FieldConditionRuleInterface;
-use craft\conditions\elements\fields\FieldConditionRuleTrait;
 
 /**
  * Text field condition rule.

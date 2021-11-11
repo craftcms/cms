@@ -2,7 +2,6 @@
 
 namespace craft\conditions;
 
-use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 
 /**

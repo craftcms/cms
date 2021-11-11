@@ -5,7 +5,7 @@ namespace craft\conditions\elements;
 use Craft;
 use craft\conditions\BaseLightswitchConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use yii\db\QueryInterface;
 
 /**
@@ -37,7 +37,7 @@ class TrashedConditionRule extends BaseLightswitchConditionRule implements Query
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var ElementQuery $query */
+        /** @var ElementQueryInterface $query */
         $query->trashed($this->value);
     }
 }

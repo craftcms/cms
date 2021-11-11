@@ -5,7 +5,7 @@ namespace craft\conditions\elements\entry;
 use Craft;
 use craft\conditions\BaseLightswitchConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use yii\db\QueryInterface;
 
 /**
@@ -37,7 +37,7 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements QueryC
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var ElementQuery $query */
+        /** @var ElementQueryInterface $query */
         if ($this->value) {
             $query->uri('not :empty:');
         } else {

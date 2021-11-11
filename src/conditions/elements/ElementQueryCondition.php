@@ -6,7 +6,6 @@ use Craft;
 use craft\conditions\BaseQueryCondition;
 use craft\conditions\elements\fields\FieldConditionRuleInterface;
 use craft\errors\InvalidTypeException;
-use yii\base\InvalidArgumentException;
 
 /**
  * ElementQueryCondition provides an element query condition.
