@@ -18,10 +18,10 @@ use yii\base\InvalidArgumentException;
  * BaseCondition provides a base implementation for conditions.
  *
  * @property ConditionRuleInterface[] $conditionRules The rules this condition is configured with
- * @property string[]|array{class: string}[] $conditionRuleTypes The available rule types for this condition
  * @property-read array $config The condition’s portable config
  * @property-read string $builderHtml The HTML for the condition builder, including its outer container element
  * @property-read string $builderInnerHtml The inner HTML for the condition builder, excluding its outer container element
+ * @property-read string[]|array{class: string}[] $conditionRuleTypes The available rule types for this condition
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -43,7 +43,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @var string[]|array{class: string}[]|array{type: string}[] The available rule types for this condition.
      * @see getConditionRuleTypes()
-     * @see setConditionRuleTypes()
      */
     private array $_conditionRuleTypes;
 
@@ -87,14 +86,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         return $this->_conditionRuleTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setConditionRuleTypes(array $conditionRuleTypes = []): void
-    {
-        $this->_conditionRuleTypes = $conditionRuleTypes;
     }
 
     /**
@@ -256,7 +247,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 'vals' => array_filter([
                     'namespace' => $namespace,
                     'options' => Json::encode($options),
-                    'conditionRuleTypes' => Json::encode($this->getConditionRuleTypes()),
                 ]),
             ],
         ]);
@@ -435,7 +425,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     protected function defineRules(): array
     {
         return [
-            [['conditionRules', 'conditionRuleTypes'], 'safe'],
+            [['conditionRules'], 'safe'],
         ];
     }
 }

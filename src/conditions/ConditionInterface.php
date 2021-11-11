@@ -48,13 +48,6 @@ interface ConditionInterface
     public function getConditionRuleTypes(): array;
 
     /**
-     * Sets the available rule types for this condition.
-     *
-     * @param string[]|array{class: string}[] $conditionRuleTypes
-     */
-    public function setConditionRuleTypes(array $conditionRuleTypes = []): void;
-
-    /**
      * Returns the selectable rules for the condition, indexed by type.
      *
      * @param array The builder options
