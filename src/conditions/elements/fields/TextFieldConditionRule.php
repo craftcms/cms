@@ -7,12 +7,12 @@ use craft\conditions\elements\fields\FieldConditionRuleInterface;
 use craft\conditions\elements\fields\FieldConditionRuleTrait;
 
 /**
- * Plain Text field condition rule.
+ * Text field condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class PlainTextConditionRule extends BaseTextConditionRule implements FieldConditionRuleInterface
+class TextFieldConditionRule extends BaseTextConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
