@@ -3,7 +3,6 @@
 ## Unreleased
 
 ### Added
-- Asset image preview now allow updating the focal point.
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
@@ -11,6 +10,8 @@
 - Added the “Deactivate users by default” user registration setting, which replaces “Suspend users by default”. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
+- It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
+- Added the `authors` user query param.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
 - Added `craft\base\Volume::CONFIG_VISIBILITY`.
