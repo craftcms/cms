@@ -3,6 +3,7 @@
 namespace craft\conditions\elements;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\conditions\BaseQueryCondition;
 use craft\conditions\elements\fields\FieldConditionRuleInterface;
 use craft\errors\InvalidTypeException;
@@ -16,10 +17,27 @@ use craft\errors\InvalidTypeException;
 class ElementQueryCondition extends BaseQueryCondition
 {
     /**
+     * @var string|null The element type being queried.
+     */
+    public ?string $elementType;
+
+    /**
      * @var string The field context that should be used when fetching custom fields’ condition rule types.
      * @see conditionRuleTypes()
      */
     public string $fieldContext = 'global';
+
+    /**
+     * Constructor.
+     *
+     * @param string|null $elementType
+     * @param array $config
+     */
+    public function __construct(?string $elementType = null, array $config = [])
+    {
+        $this->elementType = $elementType;
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -39,6 +57,15 @@ class ElementQueryCondition extends BaseQueryCondition
             SlugConditionRule::class,
             TrashedConditionRule::class,
         ];
+
+        if ($this->elementType !== null) {
+            /** @var string|ElementInterface $elementType */
+            $elementType = $this->elementType;
+
+            if ($elementType::hasUris()) {
+                $types[] = HasUrlConditionRule::class;
+            }
+        }
 
         foreach (Craft::$app->getFields()->getAllFields($this->fieldContext) as $field) {
             if (($type = $field->getQueryConditionRuleType()) !== null) {
@@ -62,7 +89,18 @@ class ElementQueryCondition extends BaseQueryCondition
     public function getConfig(): array
     {
         $config = parent::getConfig();
+        $config['elementType'] = $this->elementType;
         $config['fieldContext'] = $this->fieldContext;
         return $config;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = [['elementType', 'fieldContext'], 'safe'];
+        return $rules;
     }
 }

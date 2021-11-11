@@ -192,7 +192,7 @@ class Entry extends Element
      */
     public static function createCondition(): QueryConditionInterface
     {
-        return Craft::createObject(EntryQueryCondition::class);
+        return Craft::createObject(EntryQueryCondition::class, [static::class]);
     }
 
     /**

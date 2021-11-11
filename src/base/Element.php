@@ -652,7 +652,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function createCondition(): QueryConditionInterface
     {
-        return Craft::createObject(ElementQueryCondition::class);
+        return Craft::createObject(ElementQueryCondition::class, [static::class]);
     }
 
     /**
