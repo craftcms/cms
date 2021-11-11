@@ -52,7 +52,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['value'], 'in', 'range' => $this->_validValues()],
+            [['value'], 'in', 'range' => fn() => $this->_validValues()],
         ]);
     }
 
