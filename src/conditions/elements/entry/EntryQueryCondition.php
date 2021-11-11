@@ -18,11 +18,11 @@ class EntryQueryCondition extends ElementQueryCondition
     protected function conditionRuleTypes(): array
     {
         return array_merge(parent::conditionRuleTypes(), [
-            TypeConditionRule::class,
-            SectionConditionRule::class,
             AuthorGroupConditionRule::class,
-            PostDateConditionRule::class,
             ExpiryDateConditionRule::class,
+            PostDateConditionRule::class,
+            SectionConditionRule::class,
+            TypeConditionRule::class,
         ]);
     }
 }
