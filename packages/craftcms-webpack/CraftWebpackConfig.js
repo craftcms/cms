@@ -205,14 +205,7 @@ class CraftWebpackConfig {
             devtool: 'source-map',
             optimization,
             resolve: {
-                alias: {
-                    build_modules: path.resolve(__dirname, 'node_modules'),
-                },
                 extensions: ['.wasm', '.ts', '.tsx', '.mjs', '.js', '.json', '.vue'],
-                modules: [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, '../../node_modules'), 'node_modules']
-            },
-            resolveLoader: {
-                modules: [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, '../../node_modules'), 'node_modules'],
             },
             module: {
                 rules: [

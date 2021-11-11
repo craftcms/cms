@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/craftcms/cms/issues"
   },
-  "devDependencies": {
+  "dependencies": {
     "@babel/core": "^7.14.0",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-env": "^7.14.1",
