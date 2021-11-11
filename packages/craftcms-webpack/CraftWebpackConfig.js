@@ -156,23 +156,6 @@ class CraftWebpackConfig {
         if (!this.isDevServerRunning) {
             plugins.push(new CleanWebpackPlugin());
             optimization = {
-                splitChunks: {
-                    maxInitialRequests: Infinity,
-                    minSize: 0,
-                    cacheGroups: {
-                        'craft-components': {
-                            test: module => {
-                                return module.identifier().includes('src/js/components') && module.identifier().includes('.ts');
-                            },
-                            name: module => {
-                                const list = module.identifier().split('/');
-                                const filename = list.pop().split('.');
-                                return filename.shift();
-                            },
-                            enforce: true,
-                        }
-                    }
-                },
                 minimize: true,
                 minimizer: [
                     new TerserWebpackPlugin({
@@ -227,8 +210,8 @@ class CraftWebpackConfig {
                         use: {
                             loader: 'babel-loader',
                             options: {
-                                plugins: [path.resolve(__dirname, './node_modules/@babel/plugin-syntax-dynamic-import')],
-                                presets: [path.resolve(__dirname, './node_modules/@babel/preset-env'), path.resolve(__dirname, './node_modules/@babel/preset-typescript')]
+                                plugins: ['@babel/plugin-syntax-dynamic-import'],
+                                presets: ['@babel/preset-env', '@babel/preset-typescript']
                             }
                         }
                     },
