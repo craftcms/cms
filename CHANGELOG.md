@@ -9,6 +9,7 @@
 ### Fixed
 - Fixed a bug where `craft\base\FieldTrait::$required` wasn’t getting set before custom fields’ `getInputHtml()` methods were called.
 - Fixed a bug where entry drafts and revisions were missing their structure info when previewed. ([#10056](https://github.com/craftcms/cms/issues/10056))
+- Fixed a bug where “Customize” buttons on element index pages didn’t have a pointer cursor. ([#10067](https://github.com/craftcms/cms/issues/10067))
 
 ## 3.7.20 - 2021-11-06
 
