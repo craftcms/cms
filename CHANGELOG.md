@@ -3,7 +3,21 @@
 ## Unreleased
 
 ### Changed
+- Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
+- The GraphiQL IDE no longer updates the URL automatically as the query is modified. The query is now deep-linkable via a new “Share query” button. ([#10064](https://github.com/craftcms/cms/issues/10064))
+
+### Fixed
+- Fixed a bug where `craft\base\FieldTrait::$required` wasn’t getting set before custom fields’ `getInputHtml()` methods were called.
+
+## 3.7.20 - 2021-11-06
+
+### Changed
 - Non-admin users with permission to administrate other users can now require password resets for other users. ([#10057](https://github.com/craftcms/cms/issues/10057))
+- The Plugin Store will now prevent installation of plugins that require a greater PHP version than what’s allowed by the environment.
+
+### Fixed
+- Fixed a bug where focus rings weren’t visible on Safari. ([#10058](https://github.com/craftcms/cms/pull/10058))
+- Fixed a 403 error that occurred when executing pending migrations from the control panel while logged out. ([#9990](https://github.com/craftcms/cms/issues/9990))
 
 ## 3.7.19.1 - 2021-11-04
 
@@ -75,7 +89,6 @@
 - Fixed an error that could occur if the `log` component was configured with a custom log target and `flushInterval` set to `1`.
 - Fixed a bug where `plugin/*` commands weren’t always handling failures properly. ([#9984](https://github.com/craftcms/cms/issues/9984))
 - Fixed a bug where entry title changes could be overlooked when merging upstream changes into a draft. ([#9966](https://github.com/craftcms/cms/issues/9966))
-- Fixed a bug where focus rings weren’t ever visible on Safari, unless the “Always show focus rings” accessibility preference was enabled. ([#10009](https://github.com/craftcms/cms/pull/10009))
 - Fixed a bug where it wasn’t possible to query for draft or revision creators via GraphQL. ([craftcms/gatsby-source-craft#56](https://github.com/craftcms/gatsby-source-craft/issues/56))
 - Fixed a bug where Super Table blocks could go missing when a draft was created, if their block type ID matched another Matrix/Super Table/Neo block’s ID on the same page.
 
