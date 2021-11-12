@@ -13,12 +13,13 @@ use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
- * GqlTypeInterface defines the common interface to be implemented by all GraphQL type classes provided by Craft and plugins.
+ * SingularTypeInterface defines the common interface to be implemented by all types that have no similar types and,
+ * thus, aren't generated.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-interface NonGeneratedTypeInterface
+interface SingularTypeInterface
 {
     /**
      * Return the name of the GraphQL type.

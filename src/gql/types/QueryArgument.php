@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace craft\gql\types;
 
 use craft\errors\GqlException;
-use craft\gql\base\NonGeneratedTypeInterface;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\BooleanValueNode;
 use GraphQL\Language\AST\IntValueNode;
@@ -22,7 +22,7 @@ use GraphQL\Type\Definition\ScalarType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.14
  */
-class QueryArgument extends ScalarType implements NonGeneratedTypeInterface
+class QueryArgument extends ScalarType implements SingularTypeInterface
 {
     /**
      * @var string

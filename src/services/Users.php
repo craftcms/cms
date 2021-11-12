@@ -341,7 +341,7 @@ class Users extends Component
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-            'preferences' => $preferences,
+            'preferences' => Json::encode($preferences),
         ], true, [], false);
     }
 
