@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'ステータスの設定',
     'Settings' => '設定',
     'Setup your site' => 'サイトのセットアップ',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'ユーザーアカウントに保存する前に新しいメールアドレスを確認ししますか？(これは新規ユーザー登録に影響します。)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => '自分のアカウントを登録したユーザーは、デフォルトで保留されるべきですか？これにより、認証メールを受信できなくなります。',
     'Show Time Zone' => 'タイムゾーンの表示',
