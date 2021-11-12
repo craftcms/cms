@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Status instellen',
     'Settings' => 'Instellingen',
     'Setup your site' => 'Stel uw site in',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Moeten nieuwe e-mailadressen worden bevestigd voor ze in een gebruikers-account worden opgeslagen? (Dit betreft ook nieuwe gebruikersregistraties.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Moeten gebruikers die hun eigen accounts registreren standaard opgeheven worden? Dit zal ertoe leiden dat ze geen activeringsbericht ontvangen.',
     'Show Time Zone' => 'Toon Tijdzone',
