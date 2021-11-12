@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'تنظیم وضعیت',
     'Settings' => 'تنظیمات',
     'Setup your site' => 'سایتت خود را تنظیم نمایید',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'پست های الکترونیکی جدید قبل از ذخیره شدن در حساب های کاربری صحت سنجی شوند؟ (شامل ثبت کاربر جدید نیز می شود.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'آیا کاربرانی که حساب های کاربری خودشان را ثبت می کنند باید به طور پیش فرض تعلیق گردند؟ این کار از دریافت پست الکترونیکی فعالسازی توسط آنها جلوگیری می نماید.',
     'Show Time Zone' => 'Show Time Zone',
