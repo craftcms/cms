@@ -78,13 +78,13 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch all authors
-     * $admins = \craft\elements\User::find()
+     * $authors = \craft\elements\User::find()
      *     ->authors()
      *     ->all();
      * ```
      * ```twig
      * {# fetch all authors #}
-     * {% set admins = craft.users()
+     * {% set authors = craft.users()
      *   .authors()
      *   .all()%}
      * ```
@@ -92,6 +92,26 @@ class UserQuery extends ElementQuery
      * @since 4.0.0
      */
     public ?bool $authors = null;
+
+    /**
+     * @var bool|null Whether to only return users that have uploaded an asset.
+     * ---
+     * ```php
+     * // fetch all users who have uploaded an asset
+     * $uploaders = \craft\elements\User::find()
+     *     ->assetUploaders()
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch all users who have uploaded an asset #}
+     * {% set uploaders = craft.users()
+     *   .assetUploaders()
+     *   .all()%}
+     * ```
+     * @used-by assetUploaders()
+     * @since 4.0.0
+     */
+    public ?bool $assetUploaders = null;
 
     /**
      * @var bool|null Whether to only return users that have (or don’t have) user photos.
@@ -256,6 +276,36 @@ class UserQuery extends ElementQuery
     public function authors(?bool $value = true): self
     {
         $this->authors = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only users that have uploaded an asset.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all users who have uploaded an asset #}
+     * {% set {elements-var} = {twig-method}
+     *   .assetUploaders()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all users who have uploaded an asset
+     * ${elements-var} = {element-class}::find()
+     *     ->assetUploaders()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $assetUploaders
+     * @since 4.0.0
+     */
+    public function assetUploaders(?bool $value = true): self
+    {
+        $this->assetUploaders = $value;
         return $this;
     }
 
@@ -710,10 +760,19 @@ class UserQuery extends ElementQuery
 
         if (is_bool($this->authors)) {
             $this->subQuery->andWhere([
-                'exists',
+                $this->authors ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ENTRIES)
                     ->where(['authorId' => new Expression('[[elements.id]]')])
+            ]);
+        }
+
+        if (is_bool($this->assetUploaders)) {
+            $this->subQuery->andWhere([
+                $this->assetUploaders ? 'exists' : 'not exists',
+                (new Query())
+                    ->from(Table::ASSETS)
+                    ->where(['uploaderId' => new Expression('[[elements.id]]')])
             ]);
         }
 
