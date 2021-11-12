@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Sett status',
     'Settings' => 'Innstillinger',
     'Setup your site' => 'Konfigurer nettsiden din',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Skal nye e-postadresser verifiseres før de lagres på brukerkontoene? (Dette påvirker også senere brukerregistreringer.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Skal brukere som registrerer sin egen konto, settes som suspenderte som standard? Dette medfører at de ikke vil motta en epost for aktivering.',
     'Show Time Zone' => 'Show Time Zone',
