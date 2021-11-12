@@ -1212,6 +1212,7 @@ return [
     'Set status' => '设置状态',
     'Settings' => '设置',
     'Setup your site' => '设置您的站点',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => '保存至用户账户前，应该先验证新的电子邮件地址吗？（该操作还会影响到新用户注册。）',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => '注册自己帐户的用户是否应被默认挂起？这会阻止用户接收激活电子邮件。',
     'Show Time Zone' => '显示时区',
