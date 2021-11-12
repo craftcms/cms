@@ -9,19 +9,19 @@ use craft\elements\db\UserQuery;
 use yii\db\QueryInterface;
 
 /**
- * Email condition rule.
+ * Last name condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
+class LastNameConditionRule extends BaseTextConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Email');
+        return Craft::t('app', 'Last Name');
     }
 
     /**
@@ -29,7 +29,7 @@ class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['email'];
+        return ['lastName'];
     }
 
     /**
@@ -38,6 +38,6 @@ class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->email($this->paramValue());
+        $query->lastName($this->paramValue());
     }
 }
