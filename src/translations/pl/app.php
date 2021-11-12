@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Ustaw status',
     'Settings' => 'Ustawienia',
     'Setup your site' => 'Ustawienia witryny',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Czy nowy adres e-mail powinien zostać zweryfikowany przed przypisaniem do kont użytkowników? (To także dotyczy nowych użytkowników.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Czy użytkownicy, którzy rejestrują własne konta mają być domyślnie zawieszani? To uniemożliwi im otrzymanie aktywacyjnych wiadomości e-mail.',
     'Show Time Zone' => 'Pokaż strefę czasową',
