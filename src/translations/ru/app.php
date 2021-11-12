@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Установить статус',
     'Settings' => 'Настройки',
     'Setup your site' => 'Настройте свой сайт',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Следует ли проверять адрес электронной почты перед сохранением в учетной записи пользователя? (Это также относится к регистрации новых пользователей.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Следует ли по умолчанию приостановить действие учетных записей пользователей, которые регистрируют собственные учетные записи? В этом случае пользователи не будут получать сообщение для активации.',
     'Show Time Zone' => 'Показать часовой пояс',
