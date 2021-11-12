@@ -5,7 +5,7 @@ namespace craft\conditions\elements\asset;
 use craft\conditions\elements\ElementQueryCondition;
 
 /**
- * asset query condition.
+ * Asset query condition.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
