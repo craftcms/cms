@@ -16,7 +16,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     /**
      * @var bool
      */
-    public bool $value = false;
+    public bool $value = true;
 
     /**
      * Returns the input container attributes.
