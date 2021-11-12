@@ -193,8 +193,8 @@ export class CraftGraphiQL extends React.Component {
             }),
             elem(GraphiQL.Button, {
                 onClick: this.handleClickShare.bind(this),
-                label: "Share query",
-                title: "Share query",
+                label: Craft.t('app', 'Share query'),
+                title: Craft.t('app', 'Share query'),
                 key: "shareQuery"
             }),
 
