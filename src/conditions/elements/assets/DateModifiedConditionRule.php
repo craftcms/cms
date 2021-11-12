@@ -1,27 +1,27 @@
 <?php
 
-namespace craft\conditions\elements\asset;
+namespace craft\conditions\elements\assets;
 
 use Craft;
-use craft\conditions\BaseTextConditionRule;
+use craft\conditions\BaseDateRangeConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use yii\db\QueryInterface;
 
 /**
- * Filename condition rule.
+ * Date Modified condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FilenameConditionRule extends BaseTextConditionRule implements QueryConditionRuleInterface
+class DateModifiedConditionRule extends BaseDateRangeConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Filename');
+        return Craft::t('app', 'File Modification Date');
     }
 
     /**
@@ -29,7 +29,7 @@ class FilenameConditionRule extends BaseTextConditionRule implements QueryCondit
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['filename'];
+        return ['dateModified'];
     }
 
     /**
@@ -38,6 +38,6 @@ class FilenameConditionRule extends BaseTextConditionRule implements QueryCondit
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->filename($this->paramValue());
+        $query->dateModified($this->paramValue());
     }
 }

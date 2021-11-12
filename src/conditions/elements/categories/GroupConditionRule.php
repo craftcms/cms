@@ -1,16 +1,16 @@
 <?php
 
-namespace craft\conditions\elements\tag;
+namespace craft\conditions\elements\categories;
 
 use Craft;
 use craft\conditions\BaseSelectConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\TagQuery;
+use craft\elements\db\CategoryQuery;
 use craft\helpers\ArrayHelper;
 use yii\db\QueryInterface;
 
 /**
- * Tag group condition rule.
+ * Category group condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -22,7 +22,7 @@ class GroupConditionRule extends BaseSelectConditionRule implements QueryConditi
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Tag Group');
+        return Craft::t('app', 'Category Group');
     }
 
     /**
@@ -38,7 +38,7 @@ class GroupConditionRule extends BaseSelectConditionRule implements QueryConditi
      */
     protected function options(): array
     {
-        $groups = Craft::$app->getTags()->getAllTagGroups();
+        $groups = Craft::$app->getCategories()->getAllGroups();
         return ArrayHelper::map($groups, 'uid', 'name');
     }
 
@@ -47,10 +47,10 @@ class GroupConditionRule extends BaseSelectConditionRule implements QueryConditi
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        $group = Craft::$app->getTags()->getTagGroupByUid($this->value);
+        $group = Craft::$app->getCategories()->getGroupByUid($this->value);
 
         if ($group) {
-            /** @var TagQuery $query */
+            /** @var CategoryQuery $query */
             $query->group($group);
         }
     }

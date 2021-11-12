@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\conditions\elements\entry\EntryQueryCondition;
+use craft\conditions\elements\entries\EntryQueryCondition;
 use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;

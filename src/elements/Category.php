@@ -9,7 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\conditions\elements\category\CategoryQueryCondition;
+use craft\conditions\elements\categories\CategoryQueryCondition;
 use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;

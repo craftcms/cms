@@ -1,27 +1,27 @@
 <?php
 
-namespace craft\conditions\elements\asset;
+namespace craft\conditions\elements\users;
 
 use Craft;
-use craft\conditions\BaseDateRangeConditionRule;
+use craft\conditions\BaseTextConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\AssetQuery;
+use craft\elements\db\UserQuery;
 use yii\db\QueryInterface;
 
 /**
- * Date Modified condition rule.
+ * Email condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class DateModifiedConditionRule extends BaseDateRangeConditionRule implements QueryConditionRuleInterface
+class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'File Modification Date');
+        return Craft::t('app', 'Email');
     }
 
     /**
@@ -29,7 +29,7 @@ class DateModifiedConditionRule extends BaseDateRangeConditionRule implements Qu
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['dateModified'];
+        return ['email'];
     }
 
     /**
@@ -37,7 +37,7 @@ class DateModifiedConditionRule extends BaseDateRangeConditionRule implements Qu
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var AssetQuery $query */
-        $query->dateModified($this->paramValue());
+        /** @var UserQuery $query */
+        $query->email($this->paramValue());
     }
 }

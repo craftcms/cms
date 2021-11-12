@@ -1,27 +1,27 @@
 <?php
 
-namespace craft\conditions\elements\asset;
+namespace craft\conditions\elements\entries;
 
 use Craft;
-use craft\conditions\BaseNumberConditionRule;
+use craft\conditions\BaseDateRangeConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\AssetQuery;
+use craft\elements\db\EntryQuery;
 use yii\db\QueryInterface;
 
 /**
- * Width condition rule.
+ * Element post date condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class WidthConditionRule extends BaseNumberConditionRule implements QueryConditionRuleInterface
+class PostDateConditionRule extends BaseDateRangeConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Width');
+        return Craft::t('app', 'Post Date');
     }
 
     /**
@@ -29,7 +29,7 @@ class WidthConditionRule extends BaseNumberConditionRule implements QueryConditi
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['width'];
+        return ['postDate', 'after', 'before'];
     }
 
     /**
@@ -37,7 +37,7 @@ class WidthConditionRule extends BaseNumberConditionRule implements QueryConditi
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var AssetQuery $query */
-        $query->width($this->paramValue());
+        /** @var EntryQuery $query */
+        $query->postDate($this->paramValue());
     }
 }

@@ -9,7 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\conditions\elements\tag\TagQueryCondition;
+use craft\conditions\elements\tags\TagQueryCondition;
 use craft\conditions\QueryConditionInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;

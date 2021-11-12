@@ -1,28 +1,28 @@
 <?php
 
-namespace craft\conditions\elements\asset;
+namespace craft\conditions\elements\tags;
 
 use Craft;
 use craft\conditions\BaseSelectConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\AssetQuery;
+use craft\elements\db\TagQuery;
 use craft\helpers\ArrayHelper;
 use yii\db\QueryInterface;
 
 /**
- * Asset volume condition rule.
+ * Tag group condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class VolumeConditionRule extends BaseSelectConditionRule implements QueryConditionRuleInterface
+class GroupConditionRule extends BaseSelectConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Volume');
+        return Craft::t('app', 'Tag Group');
     }
 
     /**
@@ -30,7 +30,7 @@ class VolumeConditionRule extends BaseSelectConditionRule implements QueryCondit
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['volume', 'volumeId'];
+        return ['group', 'groupId'];
     }
 
     /**
@@ -38,8 +38,8 @@ class VolumeConditionRule extends BaseSelectConditionRule implements QueryCondit
      */
     protected function options(): array
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
-        return ArrayHelper::map($volumes, 'uid', 'name');
+        $groups = Craft::$app->getTags()->getAllTagGroups();
+        return ArrayHelper::map($groups, 'uid', 'name');
     }
 
     /**
@@ -47,11 +47,11 @@ class VolumeConditionRule extends BaseSelectConditionRule implements QueryCondit
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($this->value);
+        $group = Craft::$app->getTags()->getTagGroupByUid($this->value);
 
-        if ($volume) {
-            /** @var AssetQuery $query */
-            $query->volume($volume);
+        if ($group) {
+            /** @var TagQuery $query */
+            $query->group($group);
         }
     }
 }

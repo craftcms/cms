@@ -1,27 +1,27 @@
 <?php
 
-namespace craft\conditions\elements\entry;
+namespace craft\conditions\elements\assets;
 
 use Craft;
-use craft\conditions\BaseDateRangeConditionRule;
+use craft\conditions\BaseTextConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\EntryQuery;
+use craft\elements\db\AssetQuery;
 use yii\db\QueryInterface;
 
 /**
- * Element expiry date condition rule.
+ * Filename condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements QueryConditionRuleInterface
+class FilenameConditionRule extends BaseTextConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Expiry Date');
+        return Craft::t('app', 'Filename');
     }
 
     /**
@@ -29,7 +29,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Quer
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['expiryDate'];
+        return ['filename'];
     }
 
     /**
@@ -37,7 +37,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Quer
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var EntryQuery $query */
-        $query->expiryDate($this->paramValue());
+        /** @var AssetQuery $query */
+        $query->filename($this->paramValue());
     }
 }

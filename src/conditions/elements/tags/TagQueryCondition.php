@@ -1,16 +1,16 @@
 <?php
 
-namespace craft\conditions\elements\category;
+namespace craft\conditions\elements\tags;
 
 use craft\conditions\elements\ElementQueryCondition;
 
 /**
- * Category query condition.
+ * Tag query condition.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class CategoryQueryCondition extends ElementQueryCondition
+class TagQueryCondition extends ElementQueryCondition
 {
     /**
      * @inheritdoc

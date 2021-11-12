@@ -13,7 +13,7 @@ use craft\base\Field;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
-use craft\conditions\elements\asset\AssetQueryCondition;
+use craft\conditions\elements\assets\AssetQueryCondition;
 use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;

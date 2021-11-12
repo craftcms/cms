@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\conditions\elements\entry;
+namespace craft\conditions\elements\entries;
 
 use Craft;
 use craft\conditions\BaseMultiSelectConditionRule;

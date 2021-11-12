@@ -1,27 +1,27 @@
 <?php
 
-namespace craft\conditions\elements\user;
+namespace craft\conditions\elements\entries;
 
 use Craft;
-use craft\conditions\BaseTextConditionRule;
+use craft\conditions\BaseDateRangeConditionRule;
 use craft\conditions\QueryConditionRuleInterface;
-use craft\elements\db\UserQuery;
+use craft\elements\db\EntryQuery;
 use yii\db\QueryInterface;
 
 /**
- * Email condition rule.
+ * Element expiry date condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
+class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements QueryConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Email');
+        return Craft::t('app', 'Expiry Date');
     }
 
     /**
@@ -29,7 +29,7 @@ class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['email'];
+        return ['expiryDate'];
     }
 
     /**
@@ -37,7 +37,7 @@ class Email extends BaseTextConditionRule implements QueryConditionRuleInterface
      */
     public function modifyQuery(QueryInterface $query): void
     {
-        /** @var UserQuery $query */
-        $query->email($this->paramValue());
+        /** @var EntryQuery $query */
+        $query->expiryDate($this->paramValue());
     }
 }
