@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Set status',
     'Settings' => 'Settings',
     'Setup your site' => 'Setup your site',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.',
     'Show Time Zone' => 'Show Time Zone',
