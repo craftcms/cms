@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Status festlegen',
     'Settings' => 'Einstellungen',
     'Setup your site' => 'Konfigurieren Sie Ihre Seite',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Sollen neue E-Mail-Adressen überprüft werden, bevor sie in Benutzerkonten gespeichert werden? (Dies betrifft auch die Registrierung neuer Benutzer.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Sollten Benutzer, die ihre eigenen Konten registrieren, standardmäßig gesperrt werden? Dadurch wird verhindert, dass sie eine Aktivierungs-E-Mail erhalten.',
     'Show Time Zone' => 'Zeitzone anzeigen',
