@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'تعيين الحالة',
     'Settings' => 'الإعدادات',
     'Setup your site' => 'إعداد الموقع',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'هل يجب التأكد من صحة عناوين البريد الإلكتروني قبل حفظ حسابات المستخدمين؟ (سيؤثر ذلك أيضاً على تسجيل المستخدمين الجدد.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'هل يجب تعليق المستخدمين الذين يسجلون حساباتهم بشكل افتراضي؟ هذا سيمنعهم من تلقي رسالة التفعيل عبر البريد الإلكتروني.',
     'Show Time Zone' => 'إظهار المنطقة الزمنية',
