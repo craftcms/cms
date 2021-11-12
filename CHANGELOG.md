@@ -102,6 +102,7 @@
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
+- Added `craft\services\Users::removeCredentials()`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the `assets/update-focal-point` action.
 

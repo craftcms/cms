@@ -443,11 +443,12 @@ class Users extends Component
     }
 
     /**
-     * Remove credentials for a user.
+     * Removes credentials for a user.
      *
      * @param User $user The user that should have credentials removed.
      * @return bool Whether the user's credentials were successfully removed.
      * @throws UserNotFoundException
+     * @since 4.0.0
      */
     public function removeCredentials(User $user): bool
     {
