@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Státusz beállítása',
     'Settings' => 'Beállítások',
     'Setup your site' => 'Állítsd be az oldaladat',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Szükséges az új email cím megerősítése mielőtt mentésre kerül a felhasználói fiók? (Ez új felhasználó regisztrációjára is hatással van.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Legyenek a saját fiókot regisztráló felhasználók alapértelmezés szerint felfüggesztve? Ez gátolni fogja, hogy aktivációs e-mailt kaphassanak.',
     'Show Time Zone' => 'Időzóna megjelenítése',
