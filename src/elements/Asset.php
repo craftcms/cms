@@ -13,6 +13,8 @@ use craft\base\Field;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\conditions\elements\asset\AssetQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
@@ -208,6 +210,15 @@ class Asset extends Element
     public static function find(): ElementQueryInterface
     {
         return new AssetQuery(static::class);
+    }
+
+    /**
+     * @inheritdoc
+     * @return AssetQueryCondition
+     */
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(AssetQueryCondition::class, [static::class]);
     }
 
     /**
