@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Durumu ayarla',
     'Settings' => 'Ayarlar',
     'Setup your site' => 'Sitenizi Ayarlayın',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Kullanıcı hesaplarına kaydedilmeden önce eposta adresleri doğrulanmalı mıdır? (Bu aynı zamanda yeni hesap oluşturulmasını da etkiler.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Kendi hesaplarını kaydeden kullanıcılar varsayılan olarak yasaklansın mı? Bu, onlardan aktivasyon e-postası almanızı engelleyecektir.',
     'Show Time Zone' => 'Saat Dilimi Göster',
