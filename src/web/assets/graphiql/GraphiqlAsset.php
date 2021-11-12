@@ -46,7 +46,15 @@ class GraphiqlAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                'Explore the GraphQL API',
+                'Explorer',
+                'History',
+                'Prettify query',
+                'Prettify',
                 'Share query',
+                'Share',
+                'Toggle explorer',
+                'Toggle history',
             ]);
         }
     }

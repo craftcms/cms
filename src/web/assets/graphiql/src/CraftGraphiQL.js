@@ -168,32 +168,32 @@ export class CraftGraphiQL extends React.Component {
 
     render() {
 
-        let logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API");
+        let logoElement = React.createElement(GraphiQL.Logo, {}, Craft.t('app', 'Explore the GraphQL API'));
 
         // Set up the toolbar.
         let toolbarElements = [
             elem(GraphiQL.Button, {
                 onClick: this.handleClickPrettifyButton.bind(this),
-                label: "Prettify",
-                title: "Prettify query",
+                label: Craft.t('app', 'Prettify'),
+                title: Craft.t('app', 'Prettify query'),
                 key: "prettify"
             }),
             elem(GraphiQL.Button, {
                 onClick: this.handleClickHistoryButton.bind(this),
-                label: "History",
-                title: "Toggle history",
+                label: Craft.t('app', 'History'),
+                title: Craft.t('app', 'Toggle history'),
                 key: "history"
             }),
             this._makeSchemaSelector(this.props.gqlSchemas, this.props.selectedSchema),
             elem(GraphiQL.Button, {
                 onClick: this.handleClickExplorerButton.bind(this),
-                label: "Explorer",
-                title: "Toggle explorer",
+                label: Craft.t('app', 'Explorer'),
+                title: Craft.t('app', 'Toggle explorer'),
                 key: "explore"
             }),
             elem(GraphiQL.Button, {
                 onClick: this.handleClickShare.bind(this),
-                label: Craft.t('app', 'Share query'),
+                label: Craft.t('app', 'Share'),
                 title: Craft.t('app', 'Share query'),
                 key: "shareQuery"
             }),
