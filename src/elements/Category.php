@@ -9,6 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\conditions\elements\category\CategoryQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -127,6 +129,15 @@ class Category extends Element
     public static function find(): ElementQueryInterface
     {
         return new CategoryQuery(static::class);
+    }
+
+    /**
+     * @inheritdoc
+     * @return CategoryQueryCondition
+     */
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(CategoryQueryCondition::class, [static::class]);
     }
 
     /**
