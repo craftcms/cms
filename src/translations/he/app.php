@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'הגדר סטטוס',
     'Settings' => 'הגדרות',
     'Setup your site' => 'התקן את האתר שלך',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'האם צריך לאמת כתובת אימייל חדשה לפני שהיא נשמרת בחשבונות המשתמשים? (משפיע גם על הרשמת משתמשים חדשים.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'האם משתמשים שרושמים את החשבונות של עצמם יושעו כברירת מחדל? הדבר ימנע מהם מלקבל הודעת הפעלה בדואר אלקטרוני.',
     'Show Time Zone' => 'הצג אזור זמן',
