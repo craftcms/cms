@@ -78,13 +78,13 @@ class UserQuery extends ElementQuery
      * ---
      * ```php
      * // fetch all authors
-     * $admins = \craft\elements\User::find()
+     * $authors = \craft\elements\User::find()
      *     ->authors()
      *     ->all();
      * ```
      * ```twig
      * {# fetch all authors #}
-     * {% set admins = craft.users()
+     * {% set authors = craft.users()
      *   .authors()
      *   .all()%}
      * ```
@@ -710,7 +710,7 @@ class UserQuery extends ElementQuery
 
         if (is_bool($this->authors)) {
             $this->subQuery->andWhere([
-                'exists',
+                $this->authors ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ENTRIES)
                     ->where(['authorId' => new Expression('[[elements.id]]')])
