@@ -1212,6 +1212,7 @@ return [
     'Set status' => 'Nastavit stav',
     'Settings' => 'Nastavení',
     'Setup your site' => 'Nastavte Váš web',
+    'Share query' => 'Share query',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Mají být emailové adresy ověřeny před tím, než se uloží k uživatelským účtům? (Toto ovlivní i registraci uživatelů).',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Měli by uživatelé, kteří registrují své vlastní účty, být ve výchozím nastavení pozastaveni? Tím se zabrání zaslání aktivačního e-mailu těmto uživatelům.',
     'Show Time Zone' => 'Zobrazit časové pásmo',
