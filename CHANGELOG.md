@@ -2,12 +2,9 @@
 
 ## Unreleased
 
-### Added
-- Added a “Share query” button to the GraphiQL editor for sharing queries. ([#10064](https://github.com/craftcms/cms/issues/10064))
-
 ### Changed
-- Craft now also displays dimensions (if any are set) for video assets, as opposed to image assets only. ([#9038](https://github.com/craftcms/cms/discussions/9038))
-- Craft no longer automatically updates the URL when editing queries in GraphiQL. ([#10064](https://github.com/craftcms/cms/issues/10064))
+- Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
+- The GraphiQL IDE no longer updates the URL automatically as the query is modified. The query is now deep-linkable via a new “Share query” button. ([#10064](https://github.com/craftcms/cms/issues/10064))
 
 ### Fixed
 - Fixed a bug where `craft\base\FieldTrait::$required` wasn’t getting set before custom fields’ `getInputHtml()` methods were called.
