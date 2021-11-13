@@ -50,6 +50,9 @@
                     }
 
                     this.trigger('typeChange');
+
+                    // Trigger an autosave with the new form data
+                    window.draftEditor.checkForm();
                 }
             });
         }
