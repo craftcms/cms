@@ -10,6 +10,7 @@
 - Entry post dates now default to the day before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
 - Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
 - The GraphiQL IDE no longer updates the URL automatically as the query is modified. The query is now deep-linkable via a new “Share query” button. ([#10064](https://github.com/craftcms/cms/issues/10064))
+- Updated GraphiQL to 1.4.7.
 
 ### Fixed
 - Fixed a bug where `craft\base\FieldTrait::$required` wasn’t getting set before custom fields’ `getInputHtml()` methods were called.
