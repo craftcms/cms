@@ -8,6 +8,7 @@
 ### Changed
 - Entries now validate that their post date comes before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
 - Entry post dates now default to the day before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
+- Entry post dates are no longer set automatically until the entry is saved with the `live` scenario.
 - Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
 - The GraphiQL IDE no longer updates the URL automatically as the query is modified. The query is now deep-linkable via a new “Share query” button. ([#10064](https://github.com/craftcms/cms/issues/10064))
 - Updated GraphiQL to 1.4.7.
