@@ -244,6 +244,7 @@
 - Element index queries are now cached.
 - The `migrate/all` command now includes plugins whose schema versions have changed, even if they don’t have any new migrations. ([#9860](https://github.com/craftcms/cms/issues/9860))
 - It’s now possible to pass an array of Matrix block IDs into a Matrix field’s element query param. ([#9875](https://github.com/craftcms/cms/issues/9875))
+- Improved GraphQL performance. ([#9830](https://github.com/craftcms/cms/issues/9830))
 
 ### Deprecated
 - Deprecated `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
