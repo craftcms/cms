@@ -16,6 +16,7 @@
 - Fixed a bug where entry drafts and revisions were missing their structure info when previewed. ([#10056](https://github.com/craftcms/cms/issues/10056))
 - Fixed a bug where “Customize” buttons on element index pages didn’t have a pointer cursor. ([#10067](https://github.com/craftcms/cms/issues/10067))
 - Fixed a bug where Edit Entry pages would warn about losing unsaved changes if the page was unloaded immediately after the entry type was changed. ([#10076](https://github.com/craftcms/cms/issues/10076))
+- Fixed a bug where Craft wasn’t able to resolve dynamic control panel resource requests if Craft was installed in a subdirectory.
 
 ## 3.7.20 - 2021-11-06
 
