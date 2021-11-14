@@ -815,7 +815,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
             'postDate' => Craft::t('app', 'Post Date'),
