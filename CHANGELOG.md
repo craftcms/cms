@@ -8,6 +8,7 @@
 - Added `craft\validators\DateCompareValidator`.
 
 ### Changed
+- Improved the accessibility of several field types. ([#10085](https://github.com/craftcms/cms/pull/10085))
 - Entries now validate that their post date comes before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
 - Entry post dates now default to the day before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
 - Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
