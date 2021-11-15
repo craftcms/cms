@@ -2,12 +2,27 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\behaviors\CustomFieldBehavior::$canSetProperties`.
+- Added `craft\services\Fields::getFieldVersion()`.
+- Added `craft\validators\DateCompareValidator`.
+
 ### Changed
+- Entries now validate that their post date comes before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
+- Entry post dates now default to the day before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
 - Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
 - The GraphiQL IDE no longer updates the URL automatically as the query is modified. The query is now deep-linkable via a new “Share query” button. ([#10064](https://github.com/craftcms/cms/issues/10064))
+- `canSetProperties` and `hasMethods` are now reserved field handles.
+- `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
+- Updated GraphiQL to 1.4.7.
 
 ### Fixed
 - Fixed a bug where `craft\base\FieldTrait::$required` wasn’t getting set before custom fields’ `getInputHtml()` methods were called.
+- Fixed a bug where entry drafts and revisions were missing their structure info when previewed. ([#10056](https://github.com/craftcms/cms/issues/10056))
+- Fixed a bug where “Customize” buttons on element index pages didn’t have a pointer cursor. ([#10067](https://github.com/craftcms/cms/issues/10067))
+- Fixed a bug where Edit Entry pages would warn about losing unsaved changes if the page was unloaded immediately after the entry type was changed. ([#10076](https://github.com/craftcms/cms/issues/10076))
+- Fixed a bug where Craft wasn’t able to resolve dynamic control panel resource requests if Craft was installed in a subdirectory.
+- Fixed an error that occurred when attempting to create a new unpublished draft via the `entry-revisions/save-draft` action. ([#10089](https://github.com/craftcms/cms/issues/10089))
 
 ## 3.7.20 - 2021-11-06
 
@@ -179,7 +194,7 @@
 ### Changed
 - Mutex locks which are “released” during a database transaction are no longer actually released for other requests until the transaction is complete.
 - Username inputs now disable auto-capitalization on iOS devices.
-- Date and time fields now use native `date` and `type` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
+- Date and time fields now use native `date` and `time` input types on mobile. ([#9903](https://github.com/craftcms/cms/discussions/9903))
 - Improved the performance of eager-loading entry authors. ([#9907](https://github.com/craftcms/cms/discussions/9907))
 - Simultaneous entry-save requests are now executed once at a time.
 - Matrix block queries now factor in nested fields based on the `type`/`typeId` param, if set. ([#9921](https://github.com/craftcms/cms/discussions/9921))
@@ -233,6 +248,7 @@
 - Element index queries are now cached.
 - The `migrate/all` command now includes plugins whose schema versions have changed, even if they don’t have any new migrations. ([#9860](https://github.com/craftcms/cms/issues/9860))
 - It’s now possible to pass an array of Matrix block IDs into a Matrix field’s element query param. ([#9875](https://github.com/craftcms/cms/issues/9875))
+- Improved GraphQL performance. ([#9830](https://github.com/craftcms/cms/issues/9830))
 
 ### Deprecated
 - Deprecated `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
@@ -710,7 +726,6 @@
 - Site group names can now be set to environment variables. ([#8044](https://github.com/craftcms/cms/issues/8044))
 - Template requests now respond with a `Content-Length` header. ([#8070](https://github.com/craftcms/cms/issues/8070))
 - Exceptions thrown by queue jobs are now logged. ([#8060](https://github.com/craftcms/cms/issues/8060))
-- `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
 - `craft\helpers\Cp::elementHtml()` now has a `$single` argument.

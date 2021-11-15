@@ -1639,6 +1639,24 @@ class Fields extends Component
     }
 
     /**
+     * Returns the current field version.
+     *
+     * @return string|null
+     * @since 3.7.21
+     */
+    public function getFieldVersion(): ?string
+    {
+        $fieldVersion = Craft::$app->getInfo()->fieldVersion;
+
+        // If it doesn't start with `2@`, then it needs to be updated
+        if ($fieldVersion === null || strpos($fieldVersion, '2@') !== 0) {
+            return null;
+        }
+
+        return $fieldVersion;
+    }
+
+    /**
      * Sets a new field version, so the CustomFieldBehavior class
      * will get regenerated on the next request.
      */
@@ -1649,7 +1667,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = StringHelper::randomString(12);
+        $info->fieldVersion = '2@' . StringHelper::randomString(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 

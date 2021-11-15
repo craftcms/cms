@@ -24,6 +24,11 @@ class CustomFieldBehavior extends Behavior
     public $hasMethods = false;
 
     /**
+     * @var bool Whether properties on the class should be settable directly.
+     */
+    public $canSetProperties = true;
+
+    /**
      * @var string[] List of supported field handles.
      */
     public static $fieldHandles = [
@@ -110,6 +115,9 @@ class CustomFieldBehavior extends Behavior
      */
     public function canSetProperty($name, $checkVars = true)
     {
+        if (!$this->canSetProperties) {
+            return false;
+        }
         if ($checkVars && isset(self::$fieldHandles[$name])) {
             return true;
         }
