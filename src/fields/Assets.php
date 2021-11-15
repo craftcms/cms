@@ -321,14 +321,6 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * @inheritdoc
-     */
-    public function useFieldset(): bool
-    {
-        return true;
-    }
-
-    /**
      * Validates the files to make sure they are one of the allowed file kinds.
      *
      * @param ElementInterface $element
