@@ -524,24 +524,25 @@ class Cp
                 'class' => ['instructions'],
             ])
             : '';
-        $requiredHtml = $required
-            ? Html::tag('span', Craft::t('app', 'Required'), [
-                'class' => ['visually-hidden'],
-            ]) .
-            Html::tag('span', '', [
-                'class' => ['required'],
-                'aria' => [
-                    'hidden' => 'true',
-                ],
-            ])
-            : '';
-        $labelHtml = $label . $requiredHtml;
+        $labelHtml = $label . (
+            $required
+                ? Html::tag('span', Craft::t('app', 'Required'), [
+                    'class' => ['visually-hidden'],
+                ]) .
+                Html::tag('span', '', [
+                    'class' => ['required'],
+                    'aria' => [
+                        'hidden' => 'true',
+                    ],
+                ])
+                : ''
+            );
 
         return Html::tag($fieldset ? 'fieldset' : 'div',
             (($label && $fieldset)
                 ? Html::tag('legend', $labelHtml, [
                     'class' => ['visually-hidden'],
-                ]) 
+                ])
                 : '') .
             ($status
                 ? Html::tag('div', '', [
