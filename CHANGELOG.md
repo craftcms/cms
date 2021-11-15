@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added `craft\behaviors\CustomFieldBehavior::$canSetProperties`.
+- Added `craft\services\Fields::getFieldVersion()`.
 - Added `craft\validators\DateCompareValidator`.
 
 ### Changed
@@ -10,6 +12,8 @@
 - Entry post dates now default to the day before their expiry date, if they have one. ([#10074](https://github.com/craftcms/cms/issues/10074))
 - Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
 - The GraphiQL IDE no longer updates the URL automatically as the query is modified. The query is now deep-linkable via a new “Share query” button. ([#10064](https://github.com/craftcms/cms/issues/10064))
+- `canSetProperties` and `hasMethods` are now reserved field handles.
+- `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - Updated GraphiQL to 1.4.7.
 
 ### Fixed
@@ -721,7 +725,6 @@
 - Site group names can now be set to environment variables. ([#8044](https://github.com/craftcms/cms/issues/8044))
 - Template requests now respond with a `Content-Length` header. ([#8070](https://github.com/craftcms/cms/issues/8070))
 - Exceptions thrown by queue jobs are now logged. ([#8060](https://github.com/craftcms/cms/issues/8060))
-- `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - `craft\base\Element::getCpEditUrl()` now includes a `draftId`/`revisionId` query string param in the returned URL if the element is a draft or revision. ([#7832](https://github.com/craftcms/cms/issues/7832))
 - `craft\base\FieldInterface::getContentColumnType()` can now return an array, if the field stores content across multiple columns.
 - `craft\helpers\Cp::elementHtml()` now has a `$single` argument.
