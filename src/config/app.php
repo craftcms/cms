@@ -157,6 +157,9 @@ return [
         'utilities' => [
             'class' => craft\services\Utilities::class,
         ],
+        'webpack' => [
+            'class' => craft\services\Webpack::class,
+        ],
         'contentMigrator' => [
             'class' => craft\db\MigrationManager::class,
             'track' => craft\db\MigrationManager::TRACK_CONTENT,

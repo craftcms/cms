@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\services\Webpack`.
+
 ## 3.7.20 - 2021-11-06
 
 ### Changed
