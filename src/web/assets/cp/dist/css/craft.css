@@ -2551,9 +2551,9 @@ body.rtl .datewrapper .text:placeholder-shown + div[data-icon], body.rtl .datewr
 
 .timewrapper { width: 7em; }
 
-::-webkit-input-placeholder { color: #9aa5b1; }
+::-webkit-input-placeholder { color: #7b8793; }
 
-::placeholder { color: #9aa5b1; }
+::placeholder { color: #7b8793; }
 
 /* Kill IE's special text features */
 ::-ms-reveal, ::-ms-clear { display: none; }

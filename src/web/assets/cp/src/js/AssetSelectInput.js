@@ -109,6 +109,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 type: 'button',
                 class: 'btn dashed',
                 'data-icon': 'upload',
+                'aria-label': this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
                 text: this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
             }).insertAfter(this.$addElementBtn);
             options.fileInput = $('<input/>', {
