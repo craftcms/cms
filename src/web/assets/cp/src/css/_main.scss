@@ -8,7 +8,7 @@
 
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
-  $halfSize: math.div($size / 2);
+  $halfSize: $size / 2;
   background-image: linear-gradient(45deg, $grey100 25%, transparent 25%),
     linear-gradient(135deg, $grey100 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, $grey100 75%),
@@ -19,7 +19,7 @@
 
 @mixin striped-bg($size, $color: $grey100) {
   // h/t https://css-tricks.com/stripes-css/
-  $halfSize: math.div($size / 2);
+  $halfSize: $size / 2;
   body.ltr & {
     background: repeating-linear-gradient(
       135deg,
