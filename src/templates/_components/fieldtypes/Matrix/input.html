@@ -42,7 +42,12 @@
                     </div>
                     <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>
                     <div class="actions">
-                        <div class="status off" title="{{ 'Disabled'|t('app') }}" aria-label="{{ 'Disabled'|t('app') }}"></div>
+                        <div class="status off" title="{{ 'Disabled'|t('app') }}">
+                            {{ tag('span', {
+                                class: 'visually-hidden',
+                                html: 'Disabled'|t('app'),
+                            }) }}
+                        </div>
                         <button type="button" class="btn settings icon menubtn" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
                         <div class="menu">
                             <ul class="padded">
@@ -81,7 +86,7 @@
         <div class="buttons">
             <div class="btngroup">
                 {% for blockType in blockTypes %}
-                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</button>
+                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}">{{ blockType.name|t('site') }}</button>
                 {% endfor %}
             </div>
 

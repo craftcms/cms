@@ -127,7 +127,16 @@ class PreviewController extends Controller
 
         $element = $query->one();
 
-        if ($element) {
+        if ($element && !$element->lft) {
+            if ($element->getIsDerivative()) {
+                // See if we can add structure data to it
+                $canonical = $element->getCanonical(true);
+                $element->structureId = $canonical->structureId;
+                $element->lft = $canonical->lft;
+                $element->rgt = $canonical->rgt;
+                $element->level = $canonical->level;
+            }
+
             $element->previewing = true;
             Craft::$app->getElements()->setPlaceholderElement($element);
         }
