@@ -8,6 +8,7 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
@@ -75,6 +76,10 @@ abstract class BaseElementFixture extends DbFixture
             }
 
             $this->populateElement($element, $data);
+
+            if ($element->enabled && $element->getIsCanonical() && !$element->isProvisionalDraft) {
+                $element->setScenario(Element::SCENARIO_LIVE);
+            }
 
             if (!$this->saveElement($element)) {
                 throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
