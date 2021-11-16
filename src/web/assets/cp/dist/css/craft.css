@@ -474,7 +474,7 @@ body.rtl .with-icon.notice:before, body.rtl .with-icon.warning:before { margin: 
 .content:after { content: ''; display: block; height: 0; clear: both; visibility: hidden; }
 
 /* Customize Sources */
-.sidebar .customize-sources { display: block; margin: 14px -24px 4px; color: #606d7b !important; -o-transition: color linear 100ms; transition: color linear 100ms; }
+.sidebar .customize-sources { display: block; margin: 14px -24px 4px; color: #606d7b !important; -o-transition: color linear 100ms; transition: color linear 100ms; cursor: pointer; }
 
 body.ltr .sidebar .customize-sources { padding: 7px 14px 7px 24px ; }
 
@@ -2597,9 +2597,9 @@ body.rtl .datewrapper .text:placeholder-shown + div[data-icon], body.rtl .datewr
 
 .timewrapper { width: 7em; }
 
-::-webkit-input-placeholder { color: #9aa5b1; }
+::-webkit-input-placeholder { color: #7b8793; }
 
-::placeholder { color: #9aa5b1; }
+::placeholder { color: #7b8793; }
 
 /* Kill IE's special text features */
 ::-ms-reveal, ::-ms-clear { display: none; }

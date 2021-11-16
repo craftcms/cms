@@ -240,10 +240,10 @@ class App
         switch ($unit) {
             case 'g':
                 $value *= 1024;
-            // no break (cumulative multiplier)
+            // no break
             case 'm':
                 $value *= 1024;
-            // no break (cumulative multiplier)
+            // no break
             case 'k':
                 $value *= 1024;
         }

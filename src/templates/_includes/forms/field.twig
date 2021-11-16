@@ -54,9 +54,10 @@
         {{ tag('div', {
             class: ['status-badge', status[0]],
             title: status[1],
-            aria: {
-                label: status[1],
-            },
+        }) }}
+        {{ tag('span', {
+            class: ['visually-hidden'],
+            html: status[1],
         }) }}
     {% endif %}
     {% if label or showAttribute %}

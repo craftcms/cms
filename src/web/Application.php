@@ -477,12 +477,12 @@ class Application extends \yii\web\Application
     {
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
-        $pathInfo = $request->getPathInfo();
-        if (strpos('/' . $pathInfo, $resourceBaseUri . '/') !== 0) {
+        $requestPath = $request->getFullPath();
+        if (strpos('/' . $requestPath, $resourceBaseUri . '/') !== 0) {
             return;
         }
 
-        $resourceUri = substr($pathInfo, strlen($resourceBaseUri));
+        $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
 

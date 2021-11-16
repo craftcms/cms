@@ -46,6 +46,9 @@
             class: ['btn', 'add', 'icon', 'dashed', disabled ? 'disabled']|filter,
             text: selectionLabel ?? 'Choose'|t('app'),
             disabled: disabled,
+            aria: {
+                label: selectionLabel ?? 'Choose'|t('app'),
+            }
         }) }}
     </div>
 {% endtag %}

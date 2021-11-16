@@ -241,7 +241,11 @@ class CustomField extends BaseField
         if (empty($element->id) || $element->isFieldEmpty($this->_field->handle)) {
             $view->setInitialDeltaValue($this->_field->handle, null);
         }
-        return $this->_field->getInputHtml($value, $element);
+        $wasRequired = $this->_field->required;
+        $this->_field->required = $this->required;
+        $html = $this->_field->getInputHtml($value, $element);
+        $this->_field->required = $wasRequired;
+        return $html;
     }
 
     /**

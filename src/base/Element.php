@@ -1796,7 +1796,10 @@ abstract class Element extends Component implements ElementInterface
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        $behaviors['customFields'] = CustomFieldBehavior::class;
+        $behaviors['customFields'] = [
+            'class' => CustomFieldBehavior::class,
+            'canSetProperties' => false,
+        ];
         return $behaviors;
     }
 

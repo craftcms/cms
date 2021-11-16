@@ -443,6 +443,24 @@ class Users extends Component
     }
 
     /**
+     * Removes credentials for a user.
+     *
+     * @param User $user The user that should have credentials removed.
+     * @return bool Whether the user's credentials were successfully removed.
+     * @throws UserNotFoundException
+     * @since 4.0.0
+     */
+    public function removeCredentials(User $user): bool
+    {
+        $userRecord = $this->_getUserRecordById($user->id);
+        $userRecord->active = false;
+        $userRecord->pending = false;
+        $userRecord->password = null;
+        $userRecord->verificationCode = null;
+        return $userRecord->save();
+    }
+
+    /**
      * Crops and saves a user’s photo.
      *
      * @param User $user the user.
