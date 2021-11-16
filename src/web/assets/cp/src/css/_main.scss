@@ -5252,7 +5252,7 @@ body.reduce-focus-visibility {
   width: 7em;
 }
 
-@include placeholder-styles($grey300);
+@include placeholder-styles($grey400);
 
 /* Kill IE's special text features */
 ::-ms-reveal,
