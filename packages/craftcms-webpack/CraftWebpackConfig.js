@@ -121,6 +121,66 @@ class CraftWebpackConfig {
      * @private
      */
     _devServer() {
+        // Find PHP asset bundles
+        let files = fs.readdirSync(this.basePath);
+        let assetBundleClasses = [];
+
+        for (let i = 0; i < files.length; i++) {
+            let filename = path.join(this.basePath, files[i]);
+            let stat = fs.lstatSync(filename);
+            if (!stat.isDirectory() && filename.indexOf('.php') > 0) {
+                let data = fs.readFileSync(filename);
+
+                if (data) {
+                    let namespaceRegex = /namespace\s(.*?);/gs;
+                    let classNameRegex = /class\s(.*?)\sextends/gs;
+                    let m; let n;
+                    let namespace = null;
+                    let className = null;
+
+                    while ((m = namespaceRegex.exec(data)) !== null) {
+                        // This is necessary to avoid infinite loops with zero-width matches
+                        if (m.index === namespaceRegex.lastIndex) {
+                            namespaceRegex.lastIndex++;
+                        }
+
+                        // The result can be accessed through the `m`-variable.
+                        m.forEach((match, groupIndex) => {
+                            if (groupIndex === 1) {
+                                namespace = match;
+                            }
+                        });
+                    }
+
+                    while ((n = classNameRegex.exec(data)) !== null) {
+                        // This is necessary to avoid infinite loops with zero-width matches
+                        if (n.index === classNameRegex.lastIndex) {
+                            classNameRegex.lastIndex++;
+                        }
+
+                        // The result can be accessed through the `m`-variable.
+                        n.forEach((match, groupIndex) => {
+                            if (groupIndex === 1) {
+                                className = match;
+                            }
+                        });
+                    }
+
+                    if (namespace && className) {
+                        assetBundleClasses.push(namespace + '\\' + className);
+                    }
+                }
+            }
+        }
+
+        let response = {
+            classes: assetBundleClasses,
+            basePath: this.basePath,
+            srcPath: this.srcPath,
+            envPath: this.envPath,
+            distPath: this.distPath,
+        }
+
         return {
             contentBase: this.devServer.contentBase,
             watchContentBase: true,
@@ -132,7 +192,12 @@ class CraftWebpackConfig {
             inline: true,
             port: this.devServer.port,
             public: this.devServer.publicPath,
-            stats: 'errors-only'
+            stats: 'errors-only',
+            before: function(app, server, compiler) {
+                app.get('/which-asset', function(req, res) {
+                    res.json(response);
+                });
+            }
         };
     }
 
