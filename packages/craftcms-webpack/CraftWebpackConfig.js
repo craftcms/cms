@@ -253,7 +253,7 @@ class CraftWebpackConfig {
                                 loader: 'postcss-loader',
                                 options: {
                                     postcssOptions: {
-                                        path: this.postCssConfig
+                                        config: this.postCssConfig
                                     },
                                 }
                             },
