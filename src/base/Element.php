@@ -1739,7 +1739,11 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            return $this->getFieldValue($name);
+            $value = $this->getFieldValue($name);
+            if (is_object($value)) {
+                $value = clone $value;
+            }
+            return $value;
         }
 
         return parent::__get($name);
