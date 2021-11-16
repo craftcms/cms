@@ -412,7 +412,7 @@ class CraftWebpackConfig {
             splitChunks: {
                 name: false,
                 cacheGroups: {
-                    commons: {
+                    defaultVendors: {
                         test: /[\\/]node_modules[\\/]/,
                         name: 'chunk-vendors',
                         chunks: 'all'
