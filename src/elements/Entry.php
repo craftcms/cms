@@ -1544,6 +1544,17 @@ EOD;
             $this->authorId = Craft::$app->getUser()->getId();
         }
 
+        if ($this->scenario === self::SCENARIO_LIVE && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = new DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // ...unless an expiry date is set in the past
+            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+            }
+        }
+
         return parent::beforeValidate();
     }
 
@@ -1616,17 +1627,6 @@ EOD;
         }
 
         $this->updateTitle();
-
-        if ($this->enabled && !$this->postDate) {
-            // Default the post date to the current date/time
-            $this->postDate = new DateTime();
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-            // ...unless an expiry date is set in the past
-            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
-                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
-            }
-        }
 
         return parent::beforeSave($isNew);
     }
