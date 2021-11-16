@@ -3,7 +3,8 @@
   "private": true,
   "main": "webpack.config.js",
   "scripts": {
-    "build": "webpack --node-env=production --progress --config $INIT_CWD/webpack.config.js"
+    "build": "CWD=$INIT_CWD webpack --node-env=production --progress --config $INIT_CWD/webpack.config.js",
+    "serve": "CWD=$INIT_CWD webpack-dev-server --node-env=development --config $INIT_CWD/webpack.config.js"
   },
   "devDependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",

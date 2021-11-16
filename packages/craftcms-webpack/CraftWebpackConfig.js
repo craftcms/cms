@@ -6,6 +6,7 @@ const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const path = require('path');
 const fs = require('fs');
+const touch = require('touch');
 
 // Plugins
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
@@ -17,6 +18,19 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const RemovePlugin = require('remove-files-webpack-plugin');
+const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
+
+class WebpackForceRebuildOnEmitPlugin {
+    apply(compiler) {
+        compiler.hooks.emit.tapAsync('WebpackForceRebuildOnEmitPlugin', (compilation, callback) => {
+            const outputPath = compilation.outputOptions.path;
+            const firstAssetName = compilation.getAssets()[0].name;
+            const assetToTouch = path.resolve(outputPath, firstAssetName);
+            touch(assetToTouch);
+            callback();
+        });
+    }
+}
 
 /**
  * CraftWebpackConfig class
@@ -33,19 +47,27 @@ class CraftWebpackConfig {
         this.basePath = path.dirname(ParentModule());
 
         // env
+        this.rootPath = path.resolve('./');
         let assetEnvPath = path.join(this.basePath, './.env');
-        let baseEnvPath = path.resolve(__dirname, './.env');
+        let rootEnvPath = path.resolve(this.rootPath, './.env');
+
+        this.isRunningFromRoot = process.env.CWD === this.rootPath;
 
         // Check asset for env file or fall back to root env if it exists.
-        this.envPath = fs.existsSync(assetEnvPath)
-            ? assetEnvPath
-            : (fs.existsSync(baseEnvPath) ? baseEnvPath : null);
+        this.envPath = fs.existsSync(rootEnvPath) ? rootEnvPath : null;
+        if (!this.isRunningFromRoot) {
+            this.envPath = fs.existsSync(assetEnvPath) ? assetEnvPath : this.envPath;
+        }
 
         if (this.envPath) {
             require('dotenv').config({path: this.envPath});
         }
 
         this.isDevServerRunning = process.env.WEBPACK_DEV_SERVER;
+
+        if (this.isDevServerRunning && this.isRunningFromRoot) {
+            throw new Error('Running the dev server is only permitted in individual assets.');
+        }
 
         this.nodeEnv = 'production';
         if (!process.env.NODE_ENV && this.isDevServerRunning) {
@@ -81,6 +103,7 @@ class CraftWebpackConfig {
         this.jsFilename = '[name].min.js';
 
         // Set options from class call
+        this.templatesPath = options.templatesPath || path.join(this.rootPath, '/src/templates');
         this.type = options.type || 'asset';
         this.config = options.config || {};
         this.postCssConfig = options.postCssConfig || path.resolve(__dirname, 'postcss.config.js');
@@ -98,6 +121,66 @@ class CraftWebpackConfig {
      * @private
      */
     _devServer() {
+        // Find PHP asset bundles
+        let files = fs.readdirSync(this.basePath);
+        let assetBundleClasses = [];
+
+        for (let i = 0; i < files.length; i++) {
+            let filename = path.join(this.basePath, files[i]);
+            let stat = fs.lstatSync(filename);
+            if (!stat.isDirectory() && filename.indexOf('.php') > 0) {
+                let data = fs.readFileSync(filename);
+
+                if (data) {
+                    let namespaceRegex = /namespace\s(.*?);/gs;
+                    let classNameRegex = /class\s(.*?)\sextends/gs;
+                    let m; let n;
+                    let namespace = null;
+                    let className = null;
+
+                    while ((m = namespaceRegex.exec(data)) !== null) {
+                        // This is necessary to avoid infinite loops with zero-width matches
+                        if (m.index === namespaceRegex.lastIndex) {
+                            namespaceRegex.lastIndex++;
+                        }
+
+                        // The result can be accessed through the `m`-variable.
+                        m.forEach((match, groupIndex) => {
+                            if (groupIndex === 1) {
+                                namespace = match;
+                            }
+                        });
+                    }
+
+                    while ((n = classNameRegex.exec(data)) !== null) {
+                        // This is necessary to avoid infinite loops with zero-width matches
+                        if (n.index === classNameRegex.lastIndex) {
+                            classNameRegex.lastIndex++;
+                        }
+
+                        // The result can be accessed through the `m`-variable.
+                        n.forEach((match, groupIndex) => {
+                            if (groupIndex === 1) {
+                                className = match;
+                            }
+                        });
+                    }
+
+                    if (namespace && className) {
+                        assetBundleClasses.push(namespace + '\\' + className);
+                    }
+                }
+            }
+        }
+
+        let response = {
+            classes: assetBundleClasses,
+            basePath: this.basePath,
+            srcPath: this.srcPath,
+            envPath: this.envPath,
+            distPath: this.distPath,
+        }
+
         return {
             contentBase: this.devServer.contentBase,
             watchContentBase: true,
@@ -109,7 +192,12 @@ class CraftWebpackConfig {
             inline: true,
             port: this.devServer.port,
             public: this.devServer.publicPath,
-            stats: 'errors-only'
+            stats: 'errors-only',
+            before: function(app, server, compiler) {
+                app.get('/which-asset', function(req, res) {
+                    res.json(response);
+                });
+            }
         };
     }
 
@@ -117,7 +205,12 @@ class CraftWebpackConfig {
      * Base webpack config
      */
     base() {
-        const plugins = [];
+        const plugins = [
+            new ExtraWatchWebpackPlugin({
+                dirs: [ this.templatesPath ],
+            }),
+            new WebpackForceRebuildOnEmitPlugin(),
+        ];
         let optimization = {};
 
         // Only load dotenv plugin if there is a .env file
@@ -155,6 +248,7 @@ class CraftWebpackConfig {
 
         if (!this.isDevServerRunning) {
             plugins.push(new CleanWebpackPlugin());
+
             optimization = {
                 minimize: true,
                 minimizer: [
@@ -252,7 +346,7 @@ class CraftWebpackConfig {
                                 loader: 'postcss-loader',
                                 options: {
                                     postcssOptions: {
-                                        path: this.postCssConfig
+                                        config: this.postCssConfig
                                     },
                                 }
                             },

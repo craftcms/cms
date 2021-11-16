@@ -20,6 +20,44 @@ class AssetBundle extends \yii\web\AssetBundle
     private static $_useCompressedJs;
 
     /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        $this->_updateResourcePaths();
+    }
+
+    /**
+     * Prepend dev server to resources if required
+     *
+     * @return void
+     */
+    private function _updateResourcePaths(): void
+    {
+        if (!empty($this->js)) {
+            $this->js = array_map([$this, '_prependDevServer'], $this->js);
+        }
+
+        if (!empty($this->css)) {
+            $this->css = array_map([$this, '_prependDevServer'], $this->css);
+        }
+    }
+
+    /**
+     * Prefix the string with the dev server host if the dev server is running.
+     *
+     * @param string $filePath
+     * @return string
+     */
+    private function _prependDevServer(string $filePath): string
+    {
+        $devServer = rtrim(Craft::$app->getWebpack()->getDevServer(static::class), '/');
+        return ($devServer ? $devServer . '/' : '') . $filePath;
+    }
+
+    /**
      * Returns whether Craft is configured to serve compressed JavaScript files
      *
      * @return bool
