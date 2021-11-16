@@ -14,6 +14,7 @@
 - Video assets’ dimensions are no longer suppressed, if they were set by a plugin or module. ([#9038](https://github.com/craftcms/cms/discussions/9038))
 - The GraphiQL IDE no longer updates the URL automatically as the query is modified. The query is now deep-linkable via a new “Share query” button. ([#10064](https://github.com/craftcms/cms/issues/10064))
 - `canSetProperties` and `hasMethods` are now reserved field handles.
+- Improved the performance of entry queries. ([#10095](https://github.com/craftcms/cms/issues/10095))
 - `craft\base\Element::__set()` now detects whether a custom field value is being set, and if so, passes the value through `setFieldValue()`. ([#7726](https://github.com/craftcms/cms/issues/7726))
 - Updated GraphiQL to 1.4.7.
 
