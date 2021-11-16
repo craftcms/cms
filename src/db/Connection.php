@@ -174,7 +174,8 @@ class Connection extends \yii\db\Connection
         $systemName = mb_strtolower(FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
             'asciiOnly' => true,
         ]));
-        $filename = ($systemName ? $systemName . '--' : '') . gmdate('Y-m-d-His') . '--v' . Craft::$app->getVersion();
+        $version = Craft::$app->getInfo()->version ?? Craft::$app->getVersion();
+        $filename = ($systemName ? "$systemName--" : '') . gmdate('Y-m-d-His') . "--v$version";
         $backupPath = Craft::$app->getPath()->getDbBackupPath();
         $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '.sql';
         $i = 0;
