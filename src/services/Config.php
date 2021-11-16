@@ -144,6 +144,7 @@ class Config extends Component
      * ```
      *
      * @return object
+     * @since 4.0.0
      */
     public function getCustom(): object
     {
