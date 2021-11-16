@@ -65,7 +65,7 @@ class AssetImageTransform extends Model
     /**
      * @var DateTime|null Dimension change time
      */
-    public ?DateTime $dimensionChangeTime = null;
+    public ?DateTime $parameterChangeTime = null;
 
     /**
      * @var string Mode
@@ -136,7 +136,7 @@ class AssetImageTransform extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true];
-        $rules[] = [['dimensionChangeTime'], DateTimeValidator::class];
+        $rules[] = [['parameterChangeTime'], DateTimeValidator::class];
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];

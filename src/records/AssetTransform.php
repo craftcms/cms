@@ -24,7 +24,7 @@ use DateTime;
  * @property string $format Format
  * @property string $interlace Interlace
  * @property int $quality Quality
- * @property DateTime $dimensionChangeTime Dimension change time
+ * @property DateTime $parameterChangeTime Critical parameter change time
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

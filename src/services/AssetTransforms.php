@@ -285,7 +285,7 @@ class AssetTransforms extends Component
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
-                $transformRecord->dimensionChangeTime = new DateTime('@' . time());
+                $transformRecord->parameterChangeTime = new DateTime('@' . time());
                 $deleteTransformIndexes = true;
             }
 
@@ -637,7 +637,7 @@ class AssetTransforms extends Component
         }
 
         // If the named transform's dimensions have changed since the time the index was created, it's no longer valid
-        if ($result['dateIndexed'] < Db::prepareDateForDb($transform->dimensionChangeTime)) {
+        if ($result['dateIndexed'] < Db::prepareDateForDb($transform->parameterChangeTime)) {
             return false;
         }
 
@@ -847,7 +847,7 @@ class AssetTransforms extends Component
                 'width',
                 'height',
                 'format',
-                'dimensionChangeTime',
+                'parameterChangeTime',
                 'mode',
                 'position',
                 'quality',
@@ -894,7 +894,7 @@ class AssetTransforms extends Component
                 'name',
                 'handle',
                 'uid',
-                'dimensionChangeTime',
+                'parameterChangeTime',
             ];
 
             foreach ($parameters as $parameter => $value) {
@@ -1475,7 +1475,7 @@ class AssetTransforms extends Component
                 'format',
                 'quality',
                 'interlace',
-                'dimensionChangeTime',
+                'parameterChangeTime',
                 'uid',
             ])
             ->from([Table::ASSETTRANSFORMS])

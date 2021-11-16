@@ -171,7 +171,7 @@ class Install extends Migration
             'format' => $this->string(),
             'quality' => $this->integer(),
             'interlace' => $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->notNull()->defaultValue('none'),
-            'dimensionChangeTime' => $this->dateTime(),
+            'parameterChangeTime' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
