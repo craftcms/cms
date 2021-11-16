@@ -938,7 +938,11 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
 
             // Should we set the structureId param?
-            if ($this->structureId === null && count($this->sectionId) === 1) {
+            if (
+                $this->structureId === null &&
+                $this->withStructure === true &&
+                count($this->sectionId) === 1
+            ) {
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::SECTIONS])
