@@ -1662,7 +1662,7 @@ EOD;
 
             $record->save(false);
 
-            if (!$this->duplicateOf && $section->type == Section::TYPE_STRUCTURE) {
+            if ($this->getIsCanonical() && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->_hasNewParent()) {
                     $this->_placeInStructure($isNew, $section);
