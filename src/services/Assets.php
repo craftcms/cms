@@ -42,7 +42,7 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
-use craft\models\AssetTransform;
+use craft\models\AssetImageTransform;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
 use craft\queue\jobs\GeneratePendingTransforms;
@@ -585,7 +585,7 @@ class Assets extends Component
      * Returns the URL for an asset, possibly with a given transform applied.
      *
      * @param Asset $asset
-     * @param AssetTransform|string|array|null $transform
+     * @param AssetImageTransform|string|array|null $transform
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
      * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null

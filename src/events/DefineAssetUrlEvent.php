@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\elements\Asset;
-use craft\models\AssetTransform;
+use craft\models\AssetImageTransform;
 use yii\base\Event;
 
 /**
@@ -20,7 +20,7 @@ use yii\base\Event;
 class DefineAssetUrlEvent extends Event
 {
     /**
-     * @var AssetTransform|string|array|null Asset transform index that is being generated (if any)
+     * @var AssetImageTransform|string|array|null Asset transform index that is being generated (if any)
      */
     public $transform;
 

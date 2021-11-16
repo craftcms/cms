@@ -8,7 +8,10 @@
 namespace craft\models;
 
 use Craft;
+use craft\assets\imagetransforms\DefaultDriver;
+use craft\base\AssetImageTransformDriverInterface;
 use craft\base\Model;
+use craft\errors\AssetTransformException;
 use craft\records\AssetTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
@@ -16,14 +19,19 @@ use craft\validators\UniqueValidator;
 use DateTime;
 
 /**
- * The AssetTransform model class.
+ * The AssetImageTransform model class.
  *
  * @property bool $isNamedTransform Whether this is a named transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetTransform extends Model
+class AssetImageTransform extends Model
 {
+    /**
+     * @var string The default image transform driver.
+     */
+     public const DEFAULT_DRIVER = DefaultDriver::class;
+
     /**
      * @var int|null ID
      */
@@ -85,6 +93,14 @@ class AssetTransform extends Model
     public ?string $uid = null;
 
     /**
+     * The Image Transform driver to use for image transforms.
+     *
+     * @var string
+     */
+    protected string $imageTransformDriver = self::DEFAULT_DRIVER;
+
+
+    /**
      * @inheritdoc
      */
     public function attributeLabels(): array
@@ -98,6 +114,19 @@ class AssetTransform extends Model
             'quality' => Craft::t('app', 'Quality'),
             'width' => Craft::t('app', 'Width'),
         ];
+    }
+
+    /**
+     * @param string $imageTransformDriver
+     */
+    public function setImageTransformDriver(string $imageTransformDriver): void
+    {
+        if (!is_subclass_of($imageTransformDriver, AssetImageTransformDriverInterface::class)) {
+            Craft::warning($imageTransformDriver . ' is not a valid image transform driver.');
+            $imageTransformDriver = self::DEFAULT_DRIVER;
+        }
+
+        $this->imageTransformDriver = $imageTransformDriver;
     }
 
     /**
@@ -206,5 +235,15 @@ class AssetTransform extends Model
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'dimensionChangeTime';
         return $attributes;
+    }
+
+    /**
+     * Return the image transformer for this transform.
+     *
+     * @return AssetImageTransformDriverInterface
+     */
+    public function getImageTransformer(): ?AssetImageTransformDriverInterface
+    {
+        return Craft::$app->getAssetTransforms()->getTransformDriver($this->imageTransformDriver);
     }
 }

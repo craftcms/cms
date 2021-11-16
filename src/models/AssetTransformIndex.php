@@ -16,7 +16,7 @@ use yii\base\InvalidConfigException;
 /**
  * Class AssetTransformIndex model.
  *
- * @property AssetTransform $transform
+ * @property AssetImageTransform $transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -126,10 +126,10 @@ class AssetTransformIndex extends Model
     /**
      * Returns the transform associated with this index.
      *
-     * @return AssetTransform
+     * @return AssetImageTransform
      * @throws InvalidConfigException if [[location]] is invalid
      */
-    public function getTransform(): AssetTransform
+    public function getTransform(): AssetImageTransform
     {
         if (isset($this->_transform)) {
             return $this->_transform;

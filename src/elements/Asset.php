@@ -43,7 +43,7 @@ use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\models\AssetTransform;
+use craft\models\AssetImageTransform;
 use craft\models\FieldLayout;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
@@ -673,9 +673,9 @@ class Asset extends Element
     private ?array $_focalPoint = null;
 
     /**
-     * @var AssetTransform|null
+     * @var AssetImageTransform|null
      */
-    private ?AssetTransform $_transform = null;
+    private ?AssetImageTransform $_transform = null;
 
     /**
      * @var string
@@ -990,7 +990,7 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
@@ -1039,7 +1039,7 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return array
      * @since 3.7.16
      */
@@ -1218,7 +1218,7 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -1401,7 +1401,7 @@ class Asset extends Element
     /**
      * Returns the image height.
      *
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
 
@@ -1423,7 +1423,7 @@ class Asset extends Element
     /**
      * Returns the image width.
      *
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
     public function getWidth($transform = null)
@@ -1879,7 +1879,7 @@ class Asset extends Element
     /**
      * Returns a copy of the asset with the given transform applied to it.
      *
-     * @param AssetTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
+     * @param AssetImageTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
      * @return Asset
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
@@ -2118,7 +2118,7 @@ class Asset extends Element
     /**
      * Returns the width and height of the image.
      *
-     * @param AssetTransform|string|array|null $transform
+     * @param AssetImageTransform|string|array|null $transform
      * @return array
      */
     private function _dimensions($transform = null): array

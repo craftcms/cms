@@ -31,7 +31,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
-use craft\models\AssetTransform;
+use craft\models\AssetImageTransform;
 use craft\models\AssetTransformIndex;
 use craft\records\AssetTransform as AssetTransformRecord;
 use DateTime;
@@ -101,7 +101,7 @@ class AssetTransforms extends Component
     public $db = 'db';
 
     /**
-     * @var MemoizableArray<AssetTransform>|null
+     * @var MemoizableArray<AssetImageTransform>|null
      * @see _transforms()
      */
     private ?MemoizableArray $_transforms = null;
@@ -145,14 +145,14 @@ class AssetTransforms extends Component
     /**
      * Returns a memoizable array of all named asset transforms.
      *
-     * @return MemoizableArray<AssetTransform>
+     * @return MemoizableArray<AssetImageTransform>
      */
     private function _transforms(): MemoizableArray
     {
         if (!isset($this->_transforms)) {
             $transforms = [];
             foreach ($this->_createTransformQuery()->all() as $result) {
-                $transforms[] = new AssetTransform($result);
+                $transforms[] = new AssetImageTransform($result);
             }
             $this->_transforms = new MemoizableArray($transforms);
         }
@@ -163,7 +163,7 @@ class AssetTransforms extends Component
     /**
      * Returns all named asset transforms.
      *
-     * @return AssetTransform[]
+     * @return AssetImageTransform[]
      */
     public function getAllTransforms(): array
     {
@@ -174,9 +174,9 @@ class AssetTransforms extends Component
      * Returns an asset transform by its handle.
      *
      * @param string $handle
-     * @return AssetTransform|null
+     * @return AssetImageTransform|null
      */
-    public function getTransformByHandle(string $handle): ?AssetTransform
+    public function getTransformByHandle(string $handle): ?AssetImageTransform
     {
         return $this->_transforms()->firstWhere('handle', $handle, true);
     }
@@ -185,9 +185,9 @@ class AssetTransforms extends Component
      * Returns an asset transform by its ID.
      *
      * @param int $id
-     * @return AssetTransform|null
+     * @return AssetImageTransform|null
      */
-    public function getTransformById(int $id): ?AssetTransform
+    public function getTransformById(int $id): ?AssetImageTransform
     {
         return $this->_transforms()->firstWhere('id', $id);
     }
@@ -196,10 +196,10 @@ class AssetTransforms extends Component
      * Returns an asset transform by its UID.
      *
      * @param string $uid
-     * @return AssetTransform|null
+     * @return AssetImageTransform|null
      * @since 3.1.0
      */
-    public function getTransformByUid(string $uid): ?AssetTransform
+    public function getTransformByUid(string $uid): ?AssetImageTransform
     {
         return $this->_transforms()->firstWhere('uid', $uid, true);
     }
@@ -207,12 +207,12 @@ class AssetTransforms extends Component
     /**
      * Saves an asset transform.
      *
-     * @param AssetTransform $transform The transform to be saved
+     * @param AssetImageTransform $transform The transform to be saved
      * @param bool $runValidation Whether the transform should be validated
      * @return bool
      * @throws AssetTransformException If attempting to update a non-existing transform.
      */
-    public function saveTransform(AssetTransform $transform, bool $runValidation = true): bool
+    public function saveTransform(AssetImageTransform $transform, bool $runValidation = true): bool
     {
         $isNewTransform = !$transform->id;
 
@@ -350,21 +350,12 @@ class AssetTransforms extends Component
      *
      * Note that passing an ID to this function is now deprecated. Use [[deleteTransformById()]] instead.
      *
-     * @param int|AssetTransform $transform The transform
+     * @param int|AssetImageTransform $transform The transform
      * @return bool Whether the transform was deleted
      * @throws \yii\db\Exception on DB error
      */
-    public function deleteTransform($transform): bool
+    public function deleteTransform(AssetImageTransform $transform): bool
     {
-        // todo: remove this code in 3.0 & hardcode the $transform type
-        if (is_int($transform)) {
-            Craft::$app->getDeprecator()->log(self::class . '::deleteTransform(id)', '`' . self::class . '::deleteTransform()` should only be called with a `' . AssetTransform::class . '` reference. Use `' . self::class . '::deleteTransformById()` to get a transform by its ID.');
-            return $this->deleteTransformById($transform);
-        }
-        if (!$transform instanceof AssetTransform) {
-            throw new InvalidArgumentException('$transform must be a ' . AssetTransform::class . ' object.');
-        }
-
         // Fire a 'beforeDeleteAssetTransform' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
@@ -452,7 +443,7 @@ class AssetTransforms extends Component
         $transformsByFingerprint = [];
         $indexCondition = ['or'];
 
-        /** @var AssetTransform|null $refTransform */
+        /** @var AssetImageTransform|null $refTransform */
         $refTransform = null;
 
         foreach ($transforms as $transform) {
@@ -556,7 +547,7 @@ class AssetTransforms extends Component
      * Get a transform index row. If it doesn't exist - create one.
      *
      * @param Asset $asset
-     * @param AssetTransform|string|array|null $transform
+     * @param AssetImageTransform|string|array|null $transform
      * @return AssetTransformIndex
      * @throws AssetTransformException if the transform cannot be found by the handle
      */
@@ -628,11 +619,11 @@ class AssetTransforms extends Component
      * Validates a transform index result to see if the index is still valid for a given asset.
      *
      * @param array $result
-     * @param AssetTransform $transform
+     * @param AssetImageTransform $transform
      * @param Asset|array $asset The asset object or a raw database result
      * @return bool Whether the index result is still valid
      */
-    public function validateTransformIndexResult(array $result, AssetTransform $transform, $asset): bool
+    public function validateTransformIndexResult(array $result, AssetImageTransform $transform, $asset): bool
     {
         // If the asset has been modified since the time the index was created, it's no longer valid
         $dateModified = ArrayHelper::getValue($asset, 'dateModified');
@@ -742,7 +733,7 @@ class AssetTransforms extends Component
     {
         // For _widthxheight_mode
         if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?/i', $index->location, $matches)) {
-            $transform = new AssetTransform();
+            $transform = new AssetImageTransform();
             $transform->width = ($matches['width'] !== 'AUTO' ? (int)$matches['width'] : null);
             $transform->height = ($matches['height'] !== 'AUTO' ? (int)$matches['height'] : null);
             $transform->mode = $matches['mode'];
@@ -825,17 +816,17 @@ class AssetTransforms extends Component
     /**
      * Normalize a transform from handle or a set of properties to an AssetTransform.
      *
-     * @param AssetTransform|string|array|null $transform
-     * @return AssetTransform|null
+     * @param AssetImageTransform|string|array|null $transform
+     * @return AssetImageTransform|null
      * @throws AssetTransformException if $transform is an invalid transform handle
      */
-    public function normalizeTransform($transform): ?AssetTransform
+    public function normalizeTransform($transform): ?AssetImageTransform
     {
         if (!$transform) {
             return null;
         }
 
-        if ($transform instanceof AssetTransform) {
+        if ($transform instanceof AssetImageTransform) {
             return $transform;
         }
 
@@ -845,11 +836,11 @@ class AssetTransforms extends Component
                 return $this->extendTransform($baseTransform, $transform);
             }
 
-            return new AssetTransform($transform);
+            return new AssetImageTransform($transform);
         }
 
         if (is_object($transform)) {
-            return new AssetTransform(ArrayHelper::toArray($transform, [
+            return new AssetImageTransform(ArrayHelper::toArray($transform, [
                 'id',
                 'name',
                 'handle',
@@ -1494,10 +1485,10 @@ class AssetTransforms extends Component
     /**
      * Returns a transform's folder name.
      *
-     * @param AssetTransform $transform
+     * @param AssetImageTransform $transform
      * @return string
      */
-    private function _getTransformFolderName(AssetTransform $transform): string
+    private function _getTransformFolderName(AssetImageTransform $transform): string
     {
         if ($transform->getIsNamedTransform()) {
             return $this->_getNamedTransformFolderName($transform);
@@ -1509,21 +1500,21 @@ class AssetTransforms extends Component
     /**
      * Returns a named transform's folder name.
      *
-     * @param AssetTransform|string $transform
+     * @param AssetImageTransform|string $transform
      * @return string
      */
     private function _getNamedTransformFolderName($transform): string
     {
-        return '_' . ($transform instanceof AssetTransform ? $transform->handle : $transform);
+        return '_' . ($transform instanceof AssetImageTransform ? $transform->handle : $transform);
     }
 
     /**
      * Returns an unnamed transform's folder name.
      *
-     * @param AssetTransform $transform
+     * @param AssetImageTransform $transform
      * @return string
      */
-    private function _getUnnamedTransformFolderName(AssetTransform $transform): string
+    private function _getUnnamedTransformFolderName(AssetImageTransform $transform): string
     {
         return '_' . ($transform->width ?: 'AUTO') . 'x' . ($transform->height ?: 'AUTO') .
             '_' . $transform->mode .
