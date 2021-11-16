@@ -1222,98 +1222,9 @@ class AssetTransforms extends Component
                 'Tried to detect the appropriate image format for a non-image!'));
         }
 
-        // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
-        // we fallback to jpg
-        $images = Craft::$app->getImages();
-        if ($images->getIsGd() || !method_exists(Imagick::class, 'getImageAlphaChannel')) {
-            return 'jpg';
-        }
-
-        $volume = $asset->getVolume();
-
-        $tempFilename = uniqid(pathinfo($asset->getFilename(), PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
-        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        AssetsHelper::downloadFile($volume, $asset->getPath(), $tempPath);
-
-        $image = $images->loadImage($tempPath);
-
-        if ($image->getIsTransparent()) {
-            $format = 'png';
-        } else {
-            $format = 'jpg';
-        }
-
-        if (!$volume instanceof LocalVolumeInterface) {
-            // Store for potential later use and queue for deletion if needed.
-            $asset->setTransformSource($tempPath);
-            $this->queueSourceForDeletingIfNecessary($tempPath);
-        } else {
-            // For local, though, we just delete the temp file.
-            FileHelper::unlink($tempPath);
-        }
-
-        return $format;
+        return 'jpg';
     }
 
-    /**
-     * Return a subfolder used by the Transform Index for the Asset.
-     *
-     * @param Asset $asset
-     * @param AssetTransformIndex $index
-     * @return string
-     */
-    public function getTransformSubfolder(Asset $asset, AssetTransformIndex $index): string
-    {
-        $path = $index->location;
-
-        if (!empty($index->filename) && $index->filename !== $asset->getFilename()) {
-            $path .= DIRECTORY_SEPARATOR . $asset->id;
-        }
-
-        return $path;
-    }
-
-    /**
-     * Return the filename used by the Transform Index for the Asset.
-     *
-     * @param Asset $asset
-     * @param AssetTransformIndex $index
-     * @return string
-     */
-    public function getTransformFilename(Asset $asset, AssetTransformIndex $index): string
-    {
-        return $index->filename ?: $asset->getFilename();
-    }
-
-    /**
-     * Returns the path to a transform, relative to the asset's folder.
-     *
-     * @param Asset $asset
-     * @param AssetTransformIndex $index
-     * @return string
-     */
-    public function getTransformSubpath(Asset $asset, AssetTransformIndex $index): string
-    {
-        return $this->getTransformSubfolder($asset, $index) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $index);
-    }
-
-    /**
-     * Returns the URI for a transform, relative to the asset's folder.
-     *
-     * @param Asset $asset
-     * @param AssetTransformIndex $index
-     * @return string
-     */
-    public function getTransformUri(Asset $asset, AssetTransformIndex $index): string
-    {
-        $uri = $this->getTransformSubpath($asset, $index);
-
-        if (DIRECTORY_SEPARATOR !== '/') {
-            $uri = str_replace(DIRECTORY_SEPARATOR, '/', $uri);
-        }
-
-        return $uri;
-    }
 
     /**
      * Delete *ALL* transform data (including thumbs and sources) associated with the Asset.
