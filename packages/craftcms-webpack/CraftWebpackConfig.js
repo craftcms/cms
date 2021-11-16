@@ -33,19 +33,27 @@ class CraftWebpackConfig {
         this.basePath = path.dirname(ParentModule());
 
         // env
+        this.rootPath = path.resolve('./');
         let assetEnvPath = path.join(this.basePath, './.env');
-        let baseEnvPath = path.resolve(__dirname, './.env');
+        let rootEnvPath = path.resolve(this.rootPath, './.env');
+
+        this.isRunningFromRoot = process.env.CWD === this.rootPath;
 
         // Check asset for env file or fall back to root env if it exists.
-        this.envPath = fs.existsSync(assetEnvPath)
-            ? assetEnvPath
-            : (fs.existsSync(baseEnvPath) ? baseEnvPath : null);
+        this.envPath = fs.existsSync(rootEnvPath) ? rootEnvPath : null;
+        if (!this.isRunningFromRoot) {
+            this.envPath = fs.existsSync(assetEnvPath) ? assetEnvPath : this.envPath;
+        }
 
         if (this.envPath) {
             require('dotenv').config({path: this.envPath});
         }
 
         this.isDevServerRunning = process.env.WEBPACK_DEV_SERVER;
+
+        if (this.isDevServerRunning && this.isRunningFromRoot) {
+            throw new Error('Running the dev server is only permitted in individual assets.');
+        }
 
         this.nodeEnv = 'production';
         if (!process.env.NODE_ENV && this.isDevServerRunning) {
