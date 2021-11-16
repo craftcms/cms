@@ -28,6 +28,7 @@ return [
         'lastName' => 'SMITH',
         'username' => 'user3',
         'email' => 'user3@crafttest.com',
+        'shortBio' => 'foo',
     ],
     [
         'active' => true,
@@ -35,5 +36,6 @@ return [
         'lastName' => '4',
         'username' => 'user4',
         'email' => 'user4@someemail.com',
+        'shortBio' => 'foo',
     ]
 ];
