@@ -952,14 +952,17 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
 
             // Should we set the structureId param?
-            if (!isset($this->structureId) && count($this->sectionId) === 1) {
-                $structureId = (new Query())
-                    ->select(['structureId'])
-                    ->from([Table::SECTIONS])
-                    ->where(Db::parseNumericParam('id', $this->sectionId))
-                    ->andWhere(['type' => Section::TYPE_STRUCTURE])
-                    ->scalar();
-                $this->structureId = (int)$structureId ?: false;
+            if (
+                $this->withStructure !== false &&
+                !isset($this->structureId) &&
+                count($this->sectionId) === 1
+            ) {
+                $section = Craft::$app->getSections()->getSectionById(reset($this->sectionId));
+                if ($section && $section->type === Section::TYPE_STRUCTURE) {
+                    $this->structureId = $section->structureId;
+                } else {
+                    $this->withStructure = false;
+                }
             }
         }
     }
