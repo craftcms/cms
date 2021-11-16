@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.21 - 2021-11-16
 
 ### Added
 - Added `craft\behaviors\CustomFieldBehavior::$canSetProperties`.
