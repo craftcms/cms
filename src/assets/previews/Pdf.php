@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\assetpreviews;
+namespace craft\assets\previews;
 
 use craft\base\AssetPreviewHandler;
 use craft\helpers\Html;

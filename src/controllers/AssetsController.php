@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\assetpreviews\Image as ImagePreview;
+use craft\assets\previews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;

@@ -6,7 +6,7 @@
  * @since 3.4.0
  */
 
-namespace craft\assetpreviews;
+namespace craft\assets\previews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;
