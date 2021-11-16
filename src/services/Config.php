@@ -13,7 +13,6 @@ use craft\config\GeneralConfig;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
-use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -25,8 +24,8 @@ use yii\base\InvalidConfigException;
  * as well as the values of any plugins’ config settings.
  * An instance of the Config service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
  *
- * @property DbConfig $db the DB config settings
- * @property GeneralConfig $general the general config settings
+ * @property-read DbConfig $db the DB config settings
+ * @property-read GeneralConfig $general the general config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -74,52 +73,55 @@ class Config extends Component
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
-     * @return BaseObject The config settings
+     * @return object The config settings
      * @throws InvalidArgumentException if $category is invalid
      * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
      */
-    public function getConfigSettings(string $category): BaseObject
+    public function getConfigSettings(string $category): object
     {
-        if (isset($this->_configSettings[$category])) {
-            return $this->_configSettings[$category];
+        if (!isset($this->_configSettings[$category])) {
+            $this->_configSettings[$category] = $this->_createConfigObj($category);
         }
+
+        return $this->_configSettings[$category];
+    }
+
+    /**
+     * Creates a new config object.
+     *
+     * @param string $category The config category
+     * @return object
+     */
+    private function _createConfigObj(string $category): object
+    {
+        $config = $this->getConfigFromFile($category);
 
         switch ($category) {
             case self::CATEGORY_DB:
-                $class = DbConfig::class;
-                break;
+                return new DbConfig($config);
             case self::CATEGORY_GENERAL:
-                $class = GeneralConfig::class;
-                break;
-            default:
-                throw new InvalidArgumentException('Invalid config category: ' . $category);
-        }
+                $obj = new GeneralConfig($config);
 
-        // Get any custom config settings
-        $config = $this->getConfigFromFile($category);
-        $config = $this->_configSettings[$category] = new $class($config);
-
-        // todo: remove this eventually
-        if ($category === self::CATEGORY_GENERAL) {
-            /** @var GeneralConfig $config */
-            if (!isset($config->securityKey)) {
-                $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
-                if (file_exists($keyPath)) {
-                    $config->securityKey = trim(file_get_contents($keyPath));
-                } else {
-                    $key = Craft::$app->getSecurity()->generateRandomString();
-                    try {
-                        FileHelper::writeToFile($keyPath, $key);
-                    } catch (ErrorException $e) {
-                        throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: ' . $e->getMessage());
+                if (!isset($obj->securityKey)) {
+                    $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
+                    if (file_exists($keyPath)) {
+                        $obj->securityKey = trim(file_get_contents($keyPath));
+                    } else {
+                        $key = Craft::$app->getSecurity()->generateRandomString();
+                        try {
+                            FileHelper::writeToFile($keyPath, $key);
+                        } catch (ErrorException $e) {
+                            throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: ' . $e->getMessage());
+                        }
+                        $obj->securityKey = $key;
                     }
-                    $config->securityKey = $key;
+                    Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `$keyPath` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
                 }
-                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `$keyPath` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
-            }
-        }
 
-        return $config;
+                return $obj;
+            default:
+                throw new InvalidArgumentException("Invalid config category: $category");
+        }
     }
 
     /**
