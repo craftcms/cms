@@ -1,6 +1,6 @@
 /* jshint esversion: 6 */
 /* globals module, require, webpack */
-const CraftWebpackConfig = require('../../../../packages/craftcms-webpack/CraftWebpackConfig');
+const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = new CraftWebpackConfig({

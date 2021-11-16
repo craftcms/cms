@@ -1,6 +1,6 @@
 /* jshint esversion: 6 */
 /* globals module, require */
-const CraftWebpackConfig = require('../../../../packages/craftcms-webpack/CraftWebpackConfig');
+const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
 
 module.exports = new CraftWebpackConfig({
     type: 'vue',
