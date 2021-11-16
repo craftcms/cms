@@ -26,11 +26,16 @@ use yii\base\InvalidConfigException;
  *
  * @property-read DbConfig $db the DB config settings
  * @property-read GeneralConfig $general the general config settings
+ * @property-read object $custom the custom config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Config extends Component
 {
+    /**
+     * @since 4.0.0
+     */
+    public const CATEGORY_CUSTOM = 'custom';
     public const CATEGORY_DB = 'db';
     public const CATEGORY_GENERAL = 'general';
 
@@ -97,6 +102,8 @@ class Config extends Component
         $config = $this->getConfigFromFile($category);
 
         switch ($category) {
+            case self::CATEGORY_CUSTOM:
+                return (object)$config;
             case self::CATEGORY_DB:
                 return new DbConfig($config);
             case self::CATEGORY_GENERAL:
@@ -122,6 +129,25 @@ class Config extends Component
             default:
                 throw new InvalidArgumentException("Invalid config category: $category");
         }
+    }
+
+    /**
+     * Returns the custom config settings.
+     *
+     * ---
+     *
+     * ```php
+     * $myCustomSetting = Craft::$app->config->custom->myCustomSetting;
+     * ```
+     * ```twig
+     * {% set myCustomSetting = craft.app.config.custom.myCustomSetting %}
+     * ```
+     *
+     * @return object
+     */
+    public function getCustom(): object
+    {
+        return $this->getConfigSettings(self::CATEGORY_CUSTOM);
     }
 
     /**
