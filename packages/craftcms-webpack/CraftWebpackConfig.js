@@ -1,15 +1,19 @@
 /* jshint esversion: 6 */
 /* globals  require, module, process, __dirname */
 
+// Fix issue with monorepo and some plugins
+//https://github.com/jantimon/html-webpack-plugin/issues/1451#issuecomment-712581727
+const _require = id => require(require.resolve(id, { paths: [require.main.path] }));
+
 // Libs
-const webpack = require('webpack');
+const webpack = _require('webpack');
 const { merge } = require('webpack-merge');
 const path = require('path');
 const fs = require('fs');
 const touch = require('touch');
 
 // Plugins
-const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
+const { WebpackManifestPlugin } = _require('webpack-manifest-plugin');
 const ParentModule = require('parent-module');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
@@ -368,26 +372,17 @@ class CraftWebpackConfig {
                         ],
                     },
 
-                    // TODO: replace with asset modules
-                    // https://webpack.js.org/guides/asset-modules/
+                    // TODO: put fonts in a separate folder
                     {
                         test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
-                        loader: 'file-loader',
-                        options: {
-                            // name: 'fonts/[name].[ext]',
-                            publicPath: '../',
-                        }
+                        type: 'asset/resource',
                     },
                     {
                         test: /\.(jpg|gif|png|svg|ico)$/,
-                        loader: 'file-loader',
+                        type: 'asset/resource',
                         exclude: [
                             path.resolve(this.srcPath, './fonts'),
                         ],
-                        options: {
-                            // name: '[path][name].[ext]',
-                            publicPath: '../',
-                        }
                     },
                 ],
             },
@@ -461,10 +456,10 @@ class CraftWebpackConfig {
             },
             plugins: [
                 new VueLoaderPlugin(),
-                // new webpack.HotModuleReplacementPlugin(),
-                // new WebpackManifestPlugin({
-                //     publicPath: '/'
-                // }),
+                new webpack.HotModuleReplacementPlugin(),
+                new WebpackManifestPlugin({
+                    publicPath: '/'
+                }),
             ],
         };
 
