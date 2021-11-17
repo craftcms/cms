@@ -1542,7 +1542,7 @@ return [
     'User Groups' => 'Groupes d’utilisateurs',
     'User Photo Location' => 'Emplacement de la photographie de lʼutilisateur',
     'User Photo Volume' => 'Volume des photos utilisateurs',
-    'User Settings' => 'Paramètres utilisateur',
+    'User Settings' => 'Paramètres des utilisateurs',
     'User deleted.' => 'Utilisateur supprimé.',
     'User fields saved.' => 'Champs utilisateurs enregistrés.',
     'User photo must be an image that Craft can manipulate.' => 'La photo d’un utilisateur doit être une image que Craft peut manipuler.',
