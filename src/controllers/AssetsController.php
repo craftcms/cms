@@ -323,7 +323,7 @@ class AssetsController extends Controller
                 } else {
                     $element = null;
                 }
-                $folderId = $field->resolveDynamicPathToFolderId($element);
+                $folderId = $field->resolveDynamicPathToFolderId($element, true);
             }
 
             if (empty($folderId)) {
