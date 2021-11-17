@@ -1683,7 +1683,7 @@ return [
     'Your project config YAML files are expecting different versions to be installed for the following:' => 'Les fichiers YAML de configuration du projet s’attendent à ce que différentes versions soient installées pour ce qui suit :',
     'Your project config YAML files are expecting the following plugins to be installed:' => 'Les fichiers YAML de configuration du projet de votre projet attendent l’installation des plugins suivants :',
     'Your project config YAML files contain pending changes.' => 'Vos fichiers YAML de configuration du projet ont des modifications en cours.',
-    'Your server doesn’t meet the following requirements to run Craft CMS:' => 'Votre serveur ne respecte pas les spécificités minimales suivantes pour faire tourner Craft CMS :',
+    'Your server doesn’t meet the following requirements to run Craft CMS:' => 'Votre serveur ne respecte pas les pré-requis suivants pour exécuter Craft CMS :',
     'Your session has ended.' => 'Votre session a expiré.',
     'Your session will expire in {time}.' => 'Votre session expirera dans {time}.',
     'Your system isn’t set up to save content for the site “{site}”.' => 'Votre système n’est pas paramétré pour enregistrer le contenu du site « {site} ».',
