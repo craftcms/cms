@@ -1401,7 +1401,7 @@ return [
     'There was an error uploading your photo' => 'Une erreur est survenue lors du téléchargement de votre photo',
     'There was an error uploading your photo: {error}' => 'Une erreur est survenue lors du téléchargement de votre photo : {error}',
     'There’s a licensing issue with the {name} plugin.' => 'Il y a un problème avec la licence du plug-in {name}.',
-    'This action may only be performed with an elevated session.' => 'Cette action ne peut être effectuée que lors d’une session avec privilèges élevés.',
+    'This action may only be performed with an elevated session.' => 'Cette action ne peut être effectuée qu’avec une session avec privilèges élevés.',
     'This can be left blank if you just want an unlabeled separator.' => 'Ce champ peut rester vide si vous voulez seulement un séparateur sans nom.',
     'This can be set to an environment variable, or begin with an alias.' => 'Ceci peut être défini sur une variable d’environnement, ou commencer par un alias.',
     'This can be set to an environment variable.' => 'Cela peut être défini sur une variante d’environnement.',
