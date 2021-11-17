@@ -1437,7 +1437,7 @@ return [
     'This week' => 'Cette semaine',
     'This year' => 'Cette année',
     'Time Zone' => 'Fuseau horaire',
-    'Time fields are better suited for managing Time-only values.' => 'Les champs de temps sont mieux adaptés à la gestion des valeurs de temps uniquement.',
+    'Time fields are better suited for managing Time-only values.' => 'Les champs de type « Heure » sont plus adaptés à la gestion des valeurs ne contenant que lʼheure.',
     'Time to reserve' => 'Temps à réserver',
     'Time' => 'Heure',
     'Timeout' => 'Temps écoulé',
