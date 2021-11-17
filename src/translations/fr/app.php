@@ -1577,7 +1577,7 @@ return [
     'View all users' => 'Voir tous les utilisateurs',
     'View category group - {categoryGroup}' => 'Voir le groupe de catégories - {categoryGroup}',
     'View category' => 'Voir la catégorie',
-    'View entries with the “{entryType}” entry type' => 'Afficher les entrées dans le type d’entrée « {entryType} »',
+    'View entries with the “{entryType}” entry type' => 'Afficher les entrées du type « {entryType} »',
     'View entry' => 'Voir l’entrée',
     'View files uploaded by other users' => 'Afficher les fichiers téléversés par d’autres utilisateurs',
     'View global set - {globalSet}' => 'Voir le jeu de globales - {globalSet}',
