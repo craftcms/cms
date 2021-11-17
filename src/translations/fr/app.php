@@ -1548,7 +1548,7 @@ return [
     'User photo must be an image that Craft can manipulate.' => 'La photo d’un utilisateur doit être une image que Craft peut manipuler.',
     'User registered.' => 'Utilisateur enregistré.',
     'User saved.' => 'Utilisateur enregistré.',
-    'User settings saved.' => 'Paramètres utilisateurs enregistrés.',
+    'User settings saved.' => 'Paramètres des utilisateurs enregistrés.',
     'User suspended.' => 'Utilisateur suspendu.',
     'User unlocked.' => 'Utilisateur débloqué.',
     'User unsuspended.' => 'Utilisateur réactivé.',
