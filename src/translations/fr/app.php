@@ -1627,7 +1627,7 @@ return [
     'Where new {type} should be placed by default in the structure.' => 'Où le nouveau {type} doit être placé par défaut dans la structure.',
     'Where selected assets should be stored.' => 'Où les ressources sélectionnées doivent être stockées.',
     'Whether authors should be able to choose which time zone the time is in.' => 'Si les auteurs doivent pouvoir choisir le fuseau horaire.',
-    'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Si les auteurs devraient pouvoir téléverser des fichiers directement dans le champ, plutôt que de devoir sélectionner/téléverser des ressources via le module de sélection.',
+    'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Si les auteurs doivent pouvoir téléverser des fichiers directement dans le champ, plutôt que de devoir sélectionner/téléverser des ressources via la fenêtre de sélection.',
     'Whether custom fields should be validated during public registration.' => 'Si les champs personnalisés doivent être validés lors de l’inscription publique.',
     'Whether preview frames should be automatically refreshed when content changes.' => 'Actualiser automatiquement ou non les images d’aperçu lorsque le contenu est modifié.',
     'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.' => 'Si oui, les images stockées en externe sont téléchargées et enregistrées en local pour accélérer la génération des transformations d’image.',
