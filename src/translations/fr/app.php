@@ -1586,7 +1586,7 @@ return [
     'View user group - {userGroup}' => 'Voir le groupe d’utilisateurs - {userGroup}',
     'View volume - {volume}' => 'Voir le volume - {volume}',
     'View volume' => 'Voir le volume',
-    'View {plugin} in the Plugin Store' => 'Visualiser {plugin} dans la boutique de plug-ins',
+    'View {plugin} in the Plugin Store' => 'Voir {plugin} dans la boutique de plug-ins',
     'View' => 'Voir',
     'Visit webpage' => 'Visiter la page',
     'Volume - {volume}' => 'Volume - {volume}',
