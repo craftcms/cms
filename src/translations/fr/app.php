@@ -1641,7 +1641,7 @@ return [
     'Which group should this site belong to?' => 'À quel groupe ce site devrait-il appartenir ?',
     'Which section do you want to pull recent entries from?' => 'De quelle section voulez-vous récupérer les entrées récentes ?',
     'Which section do you want to save entries to?' => 'Dans quelle section voulez-vous enregistrer les entrées ?',
-    'Which site should {type} be related from?' => 'À quel site {type} devrait être relié(e) ?',
+    'Which site should {type} be related from?' => 'À quel site les {type} doivent être {type,select,utilisateurs{associés} other{associées}} ?',
     'Which sites should blocks be saved to?' => 'Sur quels sites les blocs doivent-ils être enregistrés ?',
     'Which source do you want to select {type} from?' => 'À partir de quel emplacement souhaitez-vous sélectionner {type} ?',
     'Which sources do you want to select {type} from?' => 'À partir de quels emplacements souhaitez-vous sélectionner {type} ?',
