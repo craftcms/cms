@@ -1573,7 +1573,7 @@ return [
     'Version' => 'Version',
     'Very High (Recommended)' => 'Très élevé (recommandé)',
     'Video' => 'Vidéo',
-    'View Mode' => 'Mode visualisation',
+    'View Mode' => 'Affichage',
     'View all users' => 'Voir tous les utilisateurs',
     'View category group - {categoryGroup}' => 'Voir le groupe de catégories - {categoryGroup}',
     'View category' => 'Voir la catégorie',
