@@ -365,7 +365,7 @@ class CraftWebpackConfig {
                         test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
                         loader: 'file-loader',
                         options: {
-                            name: 'fonts/[name].[ext]',
+                            // name: 'fonts/[name].[ext]',
                             publicPath: '../',
                         }
                     },
@@ -376,7 +376,7 @@ class CraftWebpackConfig {
                             path.resolve(this.srcPath, './fonts'),
                         ],
                         options: {
-                            name: '[path][name].[ext]',
+                            // name: '[path][name].[ext]',
                             publicPath: '../',
                         }
                     },
@@ -384,8 +384,8 @@ class CraftWebpackConfig {
             },
             plugins: [
                 new MiniCssExtractPlugin({
-                    filename: 'css/[name].css',
-                    chunkFilename: 'css/[name].css',
+                    // filename: 'css/[name].css',
+                    // chunkFilename: 'css/[name].css',
                 }),
             ]
         };
@@ -452,10 +452,10 @@ class CraftWebpackConfig {
             },
             plugins: [
                 new VueLoaderPlugin(),
-                new webpack.HotModuleReplacementPlugin(),
-                new WebpackManifestPlugin({
-                    publicPath: '/'
-                }),
+                // new webpack.HotModuleReplacementPlugin(),
+                // new WebpackManifestPlugin({
+                //     publicPath: '/'
+                // }),
             ],
         };
 
