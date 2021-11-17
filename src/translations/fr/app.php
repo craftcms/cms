@@ -1843,7 +1843,7 @@ return [
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} tâches',
     '{total} updates available!' => '{total} mises à jour disponibles !',
-    '{type} Settings' => 'Paramètres {type}',
+    '{type} Settings' => 'Paramètres de « {type} »',
     '{type} deleted for site.' => '{type} supprimé(e) pour le site.',
     '{type} deleted.' => '{type} supprimé.',
     '{type} saved.' => '{type} enregistré.',
