@@ -1372,7 +1372,7 @@ return [
     'The request could not be understood by the server due to malformed syntax.' => 'Le serveur n’a pu comprendre la requête à cause d’une syntaxe incorrecte.',
     'The requested URL was not found on this server.' => 'L’URL demandée n’a pas été trouvée sur ce serveur.',
     'The server doesn’t meet Craft’s new requirements:' => 'Le serveur ne répond pas aux nouveaux pré-requis de Craft CMS :',
-    'The table name prefix' => 'Le préfixe du nom de la table',
+    'The table name prefix' => 'Le préfixe des noms de tables',
     'The template Craft CMS will use for HTML emails' => 'Le template qu’utilisera Craft CMS pour les emails en HTML',
     'The template will be rendered with an `element` variable.' => 'Le template sera rendu avec une variable « élément ».',
     'The text that will be shown if the field doesn’t have a value.' => 'Le texte qui sera affiché si le champ ne contient pas de valeur.',
