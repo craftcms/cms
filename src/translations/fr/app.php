@@ -1680,7 +1680,7 @@ return [
     'Your email settings are invalid.' => 'Vos paramètres de messagerie sont invalides.',
     'Your license key is invalid.' => 'Votre clef de licence n’est pas valide.',
     'Your order has been processed successfully.' => 'Votre commande a été traitée avec succès.',
-    'Your project config YAML files are expecting different versions to be installed for the following:' => 'Les fichiers YAML de configuration du projet de votre projet s’attendent à ce que différentes versions soient installées pour ce qui suit :',
+    'Your project config YAML files are expecting different versions to be installed for the following:' => 'Les fichiers YAML de configuration du projet s’attendent à ce que différentes versions soient installées pour ce qui suit :',
     'Your project config YAML files are expecting the following plugins to be installed:' => 'Les fichiers YAML de configuration du projet de votre projet attendent l’installation des plugins suivants :',
     'Your project config YAML files contain pending changes.' => 'Vos fichiers YAML de configuration du projet ont des modifications en cours.',
     'Your server doesn’t meet the following requirements to run Craft CMS:' => 'Votre serveur ne respecte pas les spécificités minimales suivantes pour faire tourner Craft CMS :',
