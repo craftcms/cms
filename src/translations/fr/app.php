@@ -1501,7 +1501,7 @@ return [
     'Update YAML files' => 'Mettre à jour les fichiers YAML',
     'Update aborted.' => 'Mise à jour interrompue.',
     'Update all' => 'Tout mettre à jour',
-    'Update asset indexes' => 'Mettre à jour les index de ressources',
+    'Update asset indexes' => 'Mettre à jour l’index de ressources',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Mettez à jour vos fichiers YAML de configuration du projet pour refléter les derniers changements dans la configuration de projet chargée.',
     'Update {type}' => 'Mettre à jour {type}',
     'Update' => 'Mettre à jour',
