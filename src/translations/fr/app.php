@@ -1234,7 +1234,7 @@ return [
     'Show' => 'Afficher',
     'Show/hide children' => 'Afficher/masquer les enfants',
     'Showing results for “{searchQuery}”' => 'Affichage des résultats pour « {searchQuery} »',
-    'Showing your unsaved changes.' => 'Montrer vos changements non enregistrés.',
+    'Showing your unsaved changes.' => 'Affichage de vos changements non enregistrés.',
     'Sign into Craft ID' => 'Se connecter au Craft ID',
     'Sign out from Craft ID' => 'Se déconnecter du Craft ID',
     'Sign out' => 'Déconnexion',
