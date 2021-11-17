@@ -1515,7 +1515,7 @@ return [
     'Updating element references' => 'Mise à jour des références d’élément',
     'Updating element slugs and URIs' => 'Mise à jour des identificateurs des éléments et des URIs',
     'Updating entry drafts and revisions' => 'Mise à jour des brouillons d’entrées et des révisions',
-    'Updating search indexes' => 'Mise à jour des index de recherche',
+    'Updating search indexes' => 'Mise à jour de l’index de recherche',
     'Updating the plugin…' => 'Mise à jour du plug-in…',
     'Updating…' => 'Mise à jour…',
     'Upgrade Craft CMS' => 'Mettre à niveau Craft CMS',
