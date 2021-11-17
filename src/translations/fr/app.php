@@ -1554,7 +1554,7 @@ return [
     'User unsuspended.' => 'Utilisateur réactivé.',
     'User' => 'Utilisateur',
     'Username or Email' => 'Nom d’utilisateur ou email',
-    'Username or email is required.' => 'Le nom d’utilisateur ou email est nécessaire.',
+    'Username or email is required.' => 'Le nom d’utilisateur ou l’email est nécessaire.',
     'Username' => 'Nom d’utilisateur',
     'Users deleted.' => 'Utilisateurs supprimés.',
     'Users not restored.' => 'Utilisateurs non restaurés.',
