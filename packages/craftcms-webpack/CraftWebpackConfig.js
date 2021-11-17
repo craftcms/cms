@@ -350,7 +350,8 @@ class CraftWebpackConfig {
                             {
                                 loader: MiniCssExtractPlugin.loader,
                                 options: {
-                                    publicPath: '../',
+                                    publicPath: './',
+                                    esModule: false,
                                 }
                             },
                             'css-loader',
