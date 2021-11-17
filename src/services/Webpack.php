@@ -97,14 +97,14 @@ class Webpack extends Component
         $envFile = $this->_getEnvFilePath($class);
 
         // TODO: Use DotEnv::parse() when we version is bumped.
-        $fileContent = @file_get_contents($envFile);
+        $fileContents = file_exists($envFile) ? @file_get_contents($envFile) : null;
 
-        if (!$fileContent) {
+        if (!$fileContents) {
             return $this->_envFileVariables[$class] = [];
         }
 
         $pattern = '/^([a-zA-Z_]+)=(")?(.*?)(?(2)\2|)$/m';
-        preg_match_all($pattern, $fileContent, $matches, PREG_SET_ORDER, 0);
+        preg_match_all($pattern, $fileContents, $matches, PREG_SET_ORDER, 0);
 
         $this->_envFileVariables[$class] = [];
 
