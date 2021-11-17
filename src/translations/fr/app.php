@@ -78,7 +78,7 @@ return [
     'Allow listing element revisions' => 'Autoriser les entrées de révisions d’éléments',
     'Allow listing non-live and otherwise inactive elements.' => 'Autoriser les entrées d’éléments non publiés et inactifs.',
     'Allow public registration' => 'Autoriser l’enregistrement public',
-    'Allow self relations' => 'Autoriser les relations à soi-même',
+    'Allow self relations' => 'Autoriser les auto-relations',
     'Allow uploading directly to the field' => 'Autoriser le téléversement directement dans le champ',
     'Allowed URL Types' => 'Types d’URL autorisés',
     'Already in your cart' => 'Déjà dans votre panier',
