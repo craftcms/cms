@@ -1622,7 +1622,7 @@ return [
     'What’s New' => 'Les nouveautés',
     'When someone replaces a file, the record of who uploaded the file will be updated as well.' => 'Lorsqu’un utilisateur remplace un fichier, l’historique du téléversement est également mise à jour.',
     'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'Où les ressources doivent être stockées lorsqu’elles sont téléversées directement sur le champ, ou via un formulaire de la partie publique du site.',
-    'Where do you want to store temporary asset uploads?' => 'Où voulez-vous garder vos mises à jour temporaires de ressources ?',
+    'Where do you want to store temporary asset uploads?' => 'Où voulez-vous stocker les téléversements temporaires de ressources ?',
     'Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>.' => 'Où voulez-vous stocker les photos utilisateurs ? Notez que le chemin de sous-dossier peut contenir des variables comme <code>{username}</code>.',
     'Where new {type} should be placed by default in the structure.' => 'Où le nouveau {type} doit être placé par défaut dans la structure.',
     'Where selected assets should be stored.' => 'Où les ressources sélectionnées doivent être stockées.',
