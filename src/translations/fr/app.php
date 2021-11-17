@@ -1222,7 +1222,7 @@ return [
     'Show nav' => 'Afficher la navigation',
     'Show nested sources' => 'Afficher les sources imbriquées',
     'Show sidebar' => 'Afficher la barre latérale',
-    'Show the Title field' => 'Afficher champ de titre',
+    'Show the Title field' => 'Afficher le champ de titre',
     'Show the debug toolbar in the control panel' => 'Afficher la barre d’outils de débogage dans le panneau de contrôle',
     'Show the debug toolbar on the front end' => 'Afficher la barre d’outils de débogage sur le frontal',
     'Show the site menu' => 'Afficher le menu du site',
