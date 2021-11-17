@@ -1598,7 +1598,7 @@ return [
     'Website' => 'Site Web',
     'Week Start Day' => 'Premier jour de la semaine',
     'What category URIs should look like for the site.' => 'À quoi les URIs de catégories devraient ressembler pour le site.',
-    'What do you want to do with any content that is only available in {language}?' => 'Que voulez-vous faire avec tout le contenu qui est seulement disponible en {language} ?',
+    'What do you want to do with any content that is only available in {language}?' => 'Que voulez-vous faire du contenu qui n’est disponible qu’en {language} ?',
     'What do you want to do with their content?' => 'Que voulez-vous faire de leur contenu ?',
     'What do you want to do?' => 'Que souhaitez-vous faire ?',
     'What do you want to name the group?' => 'Comment souhaitez-vous nommer le groupe ?',
