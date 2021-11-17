@@ -1510,7 +1510,7 @@ return [
     'Updates until {date} ({sign}{price})' => 'Mises à jour jusqu’au {date} ({sign}{price})',
     'Updates until {date}' => 'Mises à jour jusqu’au {date}',
     'Updates' => 'Mises à jour',
-    'Updating Composer dependencies (this may take a minute)…' => 'Mise à jour des liens de Composer (cela peut prendre une minute)…',
+    'Updating Composer dependencies (this may take a minute)…' => 'Mise à jour des dépendances Composer (cela peut prendre une minute)…',
     'Updating database…' => 'Mise à jour de la base de données…',
     'Updating element references' => 'Mise à jour des références d’élément',
     'Updating element slugs and URIs' => 'Mise à jour des identificateurs des éléments et des URIs',
