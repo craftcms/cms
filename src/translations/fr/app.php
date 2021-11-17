@@ -1374,7 +1374,7 @@ return [
     'The server doesn’t meet Craft’s new requirements:' => 'Le serveur ne répond pas aux nouveaux pré-requis de Craft CMS :',
     'The table name prefix' => 'Le préfixe des noms de tables',
     'The template Craft CMS will use for HTML emails' => 'Le template qu’utilisera Craft CMS pour les emails en HTML',
-    'The template will be rendered with an `element` variable.' => 'Le template sera rendu avec une variable « élément ».',
+    'The template will be rendered with an `element` variable.' => 'Le template sera rendu avec une variable `element`.',
     'The text that will be shown if the field doesn’t have a value.' => 'Le texte qui sera affiché si le champ ne contient pas de valeur.',
     'The transport type “{type}” could not be found.' => 'Le type de transport « {type} » n’a pas été trouvé.',
     'The type of column this field should get in the database.' => 'Le type de colonne que ce champ devrait récupérer dans la base de données.',
