@@ -1262,7 +1262,7 @@ return [
     'Sources' => 'Emplacements',
     'Square SVG file recommended. The logo will be displayed at {size} by {size}.' => 'Fichier SVG carré recommandé. Le logo sera affiché en {size} par {size}.',
     'Stack Trace' => 'Pile des appel',
-    'Staff Picks' => 'Les choix de l’équipe Craft',
+    'Staff Picks' => 'Sélection de l’équipe Craft',
     'Standard Fields' => 'Champs standards',
     'Status updated, with some failures due to validation errors.' => 'Statut mis à jour, avec quelques anomalies dues à des erreurs de validation.',
     'Status updated.' => 'Statut mis à jour.',
