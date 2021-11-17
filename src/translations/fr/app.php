@@ -1392,7 +1392,7 @@ return [
     'There aren’t any pending project config changes to apply.' => 'Il n’y a aucune modification de configuration du projet en cours à appliquer.',
     'There was a problem activating the user.' => 'Il y a eu un problème lors de l’activation de l’utilisateur.',
     'There was a problem impersonating this user.' => 'Il y a eu un problème lors de l’usurpation de l’identité de cet utilisateur.',
-    'There was a problem processing your credit card.' => 'Il y a eu un problème dans le traitement de votre carte de crédit.',
+    'There was a problem processing your credit card.' => 'Il y a eu un problème lors du paiement.',
     'There was a problem saving your message.' => 'Il y a eu un problème lors de la sauvegarde de votre message.',
     'There was a problem sending the password reset email.' => 'Il y a eu un problème lors de l’envoi de l’email de réinitialisation du mot de passe.',
     'There was a problem with uploading the file.' => 'Il y a eu un problème lors du téléchargement du fichier.',
