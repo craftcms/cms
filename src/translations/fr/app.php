@@ -1416,7 +1416,7 @@ return [
     'This field was updated in the Current revision.' => 'Ce champ a été mis à jour dans la révision actuelle.',
     'This field’s target subfolder path is invalid: {path}' => 'Le chemin du sous-dossier cible du champ est invalide : {path}',
     'This field’s values are used as search keywords.' => 'Les valeurs de ce champ sont utilisées comme mots-clés de recherche.',
-    'This global set doesn’t have any fields assigned to it in its field layout.' => 'Ce jeu de globales n’a aucun champ qui lui est assigné dans sa mise en page.',
+    'This global set doesn’t have any fields assigned to it in its field layout.' => 'Ce jeu de globales ne comporte aucun champ.',
     'This group doesn’t have any fields yet.' => 'Ce groupe n’a pas encore de champ.',
     'This is being overridden by the {setting} config setting.' => 'Cela est outrepassé par le paramètre de configuration {setting}.',
     'This license is for the {name} edition.' => 'Cette licence est pour la version {name}.',
