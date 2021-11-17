@@ -1383,7 +1383,7 @@ return [
     'The uploaded file exceeds the maximum allowed size.' => 'La taille du fichier téléchargé dépasse la taille maximale autorisée.',
     'The uploaded file is not an image.' => 'Le fichier téléchargé n’est pas une image.',
     'The user photo provided is not an image.' => 'La photo d’utilisateur fournie n’est pas une image.',
-    'The volume set for temp asset storage is not valid.' => 'Le volume réglé pour le stockage temporaire de ressources n’est pas valide.',
+    'The volume set for temp asset storage is not valid.' => 'Le volume sélectionné pour le stockage temporaire de ressources n’est pas valide.',
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'Le paramètre {setting} du champ {field} comporte un sous-chemin non valide (« {subpath} »).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'Le paramètre {setting} du champ {field} est défini sur un volume non valide.',
     'The “From” name Craft CMS will use when sending email.' => 'Le nom de « l’Expéditeur » qu’utilisera Craft CMS quand il enverra un email.',
