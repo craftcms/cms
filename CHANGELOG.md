@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the `entry-revisions/save-draft` action wasn’t respecting the `provisional` param when creating a new entry and draft. ([#10105](https://github.com/craftcms/cms/issues/10105))
+
 ## 3.7.21 - 2021-11-16
 
 ### Added
