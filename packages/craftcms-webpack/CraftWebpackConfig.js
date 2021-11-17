@@ -255,7 +255,6 @@ class CraftWebpackConfig {
                     new TerserWebpackPlugin({
                         extractComments: false,
                         parallel: true,
-                        sourceMap: true,
                         terserOptions: {
                             compress: {
                                 keep_classnames: true,
@@ -359,6 +358,9 @@ class CraftWebpackConfig {
                             },
                         ],
                     },
+
+                    // TODO: replace with asset modules
+                    // https://webpack.js.org/guides/asset-modules/
                     {
                         test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
                         loader: 'file-loader',
@@ -408,6 +410,8 @@ class CraftWebpackConfig {
      * Vue webpack config
      */
     vue() {
+        // TODO: https://webpack.js.org/migrate/5/#clean-up-configuration
+        // kill this?
         const optimization = this.isDevServerRunning ? {} : {
             splitChunks: {
                 name: false,
