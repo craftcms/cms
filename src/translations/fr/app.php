@@ -1474,7 +1474,7 @@ return [
     'Try for free' => 'Essai gratuit',
     'Try running `composer install` from your terminal to resolve.' => 'Essayez d’exécuter `composer install` à partir de votre terminal pour résoudre le problème.',
     'Try' => 'Essayer',
-    'Trying again…' => 'Nouvel essai...',
+    'Trying again…' => 'Nouvel essai…',
     'Type' => 'Type',
     'UI Elements' => 'Éléments IU',
     'UI Mode' => 'Mode IU',
