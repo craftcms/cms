@@ -373,6 +373,7 @@ class CraftWebpackConfig {
                     },
 
                     // TODO: put fonts in a separate folder
+                    // https://stackoverflow.com/a/66681262
                     {
                         test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
                         type: 'asset/resource',
@@ -388,8 +389,8 @@ class CraftWebpackConfig {
             },
             plugins: [
                 new MiniCssExtractPlugin({
-                    // filename: 'css/[name].css',
-                    // chunkFilename: 'css/[name].css',
+                    filename: '[name].css',
+                    chunkFilename: '[name].css',
                 }),
             ]
         };
@@ -416,18 +417,19 @@ class CraftWebpackConfig {
     vue() {
         // TODO: https://webpack.js.org/migrate/5/#clean-up-configuration
         // kill this?
-        const optimization = this.isDevServerRunning ? {} : {
-            splitChunks: {
-                name: false,
-                cacheGroups: {
-                    defaultVendors: {
-                        test: /[\\/]node_modules[\\/]/,
-                        name: 'chunk-vendors',
-                        chunks: 'all'
-                    }
-                }
-            }
-        };
+        const optimization = {};
+        // const optimization = this.isDevServerRunning ? {} : {
+        //     splitChunks: {
+        //         name: false,
+        //         cacheGroups: {
+        //             defaultVendors: {
+        //                 test: /[\\/]node_modules[\\/]/,
+        //                 name: 'chunk-vendors',
+        //                 chunks: 'all'
+        //             }
+        //         }
+        //     }
+        // };
 
         const vueConfig = {
             context: this.srcPath,
@@ -456,7 +458,10 @@ class CraftWebpackConfig {
             },
             plugins: [
                 new VueLoaderPlugin(),
+
+                // TODO: shouldn't include this in production
                 new webpack.HotModuleReplacementPlugin(),
+
                 new WebpackManifestPlugin({
                     publicPath: '/'
                 }),

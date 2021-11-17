@@ -27,7 +27,7 @@ class EditTransformAsset extends AssetBundle
         ];
 
         $this->css = [
-            'css/transforms.css',
+            'transforms.css',
         ];
 
         parent::init();

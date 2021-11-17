@@ -32,7 +32,7 @@ class CraftSupportAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/CraftSupportWidget.css',
+        'CraftSupportWidget.css',
     ];
 
     /**

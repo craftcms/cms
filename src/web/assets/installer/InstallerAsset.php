@@ -32,7 +32,7 @@ class InstallerAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/install.css',
+        'install.css',
     ];
 
     /**

@@ -31,7 +31,7 @@ class RoutesAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/routes.css',
+        'routes.css',
     ];
 
     /**

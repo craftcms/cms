@@ -27,7 +27,7 @@ class UtilitiesAsset extends AssetBundle
         ];
 
         $this->css = [
-            'css/utilities.css',
+            'utilities.css',
         ];
 
         parent::init();

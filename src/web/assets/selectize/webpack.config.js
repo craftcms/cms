@@ -19,7 +19,7 @@ module.exports = new CraftWebpackConfig({
                     {
                         context: NODE_MODULES + 'selectize/dist/css',
                         from: 'selectize.css',
-                        to: './css/.',
+                        to: '.',
                     }
                 ]
             })

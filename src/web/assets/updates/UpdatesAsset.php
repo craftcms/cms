@@ -32,7 +32,7 @@ class UpdatesAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/UpdatesUtility.css',
+        'UpdatesUtility.css',
     ];
 
     /**

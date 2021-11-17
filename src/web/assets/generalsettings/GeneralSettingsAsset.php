@@ -31,7 +31,7 @@ class GeneralSettingsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/rebrand.css',
+        'rebrand.css',
     ];
 
     /**

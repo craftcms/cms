@@ -32,8 +32,8 @@ class EditUserAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/AccountSettingsForm.css',
-        'css/profile.css',
+        'AccountSettingsForm.css',
+        'profile.css',
     ];
 
     /**
