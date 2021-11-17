@@ -186,19 +186,24 @@ class CraftWebpackConfig {
         }
 
         return {
-            contentBase: this.devServer.contentBase,
-            watchContentBase: true,
-            disableHostCheck: true,
+            // contentBase: this.devServer.contentBase,
+            // watchContentBase: true,
+            // disableHostCheck: true,
             headers: {"Access-Control-Allow-Origin": "*"},
             host: this.devServer.host,
             hot: true,
             https: this.https,
-            inline: true,
+            // inline: true,
             port: this.devServer.port,
-            public: this.devServer.publicPath,
-            stats: 'errors-only',
-            before: function(app, server, compiler) {
-                app.get('/which-asset', function(req, res) {
+            // public: this.devServer.publicPath,
+            client: {
+                overlay: {
+                  errors: true,
+                  warnings: false,
+                },
+            },
+            onBeforeSetupMiddleware: function(devServer) {
+                devServer.app.get('/which-asset', function(req, res) {
                     res.json(response);
                 });
             }
@@ -255,32 +260,32 @@ class CraftWebpackConfig {
 
             optimization = {
                 minimize: true,
-                minimizer: [
-                    new TerserWebpackPlugin({
-                        extractComments: false,
-                        parallel: true,
-                        terserOptions: {
-                            compress: {
-                                keep_classnames: true,
-                                keep_fnames: true,
-                                unused: false,
-                            },
-                            mangle: false,
-                            output: {
-                                comments: false,
-                            },
-                        },
-                        test: /\.js(\?.*)?$/i,
-                    }),
-                    this.nodeEnv === 'production' ? new CssMinimizerPlugin({
-                        parallel: true,
-                    }) : null,
-                ],
+                // minimizer: [
+                //     new TerserWebpackPlugin({
+                //         extractComments: false,
+                //         parallel: true,
+                //         terserOptions: {
+                //             compress: {
+                //                 keep_classnames: true,
+                //                 keep_fnames: true,
+                //                 unused: false,
+                //             },
+                //             mangle: false,
+                //             output: {
+                //                 comments: false,
+                //             },
+                //         },
+                //         test: /\.js(\?.*)?$/i,
+                //     }),
+                //     this.nodeEnv === 'production' ? new CssMinimizerPlugin({
+                //         parallel: true,
+                //     }) : null,
+                // ],
             };
         }
 
         const baseConfig = {
-            watch: this.nodeEnv === 'development',
+            // watch: this.nodeEnv === 'development',
             mode: this.nodeEnv,
             devtool: 'source-map',
             optimization,
