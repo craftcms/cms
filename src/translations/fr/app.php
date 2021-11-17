@@ -1212,7 +1212,7 @@ return [
     'Settings' => 'Paramètres',
     'Setup your site' => 'Paramétrez votre site',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Les nouvelles adresses email doivent-elles être vérifiées avant d’être enregistrées sur le compte utilisateur ? (ce paramètre affecte également l’inscription des nouveaux utilisateurs.)',
-    'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Les utilisateurs qui enregistrent leurs propres comptes doivent-ils être suspendus par défaut ? Cela leur évitera de recevoir un e-mail d’activation.',
+    'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Les utilisateurs qui s’inscrivent doivent-ils être suspendus par défaut ? Cela les empêchera de recevoir un e-mail d’activation.',
     'Show Time Zone' => 'Afficher le fuseau horaire',
     'Show all changes' => 'Afficher toutes les modifications',
     'Show date and time' => 'Afficher date et heure',
