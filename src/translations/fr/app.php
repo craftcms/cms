@@ -1217,7 +1217,7 @@ return [
     'Show all changes' => 'Afficher toutes les modifications',
     'Show date and time' => 'Afficher la date et l’heure',
     'Show date' => 'Afficher la date',
-    'Show field handles in edit forms' => 'Afficher les poignées des champs dans les formulaires d’édition',
+    'Show field handles in edit forms' => 'Afficher les "handles" des champs dans les formulaires d’édition',
     'Show full exception views when Dev Mode is disabled' => 'Montrer la vue complète des exceptions quand le mode dev est désactivé',
     'Show nav' => 'Afficher la navigation',
     'Show nested sources' => 'Afficher les sources imbriquées',
