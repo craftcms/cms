@@ -12,7 +12,6 @@ const ASSETS_PATH = path.join(__dirname, '../../src/web/assets');
 let configs = [];
 
 // Import asset configs
-let assetWebpackConfigs = [];
 let assetWebPackConfigFiles = fs.readdirSync(ASSETS_PATH).filter(f => {
     let dirPath = path.join(ASSETS_PATH, f);
     let filePath = path.join(dirPath, 'webpack.config.js');
