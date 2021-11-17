@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
+use craft\models\UserGroup;
 use craft\services\ElementSources;
 use craft\services\ProjectConfig;
 use yii\web\Response;
@@ -71,17 +72,23 @@ class ElementIndexSettingsController extends BaseElementsController
             array_shift($tableAttributes);
             $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
 
-            if ($source['type'] === ElementSources::TYPE_CUSTOM && isset($source['condition'])) {
-                $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
-                $view->startJsBuffer();
-                $conditionBuilderHtml = $view->namespaceInputs(function() use ($condition) {
-                    return $condition->getBuilderHtml([
-                        'mainTag' => 'div',
-                        'projectConfigTypes' => true,
-                    ]);
-                }, "sources[{$source['key']}][condition]");
-                $conditionBuilderJs = $view->clearJsBuffer();
-                $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
+            if ($source['type'] === ElementSources::TYPE_CUSTOM) {
+                if (isset($source['condition'])) {
+                    $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
+                    $view->startJsBuffer();
+                    $conditionBuilderHtml = $view->namespaceInputs(function() use ($condition) {
+                        return $condition->getBuilderHtml([
+                            'mainTag' => 'div',
+                            'projectConfigTypes' => true,
+                        ]);
+                    }, "sources[{$source['key']}][condition]");
+                    $conditionBuilderJs = $view->clearJsBuffer();
+                    $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
+                }
+
+                if (isset($source['userGroups']) && $source['userGroups'] === false) {
+                    $source['userGroups'] = [];
+                }
             }
         }
         unset($source);
@@ -103,12 +110,20 @@ class ElementIndexSettingsController extends BaseElementsController
         }, 'sources[__SOURCE_KEY__][condition]');
         $conditionBuilderJs = $view->clearJsBuffer();
 
+        $userGroups = collect(Craft::$app->getUserGroups()->getAllGroups())
+            ->map(fn(UserGroup $group) => [
+                'label' => Craft::t('site', $group->name),
+                'value' => $group->uid,
+            ])
+            ->all();
+
         return $this->asJson([
             'sources' => $sources,
             'availableTableAttributes' => $availableTableAttributes,
             'elementTypeName' => $elementType::displayName(),
             'conditionBuilderHtml' => $conditionBuilderHtml,
             'conditionBuilderJs' => $conditionBuilderJs,
+            'userGroups' => $userGroups,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
@@ -160,6 +175,10 @@ class ElementIndexSettingsController extends BaseElementsController
                             'label' => $postedSettings['label'],
                             'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
                         ];
+
+                        if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
+                            $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
+                        }
                     }
                 } else if (isset($oldSourceConfigs[$source['key']])) {
                     $sourceConfig += $oldSourceConfigs[$source['key']];
@@ -167,6 +186,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     // Ignore it
                     continue;
                 }
+
                 $newSourceConfigs[] = $sourceConfig;
             }
         }

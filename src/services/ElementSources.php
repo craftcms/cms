@@ -84,6 +84,9 @@ class ElementSources extends Component
                         $nativeSourceKeys[$source['key']] = true;
                     }
                 } else {
+                    if ($source['type'] === self::TYPE_CUSTOM && !$this->_showCustomSource($source)) {
+                        continue;
+                    }
                     $sources[] = $source;
                 }
             }
@@ -105,6 +108,42 @@ class ElementSources extends Component
 
         // Clear out any unwanted headings and return
         return static::filterExtraHeadings($sources);
+    }
+
+    /**
+     * Returns whether the given custom source should be available for the current user.
+     *
+     * @param array $source
+     * @return bool
+     */
+    private function _showCustomSource(array $source): bool
+    {
+        if (!isset($source['userGroups'])) {
+            // Show for everyone
+            return true;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->admin) {
+            return true;
+        }
+
+        if ($source['userGroups'] === false) {
+            return false;
+        }
+
+        foreach ($user->getGroups() as $group) {
+            if (in_array($group->uid, $source['userGroups'], true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

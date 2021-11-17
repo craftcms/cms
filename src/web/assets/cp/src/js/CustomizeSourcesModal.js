@@ -29,6 +29,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     conditionBuilderHtml: null,
     conditionBuilderJs: null,
+    userGroups: null,
 
     init: function(elementIndex, settings) {
         this.base();
@@ -86,6 +87,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         this.elementTypeName = response.elementTypeName;
         this.conditionBuilderHtml = response.conditionBuilderHtml;
         this.conditionBuilderJs = response.conditionBuilderJs;
+        this.userGroups = response.userGroups;
 
         if (response.headHtml) {
             Craft.appendHeadHtml(response.headHtml);
@@ -476,6 +478,17 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
         Craft.appendFootHtml(conditionBuilderJs);
 
         this.createTableAttributesField($container);
+
+        if (this.modal.userGroups.length) {
+            Craft.ui.createCheckboxSelectField({
+                label: Craft.t('app', 'User Groups'),
+                instructions: Craft.t('app', 'Choose which user groups should have access to this source.'),
+                name: `sources[${this.sourceData.key}][userGroups]`,
+                options: this.modal.userGroups,
+                values: this.sourceData.userGroups || '*',
+                showAllOption: true,
+            }).appendTo($container);
+        }
 
         $container.append('<hr/>');
 
