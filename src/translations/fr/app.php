@@ -1353,7 +1353,7 @@ return [
     'The license key in use belongs to {domain}' => 'La clef de licence utilisée appartient à {domain}',
     'The license located at {file} belongs to {domain}.' => 'La licence située dans {file} appartient à {domain}.',
     'The loaded project config has more recent changes than your project config YAML files.' => 'La configuration du projet chargée comporte des modifications plus récentes que les fichiers YAML de configuration du projet.',
-    'The locale that should be used for date and number formatting.' => 'La locale qui doit être utilisée pour la mise en forme des dates et numéros.',
+    'The locale that should be used for date and number formatting.' => 'La locale qui doit être utilisée pour la mise en forme des dates et nombres.',
     'The maximum length (in bytes) the field can hold.' => 'La longueur maximale (en octets) que le champ peut contenir.',
     'The maximum number of blocks the field is allowed to have.' => 'Le nombre maximum de blocs autorisé pour ce champ.',
     'The maximum number of characters or bytes the field is allowed to have.' => 'Le nombre maximal de caractères ou d’octets dans ce champ.',
