@@ -1249,7 +1249,7 @@ return [
     'Site' => 'Site',
     'Sites' => 'Sites',
     'Size' => 'Taille',
-    'Skip to content' => 'Skip to content',
+    'Skip to content' => 'Aller directement au contenu',
     'Skipped files' => 'Fichiers ignorés',
     'Slug' => 'Identificateur',
     'Some categories restored.' => 'Certaines catégories restaurées.',
