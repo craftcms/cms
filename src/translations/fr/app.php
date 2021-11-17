@@ -1368,7 +1368,7 @@ return [
     'The path to the volume’s directory on the file system.' => 'Chemin vers le répertoire du volume dans le système de fichiers.',
     'The plugin was removed successfully.' => 'Le plugin a été supprimé avec succès.',
     'The primary site cannot be disabled.' => 'Ce site principal ne peut pas être désactivé.',
-    'The primary site will be loaded by default on the front end.' => 'Le site primaire sera celui chargé par défaut sur le frontal.',
+    'The primary site will be loaded by default on the front end.' => 'Le site principal sera celui chargé par défaut sur la partie publique du site.',
     'The request could not be understood by the server due to malformed syntax.' => 'Le serveur n’a pu comprendre la requête à cause d’une syntaxe incorrecte.',
     'The requested URL was not found on this server.' => 'L’URL demandée n’a pas été trouvée sur ce serveur.',
     'The server doesn’t meet Craft’s new requirements:' => 'Le serveur ne répond pas aux nouveaux pré-requis de Craft CMS :',
