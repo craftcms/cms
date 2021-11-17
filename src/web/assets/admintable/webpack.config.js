@@ -7,7 +7,7 @@ module.exports = new CraftWebpackConfig({
     config: {
         entry: { app: './main.js'},
         output: {
-            filename: 'js/app.js',
+            // filename: 'js/app.js',
             chunkFilename: 'js/[name].js',
         },
     }
