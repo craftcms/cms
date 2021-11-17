@@ -1467,7 +1467,7 @@ return [
     'Trashed' => 'Détruite(s)',
     'Trial' => 'Essai',
     'Tried to detect the appropriate image format for a non-image!' => 'A essayé de détecter le format d’image approprié pour un fichier non-image !',
-    'Tried to download the source file for image “{file}”, but it was 0 bytes long.' => 'Nous avons tenté de télécharger le fichier source pour l’image « {file} », mais il comportait 0 octet.',
+    'Tried to download the source file for image “{file}”, but it was 0 bytes long.' => 'Craft a essayé de télécharger le fichier source pour l’image « {file} », mais il comportait 0 octet.',
     'Tried to read the template at {path}, but could not. Check the permissions.' => 'Craft a essayé de lire le template à l’adresse {path} mais n’y est pas parvenu. Vérifier les droits d’accès.',
     'Troubleshoot' => 'Dépanner',
     'Try again' => 'Réessayez',
