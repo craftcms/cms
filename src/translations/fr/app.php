@@ -1089,7 +1089,7 @@ return [
     'Release all jobs' => 'Annuler toutes les tâches',
     'Release job' => 'Annuler la tâche',
     'Release' => 'Annuler',
-    'Remember your password?' => 'Se souvenir de votre mot de passe ?',
+    'Remember your password?' => 'Vous vous souvenez de votre mot de passe ?',
     'Remove files and folders' => 'Supprimer les fichiers et les dossiers',
     'Remove files uploaded by other users' => 'Supprimer les fichiers téléversés par d’autres utilisateurs',
     'Remove it' => 'Supprimez-le',
