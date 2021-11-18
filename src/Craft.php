@@ -20,6 +20,7 @@ use yii\db\Expression;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
+use yii\base\InvalidArgumentException;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -93,6 +94,42 @@ class Craft extends Yii
         }
 
         return static::getAlias($str, false) ?: $str;
+    }
+
+    /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced boolean value.
+     *
+     * ---
+     *
+     * ```php
+     * $value = Craft::parseBooleanEnv('$SYSTEM_STATUS');
+     * ```
+     *
+     * @param string|bool|null $value
+     * @param bool|null $default
+     * @return bool|null
+     * @throws InvalidArgumentException
+     * @since 3.7.22
+     */
+    public static function parseBooleanEnv($value, ?bool $default = null): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (!is_string($value)) {
+            throw new InvalidArgumentException('Craft::parseBooleanEnv() only accepts a boolean or string value.');
+        }
+
+        $value = Craft::parseEnv($value);
+        $boolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+
+        if ($boolean === null) {
+            Craft::warning("Invalid boolean value: $value");
+            return $default;
+        }
+
+        return $boolean;
     }
 
     /**
