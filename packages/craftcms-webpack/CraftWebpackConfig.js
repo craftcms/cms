@@ -242,7 +242,8 @@ class CraftWebpackConfig {
             }
 
             plugins.push(new RemovePlugin({
-                after: after
+                after: after,
+                log: false,
             }));
         }
 
