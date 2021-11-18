@@ -184,22 +184,27 @@ class CraftWebpackConfig {
         }
 
         return {
-            // contentBase: this.devServer.contentBase,
-            // watchContentBase: true,
-            // disableHostCheck: true,
+            allowedHosts: "all",
+            devMiddleware: {
+                publicPath: this.devServer.publicPath,
+            },
             headers: {"Access-Control-Allow-Origin": "*"},
             host: this.devServer.host,
             hot: true,
             https: this.https,
-            // inline: true,
             port: this.devServer.port,
-            // public: this.devServer.publicPath,
             client: {
                 overlay: {
                   errors: true,
                   warnings: false,
                 },
             },
+            static: [
+                {
+                    directory: this.devServer.contentBase,
+                    watch: true,
+                }
+            ],
             onBeforeSetupMiddleware: function(devServer) {
                 devServer.app.get('/which-asset', function(req, res) {
                     res.json(response);
@@ -256,9 +261,7 @@ class CraftWebpackConfig {
         if (!this.isDevServerRunning) {
             plugins.push(new CleanWebpackPlugin());
 
-            optimization = {
-                minimize: true,
-            };
+            optimization.minimize = true;
         }
 
         const baseConfig = {
@@ -410,10 +413,6 @@ class CraftWebpackConfig {
                 publicPath: '/'
             }),
         ];
-
-        if (this.isDevServerRunning) {
-            plugins.push(new webpack.HotModuleReplacementPlugin());
-        }
 
         const vueConfig = {
             context: this.srcPath,
