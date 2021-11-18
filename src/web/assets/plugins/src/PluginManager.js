@@ -1,4 +1,4 @@
-import '../../plugins/src/plugins.scss';
+import './plugins.scss';
 
 (function($) {
     /** global: Craft */

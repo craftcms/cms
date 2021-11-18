@@ -1,4 +1,4 @@
-import '../../userpermissions/src/user-permissions.scss';
+import './user-permissions.scss';
 
 (function($) {
     /** global: Craft */

@@ -1,4 +1,4 @@
-import '../../dashboard/src/dashboard.scss';
+import './dashboard.scss';
 
 (function($) {
     /** global: Craft */

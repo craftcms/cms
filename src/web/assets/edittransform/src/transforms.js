@@ -1,1 +1,1 @@
-import '../../edittransform/src/transforms.scss';
+import './transforms.scss';

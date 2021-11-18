@@ -1,4 +1,4 @@
-import '../../login/src/login.scss';
+import './login.scss';
 
 (function($) {
     /** global: Craft */

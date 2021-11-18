@@ -1,4 +1,4 @@
-import '../../routes/src/routes.scss';
+import './routes.scss';
 
 (function($) {
     /** global: Craft */

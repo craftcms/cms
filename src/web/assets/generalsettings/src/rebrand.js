@@ -1,4 +1,4 @@
-import '../../generalsettings/src/rebrand.scss';
+import './rebrand.scss';
 
 (function($) {
     /** global: Craft */

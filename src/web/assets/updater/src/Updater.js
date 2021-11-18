@@ -1,4 +1,4 @@
-import '../../updater/src/update.scss';
+import './update.scss';
 
 (function($) {
     /** global: Craft */

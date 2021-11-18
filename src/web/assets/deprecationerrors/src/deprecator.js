@@ -1,4 +1,4 @@
-import '../../deprecationerrors/src/deprecator.scss';
+import './deprecator.scss';
 
 (function($) {
     /** global: Craft */

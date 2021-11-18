@@ -1,1 +1,1 @@
-import '../../utilities/src/utilities.scss';
+import './utilities.scss';

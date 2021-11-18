@@ -1,4 +1,4 @@
-import '../../edituser/src/profile.scss';
+import './profile.scss';
 
 (function($) {
     /** global: Craft */

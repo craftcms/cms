@@ -1,4 +1,4 @@
-import '../../systemmessages/src/system_messages.scss';
+import './system_messages.scss';
 
 (function($) {
     /** global: Craft */

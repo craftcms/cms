@@ -1,4 +1,4 @@
-import '../../edituser/src/account.scss';
+import './account.scss';
 
 (function($) {
     /** global: Craft */

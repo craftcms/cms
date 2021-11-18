@@ -1,4 +1,4 @@
-import '../../craftsupport/src/CraftSupportWidget.scss';
+import './CraftSupportWidget.scss';
 
 (function($) {
     /** global: Craft */
