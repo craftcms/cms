@@ -2,7 +2,7 @@
 /* globals module, require, __dirname */
 const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const NODE_MODULES = __dirname + '/../../../../node_modules/';
+const path = require('path');
 
 module.exports = new CraftWebpackConfig({
     type: 'lib',
@@ -12,7 +12,7 @@ module.exports = new CraftWebpackConfig({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: NODE_MODULES + 'jquery-ui/ui/i18n',
+                        context: path.join(path.dirname(require.resolve('jquery-ui/package.json')), 'ui','i18n'),
                         from: '*',
                         to: '.'
                     },

@@ -1,9 +1,7 @@
 /* jshint esversion: 6 */
 /* globals module, require, __dirname */
 const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
-const NODE_MODULES = __dirname + '/../../../../node_modules/';
 
 module.exports = new CraftWebpackConfig({
     type: 'lib',
@@ -13,14 +11,14 @@ module.exports = new CraftWebpackConfig({
             new MergeIntoSingleFilePlugin({
                 files: {
                     'jquery-ui.js': [
-                        NODE_MODULES + '/jquery-ui/ui/version.js',
-                        NODE_MODULES + '/jquery-ui/ui/widget.js',
-                        NODE_MODULES + '/jquery-ui/ui/position.js',
-                        NODE_MODULES + '/jquery-ui/ui/focusable.js',
-                        NODE_MODULES + '/jquery-ui/ui/keycode.js',
-                        NODE_MODULES + '/jquery-ui/ui/scroll-parent.js',
-                        NODE_MODULES + '/jquery-ui/ui/widgets/datepicker.js',
-                        NODE_MODULES + '/jquery-ui/ui/widgets/mouse.js',
+                        require.resolve('jquery-ui/ui/version.js'),
+                        require.resolve('jquery-ui/ui/widget.js'),
+                        require.resolve('jquery-ui/ui/position.js'),
+                        require.resolve('jquery-ui/ui/focusable.js'),
+                        require.resolve('jquery-ui/ui/keycode.js'),
+                        require.resolve('jquery-ui/ui/scroll-parent.js'),
+                        require.resolve('jquery-ui/ui/widgets/datepicker.js'),
+                        require.resolve('jquery-ui/ui/widgets/mouse.js'),
                     ],
                 },
                 transform: {

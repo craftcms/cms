@@ -12,8 +12,7 @@ module.exports = new CraftWebpackConfig({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: NODE_MODULES + '/jquery.payment/lib',
-                        from: 'jquery.payment.min.js',
+                        from: require.resolve('jquery.payment/lib/jquery.payment.min.js'),
                         to: 'jquery.payment.js',
                     },
                 ],
