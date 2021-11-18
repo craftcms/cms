@@ -12,8 +12,7 @@ module.exports = new CraftWebpackConfig({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: NODE_MODULES + '/fabric/dist',
-                        from: 'fabric.js',
+                        from: require.resolve('fabric/dist/fabric.js'),
                     },
                 ],
             }),

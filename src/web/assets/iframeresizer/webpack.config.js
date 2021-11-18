@@ -2,7 +2,7 @@
 /* globals module, require, __dirname */
 const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const NODE_MODULES = __dirname + '/../../../../node_modules/';
+const path = require('path');
 
 module.exports = new CraftWebpackConfig({
     type: 'lib',
@@ -12,7 +12,7 @@ module.exports = new CraftWebpackConfig({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: NODE_MODULES + '/iframe-resizer/js',
+                        context: path.join(path.dirname(require.resolve('iframe-resizer/package.json')), 'js'),
                         from: 'iframeResizer.*',
                         to: '.',
                     }
