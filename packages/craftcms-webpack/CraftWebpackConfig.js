@@ -11,6 +11,9 @@ const { merge } = require('webpack-merge');
 const path = require('path');
 const fs = require('fs');
 const touch = require('touch');
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+const argv = yargs(hideBin(process.argv)).argv
 
 // Plugins
 const { WebpackManifestPlugin } = _require('webpack-manifest-plugin');
@@ -40,11 +43,12 @@ class CraftWebpackConfig {
         let assetEnvPath = path.join(this.basePath, './.env');
         let rootEnvPath = path.resolve(this.rootPath, './.env');
 
-        this.isRunningFromRoot = process.env.CWD === this.rootPath;
+        this.configName = argv['config-name'] || null;
+        this.isDevServerRunning = path.basename(argv['$0']) === 'webpack-dev-server';
 
         // Check asset for env file or fall back to root env if it exists.
         this.envPath = fs.existsSync(rootEnvPath) ? rootEnvPath : null;
-        if (!this.isRunningFromRoot) {
+        if (this.configName) {
             this.envPath = fs.existsSync(assetEnvPath) ? assetEnvPath : this.envPath;
         }
 
@@ -52,9 +56,7 @@ class CraftWebpackConfig {
             require('dotenv').config({path: this.envPath});
         }
 
-        this.isDevServerRunning = process.env.WEBPACK_DEV_SERVER;
-
-        if (this.isDevServerRunning && this.isRunningFromRoot) {
+        if (this.isDevServerRunning && !this.configName) {
             throw new Error('Running the dev server is only permitted in individual assets.');
         }
 
@@ -251,6 +253,7 @@ class CraftWebpackConfig {
         }
 
         const baseConfig = {
+            name: path.basename(this.basePath),
             mode: this.nodeEnv,
             devtool: 'source-map',
             optimization,

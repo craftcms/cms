@@ -52,6 +52,7 @@
     "webpack-dev-server": "^4.4.0",
     "webpack-manifest-plugin": "^4.0.2",
     "webpack-merge": "^5.8.0",
-    "webpack-merge-and-include-globally": "^2.1.25"
+    "webpack-merge-and-include-globally": "^2.1.25",
+    "yargs": "^17.2.1"
   }
 }
