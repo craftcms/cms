@@ -38,14 +38,15 @@
         value: system.name
     }) }}
 
-    {{ forms.lightswitchField({
+    {{ forms.booleanMenuField({
         label: "System Status"|t('app'),
         warning: (craft.app.config.general.isSystemLive is same as(true) or craft.app.config.general.isSystemLive is same as(false) ? configWarning('isSystemLive')),
         id: 'live',
         name: 'live',
-        onLabel: 'Online'|t('app'),
-        offLabel: 'Offline'|t('app'),
-        on: system.live
+        yesLabel: 'Online'|t('app'),
+        noLabel: 'Offline'|t('app'),
+        includeEnvVars: true,
+        value: system.live
     }) }}
 
     {{ forms.textField({
@@ -64,6 +65,7 @@
         id: 'time-zone',
         name: 'timeZone',
         value: system.timeZone,
+        includeEnvVars: true,
     }) }}
 
     {% if CraftEdition == CraftPro %}

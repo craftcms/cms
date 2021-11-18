@@ -826,7 +826,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * {# Fetch all {elements} that are related to myCategoryA and myCategoryB #}
      * {% set {elements-var} = {twig-method}
      *   .relatedTo(myCategoryA)
-     *   .andRelatedTo(myCategoryBy)
+     *   .andRelatedTo(myCategoryB)
      *   .all() %}
      * ```
      *

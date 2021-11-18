@@ -601,7 +601,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)$this->getProjectConfig()->get('system.live');
+        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
     }
 
     /**
@@ -1427,14 +1427,11 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        $timezone = $this->getConfig()->getGeneral()->timezone;
+        /** @var WebApplication|ConsoleApplication $this */
+        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
-        if (!$timezone) {
-            $timezone = $this->getProjectConfig()->get('system.timeZone');
-        }
-
-        if ($timezone) {
-            $this->setTimeZone($timezone);
+        if ($timeZone) {
+            $this->setTimeZone(Craft::parseEnv($timeZone));
         }
     }
 

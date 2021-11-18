@@ -2653,6 +2653,10 @@ body:not(.reduce-focus-visibility) .select:not(.selectize) select:focus, body.re
 body .selectize-dropdown { border: none; }
 
 /* single select styles */
+.selectize.select { height: 34px; }
+
+.selectize.select:not(.fullwidth) { width: 25em; }
+
 .selectize.select .selectize-control, .selectize.select .selectize-control .selectize-input { position: relative; border-radius: 5px; white-space: nowrap; }
 
 .selectize.select .selectize-control { max-width: 100%; position: relative; }
@@ -2673,7 +2677,7 @@ body.rtl .selectize.select .selectize-control .selectize-input { padding: 7px 10
 
 .selectize.select .selectize-control .selectize-input::-ms-expand { display: none; }
 
-.selectize.select.fullwidth .selectize-control, .selectize.select.fullwidth .selectize-control .selectize-input { min-width: 100%; }
+.selectize.select .selectize-control, .selectize.select .selectize-control .selectize-input { width: 100%; }
 
 /* multi select styles */
 .selectize.multiselect .selectize-control.multi .selectize-input { padding: 6px 8px; }
@@ -2701,9 +2705,6 @@ body .selectize-dropdown [data-selectable], body .selectize-dropdown .optgroup-h
 body .selectize-dropdown .optgroup-header { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: #606d7b; text-transform: uppercase; font-weight: bold; margin: 0; padding: 4px 0; }
 
 body .selectize-dropdown .active { color: #fff; background-color: #8b96a2; }
-
-/* time zones */
-.timezone { height: 34px; max-width: 25em; }
 
 /* datepicker */
 .ui-datepicker { position: fixed; top: -300px; -padding: 10px; width: 210px; height: 242px; z-index: 101 !important; }

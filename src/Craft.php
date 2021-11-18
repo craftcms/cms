@@ -16,6 +16,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
+use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
@@ -88,6 +89,42 @@ class Craft extends Yii
     }
 
     /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced boolean value.
+     *
+     * ---
+     *
+     * ```php
+     * $value = Craft::parseBooleanEnv('$SYSTEM_STATUS');
+     * ```
+     *
+     * @param string|bool|null $value
+     * @param bool|null $default
+     * @return bool|null
+     * @throws InvalidArgumentException
+     * @since 3.7.22
+     */
+    public static function parseBooleanEnv($value, ?bool $default = null): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (!is_string($value)) {
+            throw new InvalidArgumentException('Craft::parseBooleanEnv() only accepts a boolean or string value.');
+        }
+
+        $value = Craft::parseEnv($value);
+        $boolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+
+        if ($boolean === null) {
+            Craft::warning("Invalid boolean value: $value");
+            return $default;
+        }
+
+        return $boolean;
+    }
+
+    /**
      * Displays a variable.
      *
      * @param mixed $var The variable to be dumped.
@@ -122,7 +159,7 @@ class Craft extends Yii
         if ($highlight === null) {
             $highlight = !static::$app->getRequest()->getIsConsoleRequest();
         }
-        
+
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }

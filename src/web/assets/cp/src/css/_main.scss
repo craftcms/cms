@@ -5453,6 +5453,14 @@ body .selectize-dropdown {
 }
 
 /* single select styles */
+.selectize.select {
+  height: 34px;
+
+  &:not(.fullwidth) {
+    width: 25em;
+  }
+}
+
 .selectize.select .selectize-control,
 .selectize.select .selectize-control .selectize-input {
   @include select-styles;
@@ -5470,9 +5478,9 @@ body .selectize-dropdown {
   @include select-input-styles;
 }
 
-.selectize.select.fullwidth .selectize-control,
-.selectize.select.fullwidth .selectize-control .selectize-input {
-  @include select-input-fullwidth-styles;
+.selectize.select .selectize-control,
+.selectize.select .selectize-control .selectize-input {
+  width: 100%;
 }
 
 /* multi select styles */
@@ -5533,12 +5541,6 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
-}
-
-/* time zones */
-.timezone {
-  height: 34px;
-  max-width: 25em;
 }
 
 /* datepicker */
