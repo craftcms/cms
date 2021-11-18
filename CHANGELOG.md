@@ -15,6 +15,7 @@
 
 ### Fixed
 - Fixed a bug where the `entry-revisions/save-draft` action wasn’t respecting the `provisional` param when creating a new entry and draft. ([#10105](https://github.com/craftcms/cms/issues/10105))
+- Fixed an error that occurred when saving an element, if any custom field handles conflicted with magic properties on element queries. ([#10099](https://github.com/craftcms/cms/issues/10099))
 
 ## 3.7.21 - 2021-11-16
 
