@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `selectize` and `selectizeField` macros to the `_includes/forms.html` control panel template.
+
 ### Fixed
 - Fixed a bug where the `entry-revisions/save-draft` action wasn’t respecting the `provisional` param when creating a new entry and draft. ([#10105](https://github.com/craftcms/cms/issues/10105))
 
