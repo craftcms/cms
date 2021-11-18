@@ -116,6 +116,11 @@
 {% endmacro %}
 
 
+{% macro booleanMenu(config) %}
+    {% include "_includes/forms/booleanMenu" with config only %}
+{% endmacro %}
+
+
 {% macro fieldLayoutDesigner(config) %}
     {% include "_includes/forms/fieldLayoutDesigner" with config only %}
 {% endmacro %}
@@ -312,6 +317,12 @@
 {% macro timeZoneField(config) %}
     {% set config = config|merge({id: config.id ?? "timezone#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro booleanMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "booleanmenu#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/booleanMenu') }}
 {% endmacro %}
 
 

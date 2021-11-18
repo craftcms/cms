@@ -3,7 +3,15 @@
 ## Unreleased
 
 ### Added
-- Added the `selectize` and `selectizeField` macros to the `_includes/forms.html` control panel template.
+- Added the `booleanMenu`, `booleanMenuField`, `selectize`, and `selectizeField` macros to the `_includes/forms.html` control panel template. ([#8866](https://github.com/craftcms/cms/discussions/8866))
+- Added `Craft::parseBooleanEnv()`.
+- Added `craft\web\twig\variables\Cp::getBooleanEnvOptions()`.
+- Added `craft\web\twig\variables\Cp::getEnvOptions()`.
+
+### Changed
+- The “System Status” and “Time Zone” general settings can now be set to environment variables. ([#9855](https://github.com/craftcms/cms/issues/9855))
+- The “Encryption Method” SMTP mailer type setting can now be set to an environment variable. ([#8989](https://github.com/craftcms/cms/discussions/8989))
+- The `timeZone` and `timeZoneField` control panel form macros now support an `includeEnvVars` setting.
 
 ### Fixed
 - Fixed a bug where the `entry-revisions/save-draft` action wasn’t respecting the `provisional` param when creating a new entry and draft. ([#10105](https://github.com/craftcms/cms/issues/10105))
