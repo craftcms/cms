@@ -31,7 +31,7 @@ class UserPermissionsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'UserPermissions.css',
+        'css/UserPermissions.css',
     ];
 
     /**

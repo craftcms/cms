@@ -75,8 +75,8 @@ class CpAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'craft.css',
-        'charts.css',
+        'css/craft.css',
+        'css/charts.css',
     ];
 
     /**

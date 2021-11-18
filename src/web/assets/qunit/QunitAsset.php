@@ -24,7 +24,7 @@ class QunitAsset extends AssetBundle
         $this->sourcePath = __DIR__ . '/dist';
 
         $this->css = [
-            'qunit-2.1.1.css',
+            'css/qunit-2.1.1.css',
         ];
 
         $this->js = [

@@ -218,7 +218,7 @@ class CraftWebpackConfig {
             new ExtraWatchWebpackPlugin({
                 dirs: [ this.templatesPath ],
             }),
-            new WebpackForceRebuildOnEmitPlugin(),
+            // new WebpackForceRebuildOnEmitPlugin(),
         ];
         let optimization = {};
 
@@ -260,32 +260,10 @@ class CraftWebpackConfig {
 
             optimization = {
                 minimize: true,
-                // minimizer: [
-                //     new TerserWebpackPlugin({
-                //         extractComments: false,
-                //         parallel: true,
-                //         terserOptions: {
-                //             compress: {
-                //                 keep_classnames: true,
-                //                 keep_fnames: true,
-                //                 unused: false,
-                //             },
-                //             mangle: false,
-                //             output: {
-                //                 comments: false,
-                //             },
-                //         },
-                //         test: /\.js(\?.*)?$/i,
-                //     }),
-                //     this.nodeEnv === 'production' ? new CssMinimizerPlugin({
-                //         parallel: true,
-                //     }) : null,
-                // ],
             };
         }
 
         const baseConfig = {
-            // watch: this.nodeEnv === 'development',
             mode: this.nodeEnv,
             devtool: 'source-map',
             optimization,
@@ -321,11 +299,11 @@ class CraftWebpackConfig {
                     // GraphQL
                     // https://github.com/graphql/graphql-js/issues/2721#issuecomment-723008284
                     {
-                      test: /\.m?js/,
-                      resolve: {
-                          fullySpecified: false
-                      }
-                  },
+                        test: /\.m?js/,
+                        resolve: {
+                            fullySpecified: false
+                        }
+                    },
                 ]
             },
             plugins,
@@ -355,7 +333,11 @@ class CraftWebpackConfig {
                             {
                                 loader: MiniCssExtractPlugin.loader,
                                 options: {
-                                    publicPath: './',
+
+                                    // backing up from dist
+                                    publicPath: '../',
+
+                                    // Workaround for css imports/vue
                                     esModule: false,
                                 }
                             },
@@ -377,12 +359,12 @@ class CraftWebpackConfig {
                             },
                         ],
                     },
-
-                    // TODO: put fonts in a separate folder
-                    // https://stackoverflow.com/a/66681262
                     {
                         test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
                         type: 'asset/resource',
+                        generator: {
+                            filename: 'fonts/[name][ext][query]'
+                        }
                     },
                     {
                         test: /\.(jpg|gif|png|svg|ico)$/,
@@ -390,13 +372,16 @@ class CraftWebpackConfig {
                         exclude: [
                             path.resolve(this.srcPath, './fonts'),
                         ],
+                        generator: {
+                            filename: '[path][name][ext][query]'
+                        }
                     },
                 ],
             },
             plugins: [
                 new MiniCssExtractPlugin({
-                    filename: '[name].css',
-                    chunkFilename: '[name].css',
+                    filename: 'css/[name].css',
+                    chunkFilename: 'css/[name].css',
                 }),
             ]
         };
@@ -421,21 +406,16 @@ class CraftWebpackConfig {
      * Vue webpack config
      */
     vue() {
-        // TODO: https://webpack.js.org/migrate/5/#clean-up-configuration
-        // kill this?
-        const optimization = {};
-        // const optimization = this.isDevServerRunning ? {} : {
-        //     splitChunks: {
-        //         name: false,
-        //         cacheGroups: {
-        //             defaultVendors: {
-        //                 test: /[\\/]node_modules[\\/]/,
-        //                 name: 'chunk-vendors',
-        //                 chunks: 'all'
-        //             }
-        //         }
-        //     }
-        // };
+        const plugins = [
+            new VueLoaderPlugin(),
+            new WebpackManifestPlugin({
+                publicPath: '/'
+            }),
+        ];
+
+        if (this.isDevServerRunning) {
+            plugins.push(new webpack.HotModuleReplacementPlugin());
+        }
 
         const vueConfig = {
             context: this.srcPath,
@@ -455,23 +435,13 @@ class CraftWebpackConfig {
                 ]
             },
             devServer: this._devServer(),
-            optimization,
             externals: {
                 'vue': 'Vue',
                 'vue-router': 'VueRouter',
                 'vuex': 'Vuex',
                 'axios': 'axios'
             },
-            plugins: [
-                new VueLoaderPlugin(),
-
-                // TODO: shouldn't include this in production
-                new webpack.HotModuleReplacementPlugin(),
-
-                new WebpackManifestPlugin({
-                    publicPath: '/'
-                }),
-            ],
+            plugins
         };
 
         return merge(this.asset(), vueConfig);

@@ -22,7 +22,7 @@ class SelectizeAsset extends AssetBundle
         $this->sourcePath = __dir__ . '/dist';
 
         $this->css = [
-            'selectize.css',
+            'css/selectize.css',
         ];
 
         $this->js = [
