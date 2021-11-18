@@ -18,7 +18,7 @@ use yii\base\Component;
  * Webpack service
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.7.x
+ * @since 3.7.22
  */
 class Webpack extends Component
 {

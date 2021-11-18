@@ -33,6 +33,7 @@ class AssetBundle extends \yii\web\AssetBundle
      * Prepend dev server to resources if required
      *
      * @return void
+     * @since 3.7.22
      */
     private function _updateResourcePaths(): void
     {
@@ -50,6 +51,7 @@ class AssetBundle extends \yii\web\AssetBundle
      *
      * @param string $filePath
      * @return string
+     * @since 3.7.22
      */
     private function _prependDevServer(string $filePath): string
     {

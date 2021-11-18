@@ -1427,6 +1427,7 @@ trait ApplicationTrait
      * Returns the webpack service.
      *
      * @return \craft\services\Webpack The volumes service
+     * @since 3.7.22
      */
     public function getWebpack()
     {
