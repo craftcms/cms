@@ -518,6 +518,94 @@ class Cp extends Component
     }
 
     /**
+     * Returns environment variable options for a select input.
+     *
+     * @param array|null $allowedValues
+     * @return array
+     * @since 3.7.22
+     */
+    public function getEnvOptions(?array $allowedValues = null): array
+    {
+        if ($allowedValues !== null) {
+            $allowedValues = array_flip($allowedValues);
+        }
+
+        $options = [];
+        $security = Craft::$app->getSecurity();
+
+        foreach (array_keys($_SERVER) as $var) {
+            if (
+                is_string($var) &&
+                is_string($value = App::env($var)) &&
+                ($allowedValues === null || isset($allowedValues[$value]))
+            ) {
+                $data = [];
+                if ($value !== '') {
+                    $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
+                }
+
+                $options[] = [
+                    'label' => "$$var",
+                    'value' => "$$var",
+                    'data' => [
+                        'data' => !empty($data) ? $data : false,
+                    ],
+                ];
+            }
+        }
+
+        return $this->_envOptions($options);
+    }
+
+    /**
+     * Returns environment variable options for a boolean menu.
+     *
+     * @return array
+     * @since 3.7.22
+     */
+    public function getBooleanEnvOptions(): array
+    {
+        $options = [];
+
+        foreach (array_keys($_SERVER) as $var) {
+            if (
+                is_string($var) &&
+                is_string($value = App::env($var)) &&
+                $value !== '' &&
+                ($boolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)) !== null
+            ) {
+                $options[] = [
+                    'label' => "$$var",
+                    'value' => "$$var",
+                    'data' => [
+                        'data' => [
+                            'status' => $boolean ? 'green' : 'white',
+                        ],
+                    ],
+                ];
+            }
+        }
+
+        return $this->_envOptions($options);
+    }
+
+    /**
+     * @param array $options
+     * @return array
+     */
+    private function _envOptions(array $options): array
+    {
+        if (!empty($options)) {
+            ArrayHelper::multisort($options, 'value');
+            array_unshift($options, [
+                'optgroup' => Craft::t('app', 'Environment Variables'),
+            ]);
+        }
+
+        return $options;
+    }
+
+    /**
      * Returns all known time zones for a time zone input.
      *
      * @return array
@@ -552,11 +640,12 @@ class Cp extends Component
                 $label .= " $abbr";
             }
 
+            $data = [];
+
             if ($timezoneId !== 'UTC') {
                 [, $city] = explode('/', $timezoneId, 2);
                 // Cleanup, e.g. North_Dakota/New_Salem => New Salem, North Dakota
-                $city = str_replace('_', ' ', implode(', ', array_reverse(explode('/', $city))));
-                $label .= " – $city";
+                $data['hint'] = str_replace('_', ' ', implode(', ', array_reverse(explode('/', $city))));
             }
 
             $offsets[] = $offset;
@@ -564,6 +653,9 @@ class Cp extends Component
             $options[] = [
                 'value' => $timezoneId,
                 'label' => $label,
+                'data' => [
+                    'data' => !empty($data) ? $data : false,
+                ],
             ];
         }
 

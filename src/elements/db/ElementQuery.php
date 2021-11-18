@@ -1653,21 +1653,14 @@ class ElementQuery extends Query implements ElementQueryInterface
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
         foreach ((new ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (
-                !$property->isStatic() &&
-                !in_array($property->getName(), [
-                    'hasMethods',
-                    'owner',
-                    // avoid conflicts with ElementQuery getters
-                    'iterator',
-                    'cachedResult',
-                    'criteria',
-                    'behaviors',
-                    'behavior',
-                    'rawSql',
-                ], true)
-            ) {
-                $names[] = $property->getName();
+            if (!$property->isStatic()) {
+                $name = $property->getName();
+                if (
+                    !in_array($name, ['canSetProperties', 'hasMethods', 'owner']) &&
+                    !method_exists($this, "get$name")
+                ) {
+                    $names[] = $property->getName();
+                }
             }
         }
 

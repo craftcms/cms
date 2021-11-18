@@ -49,17 +49,18 @@
     }) }}
 </div>
 
-{{ forms.selectField({
+{{ forms.selectizeField({
     label: "Encryption Method",
     id: 'encryptionMethod',
     name: 'encryptionMethod',
     options: [
-        { value: '', label: "None"|t('app') },
+        { value: 'none', label: "None"|t('app') },
         { value: 'ssl', label: "SSL"|t('app') },
         { value: 'tls', label: "TLS"|t('app') }
     ],
-    default: 'none',
-    value: adapter.encryptionMethod
+    includeEnvVars: true,
+    value: adapter.encryptionMethod ?: 'none',
+    errors: adapter.getErrors('encryptionMethod'),
 }) }}
 
 {{ forms.textField({

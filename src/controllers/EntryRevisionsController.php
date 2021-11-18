@@ -237,7 +237,7 @@ class EntryRevisionsController extends BaseEntriesController
 
             $entry->enabled = $enabled;
             /** @var Entry|DraftBehavior $draft */
-            $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
+            $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [], $provisional);
         } else {
             $transaction = null;
 
