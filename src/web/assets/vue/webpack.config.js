@@ -3,7 +3,6 @@
 const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
-const NODE_MODULES = __dirname + '/../../../../node_modules/';
 
 module.exports = new CraftWebpackConfig({
     type: 'lib',
@@ -13,10 +12,10 @@ module.exports = new CraftWebpackConfig({
             new MergeIntoSingleFilePlugin({
                 files: {
                     'vue.js': [
-                        NODE_MODULES + '/vue/dist/vue.min.js',
-                        NODE_MODULES + '/vue-router/dist/vue-router.min.js',
-                        NODE_MODULES + '/vuex/dist/vuex.min.js',
-                        NODE_MODULES + '/vue-autosuggest/dist/vue-autosuggest.js',
+                        require.resolve('vue/dist/vue.min.js'),
+                        require.resolve('vue-router/dist/vue-router.min.js'),
+                        require.resolve('vuex/dist/vuex.min.js'),
+                        require.resolve('vue-autosuggest/dist/vue-autosuggest.js'),
                     ],
                 },
             }),

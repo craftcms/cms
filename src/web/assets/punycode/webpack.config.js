@@ -2,7 +2,7 @@
 /* globals module, require */
 const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const NODE_MODULES = __dirname + '/../../../../node_modules/';
+const path = require('path');
 
 module.exports = new CraftWebpackConfig({
     type: 'lib',
@@ -12,7 +12,7 @@ module.exports = new CraftWebpackConfig({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: NODE_MODULES + '/punycode',
+                        context: path.dirname(require.resolve('punycode/package.json')),
                         from: './punycode.*',
                         to: '.'
                     }

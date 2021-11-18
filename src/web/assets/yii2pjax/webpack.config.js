@@ -2,7 +2,6 @@
 /* globals module, require, __dirname */
 const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const NODE_MODULES = __dirname + '/../../../../node_modules/';
 
 module.exports = new CraftWebpackConfig({
     type: 'lib',
@@ -12,9 +11,7 @@ module.exports = new CraftWebpackConfig({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: NODE_MODULES + 'yii2-pjax',
-                        from: 'jquery.pjax.js',
-                        to: '.'
+                        from: require.resolve('yii2-pjax/jquery.pjax.js'),
                     },
                 ],
             }),
