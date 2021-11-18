@@ -36,23 +36,23 @@ class CraftWebpackConfig {
             'vue',
         ];
 
-        this.basePath = path.dirname(ParentModule());
-
-        // env
         this.rootPath = path.resolve('./');
-        let assetEnvPath = path.join(this.basePath, './.env');
-        let rootEnvPath = path.resolve(this.rootPath, './.env');
-
-        this.configName = argv['config-name'] || null;
+        this.basePath = path.dirname(ParentModule());
+        this.configName = path.basename(this.basePath);
         this.isDevServerRunning = path.basename(argv['$0']) === 'webpack-dev-server';
+        this.requestedConfig = argv['config-name'] || null;
+        this.isRequestedConfig = this.requestedConfig && path.basename(this.basePath) === this.requestedConfig;
 
-        // Check asset for env file or fall back to root env if it exists.
+        const rootEnvPath = path.resolve(this.rootPath, './.env');
+        const assetEnvPath = path.resolve(this.basePath, './.env');
+
         this.envPath = fs.existsSync(rootEnvPath) ? rootEnvPath : null;
-        if (this.configName) {
-            this.envPath = fs.existsSync(assetEnvPath) ? assetEnvPath : this.envPath;
+
+        if (this.isRequestedConfig && fs.existsSync(assetEnvPath)) {
+            this.envPath = assetEnvPath;
         }
 
-        if (this.envPath) {
+        if (fs.existsSync(this.envPath)) {
             require('dotenv').config({path: this.envPath});
         }
 
@@ -254,7 +254,7 @@ class CraftWebpackConfig {
         }
 
         const baseConfig = {
-            name: path.basename(this.basePath),
+            name: this.configName,
             mode: this.nodeEnv,
             devtool: 'source-map',
             optimization,
