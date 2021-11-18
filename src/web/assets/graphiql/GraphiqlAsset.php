@@ -9,6 +9,7 @@ namespace craft\web\assets\graphiql;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\View;
 
 /**
  * GraphiQL asset bundle.
@@ -35,4 +36,26 @@ class GraphiqlAsset extends AssetBundle
     public $css = [
         'css/graphiql.css',
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view)
+    {
+        parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $view->registerTranslations('app', [
+                'Explore the GraphQL API',
+                'Explorer',
+                'History',
+                'Prettify query',
+                'Prettify',
+                'Share query',
+                'Share',
+                'Toggle explorer',
+                'Toggle history',
+            ]);
+        }
+    }
 }

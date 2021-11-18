@@ -51,6 +51,11 @@
 {% endmacro %}
 
 
+{% macro selectize(config) %}
+    {% include "_includes/forms/selectize" with config only %}
+{% endmacro %}
+
+
 {% macro multiselect(config) %}
     {% include "_includes/forms/multiselect" with config only %}
 {% endmacro %}
@@ -108,6 +113,11 @@
 
 {% macro timeZone(config) %}
     {% include "_includes/forms/timeZone" with config only %}
+{% endmacro %}
+
+
+{% macro booleanMenu(config) %}
+    {% include "_includes/forms/booleanMenu" with config only %}
 {% endmacro %}
 
 
@@ -197,6 +207,12 @@
 {% macro selectField(config) %}
     {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/select') }}
+{% endmacro %}
+
+
+{% macro selectizeField(config) %}
+    {% set config = config|merge({id: config.id ?? "selectize#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/selectize') }}
 {% endmacro %}
 
 
@@ -301,6 +317,12 @@
 {% macro timeZoneField(config) %}
     {% set config = config|merge({id: config.id ?? "timezone#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro booleanMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "booleanmenu#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/booleanMenu') }}
 {% endmacro %}
 
 

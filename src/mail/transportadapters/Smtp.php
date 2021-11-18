@@ -74,6 +74,7 @@ class Smtp extends BaseTransportAdapter
                 'port',
                 'username',
                 'password',
+                'encryptionMethod',
             ],
         ];
         return $behaviors;
@@ -111,7 +112,7 @@ class Smtp extends BaseTransportAdapter
                 return (bool)$model->useAuthentication;
             },
         ];
-        $rules[] = [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']];
+        $rules[] = [['encryptionMethod'], 'in', 'range' => ['none', 'tls', 'ssl']];
         $rules[] = [['timeout'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -144,7 +145,10 @@ class Smtp extends BaseTransportAdapter
         }
 
         if ($this->encryptionMethod) {
-            $config['encryption'] = $this->encryptionMethod;
+            $encryptionMethod = Craft::parseEnv($this->encryptionMethod);
+            if ($encryptionMethod && $encryptionMethod !== 'none') {
+                $config['encryption'] = $encryptionMethod;
+            }
         }
 
         return $config;

@@ -1,0 +1,37 @@
+{% set id = id ?? "selectize#{random()}" %}
+{% set selectizeOptions = {
+    dropdownParent: 'body',
+}|merge(selectizeOptions ?? []) %}
+
+{% if includeEnvVars ?? false %}
+    {% set allowedValues = options is defined
+        ? options|filter(o => o.optgroup is not defined)|map((o, k) => o.value is defined ? o.value : k)
+        : null %}
+    {% set options = (options ?? [])|merge(craft.cp.getEnvOptions(allowedValues)) %}
+{% endif %}
+
+{% include '_includes/forms/select' with {
+    class: (class ?? [])|explodeClass|push('selectize')|unique,
+} %}
+
+{% js %}
+(() => {
+    const label = function(data) {
+        let label = Craft.escapeHtml(data.text);
+        if (typeof data.status !== 'undefined') {
+            label = `<span class="status ${data.status}"></span>${label}`;
+        }
+        if (typeof data.hint !== 'undefined') {
+            label += ` <span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
+        }
+        return label;
+    };
+
+    $("#{{ id|namespaceInputId|e('js') }}").selectize($.extend({
+        render: {
+            option: data => `<div class="option ${data.value === '' ? 'selectize-dropdown-emptyoptionlabel' : ''}">${label(data)}</div>`,
+            item: data => `<div class="item">${label(data)}</div>`,
+        },
+    }, {{ selectizeOptions|json_encode|raw }}));
+})()
+{% endjs %}

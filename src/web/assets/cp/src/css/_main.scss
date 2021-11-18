@@ -930,6 +930,7 @@ td.right {
     @include padding(7px, 14px, 7px, 24px);
     color: $lightTextColor !important;
     transition: color linear 100ms;
+    cursor: pointer;
 
     .icon {
       @include margin-right(4px);
@@ -5335,7 +5336,7 @@ body.reduce-focus-visibility {
   width: 7em;
 }
 
-@include placeholder-styles($grey300);
+@include placeholder-styles($grey400);
 
 /* Kill IE's special text features */
 ::-ms-reveal,
@@ -5409,6 +5410,14 @@ body .selectize-dropdown {
 }
 
 /* single select styles */
+.selectize.select {
+  height: 34px;
+
+  &:not(.fullwidth) {
+    width: 25em;
+  }
+}
+
 .selectize.select .selectize-control,
 .selectize.select .selectize-control .selectize-input {
   @include select-styles;
@@ -5426,9 +5435,9 @@ body .selectize-dropdown {
   @include select-input-styles;
 }
 
-.selectize.select.fullwidth .selectize-control,
-.selectize.select.fullwidth .selectize-control .selectize-input {
-  @include select-input-fullwidth-styles;
+.selectize.select .selectize-control,
+.selectize.select .selectize-control .selectize-input {
+  width: 100%;
 }
 
 /* multi select styles */
@@ -5492,12 +5501,6 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
-}
-
-/* time zones */
-.timezone {
-  height: 34px;
-  max-width: 25em;
 }
 
 /* datepicker */
