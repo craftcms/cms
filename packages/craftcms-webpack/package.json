@@ -34,7 +34,6 @@
     "dotenv-webpack": "^7.0.3",
     "eslint": "^8.2.0",
     "eslint-plugin-vue": "^8.0.3",
-    "extra-watch-webpack-plugin": "^1.0.3",
     "file-loader": "^6.2.0",
     "mini-css-extract-plugin": "^2.4.4",
     "node-json-minify": "^1.0.0",

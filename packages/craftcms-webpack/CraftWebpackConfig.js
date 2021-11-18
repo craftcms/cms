@@ -20,19 +20,6 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const RemovePlugin = require('remove-files-webpack-plugin');
-const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
-
-class WebpackForceRebuildOnEmitPlugin {
-    apply(compiler) {
-        compiler.hooks.emit.tapAsync('WebpackForceRebuildOnEmitPlugin', (compilation, callback) => {
-            const outputPath = compilation.outputOptions.path;
-            const firstAssetName = compilation.getAssets()[0].name;
-            const assetToTouch = path.resolve(outputPath, firstAssetName);
-            touch(assetToTouch);
-            callback();
-        });
-    }
-}
 
 /**
  * CraftWebpackConfig class
@@ -203,7 +190,11 @@ class CraftWebpackConfig {
                 {
                     directory: this.devServer.contentBase,
                     watch: true,
-                }
+                },
+                {
+                    directory: this.templatesPath,
+                    watch: true,
+                },
             ],
             onBeforeSetupMiddleware: function(devServer) {
                 devServer.app.get('/which-asset', function(req, res) {
@@ -217,12 +208,7 @@ class CraftWebpackConfig {
      * Base webpack config
      */
     base() {
-        const plugins = [
-            new ExtraWatchWebpackPlugin({
-                dirs: [ this.templatesPath ],
-            }),
-            // new WebpackForceRebuildOnEmitPlugin(),
-        ];
+        const plugins = [];
         let optimization = {};
 
         // Only load dotenv plugin if there is a .env file
