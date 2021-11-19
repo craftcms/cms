@@ -19,7 +19,7 @@
     "fabric": "^1.7.19",
     "focus-visible": "^5.2.0",
     "garnishjs": "^0.1.47",
-    "graphiql": "^1.4.7",
+    "graphiql": "^0.14.2",
     "graphiql-explorer": "^0.6.3",
     "graphql": "^14.6.0",
     "iframe-resizer": "^4.3.2",
