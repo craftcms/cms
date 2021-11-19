@@ -221,6 +221,7 @@ class CraftWebpackConfig {
         if (this.removeFiles && typeof this.removeFiles === 'object' && !this.isDevServerRunning) {
             let after = {
                 root: this.removeFiles.root || this.distPath,
+                log: false,
             };
 
             if (this.removeFiles.test !== undefined && this.removeFiles.test !== null && Array.isArray(this.removeFiles.test)) {
@@ -243,7 +244,6 @@ class CraftWebpackConfig {
 
             plugins.push(new RemovePlugin({
                 after: after,
-                log: false,
             }));
         }
 
