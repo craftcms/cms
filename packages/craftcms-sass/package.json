@@ -7,6 +7,7 @@
     "sass",
     "mixins"
   ],
+  "main": "_mixins.scss",
   "author": "Brandon Kelly <brandon@pixelandtonic.com>",
   "homepage": "https://craftcms.com",
   "license": "MIT",
