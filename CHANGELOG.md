@@ -5,6 +5,7 @@
 ### Added
 - Added the `booleanMenu`, `booleanMenuField`, `selectize`, and `selectizeField` macros to the `_includes/forms.html` control panel template. ([#8866](https://github.com/craftcms/cms/discussions/8866))
 - Added `Craft::parseBooleanEnv()`.
+- Added `craft\base\ApplicationTrait::getWebpack()`.
 - Added `craft\services\Webpack`.
 - Added `craft\web\twig\variables\Cp::getBooleanEnvOptions()`.
 - Added `craft\web\twig\variables\Cp::getEnvOptions()`.

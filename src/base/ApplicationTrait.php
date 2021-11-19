@@ -122,6 +122,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Users $users The users service
  * @property-read \craft\services\Utilities $utilities The utilities service
  * @property-read \craft\services\Volumes $volumes The volumes service
+ * @property-read \craft\services\Webpack $webpack The webpack service
  * @property-read \yii\mutex\Mutex $mutex The application’s mutex service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
