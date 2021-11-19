@@ -28,7 +28,7 @@ class PrismJsAsset extends AssetBundle
         ];
 
         $this->css = [
-            'css/prism.css',
+            'prism.css',
         ];
 
         parent::init();
