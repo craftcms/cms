@@ -287,7 +287,7 @@ class CraftWebpackConfig {
                         }
                     },
 
-                    // GraphQL
+                    // graphiql
                     // https://github.com/graphql/graphql-js/issues/2721#issuecomment-723008284
                     {
                         test: /\.m?js/,
