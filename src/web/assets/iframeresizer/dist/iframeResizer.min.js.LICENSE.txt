@@ -1,0 +1,6 @@
+/*! iFrame Resizer (iframeSizer.min.js ) - v4.3.2 - 2021-04-26
+ *  Desc: Force cross domain iframes to size to content.
+ *  Requires: iframeResizer.contentWindow.min.js to be loaded into the target frame.
+ *  Copyright: (c) 2021 David J. Bradshaw - dave@bradshaw.net
+ *  License: MIT
+ */

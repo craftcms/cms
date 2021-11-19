@@ -5,6 +5,7 @@
 ### Added
 - Added the `booleanMenu`, `booleanMenuField`, `selectize`, and `selectizeField` macros to the `_includes/forms.html` control panel template. ([#8866](https://github.com/craftcms/cms/discussions/8866))
 - Added `Craft::parseBooleanEnv()`.
+- Added `craft\services\Webpack`.
 - Added `craft\web\twig\variables\Cp::getBooleanEnvOptions()`.
 - Added `craft\web\twig\variables\Cp::getEnvOptions()`.
 
@@ -115,7 +116,7 @@
 - Craft no longer writes out informational log messages when it’s not installed yet or an update is pending, if Dev Mode is disabled.
 - Dropdown fields now prepend a blank option to their menu when the current value is invalid. ([#9989](https://github.com/craftcms/cms/issues/9989))
 - Some control panel POST requests no longer disable database replica connections. ([#9996](https://github.com/craftcms/cms/discussions/9996))
-- Updated Axios to 0.21.4. 
+- Updated Axios to 0.21.4.
 - Updated jQuery UI to 1.13.0.
 
 ### Fixed
@@ -599,7 +600,7 @@
 - Added the `users/create` and `users/delete` commands. ([#8014](https://github.com/craftcms/cms/issues/8014))
 - Added the `siteSettingsId` element query and GraphQL API query parameter for all elements.
 - Added the `preferSites` GraphQL API query argument for all elements. ([#8006](https://github.com/craftcms/cms/pull/8006))
-- Added the `ancestors`, `descendants`, `drafts`, `draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` fields to entry GraphQL queries. ([#7950]((https://github.com/craftcms/cms/issues/7950)))
+- Added the `ancestors`, `descendants`, `drafts`, `draftCreator`, `revisions`, `currentRevision`, and `revisionCreator` fields to entry GraphQL queries. ([#7950](https://github.com/craftcms/cms/issues/7950))
 - Added the `httpProxy` config setting, which can be used instead of setting the `proxy` Guzzle request option. ([#9105](https://github.com/craftcms/cms/issues/9105))
 - Added the `previewTokenDuration` config setting. ([#2394](https://github.com/craftcms/cms/issues/2394))
 - Added the `revAssetUrls` config setting. ([#7847](https://github.com/craftcms/cms/issues/7847))
@@ -792,7 +793,7 @@
 
 ### Fixed
 - Fixed a bug where Craft would place the `beginBody()` tag incorrectly if a template’s `<body>` tag had attribute values that included `>` characters. ([#7779](https://github.com/craftcms/cms/issues/7779))
-- Fixed a bug where updated attributes and fields weren’t getting tracked when publishing a draft or reverting an entry to a revision. 
+- Fixed a bug where updated attributes and fields weren’t getting tracked when publishing a draft or reverting an entry to a revision.
 - Fixed a bug where it wasn’t easily possible to submit forms to controller actions from Live Preview pages. ([#7885](https://github.com/craftcms/cms/issues/7885))
 - Fixed a bug where it was possible to choose a different parent entry when editing a draft, even though the change wouldn’t stick when publishing the draft.
 - Fixed a bug where changing an entry’s parent wouldn’t update any of its drafts.
@@ -899,7 +900,7 @@
 - Fixed a bug where duplicated entries’ slugs and URIs could be incremented when changing a section’s propagation method. ([#7895](https://github.com/craftcms/cms/issues/7895))
 - Fixed a bug where the `Permissions-Policy` anti-FLoC header was being applied incorrectly. ([#7896](https://github.com/craftcms/cms/issues/7896))
 - Fixed a MySQL error that could occur when indexing search keywords which contained certain Russian characters. ([#7905](https://github.com/craftcms/cms/issues/7905))
-- Fixed a bug  where `craft\elements\actions\Delete` wasn’t hard-deleting elements when `$hard` was set to `true`, if the element index wasn’t already set to query soft-deleted elements. ([#7901](https://github.com/craftcms/cms/issues/7901))
+- Fixed a bug where `craft\elements\actions\Delete` wasn’t hard-deleting elements when `$hard` was set to `true`, if the element index wasn’t already set to query soft-deleted elements. ([#7901](https://github.com/craftcms/cms/issues/7901))
 - Fixed a bug where `craft\elements\actions\Delete` wasn’t clearing search indexes when `$hard` was set to `true`. ([#7901](https://github.com/craftcms/cms/issues/7901))
 - Fixed a PHP error that could occur if `config/app.php` was overriding the `log` component using `craft\helpers\App::logConfig()`, and expecting it to return an array with log target configs (as it used to before Craft 3.6).
 - Fixed a SQL error that occurred when calling `craft\records\SiteGroup::getSites()`. ([#7914](https://github.com/craftcms/cms/issues/7914))
@@ -1131,7 +1132,7 @@
 - Fixed a bug where Craft would set plugins’ base paths to the file system root directory, if they were configured with an invalid `basePath` in `vendor/craftcms/plugins.php`.
 - Fixed a bug where user verification and password-reset URLs would use `https` in some cases where they shouldn’t. ([#7581](https://github.com/craftcms/cms/issues/7581))
 - Fixed a bug where it wasn’t possible to override the `User-Agent` header sent by Guzzle from `config/guzzle.php`. ([#7597](https://github.com/craftcms/cms/issues/7597))
-- Fixed a bug where non-admin users weren’t able to replace files from the Edit Asset page, unless they had the “Remove files and folders” permission. ([#7601](https://github.com/craftcms/cms/issues/7601))
+- Fixed a bug where non-admin users weren’t able to replace files from the Edit Asset page, unless they had the “Remove files and folders” permission. ([#7601](https://github.com/craftcms/cms/issues/7601))
 - Fixed a bug where links within info HUDs weren’t opening in a new window.
 
 ### Security
@@ -1604,8 +1605,8 @@
 - Fixed a bug where the `siteName` and `siteUrl` config settings could get hard-coded into the project config when the project config was rebuilt. ([#7208](https://github.com/craftcms/cms/issues/7208))
 - Fixed a bug where sites’ Name setting would show the `siteName` config setting value rather than the stored value, if it was set.
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect some of the properties of the transform set on the asset. ([#7193](https://github.com/craftcms/cms/issues/7193))
-- Fixed a bug where WebP images were not transformable, even if the server was configured for it. ([#7170](https://github.com/craftcms/cms/issues/7170)) 
-- Fixed a bug where the image editor could save an image incorrectly, if the `upscaleImages` config setting was set to `false`.
+- Fixed a bug where WebP images were not transformable, even if the server was configured for it. ([#7170](https://github.com/craftcms/cms/issues/7170))
+- Fixed a bug where the image editor could save an image incorrectly, if the `upscaleImages` config setting was set to `false`.
 - Fixed a bug where it wasn’t possible to install a plugin if it had a row in the `plugins` table, but it wasn’t in the project config. ([#7229](https://github.com/craftcms/cms/issues/7229))
 - Fixed a bug where Craft wasn’t always respecting plugins’ `minVersionRequired`. ([#7191](https://github.com/craftcms/cms/issues/7191))
 - Fixed a bug where `craft\elements\db\ElementQuery::getCriteria()` wasn’t including custom field criteria values. ([#7225](https://github.com/craftcms/cms/issues/7225))
@@ -3557,7 +3558,7 @@
 - It’s now possible to query for elements by their custom field values via GraphQL. ([#5208](https://github.com/craftcms/cms/issues/5208))
 - It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager loading criteria.
 - GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
-- GraphQL schemas are now stored in the project config (sans tokens). ([#4829]((https://github.com/craftcms/cms/issues/4829))
+- GraphQL schemas are now stored in the project config (sans tokens). ([#4829](https://github.com/craftcms/cms/issues/4829))
 - Added a new “Expanded” element exporter type, which includes expanded custom field values, including Matrix and relational fields. ([#4484](https://github.com/craftcms/cms/issues/4484))
 - It’s now possible to export elements as CSV, JSON, or XML files.
 - Added support for plugin-supplied element exporters. ([#5090](https://github.com/craftcms/cms/issues/5090))
@@ -5633,7 +5634,7 @@
 ## 3.1.3 - 2019-01-21
 
 ### Added
-- Added the `|json_decode` Twig filter.  ([#3678](https://github.com/craftcms/cms/pull/3678))
+- Added the `|json_decode` Twig filter. ([#3678](https://github.com/craftcms/cms/pull/3678))
 
 ### Fixed
 - Fixed an error that occurred when updating to Craft 3.1 if a plugin or module was calling any soft-deletable records’ `find()` methods.
@@ -6414,7 +6415,7 @@
 - Craft no longer relies on ImageMagick or GD to define the image formats that should be considered manipulatable. ([#2408](https://github.com/craftcms/cms/issues/2408))
 - Removed the `showBetaUpdates` config setting as it’s no longer being used.
 - When uploading a file to an Assets field, Craft will automatically sort the file list to show the latest uploads first. ([#2812](https://github.com/craftcms/cms/issues/2812))
-- `dateCreated`, `dateUpdated`, `postDate`, `expiryDate`, `after`, and  `before` element query params can new be set to `DateTime` objects.
+- `dateCreated`, `dateUpdated`, `postDate`, `expiryDate`, `after`, and `before` element query params can new be set to `DateTime` objects.
 - Matrix fields now auto-focus the first text input within newly-created Matrix blocks. ([#3104](https://github.com/craftcms/cms/issues/3104))
 - Updated Twig to 2.5.0.
 - Updated Garnish to 0.1.26.
@@ -6920,7 +6921,7 @@
 - Added the `|timestamp` Twig filter, for formatting a date as a user-friendly timestamp.
 - Added the `|datetime` Twig filter, for formatting a date with a localized date+time format.
 - Added the `|time` Twig filter, for formatting a date with a localized time format.
-- Added the `|multisort` Twig filter, which duplicates an array and sorts it with [craft\helpers\ArrayHelper::multisort()](http://www.yiiframework.com/doc-2.0/yii-helpers-basearrayhelper.html#multisort()-detail).
+- Added the `|multisort` Twig filter, which duplicates an array and sorts it with [`craft\helpers\ArrayHelper::multisort()`](http://www.yiiframework.com/doc-2.0/yii-helpers-basearrayhelper.html#multisort()-detail).
 - Added the `|atom` and `|rss` Twig filters, for formatting dates in Atom and RSS date formats, respectively.
 - Added the `|column` Twig filter, for capturing the key/property values of a series of arrays/objects.
 - Added the `|index` Twig filter, for indexing an array of arrays/objects by one of their keys/values.

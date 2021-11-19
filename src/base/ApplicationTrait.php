@@ -1424,6 +1424,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the webpack service.
+     *
+     * @return \craft\services\Webpack The volumes service
+     * @since 3.7.22
+     */
+    public function getWebpack()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('webpack');
+    }
+
+    /**
      * Initializes things that should happen before the main Application::init()
      */
     private function _preInit()

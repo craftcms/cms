@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="375px" height="31px" viewBox="0 0 375 31" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>mobile_top</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="mobile_top" fill-rule="nonzero">
+            <path d="M17,0 L358,0 C367.388841,0 375,7.61115925 375,17 L375,31 L0,31 L0,17 C0,7.61115925 7.61115925,0 17,0 Z" id="Rectangle-10" fill="#EBF1F8"></path>
+            <ellipse id="Oval-2-Copy-4" stroke="#D7DBDE" cx="159.001574" cy="15.5" rx="4.00157442" ry="4.0250001"></ellipse>
+            <rect id="Rectangle-13-Copy" stroke="#D7DBDE" x="171" y="13.4749999" width="50" height="4" rx="2"></rect>
+        </g>
+    </g>
+</svg>

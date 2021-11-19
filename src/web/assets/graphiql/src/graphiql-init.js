@@ -1,5 +1,7 @@
 import {init} from './CraftGraphiQL.js';
 import ReactDOM from 'react-dom';
+import 'graphiql/graphiql.css';
+import './graphiql.scss';
 
 require('whatwg-fetch');
 
