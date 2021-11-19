@@ -25,9 +25,9 @@ const Dotenv = require('dotenv-webpack');
 const RemovePlugin = require('remove-files-webpack-plugin');
 
 /**
- * CraftWebpackConfig class
+ * ConfigFactory class
  */
-class CraftWebpackConfig {
+class ConfigFactory {
     constructor(options = {}) {
         this.types = [
             'asset',
@@ -435,4 +435,4 @@ class CraftWebpackConfig {
     }
 }
 
-module.exports = CraftWebpackConfig;
+module.exports = ConfigFactory;
