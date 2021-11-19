@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 body,
 #graphiql {
@@ -181,7 +181,7 @@ body,
         }
       }
     }
-    
+
     .execute-options li {
       padding-left: 14px;
     }
