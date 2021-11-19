@@ -1,6 +1,6 @@
 {
   "name": "@craftcms/webpack",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Webpack build tools for Craft CMS",
   "keywords": [
     "craftcms",
