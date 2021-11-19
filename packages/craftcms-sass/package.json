@@ -1,6 +1,6 @@
 {
-  "name": "craftcms-sass",
-  "version": "3.5.7",
+  "name": "@craftcms/sass",
+  "version": "0.1.0",
   "description": "Sass mixins for Craft CMS",
   "keywords": [
     "craftcms",
