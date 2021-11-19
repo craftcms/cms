@@ -587,7 +587,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
+        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**

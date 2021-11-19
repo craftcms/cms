@@ -20,7 +20,6 @@ use yii\db\Expression;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
-use yii\base\InvalidArgumentException;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -97,39 +96,30 @@ class Craft extends Yii
     }
 
     /**
-     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced boolean value.
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced
+     * boolean value, or `null` if a boolean value can’t be determined.
      *
      * ---
      *
      * ```php
-     * $value = Craft::parseBooleanEnv('$SYSTEM_STATUS');
+     * $status = Craft::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
      * ```
      *
-     * @param string|bool|null $value
-     * @param bool|null $default
+     * @param mixed $value
      * @return bool|null
-     * @throws InvalidArgumentException
      * @since 3.7.22
      */
-    public static function parseBooleanEnv($value, ?bool $default = null): ?bool
+    public static function parseBooleanEnv($value): ?bool
     {
         if (is_bool($value)) {
             return $value;
         }
 
         if (!is_string($value)) {
-            throw new InvalidArgumentException('Craft::parseBooleanEnv() only accepts a boolean or string value.');
+            return null;
         }
 
-        $value = Craft::parseEnv($value);
-        $boolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($boolean === null) {
-            Craft::warning("Invalid boolean value: $value");
-            return $default;
-        }
-
-        return $boolean;
+        return filter_var(Craft::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -167,7 +157,7 @@ class Craft extends Yii
         if ($highlight === null) {
             $highlight = !static::$app->getRequest()->getIsConsoleRequest();
         }
-        
+
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }
