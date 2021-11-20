@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\updates;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Updates utility

@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\qunit;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Qunit asset bundle.

@@ -9,7 +9,6 @@ namespace craft\web;
 
 /**
  * @inheritdoc
- * @deprecated in 4.0.0. Use [[\yii\web\AssetBundle]] instead.
  */
 class AssetBundle extends \yii\web\AssetBundle
 {

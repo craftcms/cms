@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\feed;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for Feed widgets

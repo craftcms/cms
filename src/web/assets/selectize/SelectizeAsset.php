@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\selectize;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Selectize asset bundle.

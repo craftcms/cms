@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\focalpoint;
 
-use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**

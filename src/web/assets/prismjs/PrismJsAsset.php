@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\prismjs;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * PrismJs asset bundle.

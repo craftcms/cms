@@ -7,10 +7,10 @@
 
 namespace craft\web\assets\garnish;
 
+use craft\web\AssetBundle;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\velocity\VelocityAsset;
-use yii\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**

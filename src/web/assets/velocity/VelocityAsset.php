@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\velocity;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Velocity asset bundle.

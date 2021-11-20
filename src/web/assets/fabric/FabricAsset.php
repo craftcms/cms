@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\fabric;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Fabric asset bundle.

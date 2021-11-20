@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\vue;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Vue asset bundle.

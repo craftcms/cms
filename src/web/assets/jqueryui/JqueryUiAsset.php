@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\jqueryui;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
