@@ -82,6 +82,7 @@ use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
 use craft\services\Volumes;
+use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
@@ -161,6 +162,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Utilities $utilities The utilities service
  * @property-read View $view The view component
  * @property-read Volumes $volumes The volumes service
+ * @property-read Webpack $webpack The webpack service
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
  * @property-read bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
  * @property-read bool $hasWrongEdition Whether Craft is running with the wrong edition
@@ -1350,6 +1352,18 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('volumes');
+    }
+
+    /**
+     * Returns the webpack service.
+     *
+     * @return Webpack The volumes service
+     * @since 3.7.22
+     */
+    public function getWebpack(): Webpack
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('webpack');
     }
 
     /**
