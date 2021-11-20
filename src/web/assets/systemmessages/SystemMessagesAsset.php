@@ -32,7 +32,7 @@ class SystemMessagesAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'system_messages.css',
+        'css/system_messages.css',
     ];
 
     /**

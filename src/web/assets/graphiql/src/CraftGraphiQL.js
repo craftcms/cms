@@ -1,4 +1,4 @@
-import {buildClientSchema, getIntrospectionQuery} from 'graphql';
+// import {buildClientSchema, getIntrospectionQuery} from 'graphql';
 import React from 'react';
 import GraphiQL from 'graphiql';
 import GraphiQLExplorer from 'graphiql-explorer';
@@ -112,11 +112,11 @@ export class CraftGraphiQL extends React.Component {
 
         this.props
             .fetcher({
-                query: getIntrospectionQuery(),
+                // query: getIntrospectionQuery(),
             })
             .then(result => {
                 const editor = this.graphiql.current.getQueryEditor();
-                this.setState({schema: buildClientSchema(result.data)});
+                // this.setState({schema: buildClientSchema(result.data)});
             });
     }
 

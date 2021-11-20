@@ -43,38 +43,19 @@ class PluginStoreAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = __DIR__ . '/dist/';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
             VueAsset::class,
         ];
 
-        $pluginStoreService = Craft::$app->getPluginStore();
-
-        $config = [
-            'devServer' => [
-                'manifestPath' => $pluginStoreService->devServerManifestPath,
-                'publicPath' => $pluginStoreService->devServerPublicPath,
-            ],
-            'server' => [
-                'manifestPath' => __DIR__ . '/dist/',
-                'publicPath' => '',
-            ],
-            'manifest' => [
-                'legacy' => 'manifest.json',
-                'modern' => 'manifest.json',
-            ],
-        ];
-
         $this->css = [
-            $this->getModule($config, 'chunk-vendors.css'),
-            $this->getModule($config, 'app.css'),
+            'css/app.css',
         ];
 
         $this->js = [
-            $this->getModule($config, 'chunk-vendors.js'),
-            $this->getModule($config, 'app.js'),
+            'js/app.js',
         ];
 
         parent::init();

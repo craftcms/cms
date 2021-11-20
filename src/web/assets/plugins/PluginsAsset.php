@@ -32,7 +32,7 @@ class PluginsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'plugins.css',
+        'css/PluginManager.css',
     ];
 
     /**
