@@ -1,3 +1,5 @@
+import './focal.scss';
+
 import JQEvent = JQuery.Event;
 
 class FocalPoint {
@@ -64,7 +66,7 @@ class FocalPoint {
         if (this.debounceTimer) {
             this.storeFocalPosition();
         }
-        
+
         this.$focal.off('mousedown touchstart', this.handleDragStart.bind(this));
         $(window).off('mouseup touchend', this.handleDragEnd.bind(this));
         $(window).off('mousemove touchmove', this.handleMove.bind(this));
@@ -80,7 +82,7 @@ class FocalPoint {
     protected isCentered() {
         return this.focalPos[0] == 0.5 && this.focalPos[1]  == 0.5;
     }
-    
+
     protected handleDragEnd()
     {
         this.dragging = false;
@@ -135,7 +137,7 @@ class FocalPoint {
         }
 
         clearTimeout(this.debounceTimer);
-        this.debounceTimer = setTimeout(() => this.storeFocalPosition(), this.debounceTimeout);
+        this.debounceTimer = window.setTimeout(() => this.storeFocalPosition(), this.debounceTimeout);
     }
 
     public storeFocalPosition()
