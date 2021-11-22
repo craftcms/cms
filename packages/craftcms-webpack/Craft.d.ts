@@ -23,5 +23,4 @@ declare var Craft: {
 };
 
 declare var Garnish: any;
-declare type JQuery = any;
 declare var $: any;
