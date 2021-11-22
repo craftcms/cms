@@ -18,6 +18,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
@@ -35,7 +36,6 @@ use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -75,7 +75,7 @@ class CpAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/craft.css',
+        'css/Craft.css',
         'css/charts.css',
     ];
 

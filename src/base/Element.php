@@ -2982,7 +2982,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $descendants = $this->getDescendants();
         if (is_array($descendants)) {
-            return !empty($descendants);
+            return (bool)$descendants;
         }
         return $descendants->exists();
     }

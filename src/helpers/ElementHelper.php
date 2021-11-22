@@ -538,7 +538,7 @@ class ElementHelper
         $path = explode('/', $sourceKey);
         $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
 
-        while (!empty($path)) {
+        while ($path) {
             $key = array_shift($path);
             $source = null;
 

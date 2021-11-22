@@ -1406,7 +1406,7 @@ class ProjectConfig extends Component
 
         $this->_appliedConfig = $generatedConfig;
 
-        return $generatedConfig ?? [];
+        return $generatedConfig;
     }
 
     /**

@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\generalsettings;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the General Settings page
@@ -31,7 +31,7 @@ class GeneralSettingsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'rebrand.css',
+        'css/rebrand.css',
     ];
 
     /**

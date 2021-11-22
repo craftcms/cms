@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 @mixin spinner {
   width: 24px;
@@ -8,32 +8,43 @@
 
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
-  $halfSize: $size / 2;
-  background-image:
-          linear-gradient(45deg, $grey100 25%, transparent 25%),
-          linear-gradient(135deg, $grey100 25%, transparent 25%),
-          linear-gradient(45deg, transparent 75%, $grey100 75%),
-          linear-gradient(135deg, transparent 75%, $grey100 75%);
+  $halfSize: $size * 0.5;
+  background-image: linear-gradient(45deg, $grey100 25%, transparent 25%),
+    linear-gradient(135deg, $grey100 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, $grey100 75%),
+    linear-gradient(135deg, transparent 75%, $grey100 75%);
   background-size: $size $size;
   background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }
 
 @mixin striped-bg($size, $color: $grey100) {
   // h/t https://css-tricks.com/stripes-css/
-  $halfSize: $size / 2;
+  $halfSize: $size * 0.5;
   body.ltr & {
-    background: repeating-linear-gradient(135deg, $white, $white $halfSize, $color $halfSize, $color $size);
+    background: repeating-linear-gradient(
+      135deg,
+      $white,
+      $white $halfSize,
+      $color $halfSize,
+      $color $size
+    );
   }
   body.rtl & {
-    background: repeating-linear-gradient(45deg, $white, $white $halfSize, $color $halfSize, $color $size);
+    background: repeating-linear-gradient(
+      45deg,
+      $white,
+      $white $halfSize,
+      $color $halfSize,
+      $color $size
+    );
   }
 }
 
 @font-face {
-  font-family: 'Craft';
-  src: url('../fonts/Craft.woff') format('woff'),
-  url('../fonts/Craft.ttf') format('truetype'),
-  url('../fonts/Craft.svg#Craft') format('svg');
+  font-family: "Craft";
+  src: url("../fonts/Craft.woff") format("woff"),
+    url("../fonts/Craft.ttf") format("truetype"),
+    url("../fonts/Craft.svg#Craft") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -48,7 +59,8 @@
   --hairline-color: #{$hairlineColor};
 }
 
-body, html {
+body,
+html {
   background-color: $grey100;
 }
 
@@ -70,15 +82,47 @@ body.rtl {
   direction: rtl;
 }
 
-body, input, select, textarea {
+body,
+input,
+select,
+textarea {
   @include sans-serif-font;
 }
 
-.first, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, blockquote:first-child, hr:first-child, .pane:first-child, .grid:first-child, fieldset:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child {
+.first,
+h1:first-child,
+h2:first-child,
+h3:first-child,
+h4:first-child,
+h5:first-child,
+h6:first-child,
+p:first-child,
+blockquote:first-child,
+hr:first-child,
+.pane:first-child,
+.grid:first-child,
+fieldset:first-child,
+.field:first-child,
+.toolbar:first-child,
+.buttons:first-child {
   margin-top: 0 !important;
 }
 
-.last, h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, blockquote:last-child, .pane:last-child, .grid:last-child, fieldset:last-child, .field:last-child, .toolbar:last-child, .buttons:last-child {
+.last,
+h1:last-child,
+h2:last-child,
+h3:last-child,
+h4:last-child,
+h5:last-child,
+h6:last-child,
+p:last-child,
+blockquote:last-child,
+.pane:last-child,
+.grid:last-child,
+fieldset:last-child,
+.field:last-child,
+.toolbar:last-child,
+.buttons:last-child {
   margin-bottom: 0 !important;
 }
 
@@ -152,50 +196,50 @@ table.editable textarea {
   content: attr(data-icon-after);
 }
 
-body.rtl [data-icon=list]:before,
-body.rtl [data-icon-after=list]:after {
-  content: 'listrtl';
+body.rtl [data-icon="list"]:before,
+body.rtl [data-icon-after="list"]:after {
+  content: "listrtl";
 }
 
-body.rtl [data-icon=structure]:before,
-body.rtl [data-icon-after=structure]:after {
-  content: 'structurertl';
+body.rtl [data-icon="structure"]:before,
+body.rtl [data-icon-after="structure"]:after {
+  content: "structurertl";
 }
 
 .icon.secure:before {
-  content: 'secure';
+  content: "secure";
 }
 
 .icon.insecure:before {
-  content: 'insecure';
+  content: "insecure";
 }
 
 .icon.add:before {
-  content: 'plus';
+  content: "plus";
 }
 
 .icon.edit:before {
-  content: 'edit';
+  content: "edit";
 }
 
 .icon.settings:before {
-  content: 'settings';
+  content: "settings";
 }
 
 .icon.search:before {
-  content: 'search';
+  content: "search";
 }
 
 .icon.expand:before {
-  content: 'expand';
+  content: "expand";
 }
 
 .icon.collapse:before {
-  content: 'collapse';
+  content: "collapse";
 }
 
 .help:before {
-  content: 'help';
+  content: "help";
   color: $pink400;
 }
 
@@ -208,58 +252,64 @@ body.rtl [data-icon-after=structure]:after {
 
 #preview-btn:before {
   margin-top: -2px;
-  content: 'view';
+  content: "view";
 }
 
 #share-btn:before {
   body.ltr & {
-    content: 'share';
+    content: "share";
   }
   body.rtl & {
-    content: 'shareleft';
+    content: "shareleft";
   }
 }
 
 /* headings */
-h1, .h1 {
+h1,
+.h1 {
   margin-bottom: 24px;
   font-size: 18px;
   font-weight: bold;
   line-height: 1.2;
 }
 
-h2, .h2 {
+h2,
+.h2 {
   margin: 14px 0;
   font-size: 16px;
   font-weight: bold;
   line-height: 20px;
 }
 
-h3, .h3 {
+h3,
+.h3 {
   margin: 14px 0;
   font-weight: bold;
   line-height: 1.2;
 }
 
-h4, .h4 {
+h4,
+.h4 {
   margin: 14px 0;
   font-weight: bold;
   line-height: 1.2;
   color: $mediumTextColor;
 }
 
-h5, .h5 {
+h5,
+.h5 {
   margin: 14px 0 3px;
   line-height: 1.2;
   color: $mediumTextColor;
 }
 
-h6, .h6 {
+h6,
+.h6 {
   @include h6-styles;
 }
 
 h1[data-icon]:before {
-  @include margin(-8px, 10px, 0, 0)
+  @include margin(-8px, 10px, 0, 0);
 }
 
 h2[data-icon]:before {
@@ -357,10 +407,10 @@ li.sel a {
   @include padding-left(4px);
   color: $lightTextColor;
   body.ltr & {
-    content: 'circlerarr';
+    content: "circlerarr";
   }
   body.rtl & {
-    content: 'circlelarr';
+    content: "circlelarr";
   }
 }
 
@@ -400,7 +450,7 @@ li.sel a {
   background-color: $grey200;
 
   &:before {
-    content: 'check';
+    content: "check";
     color: $successColor;
   }
 }
@@ -409,7 +459,7 @@ li.sel a {
   background-color: $grey200;
 
   &:before {
-    content: 'alert';
+    content: "alert";
     color: $errorColor;
   }
 }
@@ -463,7 +513,6 @@ li.sel a {
         padding-top: 7px;
         border-radius: $largeBorderRadius;
       }
-
     }
   }
 
@@ -523,11 +572,14 @@ a.fieldtoggle:before {
 }
 
 /* emphasis */
-em, i {
+em,
+i {
   font-style: italic;
 }
 
-strong, b, i em {
+strong,
+b,
+i em {
   font-weight: bold;
 }
 
@@ -598,7 +650,7 @@ input.checkbox + label.smalltext {
 }
 
 .required:after {
-  content: 'asterisk';
+  content: "asterisk";
   @include margin(-2px, 0, 0, 5px);
   font-size: 7px;
   color: $errorColor;
@@ -622,13 +674,13 @@ td {
   vertical-align: middle;
 }
 
-body.ltr table[dir='rtl'] {
+body.ltr table[dir="rtl"] {
   th,
   td {
     text-align: right;
   }
 }
-body.rtl table[dir='ltr'] {
+body.rtl table[dir="ltr"] {
   th,
   td {
     text-align: left;
@@ -655,16 +707,16 @@ td.right {
   @include token-styles;
 }
 
-.token[data-name='*'] {
+.token[data-name="*"] {
   position: relative;
   width: 10px;
 }
 
-.token[data-name='*'] span {
+.token[data-name="*"] span {
   opacity: 0;
 }
 
-.token[data-name='*']:before {
+.token[data-name="*"]:before {
   @include icon;
   display: block;
   position: absolute;
@@ -673,12 +725,12 @@ td.right {
   width: 100%;
   font-size: 9px;
   line-height: 17px;
-  content: 'asterisk';
+  content: "asterisk";
   text-indent: 0;
 }
 
 .token:focus {
-  box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
+  box-shadow: 0 0 0 1px transparentize($grey500, 0.75);
   background-color: $white;
 }
 
@@ -731,11 +783,11 @@ td.right {
   }
 
   &.notice:before {
-    content: 'lightbulb';
+    content: "lightbulb";
   }
 
   &.warning:before {
-    content: 'alert';
+    content: "alert";
   }
 }
 
@@ -752,7 +804,7 @@ td.right {
 }
 
 .icon.move:before {
-  content: 'move';
+  content: "move";
   color: $mediumTextColor;
 }
 
@@ -765,7 +817,7 @@ td.right {
 }
 
 .icon.delete:before {
-  content: 'remove';
+  content: "remove";
   color: $darkHairlineColor;
 }
 
@@ -789,7 +841,7 @@ td.right {
   padding: 0;
   margin: 0;
   overflow: hidden;
-  clip: rect(0,0,0,0);
+  clip: rect(0, 0, 0, 0);
   border: 0;
 }
 
@@ -820,7 +872,7 @@ td.right {
 
   &:not(.warning) {
     &:before {
-      content: 'info';
+      content: "info";
     }
     &:hover:before {
       color: $linkColor;
@@ -829,7 +881,7 @@ td.right {
 
   &.warning {
     &:before {
-      content: 'alert';
+      content: "alert";
     }
     &:hover:before {
       color: $warningColor;
@@ -1209,7 +1261,7 @@ ul.icons {
     }
   }
 
-  &[type='color'] {
+  &[type="color"] {
     padding: 6px !important;
     width: 36px;
   }
@@ -1277,7 +1329,7 @@ ul.icons {
 
 .btn.icon.add.loading:after {
   position: absolute;
-  content: '';
+  content: "";
   font-size: 0;
   display: block;
   width: 24px;
@@ -1410,7 +1462,8 @@ ul.icons {
     width: 13px;
     background: none;
     @include margin-left(-13px);
-    transition: opacity linear 100ms, margin-left linear 100ms, margin-right linear 100ms;
+    transition: opacity linear 100ms, margin-left linear 100ms,
+      margin-right linear 100ms;
   }
 
   &:hover,
@@ -1571,7 +1624,6 @@ ul.icons {
 
 /* special buttons */
 .btn {
-
   &.submit,
   &.secondary {
     &,
@@ -1644,7 +1696,7 @@ div.btn.submit {
 
 div.btn.submit input {
   position: absolute;
-  left: 100%
+  left: 100%;
 }
 
 /* dashed buttons */
@@ -1760,12 +1812,12 @@ div.btn.submit input {
       color: $mediumTextColor;
       cursor: default;
 
-      &[data-toggle=on] {
+      &[data-toggle="on"] {
         @include padding-right(10px);
         @include margin-left(7px);
       }
 
-      &[data-toggle=off] {
+      &[data-toggle="off"] {
         @include padding-left(10px);
         @include margin-right(7px);
       }
@@ -2267,7 +2319,8 @@ $elementInnerSpacing: 5px;
     &.hasthumb {
       .elementthumb {
         img {
-          box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9), 0 6px 4px -4px transparentize($darkSelColor, 0.8)
+          box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
+            0 6px 4px -4px transparentize($darkSelColor, 0.8);
         }
       }
     }
@@ -2322,7 +2375,9 @@ $elementInnerSpacing: 5px;
     box-sizing: border-box;
 
     &.hasstatus {
-      @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
+      @include padding-left(
+        $baseElementSidePadding + $statusSize + $elementInnerSpacing
+      );
 
       .status {
         position: absolute;
@@ -2352,7 +2407,9 @@ $elementInnerSpacing: 5px;
       }
 
       &.hasstatus {
-        @include padding-left($smallThumbSize + $elementInnerSpacing * 2 + $statusSize);
+        @include padding-left(
+          $smallThumbSize + $elementInnerSpacing * 2 + $statusSize
+        );
 
         .status {
           @include left($smallThumbSize + $elementInnerSpacing);
@@ -2363,17 +2420,21 @@ $elementInnerSpacing: 5px;
 
   &.large.hasthumb {
     display: block;
-    padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing} $baseElementSidePadding $baseElementSidePadding;
+    padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing}
+      $baseElementSidePadding $baseElementSidePadding;
     width: #{120px + $baseElementSidePadding + $baseElementSidePadding};
     box-sizing: border-box;
 
     &.hasstatus {
-      @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
+      @include padding-left(
+        $baseElementSidePadding + $statusSize + $elementInnerSpacing
+      );
 
       .status {
         position: absolute;
         @include left($baseElementSidePadding);
-        top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing + 6};
+        top: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
+          6};
       }
     }
 
@@ -2427,7 +2488,7 @@ $elementInnerSpacing: 5px;
     @include padding-right($baseElementSidePadding + 24);
 
     &:after {
-      content: '';
+      content: "";
       font-size: 0;
       position: absolute;
       bottom: 0;
@@ -2455,14 +2516,15 @@ $checkboxPadding: $checkboxSize + 4;
 
     &:after {
       display: block;
-      content: '';
+      content: "";
       font-size: 0;
       position: absolute;
       top: 0;
       left: -24px;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
-      background: transparentize($white, 0.25) url(../images/spinner.gif) no-repeat 50% 50%;;
+      background: transparentize($white, 0.25) url(../images/spinner.gif)
+        no-repeat 50% 50%;
       border-radius: $largeBorderRadius;
     }
   }
@@ -2474,7 +2536,7 @@ $checkboxPadding: $checkboxSize + 4;
     box-shadow: none;
 
     &:after {
-      content: '';
+      content: "";
     }
 
     .selectallcontainer {
@@ -2512,8 +2574,15 @@ $checkboxPadding: $checkboxSize + 4;
 
   // thumbs views
   .thumbsview {
-    @include margin(-$baseElementSidePadding, -$baseElementSidePadding - 1px, -$baseElementSidePadding - 1px, -$baseElementSidePadding);
-    width: calc(100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px});
+    @include margin(
+      -$baseElementSidePadding,
+      -$baseElementSidePadding - 1px,
+      -$baseElementSidePadding - 1px,
+      -$baseElementSidePadding
+    );
+    width: calc(
+      100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px}
+    );
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -2531,21 +2600,29 @@ $checkboxPadding: $checkboxSize + 4;
       &.has-checkbox {
         .element.hasthumb {
           &:not(.hasstatus) {
-            @include padding-left($baseElementSidePadding + $checkboxSize + $elementInnerSpacing);
+            @include padding-left(
+              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
+            );
           }
 
           &.hasstatus {
-            @include padding-left($baseElementSidePadding + $checkboxSize + $elementInnerSpacing + $statusSize + $elementInnerSpacing);
+            @include padding-left(
+              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing +
+                $statusSize + $elementInnerSpacing
+            );
 
             .status {
-              @include left($baseElementSidePadding + $checkboxSize + $elementInnerSpacing);
+              @include left(
+                $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
+              );
             }
           }
         }
 
         .checkbox {
           position: absolute;
-          top: $baseElementSidePadding + $largeThumbSize + $elementInnerSpacing + (20px - $checkboxSize) / 2;
+          top: $baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
+            (20px - $checkboxSize) * 0.5;
           @include left($baseElementSidePadding);
         }
       }
@@ -2637,7 +2714,7 @@ $checkboxPadding: $checkboxSize + 4;
       padding: 0 5px;
 
       &:before {
-        content: 'downangle';
+        content: "downangle";
         color: $darkHairlineColor;
       }
 
@@ -2881,7 +2958,7 @@ table.editable {
           opacity: 1;
 
           &:after {
-            content: '';
+            content: "";
             font-size: 0;
             position: absolute;
             top: 0;
@@ -3071,7 +3148,7 @@ ul.tree,
 }
 
 .purple {
-  background-color: #9B59B6;
+  background-color: #9b59b6;
 }
 
 .blue {
@@ -3232,7 +3309,8 @@ ul.tree,
       top: calc(50% - 16px);
       @include left(0);
 
-      img, svg {
+      img,
+      svg {
         width: 100%;
         height: 100%;
       }
@@ -3274,14 +3352,14 @@ ul.tree,
 
     &:after {
       display: block;
-      content: '';
+      content: "";
       font-size: 0;
       position: absolute;
       top: 0;
       left: -24px;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
-      background: url(../images/spinner.gif) no-repeat 50% 50%;;
+      background: url(../images/spinner.gif) no-repeat 50% 50%;
     }
   }
 }
@@ -3325,10 +3403,18 @@ ul.tree,
 
     &.scrollable {
       body.ltr & {
-        mask-image: linear-gradient(to left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 24px);
+        mask-image: linear-gradient(
+          to left,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 1) 24px
+        );
       }
       body.rtl & {
-        mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1) 24px);
+        mask-image: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 1) 24px
+        );
       }
     }
 
@@ -3408,7 +3494,7 @@ ul.tree,
           width: 31px;
           @include alignright;
           @include icon;
-          content: 'plus';
+          content: "plus";
           color: $lightTextColor;
         }
 
@@ -3651,7 +3737,8 @@ ul.tree,
 .slideout {
   position: absolute;
   background-color: $white;
-  box-shadow: 0 0 0 1px transparentize($grey400, 0.75), 0 25px 100px transparentize($grey900, 0.5);
+  box-shadow: 0 0 0 1px transparentize($grey400, 0.75),
+    0 25px 100px transparentize($grey900, 0.5);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3804,7 +3891,7 @@ ul.tree,
         padding: 24px;
         width: calc(100% - 350px);
         height: 100%;
-        box-sizing: border-box;;
+        box-sizing: border-box;
         box-shadow: 0 0 0 1px transparentize($grey1000, 0.9);
         overflow: hidden auto;
       }
@@ -3935,7 +4022,7 @@ ul.tree,
       @include icon;
       @include margin(-6px, 0, 0, -58px);
       @include floatleft;
-      content: 'alert';
+      content: "alert";
       font-size: 40px;
       color: $lightTextColor;
     }
@@ -3948,7 +4035,7 @@ ul.tree,
       @include icon;
       @include margin(-14px, 0, 0, -56px);
       @include floatleft;
-      content: 'secure';
+      content: "secure";
       font-size: 58px;
       color: $lightTextColor;
     }
@@ -4069,7 +4156,7 @@ ul.tree,
 
   &.loading {
     &:after {
-      content: '';
+      content: "";
       font-size: 0;
       display: block;
       position: absolute;
@@ -4077,7 +4164,8 @@ ul.tree,
       height: 100%;
       left: 0;
       top: 0;
-      background: transparentize($grey900, 0.2) no-repeat 50% 50% url(../images/spinner_dark.gif);
+      background: transparentize($grey900, 0.2) no-repeat 50% 50%
+        url(../images/spinner_dark.gif);
     }
   }
 
@@ -4189,7 +4277,6 @@ ul.tree,
             }
 
             tr {
-
               &.disabled {
                 opacity: 1;
                 color: $grey200;
@@ -4394,7 +4481,7 @@ ul.tree,
           }
 
           &.sel:not([data-icon]):before {
-            content: 'check';
+            content: "check";
           }
         }
       }
@@ -4418,7 +4505,8 @@ ul.tree,
           @include margin-left(14px);
           padding: 0 4px;
           border-radius: $mediumBorderRadius;
-          box-shadow: 0 0 0 1px transparentize($grey600, 0.75), 0 1px 3px -1px transparentize($grey600, 0.5);
+          box-shadow: 0 0 0 1px transparentize($grey600, 0.75),
+            0 1px 3px -1px transparentize($grey600, 0.5);
         }
       }
     }
@@ -4438,7 +4526,7 @@ ul.tree,
           position: absolute;
           top: 36px;
           @include left(7px);
-          content: 'check';
+          content: "check";
           font-size: 14px;
           color: $lightTextColor;
         }
@@ -4647,7 +4735,7 @@ table.editable textarea,
 }
 
 .selectize-text > .selectize-control > .selectize-input,
-.selectize.multiselect .selectize-control.multi .selectize-input{
+.selectize.multiselect .selectize-control.multi .selectize-input {
   line-height: 18px;
 }
 
@@ -4762,7 +4850,7 @@ fieldset {
     @include left(-25px);
     width: 2px;
     height: 100%;
-    content: '';
+    content: "";
     cursor: help;
 
     &.modified {
@@ -4922,7 +5010,7 @@ div.checkbox:empty {
 
 input.checkbox + label:empty:after,
 div.checkbox:empty:after {
-  content: '';
+  content: "";
   font-size: 0;
 }
 
@@ -4935,8 +5023,8 @@ div.checkbox:before {
   top: 0;
   width: $checkboxSize !important;
   height: $checkboxSize;
-  box-sizing: border-box;;
-  content: '';
+  box-sizing: border-box;
+  content: "";
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
@@ -4963,13 +5051,13 @@ div.checkbox.indeterminate:before {
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
 .sel div.checkbox:not(.indeterminate):before {
-  content: 'check';
+  content: "check";
   font-size: 15px;
 }
 
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
-  content: 'minus';
+  content: "minus";
   font-size: 7px;
   text-align: center;
 }
@@ -5023,7 +5111,7 @@ div.radio {
   display: inline-block;
   clear: none;
   position: relative;
-  @include padding-left($radioSize+ 5);
+  @include padding-left($radioSize + 5);
   height: 16px;
   cursor: pointer;
 }
@@ -5045,7 +5133,7 @@ div.radio:before,
 div.radio:after {
   display: block;
   position: absolute;
-  content: '';
+  content: "";
   box-sizing: border-box;
   background-clip: padding-box;
   border-radius: 100%;
@@ -5185,7 +5273,7 @@ body.reduce-focus-visibility {
 
     &:before {
       @include icon;
-      content: 'remove';
+      content: "remove";
     }
   }
 
@@ -5299,7 +5387,7 @@ body.reduce-focus-visibility {
 
   &:before {
     @include icon;
-    content: 'remove';
+    content: "remove";
   }
 
   &:hover {
@@ -5498,7 +5586,10 @@ body .selectize-dropdown {
   margin-bottom: 1px;
 }
 
-.selectize.multiselect .selectize-control.plugin-remove_button [data-value] .remove {
+.selectize.multiselect
+  .selectize-control.plugin-remove_button
+  [data-value]
+  .remove {
   padding: 0;
 }
 
@@ -5520,12 +5611,12 @@ body .selectize-dropdown-content {
 
 body .selectize-dropdown-content > div[data-value="new"]:before {
   @include icon;
-  content: 'plus';
+  content: "plus";
   margin-right: 5px;
 }
 
 body .selectize-dropdown-content > div[data-value="new"]:after {
-  content: '…';
+  content: "…";
 }
 
 body .selectize-dropdown [data-selectable],
@@ -5833,7 +5924,8 @@ ul.errors li {
       width: 240px;
       z-index: 1;
       background: #fff;
-      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9), 1px 0 0 0 transparentize($grey900, 0.9);
+      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9),
+        1px 0 0 0 transparentize($grey900, 0.9);
 
       .mc-col-items {
         padding: 14px;
@@ -5852,7 +5944,10 @@ ul.errors li {
       padding: 7px 14px 6px;
       border-bottom: 1px solid $hairlineColor;
       background-color: $grey050;
-      background-image: linear-gradient(transparentize($grey800, 1), transparentize($grey800, 0.95));
+      background-image: linear-gradient(
+        transparentize($grey800, 1),
+        transparentize($grey800, 0.95)
+      );
     }
   }
 
@@ -5935,7 +6030,7 @@ ul.errors li {
       &.mci-required:after {
         @include icon;
         @include margin(-2px, 0, 0, 4px);
-        content: 'asterisk';
+        content: "asterisk";
         font-size: 8px;
       }
     }
@@ -6002,7 +6097,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 
     &:after {
       display: block;
-      content: '';
+      content: "";
       position: absolute;
       bottom: -1px;
       left: 14px;
@@ -6244,10 +6339,8 @@ body.sitepicker {
 
 /* Fix layout of modal element selectors for IE8 */
 .elementselectormodal .body .main {
-  float: left \9
-;
-  width: 445px \9
-;
+  float: left \9;
+  width: 445px \9;
 }
 
 /* ----------------------------------------
@@ -6255,10 +6348,10 @@ body.sitepicker {
 /* ----------------------------------------*/
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
+  only screen and (-moz-min-device-pixel-ratio: 1.5),
+  only screen and (-o-min-device-pixel-ratio: 3/2),
+  only screen and (min-device-pixel-ratio: 1.5),
+  only screen and (min-resolution: 1.5dppx) {
   table.data {
     thead {
       th.ordered.loading {

@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\fabric;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Fabric asset bundle.
@@ -19,7 +19,7 @@ class FabricAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/fabric';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->js = [
             'fabric.js',

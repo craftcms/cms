@@ -20,14 +20,14 @@ class HtmxAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/htmx';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             CpAsset::class,
         ];
 
         $this->js = [
-            'htmx.js',
+            'htmx.min.js',
         ];
 
         parent::init();

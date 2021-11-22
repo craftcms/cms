@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\timepicker;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -20,7 +20,7 @@ class TimepickerAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/timepicker';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             JqueryAsset::class,

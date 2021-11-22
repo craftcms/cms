@@ -86,6 +86,24 @@ class Config extends Component
     {
         if (!isset($this->_configSettings[$category])) {
             $this->_configSettings[$category] = $this->_createConfigObj($category);
+
+            // This needs to happen here – after `$this->_configSettings[$category]` has been set – to avoid
+            // an infinite recursion bug
+            if ($category === self::CATEGORY_GENERAL && !isset($this->_configSettings[$category]->securityKey)) {
+                $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
+                if (file_exists($keyPath)) {
+                    $this->_configSettings[$category]->securityKey = trim(file_get_contents($keyPath));
+                } else {
+                    $key = Craft::$app->getSecurity()->generateRandomString();
+                    try {
+                        FileHelper::writeToFile($keyPath, $key);
+                    } catch (ErrorException $e) {
+                        throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: ' . $e->getMessage());
+                    }
+                    $this->_configSettings[$category]->securityKey = $key;
+                }
+                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `$keyPath` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
+            }
         }
 
         return $this->_configSettings[$category];
@@ -107,25 +125,7 @@ class Config extends Component
             case self::CATEGORY_DB:
                 return new DbConfig($config);
             case self::CATEGORY_GENERAL:
-                $obj = new GeneralConfig($config);
-
-                if (!isset($obj->securityKey)) {
-                    $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
-                    if (file_exists($keyPath)) {
-                        $obj->securityKey = trim(file_get_contents($keyPath));
-                    } else {
-                        $key = Craft::$app->getSecurity()->generateRandomString();
-                        try {
-                            FileHelper::writeToFile($keyPath, $key);
-                        } catch (ErrorException $e) {
-                            throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: ' . $e->getMessage());
-                        }
-                        $obj->securityKey = $key;
-                    }
-                    Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `$keyPath` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
-                }
-
-                return $obj;
+                return new GeneralConfig($config);
             default:
                 throw new InvalidArgumentException("Invalid config category: $category");
         }

@@ -261,7 +261,6 @@
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
 - Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
-- Deprecated `craft\web\AssetBundle`. `yii\web\AssetBundle` should be used instead.
 
 ### Removed
 - Removed the `--type` option from `migrate/*` commands. `--track` or `--plugin` can be used instead.

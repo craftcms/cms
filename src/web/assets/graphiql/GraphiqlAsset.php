@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\graphiql;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * GraphiQL asset bundle.
@@ -34,7 +34,7 @@ class GraphiqlAsset extends AssetBundle
 
     /** @inheritdoc */
     public $css = [
-        'graphiql.css',
+        'css/graphiql.css',
     ];
 
     /**
