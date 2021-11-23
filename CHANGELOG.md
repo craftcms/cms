@@ -12,7 +12,7 @@
 
 ### Changed
 - The “System Status” and “Time Zone” general settings can now be set to environment variables. ([#9855](https://github.com/craftcms/cms/issues/9855))
-- The “Encryption Method” SMTP mailer type setting can now be set to an environment variable. ([#8989](https://github.com/craftcms/cms/discussions/8989))
+- The “Use authentication” and “Encryption Method” SMTP mailer type settings can now be set to an environment variable. ([#8989](https://github.com/craftcms/cms/discussions/8989))
 - The `timeZone` and `timeZoneField` control panel form macros now support an `includeEnvVars` setting.
 
 ### Fixed

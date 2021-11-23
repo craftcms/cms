@@ -1,5 +1,13 @@
 {% set id = id ?? "booleanmenu#{random()}" %}
 
+{% set inputAttributes = {
+    data: {
+        'boolean-menu': true,
+        target: toggle ?? false,
+        'reverse-target': reverseToggle ?? false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
 {% set options = [
     {
         label: yesLabel ?? 'Yes'|t('app'),
