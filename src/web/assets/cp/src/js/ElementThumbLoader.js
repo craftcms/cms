@@ -21,6 +21,9 @@ Craft.ElementThumbLoader = Garnish.Base.extend({
         for (let i = 0; i < $thumbs.length; i++) {
             let $thumb = $thumbs.eq(i);
             let $scrollParent = $thumb.scrollParent();
+            if ($scrollParent.prop('nodeName') === 'FIELDSET') {
+                $scrollParent = $scrollParent.scrollParent();
+            }
             if ($scrollParent[0] === document.body) {
                 $scrollParent = Garnish.$doc;
             }
