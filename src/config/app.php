@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.7.21',
+    'version' => '3.7.22',
     'schemaVersion' => '3.7.8',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -156,6 +156,9 @@ return [
         ],
         'utilities' => [
             'class' => craft\services\Utilities::class,
+        ],
+        'webpack' => [
+            'class' => craft\services\Webpack::class,
         ],
         'contentMigrator' => [
             'class' => craft\db\MigrationManager::class,

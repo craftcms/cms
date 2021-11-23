@@ -55,6 +55,19 @@ class Craft extends Yii
     private static $_fields;
 
     /**
+     * @inheritdoc
+     *
+     * @template T
+     * @param class-string<T>|array{class: class-string<T>}|callable(): T $type
+     * @param array $params
+     * @return T
+     */
+    public static function createObject($type, array $params = [])
+    {
+        return parent::createObject($type, $params);
+    }
+
+    /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
      * and/or an alias (`@aliasName`), and returns the referenced value.
      *
@@ -96,6 +109,33 @@ class Craft extends Yii
     }
 
     /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced
+     * boolean value, or `null` if a boolean value can’t be determined.
+     *
+     * ---
+     *
+     * ```php
+     * $status = Craft::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
+     * ```
+     *
+     * @param mixed $value
+     * @return bool|null
+     * @since 3.7.22
+     */
+    public static function parseBooleanEnv($value): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        return filter_var(Craft::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+    }
+
+    /**
      * Displays a variable.
      *
      * @param mixed $var The variable to be dumped.
@@ -130,7 +170,7 @@ class Craft extends Yii
         if ($highlight === null) {
             $highlight = !static::$app->getRequest()->getIsConsoleRequest();
         }
-        
+
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }

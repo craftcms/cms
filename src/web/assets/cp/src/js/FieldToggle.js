@@ -68,6 +68,9 @@ Craft.FieldToggle = Garnish.Base.extend({
 
         switch (nodeName) {
             case 'SELECT':
+                if (Garnish.hasAttr(this.$toggle, 'data-boolean-menu')) {
+                    return 'booleanMenu';
+                }
                 return 'select';
             case 'A':
                 return 'link';
@@ -94,22 +97,32 @@ Craft.FieldToggle = Garnish.Base.extend({
     },
 
     getToggleVal: function() {
-        if (this.type === 'checkbox') {
-            if (typeof this.$toggle.prop('checked') !== 'undefined') {
-                return this.$toggle.prop('checked');
-            }
-            return this.$toggle.attr('aria-checked') === 'true';
-        }
+        switch (this.type) {
+            case 'checkbox':
+                if (typeof this.$toggle.prop('checked') !== 'undefined') {
+                    return this.$toggle.prop('checked');
+                }
+                return this.$toggle.attr('aria-checked') === 'true';
 
-        let postVal;
-        if (this.type === 'fieldset') {
-            postVal = this.$toggle.find('input:checked:first').val();
-        } else {
-            postVal = Garnish.getInputPostVal(this.$toggle);
-        }
+            case 'booleanMenu':
+                const boolean = this.$toggle.data('boolean');
+                if (typeof boolean !== 'undefined') {
+                    return boolean;
+                }
+                const val = this.$toggle.val();
+                return val && val !== '0';
 
-        // Normalize the value
-        return (typeof postVal === 'undefined' || postVal === null) ? null : postVal.replace(/[^\w]+/g, '-');
+            default:
+                let postVal;
+                if (this.type === 'fieldset') {
+                    postVal = this.$toggle.find('input:checked:first').val();
+                } else {
+                    postVal = Garnish.getInputPostVal(this.$toggle);
+                }
+
+                // Normalize the value
+                return (typeof postVal === 'undefined' || postVal === null) ? null : postVal.replace(/[^\w]+/g, '-');
+        }
     },
 
     onToggleChange: function() {

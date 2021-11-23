@@ -122,6 +122,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\services\Users $users The users service
  * @property-read \craft\services\Utilities $utilities The utilities service
  * @property-read \craft\services\Volumes $volumes The volumes service
+ * @property-read \craft\services\Webpack $webpack The webpack service
  * @property-read \yii\mutex\Mutex $mutex The application’s mutex service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
@@ -586,7 +587,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)$this->getProjectConfig()->get('system.live');
+        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -1424,6 +1425,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the webpack service.
+     *
+     * @return \craft\services\Webpack The volumes service
+     * @since 3.7.22
+     */
+    public function getWebpack()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('webpack');
+    }
+
+    /**
      * Initializes things that should happen before the main Application::init()
      */
     private function _preInit()
@@ -1484,14 +1497,10 @@ trait ApplicationTrait
     private function _setTimeZone()
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $timezone = $this->getConfig()->getGeneral()->timezone;
+        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
-        if (!$timezone) {
-            $timezone = $this->getProjectConfig()->get('system.timeZone');
-        }
-
-        if ($timezone) {
-            $this->setTimeZone($timezone);
+        if ($timeZone) {
+            $this->setTimeZone(Craft::parseEnv($timeZone));
         }
     }
 
