@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.22 - 2021-11-23
 
 ### Added
 - Added the `booleanMenu`, `booleanMenuField`, `selectize`, and `selectizeField` macros to the `_includes/forms.html` control panel template. ([#8866](https://github.com/craftcms/cms/discussions/8866))
