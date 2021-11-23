@@ -579,7 +579,7 @@ class Cp extends Component
                     'value' => "$$var",
                     'data' => [
                         'data' => [
-                            'status' => $boolean ? 'green' : 'white',
+                            'boolean' => $boolean,
                         ],
                     ],
                 ];
