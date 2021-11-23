@@ -132,6 +132,7 @@ class PreviewController extends Controller
                 // See if we can add structure data to it
                 $canonical = $element->getCanonical(true);
                 $element->structureId = $canonical->structureId;
+                $element->root = $canonical->root;
                 $element->lft = $canonical->lft;
                 $element->rgt = $canonical->rgt;
                 $element->level = $canonical->level;
