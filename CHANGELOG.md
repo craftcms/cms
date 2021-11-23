@@ -21,6 +21,7 @@
 - Fixed a bug where relational field thumbnails weren’t always loading for fields that weren’t on the initial tab.
 - Fixed a bug where previewing disabled Structure section entries or categories would return a 404 response. ([#10121](https://github.com/craftcms/cms/issues/10121))
 - Fixed a bug where ancestor/sibling/descendant queries were yielding no results when previewing a draft or revision. ([#10122](https://github.com/craftcms/cms/issues/10122))
+- Fixed a bug where Matrix fields weren’t getting reverted properly when reverting an entry’s content to a prior revision. ([#10106](https://github.com/craftcms/cms/issues/10106))
 
 ## 3.7.21 - 2021-11-16
 
