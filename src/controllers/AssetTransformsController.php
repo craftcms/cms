@@ -9,7 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\Image;
-use craft\models\AssetImageTransform;
+use craft\models\ImageTransform;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -46,7 +46,7 @@ class AssetTransformsController extends Controller
         $variables = [];
 
         $variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
-        $variables['modes'] = AssetImageTransform::modes();
+        $variables['modes'] = ImageTransform::modes();
 
         return $this->renderTemplate('settings/assets/transforms/_index', $variables);
     }
@@ -55,11 +55,11 @@ class AssetTransformsController extends Controller
      * Edit an asset transform.
      *
      * @param string|null $transformHandle The transform’s handle, if any.
-     * @param AssetImageTransform|null $transform The transform being edited, if there were any validation errors.
+     * @param ImageTransform|null $transform The transform being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform(?string $transformHandle = null, ?AssetImageTransform $transform = null): Response
+    public function actionEditTransform(?string $transformHandle = null, ?ImageTransform $transform = null): Response
     {
         if ($transform === null) {
             if ($transformHandle !== null) {
@@ -69,7 +69,7 @@ class AssetTransformsController extends Controller
                     throw new NotFoundHttpException('Transform not found');
                 }
             } else {
-                $transform = new AssetImageTransform();
+                $transform = new ImageTransform();
             }
         }
 
@@ -97,7 +97,7 @@ class AssetTransformsController extends Controller
     {
         $this->requirePostRequest();
 
-        $transform = new AssetImageTransform();
+        $transform = new ImageTransform();
         $transform->id = $this->request->getBodyParam('transformId');
         $transform->name = $this->request->getBodyParam('name');
         $transform->handle = $this->request->getBodyParam('handle');

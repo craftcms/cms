@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -10,6 +11,7 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
+use craft\base\LocalFsInterface;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
@@ -27,24 +29,25 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
-use craft\errors\AssetTransformException;
 use craft\errors\FileException;
+use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\models\AssetImageTransform;
 use craft\models\FieldLayout;
+use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
@@ -673,9 +676,9 @@ class Asset extends Element
     private ?array $_focalPoint = null;
 
     /**
-     * @var AssetImageTransform|null
+     * @var ImageTransform|null
      */
-    private ?AssetImageTransform $_transform = null;
+    private ?ImageTransform $_transform = null;
 
     /**
      * @var string
@@ -990,7 +993,7 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
@@ -1039,7 +1042,7 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return array
      * @since 3.7.16
      */
@@ -1218,9 +1221,9 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return Asset
-     * @throws AssetTransformException if $transform is an invalid transform handle
+     * @throws ImageTransformException if $transform is an invalid transform handle
      */
     public function setTransform($transform): Asset
     {
@@ -1261,6 +1264,8 @@ class Asset extends Element
         // Normalize empty transform values
         $transform = $transform ?: null;
 
+        $assetTransformsService = Craft::$app->getAssetTransforms();
+
         if (is_array($transform)) {
             if (isset($transform['width'])) {
                 $transform['width'] = round((float)$transform['width']);
@@ -1268,21 +1273,45 @@ class Asset extends Element
             if (isset($transform['height'])) {
                 $transform['height'] = round((float)$transform['height']);
             }
-            $assetTransformsService = Craft::$app->getAssetTransforms();
             $transform = $assetTransformsService->normalizeTransform($transform);
         }
 
-        if ($transform === null && isset($this->_transform)) {
+        if ($transform === null) {
+            if (!isset($this->_transform)) {
+                return AssetsHelper::generateUrl($volume, $this);
+            }
             $transform = $this->_transform;
         }
 
-        try {
-            return Craft::$app->getAssets()->getAssetUrl($this, $transform, $generateNow);
-        } catch (VolumeObjectNotFoundException $e) {
-            Craft::error("Could not determine asset's URL ($this->id): {$e->getMessage()}");
-            Craft::$app->getErrorHandler()->logException($e);
-            return UrlHelper::actionUrl('not-found', null, null, false);
+        if ($generateNow === null) {
+            $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         }
+
+        $index = $assetTransformsService->getTransformIndex($this, $transform);
+        $imageTransformer = $index->getImageTransformer();
+
+        // Does the file actually exist?
+        if ($index->fileExists) {
+            return $imageTransformer->getTransformUrl($this, $index);
+        }
+
+        if ($generateNow) {
+            try {
+                $url = $imageTransformer->getTransformUrl($this, $index);
+            } catch (\Exception $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+                return UrlHelper::actionUrl('not-found', null, null, false);
+            }
+
+            $assetTransformsService->storeTransformIndexData($index);
+
+            return $url;
+        }
+
+        ImageTransforms::queuePendingTransformJob();
+
+        // Return the temporary transform URL
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
     }
 
     /**
@@ -1401,7 +1430,7 @@ class Asset extends Element
     /**
      * Returns the image height.
      *
-     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
 
@@ -1423,7 +1452,7 @@ class Asset extends Element
     /**
      * Returns the image width.
      *
-     * @param AssetImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
     public function getWidth($transform = null)
@@ -1493,18 +1522,6 @@ class Asset extends Element
             return null;
         }
         return $width . '×' . $height;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTransformSource(): string
-    {
-        if (!$this->_transformSource) {
-            Craft::$app->getAssetTransforms()->getLocalImageSource($this);
-        }
-
-        return $this->_transformSource;
     }
 
     /**
@@ -1879,9 +1896,9 @@ class Asset extends Element
     /**
      * Returns a copy of the asset with the given transform applied to it.
      *
-     * @param AssetImageTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
      * @return Asset
-     * @throws AssetTransformException if $transform is an invalid transform handle
+     * @throws ImageTransformException if $transform is an invalid transform handle
      */
     public function copyWithTransform($transform): Asset
     {
@@ -2118,7 +2135,7 @@ class Asset extends Element
     /**
      * Returns the width and height of the image.
      *
-     * @param AssetImageTransform|string|array|null $transform
+     * @param ImageTransform|string|array|null $transform
      * @return array
      */
     private function _dimensions($transform = null): array

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -9,6 +10,7 @@ namespace craft\base;
 
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\fs\Local;
 use craft\models\FieldLayout;
 use craft\models\VolumeListing;
 use Generator;
@@ -39,6 +41,14 @@ interface VolumeInterface extends SavableComponentInterface
      * @return string|null The root URL, or `null` if there isn’t one
      */
     public function getRootUrl(): ?string;
+
+    /**
+     * Return the file system used by the volume.
+     *
+     * @return FsInterface
+     * @since 4.0.0
+     */
+    public function getFilesystem(): FsInterface;
 
     /**
      * List files.

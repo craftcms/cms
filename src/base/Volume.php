@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * The base class for all asset Volumes. All Volume types must extend this class.
  *
@@ -11,6 +12,7 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\fs\Local;
 use craft\helpers\Assets;
 use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
@@ -157,5 +159,15 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function updateFileByStream(string $path, $stream, array $config): void
     {
         $this->writeFileFromStream($path, $stream, $config);
+    }
+
+    /**
+     * Get the local file system.
+     * @return Local
+     * @since 4.0.0
+     */
+    public function getFilesystem(): Local {
+        // TODO stub
+        return new Local();
     }
 }

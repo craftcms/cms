@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,19 +9,21 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\ImageTransformDriverInterface;
 use craft\base\Model;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use yii\base\InvalidConfigException;
 
 /**
- * Class AssetTransformIndex model.
+ * Class ImageTransformIndexs model.
  *
- * @property AssetImageTransform $transform
+ * @property-read null|ImageTransformDriverInterface $imageTransformer
+ * @property ImageTransform $transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetTransformIndex extends Model
+class ImageTransformIndex extends Model
 {
     /**
      * @var int|null ID
@@ -33,9 +36,9 @@ class AssetTransformIndex extends Model
     public ?int $assetId = null;
 
     /**
-     * @var int|null Volume ID
+     * @var string The transform driver
      */
-    public ?int $volumeId = null;
+    public string $driver = ImageTransform::DEFAULT_DRIVER;
 
     /**
      * @var string|null Filename
@@ -50,7 +53,7 @@ class AssetTransformIndex extends Model
     /**
      * @var string|null Location
      */
-    public ?string $location = null;
+    public ?string $transformString = null;
 
     /**
      * @var bool File exists
@@ -88,9 +91,9 @@ class AssetTransformIndex extends Model
     public ?string $detectedFormat = null;
 
     /**
-     * @var AssetTransform|null The transform associated with this index
+     * @var ImageTransform|null The transform associated with this index
      */
-    private ?AssetTransform $_transform = null;
+    private ?ImageTransform $_transform = null;
 
     /**
      * @inheritdoc
@@ -126,17 +129,17 @@ class AssetTransformIndex extends Model
     /**
      * Returns the transform associated with this index.
      *
-     * @return AssetImageTransform
-     * @throws InvalidConfigException if [[location]] is invalid
+     * @return ImageTransform
+     * @throws InvalidConfigException if [[transformString]] is invalid
      */
-    public function getTransform(): AssetImageTransform
+    public function getTransform(): ImageTransform
     {
         if (isset($this->_transform)) {
             return $this->_transform;
         }
 
-        if (($this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform(mb_substr($this->location, 1))) === null) {
-            throw new InvalidConfigException('Invalid transform location: ' . $this->location);
+        if (($this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->transformString)) === null) {
+            throw new InvalidConfigException('Invalid transform string: ' . $this->transformString);
         }
 
         return $this->_transform;
@@ -145,10 +148,22 @@ class AssetTransformIndex extends Model
     /**
      * Sets the transform associated with this index.
      *
-     * @param AssetTransform $transform
+     * @param ImageTransform $transform
      */
-    public function setTransform(AssetTransform $transform): void
+    public function setTransform(ImageTransform $transform): void
     {
         $this->_transform = $transform;
     }
+
+    /**
+     * Return the image transformer for this transform.
+     *
+     * @return ImageTransformDriverInterface
+     * @since 4.0.0
+     */
+    public function getImageTransformer(): ImageTransformDriverInterface
+    {
+        return Craft::$app->getAssetTransforms()->getImageTransformer($this->driver);
+    }
+
 }

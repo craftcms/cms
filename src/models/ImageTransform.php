@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -9,23 +10,22 @@ namespace craft\models;
 
 use Craft;
 use craft\assets\imagetransforms\DefaultDriver;
-use craft\base\AssetImageTransformDriverInterface;
+use craft\base\ImageTransformDriverInterface;
 use craft\base\Model;
-use craft\errors\AssetTransformException;
-use craft\records\AssetTransform as AssetTransformRecord;
+use craft\records\ImageTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
 
 /**
- * The AssetImageTransform model class.
+ * The ImageTransform model class.
  *
  * @property bool $isNamedTransform Whether this is a named transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetImageTransform extends Model
+class ImageTransform extends Model
 {
     /**
      * @var string The default image transform driver.
@@ -97,8 +97,7 @@ class AssetImageTransform extends Model
      *
      * @var string
      */
-    protected string $imageTransformDriver = self::DEFAULT_DRIVER;
-
+    protected string $driver = self::DEFAULT_DRIVER;
 
     /**
      * @inheritdoc
@@ -113,20 +112,8 @@ class AssetImageTransform extends Model
             'position' => Craft::t('app', 'Position'),
             'quality' => Craft::t('app', 'Quality'),
             'width' => Craft::t('app', 'Width'),
+            'driver' => Craft::t('app', 'Image transform driver'),
         ];
-    }
-
-    /**
-     * @param string $imageTransformDriver
-     */
-    public function setImageTransformDriver(string $imageTransformDriver): void
-    {
-        if (!is_subclass_of($imageTransformDriver, AssetImageTransformDriverInterface::class)) {
-            Craft::warning($imageTransformDriver . ' is not a valid image transform driver.');
-            $imageTransformDriver = self::DEFAULT_DRIVER;
-        }
-
-        $this->imageTransformDriver = $imageTransformDriver;
     }
 
     /**
@@ -240,10 +227,38 @@ class AssetImageTransform extends Model
     /**
      * Return the image transformer for this transform.
      *
-     * @return AssetImageTransformDriverInterface
+     * @return ImageTransformDriverInterface
+     * @since 4.0.0
      */
-    public function getImageTransformer(): ?AssetImageTransformDriverInterface
+    public function getImageTransformer(): ImageTransformDriverInterface
     {
-        return Craft::$app->getAssetTransforms()->getTransformDriver($this->imageTransformDriver);
+        return Craft::$app->getAssetTransforms()->getImageTransformer($this->driver);
+    }
+
+    /**
+     * Set the transform driver.
+     *
+     * @param string $imageTransformDriver
+     * @since 4.0.0
+     */
+    public function setDriver(string $imageTransformDriver): void
+    {
+        if (!is_subclass_of($imageTransformDriver, ImageTransformDriverInterface::class)) {
+            Craft::warning($imageTransformDriver . ' is not a valid image transform driver.');
+            $imageTransformDriver = self::DEFAULT_DRIVER;
+        }
+
+        $this->driver = $imageTransformDriver;
+    }
+
+    /**
+     * Get the transform driver.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    public function getDriver(): string
+    {
+        return $this->driver;
     }
 }

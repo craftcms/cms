@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\models\AssetTransformIndex;
+use craft\models\ImageTransformIndex;
 
 /**
  * Asset transform image event class.
@@ -18,7 +18,7 @@ use craft\models\AssetTransformIndex;
 class AssetTransformImageEvent extends AssetEvent
 {
     /**
-     * @var AssetTransformIndex Asset transform index that is being generated.
+     * @var ImageTransformIndex Asset transform index that is being generated.
      */
-    public AssetTransformIndex $transformIndex;
+    public ImageTransformIndex $transformIndex;
 }

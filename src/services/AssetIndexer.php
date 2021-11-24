@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace craft\services;
 
 use Craft;
+use craft\base\LocalFsInterface;
 use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
@@ -19,6 +21,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
@@ -651,7 +654,7 @@ class AssetIndexer extends Component
                 $tempPath = null;
 
                 // For local images it's easy - the image is right there, nothing to cache and the Asset id means nothing.
-                if ($volume instanceof LocalVolumeInterface) {
+                if ($volume->getFilesystem() instanceof LocalFsInterface) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
                     $dimensions = Image::imageSize($transformSourcePath);
                 } else {
@@ -687,11 +690,11 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an Asset id, so let's cover one last base.
-                if (!$volume instanceof LocalVolumeInterface && $cacheImages && $tempPath) {
+                $shouldCache = !$volume->getFilesystem() instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
+
+                if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
-                    $assetTransforms = Craft::$app->getAssetTransforms();
-                    $assetTransforms->storeLocalSource($tempPath, $targetPath);
-                    $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+                    ImageTransforms::storeLocalSource($tempPath, $targetPath);
                     FileHelper::unlink($tempPath);
                 }
             } else {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -20,6 +21,11 @@ use yii\base\BaseObject;
  */
 abstract class Image extends BaseObject
 {
+    /**
+     * @var ?callable Heartbeat function to call, if needed.
+     */
+    private $_heartBeatCallback = null;
+
     /**
      * Returns the width of the image.
      *
@@ -124,6 +130,27 @@ abstract class Image extends BaseObject
 
         if (!$height || !$width) {
             [$width, $height] = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
+        }
+    }
+
+    /**
+     * Set up a heartbeat callback.
+     *
+     * @param ?callable $cb
+     */
+    public function setHeartbeatCallback(?callable $cb = null): void
+    {
+        $this->_heartBeatCallback = $cb;
+    }
+
+    /**
+     * Let everyone back home know we're ok.
+     * @since 4.0.0
+     */
+    public function heartbeat(): void
+    {
+        if (is_callable($this->_heartBeatCallback)) {
+            call_user_func($this->_heartBeatCallback);
         }
     }
 }

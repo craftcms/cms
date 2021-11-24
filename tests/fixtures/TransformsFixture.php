@@ -8,7 +8,7 @@
 namespace crafttests\fixtures;
 
 use Craft;
-use craft\records\AssetTransform;
+use craft\records\ImageTransform;
 use craft\services\AssetTransforms;
 use craft\test\ActiveFixture;
 
@@ -29,7 +29,7 @@ class TransformsFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public $modelClass = AssetTransform::class;
+    public $modelClass = ImageTransform::class;
 
     /**
      * @inheritdoc

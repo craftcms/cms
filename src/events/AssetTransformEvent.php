@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\models\AssetImageTransform;
+use craft\models\ImageTransform;
 use yii\base\Event;
 
 /**
@@ -19,9 +19,9 @@ use yii\base\Event;
 class AssetTransformEvent extends Event
 {
     /**
-     * @var AssetImageTransform The asset transform model associated with the event.
+     * @var ImageTransform The asset transform model associated with the event.
      */
-    public AssetImageTransform $assetTransform;
+    public ImageTransform $assetTransform;
 
     /**
      * @var bool Whether the asset transform is brand new

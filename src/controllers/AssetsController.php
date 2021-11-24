@@ -12,7 +12,7 @@ use craft\assets\previews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
-use craft\errors\AssetTransformException;
+use craft\errors\ImageTransformException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
 use craft\errors\SiteNotFoundException;
@@ -1181,7 +1181,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException if the transform can't be found
      * @throws ServerErrorHttpException if the transform can't be generated
-     * @throws AssetTransformException
+     * @throws ImageTransformException
      */
     public function actionGenerateTransform(?int $transformId = null): Response
     {

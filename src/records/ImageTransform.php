@@ -28,7 +28,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetTransform extends ActiveRecord
+class ImageTransform extends ActiveRecord
 {
     /**
      * @inheritdoc
@@ -36,6 +36,6 @@ class AssetTransform extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return Table::ASSETTRANSFORMS;
+        return Table::IMAGETRANSFORMS;
     }
 }

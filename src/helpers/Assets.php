@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -15,7 +16,7 @@ use craft\enums\PeriodType;
 use craft\errors\VolumeException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
-use craft\models\AssetTransformIndex;
+use craft\models\ImageTransformIndex;
 use craft\models\VolumeFolder;
 use DateTime;
 use yii\base\Event;
@@ -81,10 +82,10 @@ class Assets
      * @param VolumeInterface $volume
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
-     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
+     * @param ImageTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $asset, ?string $uri = null, ?AssetTransformIndex $transformIndex = null): string
+    public static function generateUrl(VolumeInterface $volume, Asset $asset, ?string $uri = null, ?ImageTransformIndex $transformIndex = null): string
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $asset->folderPath;
@@ -98,10 +99,10 @@ class Assets
      *
      * @param VolumeInterface $volume
      * @param Asset $asset
-     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
+     * @param ImageTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $asset, ?AssetTransformIndex $transformIndex = null): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $asset, ?ImageTransformIndex $transformIndex = null): string
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return '';

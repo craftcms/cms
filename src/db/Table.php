@@ -21,8 +21,8 @@ abstract class Table
     /* @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
-    public const ASSETTRANSFORMINDEX = '{{%assettransformindex}}';
-    public const ASSETTRANSFORMS = '{{%assettransforms}}';
+    public const IMAGETRANSFORMINDEX = '{{%imagetransformindex}}';
+    public const IMAGETRANSFORMS = '{{%imagetransforms}}';
     /** @since 3.4.14 */
     public const CACHE = '{{%cache}}';
     public const CATEGORIES = '{{%categories}}';

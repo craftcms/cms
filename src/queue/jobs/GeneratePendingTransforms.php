@@ -40,7 +40,7 @@ class GeneratePendingTransforms extends BaseJob
 
                 // Don't let an exception stop us from processing the rest
                 try {
-                    $assetTransformsService->ensureTransformUrlByIndexModel($index);
+                    $index->getImageTransformer()->getTransformUrl($index, true);
                 } catch (Throwable $e) {
                 }
             }

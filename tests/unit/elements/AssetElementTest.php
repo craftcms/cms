@@ -11,8 +11,8 @@ use Codeception\Stub\Expected;
 use Craft;
 use craft\base\Volume;
 use craft\elements\Asset;
-use craft\models\AssetImageTransform;
-use craft\models\AssetTransformIndex;
+use craft\models\ImageTransform;
+use craft\models\ImageTransformIndex;
 use craft\services\AssetTransforms;
 use craft\test\TestCase;
 use UnitTester;
@@ -45,8 +45,8 @@ class AssetElementTest extends TestCase
         ]);
 
         $this->tester->mockCraftMethods('assetTransforms', [
-            'normalizeTransform' => Expected::once(new AssetImageTransform()),
-            'extendTransform' => Expected::once(new AssetImageTransform())
+            'normalizeTransform' => Expected::once(new ImageTransform()),
+            'extendTransform' => Expected::once(new ImageTransform())
         ]);
 
         $this->tester->mockCraftMethods('assets', [
@@ -81,10 +81,10 @@ class AssetElementTest extends TestCase
             'getAssetUrl' => 'http://url.com'
         ]);
 
-        $extend = $expectExtension ? Expected::once(new AssetImageTransform()) : Expected::never(new AssetImageTransform());
+        $extend = $expectExtension ? Expected::once(new ImageTransform()) : Expected::never(new ImageTransform());
 
         $assetTransforms = $this->make(AssetTransforms::class, [
-            'getTransformByHandle' => new AssetImageTransform(),
+            'getTransformByHandle' => new ImageTransform(),
             'extendTransform' => $extend
         ]);
 

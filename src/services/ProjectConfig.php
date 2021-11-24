@@ -2134,7 +2134,7 @@ class ProjectConfig extends Component
                 'interlace',
                 'uid',
             ])
-            ->from([Table::ASSETTRANSFORMS])
+            ->from([Table::IMAGETRANSFORMS])
             ->indexBy('uid')
             ->all();
 

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -13,7 +14,6 @@ use craft\assets\previews\Pdf;
 use craft\assets\previews\Text;
 use craft\assets\previews\Video;
 use craft\base\AssetPreviewHandlerInterface;
-use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -22,8 +22,8 @@ use craft\elements\db\AssetQuery;
 use craft\elements\User;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
-use craft\errors\AssetTransformException;
 use craft\errors\ImageException;
+use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -37,15 +37,14 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
-use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
-use craft\models\AssetImageTransform;
 use craft\models\FolderCriteria;
+use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
-use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Temp;
 use yii\base\Component;
@@ -585,12 +584,12 @@ class Assets extends Component
      * Returns the URL for an asset, possibly with a given transform applied.
      *
      * @param Asset $asset
-     * @param AssetImageTransform|string|array|null $transform
+     * @param ImageTransform|string|array|null $transform
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
      * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      * @throws VolumeException
-     * @throws AssetTransformException
+     * @throws ImageTransformException
      */
     public function getAssetUrl(Asset $asset, $transform = null, ?bool $generateNow = null): ?string
     {
@@ -612,44 +611,7 @@ class Assets extends Component
             return AssetsHelper::generateUrl($volume, $asset);
         }
 
-        // Get the transform index model
-        $assetTransforms = Craft::$app->getAssetTransforms();
-        $index = $assetTransforms->getTransformIndex($asset, $transform);
-
-        // Does the file actually exist?
-        if ($index->fileExists) {
-            // For local volumes, really make sure
-            $volume = $asset->getVolume();
-            $transformPath = $asset->folderPath . $assetTransforms->getTransformSubpath($asset, $index);
-
-            if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
-                $index->fileExists = false;
-            } else {
-                return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
-            }
-        }
-
-        if ($generateNow === null) {
-            $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        }
-
-        if ($generateNow) {
-            try {
-                return $assetTransforms->ensureTransformUrlByIndexModel($index);
-            } catch (\Exception $exception) {
-                Craft::$app->getErrorHandler()->logException($exception);
-                return null;
-            }
-        }
-
-        // Queue up a new Generate Pending Transforms job
-        if (!$this->_queuedGeneratePendingTransformsJob) {
-            Queue::push(new GeneratePendingTransforms(), 2048);
-            $this->_queuedGeneratePendingTransformsJob = true;
-        }
-
-        // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
+        return $asset->getUrl($transform, $generateNow);
     }
 
     /**
@@ -757,9 +719,8 @@ class Assets extends Component
 
             // Generate it
             FileHelper::createDirectory($dir);
-            $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
+            $imageSource = ImageTransforms::getLocalImageSource($asset);
 
-            // hail Mary
             try {
                 $image = Craft::$app->getImages()->loadImage($imageSource, $rasterize, max($width, $height));
 
