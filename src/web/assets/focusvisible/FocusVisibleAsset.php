@@ -15,7 +15,7 @@ use craft\web\AssetBundle;
 class FocusVisibleAsset extends AssetBundle
 {
     /** @inheritdoc */
-    public $sourcePath = '@lib/focus-visible';
+    public $sourcePath = __DIR__ . '/dist';
 
     /** @inheritdoc */
     public $js = [

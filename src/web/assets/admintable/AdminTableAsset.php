@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\admintable;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for admin tables
@@ -44,12 +44,10 @@ class AdminTableAsset extends AssetBundle
             ];
         } else {
             $this->css = [
-                'css/chunk-vendors.css',
                 'css/app.css',
             ];
 
             $this->js = [
-                'js/chunk-vendors.js',
                 'js/app.js',
             ];
         }

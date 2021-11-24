@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\edituser;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Edit User page
@@ -32,8 +32,8 @@ class EditUserAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'account.css',
-        'profile.css',
+        'css/AccountSettingsForm.css',
+        'css/profile.css',
     ];
 
     /**

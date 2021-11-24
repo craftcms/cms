@@ -11,7 +11,7 @@ return [
         'username' => 'user1',
         'email' => 'user1@crafttest.com',
         'fieldLayoutType' => 'craft\elements\User',
-        'field:shortBio' => "I'm Commander Sheppard and this is my favorite user in this install",
+        'shortBio' => "I'm Commander Sheppard and this is my favorite user in this install",
     ],
     [
         'active' => true,
@@ -20,7 +20,7 @@ return [
         'username' => 'user2',
         'email' => 'user2@crafttest.com',
         'fieldLayoutType' => 'craft\elements\User',
-        'field:shortBio' => 'This is the guy who knows stuff',
+        'shortBio' => 'This is the guy who knows stuff',
     ],
     [
         'active' => true,
@@ -28,6 +28,7 @@ return [
         'lastName' => 'SMITH',
         'username' => 'user3',
         'email' => 'user3@crafttest.com',
+        'shortBio' => 'foo',
     ],
     [
         'active' => true,
@@ -35,5 +36,6 @@ return [
         'lastName' => '4',
         'username' => 'user4',
         'email' => 'user4@someemail.com',
+        'shortBio' => 'foo',
     ]
 ];

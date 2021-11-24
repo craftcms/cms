@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\edittransform;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Edit Transform page
@@ -27,7 +27,7 @@ class EditTransformAsset extends AssetBundle
         ];
 
         $this->css = [
-            'transforms.css',
+            'css/transforms.css',
         ];
 
         parent::init();

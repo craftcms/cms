@@ -38,7 +38,7 @@ class Smtp extends BaseTransportAdapter
     public ?string $port = null;
 
     /**
-     * @var bool|null Whether to use authentication
+     * @var bool|string|null Whether to use authentication
      */
     public ?bool $useAuthentication = null;
 
@@ -88,8 +88,10 @@ class Smtp extends BaseTransportAdapter
             'attributes' => [
                 'host',
                 'port',
+                'useAuthentication',
                 'username',
                 'password',
+                'encryptionMethod',
             ],
         ];
         return $behaviors;
@@ -124,10 +126,10 @@ class Smtp extends BaseTransportAdapter
             'required',
             'when' => function($model) {
                 /** @var self $model */
-                return (bool)$model->useAuthentication;
+                return Craft::parseBooleanEnv($model->useAuthentication) ?? false;
             },
         ];
-        $rules[] = [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']];
+        $rules[] = [['encryptionMethod'], 'in', 'range' => ['none', 'tls', 'ssl']];
         $rules[] = [['timeout'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -154,13 +156,16 @@ class Smtp extends BaseTransportAdapter
             'timeout' => $this->timeout,
         ];
 
-        if ($this->useAuthentication) {
+        if (Craft::parseBooleanEnv($this->useAuthentication) ?? false) {
             $config['username'] = Craft::parseEnv($this->username);
             $config['password'] = Craft::parseEnv($this->password);
         }
 
         if ($this->encryptionMethod) {
-            $config['encryption'] = $this->encryptionMethod;
+            $encryptionMethod = Craft::parseEnv($this->encryptionMethod);
+            if ($encryptionMethod && $encryptionMethod !== 'none') {
+                $config['encryption'] = $encryptionMethod;
+            }
         }
 
         return $config;

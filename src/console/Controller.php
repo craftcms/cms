@@ -403,6 +403,7 @@ class Controller extends YiiController
         $error = null;
 
         if ($options['validator'] && !$options['validator']($input, $error)) {
+            /** @var string|null $error */
             $this->stdout(($error ?? $options['error']) . PHP_EOL);
             goto top;
         }

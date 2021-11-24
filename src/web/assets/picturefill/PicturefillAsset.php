@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\picturefill;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Picturefill asset bundle.
@@ -19,7 +19,7 @@ class PicturefillAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/picturefill';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->js = [
             'picturefill.js',

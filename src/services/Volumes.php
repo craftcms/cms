@@ -533,20 +533,7 @@ class Volumes extends Component
 
         try {
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
-        } catch (UnknownPropertyException $e) {
-            // Special case for Local volumes that are being converted to something else
-            // https://github.com/craftcms/cms/issues/5277
-            if (
-                isset($originalConfig['settings']['path']) && $originalConfig['type'] === Local::class
-            ) {
-                unset($originalConfig['settings']['path']);
-                return $this->createVolume($originalConfig);
-            }
-            throw $e;
         } catch (MissingComponentException $e) {
-            // Revert to the original config if it was overridden
-            $config = $originalConfig ?? $config;
-
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);

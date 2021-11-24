@@ -317,8 +317,6 @@ JS;
             'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
-            // todo: remove comment when phpstan#3283 is fixed
-            /** @phpstan-ignore-next-line */
             'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),

@@ -128,7 +128,7 @@ class TextField extends BaseNativeField
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,
             'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'instructionsId' => empty($this->instructions) ? null : "$id-instructions",
             'size' => $this->size,
             'name' => $this->name ?? $this->attribute(),
             'value' => $this->value($element),

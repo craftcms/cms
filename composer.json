@@ -67,7 +67,7 @@
     "codeception/module-yii2": "^1.0.0",
     "fakerphp/faker": "^1.13.0",
     "league/factory-muffin": "^3.0",
-    "phpstan/phpstan": "^0.12.91",
+    "phpstan/phpstan": "^1.0.0",
     "vlucas/phpdotenv": "^3.0"
   },
   "provide": {

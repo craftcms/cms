@@ -1,3 +1,5 @@
+import './login.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

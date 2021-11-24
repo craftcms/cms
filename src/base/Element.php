@@ -1739,7 +1739,11 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            return $this->getFieldValue($name);
+            $value = $this->getFieldValue($name);
+            if (is_object($value)) {
+                $value = clone $value;
+            }
+            return $value;
         }
 
         return parent::__get($name);
@@ -1786,7 +1790,10 @@ abstract class Element extends Component implements ElementInterface
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        $behaviors['customFields'] = CustomFieldBehavior::class;
+        $behaviors['customFields'] = [
+            'class' => CustomFieldBehavior::class,
+            'canSetProperties' => false,
+        ];
         return $behaviors;
     }
 
@@ -2965,7 +2972,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $descendants = $this->getDescendants();
         if (is_array($descendants)) {
-            return !empty($descendants);
+            return (bool)$descendants;
         }
         return $descendants->exists();
     }

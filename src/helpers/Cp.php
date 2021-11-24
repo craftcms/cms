@@ -515,24 +515,44 @@ class Cp
                 'class' => ['instructions'],
             ])
             : '';
+        $labelHtml = $label . (
+            $required
+                ? Html::tag('span', Craft::t('app', 'Required'), [
+                    'class' => ['visually-hidden'],
+                ]) .
+                Html::tag('span', '', [
+                    'class' => ['required'],
+                    'aria' => [
+                        'hidden' => 'true',
+                    ],
+                ])
+                : ''
+            );
 
         return Html::tag($fieldset ? 'fieldset' : 'div',
+            (($label && $fieldset)
+                ? Html::tag('legend', $labelHtml, [
+                    'class' => ['visually-hidden'],
+                ])
+                : '') .
             ($status
                 ? Html::tag('div', '', [
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
-                    'aria' => [
-                        'label' => $status[1],
-                    ],
+                ]) .
+                Html::tag('span', $status[1], [
+                    'class' => 'visually-hidden',
                 ])
                 : '') .
             (($label || $showAttribute)
                 ? Html::tag('div',
                     ($label
-                        ? Html::tag($fieldset ? 'legend' : 'label', $label, ArrayHelper::merge([
+                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
                             'id' => $labelId,
-                            'class' => $required ? ['required'] : [],
                             'for' => !$fieldset ? $id : null,
+                            'aria' => [
+                                'hidden' => $fieldset ? 'true' : null,
+                            ],
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable

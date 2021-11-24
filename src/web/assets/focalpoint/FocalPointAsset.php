@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\focalpoint;
 
-use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -29,13 +28,13 @@ class FocalPointAsset extends AssetBundle
     ];
 
     public $css = [
-        'css/focal.css'
+        'css/FocalPoint.css'
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'js/FocalPoint.min.js',
+        'FocalPoint.min.js',
     ];
 }

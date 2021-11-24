@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\axios;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Vue asset bundle.
@@ -15,7 +15,7 @@ use yii\web\AssetBundle;
 class AxiosAsset extends AssetBundle
 {
     /** @inheritdoc */
-    public $sourcePath = '@lib/axios';
+    public $sourcePath = __DIR__ . '/dist';
 
     /** @inheritdoc */
     public $js = [

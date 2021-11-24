@@ -539,7 +539,7 @@ class ElementHelper
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 
-        while (!empty($path)) {
+        while ($path) {
             $key = array_shift($path);
             $source = null;
 

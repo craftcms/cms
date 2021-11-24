@@ -1687,13 +1687,17 @@ class GeneralConfig extends BaseObject
     {
         if (isset(self::$renamedSettings[$name])) {
             $newName = self::$renamedSettings[$name];
-            $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
+            $configFilePath = Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
             Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
             $this->$newName = $value;
             return;
         }
 
-        parent::__set($name, $value);
+        try {
+            parent::__set($name, $value);
+        } catch (UnknownPropertyException $e) {
+            throw new UnknownPropertyException("Invalid general config setting: $name. You can set custom config settings from config/custom.php.");
+        }
     }
 
     /**

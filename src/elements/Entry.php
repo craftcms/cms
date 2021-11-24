@@ -14,7 +14,6 @@ use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -45,6 +44,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\Structures;
+use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use yii\base\Exception;
@@ -604,7 +604,7 @@ class Entry extends Element
                 return $entry->authorId !== null;
             });
 
-            $map = array_map(function(Entry $entry){
+            $map = array_map(function(Entry $entry) {
                 return [
                     'source' => $entry->id,
                     'target' => $entry->authorId
@@ -815,11 +815,33 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'postDate' => Craft::t('app', 'Post Date'),
+            'expiryDate' => Craft::t('app', 'Expiry Date'),
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'typeId', 'authorId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+
+        $rules[] = [
+            ['postDate'],
+            DateCompareValidator::class,
+            'operator' => '<',
+            'compareAttribute' => 'expiryDate',
+            'when' => function() {
+                return $this->postDate && $this->expiryDate;
+            },
+            'on' => self::SCENARIO_LIVE,
+        ];
 
         if ($this->getSection()->type !== Section::TYPE_SINGLE) {
             $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
@@ -1522,6 +1544,17 @@ EOD;
             $this->authorId = Craft::$app->getUser()->getId();
         }
 
+        if ($this->scenario === self::SCENARIO_LIVE && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = new DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // ...unless an expiry date is set in the past
+            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+            }
+        }
+
         return parent::beforeValidate();
     }
 
@@ -1595,13 +1628,6 @@ EOD;
 
         $this->updateTitle();
 
-        if ($this->enabled && !$this->postDate) {
-            // Default the post date to the current date/time
-            $this->postDate = new DateTime();
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-        }
-
         return parent::beforeSave($isNew);
     }
 
@@ -1637,7 +1663,7 @@ EOD;
 
             $record->save(false);
 
-            if (!$this->duplicateOf && $section->type == Section::TYPE_STRUCTURE) {
+            if ($this->getIsCanonical() && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->_hasNewParent()) {
                     $this->_placeInStructure($isNew, $section);
