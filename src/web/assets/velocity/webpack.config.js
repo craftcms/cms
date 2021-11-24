@@ -5,9 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = configFactory({
     context: __dirname,
-    type: 'lib',
     config: {
-        entry: {'entry': './entry.js'},
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [

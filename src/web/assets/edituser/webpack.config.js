@@ -6,8 +6,8 @@ module.exports = configFactory({
     context: __dirname,
     config: {
         entry: {
-            'AccountSettingsForm': './AccountSettingsForm.js',
-            'profile': './profile.js'
+            AccountSettingsForm: './AccountSettingsForm.js',
+            profile: './profile.js'
         },
     }
 });

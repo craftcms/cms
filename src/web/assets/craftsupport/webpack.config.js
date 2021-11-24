@@ -6,7 +6,9 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'CraftSupportWidget': './CraftSupportWidget.js'},
+        entry: {
+            CraftSupportWidget: './CraftSupportWidget.js'
+        },
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [{

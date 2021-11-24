@@ -8,12 +8,12 @@ const path = require('path');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {
-            d3: require.resolve('d3/build/d3.min.js')
-        },
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [
+                    {
+                        from: require.resolve('d3/build/d3.min.js'),
+                    },
                     {
                         context: path.dirname(require.resolve('d3-format/package.json')),
                         from: 'locale/*.json',

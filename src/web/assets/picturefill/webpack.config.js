@@ -6,15 +6,12 @@ const path = require('path');
 
 module.exports = configFactory({
     context: __dirname,
-    type: 'lib',
     config: {
-        entry: {'entry': './entry.js'},
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: path.join(path.dirname(require.resolve('picturefill/package.json')), 'dist'),
-                        from: 'picturefill.js*',
+                        from: require.resolve('picturefill/dist/picturefill.js')
                     },
                 ],
             }),

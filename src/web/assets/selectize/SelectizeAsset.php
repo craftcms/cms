@@ -26,7 +26,7 @@ class SelectizeAsset extends AssetBundle
         ];
 
         $this->js = [
-            'selectize.js',
+            'selectize.min.js',
         ];
 
         parent::init();

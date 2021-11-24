@@ -8,16 +8,12 @@ module.exports = configFactory({
     config: {
         entry: {
             'Craft': './Craft.js',
-            'charts': './charts.js'
         },
-        output: { filename: 'js/[name].min.js' },
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [
-                    /*
-                    * Only some of the images are used in the CSS. So we need to make
-                    * sure we have them all
-                    * */
+                    // Only some of the images are used in the CSS. So we need to make
+                    // sure we have them all
                     {
                         from: './images/**/*',
                         to: '.'
@@ -26,5 +22,4 @@ module.exports = configFactory({
             }),
         ]
     },
-    removeFiles: { include: ['js/charts.min.js', 'js/charts.min.js.map'] },
 });

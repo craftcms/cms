@@ -5,6 +5,8 @@ const {configFactory} = require('@craftcms/webpack');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'ClearCachesUtility': './ClearCachesUtility.js'},
+        entry: {
+            ClearCachesUtility: './ClearCachesUtility.js'
+        },
     }
 });

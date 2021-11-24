@@ -2,19 +2,15 @@
 /* globals module, require, __dirname */
 const {configFactory} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const path = require('path');
 
 module.exports = configFactory({
     context: __dirname,
-    type: 'lib',
     config: {
-        entry: {'entry': './entry.js'},
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: path.join(path.dirname(require.resolve('focus-visible/package.json')), 'dist'),
-                        from: 'focus-visible*',
+                        from: require.resolve('focus-visible/dist/focus-visible.js'),
                     }
                 ]
             })

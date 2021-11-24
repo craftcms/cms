@@ -5,7 +5,6 @@ const {configFactory} = require('@craftcms/webpack');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'transforms': './transforms.js'},
+        entry: {transforms: './transforms.js'},
     },
-    removeFiles: { test: [/\.js(\.map)*$/] },
 });

@@ -5,7 +5,6 @@ const {configFactory} = require('@craftcms/webpack');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'graphiql': './graphiql-init.js'},
-        output: { filename: 'graphiql.js' },
+        entry: {graphiql: './graphiql-init.js'},
     }
 });

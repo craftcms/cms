@@ -5,6 +5,6 @@ const {configFactory} = require('@craftcms/webpack');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'rebrand': './rebrand.js'},
+        entry: {rebrand: './rebrand.js'},
     }
 });

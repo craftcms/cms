@@ -5,6 +5,6 @@ const {configFactory} = require('@craftcms/webpack');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'EntryTypeSwitcher': './EntryTypeSwitcher.js'},
+        entry: {EntryTypeSwitcher: './EntryTypeSwitcher.js'},
     }
 });

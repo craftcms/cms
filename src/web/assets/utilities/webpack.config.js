@@ -7,5 +7,4 @@ module.exports = configFactory({
     config: {
         entry: {'utilities': './utilities.js'},
     },
-    removeFiles: { test: [/\.js(\.map)*$/] },
 });

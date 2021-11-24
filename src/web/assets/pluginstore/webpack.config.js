@@ -5,7 +5,7 @@ const {configFactory} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = configFactory({
-    context: __dirname,
+  context: __dirname,
   type: 'vue',
   postCssConfig: path.resolve(__dirname, 'postcss.config.js'),
   config: {

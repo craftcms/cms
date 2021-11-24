@@ -1,3 +1,7 @@
+// Fix issue with monorepo and some plugins
+// https://github.com/jantimon/html-webpack-plugin/issues/1451#issuecomment-712581727
+const _require = (id) => require(require.resolve(id, { paths: [require.main.path] }));
+
 const glob = require("glob");
 const path = require("path");
 const { merge } = require("webpack-merge");
@@ -7,26 +11,22 @@ const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const argv = yargs(hideBin(process.argv)).argv;
 const Dotenv = require("dotenv-webpack");
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const { WebpackManifestPlugin } = _require('webpack-manifest-plugin');
 
 // Where webpack-cli was run from
 const rootPath = path.resolve("./");
-
-// Fix issue with monorepo and some plugins
-// https://github.com/jantimon/html-webpack-plugin/issues/1451#issuecomment-712581727
-const _require = (id) =>
-  require(require.resolve(id, { paths: [require.main.path] }));
 
 const fetchConfigs = (
   globPattern = "src/web/assets/*/webpack.config.js",
   options = {
     cwd: module.parent.path,
   }
-) =>
-  glob.sync(globPattern, options).map((match) => {
-    return require(path.resolve(options.cwd, match));
-  });
+) => glob.sync(globPattern, options).map((match) => {
+  return require(path.resolve(options.cwd, match));
+});
 
 const getFirstExistingPath = (paths = []) => {
   return paths.find((path) => {
@@ -36,12 +36,10 @@ const getFirstExistingPath = (paths = []) => {
 
 const applyDotEnv = ({ context, configName, currentConfigName }) => {
   const isCurrentConfig = currentConfigName && configName === currentConfigName;
-  const envFilePath = getFirstExistingPath(
-    [
-      isCurrentConfig && path.join(context, ".env"),
-      path.join(rootPath, ".env"),
-    ].filter(Boolean)
-  );
+  const envFilePath = getFirstExistingPath([
+    isCurrentConfig && path.join(context, ".env"),
+    path.join(rootPath, ".env"),
+  ].filter(Boolean));
 
   if (envFilePath) {
     return dotenv.config({ path: envFilePath });
@@ -104,14 +102,15 @@ const devServerFactory = ({ context, templatesPath }) => {
 
   const https = process.env.DEV_SERVER_SSL_KEY && process.env.DEV_SERVER_SSL_CERT ? {
     key: fs.readFileSync(process.env.DEV_SERVER_SSL_KEY),
-    cert: fs.readFileSync(process.env.DEV_SERVER_SSL_CERT)
+    cert: fs.readFileSync(process.env.DEV_SERVER_SSL_CERT),
   } : false;
-  const host = process.env.DEV_SERVER_HOST || 'localhost'
-  const port = process.env.DEV_SERVER_PORT || '8085'
-  const publicPath = process.env.DEV_SERVER_PUBLIC || (https ? 'https' : 'http') + `://${devHost}:${devPort}/`
+  const host = process.env.DEV_SERVER_HOST || "localhost";
+  const port = process.env.DEV_SERVER_PORT || "8085";
+  const scheme = https ? "https" : "http";
+  const publicPath = process.env.DEV_SERVER_PUBLIC || `${scheme}://${host}:${port}/`;
 
   // TODO: rename, get dist path from config
-  const contentBase = process.env.DEV_SERVER_CONTENT_BASE || path.join(context, 'dist');
+  const contentBase = process.env.DEV_SERVER_CONTENT_BASE || path.join(context, "dist");
 
   return {
     host,
@@ -182,19 +181,19 @@ const configFactory = ({
     const config = {
       name: configName,
       context: path.join(context, "src"),
+      entry: {},
       output: {
         filename: "[name].min.js",
         path: path.join(context, "dist"),
       },
       optimization: {},
-      devServer: devServerFactory({context, templatesPath}),
+      devServer: devServerFactory({ context, templatesPath }),
       devtool: "source-map",
       resolve: {
         extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
       },
       module: {
         rules: [
-          // Typescript
           {
             test: /.ts$/,
             exclude: /(node_modules|bower_components)/,
@@ -205,8 +204,6 @@ const configFactory = ({
               },
             },
           },
-
-          // Babel
           {
             test: /.m?js?$/,
             exclude: /(node_modules|bower_components)/,
@@ -227,30 +224,28 @@ const configFactory = ({
               fullySpecified: false,
             },
           },
-
           {
             test: /\.s?[ac]ss$/i,
             use: [
-              'vue-style-loader',
+              "vue-style-loader",
               {
                 loader: MiniCssExtractPlugin.loader,
                 options: {
-
                   // backing up from dist
-                  publicPath: '../',
+                  publicPath: "../",
 
                   // Workaround for css imports/vue
                   esModule: false,
-                }
+                },
               },
-              'css-loader',
+              "css-loader",
               {
-                loader: 'postcss-loader',
+                loader: "postcss-loader",
                 options: {
                   postcssOptions: {
-                    config: postcssConfig
+                    config: postcssConfig,
                   },
-                }
+                },
               },
               {
                 loader: "sass-loader",
@@ -263,27 +258,25 @@ const configFactory = ({
           },
           {
             test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
-            type: 'asset/resource',
+            type: "asset/resource",
             generator: {
-              filename: 'fonts/[name][ext][query]'
-            }
+              filename: "fonts/[name][ext][query]",
+            },
           },
           {
             test: /\.(jpg|gif|png|svg|ico)$/,
-            type: 'asset/resource',
-            exclude: [
-              path.resolve(context, './fonts'),
-            ],
+            type: "asset/resource",
+            exclude: [path.resolve(context, "./fonts")],
             generator: {
-              filename: '[path][name][ext][query]'
-            }
+              filename: "[path][name][ext][query]",
+            },
           },
         ],
       },
       plugins: [
         new MiniCssExtractPlugin({
-          filename: 'css/[name].css',
-          chunkFilename: 'css/[name].css',
+          filename: "css/[name].css",
+          chunkFilename: "css/[name].css",
         }),
       ],
     };
@@ -300,22 +293,51 @@ const configFactory = ({
     return config;
   };
 
+  const vue = (context) => {
+    return {
+      // output: {
+      //   filename: this.jsFilename,
+      //   path: this.distPath,
+      //   publicPath: this.devServer.publicPath,
+      // },
+      module: {
+        rules: [
+          {
+            test: /\.vue$/i,
+            use: ["vue-loader"],
+          },
+        ],
+      },
+      externals: {
+        vue: "Vue",
+        "vue-router": "VueRouter",
+        vuex: "Vuex",
+        axios: "axios",
+      },
+      plugins: [
+        new VueLoaderPlugin(),
+        new WebpackManifestPlugin({
+          publicPath: '/'
+        }),
+      ],
+    };
+  };
+
   const types = {
     asset() {
       return {};
     },
-    base() {
-      return {};
-    },
-    lib() {
-      return {};
-    },
-    vue() {
-      return {};
-    },
+
+    vue,
   };
 
-  return merge(base(), types[type](), config);
+  const typeConfig = types[type] || null;
+
+  if (!typeConfig) {
+    throw `Type [${type}] is not a valid config type. Must be one of [${Object.keys(types).join(', ')}].`;
+  }
+
+  return merge(base(), typeConfig(), config);
 };
 
 module.exports = {

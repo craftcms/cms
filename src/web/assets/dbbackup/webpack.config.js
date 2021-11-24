@@ -5,6 +5,6 @@ const {configFactory} = require('@craftcms/webpack');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'DbBackupUtility': './DbBackupUtility.js'},
+        entry: {DbBackupUtility: './DbBackupUtility.js'},
     }
 });

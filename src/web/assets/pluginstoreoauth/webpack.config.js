@@ -3,7 +3,7 @@
 const {configFactory} = require('@craftcms/webpack');
 
 module.exports = configFactory({
-    context: __dirname,
+  context: __dirname,
   config: {
     entry: {
       'PluginStoreOauthCallback': './PluginStoreOauthCallback.js',

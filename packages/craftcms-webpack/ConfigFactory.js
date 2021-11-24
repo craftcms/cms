@@ -113,110 +113,110 @@ class ConfigFactory {
      */
     _devServer() {
         // Find PHP asset bundles
-        let files = fs.readdirSync(this.basePath);
-        let assetBundleClasses = [];
+        // let files = fs.readdirSync(this.basePath);
+        // let assetBundleClasses = [];
 
-        for (let i = 0; i < files.length; i++) {
-            let filename = path.join(this.basePath, files[i]);
-            let stat = fs.lstatSync(filename);
-            if (!stat.isDirectory() && filename.indexOf('.php') > 0) {
-                let data = fs.readFileSync(filename);
+        // for (let i = 0; i < files.length; i++) {
+        //     let filename = path.join(this.basePath, files[i]);
+        //     let stat = fs.lstatSync(filename);
+        //     if (!stat.isDirectory() && filename.indexOf('.php') > 0) {
+        //         let data = fs.readFileSync(filename);
 
-                if (data) {
-                    let namespaceRegex = /namespace\s(.*?);/gs;
-                    let classNameRegex = /class\s(.*?)\sextends/gs;
-                    let m; let n;
-                    let namespace = null;
-                    let className = null;
+        //         if (data) {
+        //             let namespaceRegex = /namespace\s(.*?);/gs;
+        //             let classNameRegex = /class\s(.*?)\sextends/gs;
+        //             let m; let n;
+        //             let namespace = null;
+        //             let className = null;
 
-                    while ((m = namespaceRegex.exec(data)) !== null) {
-                        // This is necessary to avoid infinite loops with zero-width matches
-                        if (m.index === namespaceRegex.lastIndex) {
-                            namespaceRegex.lastIndex++;
-                        }
+        //             while ((m = namespaceRegex.exec(data)) !== null) {
+        //                 // This is necessary to avoid infinite loops with zero-width matches
+        //                 if (m.index === namespaceRegex.lastIndex) {
+        //                     namespaceRegex.lastIndex++;
+        //                 }
 
-                        // The result can be accessed through the `m`-variable.
-                        m.forEach((match, groupIndex) => {
-                            if (groupIndex === 1) {
-                                namespace = match;
-                            }
-                        });
-                    }
+        //                 // The result can be accessed through the `m`-variable.
+        //                 m.forEach((match, groupIndex) => {
+        //                     if (groupIndex === 1) {
+        //                         namespace = match;
+        //                     }
+        //                 });
+        //             }
 
-                    while ((n = classNameRegex.exec(data)) !== null) {
-                        // This is necessary to avoid infinite loops with zero-width matches
-                        if (n.index === classNameRegex.lastIndex) {
-                            classNameRegex.lastIndex++;
-                        }
+        //             while ((n = classNameRegex.exec(data)) !== null) {
+        //                 // This is necessary to avoid infinite loops with zero-width matches
+        //                 if (n.index === classNameRegex.lastIndex) {
+        //                     classNameRegex.lastIndex++;
+        //                 }
 
-                        // The result can be accessed through the `m`-variable.
-                        n.forEach((match, groupIndex) => {
-                            if (groupIndex === 1) {
-                                className = match;
-                            }
-                        });
-                    }
+        //                 // The result can be accessed through the `m`-variable.
+        //                 n.forEach((match, groupIndex) => {
+        //                     if (groupIndex === 1) {
+        //                         className = match;
+        //                     }
+        //                 });
+        //             }
 
-                    if (namespace && className) {
-                        assetBundleClasses.push(namespace + '\\' + className);
-                    }
-                }
-            }
-        }
+        //             if (namespace && className) {
+        //                 assetBundleClasses.push(namespace + '\\' + className);
+        //             }
+        //         }
+        //     }
+        // }
 
-        let response = {
-            classes: assetBundleClasses,
+        // let response = {
+            // classes: assetBundleClasses,
             basePath: this.basePath,
             srcPath: this.srcPath,
             envPath: this.envPath,
             distPath: this.distPath,
-        }
+        // }
 
-        return {
-            allowedHosts: "all",
-            devMiddleware: {
-                publicPath: this.devServer.publicPath,
-            },
-            headers: {"Access-Control-Allow-Origin": "*"},
-            host: this.devServer.host,
-            hot: true,
-            https: this.https,
-            port: this.devServer.port,
-            client: {
-                overlay: {
-                  errors: true,
-                  warnings: false,
-                },
-            },
-            static: [
-                {
-                    directory: this.devServer.contentBase,
-                    watch: true,
-                },
-                {
-                    directory: this.templatesPath,
-                    watch: true,
-                },
-            ],
-            onBeforeSetupMiddleware: function(devServer) {
-                devServer.app.get('/which-asset', function(req, res) {
-                    res.json(response);
-                });
-            }
-        };
-    }
+    //     return {
+    //         allowedHosts: "all",
+    //         devMiddleware: {
+    //             publicPath: this.devServer.publicPath,
+    //         },
+    //         headers: {"Access-Control-Allow-Origin": "*"},
+    //         host: this.devServer.host,
+    //         hot: true,
+    //         https: this.https,
+    //         port: this.devServer.port,
+    //         client: {
+    //             overlay: {
+    //               errors: true,
+    //               warnings: false,
+    //             },
+    //         },
+    //         static: [
+    //             {
+    //                 directory: this.devServer.contentBase,
+    //                 watch: true,
+    //             },
+    //             {
+    //                 directory: this.templatesPath,
+    //                 watch: true,
+    //             },
+    //         ],
+    //         onBeforeSetupMiddleware: function(devServer) {
+    //             devServer.app.get('/which-asset', function(req, res) {
+    //                 res.json(response);
+    //             });
+    //         }
+    //     };
+    // }
 
     /**
      * Base webpack config
      */
     base() {
-        const plugins = [];
-        let optimization = {};
+        // const plugins = [];
+        // let optimization = {};
 
-        // Only load dotenv plugin if there is a .env file
-        if (this.envPath) {
-            plugins.push(new Dotenv());
-        }
+        // // Only load dotenv plugin if there is a .env file
+        // if (this.envPath) {
+        //     plugins.push(new Dotenv());
+        // }
 
         if (this.removeFiles && typeof this.removeFiles === 'object' && !this.isDevServerRunning) {
             let after = {
@@ -247,137 +247,137 @@ class ConfigFactory {
             }));
         }
 
-        if (!this.isDevServerRunning) {
-            plugins.push(new CleanWebpackPlugin());
+        // if (!this.isDevServerRunning) {
+        //     plugins.push(new CleanWebpackPlugin());
 
-            optimization.minimize = true;
-        }
+        //     optimization.minimize = true;
+        // }
 
-        const baseConfig = {
-            name: this.configName,
-            mode: this.nodeEnv,
-            devtool: 'source-map',
-            optimization,
-            resolve: {
-                extensions: ['.wasm', '.ts', '.tsx', '.mjs', '.js', '.json', '.vue'],
-            },
-            module: {
-                rules: [
-                    // Typescript
-                    {
-                        test: /.ts$/,
-                        exclude: /(node_modules|bower_components)/,
-                        use: {
-                            loader: 'ts-loader',
-                            options: {
-                                configFile: path.resolve(__dirname, './tsconfig.json'),
-                            }
-                        }
-                    },
-                    // Babel
-                    {
-                        test: /.m?js?$/,
-                        exclude: /(node_modules|bower_components)/,
-                        use: {
-                            loader: 'babel-loader',
-                            options: {
-                                plugins: ['@babel/plugin-syntax-dynamic-import'],
-                                presets: ['@babel/preset-env', '@babel/preset-typescript']
-                            }
-                        }
-                    },
+        // const baseConfig = {
+        //     name: this.configName,
+        //     mode: this.nodeEnv,
+        //     devtool: 'source-map',
+        //     optimization,
+        //     resolve: {
+        //         extensions: ['.wasm', '.ts', '.tsx', '.mjs', '.js', '.json', '.vue'],
+        //     },
+        //     module: {
+        //         rules: [
+        //             // Typescript
+        //             {
+        //                 test: /.ts$/,
+        //                 exclude: /(node_modules|bower_components)/,
+        //                 use: {
+        //                     loader: 'ts-loader',
+        //                     options: {
+        //                         configFile: path.resolve(__dirname, './tsconfig.json'),
+        //                     }
+        //                 }
+        //             },
+        //             // Babel
+        //             {
+        //                 test: /.m?js?$/,
+        //                 exclude: /(node_modules|bower_components)/,
+        //                 use: {
+        //                     loader: 'babel-loader',
+        //                     options: {
+        //                         plugins: ['@babel/plugin-syntax-dynamic-import'],
+        //                         presets: ['@babel/preset-env', '@babel/preset-typescript']
+        //                     }
+        //                 }
+        //             },
 
-                    // graphiql
-                    // https://github.com/graphql/graphql-js/issues/2721#issuecomment-723008284
-                    {
-                        test: /\.m?js/,
-                        resolve: {
-                            fullySpecified: false
-                        }
-                    },
-                ]
-            },
-            plugins,
-        };
+        //             // graphiql
+        //             // https://github.com/graphql/graphql-js/issues/2721#issuecomment-723008284
+        //             {
+        //                 test: /\.m?js/,
+        //                 resolve: {
+        //                     fullySpecified: false
+        //                 }
+        //             },
+        //         ]
+        //     },
+        //     plugins,
+        // };
 
-        return baseConfig;
+        // return baseConfig;
     }
 
     /**
      * Asset webpack config
      */
     asset() {
-        const assetConfig = {
-            context: this.srcPath,
-            output: {
-                filename: this.jsFilename,
-                path: this.distPath,
+        // const assetConfig = {
+        //     context: this.srcPath,
+        //     output: {
+        //         filename: this.jsFilename,
+        //         path: this.distPath,
                 publicPath: this.nodeEnv == 'development' ? this.devServer.publicPath : '/',
             },
-            devServer: this._devServer(),
-            module: {
-                rules: [
-                    {
-                        test: /\.s?[ac]ss$/i,
-                        use: [
-                            'vue-style-loader',
-                            {
-                                loader: MiniCssExtractPlugin.loader,
-                                options: {
+            // devServer: this._devServer(),
+        //     module: {
+        //         rules: [
+        //             {
+        //                 test: /\.s?[ac]ss$/i,
+        //                 use: [
+        //                     'vue-style-loader',
+        //                     {
+        //                         loader: MiniCssExtractPlugin.loader,
+        //                         options: {
 
-                                    // backing up from dist
-                                    publicPath: '../',
+        //                             // backing up from dist
+        //                             publicPath: '../',
 
-                                    // Workaround for css imports/vue
-                                    esModule: false,
-                                }
-                            },
-                            'css-loader',
-                            {
-                                loader: 'postcss-loader',
-                                options: {
-                                    postcssOptions: {
-                                        config: this.postCssConfig
-                                    },
-                                }
-                            },
-                            {
-                                loader: "sass-loader",
-                                options: {
-                                    // Prefer `dart-sass`
-                                    implementation: require("sass"),
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
-                        type: 'asset/resource',
-                        generator: {
-                            filename: 'fonts/[name][ext][query]'
-                        }
-                    },
-                    {
-                        test: /\.(jpg|gif|png|svg|ico)$/,
-                        type: 'asset/resource',
-                        exclude: [
-                            path.resolve(this.srcPath, './fonts'),
-                        ],
-                        generator: {
-                            filename: '[path][name][ext][query]'
-                        }
-                    },
-                ],
-            },
-            plugins: [
-                new MiniCssExtractPlugin({
-                    filename: 'css/[name].css',
-                    chunkFilename: 'css/[name].css',
-                }),
-            ]
-        };
+        //                             // Workaround for css imports/vue
+        //                             esModule: false,
+        //                         }
+        //                     },
+        //                     'css-loader',
+        //                     {
+        //                         loader: 'postcss-loader',
+        //                         options: {
+        //                             postcssOptions: {
+        //                                 config: this.postCssConfig
+        //                             },
+        //                         }
+        //                     },
+        //                     {
+        //                         loader: "sass-loader",
+        //                         options: {
+        //                             // Prefer `dart-sass`
+        //                             implementation: require("sass"),
+        //                         },
+        //                     },
+        //                 ],
+        //             },
+        //             {
+        //                 test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
+        //                 type: 'asset/resource',
+        //                 generator: {
+        //                     filename: 'fonts/[name][ext][query]'
+        //                 }
+        //             },
+        //             {
+        //                 test: /\.(jpg|gif|png|svg|ico)$/,
+        //                 type: 'asset/resource',
+        //                 exclude: [
+        //                     path.resolve(this.srcPath, './fonts'),
+        //                 ],
+        //                 generator: {
+        //                     filename: '[path][name][ext][query]'
+        //                 }
+        //             },
+        //         ],
+        //     },
+        //     plugins: [
+        //         new MiniCssExtractPlugin({
+        //             filename: 'css/[name].css',
+        //             chunkFilename: 'css/[name].css',
+        //         }),
+        //     ]
+        // };
 
-        return merge(this.base(), assetConfig);
+        // return merge(this.base(), assetConfig);
     }
 
     lib() {
@@ -396,43 +396,43 @@ class ConfigFactory {
     /**
      * Vue webpack config
      */
-    vue() {
-        const plugins = [
-            new VueLoaderPlugin(),
-            new WebpackManifestPlugin({
-                publicPath: '/'
-            }),
-        ];
+    // vue() {
+    //     const plugins = [
+    //         new VueLoaderPlugin(),
+    //         new WebpackManifestPlugin({
+    //             publicPath: '/'
+    //         }),
+    //     ];
 
-        const vueConfig = {
-            context: this.srcPath,
-            output: {
-                filename: this.jsFilename,
-                path: this.distPath,
-                publicPath: this.devServer.publicPath,
-            },
-            module: {
-                rules: [
-                    {
-                        test: /\.vue$/i,
-                        use: [
-                            'vue-loader',
-                        ]
-                    }
-                ]
-            },
-            devServer: this._devServer(),
-            externals: {
-                'vue': 'Vue',
-                'vue-router': 'VueRouter',
-                'vuex': 'Vuex',
-                'axios': 'axios'
-            },
-            plugins
-        };
+    //     const vueConfig = {
+    //         context: this.srcPath,
+    //         output: {
+    //             filename: this.jsFilename,
+    //             path: this.distPath,
+    //             publicPath: this.devServer.publicPath,
+    //         },
+    //         module: {
+    //             rules: [
+    //                 {
+    //                     test: /\.vue$/i,
+    //                     use: [
+    //                         'vue-loader',
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         devServer: this._devServer(),
+    //         externals: {
+    //             'vue': 'Vue',
+    //             'vue-router': 'VueRouter',
+    //             'vuex': 'Vuex',
+    //             'axios': 'axios'
+    //         },
+    //         plugins
+    //     };
 
-        return merge(this.asset(), vueConfig);
-    }
+    //     return merge(this.asset(), vueConfig);
+    // }
 }
 
 module.exports = ConfigFactory;

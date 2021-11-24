@@ -5,6 +5,8 @@ const {configFactory} = require('@craftcms/webpack');
 module.exports = configFactory({
     context: __dirname,
     config: {
-        entry: {'AssetIndexesUtility': './AssetIndexesUtility.js'},
+        entry: {
+            AssetIndexesUtility: './AssetIndexesUtility.js'
+        },
     }
 });

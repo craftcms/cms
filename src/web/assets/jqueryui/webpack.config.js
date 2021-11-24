@@ -5,10 +5,9 @@ const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
 
 module.exports = configFactory({
     context: __dirname,
-    type: 'lib',
     config: {
-        entry: {'entry': './entry.js'},
         plugins: [
+
             new MergeIntoSingleFilePlugin({
                 files: {
                     'jquery-ui.js': [
@@ -22,9 +21,6 @@ module.exports = configFactory({
                         require.resolve('jquery-ui/ui/widgets/mouse.js'),
                     ],
                 },
-                transform: {
-                    'jquery-ui.js': code => require("uglify-js").minify(code).code
-                }
             }),
         ]
     }
