@@ -7,7 +7,6 @@ const fs = require('fs');
 // Where webpack-cli was run from
 const rootPath = path.resolve('./');
 
-// const callerPath = path.basename(getCallerFile());
 // Fix issue with monorepo and some plugins
 // https://github.com/jantimon/html-webpack-plugin/issues/1451#issuecomment-712581727
 const _require = id => require(require.resolve(id, { paths: [require.main.path] }));
@@ -36,6 +35,12 @@ const types = {
   },
 }
 
+const getFirstExistingPath = (paths = []) => {
+  return paths.find(path => {
+    return fs.existsSync(path);
+  });
+}
+
 const configFactory = ({
   cwd,
   type = 'asset',
@@ -59,12 +64,6 @@ const configFactory = ({
 
   return merge(types[type](), config);
 };
-
-const getFirstExistingPath = (paths = []) => {
-  return paths.find(path => {
-    return fs.existsSync(path);
-  });
-}
 
 module.exports = {
   configFactory,
