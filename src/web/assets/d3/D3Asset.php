@@ -41,7 +41,7 @@ class D3Asset extends AssetBundle
     public function init()
     {
         $this->js = [
-            'd3.js',
+            'd3.min.js',
         ];
 
         parent::init();
