@@ -3,9 +3,15 @@ const path = require('path');
 const { merge } = require('webpack-merge');
 const dotenv = require('dotenv');
 const fs = require('fs');
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+const argv = yargs(hideBin(process.argv)).argv
 
 // Where webpack-cli was run from
 const rootPath = path.resolve('./');
+
+// Single config via --config-name arg
+const requestedConfig = argv['config-name'] || null;
 
 // Fix issue with monorepo and some plugins
 // https://github.com/jantimon/html-webpack-plugin/issues/1451#issuecomment-712581727
@@ -52,11 +58,11 @@ const configFactory = ({
   ]),
   removeFiles = null,
 }) => {
-
+  const isRequestedConfig = requestedConfig && path.basename(cwd) === requestedConfig;
   const envFilePath = getFirstExistingPath([
-    path.join(cwd, '.env'),
+    isRequestedConfig && path.join(cwd, '.env'),
     path.join(rootPath, '.env'),
-  ]);
+  ].filter(Boolean));
 
   if (envFilePath) {
     dotenv.config({path: envFilePath})
