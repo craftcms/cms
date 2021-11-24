@@ -281,43 +281,40 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
                 ArrayHelper::multisort($ruleTypeOptions, 'label');
 
-                // Add rule type selector
-                $switcherHtml = Cp::selectHtml([
-                    'name' => 'type',
-                    'options' => $ruleTypeOptions,
-                    'value' => $ruleValue,
-                    'inputAttributes' => [
-                        'hx' => [
-                            'post' => UrlHelper::actionUrl('conditions/render'),
+                $ruleHtml .=
+                    // Rule type selector
+                    Html::beginTag('div', ['class' => 'rule-switcher']) .
+                    Cp::selectHtml([
+                        'name' => 'type',
+                        'options' => $ruleTypeOptions,
+                        'value' => $ruleValue,
+                        'inputAttributes' => [
+                            'hx' => [
+                                'post' => UrlHelper::actionUrl('conditions/render'),
+                            ],
                         ],
-                    ],
-                ]);
-
-                $ruleHtml .= Html::tag('div', $switcherHtml, [
-                    'class' => ['rule-switcher'],
-                ]);
-
-                // Get rule input html
-                $ruleHtml .= Html::tag('div', $rule->getHtml($options), [
-                    'id' => 'rule-body',
-                    'class' => ['rule-body', 'flex-grow'],
-                ]);
-
-                // Add delete button
-                $deleteButtonAttr = [
-                    'id' => 'delete',
-                    'class' => ['delete', 'icon'],
-                    'title' => Craft::t('app', 'Delete'),
-                    'hx' => [
-                        'vals' => ['uid' => $rule->uid],
-                        'post' => UrlHelper::actionUrl('conditions/remove-rule'),
-                    ],
-                ];
-                $deleteButton = Html::tag('a', '', $deleteButtonAttr);
-                $ruleHtml .= Html::tag('div', $deleteButton, [
-                    'id' => 'rule-actions',
-                    'class' => ['rule-actions'],
-                ]);
+                    ]) .
+                    Html::endTag('div') .
+                    // Rule HTML
+                    Html::tag('div', $rule->getHtml($options), [
+                        'id' => 'rule-body',
+                        'class' => ['rule-body', 'flex-grow'],
+                    ]) .
+                    // Delete button
+                    Html::beginTag('div', [
+                        'id' => 'rule-actions',
+                        'class' => ['rule-actions'],
+                    ]) .
+                    Html::tag('a', '', [
+                        'id' => 'delete',
+                        'class' => ['delete', 'icon'],
+                        'title' => Craft::t('app', 'Delete'),
+                        'hx' => [
+                            'vals' => ['uid' => $rule->uid],
+                            'post' => UrlHelper::actionUrl('conditions/remove-rule'),
+                        ],
+                    ]) .
+                    Html::endTag('div');
 
                 return Html::tag('div', $ruleHtml, [
                     'id' => 'condition-rule',
@@ -342,30 +339,31 @@ abstract class BaseCondition extends Component implements ConditionInterface
             ]
         );
 
-        $html .= Html::tag('div',
-            Html::tag('button',
-                $this->addRuleLabel() .
-                Html::tag('div', '', [
-                    'class' => ['htmx-indicator', 'spinner'],
-                    'id' => "{$options['id']}-indicator",
-                ]), [
-                    'type' => 'button',
-                    'class' => array_filter([
-                        'btn',
-                        'add',
-                        'icon',
-                        'fullwidth',
-                        'dashed',
-                        empty($selectableRules) ? 'disabled' : null,
-                    ]),
-                    'hx' => [
-                        'post' => UrlHelper::actionUrl('conditions/add-rule'),
-                    ],
-                ]
-            ), [
+        $html .=
+            Html::beginTag('div', [
                 'class' => ['condition-footer', 'flex', 'flex-nowrap'],
-            ]
-        );
+            ]) .
+            Html::beginTag('button', [
+                'type' => 'button',
+                'class' => array_filter([
+                    'btn',
+                    'add',
+                    'icon',
+                    'fullwidth',
+                    'dashed',
+                    empty($selectableRules) ? 'disabled' : null,
+                ]),
+                'hx' => [
+                    'post' => UrlHelper::actionUrl('conditions/add-rule'),
+                ],
+            ]) .
+            $this->addRuleLabel() .
+            Html::tag('div', '', [
+                'class' => ['htmx-indicator', 'spinner'],
+                'id' => "{$options['id']}-indicator",
+            ]) .
+            Html::endTag('button') .
+            Html::endTag('div');
 
         // Add inline script tag
         if ($isHtmxRequest && $rulesJs) {

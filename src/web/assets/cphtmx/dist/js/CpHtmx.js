@@ -5,25 +5,22 @@ htmx.on('htmx:configRequest', function(evt) {
 
 // Anytime Htmx does a swap, look for html in templates to be added to head or foot in CP
 htmx.on('htmx:load', function(evt) {
+    const headHtmls = evt.detail.elt.querySelectorAll("template.hx-head-html");
+    const bodyHtmls = evt.detail.elt.querySelectorAll("template.hx-body-html");
 
-    const content = evt.detail.elt;
-
-    const headHtmls = content.querySelectorAll("template.hx-head-html");
-    const bodyHtmls = content.querySelectorAll("template.hx-body-html");
-
-    for (var i = 0; i < headHtmls.length; i++) {
-        var headHtml = headHtmls[i].innerHTML;
+    for (let i = 0; i < headHtmls.length; i++) {
+        const headHtml = headHtmls[i].innerHTML;
         if (headHtml) {
             Craft.appendHeadHtml(headHtml);
         }
     }
 
-    for (var i = 0; i < bodyHtmls.length; i++) {
-        var bodyHtml = bodyHtmls[i].innerHTML;
+    for (let i = 0; i < bodyHtmls.length; i++) {
+        const bodyHtml = bodyHtmls[i].innerHTML;
         if (bodyHtml) {
             Craft.appendFootHtml(bodyHtml);
         }
     }
 
-    Craft.initUiElements(content);
+    Craft.initUiElements(evt.detail.elt);
 });
