@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Updated Garnish to 0.1.48.
+
 ## 3.7.22 - 2021-11-23
 
 ### Added
