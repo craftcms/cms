@@ -5,6 +5,10 @@ htmx.on('htmx:configRequest', function(evt) {
 
 // Anytime Htmx does a swap, look for html in templates to be added to head or foot in CP
 htmx.on('htmx:load', function(evt) {
+    if (evt.detail.elt === document.body) {
+        return;
+    }
+
     const headHtmls = evt.detail.elt.querySelectorAll("template.hx-head-html");
     const bodyHtmls = evt.detail.elt.querySelectorAll("template.hx-body-html");
 
