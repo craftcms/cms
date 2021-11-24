@@ -10,9 +10,6 @@ const argv = yargs(hideBin(process.argv)).argv
 // Where webpack-cli was run from
 const rootPath = path.resolve('./');
 
-// Single config via --config-name arg
-const requestedConfig = argv['config-name'] || null;
-
 // Fix issue with monorepo and some plugins
 // https://github.com/jantimon/html-webpack-plugin/issues/1451#issuecomment-712581727
 const _require = id => require(require.resolve(id, { paths: [require.main.path] }));
@@ -47,6 +44,19 @@ const getFirstExistingPath = (paths = []) => {
   });
 }
 
+const applyDotEnv = ({cwd, configName}) => {
+  const currentConfig = argv['config-name'] || null;
+  const isCurrentConfig = currentConfig && configName === currentConfig;
+  const envFilePath = getFirstExistingPath([
+    isCurrentConfig && path.join(cwd, '.env'),
+    path.join(rootPath, '.env'),
+  ].filter(Boolean));
+
+  if (envFilePath) {
+    return dotenv.config({path: envFilePath});
+  }
+};
+
 const configFactory = ({
   cwd,
   type = 'asset',
@@ -58,17 +68,12 @@ const configFactory = ({
   ]),
   removeFiles = null,
 }) => {
-  const isRequestedConfig = requestedConfig && path.basename(cwd) === requestedConfig;
-  const envFilePath = getFirstExistingPath([
-    isRequestedConfig && path.join(cwd, '.env'),
-    path.join(rootPath, '.env'),
-  ].filter(Boolean));
+  const name = path.basename(cwd);
+  applyDotEnv({cwd, configName: name});
 
-  if (envFilePath) {
-    dotenv.config({path: envFilePath})
-  }
-
-  return merge(types[type](), config);
+  return merge({
+    name,
+  }, types[type](), config);
 };
 
 module.exports = {
