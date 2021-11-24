@@ -87,16 +87,18 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     {
         return
             Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]) .
-            Html::tag('div', Html::tag('p', Craft::t('app', 'From'))) .
+            Html::label(Craft::t('app', 'From'), 'start-date-date') .
             Html::tag('div',
                 Cp::dateHtml([
+                    'id' => 'start-date',
                     'name' => 'startDate',
                     'value' => $this->getStartDate(),
                 ])
             ) .
-            Html::tag('div', Html::tag('p', Craft::t('app', 'To'))) .
+            Html::label(Craft::t('app', 'To'), 'end-date-date') .
             Html::tag('div',
                 Cp::dateHtml([
+                    'id' => 'end-date',
                     'name' => 'endDate',
                     'value' => $this->getEndDate(),
                 ])

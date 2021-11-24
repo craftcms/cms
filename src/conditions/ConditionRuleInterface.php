@@ -59,4 +59,18 @@ interface ConditionRuleInterface extends ComponentInterface
      * @return ConditionInterface
      */
     public function getCondition(): ConditionInterface;
+
+    /**
+     * Returns whether the rule’s type selector should be autofocused.
+     *
+     * @return bool
+     */
+    public function getAutofocus(): bool;
+
+    /**
+     * Sets whether the rule’s type selector should be autofocused.
+     *
+     * @param bool $autofocus
+     */
+    public function setAutofocus(bool $autofocus = true): void;
 }

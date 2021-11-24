@@ -206,13 +206,14 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         return Html::tag($tagName, $this->getBuilderInnerHtml($options), [
             'id' => $options['id'],
+            'class' => 'condition-container',
         ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getBuilderInnerHtml(array $options = []): string
+    public function getBuilderInnerHtml(array $options = [], bool $autofocusAddButton = false): string
     {
         $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
         $view = Craft::$app->getView();
@@ -252,8 +253,16 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $ruleCount = 0;
 
         foreach ($this->getConditionRules() as $rule) {
-            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $options, $selectableRules) {
-                $ruleHtml = Html::hiddenInput('uid', $rule->uid) .
+            $ruleCount++;
+
+            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleCount, $options, $selectableRules) {
+                $ruleHtml =
+                    Html::tag('legend', Craft::t('app', 'Condition {num, number}', [
+                        'num' => $ruleCount,
+                    ]), [
+                        'class' => 'visually-hidden',
+                    ]) .
+                    Html::hiddenInput('uid', $rule->uid) .
                     Html::hiddenInput('class', get_class($rule));
 
                 if ($options['sortable']) {
@@ -284,10 +293,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $ruleHtml .=
                     // Rule type selector
                     Html::beginTag('div', ['class' => 'rule-switcher']) .
+                    Html::label(Craft::t('app', 'Rule Type'), 'type', [
+                        'class' => 'visually-hidden',
+                    ]) .
                     Cp::selectHtml([
+                        'id' => 'type',
                         'name' => 'type',
                         'options' => $ruleTypeOptions,
                         'value' => $ruleValue,
+                        'autofocus' => $rule->getAutofocus(),
                         'inputAttributes' => [
                             'hx' => [
                                 'post' => UrlHelper::actionUrl('conditions/render'),
@@ -300,15 +314,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         'id' => 'rule-body',
                         'class' => ['rule-body', 'flex-grow'],
                     ]) .
-                    // Delete button
+                    // Remove button
                     Html::beginTag('div', [
                         'id' => 'rule-actions',
                         'class' => ['rule-actions'],
                     ]) .
-                    Html::tag('a', '', [
-                        'id' => 'delete',
+                    Html::button('', [
+                        'type' => 'button',
                         'class' => ['delete', 'icon'],
-                        'title' => Craft::t('app', 'Delete'),
+                        'title' => Craft::t('app', 'Remove'),
                         'hx' => [
                             'vals' => ['uid' => $rule->uid],
                             'post' => UrlHelper::actionUrl('conditions/remove-rule'),
@@ -316,11 +330,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     ]) .
                     Html::endTag('div');
 
-                return Html::tag('div', $ruleHtml, [
+                return Html::tag('fieldset', $ruleHtml, [
                     'id' => 'condition-rule',
                     'class' => ['condition-rule', 'flex', 'draggable'],
                 ]);
-            }, 'conditionRules[' . ++$ruleCount . ']');
+            }, 'conditionRules[' . $ruleCount . ']');
         }
 
         $rulesJs = $view->clearJsBuffer(false);
@@ -353,15 +367,27 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'dashed',
                     empty($selectableRules) ? 'disabled' : null,
                 ]),
+                'autofocus' => $autofocusAddButton,
+                'aria' => [
+                    'label' => $this->addRuleLabel(),
+                    'live' => 'polite',
+                ],
                 'hx' => [
                     'post' => UrlHelper::actionUrl('conditions/add-rule'),
                 ],
             ]) .
             $this->addRuleLabel() .
-            Html::tag('div', '', [
-                'class' => ['htmx-indicator', 'spinner'],
+            Html::beginTag('div', [
+                'class' => ['htmx-indicator'],
                 'id' => "{$options['id']}-indicator",
             ]) .
+            Html::tag('div', '', [
+                'class' => 'spinner',
+            ]) .
+            Html::tag('div', Craft::t('app', 'Loading'), [
+                'class' => ['loading-text', 'visually-hidden'],
+            ]) .
+            Html::endTag('div') .
             Html::endTag('button') .
             Html::endTag('div');
 

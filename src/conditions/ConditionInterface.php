@@ -26,9 +26,10 @@ interface ConditionInterface
      * Renders the inner HTML for the condition builder, excluding its outer container element.
      *
      * @param array $options The builder options
+     * @param bool $autofocusAddButton Whether the Add Rule button should be autofocused
      * @return string
      */
-    public function getBuilderInnerHtml(array $options = []): string;
+    public function getBuilderInnerHtml(array $options = [], bool $autofocusAddButton = false): string;
 
     /**
      * Returns the condition’s portable config.

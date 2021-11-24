@@ -8,6 +8,7 @@ use craft\helpers\StringHelper;
 /**
  * BaseConditionRule provides a base implementation for condition rules.
  *
+ * @property bool $isNew Whether the rule is new
  * @property ConditionInterface $condition
  * @property-read array $config The rule’s portable config
  * @property-read string $html The rule’s HTML for a condition builder
@@ -34,6 +35,13 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      * @var ConditionInterface
      */
     private ConditionInterface $_condition;
+
+    /**
+     * @var bool
+     * @see getAutofocus()
+     * @see setAutofocus()
+     */
+    private bool $_autofocus = false;
 
     /**
      * @inheritdoc
@@ -87,5 +95,21 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return [
             [['uid'], 'safe'],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAutofocus(): bool
+    {
+        return $this->_autofocus;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAutofocus(bool $autofocus = true): void
+    {
+        $this->_autofocus = $autofocus;
     }
 }

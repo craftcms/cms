@@ -77,6 +77,7 @@ class ConditionsController extends Controller
             ->first();
 
         if ($rule) {
+            $rule->setAutofocus();
             $this->_condition->addConditionRule($rule);
         }
 
@@ -93,16 +94,17 @@ class ConditionsController extends Controller
             ->filter(fn(ConditionRuleInterface $rule) => $rule->uid !== $ruleUid)
             ->all();
         $this->_condition->setConditionRules($conditionRules);
-        return $this->renderBuilderHtml();
+        return $this->renderBuilderHtml(true);
     }
 
     /**
+     * @param bool $setFocus Whether to set focus on the Add button
      * @return string
      */
-    protected function renderBuilderHtml(): string
+    protected function renderBuilderHtml(bool $setFocus = false): string
     {
-        return Craft::$app->getView()->namespaceInputs(function() {
-            return $this->_condition->getBuilderInnerHtml($this->_options);
+        return Craft::$app->getView()->namespaceInputs(function() use ($setFocus) {
+            return $this->_condition->getBuilderInnerHtml($this->_options, $setFocus);
         }, $this->_namespace);
     }
 }

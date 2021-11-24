@@ -10,8 +10,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     $sidebar: null,
     $sourcesContainer: null,
     $sourceSettingsContainer: null,
-    $newHeadingBtn: null,
-    $newSourceBtn: null,
+    $addSourceMenu: null,
+    addSourceMenu: null,
     $footer: null,
     $footerBtnContainer: null,
     $saveBtn: null,
@@ -116,51 +116,64 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             this.sources[0].select();
         }
 
-        const $menuBtnContainer = $('<div class="buttons left"/>').appendTo(this.$footer);
+        const $menuBtnContainer = $('<div class="buttons left" data-wrapper/>').appendTo(this.$footer);
         const $menuBtn = $('<button/>', {
             type: 'button',
             class: 'btn menubtn add icon',
             'aria-label': Craft.t('app', 'Add…'),
+            'aria-controls': 'add-source-menu',
             title: Craft.t('app', 'Add…'),
+            'data-disclosure-trigger': '',
         }).appendTo($menuBtnContainer);
 
-        const $menu = $('<div/>', {
-            class: 'menu',
+        this.$addSourceMenu = $('<div/>', {
+            id: 'add-source-menu',
+            class: 'menu menu--disclosure',
         }).appendTo($menuBtnContainer);
+
+        const addSource = sourceData => {
+            const source = this.addSource(sourceData);
+            Garnish.scrollContainerToElement(this.$sidebar, source.$item);
+            source.select();
+            this.updateSourcesOnSave = true;
+            this.addSourceMenu.hide();
+        };
+
+        const $newHeadingBtn = $('<button/>', {
+            type: 'button',
+            class: 'menu-option',
+            text: Craft.t('app', 'New heading'),
+        }).on('click', () => {
+            addSource({
+                type: 'heading',
+            });
+        });
+
+        const $newCustomSourceBtn = $('<button/>', {
+            type: 'button',
+            class: 'menu-option',
+            text: Craft.t('app', 'New custom source'),
+            'data-type': 'custom',
+        }).on('click', () => {
+            addSource({
+                type: 'custom',
+                key: `custom:${Craft.uuid()}`,
+                tableAttributes: [],
+                availableTableAttributes: [],
+            });
+        });
+
         const $ul  = $('<ul/>').append(
-          $('<li/>').append(
-            $('<a/>', {
-                text: Craft.t('app', 'New heading'),
-                'data-type': 'heading',
-            })
-          )
-        ).appendTo($menu);
+            $('<li/>').append($newHeadingBtn)
+        ).appendTo(this.$addSourceMenu);
 
         if (response.conditionBuilderHtml) {
-            $('<li/>').append(
-              $('<a/>', {
-                  text: Craft.t('app', 'New custom source'),
-                  'data-type': 'custom',
-              })
-            ).appendTo($ul);
+            $('<li/>')
+                .append($newCustomSourceBtn)
+                .appendTo($ul);
         }
 
-        new Garnish.MenuBtn($menuBtn, {
-            onOptionSelect: option => {
-                const sourceData = {
-                    type: $(option).data('type'),
-                };
-                if (sourceData.type === 'custom') {
-                    sourceData.key = `custom:${Craft.uuid()}`;
-                    sourceData.tableAttributes = [];
-                    sourceData.availableTableAttributes = [];
-                }
-                const source = this.addSource(sourceData);
-                Garnish.scrollContainerToElement(this.$sidebar, source.$item);
-                source.select();
-                this.updateSourcesOnSave = true;
-            }
-        });
+        this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
     },
 
     addSource: function(sourceData) {
@@ -278,6 +291,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     destroy: function() {
         for (let i = 0; i < this.sources.length; i++) {
             this.sources[i].destroy();
+        }
+
+        if (this.addSourceMenu) {
+            this.addSourceMenu.destroy();
+            this.$addSourceMenu.remove();
         }
 
         delete this.sources;
