@@ -3,7 +3,7 @@
 const {configFactory} = require('@craftcms/webpack');
 
 module.exports = configFactory({
-    cwd: __dirname,
+    context: __dirname,
     type: 'vue',
     config: {
         entry: { app: './main.js'},

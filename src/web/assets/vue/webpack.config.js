@@ -1,10 +1,11 @@
 /* jshint esversion: 6 */
 /* globals module, require, __dirname */
-const {ConfigFactory} = require('@craftcms/webpack');
+const {configFactory} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
 
-module.exports = new ConfigFactory({
+module.exports = configFactory({
+    context: __dirname,
     type: 'lib',
     config: {
         entry: {'entry': './entry.js'},
