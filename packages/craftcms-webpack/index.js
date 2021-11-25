@@ -310,6 +310,17 @@ const getConfig = ({
           chunkFilename: "css/[name].css",
         }),
       ],
+      externals: {
+        jquery: 'jQuery',
+        d3: 'd3',
+        axios: 'axios',
+        fabric: 'fabric',
+        'element-resize-detector': 'elementResizeDetectorMaker',
+        garnishjs: 'Garnish',
+        'iframe-resizer': 'iFrameResize',
+        picturefill: 'picturefill',
+        xregexp: 'XRegExp'
+      },
     };
 
     const dotenvResult = applyDotEnv({
