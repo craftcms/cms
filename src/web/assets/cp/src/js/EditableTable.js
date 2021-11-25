@@ -102,6 +102,10 @@ Craft.EditableTable = Garnish.Base.extend({
         }
     },
     canDeleteRow: function() {
+        if (!this.settings.allowDelete) {
+            return false;
+        }
+
         return (this.rowCount > this.settings.minRows);
     },
     deleteRow: function(row) {
@@ -125,7 +129,7 @@ Craft.EditableTable = Garnish.Base.extend({
         row.destroy();
     },
     canAddRow: function() {
-        if (this.settings.staticRows) {
+        if (!this.settings.allowAdd) {
             return false;
         }
 
@@ -168,7 +172,7 @@ Craft.EditableTable = Garnish.Base.extend({
     },
 
     createRow: function(rowId, columns, baseName, values) {
-        return Craft.EditableTable.createRow(rowId, columns, baseName, values);
+        return Craft.EditableTable.createRow(rowId, columns, baseName, values, this.settings.allowReorder, this.settings.allowDelete);
     },
 
     createRowObj: function($tr) {
@@ -266,14 +270,16 @@ Craft.EditableTable = Garnish.Base.extend({
     defaults: {
         rowIdPrefix: '',
         defaultValues: {},
-        staticRows: false,
+        allowAdd: true,
+        allowReorder: true,
+        allowDelete: true,
         minRows: null,
         maxRows: null,
         onAddRow: $.noop,
         onDeleteRow: $.noop
     },
 
-    createRow: function(rowId, columns, baseName, values) {
+    createRow: function(rowId, columns, baseName, values, allowReorder, allowDelete) {
         var $tr = $('<tr/>', {
             'data-id': rowId
         });
@@ -391,23 +397,27 @@ Craft.EditableTable = Garnish.Base.extend({
             $cell.appendTo($tr);
         }
 
-        $('<td/>', {
-            'class': 'thin action'
-        }).append(
-            $('<a/>', {
-                'class': 'move icon',
-                'title': Craft.t('app', 'Reorder')
-            })
-        ).appendTo($tr);
+        if (allowReorder) {
+            $('<td/>', {
+                'class': 'thin action'
+            }).append(
+                $('<a/>', {
+                    'class': 'move icon',
+                    'title': Craft.t('app', 'Reorder')
+                })
+            ).appendTo($tr);
+        }
 
-        $('<td/>', {
-            'class': 'thin action'
-        }).append(
-            $('<a/>', {
-                'class': 'delete icon',
-                'title': Craft.t('app', 'Delete')
-            })
-        ).appendTo($tr);
+        if (allowDelete) {
+            $('<td/>', {
+                'class': 'thin action'
+            }).append(
+                $('<a/>', {
+                    'class': 'delete icon',
+                    'title': Craft.t('app', 'Delete')
+                })
+            ).appendTo($tr);
+        }
 
         return $tr;
     }
