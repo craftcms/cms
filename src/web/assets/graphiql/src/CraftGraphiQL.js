@@ -1,4 +1,4 @@
-// import {buildClientSchema, getIntrospectionQuery} from 'graphql';
+import {buildClientSchema, getIntrospectionQuery} from 'graphql';
 import React from 'react';
 import GraphiQL from 'graphiql';
 import GraphiQLExplorer from 'graphiql-explorer';
@@ -98,7 +98,8 @@ export class CraftGraphiQL extends React.Component {
         this.state = {
             schema: null,
             explorerIsOpen: false,
-            query: params.get('query') ?? undefined
+            query: params.get('query') ?? undefined,
+            loadingSchema: true
         }
     }
 
@@ -106,17 +107,24 @@ export class CraftGraphiQL extends React.Component {
     componentDidMount() {
         // Make sure we're aware of the query.
         this.state.query = this.graphiql.current.state.query;
+        if (this.state.loadingSchema) {
+            this.graphiql.current.setState({isWaitingForResponse:  true});
+        }
 
         parameters.query = this.graphiql.current.getQueryEditor().options.value;
         parameters.variables = this.graphiql.current.getVariableEditor().options.value;
 
         this.props
             .fetcher({
-                // query: getIntrospectionQuery(),
+                query: getIntrospectionQuery(),
             })
             .then(result => {
                 const editor = this.graphiql.current.getQueryEditor();
-                // this.setState({schema: buildClientSchema(result.data)});
+                this.graphiql.current.setState({isWaitingForResponse:  false});
+                this.setState({
+                    loadingSchema: false,
+                    schema: buildClientSchema(result.data)
+                });
             });
     }
 
@@ -214,7 +222,7 @@ export class CraftGraphiQL extends React.Component {
             }),
             elem(GraphiQL, {
                 fetcher: this.props.fetcher,
-                schema: undefined,
+                schema: this.state.schema,
                 query: this.state.query,
                 variables: parameters.variables,
                 operationName: parameters.operationName,

@@ -3,7 +3,11 @@
 ## Unreleased
 
 ### Changed
+- Reduced the amount of time it took for the GraphiQL IDE to initialize.
 - Updated Garnish to 0.1.48.
+
+### Fixed
+- Fixed a bug where GraphiQL Explorer wasn’t working. ([#10153](https://github.com/craftcms/cms/issues/10153))
 
 ## 3.7.22 - 2021-11-23
 
