@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 body,
 #graphiql {
@@ -89,10 +89,6 @@ body,
 
   .docExplorerWrap {
     z-index: 8 !important;
-
-    .doc-explorer-contents {
-      overflow-y: auto !important;
-    }
   }
 
   .queryWrap {
@@ -185,7 +181,7 @@ body,
         }
       }
     }
-    
+
     .execute-options li {
       padding-left: 14px;
     }

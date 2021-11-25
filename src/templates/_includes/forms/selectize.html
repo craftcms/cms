@@ -1,0 +1,72 @@
+{% set id = id ?? "selectize#{random()}" %}
+{% set selectizeOptions = {
+    dropdownParent: 'body',
+}|merge(selectizeOptions ?? []) %}
+
+{% if includeEnvVars ?? false %}
+    {% set allowedValues = options is defined
+        ? options|filter(o => o.optgroup is not defined)|map((o, k) => o.value is defined ? o.value : k)
+        : null %}
+    {% set options = (options ?? [])|merge(craft.cp.getEnvOptions(allowedValues)) %}
+{% endif %}
+
+{% include '_includes/forms/select' with {
+    class: (class ?? [])|explodeClass|push('selectize')|unique,
+} %}
+
+{% js %}
+(() => {
+    const label = data => {
+        let label = Craft.escapeHtml(data.text);
+        const status = (() => {
+            if (typeof data.status !== 'undefined') {
+                return data.status;
+            }
+            if (typeof data.boolean !== 'undefined') {
+                return data.boolean ? 'green' : 'white';
+            }
+            return null;
+        })();
+        if (status) {
+            label = `<span class="status ${status}"></span>${label}`;
+        }
+        if (typeof data.hint !== 'undefined') {
+            label += ` <span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
+        }
+        return label;
+    };
+
+    const $select = $("#{{ id|namespaceInputId|e('js') }}");
+
+    const updateBooleanValue = () => {
+        const boolean = $select.data('selectize').$wrapper.find('.item').data('boolean');
+        if (typeof boolean !== 'undefined') {
+            $select.data('boolean', !!boolean);
+        } else {
+            $select.removeData('boolean');
+        }
+    };
+
+    $select.selectize($.extend({
+        render: {
+            option: data => {
+                const classes = ['option'];
+                if (data.value === '') {
+                    classes.push('selectize-dropdown-emptyoptionlabel');
+                }
+                return `<div class="${classes.join(' ')}">${label(data)}</div>`;
+            },
+            item: data => {
+                const attrs = ['class="item"'];
+                if (typeof data.boolean !== 'undefined') {
+                    attrs.push(`data-boolean="${data.boolean ? '1' : ''}"`);
+                }
+                return `<div ${attrs.join(' ')}>${label(data)}</div>`;
+            },
+        },
+        onChange: updateBooleanValue,
+    }, {{ selectizeOptions|json_encode|raw }}));
+
+    updateBooleanValue();
+})()
+{% endjs %}

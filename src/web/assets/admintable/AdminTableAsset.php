@@ -44,12 +44,10 @@ class AdminTableAsset extends AssetBundle
             ];
         } else {
             $this->css = [
-                'css/chunk-vendors.css',
                 'css/app.css',
             ];
 
             $this->js = [
-                'js/chunk-vendors.js',
                 'js/app.js',
             ];
         }

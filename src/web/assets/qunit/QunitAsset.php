@@ -11,6 +11,8 @@ use craft\web\AssetBundle;
 
 /**
  * Qunit asset bundle.
+ *
+ * Qunit asset files are manually added to the `dist` directory.
  */
 class QunitAsset extends AssetBundle
 {
@@ -19,7 +21,7 @@ class QunitAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@lib/qunit';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->css = [
             'qunit-2.1.1.css',

@@ -1,0 +1,61 @@
+{
+  "name": "@craftcms/webpack",
+  "version": "0.0.1",
+  "description": "Webpack build tools for Craft CMS",
+  "keywords": [
+    "craftcms",
+    "webpack"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "webpack.config.js",
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "homepage": "https://craftcms.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craftcms/cms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/craftcms/cms/issues"
+  },
+  "dependencies": {
+    "@babel/core": "^7.14.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/preset-env": "^7.16.4",
+    "@babel/preset-typescript": "^7.16.0",
+    "@vue/babel-preset-app": "^4.4.1",
+    "autoprefixer": "^10.3.1",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.2.2",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^9.1.0",
+    "core-js": "^3.6.5",
+    "css-loader": "^6.5.1",
+    "dotenv": "^10.0.0",
+    "dotenv-webpack": "^7.0.3",
+    "eslint": "^8.2.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "file-loader": "^6.2.0",
+    "mini-css-extract-plugin": "^2.4.4",
+    "node-json-minify": "^1.0.0",
+    "postcss": "^8.2.8",
+    "postcss-loader": "^6.2.0",
+    "remove-files-webpack-plugin": "^1.4.5",
+    "sass": "^1.26.8",
+    "sass-loader": "^12.3.0",
+    "style-loader": "^3.3.1",
+    "touch": "^3.1.0",
+    "ts-loader": "^9.2.6",
+    "vue-loader": "^15.9.2",
+    "vue-template-compiler": "^2.6.14",
+    "webpack": "^5.64.1",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.4.0",
+    "webpack-manifest-plugin": "^4.0.2",
+    "webpack-merge": "^5.8.0",
+    "webpack-merge-and-include-globally": "^2.1.25",
+    "yargs": "^17.2.1"
+  }
+}

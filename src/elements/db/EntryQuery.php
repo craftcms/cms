@@ -24,9 +24,9 @@ use yii\db\Connection;
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
  *
- * @property string|string[]|Section $section The handle(s) of the section(s) that resulting entries must belong to.
- * @property string|string[]|EntryType $type The handle(s) of the entry type(s) that resulting entries must have.
- * @property string|string[]|UserGroup $authorGroup The handle(s) of the user group(s) that resulting entries’ authors must belong to.
+ * @property-write string|string[]|EntryType|null $type The entry type(s) that resulting entries must have
+ * @property-write string|string[]|Section|null $section The section(s) that resulting entries must belong to
+ * @property-write string|string[]|UserGroup|null $authorGroup The user group(s) that resulting entries’ authors must belong to
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
  * @method Entry|array|null nth(int $n, Connection $db = null)
@@ -938,14 +938,17 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
 
             // Should we set the structureId param?
-            if ($this->structureId === null && count($this->sectionId) === 1) {
-                $structureId = (new Query())
-                    ->select(['structureId'])
-                    ->from([Table::SECTIONS])
-                    ->where(Db::parseParam('id', $this->sectionId))
-                    ->andWhere(['type' => Section::TYPE_STRUCTURE])
-                    ->scalar();
-                $this->structureId = (int)$structureId ?: false;
+            if (
+                $this->withStructure !== false &&
+                $this->structureId === null &&
+                count($this->sectionId) === 1
+            ) {
+                $section = Craft::$app->getSections()->getSectionById(reset($this->sectionId));
+                if ($section && $section->type === Section::TYPE_STRUCTURE) {
+                    $this->structureId = $section->structureId;
+                } else {
+                    $this->withStructure = false;
+                }
             }
         }
     }

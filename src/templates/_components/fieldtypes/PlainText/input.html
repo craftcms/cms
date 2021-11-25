@@ -15,8 +15,9 @@
     maxlength: field.charLimit,
     showCharsLeft: true,
     placeholder: field.placeholder ? field.placeholder|t('site'),
+    required: field.required,
     rows: field.initialRows,
-    orientation: orientation,
+    orientation: orientation ?? null,
 } %}
 
 {% if field.multiline %}

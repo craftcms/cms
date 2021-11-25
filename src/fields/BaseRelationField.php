@@ -893,6 +893,14 @@ JS;
     }
 
     /**
+     * @inheritdoc
+     */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
      * Returns an array of variables that should be passed to the settings template.
      *
      * @return array
@@ -1108,7 +1116,7 @@ JS;
         $clone
             ->drafts(null)
             ->anyStatus()
-            ->siteId('*')
+            ->site('*')
             ->limit(null)
             ->unique();
         if ($element !== null) {

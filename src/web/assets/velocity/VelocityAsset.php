@@ -19,7 +19,7 @@ class VelocityAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@lib/velocity';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->js = [
             'velocity.js',

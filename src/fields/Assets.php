@@ -411,7 +411,7 @@ class Assets extends BaseRelationField
                 $query->siteId($targetSite);
             } else {
                 $query
-                    ->siteId('*')
+                    ->site('*')
                     ->unique()
                     ->preferSites([$targetSite]);
             }

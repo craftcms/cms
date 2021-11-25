@@ -42,7 +42,7 @@ use yii\db\ExpressionInterface;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
- * @property string|Site $site The site or site handle that the elements should be returned in
+ * @property-write string|string[]|Site $site The site(s) that resulting elements must be returned in
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -1792,21 +1792,14 @@ class ElementQuery extends Query implements ElementQueryInterface
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
         foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (
-                !$property->isStatic() &&
-                !in_array($property->getName(), [
-                    'hasMethods',
-                    'owner',
-                    // avoid conflicts with ElementQuery getters
-                    'iterator',
-                    'cachedResult',
-                    'criteria',
-                    'behaviors',
-                    'behavior',
-                    'rawSql',
-                ], true)
-            ) {
-                $names[] = $property->getName();
+            if (!$property->isStatic()) {
+                $name = $property->getName();
+                if (
+                    !in_array($name, ['canSetProperties', 'hasMethods', 'owner']) &&
+                    !method_exists($this, "get$name")
+                ) {
+                    $names[] = $property->getName();
+                }
             }
         }
 
@@ -2433,6 +2426,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         return (
             !$this->trashed &&
+            !$this->revisions &&
             ($this->withStructure ?? (bool)$this->structureId)
         );
     }
@@ -2476,12 +2470,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
         if ($this->structureId) {
-            $this->query->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            $this->query->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[subquery.elementsId]]',
                 ['structureelements.structureId' => $this->structureId],
             ]);
-            $this->subQuery->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            $this->subQuery->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
                 ['structureelements.structureId' => $this->structureId],
@@ -2770,25 +2764,43 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeStructureParamValue(string $property, string $class): ElementInterface
     {
+        $element = $this->$property;
+
+        if ($element === false) {
+            throw new QueryAbortedException();
+        }
+
         /** @var string|ElementInterface $class */
-        if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
-            $this->$property = $class::find()
-                ->id($this->$property)
+        if ($element instanceof ElementInterface && !$element->lft) {
+            $element = $element->id;
+        }
+
+        if (!$element instanceof ElementInterface) {
+            $element = $class::find()
+                ->id($element)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
                 ->anyStatus()
                 ->one();
 
-            if ($this->$property === null) {
+            if ($element === null) {
                 $this->$property = false;
+                throw new QueryAbortedException();
             }
         }
 
-        if ($this->$property === false) {
-            throw new QueryAbortedException();
+        if (!$element->lft) {
+            if ($element->getIsDerivative()) {
+                $element = $element->getCanonical(true);
+            }
+
+            if (!$element->lft) {
+                $this->$property = false;
+                throw new QueryAbortedException();
+            }
         }
 
-        return $this->$property;
+        return $this->$property = $element;
     }
 
     /**

@@ -105,7 +105,7 @@ class PruneRevisionsController extends Controller
 
             $extraRevisions = $elementType::find()
                 ->revisionOf($element['id'])
-                ->siteId('*')
+                ->site('*')
                 ->unique()
                 ->anyStatus()
                 ->orderBy(['num' => SORT_DESC])
