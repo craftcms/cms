@@ -178,7 +178,6 @@ JS;
             'From',
             'Give your tab a name.',
             'Handle',
-            'Header Column Heading',
             'Heading',
             'Hide nested sources',
             'Hide sidebar',
