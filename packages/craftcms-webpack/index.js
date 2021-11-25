@@ -15,6 +15,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const { WebpackManifestPlugin } = _require('webpack-manifest-plugin');
+const JsonMinimizerPlugin = require('json-minimizer-webpack-plugin');
 
 /**
  * Returns the first existing file based on a list of paths.
@@ -337,6 +338,10 @@ const getConfig = ({
     if (!isDevServerRunning) {
       config.plugins.push(new CleanWebpackPlugin());
       config.optimization.minimize = true;
+      config.optimization.minimizer =  [
+        `...`,
+        new JsonMinimizerPlugin(),
+      ]
     }
 
     return config;
