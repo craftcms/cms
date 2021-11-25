@@ -290,11 +290,6 @@ const configFactory = ({
 
   const types = {
     vue: {
-      // output: {
-      //   filename: this.jsFilename,
-      //   path: this.distPath,
-      //   publicPath: this.devServer.publicPath,
-      // },
       module: {
         rules: [
           {
