@@ -39,7 +39,7 @@ class CraftSupportAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'CraftSupportWidget.min.js',
+        'CraftSupportWidget.js',
     ];
 
     /**

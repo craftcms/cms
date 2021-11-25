@@ -10,7 +10,7 @@ module.exports = configFactory({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: require.resolve('axios/dist/axios.min.js'),
+                        from: require.resolve('axios/dist/axios.js'),
                     },
                 ],
             }),

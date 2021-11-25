@@ -82,7 +82,7 @@ class CpAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'Craft.min.js',
+        'Craft.js',
     ];
 
     /**

@@ -183,7 +183,7 @@ const configFactory = ({
       context: path.join(context, "src"),
       entry: {},
       output: {
-        filename: "[name].min.js",
+        filename: "[name].js",
         path: path.join(context, "dist"),
       },
       optimization: {},

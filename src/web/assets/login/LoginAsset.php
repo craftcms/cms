@@ -41,7 +41,7 @@ class LoginAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'login.min.js',
+        'login.js',
     ];
 
     /**

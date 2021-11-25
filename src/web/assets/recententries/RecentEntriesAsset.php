@@ -32,7 +32,7 @@ class RecentEntriesAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'RecentEntriesWidget.min.js',
+        'RecentEntriesWidget.js',
     ];
 
     /**

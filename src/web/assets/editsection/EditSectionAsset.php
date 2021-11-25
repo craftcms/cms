@@ -31,6 +31,6 @@ class EditSectionAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'editsection.min.js',
+        'editsection.js',
     ];
 }

@@ -31,6 +31,6 @@ class ClearCachesAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'ClearCachesUtility.min.js',
+        'ClearCachesUtility.js',
     ];
 }

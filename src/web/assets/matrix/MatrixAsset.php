@@ -32,7 +32,7 @@ class MatrixAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'MatrixInput.min.js',
+        'MatrixInput.js',
     ];
 
     /**

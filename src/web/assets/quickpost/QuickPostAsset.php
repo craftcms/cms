@@ -32,7 +32,7 @@ class QuickPostAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'QuickPostWidget.min.js',
+        'QuickPostWidget.js',
     ];
 
     /**

@@ -12,7 +12,7 @@ module.exports = configFactory({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: require.resolve('d3/build/d3.min.js'),
+                        from: require.resolve('d3/build/d3.js'),
                     },
                     {
                         context: path.dirname(require.resolve('d3-format/package.json')),

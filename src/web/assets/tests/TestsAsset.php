@@ -29,7 +29,7 @@ class TestsAsset extends AssetBundle
         ];
 
         $this->js = [
-            'tests.min.js',
+            'tests.js',
         ];
 
         parent::init();

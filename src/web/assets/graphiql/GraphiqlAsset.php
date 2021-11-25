@@ -29,7 +29,7 @@ class GraphiqlAsset extends AssetBundle
 
     /** @inheritdoc */
     public $js = [
-        'graphiql.min.js',
+        'graphiql.js',
     ];
 
     /** @inheritdoc */
