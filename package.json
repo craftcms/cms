@@ -7,9 +7,12 @@
     "serve": "webpack-dev-server --node-env=development"
   },
   "devDependencies": {
+    "@craftcms/webpack": "./packages/craftcms-webpack",
+    "lerna": "^4.0.0"
+  },
+  "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
     "@craftcms/sass": "./packages/craftcms-sass",
-    "@craftcms/webpack": "./packages/craftcms-webpack",
     "@pixelandtonic/craftui": "~0.3.8",
     "accounting": "^0.4.1",
     "axios": "^0.21.4",
@@ -30,8 +33,6 @@
     "jquery": "^3.6.0",
     "jquery-ui": "^1.13.0",
     "jquery.payment": "^3.0.0",
-    "json-minimizer-webpack-plugin": "^3.1.1",
-    "lerna": "^4.0.0",
     "lodash": "^4.17.21",
     "picturefill": "^3.0.3",
     "punycode": "1.3.*",
