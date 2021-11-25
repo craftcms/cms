@@ -188,6 +188,7 @@ JS;
             'Keep both',
             'Keep me logged in',
             'Keep them',
+            'Label',
             'License transferred.',
             'Limit',
             'Loading',
