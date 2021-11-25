@@ -3,7 +3,7 @@
 const {configFactory} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const JSONMinifyPlugin = require('node-json-minify');
-const path = require('path');
+const pkgDir = require('pkg-dir');
 
 module.exports = configFactory({
     context: __dirname,
@@ -15,7 +15,7 @@ module.exports = configFactory({
                         from: require.resolve('d3/build/d3.js'),
                     },
                     {
-                        context: path.dirname(require.resolve('d3-format/package.json')),
+                        context: pkgDir.sync(require.resolve('d3-format')),
                         from: 'locale/*.json',
                         to: 'd3-format/',
                         transform: function(content) {
@@ -23,7 +23,7 @@ module.exports = configFactory({
                         }
                     },
                     {
-                        context: path.dirname(require.resolve('d3-time-format/package.json')),
+                        context: pkgDir.sync(require.resolve('d3-time-format')),
                         from: 'locale/*.json',
                         to: 'd3-time-format/',
                         transform: function(content) {

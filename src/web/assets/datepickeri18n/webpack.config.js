@@ -3,7 +3,7 @@
 const {configFactory} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
-const modulePath = path.dirname(require.resolve('jquery-ui/package.json'));
+const pkgDir = require('pkg-dir');
 
 module.exports = configFactory({
     context: __dirname,
@@ -12,7 +12,7 @@ module.exports = configFactory({
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: path.join(modulePath, 'ui', 'i18n'),
+                        context: path.join(pkgDir.sync(require.resolve('jquery-ui')), 'ui', 'i18n'),
                         from: '*',
                         to: '.'
                     },

@@ -43,6 +43,7 @@
     "glob": "^7.2.0",
     "mini-css-extract-plugin": "^2.4.4",
     "node-json-minify": "^1.0.0",
+    "pkg-dir": "^6.0.1",
     "postcss": "^8.2.8",
     "postcss-loader": "^6.2.0",
     "sass": "^1.26.8",
