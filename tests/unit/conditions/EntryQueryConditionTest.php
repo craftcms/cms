@@ -10,8 +10,8 @@ namespace crafttests\unit\conditions;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\conditions\elements\entry\AuthorGroupConditionRule;
-use craft\conditions\elements\entry\EntryQueryCondition;
+use craft\conditions\elements\entries\AuthorGroupConditionRule;
+use craft\conditions\elements\entries\EntryQueryCondition;
 use craft\conditions\elements\SlugConditionRule;
 
 
