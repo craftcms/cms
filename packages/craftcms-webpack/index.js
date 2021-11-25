@@ -46,7 +46,7 @@ const applyDotEnv = ({ context, configName, currentConfigName }) => {
   }
 };
 
-const devServerFactory = ({ context, templatesPath }) => {
+const getDevServer = ({ context, templatesPath }) => {
   // Find PHP asset bundles
   let files = fs.readdirSync(context);
   let assetBundleClasses = [];
@@ -185,7 +185,7 @@ const configFactory = ({
       path: path.join(context, "dist"),
     },
     optimization: {},
-    devServer: devServerFactory({ context, templatesPath }),
+    devServer: getDevServer({ context, templatesPath }),
     devtool: "source-map",
     resolve: {
       extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
