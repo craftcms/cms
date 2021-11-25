@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Reduced the amount of time it took for the GraphiQL IDE to initialize.
 - Updated Garnish to 0.1.48.
 
 ### Fixed
