@@ -14,7 +14,10 @@
 - Added the `assetUploaders` user query param.
 - Added the `authors` user query param.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
+- Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
+- Added `craft\base\ElementInterface::createCondition()`.
+- Added `craft\base\FieldInterface::getQueryConditionRuleType()`.
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
 - Added `craft\base\Volume::CONFIG_VISIBILITY`.
 - Added `craft\base\Volume::VISIBILITY_DEFAULT`.
@@ -22,7 +25,67 @@
 - Added `craft\base\Volume::VISIBILITY_PUBLIC`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
+- Added `craft\conditions\BaseCondition`.
+- Added `craft\conditions\BaseConditionRule`.
+- Added `craft\conditions\BaseDateRangeConditionRule`.
+- Added `craft\conditions\BaseElementSelectConditionRule`.
+- Added `craft\conditions\BaseLightswitchConditionRule`.
+- Added `craft\conditions\BaseMultiSelectConditionRule`.
+- Added `craft\conditions\BaseNumberConditionRule`.
+- Added `craft\conditions\BaseQueryCondition`.
+- Added `craft\conditions\BaseSelectConditionRule`.
+- Added `craft\conditions\BaseTextConditionRule`.
+- Added `craft\conditions\ConditionInterface`.
+- Added `craft\conditions\ConditionRuleInterface`.
+- Added `craft\conditions\elements\assets\AssetQueryCondition`.
+- Added `craft\conditions\elements\assets\DateModifiedConditionRule`.
+- Added `craft\conditions\elements\assets\FilenameConditionRule`.
+- Added `craft\conditions\elements\assets\FileSizeConditionRule`.
+- Added `craft\conditions\elements\assets\FileTypeConditionRule`.
+- Added `craft\conditions\elements\assets\HeightConditionRule`.
+- Added `craft\conditions\elements\assets\UploaderConditionRule`.
+- Added `craft\conditions\elements\assets\VolumeConditionRule`.
+- Added `craft\conditions\elements\assets\WidthConditionRule`.
+- Added `craft\conditions\elements\categories\CategoryQueryCondition`.
+- Added `craft\conditions\elements\categories\GroupConditionRule`.
+- Added `craft\conditions\elements\DateCreatedConditionRule`.
+- Added `craft\conditions\elements\DateUpdatedConditionRule`.
+- Added `craft\conditions\elements\ElementQueryCondition`.
+- Added `craft\conditions\elements\entries\AuthorConditionRule`.
+- Added `craft\conditions\elements\entries\AuthorGroupConditionRule`.
+- Added `craft\conditions\elements\entries\EntryQueryCondition`.
+- Added `craft\conditions\elements\entries\ExpiryDateConditionRule`.
+- Added `craft\conditions\elements\entries\PostDateConditionRule`.
+- Added `craft\conditions\elements\entries\SectionConditionRule`.
+- Added `craft\conditions\elements\entries\TypeConditionRule`.
+- Added `craft\conditions\elements\fields\DateFieldConditionRule`.
+- Added `craft\conditions\elements\fields\FieldConditionRuleInterface`.
+- Added `craft\conditions\elements\fields\FieldConditionRuleTrait`.
+- Added `craft\conditions\elements\fields\LightswitchFieldConditionRule`.
+- Added `craft\conditions\elements\fields\NumberFieldConditionRule`.
+- Added `craft\conditions\elements\fields\OptionsFieldConditionRule`.
+- Added `craft\conditions\elements\fields\RelationalFieldConditionRule`.
+- Added `craft\conditions\elements\fields\TextFieldConditionRule`.
+- Added `craft\conditions\elements\HasUrlConditionRule`.
+- Added `craft\conditions\elements\IdConditionRule`.
+- Added `craft\conditions\elements\RelatedToConditionRule`.
+- Added `craft\conditions\elements\SlugConditionRule`.
+- Added `craft\conditions\elements\tags\GroupConditionRule`.
+- Added `craft\conditions\elements\tags\TagQueryCondition`.
+- Added `craft\conditions\elements\UriConditionRule`.
+- Added `craft\conditions\elements\users\AdminConditionRule`.
+- Added `craft\conditions\elements\users\CredentialedConditionRule`.
+- Added `craft\conditions\elements\users\EmailConditionRule`.
+- Added `craft\conditions\elements\users\FirstNameConditionRule`.
+- Added `craft\conditions\elements\users\GroupConditionRule`.
+- Added `craft\conditions\elements\users\LastLoginDateConditionRule`.
+- Added `craft\conditions\elements\users\LastNameConditionRule`.
+- Added `craft\conditions\elements\users\UsernameConditionRule`.
+- Added `craft\conditions\elements\users\UserQueryCondition`.
+- Added `craft\conditions\QueryConditionInterface`.
+- Added `craft\conditions\QueryConditionRuleInterface`.
 - Added `craft\controllers\AssetIndexesController`.
+- Added `craft\controllers\ConditionsController`.
 - Added `craft\db\Migration::dropAllForeignKeysToTable()`.
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::dropIndexIfExists()`.
@@ -34,6 +97,7 @@
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\MissingVolumeFolderException`.
+- Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
 - Added `craft\gql\base\SingularTypeInterface`.
@@ -76,12 +140,14 @@
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
+- Added `craft\services\Conditions`.
 - Added `craft\services\Config::CATEGORY_CUSTOM`.
 - Added `craft\services\Config::getCustom()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_DATE_MODIFIED`.
+- Added `craft\services\ProjectConfig::PATH_ELEMENT_SOURCES`.
 - Added `craft\services\ProjectConfig::PATH_ENTRY_TYPES`.
 - Added `craft\services\ProjectConfig::PATH_FIELD_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_FIELDS`.
@@ -109,8 +175,11 @@
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
 - Added `craft\services\Users::removeCredentials()`.
+- Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
+- Added `craft\web\assets\htmx\HtmxAsset`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the `assets/update-focal-point` action.
+- Added the `htmx.org` JavaScript library.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.
@@ -170,6 +239,7 @@
 - Element types’ `afterSave()` methods must now have a `void` return type declaration.
 - Element types’ `attributeLabels()` methods must now have an `array` return type declaration.
 - Element types’ `defineActions()` methods’ `$source` arguments should no longer accept `null`.
+- Element types’ `defineSources()` methods’ `$context` arguments should no longer accept `null`.
 - Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
 - Element types’ `getFieldLayout()` methods must now have a `?FieldLayout` return type declaration.
 - Element types’ `getHtmlAttributes()` and `htmlAttributes()` methods must now return attribute arrays that are compatible with `craft\helpers\Html::renderTagAttributes()`.
@@ -180,6 +250,7 @@
 - Element types’ `getUriFormat()` methods must now have a `?string` return type declaration.
 - Element types’ `prepElementQueryForTableAttribute()` methods must now have a `void` return type declaration.
 - Element types’ `refHandle()` methods must now have a `?string` return type declaration.
+- Element types’ `sources()` methods’ `$context` arguments should no longer accept `null`.
 - Element types’ `tableAttributes()` and `defineTableAttributes()` methods should no longer return a generic attribute for defining the header column heading at the beginning of the returned array. The header column heading is now set to the element type’s display name, per its `displayName()` method.
 - Element queries’ `status()` methods must now have a `self` return type declaration.
 - Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
@@ -232,6 +303,7 @@
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
 - `craft\helpers\Db::truncateTable()` now returns `void` rather than `int`.
 - `craft\helpers\Gql::getUnionType()` no longer requires a resolver function to be passed, if the union contains only element GraphQL types.
+- `craft\helpers\Html` now supports defining `hx-*` and `data-hx-*` attributes via a `hx` and `data-hx` keys, similar to `aria` and `data`.
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
