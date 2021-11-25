@@ -151,7 +151,7 @@ const devServerFactory = ({ context, templatesPath }) => {
 
 const configFactory = ({
   context,
-  type = "asset",
+  type = null,
   config = {},
 
   // TODO: rename, watchPath?
@@ -160,7 +160,6 @@ const configFactory = ({
     path.resolve(context, "postcss.config.js"),
     path.resolve(__dirname, "postcss.config.js"),
   ]),
-  removeFiles = null,
 }) => {
   const configName = path.basename(context);
   const currentConfigName = argv["config-name"] || null;
@@ -171,130 +170,126 @@ const configFactory = ({
   });
   const isDevServerRunning = path.basename(argv["$0"]) === "webpack-dev-server";
 
-  if (isDevServerRunning && currentConfigName) {
+  if (isDevServerRunning && !currentConfigName) {
     throw new Error(
       "Running the dev server is only permitted in individual assets."
     );
   }
 
-  const base = () => {
-    const config = {
-      name: configName,
-      context: path.join(context, "src"),
-      entry: {},
-      output: {
-        filename: "[name].js",
-        path: path.join(context, "dist"),
-      },
-      optimization: {},
-      devServer: devServerFactory({ context, templatesPath }),
-      devtool: "source-map",
-      resolve: {
-        extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
-      },
-      module: {
-        rules: [
-          {
-            test: /.ts$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-              loader: "ts-loader",
-              options: {
-                configFile: path.resolve(__dirname, "./tsconfig.json"),
-              },
+  const baseConfig = {
+    name: configName,
+    context: path.join(context, "src"),
+    entry: {},
+    output: {
+      filename: "[name].js",
+      path: path.join(context, "dist"),
+    },
+    optimization: {},
+    devServer: devServerFactory({ context, templatesPath }),
+    devtool: "source-map",
+    resolve: {
+      extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
+    },
+    module: {
+      rules: [
+        {
+          test: /.ts$/,
+          exclude: /(node_modules|bower_components)/,
+          use: {
+            loader: "ts-loader",
+            options: {
+              configFile: path.resolve(__dirname, "./tsconfig.json"),
             },
           },
-          {
-            test: /.m?js?$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-              loader: "babel-loader",
-              options: {
-                plugins: ["@babel/plugin-syntax-dynamic-import"],
-                presets: ["@babel/preset-env", "@babel/preset-typescript"],
-              },
+        },
+        {
+          test: /.m?js?$/,
+          exclude: /(node_modules|bower_components)/,
+          use: {
+            loader: "babel-loader",
+            options: {
+              plugins: ["@babel/plugin-syntax-dynamic-import"],
+              presets: ["@babel/preset-env", "@babel/preset-typescript"],
             },
           },
+        },
 
-          // graphiql
-          // https://github.com/graphql/graphql-js/issues/2721#issuecomment-723008284
-          {
-            test: /\.m?js/,
-            resolve: {
-              fullySpecified: false,
-            },
+        // graphiql
+        // https://github.com/graphql/graphql-js/issues/2721#issuecomment-723008284
+        {
+          test: /\.m?js/,
+          resolve: {
+            fullySpecified: false,
           },
-          {
-            test: /\.s?[ac]ss$/i,
-            use: [
-              "vue-style-loader",
-              {
-                loader: MiniCssExtractPlugin.loader,
-                options: {
-                  // backing up from dist
-                  publicPath: "../",
+        },
+        {
+          test: /\.s?[ac]ss$/i,
+          use: [
+            "vue-style-loader",
+            {
+              loader: MiniCssExtractPlugin.loader,
+              options: {
+                // backing up from dist
+                publicPath: "../",
 
-                  // Workaround for css imports/vue
-                  esModule: false,
-                },
+                // Workaround for css imports/vue
+                esModule: false,
               },
-              "css-loader",
-              {
-                loader: "postcss-loader",
-                options: {
-                  postcssOptions: {
-                    config: postcssConfig,
-                  },
-                },
-              },
-              {
-                loader: "sass-loader",
-                options: {
-                  // Prefer `dart-sass`
-                  implementation: require("sass"),
-                },
-              },
-            ],
-          },
-          {
-            test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
-            type: "asset/resource",
-            generator: {
-              filename: "fonts/[name][ext][query]",
             },
-          },
-          {
-            test: /\.(jpg|gif|png|svg|ico)$/,
-            type: "asset/resource",
-            exclude: [path.resolve(context, "./fonts")],
-            generator: {
-              filename: "[path][name][ext][query]",
+            "css-loader",
+            {
+              loader: "postcss-loader",
+              options: {
+                postcssOptions: {
+                  config: postcssConfig,
+                },
+              },
             },
+            {
+              loader: "sass-loader",
+              options: {
+                // Prefer `dart-sass`
+                implementation: require("sass"),
+              },
+            },
+          ],
+        },
+        {
+          test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
+          type: "asset/resource",
+          generator: {
+            filename: "fonts/[name][ext][query]",
           },
-        ],
-      },
-      plugins: [
-        new MiniCssExtractPlugin({
-          filename: "css/[name].css",
-          chunkFilename: "css/[name].css",
-        }),
+        },
+        {
+          test: /\.(jpg|gif|png|svg|ico)$/,
+          type: "asset/resource",
+          exclude: [path.resolve(context, "./fonts")],
+          generator: {
+            filename: "[path][name][ext][query]",
+          },
+        },
       ],
-    };
-
-    if (dotEnv) {
-      config.plugins.push(new Dotenv());
-    }
-
-    if (!isDevServerRunning) {
-      config.plugins.push(new CleanWebpackPlugin());
-      config.optimization.minimize = true;
-    }
-
-    return config;
+    },
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: "css/[name].css",
+        chunkFilename: "css/[name].css",
+      }),
+    ],
   };
 
-  const vue = (context) => {
-    return {
+  if (dotEnv) {
+    baseConfig.plugins.push(new Dotenv());
+  }
+
+  if (!isDevServerRunning) {
+    baseConfig.plugins.push(new CleanWebpackPlugin());
+    baseConfig.optimization.minimize = true;
+  }
+
+  const types = {
+    vue: {
       // output: {
       //   filename: this.jsFilename,
       //   path: this.distPath,
@@ -320,24 +315,20 @@ const configFactory = ({
           publicPath: '/'
         }),
       ],
-    };
-  };
-
-  const types = {
-    asset() {
-      return {};
     },
-
-    vue,
   };
 
   const typeConfig = types[type] || null;
 
-  if (!typeConfig) {
+  if (type && !typeConfig) {
     throw `Type [${type}] is not a valid config type. Must be one of [${Object.keys(types).join(', ')}].`;
   }
 
-  return merge(base(), typeConfig(), config);
+  return merge(
+    baseConfig,
+    typeConfig || {},
+    config
+  );
 };
 
 module.exports = {
