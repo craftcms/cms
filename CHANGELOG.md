@@ -9,6 +9,7 @@
 ### Fixed
 - Fixed a bug where GraphiQL Explorer wasn’t working. ([#10153](https://github.com/craftcms/cms/issues/10153))
 - Fixed a bug where the last control panel breadcrumb could be collapsed under a “More…” menu when there was enough room to display it.
+- Fixed a bug where the “Create a new child category” action on the Categories index page resulted in a 404. ([#10148](https://github.com/craftcms/cms/issues/10148))
 
 ## 3.7.22 - 2021-11-23
 
