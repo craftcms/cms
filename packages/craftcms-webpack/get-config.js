@@ -36,7 +36,7 @@ const applyDotEnv = ({ context, configName, currentConfigName }) => {
   }
 };
 
-const getDevServer = ({ context, templatesPath }) => {
+const getDevServer = ({ context, watchPaths }) => {
   // Find PHP asset bundles
   let files = fs.readdirSync(context);
   let assetBundleClasses = [];
@@ -99,9 +99,6 @@ const getDevServer = ({ context, templatesPath }) => {
   const scheme = https ? "https" : "http";
   const publicPath = process.env.DEV_SERVER_PUBLIC || `${scheme}://${host}:${port}/`;
 
-  // TODO: rename, get dist path from config
-  const contentBase = process.env.DEV_SERVER_CONTENT_BASE || path.join(context, "dist");
-
   return {
     host,
     https,
@@ -118,16 +115,10 @@ const getDevServer = ({ context, templatesPath }) => {
         warnings: false,
       },
     },
-    static: [
-      {
-        directory: contentBase,
-        watch: true,
-      },
-      {
-        directory: templatesPath,
-        watch: true,
-      },
-    ],
+    static: watchPaths.map(directory => ({
+      directory,
+      watch: true,
+    })),
     onBeforeSetupMiddleware: function (devServer) {
       devServer.app.get("/which-asset", function (req, res) {
         res.json({
@@ -143,9 +134,10 @@ module.exports = ({
   context,
   type = null,
   config = {},
-
-  // TODO: rename, watchPath?
-  templatesPath = path.join(rootPath, "/src/templates"),
+  watchPaths = [
+    path.join(rootPath, "src/templates"),
+    path.join(context, "dist"),
+  ],
   postcssConfig = getFirstExistingPath([
     path.resolve(context, "postcss.config.js"),
     path.resolve(__dirname, "postcss.config.js"),
@@ -175,7 +167,7 @@ module.exports = ({
       path: path.join(context, "dist"),
     },
     optimization: {},
-    devServer: getDevServer({ context, templatesPath }),
+    devServer: getDevServer({ context, watchPaths }),
     devtool: "source-map",
     resolve: {
       extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
