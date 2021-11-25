@@ -7,7 +7,7 @@
 - Updated Garnish to 0.1.48.
 
 ### Fixed
-- Fixed a bug where the GraphiQL explorer wasn’t displaying schemas. ([#10153](https://github.com/craftcms/cms/issues/10153))
+- Fixed a bug where GraphiQL Explorer wasn’t working. ([#10153](https://github.com/craftcms/cms/issues/10153))
 
 ## 3.7.22 - 2021-11-23
 
