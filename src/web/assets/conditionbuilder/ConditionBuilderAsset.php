@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\conditionbuilder;
 
-use craft\web\assets\cphtmx\CpHtmxAsset;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
+use craft\web\assets\htmx\HtmxAsset;
 
 /**
  * Condition Builder asset bundle.
@@ -24,20 +24,13 @@ class ConditionBuilderAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        CpHtmxAsset::class,
+        HtmxAsset::class,
     ];
 
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        $this->css = [];
-
-        $this->js = [
-            'js/ConditionBuilder.js',
-        ];
-
-        parent::init();
-    }
+    public $js = [
+        'js/ConditionBuilder.js',
+    ];
 }

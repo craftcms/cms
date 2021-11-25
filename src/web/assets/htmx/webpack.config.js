@@ -11,6 +11,7 @@ module.exports = new CraftWebpackConfig({
         files: {
           'htmx.min.js': [
             require.resolve('htmx.org'),
+            require.resolve('./src/htmx.js'),
           ],
         },
       }),

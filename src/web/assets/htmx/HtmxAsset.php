@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\htmx;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Htmx asset bundle.
@@ -18,18 +18,19 @@ class HtmxAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->js = [
-            'htmx.min.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'htmx.min.js',
+    ];
 }
