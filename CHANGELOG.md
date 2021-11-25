@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+- Updated Garnish to 0.1.48.
+
+## 3.7.22 - 2021-11-23
+
 ### Added
 - Added the `booleanMenu`, `booleanMenuField`, `selectize`, and `selectizeField` macros to the `_includes/forms.html` control panel template. ([#8866](https://github.com/craftcms/cms/discussions/8866))
 - Added `Craft::parseBooleanEnv()`.
@@ -12,12 +17,16 @@
 
 ### Changed
 - The “System Status” and “Time Zone” general settings can now be set to environment variables. ([#9855](https://github.com/craftcms/cms/issues/9855))
-- The “Encryption Method” SMTP mailer type setting can now be set to an environment variable. ([#8989](https://github.com/craftcms/cms/discussions/8989))
+- The “Use authentication” and “Encryption Method” SMTP mailer type settings can now be set to an environment variable. ([#8989](https://github.com/craftcms/cms/discussions/8989))
 - The `timeZone` and `timeZoneField` control panel form macros now support an `includeEnvVars` setting.
 
 ### Fixed
 - Fixed a bug where the `entry-revisions/save-draft` action wasn’t respecting the `provisional` param when creating a new entry and draft. ([#10105](https://github.com/craftcms/cms/issues/10105))
 - Fixed an error that occurred when saving an element, if any custom field handles conflicted with magic properties on element queries. ([#10099](https://github.com/craftcms/cms/issues/10099))
+- Fixed a bug where relational field thumbnails weren’t always loading for fields that weren’t on the initial tab.
+- Fixed a bug where previewing disabled Structure section entries or categories would return a 404 response. ([#10121](https://github.com/craftcms/cms/issues/10121))
+- Fixed a bug where ancestor/sibling/descendant queries were yielding no results when previewing a draft or revision. ([#10122](https://github.com/craftcms/cms/issues/10122))
+- Fixed a bug where Matrix fields weren’t getting reverted properly when reverting an entry’s content to a prior revision. ([#10106](https://github.com/craftcms/cms/issues/10106))
 
 ## 3.7.21 - 2021-11-16
 

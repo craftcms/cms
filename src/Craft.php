@@ -55,6 +55,19 @@ class Craft extends Yii
     private static $_fields;
 
     /**
+     * @inheritdoc
+     *
+     * @template T
+     * @param class-string<T>|array{class: class-string<T>}|callable(): T $type
+     * @param array $params
+     * @return T
+     */
+    public static function createObject($type, array $params = [])
+    {
+        return parent::createObject($type, $params);
+    }
+
+    /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
      * and/or an alias (`@aliasName`), and returns the referenced value.
      *
