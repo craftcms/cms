@@ -7,7 +7,6 @@ module.exports = configFactory({
     context: __dirname,
     config: {
         plugins: [
-
             new MergeIntoSingleFilePlugin({
                 files: {
                     'jquery-ui.js': [
