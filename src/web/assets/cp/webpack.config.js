@@ -1,9 +1,9 @@
 /* jshint esversion: 6 */
 /* globals module, require, webpack */
-const {configFactory} = require('@craftcms/webpack');
+const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = configFactory({
+module.exports = getConfig({
     context: __dirname,
     config: {
         entry: {

@@ -1,3 +1,3 @@
-const {fetchConfigs} = require('@craftcms/webpack');
+const {getConfigs} = require('@craftcms/webpack');
 
-module.exports = fetchConfigs();
+module.exports = getConfigs();

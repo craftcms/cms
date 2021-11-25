@@ -19,7 +19,7 @@ const { WebpackManifestPlugin } = _require('webpack-manifest-plugin');
 // Where webpack-cli was run from
 const rootPath = path.resolve("./");
 
-const fetchConfigs = (
+const getConfigs = (
   globPattern = "src/web/assets/*/webpack.config.js",
   options = {
     cwd: module.parent.path,
@@ -149,7 +149,7 @@ const getDevServer = ({ context, templatesPath }) => {
   };
 };
 
-const configFactory = ({
+const getConfig = ({
   context,
   type = null,
   config = {},
@@ -327,6 +327,6 @@ const configFactory = ({
 };
 
 module.exports = {
-  configFactory,
-  fetchConfigs,
+  getConfig,
+  getConfigs,
 };

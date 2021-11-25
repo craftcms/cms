@@ -1,10 +1,10 @@
 /* jshint esversion: 6 */
 /* globals module, require */
 const path = require('path')
-const {configFactory} = require('@craftcms/webpack');
+const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = configFactory({
+module.exports = getConfig({
   context: __dirname,
   type: 'vue',
   postCssConfig: path.resolve(__dirname, 'postcss.config.js'),

@@ -1,11 +1,11 @@
 /*jshint esversion: 6 */
 /* globals module, require, __dirname */
-const {configFactory} = require('@craftcms/webpack');
+const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const JSONMinifyPlugin = require('node-json-minify');
 const pkgDir = require('pkg-dir');
 
-module.exports = configFactory({
+module.exports = getConfig({
     context: __dirname,
     config: {
         plugins: [
