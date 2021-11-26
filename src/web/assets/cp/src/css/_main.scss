@@ -817,11 +817,12 @@ td.right {
 
 .icon.delete {
   display: inline-block;
+  line-height: inherit;
 }
 
 .icon.delete:before {
   content: "remove";
-  color: $darkHairlineColor;
+  color: $removeIconColor;
 }
 
 .icon.delete:not(.disabled):hover:before {
