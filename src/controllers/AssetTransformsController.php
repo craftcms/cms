@@ -45,7 +45,7 @@ class AssetTransformsController extends Controller
     {
         $variables = [];
 
-        $variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
+        $variables['transforms'] = Craft::$app->getImageTransforms()->getAllTransforms();
         $variables['modes'] = ImageTransform::modes();
 
         return $this->renderTemplate('settings/assets/transforms/_index', $variables);
@@ -63,7 +63,7 @@ class AssetTransformsController extends Controller
     {
         if ($transform === null) {
             if ($transformHandle !== null) {
-                $transform = Craft::$app->getAssetTransforms()->getTransformByHandle($transformHandle);
+                $transform = Craft::$app->getImageTransforms()->getTransformByHandle($transformHandle);
 
                 if (!$transform) {
                     throw new NotFoundHttpException('Transform not found');
@@ -136,7 +136,7 @@ class AssetTransformsController extends Controller
         }
 
         if (!$errors) {
-            $success = Craft::$app->getAssetTransforms()->saveTransform($transform);
+            $success = Craft::$app->getImageTransforms()->saveTransform($transform);
         } else {
             $success = false;
         }
@@ -166,7 +166,7 @@ class AssetTransformsController extends Controller
 
         $transformId = $this->request->getRequiredBodyParam('id');
 
-        Craft::$app->getAssetTransforms()->deleteTransformById($transformId);
+        Craft::$app->getImageTransforms()->deleteTransformById($transformId);
 
         return $this->asJson(['success' => true]);
     }

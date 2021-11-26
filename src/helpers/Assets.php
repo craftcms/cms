@@ -685,7 +685,7 @@ class Assets
         // No existing resources we could use.
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = Craft::$app->getAssetTransforms()->getCachedCloudImageSize();
+        $maxCachedSize = Craft::$app->getImageTransforms()->getCachedCloudImageSize();
 
         if (!$volume instanceof LocalVolumeInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.

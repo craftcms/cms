@@ -21,7 +21,7 @@ use craft\helpers\Image;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\image\Raster;
 use craft\models\ImageTransformIndex;
-use craft\services\AssetTransforms;
+use craft\services\ImageTransforms;
 
 /**
  * DefaultDriver transforms the images using the Imagine library.
@@ -51,7 +51,7 @@ class DefaultDriver extends ImageTransformDriver
             // Check if it really exists
             if ($fs instanceof LocalFsInterface && !$fs->fileExists($asset->folderPath . $uri)) {
                 $transformIndexModel->fileExists = false;
-                Craft::$app->getAssetTransforms()->storeTransformIndexData($transformIndexModel);
+                Craft::$app->getImageTransforms()->storeTransformIndexData($transformIndexModel);
             } else {
                 return AssetsHelper::generateUrl($asset->getVolume(), $asset, $uri, $transformIndexModel);
             }
@@ -183,7 +183,7 @@ class DefaultDriver extends ImageTransformDriver
         }
 
         // In case this takes a while, update the timestamp so we know it's all working
-        $image->setHeartbeatCallback(fn () => Craft::$app->getAssetTransforms()->storeTransformIndexData($index));
+        $image->setHeartbeatCallback(fn () => Craft::$app->getImageTransforms()->storeTransformIndexData($index));
 
         switch ($transform->mode) {
             case 'fit':
@@ -214,7 +214,7 @@ class DefaultDriver extends ImageTransformDriver
             'image' => $image,
         ]);
 
-        Craft::$app->getAssetTransforms()->trigger(AssetTransforms::EVENT_GENERATE_TRANSFORM, $event);
+        Craft::$app->getImageTransforms()->trigger(ImageTransforms::EVENT_GENERATE_TRANSFORM, $event);
 
         if ($event->tempPath !== null) {
             $tempPath = $event->tempPath;
@@ -248,7 +248,7 @@ class DefaultDriver extends ImageTransformDriver
      */
     protected function generateTransform(ImageTransformIndex $index): bool
     {
-        $transformService = Craft::$app->getAssetTransforms();
+        $transformService = Craft::$app->getImageTransforms();
         $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
         $volume = $asset->getVolume();
 

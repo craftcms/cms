@@ -26,10 +26,10 @@ class GeneratePendingTransforms extends BaseJob
     public function execute($queue): void
     {
         // Get all of the pending transform index IDs
-        $indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();
+        $indexIds = Craft::$app->getImageTransforms()->getPendingTransformIndexIds();
 
         $totalIndexes = count($indexIds);
-        $assetTransformsService = Craft::$app->getAssetTransforms();
+        $assetTransformsService = Craft::$app->getImageTransforms();
 
         foreach ($indexIds as $i => $id) {
             if ($index = $assetTransformsService->getTransformIndexModelById($id)) {

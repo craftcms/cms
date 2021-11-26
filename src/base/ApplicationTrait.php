@@ -43,7 +43,7 @@ use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
-use craft\services\AssetTransforms;
+use craft\services\ImageTransforms;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Config;
@@ -111,7 +111,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
- * @property-read AssetTransforms $assetTransforms The asset transforms service
  * @property-read Assets $assets The assets service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
@@ -131,6 +130,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
  * @property-read Images $images The images service
+ * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
  * @property-read Mailer $mailer The mailer component
@@ -858,12 +858,12 @@ trait ApplicationTrait
     /**
      * Returns the asset transforms service.
      *
-     * @return AssetTransforms The asset transforms service
+     * @return ImageTransforms The asset transforms service
      */
-    public function getAssetTransforms(): AssetTransforms
+    public function getImageTransforms(): ImageTransforms
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('assetTransforms');
+        return $this->get('imageTransforms');
     }
 
     /**
@@ -1517,9 +1517,9 @@ trait ApplicationTrait
             ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
             ->onRemove(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleDeletedVolume'))
             // Transforms
-            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
-            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
-            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleDeletedTransform'))
+            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleChangedTransform'))
+            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleChangedTransform'))
+            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleDeletedTransform'))
             // Site groups
             ->onAdd(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
             ->onUpdate(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))

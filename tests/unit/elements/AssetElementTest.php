@@ -13,7 +13,7 @@ use craft\base\Volume;
 use craft\elements\Asset;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
-use craft\services\AssetTransforms;
+use craft\services\ImageTransforms;
 use craft\test\TestCase;
 use UnitTester;
 
@@ -83,7 +83,7 @@ class AssetElementTest extends TestCase
 
         $extend = $expectExtension ? Expected::once(new ImageTransform()) : Expected::never(new ImageTransform());
 
-        $assetTransforms = $this->make(AssetTransforms::class, [
+        $assetTransforms = $this->make(ImageTransforms::class, [
             'getTransformByHandle' => new ImageTransform(),
             'extendTransform' => $extend
         ]);

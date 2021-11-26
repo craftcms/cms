@@ -220,7 +220,7 @@ class ImageTransform extends Model
     public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
-        $attributes[] = 'dimensionChangeTime';
+        $attributes[] = 'parameterChangeTime';
         return $attributes;
     }
 
@@ -232,7 +232,7 @@ class ImageTransform extends Model
      */
     public function getImageTransformer(): ImageTransformDriverInterface
     {
-        return Craft::$app->getAssetTransforms()->getImageTransformer($this->driver);
+        return Craft::$app->getImageTransforms()->getImageTransformer($this->driver);
     }
 
     /**

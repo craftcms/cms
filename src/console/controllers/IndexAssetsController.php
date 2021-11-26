@@ -270,7 +270,7 @@ class IndexAssetsController extends Controller
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-            Craft::$app->getAssetTransforms()->deleteTransformIndexDataByAssetIds($assetIds);
+            Craft::$app->getImageTransforms()->deleteTransformIndexDataByAssetIds($assetIds);
             Db::delete(Table::ASSETS, [
                 'id' => $assetIds,
             ]);

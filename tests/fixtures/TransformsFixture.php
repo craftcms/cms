@@ -9,7 +9,7 @@ namespace crafttests\fixtures;
 
 use Craft;
 use craft\records\ImageTransform;
-use craft\services\AssetTransforms;
+use craft\services\ImageTransforms;
 use craft\test\ActiveFixture;
 
 /**
@@ -38,6 +38,6 @@ class TransformsFixture extends ActiveFixture
     {
         parent::load();
 
-        Craft::$app->set('assetTransforms', new AssetTransforms());
+        Craft::$app->set('assetTransforms', new ImageTransforms());
     }
 }

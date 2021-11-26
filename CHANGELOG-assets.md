@@ -15,8 +15,8 @@
 - Added `craft/models/ImageTransform::getImageTransformer()`.
 - Added `craft/models/ImageTransform::setDriver()`.
 - Added `craft/models/ImageTransformIndex::getImageTransformer()`.
-- Added `craft/services/AssetTransforms::getImageTransformer()`.
-- Added `craft/services/AssetTransforms::getSimilarTransformIndex()`.
+- Added `craft/services/ImageTransforms::getImageTransformer()`.
+- Added `craft/services/ImageTransforms::getSimilarTransformIndex()`.
 
 ### Changed
 - Images that are not web-safe now are always converted to JPG when transforming, if auto format is selected.
@@ -24,21 +24,28 @@
 - `craft/db/Table:ASSETTRANSFORMINDEX` has been renamed to `craft/db/Table:IMAGETRANSFORMINDEX`.
 - `craft/db/Table:ASSETTRANSFORMS` has been renamed to `craft/db/Table:IMAGETRANSFORMS`.
 - `craft/errors/AssetTransformException` is now `craft/errors/ImageTransformException`.
+- `craft/events/AssetTransformEvent` is now `craft/events/ImageTransformEvent`.
+- `craft/events/AssetTransformImageEvent` is now `craft/events/TransformImageEvent`.
 - `craft/models/AssetTransform` is now `craft/models/ImageTransform`.
 - `craft/models/AssetTransformIndex` is now `craft/models/ImageTransformIndex`.
+- `craft/models/ImageTransform::$dimensionChangeTime` has been renamed to `$parameterChangeTime`.
 - `craft/records/AssetTransform` is now `craft/records/ImageTransform`.
-- `craft/models/AssetTransform::$dimensionChangeTime` has been renamed to `$parameterChangeTime`.
+- `craft/services/AssetTransforms` is now `craft/services/ImageTransforms`.
+- `craft/services/AssetTransforms::EVENT_AFTER_SAVE_ASSET_TRANSFORM` has been renamed to `EVENT_AFTER_SAVE_IMAGE_TRANSFORM`.
+- `craft/services/AssetTransforms::EVENT_BEFORE_SAVE_ASSET_TRANSFORM` has been renamed to `EVENT_BEFORE_SAVE_IMAGE_TRANSFORM`.
+- `craft/services/AssetTransforms::EVENT_AFTER_DELETE_ASSET_TRANSFORM` has been renamed to `EVENT_AFTER_DELETE_IMAGE_TRANSFORM`.
+- `craft/services/AssetTransforms::EVENT_BEFORE_DELETE_ASSET_TRANSFORM` has been renamed to `EVENT_BEFORE_DELETE_IMAGE_TRANSFORM`.
 
 ### Removed
 - Removed `craft/elements/Asset::getTransformSource()`.
-- Removed `craft/services/AssetTransforms::deleteQueuedSourceFiles()`.
-- Removed `craft/services/AssetTransforms::detectAutoTransformFormat()`.
-- Removed `craft/services/AssetTransforms::getActiveTransformIndex()`.
-- Removed `craft/services/AssetTransforms::getCachedCloudImageSize()`.
-- Removed `craft/services/AssetTransforms::getLocalImageSource()`.
-- Removed `craft/services/AssetTransforms::getTransformIndexModelByAssetIdAndHandle()`.
-- Removed `craft/services/AssetTransforms::getUrlForTransformByAssetAndTransformIndex()`.
-- Removed `craft/services/AssetTransforms::getUrlForTransformByIndexId()`.
-- Removed `craft/services/AssetTransforms::queueSourceForDeletingIfNecessary()`.
-- Removed `craft/services/AssetTransforms::storeLocalSource()`.
-- Removed `craft/services/AssetTransforms::setActiveTransformIndex()`.
+- Removed `craft/services/ImageTransforms::deleteQueuedSourceFiles()`.
+- Removed `craft/services/ImageTransforms::detectAutoTransformFormat()`.
+- Removed `craft/services/ImageTransforms::getActiveTransformIndex()`.
+- Removed `craft/services/ImageTransforms::getCachedCloudImageSize()`.
+- Removed `craft/services/ImageTransforms::getLocalImageSource()`.
+- Removed `craft/services/ImageTransforms::getTransformIndexModelByAssetIdAndHandle()`.
+- Removed `craft/services/ImageTransforms::getUrlForTransformByAssetAndTransformIndex()`.
+- Removed `craft/services/ImageTransforms::getUrlForTransformByIndexId()`.
+- Removed `craft/services/ImageTransforms::queueSourceForDeletingIfNecessary()`.
+- Removed `craft/services/ImageTransforms::storeLocalSource()`.
+- Removed `craft/services/ImageTransforms::setActiveTransformIndex()`.

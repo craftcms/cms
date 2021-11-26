@@ -11,20 +11,20 @@ use craft\models\ImageTransform;
 use yii\base\Event;
 
 /**
- * Asset transform event class.
+ * Image transform event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetTransformEvent extends Event
+class ImageTransformEvent extends Event
 {
     /**
-     * @var ImageTransform The asset transform model associated with the event.
+     * @var ImageTransform The image transform model associated with the event.
      */
     public ImageTransform $assetTransform;
 
     /**
-     * @var bool Whether the asset transform is brand new
+     * @var bool Whether the image transform is brand new
      */
     public bool $isNew = false;
 }

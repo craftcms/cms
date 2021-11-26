@@ -23,9 +23,6 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
-        'assetTransforms' => [
-            'class' => craft\services\AssetTransforms::class,
-        ],
         'categories' => [
             'class' => craft\services\Categories::class,
         ],
@@ -67,6 +64,9 @@ return [
         ],
         'images' => [
             'class' => craft\services\Images::class,
+        ],
+        'imageTransforms' => [
+            'class' => craft\services\ImageTransforms::class,
         ],
         'log' => [
             'class' => craft\log\Dispatcher::class,

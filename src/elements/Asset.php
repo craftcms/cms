@@ -731,7 +731,7 @@ class Asset extends Element
         return (
             parent::__isset($name) ||
             strncmp($name, 'transform:', 10) === 0 ||
-            Craft::$app->getAssetTransforms()->getTransformByHandle($name)
+            Craft::$app->getImageTransforms()->getTransformByHandle($name)
         );
     }
 
@@ -757,7 +757,7 @@ class Asset extends Element
             return parent::__get($name);
         } catch (UnknownPropertyException $e) {
             // Is $name a transform handle?
-            if (($transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name)) !== null) {
+            if (($transform = Craft::$app->getImageTransforms()->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);
             }
 
@@ -1058,7 +1058,7 @@ class Asset extends Element
             ($transform !== null || $this->_transform) &&
             Image::canManipulateAsImage($this->getExtension())
         ) {
-            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform ?? $this->_transform);
+            $transform = Craft::$app->getImageTransforms()->normalizeTransform($transform ?? $this->_transform);
         } else {
             $transform = null;
         }
@@ -1227,7 +1227,7 @@ class Asset extends Element
      */
     public function setTransform($transform): Asset
     {
-        $this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+        $this->_transform = Craft::$app->getImageTransforms()->normalizeTransform($transform);
 
         return $this;
     }
@@ -1264,7 +1264,7 @@ class Asset extends Element
         // Normalize empty transform values
         $transform = $transform ?: null;
 
-        $assetTransformsService = Craft::$app->getAssetTransforms();
+        $assetTransformsService = Craft::$app->getImageTransforms();
 
         if (is_array($transform)) {
             if (isset($transform['width'])) {
@@ -2053,7 +2053,7 @@ class Asset extends Element
             $this->getVolume()->deleteFile($this->getPath());
         }
 
-        Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+        Craft::$app->getImageTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
     }
 
@@ -2158,7 +2158,7 @@ class Asset extends Element
             return [$this->_width, $this->_height];
         }
 
-        $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+        $transform = Craft::$app->getImageTransforms()->normalizeTransform($transform);
 
         if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             $transformRatio = $transform->width / $transform->height;
@@ -2269,7 +2269,7 @@ class Asset extends Element
 
         if ($this->folderId) {
             // Nuke the transforms
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+            Craft::$app->getImageTransforms()->deleteAllTransformData($this);
         }
 
         // Update file properties

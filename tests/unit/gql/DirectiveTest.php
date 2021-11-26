@@ -90,7 +90,7 @@ class DirectiveTest extends Unit
             [
                 'getAssetUrl' => function($asset, $parameters, $generateNow) {
                     if (is_array($parameters)) {
-                        $parameters = Craft::$app->getAssetTransforms()->normalizeTransform($parameters);
+                        $parameters = Craft::$app->getImageTransforms()->normalizeTransform($parameters);
                     }
 
                     if ($parameters instanceof ImageTransform) {

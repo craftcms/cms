@@ -25,7 +25,7 @@ use craft\queue\Queue;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
-use craft\services\AssetTransforms;
+use craft\services\ImageTransforms;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Config;
@@ -567,7 +567,7 @@ class TestSetup
             [Api::class, ['getApi', 'api']],
             [Assets::class, ['getAssets', 'assets']],
             [AssetIndexer::class, ['getAssetIndexer', 'assetIndexer']],
-            [AssetTransforms::class, ['getAssetTransforms', 'assetTransforms']],
+            [ImageTransforms::class, ['getAssetTransforms', 'assetTransforms']],
             [Categories::class, ['getCategories', 'categories']],
             [Composer::class, ['getComposer', 'composer']],
             [Config::class, ['getConfig', 'config']],

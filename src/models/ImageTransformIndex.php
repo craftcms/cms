@@ -138,7 +138,7 @@ class ImageTransformIndex extends Model
             return $this->_transform;
         }
 
-        if (($this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform($this->transformString)) === null) {
+        if (($this->_transform = Craft::$app->getImageTransforms()->normalizeTransform($this->transformString)) === null) {
             throw new InvalidConfigException('Invalid transform string: ' . $this->transformString);
         }
 
@@ -163,7 +163,7 @@ class ImageTransformIndex extends Model
      */
     public function getImageTransformer(): ImageTransformDriverInterface
     {
-        return Craft::$app->getAssetTransforms()->getImageTransformer($this->driver);
+        return Craft::$app->getImageTransforms()->getImageTransformer($this->driver);
     }
 
 }

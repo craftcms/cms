@@ -40,7 +40,7 @@ abstract class ImageTransformDriver implements ImageTransformDriverInterface
      */
     public function ensureTransformUrlByIndexModel(Asset $asset, ImageTransformIndex $index): string
     {
-        $assetTransformService = Craft::$app->getAssetTransforms();
+        $assetTransformService = Craft::$app->getImageTransforms();
 
         // Make sure we're not in the middle of working on this transform from a separate request
         if ($index->inProgress) {

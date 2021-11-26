@@ -10,15 +10,15 @@ namespace craft\events;
 use craft\models\ImageTransformIndex;
 
 /**
- * Asset transform image event class.
+ * Transform image event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetTransformImageEvent extends AssetEvent
+class TransformImageEvent extends AssetEvent
 {
     /**
-     * @var ImageTransformIndex Asset transform index that is being generated.
+     * @var ImageTransformIndex Image transform index that is being generated.
      */
     public ImageTransformIndex $transformIndex;
 }

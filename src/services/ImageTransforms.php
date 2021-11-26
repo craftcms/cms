@@ -16,8 +16,8 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\ImageTransformException;
-use craft\events\AssetTransformEvent;
-use craft\events\AssetTransformImageEvent;
+use craft\events\ImageTransformEvent;
+use craft\events\TransformImageEvent;
 use craft\events\ConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
@@ -36,33 +36,36 @@ use yii\base\InvalidConfigException;
 use yii\di\Instance;
 
 /**
- * Asset Transforms service.
- * An instance of the Asset Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssetTransforms()|`Craft::$app->assetTransforms`]].
+ * Image Transforms service.
+ * An instance of the Image Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->imageTransforms`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ *
+ * @property-read ImageTransform[] $allTransforms
+ * @property-read array $pendingTransformIndexIds
  */
-class AssetTransforms extends Component
+class ImageTransforms extends Component
 {
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is saved
      */
-    public const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
+    public const EVENT_BEFORE_SAVE_IMAGE_TRANSFORM = 'beforeSaveImageTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is saved
      */
-    public const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
+    public const EVENT_AFTER_SAVE_IMAGE_TRANSFORM = 'afterSaveImageTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered before an asset transform is deleted
      */
-    public const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
+    public const EVENT_BEFORE_DELETE_IMAGE_TRANSFORM = 'beforeDeleteImageTransform';
 
     /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
      */
-    public const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
+    public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
 
     /**
      * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
@@ -96,11 +99,6 @@ class AssetTransforms extends Component
      * @see _transforms()
      */
     private ?MemoizableArray $_transforms = null;
-
-    /**
-     * @var array
-     */
-    private array $_sourcesToBeDeleted = [];
 
     /**
      * @var array|null
@@ -207,9 +205,9 @@ class AssetTransforms extends Component
     {
         $isNewTransform = !$transform->id;
 
-        // Fire a 'beforeSaveAssetTransform' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+        // Fire a 'beforeSaveImageTransform' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
                 'assetTransform' => $transform,
                 'isNew' => $isNewTransform,
             ]));
@@ -276,7 +274,7 @@ class AssetTransforms extends Component
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
-                $transformRecord->dimensionChangeTime = new DateTime('@' . time());
+                $transformRecord->parameterChangeTime = new DateTime('@' . time());
                 $deleteTransformIndexes = true;
             }
 
@@ -306,9 +304,9 @@ class AssetTransforms extends Component
         // Clear caches
         $this->_transforms = null;
 
-        // Fire an 'afterSaveAssetTransform' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+        // Fire an 'afterSaveImageTransform' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
                 'assetTransform' => $this->getTransformById($transformRecord->id),
                 'isNew' => $isNewTransform,
             ]));
@@ -347,9 +345,9 @@ class AssetTransforms extends Component
      */
     public function deleteTransform(ImageTransform $transform): bool
     {
-        // Fire a 'beforeDeleteAssetTransform' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+        // Fire a 'beforeDeleteImageTransform' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
                 'assetTransform' => $transform,
             ]));
         }
@@ -375,7 +373,7 @@ class AssetTransforms extends Component
 
         // Fire a 'beforeApplyTransformDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
-            $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new AssetTransformEvent([
+            $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new ImageTransformEvent([
                 'assetTransform' => $transform,
             ]));
         }
@@ -387,9 +385,9 @@ class AssetTransforms extends Component
         // Clear caches
         $this->_transforms = null;
 
-        // Fire an 'afterDeleteAssetTransform' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+        // Fire an 'afterDeleteImageTransform' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
                 'assetTransform' => $transform,
             ]));
         }
@@ -628,7 +626,7 @@ class AssetTransforms extends Component
         }
 
         // If the named transform's dimensions have changed since the time the index was created, it's no longer valid
-        if ($result['dateIndexed'] < Db::prepareDateForDb($transform->dimensionChangeTime)) {
+        if ($result['dateIndexed'] < Db::prepareDateForDb($transform->parameterChangeTime)) {
             return false;
         }
 
@@ -687,7 +685,7 @@ class AssetTransforms extends Component
                 'width',
                 'height',
                 'format',
-                'dimensionChangeTime',
+                'parameterChangeTime',
                 'mode',
                 'position',
                 'quality',
@@ -919,7 +917,7 @@ class AssetTransforms extends Component
         foreach ($transformIndexes as $transformIndex) {
             // Fire a 'beforeDeleteTransforms' event
             if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TRANSFORMS)) {
-                $this->trigger(self::EVENT_BEFORE_DELETE_TRANSFORMS, new AssetTransformImageEvent([
+                $this->trigger(self::EVENT_BEFORE_DELETE_TRANSFORMS, new TransformImageEvent([
                     'asset' => $asset,
                     'transformIndex' => $transformIndex,
                 ]));
@@ -930,7 +928,7 @@ class AssetTransforms extends Component
 
             // Fire an 'afterDeleteTransforms' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_TRANSFORMS)) {
-                $this->trigger(self::EVENT_AFTER_DELETE_TRANSFORMS, new AssetTransformImageEvent([
+                $this->trigger(self::EVENT_AFTER_DELETE_TRANSFORMS, new TransformImageEvent([
                     'asset' => $asset,
                     'transformIndex' => $transformIndex,
                 ]));
@@ -1041,7 +1039,7 @@ class AssetTransforms extends Component
                 'format',
                 'quality',
                 'interlace',
-                'dimensionChangeTime',
+                'parameterChangeTime',
                 'uid',
             ])
             ->from([Table::IMAGETRANSFORMS])

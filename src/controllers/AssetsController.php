@@ -1044,7 +1044,7 @@ class AssetsController extends Controller
                 $asset->setFocalPoint($focal);
 
                 if ($focalChanged) {
-                    $transforms = Craft::$app->getAssetTransforms();
+                    $transforms = Craft::$app->getImageTransforms();
                     $transforms->deleteCreatedTransformsForAsset($asset);
                     $transforms->deleteTransformIndexDataByAssetId($assetId);
                 }
@@ -1186,7 +1186,7 @@ class AssetsController extends Controller
     public function actionGenerateTransform(?int $transformId = null): Response
     {
         // If transform Id was not passed in, see if file id and handle were.
-        $assetTransforms = Craft::$app->getAssetTransforms();
+        $assetTransforms = Craft::$app->getImageTransforms();
 
         if ($transformId) {
             $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
