@@ -9,7 +9,8 @@ declare(strict_types=1);
 namespace craft\services;
 
 use Craft;
-use craft\base\ImageTransformDriverInterface;
+use craft\assets\imagetransforms\DefaultTransformer;
+use craft\base\DriverInterface;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
 use craft\db\Query;
@@ -25,6 +26,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\image\transforms\EagerLoadTransformerInterface;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\records\ImageTransform as ImageTransformRecord;
@@ -425,12 +427,8 @@ class ImageTransforms extends Component
             return;
         }
 
-        // Index the assets by ID
-        $assetsById = ArrayHelper::index($assets, 'id');
-
         // Get the index conditions
-        $transformsByFingerprint = [];
-        $indexCondition = ['or'];
+        $transformsByDriver = [];
 
         /** @var ImageTransform|null $refTransform */
         $refTransform = null;
@@ -465,24 +463,8 @@ class ImageTransforms extends Component
                 }
             }
 
-            $transform = $this->normalizeTransform($transform);
-
-            if ($transform === null) {
-                continue;
-            }
-
-            $transformString = $fingerprint = TransformHelper::getTransformString($transform);
-            $transformCondition = ['and', ['transformString' => $transformString]];
-
-            if ($transform->format === null) {
-                $transformCondition[] = ['format' => null];
-            } else {
-                $transformCondition[] = ['format' => $transform->format];
-                $fingerprint .= ':' . $transform->format;
-            }
-
-            $indexCondition[] = $transformCondition;
-            $transformsByFingerprint[$fingerprint] = $transform;
+            $transform = TransformHelper::normalizeTransform($transform, $this);
+            $transformsByDriver[$transform->getDriver()][] = $transform;
 
             if (!isset($sizeValue)) {
                 // Use this as the reference transform in case any srcset-style transforms follow it
@@ -490,372 +472,32 @@ class ImageTransforms extends Component
             }
         }
 
-        unset($refTransform);
-
-        // Query for the indexes
-        $results = $this->_createTransformIndexQuery()
-            ->where([
-                'and',
-                ['assetId' => array_keys($assetsById)],
-                $indexCondition,
-            ])
-            ->all();
-
-        // Index the valid transform indexes by fingerprint, and capture the IDs of indexes that should be deleted
-        $invalidIndexIds = [];
-
-        foreach ($results as $result) {
-            // Get the transform's fingerprint
-            $transformFingerprint = $result['transformString'];
-
-            if ($result['format']) {
-                $transformFingerprint .= ':' . $result['format'];
-            }
-
-            // Is it still valid?
-            $transform = $transformsByFingerprint[$transformFingerprint];
-            $asset = $assetsById[$result['assetId']];
-
-            if ($this->validateTransformIndexResult($result, $transform, $asset)) {
-                $indexFingerprint = $result['assetId'] . ':' . $transformFingerprint;
-                $this->_eagerLoadedTransformIndexes[$indexFingerprint] = $result;
-            } else {
-                $invalidIndexIds[] = $result['id'];
+        foreach ($transformsByDriver as $driver => $driverTransforms) {
+            $driver = $this->getImageTransformer($driver);
+            if ($driver instanceof EagerLoadTransformerInterface) {
+                $driver->eagerLoadTransforms($assets, $driverTransforms);
             }
         }
-
-        // Delete any invalid indexes
-        if (!empty($invalidIndexIds)) {
-            Db::delete(Table::IMAGETRANSFORMINDEX, [
-                'id' => $invalidIndexIds,
-            ], [], $this->db);
-        }
-    }
-
-    /**
-     * Get a transform index row. If it doesn't exist - create one.
-     *
-     * @param Asset $asset
-     * @param ImageTransform|string|array|null $transform
-     * @return ImageTransformIndex
-     * @throws ImageTransformException if the transform cannot be found by the handle
-     */
-    public function getTransformIndex(Asset $asset, $transform): ImageTransformIndex
-    {
-        $transform = $this->normalizeTransform($transform);
-
-        if ($transform === null) {
-            throw new ImageTransformException('There was a problem finding the transform.');
-        }
-
-        $transformString = TransformHelper::getTransformString($transform);
-
-        // Was it eager-loaded?
-        $fingerprint = $asset->id . ':' . $transformString . ($transform->format === null ? '' : ':' . $transform->format);
-
-        if (isset($this->_eagerLoadedTransformIndexes[$fingerprint])) {
-            $result = $this->_eagerLoadedTransformIndexes[$fingerprint];
-            return new ImageTransformIndex($result);
-        }
-
-        // Check if an entry exists already
-        $query = $this->_createTransformIndexQuery()
-            ->where([
-                'assetId' => $asset->id,
-                'transformString' => $transformString,
-            ]);
-
-        if ($transform->format === null) {
-            // A generated auto-transform will have its format set to null, but the filename will be populated.
-            $query->andWhere(['format' => null]);
-        } else {
-            $query->andWhere(['format' => $transform->format]);
-        }
-
-        $result = $query->one();
-
-        if ($result) {
-            $transformIndex = new ImageTransformIndex($result);
-
-            if ($this->validateTransformIndexResult($result, $transform, $asset)) {
-                return $transformIndex;
-            }
-
-            // Delete the out-of-date record
-            Db::delete(Table::IMAGETRANSFORMINDEX, [
-                'id' => $result['id'],
-            ], [], $this->db);
-
-            // And the generated transform itself, too
-            $transform->getImageTransformer()->invalidateTransform($asset, $transformIndex);
-        } else {
-            // Create a new record
-            $transformIndex = new ImageTransformIndex([
-                'assetId' => $asset->id,
-                'format' => $transform->format,
-                'driver' => $transform->getDriver(),
-                'dateIndexed' => Db::prepareDateForDb(new DateTime()),
-                'transformString' => $transformString,
-                'fileExists' => false,
-                'inProgress' => false,
-            ]);
-        }
-
-        return $this->storeTransformIndexData($transformIndex);
-    }
-
-    /**
-     * Validates a transform index result to see if the index is still valid for a given asset.
-     *
-     * @param array $result
-     * @param ImageTransform $transform
-     * @param Asset|array $asset The asset object or a raw database result
-     * @return bool Whether the index result is still valid
-     */
-    public function validateTransformIndexResult(array $result, ImageTransform $transform, $asset): bool
-    {
-        // If the asset has been modified since the time the index was created, it's no longer valid
-        $dateModified = ArrayHelper::getValue($asset, 'dateModified');
-        if ($result['dateIndexed'] < Db::prepareDateForDb($dateModified)) {
-            return false;
-        }
-
-        // If it's not a named transform, consider it valid
-        if (!$transform->getIsNamedTransform()) {
-            return true;
-        }
-
-        // If the named transform's dimensions have changed since the time the index was created, it's no longer valid
-        if ($result['dateIndexed'] < Db::prepareDateForDb($transform->parameterChangeTime)) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
      * @param string $driver
      * @param array $config
-     * @return ImageTransformDriverInterface
+     * @return DriverInterface
      * @throws InvalidConfigException
      * @since 4.0.0
      */
-    public function getImageTransformer(string $driver, array $config = []): ImageTransformDriverInterface
+    public function getImageTransformer(string $driver, array $config = []): DriverInterface
     {
         // TODO events!
-        if (!is_subclass_of($driver, ImageTransformDriverInterface::class)) {
+        if (!is_subclass_of($driver, DriverInterface::class)) {
             throw new ImageTransformException($driver . ' is not a valid image transform driver');
         }
 
         return Craft::createObject(array_merge(['class' => $driver], $config));
     }
 
-    /**
-     * Normalize a transform from handle or a set of properties to an ImageTransform.
-     *
-     * @param ImageTransform|string|array|null $transform
-     * @return ImageTransform|null
-     * @throws ImageTransformException if $transform is an invalid transform handle
-     */
-    public function normalizeTransform($transform): ?ImageTransform
-    {
-        if (!$transform) {
-            return null;
-        }
 
-        if ($transform instanceof ImageTransform) {
-            return $transform;
-        }
-
-        if (is_array($transform)) {
-            if (array_key_exists('transform', $transform)) {
-                $baseTransform = $this->normalizeTransform(ArrayHelper::remove($transform, 'transform'));
-                return $this->extendTransform($baseTransform, $transform);
-            }
-
-            return new ImageTransform($transform);
-        }
-
-        if (is_object($transform)) {
-            return new ImageTransform(ArrayHelper::toArray($transform, [
-                'id',
-                'name',
-                'driver',
-                'handle',
-                'width',
-                'height',
-                'format',
-                'parameterChangeTime',
-                'mode',
-                'position',
-                'quality',
-                'interlace',
-            ]));
-        }
-
-        if (is_string($transform)) {
-            if (preg_match(TransformHelper::TRANSFORM_STRING_PATTERN, $transform)) {
-                return TransformHelper::createTransformFromString($transform);
-            }
-
-            $transform = StringHelper::removeLeft($transform, '_');
-            if (($transformModel = $this->getTransformByHandle($transform)) === null) {
-                throw new ImageTransformException(Craft::t('app', 'Invalid transform handle: {handle}', ['handle' => $transform]));
-            }
-
-            return $transformModel;
-        }
-
-        return null;
-    }
-
-    /**
-     * Extend a transform by taking an existing transform and overriding its parameters.
-     *
-     * @param ImageTransform $transform
-     * @param array $parameters
-     * @return ImageTransform
-     */
-    public function extendTransform(ImageTransform $transform, array $parameters): ImageTransform
-    {
-        if (!empty($parameters)) {
-            // Don't change the same transform
-            $transform = clone $transform;
-
-            $whiteList = [
-                'width',
-                'height',
-                'format',
-                'mode',
-                'format',
-                'position',
-                'quality',
-                'interlace',
-                'driver'
-            ];
-
-            $nullables = [
-                'id',
-                'name',
-                'handle',
-                'uid',
-                'parameterChangeTime',
-            ];
-
-            foreach ($parameters as $parameter => $value) {
-                if (in_array($parameter, $whiteList, true)) {
-                    $transform->{$parameter} = $value;
-                }
-            }
-
-            foreach ($nullables as $nullable) {
-                $transform->{$nullable} = null;
-            }
-        }
-
-        return $transform;
-    }
-
-    /**
-     * Store a transform index data by it's model.
-     *
-     * @param ImageTransformIndex $index
-     * @return ImageTransformIndex
-     */
-    public function storeTransformIndexData(ImageTransformIndex $index): ImageTransformIndex
-    {
-        $values = Db::prepareValuesForDb(
-            $index->toArray([
-                'assetId',
-                'driver',
-                'filename',
-                'format',
-                'driver',
-                'transformString',
-                'volumeId',
-                'fileExists',
-                'inProgress',
-                'error',
-                'dateIndexed',
-            ], [], false)
-        );
-
-        if ($index->id !== null) {
-            Db::update(Table::IMAGETRANSFORMINDEX, $values, [
-                'id' => $index->id,
-            ], [], true, $this->db);
-        } else {
-            Db::insert(Table::IMAGETRANSFORMINDEX, $values, true, $this->db);
-            $index->id = (int)$this->db->getLastInsertID(Table::IMAGETRANSFORMINDEX);
-        }
-
-        return $index;
-    }
-
-    /**
-     * Returns a list of pending transform index IDs.
-     *
-     * @return array
-     */
-    public function getPendingTransformIndexIds(): array
-    {
-        return $this->_createTransformIndexQuery()
-            ->select(['id'])
-            ->where(['fileExists' => false, 'inProgress' => false])
-            ->column();
-    }
-
-    /**
-     * Get a transform index model by a row id.
-     *
-     * @param int $transformId
-     * @return ImageTransformIndex|null
-     */
-    public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
-    {
-        $result = $this->_createTransformIndexQuery()
-            ->where(['id' => $transformId])
-            ->one();
-
-        return $result ? new ImageTransformIndex($result) : null;
-    }
-
-    /**
-     * Delete transform records by an Asset id
-     *
-     * @param int $assetId
-     */
-    public function deleteTransformIndexDataByAssetId(int $assetId): void
-    {
-        Db::delete(Table::IMAGETRANSFORMINDEX, [
-            'assetId' => $assetId,
-        ], [], $this->db);
-    }
-
-    /**
-     * Delete transform records by Asset ids
-     *
-     * @param int[] $assetIds
-     * @since 4.0.0
-     */
-    public function deleteTransformIndexDataByAssetIds(array $assetIds): void
-    {
-        Db::delete(Table::IMAGETRANSFORMINDEX, [
-            'assetId' => $assetIds,
-        ], [], $this->db);
-    }
-
-    /**
-     * Delete a transform index by.
-     *
-     * @param int $indexId
-     */
-    public function deleteTransformIndex(int $indexId): void
-    {
-        Db::delete(Table::IMAGETRANSFORMINDEX, [
-            'id' => $indexId,
-        ], [], $this->db);
-    }
 
     /**
      * Delete *ALL* transform data (including thumbs and sources) associated with the Asset.
@@ -866,7 +508,6 @@ class ImageTransforms extends Component
     {
         $this->deleteResizedAssetVersion($asset);
         $this->deleteCreatedTransformsForAsset($asset);
-        $this->deleteTransformIndexDataByAssetId($asset->id);
 
         $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->getFilename(), PATHINFO_EXTENSION);
 
@@ -912,112 +553,19 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
-        $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
+        // TODO
+        // Fetch all driver instances
+        // tell every drier instance that this asset is being deleted
+        // PROFIT
+        (new DefaultTransformer())->invalidateAssetTransforms($asset);
 
-        foreach ($transformIndexes as $transformIndex) {
-            // Fire a 'beforeDeleteTransforms' event
-            if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TRANSFORMS)) {
-                $this->trigger(self::EVENT_BEFORE_DELETE_TRANSFORMS, new TransformImageEvent([
-                    'asset' => $asset,
-                    'transformIndex' => $transformIndex,
-                ]));
-            }
-
-            $transformer = $transformIndex->getImageTransformer();
-            $transformer->invalidateTransform($asset, $transformIndex);
-
-            // Fire an 'afterDeleteTransforms' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_TRANSFORMS)) {
-                $this->trigger(self::EVENT_AFTER_DELETE_TRANSFORMS, new TransformImageEvent([
-                    'asset' => $asset,
-                    'transformIndex' => $transformIndex,
-                ]));
-            }
-        }
-    }
-
-    /**
-     * Get an array of ImageTransformIndex models for all created transforms for an Asset.
-     *
-     * @param Asset $asset
-     * @return array
-     */
-    public function getAllCreatedTransformsForAsset(Asset $asset): array
-    {
-        $results = $this->_createTransformIndexQuery()
-            ->where(['assetId' => $asset->id])
-            ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new ImageTransformIndex($result);
-        }
-
-        return $results;
-    }
-
-    /**
-     * Find a similar image transform for reuse for an asset and existing transform.
-     *
-     * @param Asset $asset
-     * @param ImageTransformIndex $index
-     * @return ImageTransformIndex|null
-     * @throws InvalidConfigException
-     * @since 4.0.0
-     */
-    public function getSimilarTransformIndex(Asset $asset, ImageTransformIndex $index): ?ImageTransformIndex
-    {
-        $transform = $index->getTransform();
-        $result = null;
-
-        if ($asset->getExtension() === $index->detectedFormat && !$asset->getHasFocalPoint()) {
-            $possibleLocations = [TransformHelper::getTransformString($transform, true)];
-
-            if ($transform->getIsNamedTransform()) {
-                $namedLocation = TransformHelper::getTransformString($transform);
-                $possibleLocations[] = $namedLocation;
-            }
-
-            // We're looking for transforms that fit the bill and are not the one we are trying to find/create
-            // the image for.
-            $result = $this->_createTransformIndexQuery()
-                ->where([
-                    'and',
-                    [
-                        'assetId' => $asset->id,
-                        'fileExists' => true,
-                        'transformString' => $possibleLocations,
-                        'format' => $index->detectedFormat,
-                    ],
-                    ['not', ['id' => $index->id]],
-                ])
-                ->one();
-        }
-
-        return $result ? Craft::createObject(ImageTransformIndex::class, $result) : null;
-    }
-
-    /**
-     * Returns a Query object prepped for retrieving transform indexes.
-     *
-     * @return Query
-     */
-    private function _createTransformIndexQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                'id',
-                'assetId',
-                'filename',
-                'format',
-                'transformString',
-                'fileExists',
-                'inProgress',
-                'error',
-                'dateIndexed',
-                'dateUpdated',
-                'dateCreated',
-            ])
-            ->from([Table::IMAGETRANSFORMINDEX]);
+        // fire event
+//        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TRANSFORMS)) {
+//            $this->trigger(self::EVENT_BEFORE_DELETE_TRANSFORMS, new TransformImageEvent([
+//                'asset' => $asset,
+//                'transformIndex' => $transformIndex,
+//            ]));
+//        }
     }
 
     /**

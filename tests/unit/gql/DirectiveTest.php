@@ -18,6 +18,7 @@ use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
+use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\ImageTransform;
@@ -95,7 +96,7 @@ class DirectiveTest extends Unit
             'folderId' => 7,
             'getUrl' => function($parameters, $generateNow) use ($filename) {
                 if (is_array($parameters)) {
-                    $parameters = Craft::$app->getImageTransforms()->normalizeTransform($parameters);
+                    $parameters = ImageTransforms::normalizeTransform($parameters, Craft::$app->getImageTransforms());
                 }
 
                 if ($parameters instanceof ImageTransform) {

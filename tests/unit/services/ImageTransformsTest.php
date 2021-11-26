@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
 
 class ImageTransformsTest extends Unit
@@ -30,7 +31,7 @@ class ImageTransformsTest extends Unit
      */
     public function testExtendTransform(ImageTransform $transform, array $parameters, array $resultCheck)
     {
-        $extendedTransform = Craft::$app->getImageTransforms()->extendTransform($transform, $parameters);
+        $extendedTransform = ImageTransforms::extendTransform($transform, $parameters);
 
         foreach ($resultCheck as $property => $value) {
             self::assertSame($value, $extendedTransform->{$property});
@@ -40,7 +41,7 @@ class ImageTransformsTest extends Unit
     public function testExtendingTransformReturnsNewObject()
     {
         $transform = new ImageTransform(['width' => 200, 'height' => 200]);
-        $extendedTransform = Craft::$app->getImageTransforms()->extendTransform($transform, ['height' => 300]);
+        $extendedTransform = ImageTransforms::extendTransform($transform, ['height' => 300]);
         self::assertNotSame($extendedTransform, $transform);
     }
 

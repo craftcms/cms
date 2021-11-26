@@ -82,14 +82,15 @@ class Assets
      * @param VolumeInterface $volume
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
-     * @param ImageTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
+     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
+     * @throws \yii\base\InvalidConfigException
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $asset, ?string $uri = null, ?ImageTransformIndex $transformIndex = null): string
+    public static function generateUrl(VolumeInterface $volume, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $asset->folderPath;
-        $appendix = static::urlAppendix($volume, $asset, $transformIndex);
+        $appendix = static::urlAppendix($volume, $asset, $dateUpdated);
 
         return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->getFilename()) . $appendix);
     }
@@ -99,17 +100,17 @@ class Assets
      *
      * @param VolumeInterface $volume
      * @param Asset $asset
-     * @param ImageTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
+     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $asset, ?ImageTransformIndex $transformIndex = null): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $asset,  ?DateTime $dateUpdated = null): string
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return '';
         }
 
         /** @var DateTime $dateModified */
-        $dateModified = max($asset->dateModified, $transformIndex->dateUpdated ?? null);
+        $dateModified = max($asset->dateModified, $dateUpdated ?? null);
         $v = $dateModified->getTimestamp();
 
         if ($asset->getHasFocalPoint()) {

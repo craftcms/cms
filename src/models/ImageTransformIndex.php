@@ -9,8 +9,9 @@ declare(strict_types=1);
 namespace craft\models;
 
 use Craft;
-use craft\base\ImageTransformDriverInterface;
+use craft\base\DriverInterface;
 use craft\base\Model;
+use craft\helpers\ImageTransforms;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use yii\base\InvalidConfigException;
@@ -18,7 +19,7 @@ use yii\base\InvalidConfigException;
 /**
  * Class ImageTransformIndexs model.
  *
- * @property-read null|ImageTransformDriverInterface $imageTransformer
+ * @property-read null|DriverInterface $imageTransformer
  * @property ImageTransform $transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -138,7 +139,7 @@ class ImageTransformIndex extends Model
             return $this->_transform;
         }
 
-        if (($this->_transform = Craft::$app->getImageTransforms()->normalizeTransform($this->transformString)) === null) {
+        if (($this->_transform = ImageTransforms::normalizeTransform($this->transformString, Craft::$app->getImageTransforms())) === null) {
             throw new InvalidConfigException('Invalid transform string: ' . $this->transformString);
         }
 
@@ -158,10 +159,10 @@ class ImageTransformIndex extends Model
     /**
      * Return the image transformer for this transform.
      *
-     * @return ImageTransformDriverInterface
+     * @return DriverInterface
      * @since 4.0.0
      */
-    public function getImageTransformer(): ImageTransformDriverInterface
+    public function getImageTransformer(): DriverInterface
     {
         return Craft::$app->getImageTransforms()->getImageTransformer($this->driver);
     }

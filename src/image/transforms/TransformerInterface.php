@@ -7,7 +7,7 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\base;
+namespace craft\image\transforms;
 
 use craft\db\Query;
 use craft\elements\Asset;
@@ -15,24 +15,26 @@ use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 
 /**
- * ImageTransformDriverInterface defines the common interface to be implemented by all image drivers.
+ * TransformerInterface defines the common interface to be implemented by all image drivers.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-interface ImageTransformDriverInterface
+interface TransformerInterface
 {
     /**
      * Returns the URL for an image asset transform.
      *
+     * @param Asset $asset
+     * @param ImageTransform $imageTransform
      * @return string The URL for the transform
      */
-    public function getTransformUrl(Asset $asset, ImageTransformIndex $transformIndexModel): string;
+    public function getTransformUrl(Asset $asset, ImageTransform $imageTransform): string;
 
     /**
      * Invalidate a created transform by asset and a transform index.
      *
-     * @param ImageTransformIndex $transformIndex
+     * @param Asset $asset
      */
-    public function invalidateTransform(Asset $asset, ImageTransformIndex $transformIndex): void;
+    public function invalidateAssetTransforms(Asset $asset): void;
 }

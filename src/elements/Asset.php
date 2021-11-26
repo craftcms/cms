@@ -11,7 +11,6 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
-use craft\base\LocalFsInterface;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
@@ -46,6 +45,7 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
+use craft\image\transforms\DeferredTransformerInterface;
 use craft\models\FieldLayout;
 use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
@@ -1058,7 +1058,7 @@ class Asset extends Element
             ($transform !== null || $this->_transform) &&
             Image::canManipulateAsImage($this->getExtension())
         ) {
-            $transform = Craft::$app->getImageTransforms()->normalizeTransform($transform ?? $this->_transform);
+            $transform = ImageTransforms::normalizeTransform($transform ?? $this->_transform, Craft::$app->getImageTransforms());
         } else {
             $transform = null;
         }
@@ -1227,7 +1227,7 @@ class Asset extends Element
      */
     public function setTransform($transform): Asset
     {
-        $this->_transform = Craft::$app->getImageTransforms()->normalizeTransform($transform);
+        $this->_transform = ImageTransforms::normalizeTransform($transform, Craft::$app->getImageTransforms());
 
         return $this;
     }
@@ -1273,7 +1273,7 @@ class Asset extends Element
             if (isset($transform['height'])) {
                 $transform['height'] = round((float)$transform['height']);
             }
-            $transform = $imageTransformService->normalizeTransform($transform);
+            $transform = ImageTransforms::normalizeTransform($transform, $imageTransformService);
         }
 
         if ($transform === null) {
@@ -1287,31 +1287,14 @@ class Asset extends Element
             $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         }
 
-        $index = $imageTransformService->getTransformIndex($this, $transform);
-        $imageTransformer = $index->getImageTransformer();
+        $imageTransformer = $transform->getImageTransformer();
+        $imageTransformer->getTransformUrl($this, $transform);
 
-        // Does the file actually exist?
-        if ($index->fileExists) {
-            return $imageTransformer->getTransformUrl($this, $index);
+        if ($generateNow || !$imageTransformer instanceof DeferredTransformerInterface) {
+            return $imageTransformer->getTransformUrl($this, $transform);
         }
 
-        if ($generateNow) {
-            try {
-                $url = $imageTransformer->getTransformUrl($this, $index);
-            } catch (\Exception $exception) {
-                Craft::$app->getErrorHandler()->logException($exception);
-                return UrlHelper::actionUrl('not-found', null, null, false);
-            }
-
-            $imageTransformService->storeTransformIndexData($index);
-
-            return $url;
-        }
-
-        ImageTransforms::queuePendingTransformJob();
-
-        // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
+        return $imageTransformer->getDeferredTransformUrl($this, $transform);
     }
 
     /**
@@ -2158,7 +2141,7 @@ class Asset extends Element
             return [$this->_width, $this->_height];
         }
 
-        $transform = Craft::$app->getImageTransforms()->normalizeTransform($transform);
+        $transform = ImageTransforms::normalizeTransform($transform, Craft::$app->getImageTransforms());
 
         if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             $transformRatio = $transform->width / $transform->height;

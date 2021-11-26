@@ -88,6 +88,53 @@ class ImageTransforms
     }
 
     /**
+     * Extend a transform by taking an existing transform and overriding its parameters.
+     *
+     * @param ImageTransform $transform
+     * @param array $parameters
+     * @return ImageTransform
+     */
+    public static function extendTransform(ImageTransform $transform, array $parameters): ImageTransform
+    {
+        if (!empty($parameters)) {
+            // Don't change the same transform
+            $transform = clone $transform;
+
+            $whiteList = [
+                'width',
+                'height',
+                'format',
+                'mode',
+                'format',
+                'position',
+                'quality',
+                'interlace',
+                'driver'
+            ];
+
+            $nullables = [
+                'id',
+                'name',
+                'handle',
+                'uid',
+                'parameterChangeTime',
+            ];
+
+            foreach ($parameters as $parameter => $value) {
+                if (in_array($parameter, $whiteList, true)) {
+                    $transform->{$parameter} = $value;
+                }
+            }
+
+            foreach ($nullables as $nullable) {
+                $transform->{$nullable} = null;
+            }
+        }
+
+        return $transform;
+    }
+
+    /**
      * Get a local image source to use for transforms.
      *
      * @param Asset $asset
@@ -191,6 +238,65 @@ class ImageTransforms
             ($transform->quality ? '_' . $transform->quality : '') .
             '_' . $transform->interlace .
             ($driver !== ImageTransform::DEFAULT_DRIVER ? '_' . $driver : '');
+    }
+
+    /**
+     * Normalize a transform from handle or a set of properties to an ImageTransform.
+     *
+     * @param ImageTransform|string|array|null $transform
+     * @return ImageTransform|null
+     * @throws ImageTransformException if $transform is an invalid transform handle
+     */
+    public static function normalizeTransform($transform): ?ImageTransform
+    {
+        if (!$transform) {
+            return null;
+        }
+
+        if ($transform instanceof ImageTransform) {
+            return $transform;
+        }
+
+        if (is_array($transform)) {
+            if (array_key_exists('transform', $transform)) {
+                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
+                return self::extendTransform($baseTransform, $transform);
+            }
+
+            return new ImageTransform($transform);
+        }
+
+        if (is_object($transform)) {
+            return new ImageTransform(ArrayHelper::toArray($transform, [
+                'id',
+                'name',
+                'driver',
+                'handle',
+                'width',
+                'height',
+                'format',
+                'parameterChangeTime',
+                'mode',
+                'position',
+                'quality',
+                'interlace',
+            ]));
+        }
+
+        if (is_string($transform)) {
+            if (preg_match(self::TRANSFORM_STRING_PATTERN, $transform)) {
+                return self::createTransformFromString($transform);
+            }
+
+            $transform = StringHelper::removeLeft($transform, '_');
+            if (($transformModel = Craft::$app->getImageTransforms()->getTransformByHandle($transform)) === null) {
+                throw new ImageTransformException(Craft::t('app', 'Invalid transform handle: {handle}', ['handle' => $transform]));
+            }
+
+            return $transformModel;
+        }
+
+        return null;
     }
 
     /**
