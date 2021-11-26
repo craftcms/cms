@@ -7,7 +7,7 @@ module.exports = getConfig({
     context: __dirname,
     config: {
         entry: {
-            'Craft': './Craft.js',
+            'cp': './Craft.js',
         },
         plugins: [
             new CopyWebpackPlugin({
