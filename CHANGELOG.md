@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.23 - 2021-11-26
 
 ### Added
 - Added `craft\console\Controller::table()`.
