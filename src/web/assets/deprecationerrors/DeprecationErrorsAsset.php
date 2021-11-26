@@ -38,6 +38,6 @@ class DeprecationErrorsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'deprecator.min.js',
+        'deprecator.js',
     ];
 }

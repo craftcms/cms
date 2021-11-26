@@ -31,6 +31,6 @@ class TableSettingsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'TableFieldSettings.min.js',
+        'TableFieldSettings.js',
     ];
 }

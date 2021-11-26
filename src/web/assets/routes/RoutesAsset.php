@@ -38,6 +38,6 @@ class RoutesAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'routes.min.js',
+        'routes.js',
     ];
 }
