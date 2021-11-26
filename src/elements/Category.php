@@ -265,7 +265,7 @@ class Category extends Element
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
                 if (Craft::$app->getIsMultiSite()) {
-                    $newChildUrl .= '/' . $site->handle;
+                    $newChildUrl .= '?site=' . $site->handle;
                 }
 
                 $actions[] = $elementsService->createAction([

@@ -1,9 +1,12 @@
 /* jshint esversion: 6 */
 /* globals module, require */
-const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
+const {getConfig} = require('@craftcms/webpack');
 
-module.exports = new CraftWebpackConfig({
-  config: {
-    entry: {'FocalPoint': './FocalPoint.ts'},
-  }
+module.exports = getConfig({
+    context: __dirname,
+    config: {
+        entry: {
+            FocalPoint: './FocalPoint.ts'
+        },
+    }
 });

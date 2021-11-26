@@ -418,4 +418,21 @@ class Controller extends YiiController
 
         return $input;
     }
+
+    /**
+     * Outputs a table via [[Console::table()]].
+     *
+     * @param string[]|array[] $headers The table headers
+     * @param array[] $data The table data
+     * @param array $options
+     * @since 3.7.23
+     */
+    public function table(array $headers, array $data, array $options = []): void
+    {
+        $options += [
+            'colors' => $this->isColorEnabled(),
+        ];
+
+        Console::table($headers, $data, $options);
+    }
 }

@@ -39,7 +39,7 @@ class SystemMessagesAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'system_messages.min.js',
+        'system_messages.js',
     ];
 
     /**

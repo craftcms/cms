@@ -565,13 +565,14 @@ Craft.CP = Garnish.Base.extend({
     breadcrumbItemsWrap: function() {
         if (!this.$breadcrumbItems[0]) return;
 
-        const listWidth = this.$breadcrumbList[0].offsetWidth;
+        const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
         let totalItemWidth = 0;
         
         // Iterate through all list items (inclusive of more button)
-        this.$breadcrumbList.find('li').each(function() {
-            totalItemWidth += $(this)[0].offsetWidth;
-        });
+        const $items = this.$breadcrumbList.find('li');
+        for (let i = 0; i < $items.length; i++) {
+            totalItemWidth += $items.get(i).getBoundingClientRect().width;
+        }
 
         this.breadcrumbListWidth = listWidth;
 
