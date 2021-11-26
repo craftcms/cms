@@ -1264,7 +1264,7 @@ class Asset extends Element
         // Normalize empty transform values
         $transform = $transform ?: null;
 
-        $assetTransformsService = Craft::$app->getImageTransforms();
+        $imageTransformService = Craft::$app->getImageTransforms();
 
         if (is_array($transform)) {
             if (isset($transform['width'])) {
@@ -1273,7 +1273,7 @@ class Asset extends Element
             if (isset($transform['height'])) {
                 $transform['height'] = round((float)$transform['height']);
             }
-            $transform = $assetTransformsService->normalizeTransform($transform);
+            $transform = $imageTransformService->normalizeTransform($transform);
         }
 
         if ($transform === null) {
@@ -1287,7 +1287,7 @@ class Asset extends Element
             $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         }
 
-        $index = $assetTransformsService->getTransformIndex($this, $transform);
+        $index = $imageTransformService->getTransformIndex($this, $transform);
         $imageTransformer = $index->getImageTransformer();
 
         // Does the file actually exist?
@@ -1303,7 +1303,7 @@ class Asset extends Element
                 return UrlHelper::actionUrl('not-found', null, null, false);
             }
 
-            $assetTransformsService->storeTransformIndexData($index);
+            $imageTransformService->storeTransformIndexData($index);
 
             return $url;
         }

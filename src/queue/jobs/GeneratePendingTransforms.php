@@ -29,10 +29,10 @@ class GeneratePendingTransforms extends BaseJob
         $indexIds = Craft::$app->getImageTransforms()->getPendingTransformIndexIds();
 
         $totalIndexes = count($indexIds);
-        $assetTransformsService = Craft::$app->getImageTransforms();
+        $imageTransformsService = Craft::$app->getImageTransforms();
 
         foreach ($indexIds as $i => $id) {
-            if ($index = $assetTransformsService->getTransformIndexModelById($id)) {
+            if ($index = $imageTransformsService->getTransformIndexModelById($id)) {
                 $this->setProgress($queue, $i / $totalIndexes, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $i + 1,
                     'total' => $totalIndexes,

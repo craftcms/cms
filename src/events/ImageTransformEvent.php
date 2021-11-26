@@ -21,7 +21,7 @@ class ImageTransformEvent extends Event
     /**
      * @var ImageTransform The image transform model associated with the event.
      */
-    public ImageTransform $assetTransform;
+    public ImageTransform $imageTransform;
 
     /**
      * @var bool Whether the image transform is brand new

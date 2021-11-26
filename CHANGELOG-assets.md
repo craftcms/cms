@@ -26,6 +26,7 @@
 - `craft/errors/AssetTransformException` is now `craft/errors/ImageTransformException`.
 - `craft/events/AssetTransformEvent` is now `craft/events/ImageTransformEvent`.
 - `craft/events/AssetTransformImageEvent` is now `craft/events/TransformImageEvent`.
+- `craft/events/ImageTransformEvent::$assetTransform` has been renamed to `$imageTransform`.
 - `craft/models/AssetTransform` is now `craft/models/ImageTransform`.
 - `craft/models/AssetTransformIndex` is now `craft/models/ImageTransformIndex`.
 - `craft/models/ImageTransform::$dimensionChangeTime` has been renamed to `$parameterChangeTime`.

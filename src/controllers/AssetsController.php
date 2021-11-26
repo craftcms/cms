@@ -1186,10 +1186,10 @@ class AssetsController extends Controller
     public function actionGenerateTransform(?int $transformId = null): Response
     {
         // If transform Id was not passed in, see if file id and handle were.
-        $assetTransforms = Craft::$app->getImageTransforms();
+        $imageTransformService = Craft::$app->getImageTransforms();
 
         if ($transformId) {
-            $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
+            $transformIndexModel = $imageTransformService->getTransformIndexModelById($transformId);
         } else {
             $assetId = $this->request->getRequiredBodyParam('assetId');
             $handle = $this->request->getRequiredBodyParam('handle');
@@ -1197,7 +1197,7 @@ class AssetsController extends Controller
             if ($assetModel === null) {
                 throw new BadRequestHttpException('Invalid asset ID: ' . $assetId);
             }
-            $transformIndexModel = $assetTransforms->getTransformIndex($assetModel, $handle);
+            $transformIndexModel = $imageTransformService->getTransformIndex($assetModel, $handle);
         }
 
         if (!$transformIndexModel) {
@@ -1205,7 +1205,7 @@ class AssetsController extends Controller
         }
 
         try {
-            $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
+            $url = $imageTransformService->ensureTransformUrlByIndexModel($transformIndexModel);
         } catch (\Exception $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             throw new ServerErrorHttpException('Image transform cannot be created.');

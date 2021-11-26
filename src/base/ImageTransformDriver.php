@@ -40,7 +40,7 @@ abstract class ImageTransformDriver implements ImageTransformDriverInterface
      */
     public function ensureTransformUrlByIndexModel(Asset $asset, ImageTransformIndex $index): string
     {
-        $assetTransformService = Craft::$app->getImageTransforms();
+        $imageTransformService = Craft::$app->getImageTransforms();
 
         // Make sure we're not in the middle of working on this transform from a separate request
         if ($index->inProgress) {
@@ -57,7 +57,7 @@ abstract class ImageTransformDriver implements ImageTransformDriverInterface
                 App::maxPowerCaptain();
 
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                $index = $assetTransformService->getTransformIndexModelById($index->id);
+                $index = $imageTransformService->getTransformIndexModelById($index->id);
 
                 // Is it being worked on right now?
                 if ($index->inProgress) {
@@ -68,7 +68,7 @@ abstract class ImageTransformDriver implements ImageTransformDriverInterface
                         continue;
                     }
 
-                    $assetTransformService->storeTransformIndexData($index);
+                    $imageTransformService->storeTransformIndexData($index);
                     break;
                 }
 
@@ -80,7 +80,7 @@ abstract class ImageTransformDriver implements ImageTransformDriverInterface
         if (!$index->fileExists) {
             // Mark the transform as in progress
             $index->inProgress = true;
-            $assetTransformService->storeTransformIndexData($index);
+            $imageTransformService->storeTransformIndexData($index);
 
             // Generate the transform
             try {
@@ -94,12 +94,12 @@ abstract class ImageTransformDriver implements ImageTransformDriverInterface
                     $index->error = true;
                 }
 
-                $assetTransformService->storeTransformIndexData($index);
+                $imageTransformService->storeTransformIndexData($index);
             } catch (\Exception $e) {
                 $index->inProgress = false;
                 $index->fileExists = false;
                 $index->error = true;
-                $assetTransformService->storeTransformIndexData($index);
+                $imageTransformService->storeTransformIndexData($index);
                 Craft::$app->getErrorHandler()->logException($e);
 
                 throw new ImageTransformException(Craft::t('app',
