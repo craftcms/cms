@@ -9,6 +9,7 @@
 ### Changed
 - Reduced the amount of time it took for the GraphiQL IDE to initialize.
 - The `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disable` commands’ `handle` arguments are no longer required for interactive shells. When not passed, a plugin handle can be chosen from a list of applicable plugins. ([#10158](https://github.com/craftcms/cms/discussions/10158))
+- Hyperlinks within tips are now always underlined.
 - Updated Garnish to 0.1.48.
 
 ### Fixed
