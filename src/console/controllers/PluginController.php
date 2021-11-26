@@ -54,16 +54,49 @@ class PluginController extends Controller
     /**
      * Installs a plugin.
      *
-     * @param string $handle The plugin handle.
+     * @param string|null $handle The plugin handle.
      * @return int
      */
-    public function actionInstall(string $handle): int
+    public function actionInstall(?string $handle = null): int
     {
+        $pluginsService = Craft::$app->getPlugins();
+
+        if ($handle === null) {
+            if (!$this->interactive) {
+                $this->stderr('A plugin handle must be specified.' . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $uninstalledPluginInfo = [];
+            foreach ($pluginsService->getAllPluginInfo() as $h => $info) {
+                if (!$info['isInstalled']) {
+                    $uninstalledPluginInfo[$h] = [
+                        [$h, 'format' => [Console::FG_YELLOW]],
+                        $info['name']
+                    ];
+                }
+            }
+
+            if (empty($uninstalledPluginInfo)) {
+                $this->stdout('There aren’t any uninstalled plugins present.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+
+            $this->stdout('The following uninstalled plugins are present:' . PHP_EOL . PHP_EOL);
+            $this->table(['Handle', 'Name'], $uninstalledPluginInfo);
+
+            $handle = $this->prompt(PHP_EOL . 'Choose which plugin to install:', [
+                'validator' => function(string $input) use ($uninstalledPluginInfo) {
+                    return isset($uninstalledPluginInfo[$input]);
+                }
+            ]);
+        }
+
         $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
         try {
-            $success = Craft::$app->plugins->installPlugin($handle);
+            $success = $pluginsService->installPlugin($handle);
         } catch (\Throwable $e) {
             $success = false;
         } finally {
