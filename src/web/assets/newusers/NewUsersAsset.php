@@ -31,6 +31,6 @@ class NewUsersAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'NewUsersWidget.min.js',
+        'NewUsersWidget.js',
     ];
 }
