@@ -567,7 +567,7 @@ class TestSetup
             [Api::class, ['getApi', 'api']],
             [Assets::class, ['getAssets', 'assets']],
             [AssetIndexer::class, ['getAssetIndexer', 'assetIndexer']],
-            [ImageTransforms::class, ['getAssetTransforms', 'assetTransforms']],
+            [ImageTransforms::class, ['getImageTransforms', 'imageTransforms']],
             [Categories::class, ['getCategories', 'categories']],
             [Composer::class, ['getComposer', 'composer']],
             [Config::class, ['getConfig', 'config']],
