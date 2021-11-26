@@ -11,6 +11,7 @@
 - Fixed a bug where the last control panel breadcrumb could be collapsed under a “More…” menu when there was enough room to display it.
 - Fixed a bug where the “Create a new child category” action on the Categories index page resulted in a 404. ([#10148](https://github.com/craftcms/cms/issues/10148))
 - Fixed a bug where it wasn’t possible to save an image transform when the Image Format setting was set to “Auto”. ([#10150](https://github.com/craftcms/cms/issues/10150))
+- Fixed a PHP error that could occur when defining files in an asset bundle. ([#10154](https://github.com/craftcms/cms/issues/10154))
 
 ## 3.7.22 - 2021-11-23
 
