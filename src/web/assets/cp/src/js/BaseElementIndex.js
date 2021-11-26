@@ -2157,15 +2157,27 @@ const FilterHud = Garnish.HUD.extend({
         this.sourceKey = sourceKey;
         this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
 
-        const $spinner = $('<div/>', {
-            class: 'spinner',
-        });
+        const $loadingContent = $('<div/>').append(
+            $('<div/>', {
+                class: 'spinner',
+            })
+        ).append(
+            $('<div/>', {
+                text: Craft.t('app', 'Loading'),
+                class: 'visually-hidden',
+                'aria-role': 'alert',
+            })
+        );
 
-        this.base(this.elementIndex.$filterBtn, $spinner, {
+        this.base(this.elementIndex.$filterBtn, $loadingContent, {
             hudClass: 'hud element-filter-hud loading',
         });
 
-        this.$hud.attr('id', this.id);
+        this.$hud.attr({
+            id: this.id,
+            'aria-live': 'polite',
+            'aria-busy': 'false',
+        });
         this.$tip.remove();
         this.$tip = null;
 
@@ -2184,7 +2196,7 @@ const FilterHud = Garnish.HUD.extend({
         }).then(response => {
             this.loading = false;
             this.$hud.removeClass('loading');
-            $spinner.remove();
+            $loadingContent.remove();
 
             this.$main.append(response.data.hudHtml);
             Craft.appendHeadHtml(response.data.headHtml);
@@ -2210,6 +2222,14 @@ const FilterHud = Garnish.HUD.extend({
                 this.clear();
             });
 
+            this.$hud.find('.condition-container').on('htmx:beforeRequest', () => {
+                this.setBusy();
+            });
+
+            this.$hud.find('.condition-container').on('htmx:load', () => {
+                this.setReady();
+            });
+
             this.setFocus();
         }).catch(() => {
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
@@ -2221,6 +2241,19 @@ const FilterHud = Garnish.HUD.extend({
             return;
         }
         this.base(elem, events, data, func);
+    },
+
+    setBusy: function() {
+        this.$hud.attr('aria-busy', 'true');
+
+        $('<div/>', {
+            class: 'visually-hidden',
+            text: Craft.t('app', 'Loading'),
+        }).insertAfter(this.$main.find('.htmx-indicator'));
+    },
+
+    setReady: function() {
+        this.$hud.attr('aria-busy', 'false');
     },
 
     setFocus: function() {

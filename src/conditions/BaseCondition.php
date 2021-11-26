@@ -234,7 +234,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
             'class' => ['condition-main'],
             'hx' => [
                 'target' => "#$namespacedId", // replace self
-                'indicator' => "#$namespacedId-indicator", // ID of the spinner
                 'include' => "#$namespacedId", // In case we are in a non form container
                 'vals' => array_filter([
                     'namespace' => $namespace,
@@ -370,24 +369,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 'autofocus' => $autofocusAddButton,
                 'aria' => [
                     'label' => $this->addRuleLabel(),
-                    'live' => 'polite',
                 ],
                 'hx' => [
                     'post' => UrlHelper::actionUrl('conditions/add-rule'),
                 ],
             ]) .
             $this->addRuleLabel() .
-            Html::beginTag('div', [
-                'class' => ['htmx-indicator'],
-                'id' => "{$options['id']}-indicator",
-            ]) .
             Html::tag('div', '', [
-                'class' => 'spinner',
+                'class' => ['spinner', 'htmx-indicator'],
             ]) .
-            Html::tag('div', Craft::t('app', 'Loading'), [
-                'class' => ['loading-text', 'visually-hidden'],
-            ]) .
-            Html::endTag('div') .
             Html::endTag('button') .
             Html::endTag('div');
 
