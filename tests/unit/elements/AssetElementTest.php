@@ -44,9 +44,11 @@ class AssetElementTest extends TestCase
             'filename' => 'foo.jpg',
         ]);
 
-        $this->tester->mockCraftMethods('assetTransforms', [
-            'normalizeTransform' => Expected::once(new ImageTransform()),
-            'extendTransform' => Expected::once(new ImageTransform())
+        $transform = new ImageTransform();
+        $this->tester->mockCraftMethods('imageTransforms', [
+            'normalizeTransform' => $transform,
+            'extendTransform' => Expected::once($transform),
+            'storeTransformIndexData' => new ImageTransformIndex(),
         ]);
 
         $this->tester->mockCraftMethods('assets', [
@@ -85,10 +87,11 @@ class AssetElementTest extends TestCase
 
         $assetTransforms = $this->make(ImageTransforms::class, [
             'getTransformByHandle' => new ImageTransform(),
-            'extendTransform' => $extend
+            'extendTransform' => $extend,
+            'storeTransformIndexData' => new ImageTransformIndex(),
         ]);
 
-        Craft::$app->set('assetTransforms', $assetTransforms);
+        Craft::$app->set('imageTransforms', $assetTransforms);
 
         $result = $asset->{$methodName}($transformData);
 
