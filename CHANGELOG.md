@@ -17,6 +17,7 @@
 - Fixed a bug where the “Create a new child category” action on the Categories index page resulted in a 404. ([#10148](https://github.com/craftcms/cms/issues/10148))
 - Fixed a bug where it wasn’t possible to save an image transform when the Image Format setting was set to “Auto”. ([#10150](https://github.com/craftcms/cms/issues/10150))
 - Fixed an error that could occur if any asset bundles’ `js` or `css` values were set to arrays. ([#10154](https://github.com/craftcms/cms/issues/10154))
+- Fixed a bug where structure data wasn’t always present when duplicating a multi-site elements. ([#10165](https://github.com/craftcms/cms/issues/10165))
 
 ## 3.7.22 - 2021-11-23
 
