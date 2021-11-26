@@ -1,12 +1,11 @@
 /* jshint esversion: 6 */
 /* globals module, require, __dirname */
-const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
+const {getConfig} = require('@craftcms/webpack');
 const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
 
-module.exports = new CraftWebpackConfig({
-    type: 'lib',
+module.exports = getConfig({
+    context: __dirname,
     config: {
-        entry: {'entry': './entry.js'},
         plugins: [
             new MergeIntoSingleFilePlugin({
                 files: {
@@ -21,9 +20,6 @@ module.exports = new CraftWebpackConfig({
                         require.resolve('jquery-ui/ui/widgets/mouse.js'),
                     ],
                 },
-                transform: {
-                    'jquery-ui.js': code => require("uglify-js").minify(code).code
-                }
             }),
         ]
     }

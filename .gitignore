@@ -14,4 +14,3 @@ node_modules/
 vendor/
 /bower_components
 cpresources/*
-/src/web/assets/**/dist/**/*.map

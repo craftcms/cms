@@ -44,7 +44,7 @@
             {% else %}
                 {% set optionValue = option.value is defined ? option.value : key %}
                 {{ tag('option', {
-                    value: optionValue,
+                    value: optionValue ?? '',
                     selected: (optionValue~'') is same as (value~''),
                     disabled: option.disabled ?? false,
                     text: option.label is defined ? option.label : option,

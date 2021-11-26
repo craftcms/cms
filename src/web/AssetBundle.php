@@ -26,7 +26,9 @@ class AssetBundle extends \yii\web\AssetBundle
     {
         parent::init();
 
-        $this->_updateResourcePaths();
+        if (Craft::$app->getConfig()->getGeneral()->devMode) {
+            $this->_updateResourcePaths();
+        }
     }
 
     /**
@@ -49,14 +51,27 @@ class AssetBundle extends \yii\web\AssetBundle
     /**
      * Prefix the string with the dev server host if the dev server is running.
      *
-     * @param string $filePath
-     * @return string
+     * @param string|array $filePath
+     * @return string|array
      * @since 3.7.22
      */
-    private function _prependDevServer(string $filePath): string
+    private function _prependDevServer($filePath)
     {
+        // Handle $filePath being an array: https://www.yiiframework.com/doc/api/2.0/yii-web-assetbundle#$js-detail
+        if (is_array($filePath)) {
+            $fileArray = $filePath;
+            $filePath = $filePath[0];
+        }
+
         $devServer = rtrim(Craft::$app->getWebpack()->getDevServer(static::class), '/');
-        return ($devServer ? $devServer . '/' : '') . $filePath;
+        $filePath = ($devServer ? $devServer . '/' : '') . $filePath;
+
+        if (isset($fileArray)) {
+            $fileArray[0] = $filePath;
+            $filePath = $fileArray;
+        }
+
+        return $filePath;
     }
 
     /**

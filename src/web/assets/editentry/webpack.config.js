@@ -1,9 +1,10 @@
 /* jshint esversion: 6 */
 /* globals module, require */
-const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
+const {getConfig} = require('@craftcms/webpack');
 
-module.exports = new CraftWebpackConfig({
+module.exports = getConfig({
+    context: __dirname,
     config: {
-        entry: {'EntryTypeSwitcher': './EntryTypeSwitcher.js'},
+        entry: {EntryTypeSwitcher: './EntryTypeSwitcher.js'},
     }
 });

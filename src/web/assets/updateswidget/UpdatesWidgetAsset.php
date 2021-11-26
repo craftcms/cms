@@ -32,7 +32,7 @@ class UpdatesWidgetAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'UpdatesWidget.min.js',
+        'UpdatesWidget.js',
     ];
 
     /**

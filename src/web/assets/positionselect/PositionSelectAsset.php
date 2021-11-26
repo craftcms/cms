@@ -33,6 +33,6 @@ class PositionSelectAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'PositionSelectInput.min.js',
+        'PositionSelectInput.js',
     ];
 }

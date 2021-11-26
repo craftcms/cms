@@ -3,11 +3,21 @@
     dropdownParent: 'body',
 }|merge(selectizeOptions ?? []) %}
 
+{# Normalize the options #}
+{% set options = (options ?? [])|map((o, k) => (o.optgroup is defined or o.value is defined) ? o : {
+    value: k,
+    label: o.label is defined ? o.label : o,
+}) %}
+
 {% if includeEnvVars ?? false %}
-    {% set allowedValues = options is defined
-        ? options|filter(o => o.optgroup is not defined)|map((o, k) => o.value is defined ? o.value : k)
-        : null %}
-    {% set options = (options ?? [])|merge(craft.cp.getEnvOptions(allowedValues)) %}
+    {% set allowedValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
+    {% set options = options|map(o => o.data.data.hint is defined ? o : o|merge({
+        data: {
+            data: {
+                hint: o.value,
+            }
+        },
+    }, recursive=true))|merge(craft.cp.getEnvOptions(allowedValues)) %}
 {% endif %}
 
 {% include '_includes/forms/select' with {
@@ -16,7 +26,7 @@
 
 {% js %}
 (() => {
-    const label = data => {
+    const label = (data, showHint) => {
         let label = Craft.escapeHtml(data.text);
         const status = (() => {
             if (typeof data.status !== 'undefined') {
@@ -30,7 +40,7 @@
         if (status) {
             label = `<span class="status ${status}"></span>${label}`;
         }
-        if (typeof data.hint !== 'undefined') {
+        if (showHint && typeof data.hint !== 'undefined') {
             label += ` <span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
         }
         return label;
@@ -54,14 +64,14 @@
                 if (data.value === '') {
                     classes.push('selectize-dropdown-emptyoptionlabel');
                 }
-                return `<div class="${classes.join(' ')}">${label(data)}</div>`;
+                return `<div class="${classes.join(' ')}">${label(data, true)}</div>`;
             },
             item: data => {
                 const attrs = ['class="item"'];
                 if (typeof data.boolean !== 'undefined') {
                     attrs.push(`data-boolean="${data.boolean ? '1' : ''}"`);
                 }
-                return `<div ${attrs.join(' ')}>${label(data)}</div>`;
+                return `<div ${attrs.join(' ')}>${label(data, false)}</div>`;
             },
         },
         onChange: updateBooleanValue,

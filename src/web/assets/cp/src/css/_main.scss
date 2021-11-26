@@ -766,6 +766,9 @@ td.right {
 
 .notice {
   color: $noticeColor !important;
+  a {
+    text-decoration: underline;
+  }
 }
 
 .warning {

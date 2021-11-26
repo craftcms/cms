@@ -31,6 +31,6 @@ class DbBackupAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'DbBackupUtility.min.js',
+        'DbBackupUtility.js',
     ];
 }

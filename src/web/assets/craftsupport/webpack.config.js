@@ -1,11 +1,14 @@
 /* jshint esversion: 6 */
 /* globals module, require */
-const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
+const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = new CraftWebpackConfig({
+module.exports = getConfig({
+    context: __dirname,
     config: {
-        entry: {'CraftSupportWidget': './CraftSupportWidget.js'},
+        entry: {
+            CraftSupportWidget: './CraftSupportWidget.js'
+        },
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [{

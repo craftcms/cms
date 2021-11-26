@@ -1,18 +1,18 @@
 /* jshint esversion: 6 */
 /* globals module, require, __dirname */
-const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
+const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
+const pkgDir = require('pkg-dir');
 
-module.exports = new CraftWebpackConfig({
-    type: 'lib',
+module.exports = getConfig({
+    context: __dirname,
     config: {
-        entry: {'entry': './entry.js'},
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        context: path.join(path.dirname(require.resolve('jquery-ui/package.json')), 'ui','i18n'),
+                        context: path.join(pkgDir.sync(require.resolve('jquery-ui')), 'ui', 'i18n'),
                         from: '*',
                         to: '.'
                     },
