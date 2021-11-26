@@ -84,33 +84,27 @@ class DirectiveTest extends Unit
     {
         $this->_registerDirective($directiveClass);
 
-        $this->tester->mockMethods(
-            Craft::$app,
-            'assets',
-            [
-                'getAssetUrl' => function($asset, $parameters, $generateNow) {
-                    if (is_array($parameters)) {
-                        $parameters = Craft::$app->getImageTransforms()->normalizeTransform($parameters);
-                    }
-
-                    if ($parameters instanceof ImageTransform) {
-                        $parameters = array_filter($parameters->toArray(['mode', 'width', 'height', 'format', 'position', 'interlace', 'quality']));
-                    }
-
-                    $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
-                    return $transformed . ($generateNow ? ($asset->filename . '-generateNow') : ($asset->filename . 'generateLater'));
-                }
-            ],
-            []
-        );
-
         /** @var Asset $asset */
+        $filename = StringHelper::randomString() . '.jpg';
         $asset = $this->make(Asset::class, [
-            'filename' => StringHelper::randomString() . '.jpg',
+            'filename' => $filename,
             'getVolume' => $this->make(Local::class, [
                 'hasUrls' => true,
+                'url' => 'http://domain.local/'
             ]),
-            'folderId' => 7
+            'folderId' => 7,
+            'getUrl' => function($parameters, $generateNow) use ($filename) {
+                if (is_array($parameters)) {
+                    $parameters = Craft::$app->getImageTransforms()->normalizeTransform($parameters);
+                }
+
+                if ($parameters instanceof ImageTransform) {
+                    $parameters = array_filter($parameters->toArray(['mode', 'width', 'height', 'format', 'position', 'interlace', 'quality']));
+                }
+
+                $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
+                return $transformed . ($generateNow ? ($filename . '-generateNow') : ($filename . 'generateLater'));
+            }
         ]);
 
         /** @var GqlAssetType $type */
