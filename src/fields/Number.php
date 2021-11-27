@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\conditions\elements\fields\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -283,6 +284,14 @@ JS;
         return [
             ['number', 'min' => $this->min, 'max' => $this->max],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return NumberFieldConditionRule::class;
     }
 
     /**

@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\conditions\elements\fields\TextFieldConditionRule;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use LitEmoji\LitEmoji;
@@ -257,5 +258,13 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     {
         $value = (string)$value;
         return LitEmoji::unicodeToShortcode($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType(): ?string
+    {
+        return TextFieldConditionRule::class;
     }
 }

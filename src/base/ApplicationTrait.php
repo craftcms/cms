@@ -46,13 +46,14 @@ use craft\services\Assets;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
 use craft\services\Composer;
+use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
-use craft\services\ElementIndexes;
 use craft\services\Elements;
+use craft\services\ElementSources;
 use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Gc;
@@ -115,13 +116,14 @@ use yii\web\ServerErrorHttpException;
  * @property-read Assets $assets The assets service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
+ * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
  * @property-read Content $content The content service
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
- * @property-read ElementIndexes $elementIndexes The element indexes service
+ * @property-read ElementSources $elementSources The element sources service
  * @property-read Elements $elements The elements service
  * @property-read Entries $entries The entries service
  * @property-read Fields $fields The fields service
@@ -889,6 +891,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the conditions service.
+     *
+     * @return Conditions The conditions service
+     * @since 4.0.0
+     */
+    public function getConditions(): Conditions
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('conditions');
+    }
+
+    /**
      * Returns the config service.
      *
      * @return Config The config service
@@ -958,12 +972,12 @@ trait ApplicationTrait
     /**
      * Returns the element indexes service.
      *
-     * @return ElementIndexes The element indexes service
+     * @return ElementSources The element indexes service
      */
-    public function getElementIndexes(): ElementIndexes
+    public function getElementSources(): ElementSources
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('elementIndexes');
+        return $this->get('elementSources');
     }
 
     /**
