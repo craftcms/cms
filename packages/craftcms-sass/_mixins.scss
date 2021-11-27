@@ -122,9 +122,6 @@ $warningColor: $yellow800;
 $successColor: $teal500;
 $noticeColor: $blue800;
 
-// UI element colors
-$removeIconColor: $textColor;
-
 // UI element styles
 $smallBorderRadius: 3px;
 $mediumBorderRadius: 4px;
@@ -181,7 +178,7 @@ $radioSize: 16px;
   opacity: 0.8;
 }
 
-@mixin angle($dir: down, $color: $mediumTextColor) {
+@mixin angle($dir: down, $color: var(--ui-control-color)) {
   display: block;
   content: '';
   font-size: 0;
