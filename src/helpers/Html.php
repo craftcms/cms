@@ -861,4 +861,22 @@ class Html extends \yii\helpers\Html
     {
         return preg_replace('/(?<=\S)\s+(\S+\s*)$/', '&nbsp;$1', $string);
     }
+
+    /**
+     * Returns a visually-hidden input label.
+     *
+     * @param string $content
+     * @param string|null $for
+     * @param array $options
+     * @return string
+     * @since 4.0.0
+     */
+    public static function hiddenLabel(string $content, ?string $for = null, array $options = []): string
+    {
+        return static::label($content, $for, array_merge($options, [
+            'class' => array_merge(static::explodeClass($options['class'] ?? []), [
+                'visually-hidden',
+            ]),
+        ]));
+    }
 }

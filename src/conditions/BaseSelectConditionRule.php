@@ -3,6 +3,7 @@
 namespace craft\conditions;
 
 use craft\helpers\Cp;
+use craft\helpers\Html;
 
 /**
  * BaseSelectConditionRule provides a base implementation for condition rules that are composed of a select input.
@@ -39,11 +40,16 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
-        return Cp::selectHtml([
-            'name' => 'value',
-            'options' => $this->options(),
-            'value' => $this->value,
-        ]);
+        $selectId = 'select';
+
+        return
+            Html::hiddenLabel($this->getLabel(), $selectId) .
+            Cp::selectHtml([
+                'id' => $selectId,
+                'name' => 'value',
+                'options' => $this->options(),
+                'value' => $this->value,
+            ]);
     }
 
     /**

@@ -108,29 +108,31 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
+        $operatorId = 'operator';
+        $valueId = 'value';
+
         return
             Html::beginTag('div', [
                 'class' => ['flex', 'flex-nowrap'],
             ]) .
-            Html::tag('div',
-                Cp::selectHtml([
-                    'name' => 'operator',
-                    'value' => $this->operator,
-                    'options' => array_map(function($operator) {
-                        return ['value' => $operator, 'label' => $this->operatorLabel($operator)];
-                    }, $this->operators()),
-                ])
-            ) .
-            Html::tag('div',
-                Cp::textHtml([
-                    'type' => $this->inputType(),
-                    'name' => 'value',
-                    'value' => $this->value,
-                    'autocomplete' => false,
-                ]), [
-                    'class' => 'fullwidth',
-                ]
-            ) .
+            Html::hiddenLabel(Craft::t('app', 'Operator'), $operatorId) .
+            Cp::selectHtml([
+                'id' => $operatorId,
+                'name' => 'operator',
+                'value' => $this->operator,
+                'options' => array_map(function($operator) {
+                    return ['value' => $operator, 'label' => $this->operatorLabel($operator)];
+                }, $this->operators()),
+            ]) .
+            Html::hiddenLabel($this->getLabel(), $valueId) .
+            Cp::textHtml([
+                'type' => $this->inputType(),
+                'id' => $valueId,
+                'name' => 'value',
+                'value' => $this->value,
+                'autocomplete' => false,
+                'class' => 'fullwidth',
+            ]) .
             Html::endTag('div');
     }
 

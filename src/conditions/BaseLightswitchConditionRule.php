@@ -43,17 +43,17 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
-        $html = Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]);
-        $html .= Html::tag('div',
-            Cp::lightswitchHtml([
-                'small' => true,
-                'on' => $this->value,
-                'name' => 'value',
-            ])
-        );
-        $html .= Html::endTag('div');
+        $lightswitchId = 'lightswitch';
 
-        return $html;
+        return
+            Html::hiddenLabel($this->getLabel(), $lightswitchId) .
+            Html::tag('div',
+                Cp::lightswitchHtml([
+                    'id' => $lightswitchId,
+                    'on' => $this->value,
+                    'name' => 'value',
+                ])
+            );
     }
 
     /**

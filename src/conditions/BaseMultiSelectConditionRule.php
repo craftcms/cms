@@ -5,6 +5,7 @@ namespace craft\conditions;
 use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 
 /**
  * BaseMultiSelectConditionRule provides a base implementation for condition rules that are composed of a multi-select input.
@@ -63,31 +64,33 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
-        $id = 'multiselect' . mt_rand();
-        $namespacedId = Craft::$app->getView()->namespaceInputId($id);
+        $multiSelectId = 'multiselect';
+        $namespacedId = Craft::$app->getView()->namespaceInputId($multiSelectId);
 
         $js = <<<JS
 $('#$namespacedId').selectize({
-    plugins: ["remove_button"],
-    onDropdownClose: (x) => {
-        htmx.trigger(htmx.find("#$namespacedId"), "change");
+    plugins: ['remove_button'],
+    onDropdownClose: () => {
+        htmx.trigger(htmx.find('#$namespacedId'), 'change');
     },
 });
 JS;
         Craft::$app->getView()->registerJs($js);
 
-        return Cp::multiSelectHtml([
-            'id' => $id,
-            'class' => 'selectize fullwidth',
-            'name' => 'values',
-            'values' => $this->_values,
-            'options' => $this->options(),
-            'inputAttributes' => [
-                'style' => [
-                    'display' => 'none', // Hide it before selectize does its thing
+        return
+            Html::hiddenLabel($this->getLabel(), $multiSelectId) .
+            Cp::multiSelectHtml([
+                'id' => $multiSelectId,
+                'class' => 'selectize fullwidth',
+                'name' => 'values',
+                'values' => $this->_values,
+                'options' => $this->options(),
+                'inputAttributes' => [
+                    'style' => [
+                        'display' => 'none', // Hide it before selectize does its thing
+                    ],
                 ],
-            ],
-        ]);
+            ]);
     }
 
     /**

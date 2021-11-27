@@ -119,6 +119,7 @@
 - Added `craft\helpers\Db::parseNumericParam()`.
 - Added `craft\helpers\Db::renameTable()`.
 - Added `craft\helpers\Gql::getSchemaContainedEntryTypes)()`.
+- Added `craft\helpers\Html::hiddenLabel()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\i18n\Translation`.

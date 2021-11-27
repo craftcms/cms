@@ -292,9 +292,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 $ruleHtml .=
                     // Rule type selector
                     Html::beginTag('div', ['class' => 'rule-switcher']) .
-                    Html::label(Craft::t('app', 'Rule Type'), 'type', [
-                        'class' => 'visually-hidden',
-                    ]) .
+                    Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type') .
                     Cp::selectHtml([
                         'id' => 'type',
                         'name' => 'type',

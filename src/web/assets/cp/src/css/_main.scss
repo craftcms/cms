@@ -3224,6 +3224,12 @@ ul.tree,
   & + .condition-rule {
     border-top-width: 0;
   }
+
+  .rule-body {
+    .lightswitch {
+      display: block;
+    }
+  }
 }
 
 /* ----------------------------------------

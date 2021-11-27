@@ -1002,6 +1002,7 @@ return [
     'Only up to {version} is compatible with your version of Craft.' => 'Only up to {version} is compatible with your version of Craft.',
     'Oops!' => 'Oops!',
     'Open the full edit page in a new tab' => 'Open the full edit page in a new tab',
+    'Operator' => 'Operator',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Option Label',
     'Options' => 'Options',
