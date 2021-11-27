@@ -7,8 +7,11 @@
     "serve": "webpack-dev-server --node-env=development"
   },
   "devDependencies": {
-    "@benmajor/jquery-touch-events": "^2.0.3",
     "@craftcms/webpack": "./packages/craftcms-webpack",
+    "lerna": "^4.0.0"
+  },
+  "dependencies": {
+    "@benmajor/jquery-touch-events": "^2.0.3",
     "@craftcms/sass": "./packages/craftcms-sass",
     "@pixelandtonic/craftui": "~0.3.8",
     "accounting": "^0.4.1",
@@ -22,15 +25,14 @@
     "fabric": "^1.7.19",
     "focus-visible": "^5.2.0",
     "garnishjs": "^0.1.48",
-    "graphiql": "^0.14.2",
+    "graphiql": "^1.4.7",
     "graphiql-explorer": "^0.6.3",
-    "graphql": "^14.6.0",
+    "graphql": "^15.5.0",
     "iframe-resizer": "^4.3.2",
     "inputmask": "~3.2.2 || ~3.3.5",
     "jquery": "^3.6.0",
     "jquery-ui": "^1.13.0",
     "jquery.payment": "^3.0.0",
-    "lerna": "^4.0.0",
     "lodash": "^4.17.21",
     "picturefill": "^3.0.3",
     "punycode": "1.3.*",

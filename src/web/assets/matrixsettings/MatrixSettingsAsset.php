@@ -32,7 +32,7 @@ class MatrixSettingsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'MatrixConfigurator.min.js',
+        'MatrixConfigurator.js',
     ];
 
     /**

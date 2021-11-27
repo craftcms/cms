@@ -31,6 +31,6 @@ class FindReplaceAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'FindAndReplaceUtility.min.js',
+        'FindAndReplaceUtility.js',
     ];
 }

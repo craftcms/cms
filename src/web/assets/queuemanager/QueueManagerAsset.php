@@ -39,7 +39,7 @@ class QueueManagerAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'queue-manager.min.js',
+        'queue-manager.js',
     ];
 
     /**

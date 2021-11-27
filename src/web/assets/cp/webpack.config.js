@@ -1,22 +1,19 @@
 /* jshint esversion: 6 */
 /* globals module, require, webpack */
-const CraftWebpackConfig = require('@craftcms/webpack/CraftWebpackConfig');
+const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = new CraftWebpackConfig({
+module.exports = getConfig({
+    context: __dirname,
     config: {
         entry: {
-            'Craft': './Craft.js',
-            'charts': './charts.js'
+            'cp': './Craft.js',
         },
-        output: { filename: 'js/[name].min.js' },
         plugins: [
             new CopyWebpackPlugin({
                 patterns: [
-                    /*
-                    * Only some of the images are used in the CSS. So we need to make
-                    * sure we have them all
-                    * */
+                    // Only some of the images are used in the CSS. So we need to make
+                    // sure we have them all
                     {
                         from: './images/**/*',
                         to: '.'
@@ -25,5 +22,4 @@ module.exports = new CraftWebpackConfig({
             }),
         ]
     },
-    removeFiles: { include: ['js/charts.min.js', 'js/charts.min.js.map'] },
 });

@@ -39,7 +39,7 @@ class UpdatesAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'UpdatesUtility.min.js',
+        'UpdatesUtility.js',
     ];
 
     /**
