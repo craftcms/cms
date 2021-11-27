@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that could occur on some servers that disable the PHP `set_time_limit()` function.  ([#10152](https://github.com/craftcms/cms/issues/10152))
+
 ## 3.7.23 - 2021-11-26
 
 ### Added
