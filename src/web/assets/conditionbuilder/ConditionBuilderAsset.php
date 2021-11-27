@@ -31,6 +31,6 @@ class ConditionBuilderAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'js/ConditionBuilder.js',
+        'ConditionBuilder.js',
     ];
 }
