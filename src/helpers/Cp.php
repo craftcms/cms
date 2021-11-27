@@ -255,7 +255,7 @@ class Cp
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
-        $removeText = sprintf('%1$s %2$s', Craft::t('app', 'Remove'), $label);
+
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
             $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
@@ -342,6 +342,7 @@ class Cp
         $html .= '>';
 
         if ($context === 'field' && $inputName !== null) {
+            $removeText = sprintf('%s %s', Craft::t('app', 'Remove'), $label);
             $html .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
                 Html::tag('button', '', [
                     'class' => ['delete', 'icon'],

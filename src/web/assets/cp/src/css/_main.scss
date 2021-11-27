@@ -818,19 +818,23 @@ td.right {
 .icon.delete {
   display: inline-block;
   line-height: inherit;
-}
 
-.icon.delete:before {
-  content: "remove";
-  color: $removeIconColor;
-}
+  &:before {
+    content: "remove";
+    color: $removeIconColor;
+  }
 
-.icon.delete:not(.disabled):hover:before {
-  color: $red600;
-}
+  &:not(.disabled) {
+    cursor: pointer;
 
-.icon.delete:not(.disabled):active:before {
-  color: darken($red600, 10%);
+    &:hover:before {
+      color: $red600;
+    }
+
+    &:active:before {
+      color: $red800;
+    }
+  }
 }
 
 .hidden {
