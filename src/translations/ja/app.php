@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'ファイルとフォルダーを削除',
     'Remove files uploaded by other users' => '他のユーザーがアップロードしたファイルを削除',
     'Remove it' => '削除する',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => '削除',
     'Rename file' => 'ファイル名を変更する',
     'Rename folder' => 'フォルダ名を変更する',
