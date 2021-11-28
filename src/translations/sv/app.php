@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'Ta bort filer och mappar',
     'Remove files uploaded by other users' => 'Ta bort filer som laddats upp av andra användare',
     'Remove it' => 'Ta bort den',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Ta bort',
     'Rename file' => 'Byt namn på fil',
     'Rename folder' => 'Ändra mappnamn',
