@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'Fájlok és mappák eltávolítása',
     'Remove files uploaded by other users' => 'Más felhasználók által feltöltött fájlok eltávolítása',
     'Remove it' => 'Eltávolítás',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Eltávolítás',
     'Rename file' => 'Fájl átnevezése',
     'Rename folder' => 'Mappa átnevezése',
