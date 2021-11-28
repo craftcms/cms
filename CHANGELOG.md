@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a PHP error that could occur on some servers that disable the PHP `set_time_limit()` function.  ([#10152](https://github.com/craftcms/cms/issues/10152))
+- Fixed an error that could occur when PHP’s `set_time_limit()` function was disabled. ([#10152](https://github.com/craftcms/cms/issues/10152))
 
 ## 3.7.23 - 2021-11-26
 
