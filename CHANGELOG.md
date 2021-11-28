@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
+- Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
+
 ### Fixed
 - Fixed an error that could occur when PHP’s `set_time_limit()` function was disabled. ([#10152](https://github.com/craftcms/cms/issues/10152))
 
