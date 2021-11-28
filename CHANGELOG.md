@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Config::setBooleanDotEnvVar()`.
+
 ### Changed
 - Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
 - Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
