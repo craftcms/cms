@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'הסר קבצים ותיקיות',
     'Remove files uploaded by other users' => 'הסר קבצים שהועלו על ידי משתמשים אחרים',
     'Remove it' => 'הסר את זה',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'הסר',
     'Rename file' => 'שנה שם קובץ',
     'Rename folder' => 'שם את שם התקייה.',
