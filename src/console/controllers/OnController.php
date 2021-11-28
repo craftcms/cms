@@ -35,7 +35,7 @@ class OnController extends Controller
     public function actionIndex(): int
     {
         // If the isSystemLive config setting is set, then we can’t control it from here
-        if (is_bool($live = Craft::$app->getConfig()->getGeneral()->isSystemLive)) {
+        if (is_bool(Craft::$app->getConfig()->getGeneral()->isSystemLive)) {
             $this->stderr('It\'s not possible to toggle the system status when the `isSystemLive` config setting is set.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
