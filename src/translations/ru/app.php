@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'Удалить файлы и папки',
     'Remove files uploaded by other users' => 'Удалить файлы, загруженные другими пользователями',
     'Remove it' => 'Удалить',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Удалить',
     'Rename file' => 'Переименовать файл',
     'Rename folder' => 'Переименовать папку',

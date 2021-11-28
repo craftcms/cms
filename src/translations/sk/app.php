@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'Odstrániť súbory a priečinky',
     'Remove files uploaded by other users' => 'Odstrániť súbory uložené inými používateľmi',
     'Remove it' => 'Odstrániť',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Odstrániť',
     'Rename file' => 'Premenovať súbor',
     'Rename folder' => 'Premenovať adresár',

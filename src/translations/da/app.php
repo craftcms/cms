@@ -1100,6 +1100,7 @@ return [
     'Remove files and folders' => 'Fjern filer og mapper',
     'Remove files uploaded by other users' => 'Fjern filer, der er overført af andre brugere',
     'Remove it' => 'Fjern den',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Fjern',
     'Rename file' => 'Omdøb fil',
     'Rename folder' => 'Omdøb mappe',

@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => '파일 및 폴더 제거',
     'Remove files uploaded by other users' => '다른 사용자가 업로드한 파일 제거',
     'Remove it' => '제거하기',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => '제거하기',
     'Rename file' => '파일 이름 변경하기',
     'Rename folder' => '이름 변경 폴더',

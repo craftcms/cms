@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'حذف فایل ها و پوشه ها',
     'Remove files uploaded by other users' => 'حذف فایل‌های بارگذاری‌شده به وسیله کاربرها',
     'Remove it' => 'حذف کن',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'حذف',
     'Rename file' => 'تغییر نام فایل',
     'Rename folder' => 'تغییر نام پوشه',

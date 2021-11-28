@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'Bestanden en mappen verwijderen',
     'Remove files uploaded by other users' => 'Bestanden geüpload door andere gebruikers verwijderen',
     'Remove it' => 'Verwijderen',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Verwijder',
     'Rename file' => 'Geef bestand een andere naam',
     'Rename folder' => 'Geef map een andere naam',
