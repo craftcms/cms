@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'Odebrat soubory a složky',
     'Remove files uploaded by other users' => 'Odstranit soubory nahrané jinými uživateli',
     'Remove it' => 'Odebrat',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Smazat',
     'Rename file' => 'Přejmenovat soubor',
     'Rename folder' => 'Přejmenovat adresář',
