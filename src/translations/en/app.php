@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => 'Remove files and folders',
     'Remove files uploaded by other users' => 'Remove files uploaded by other users',
     'Remove it' => 'Remove it',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => 'Remove',
     'Rename file' => 'Rename file',
     'Rename folder' => 'Rename folder',

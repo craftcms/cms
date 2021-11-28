@@ -221,6 +221,7 @@ JS;
             'Previous Page',
             'Really delete folder “{folder}”?',
             'Refresh',
+            'Remove {label}',
             'Remove',
             'Rename folder',
             'Rename',
