@@ -492,6 +492,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   .flex {
     align-items: center;
   }
+
+  .btn {
+    --ui-control-color: #{$grey400};
+    --ui-control-hover-color: #{$grey500};
+    --ui-control-active-color: #{$grey600};
+  }
 }
 
 #crumbs {
@@ -587,7 +593,7 @@ li.breadcrumb-toggle-wrapper {
   svg {
     width: 22px;
     height: 22px;
-    @include svg-mask($darkHairlineColor);
+    @include svg-mask(var(--ui-control-color));
   }
 
   &:hover,
@@ -664,15 +670,16 @@ li.breadcrumb-toggle-wrapper {
   border-radius: 0;
 
   &:after {
-    border-color: $mediumHairlineColor;
+    border-color: var(--ui-control-color);
     transition: border-color linear 100ms;
   }
 
-  &:hover,
-  &.active {
-    &:after {
-      border-color: $darkHairlineColor;
-    }
+  &:hover:after {
+    border-color: var(--ui-control-hover-color);
+  }
+
+  &[aria-expanded=true]:after {
+    border-color: var(--ui-control-active-color);
   }
 }
 
@@ -828,8 +835,6 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-$toolbarIconColor: darken($inputColor, 10%);
-
 #toolbar {
   flex: 1;
   align-items: flex-start;
@@ -844,34 +849,34 @@ $toolbarIconColor: darken($inputColor, 10%);
   .menubtn:after,
   [data-icon]:before,
   [data-icon-after]:after {
-    color: $toolbarIconColor;
+    color: var(--ui-control-color);
   }
 
   .text {
     border-radius: $largeBorderRadius;
 
     &::-webkit-input-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &:-ms-input-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &::-ms-input-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &:-moz-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &::-moz-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &::placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &:not(:focus) {
@@ -1409,11 +1414,11 @@ $toolbarIconColor: darken($inputColor, 10%);
 
           &.icon-mask {
             svg {
-              @include svg-mask($mediumTextColor);
+              @include svg-mask(var(--ui-control-color));
             }
 
             span[data-icon] {
-              color: $mediumTextColor;
+              color: var(--ui-control-color);
             }
           }
 

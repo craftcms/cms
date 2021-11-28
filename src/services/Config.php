@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -294,5 +295,39 @@ class Config extends Component
 
         // Now actually set the environment variable
         putenv("$name=$value");
+    }
+
+    /**
+     * Sets a boolean environment variable value in the project's .env file.
+     *
+     * If the environment variable is already set to a boolean-esque value, its counterpart will be used.
+     * For example, if `true` is passed and the current value is `no`, the variable will be set to `yes`.
+     *
+     * @param string $name The environment variable name
+     * @param bool $value The environment variable value
+     * @throws Exception if the .env file doesn't exist
+     * @since 3.7.24
+     */
+    public function setBooleanDotEnvVar(string $name, bool $value): void
+    {
+        switch (strtolower((string)App::env($name))) {
+            case 'yes':
+            case 'no':
+                $value = $value ? 'yes' : 'no';
+                break;
+            case 'on':
+            case 'off':
+                $value = $value ? 'on' : 'off';
+                break;
+            case '1':
+            case '0':
+                $value = $value ? '1' : '0';
+                break;
+            default:
+                $value = $value ? 'true' : 'false';
+                break;
+        }
+
+        $this->setDotEnvVar($name, $value);
     }
 }
