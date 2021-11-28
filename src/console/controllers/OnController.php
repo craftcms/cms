@@ -8,8 +8,8 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\console\Controller;
 use craft\helpers\Console;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -18,7 +18,7 @@ use yii\console\ExitCode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.7
  */
-class OnController extends Controller
+class OnController extends BaseSystemStatusController
 {
     /**
      * Turns the system on.
@@ -45,13 +45,12 @@ class OnController extends Controller
             return ExitCode::OK;
         }
 
-        // Allow changes to the project config even if it’s supposed to be read only,
-        // and prevent changes from getting written to YAML
-        $projectConfig = Craft::$app->getProjectConfig();
-        $projectConfig->readOnly = false;
-        $projectConfig->writeYamlAutomatically = false;
-
-        $projectConfig->set('system.live', true, null, false);
+        try {
+            $this->set('system.live', true);
+        } catch (Throwable $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
 
         $this->stdout('The system is now online.' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
