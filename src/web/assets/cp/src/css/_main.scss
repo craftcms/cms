@@ -5787,6 +5787,8 @@ ul.errors li {
 
   .autosuggest__results_item {
     @include menu-option-styles;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:hover,
     &.autosuggest__results_item-highlighted {
