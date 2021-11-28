@@ -97,10 +97,9 @@
         </div>
     {% endif %}
 
+    {{ parent() }}
     {# Give plugins a chance to add other things here #}
     {% hook "cp.assets.edit.meta" %}
-
-    {{ parent() }}
 {% endblock %}
 
 {% js on ready %}
