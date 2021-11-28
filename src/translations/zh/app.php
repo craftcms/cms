@@ -1099,6 +1099,7 @@ return [
     'Remove files and folders' => '移除文件和文件夹',
     'Remove files uploaded by other users' => '移除其他用户上传的文件',
     'Remove it' => '移除它',
+    'Remove {label}' => 'Remove {label}',
     'Remove' => '移除',
     'Rename file' => '重命名文件',
     'Rename folder' => '重命名文件夹',
