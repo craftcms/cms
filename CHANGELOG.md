@@ -16,7 +16,7 @@
 ### Fixed
 - Fixed an error that could occur when PHP’s `set_time_limit()` function was disabled. ([#10152](https://github.com/craftcms/cms/issues/10152))
 - Fixed a bug where the `_includes/forms/autosuggest` template wasn’t respecting `suggestEnvVars` if `suggestions` was already defined.
-- Fixed a bug where Table fields would sometimes have an incorrect GraphQL Input Type definition. ([#10173](https://github.com/craftcms/cms/issues/10173))
+- Fixed a bug where Table fields could have an incorrect GraphQL input type definition. ([#10173](https://github.com/craftcms/cms/issues/10173))
 
 ## 3.7.23 - 2021-11-26
 
