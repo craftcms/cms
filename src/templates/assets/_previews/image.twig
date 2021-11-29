@@ -23,7 +23,7 @@
 
 {% js %}
 const focalPoint = new Craft.FocalPoint(Craft.PreviewFileModal.openInstance.$container.find('.asset-image-preview'), $('#toggle-focal'), {{ editFocal|default(false) }});
-console.log(focalPoint);
+
 function resizePreviewImage() {
     var instance = Craft.PreviewFileModal.openInstance;
     var containerHeight = Garnish.$win.height() * 0.66;
