@@ -546,6 +546,7 @@ return [
     'Edited' => 'Edited',
     'Editor Slideouts' => 'Editor Slideouts',
     'Element' => 'Element',
+    'Element select' => 'Element select',
     'Elements duplicated.' => 'Elements duplicated.',
     'Elements' => 'Elements',
     'Email Settings' => 'Email Settings',
