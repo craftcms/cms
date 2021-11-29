@@ -25,6 +25,7 @@
         @selected="onSelected"
         @focus="updateFilteredOptions"
         @blur="onBlur"
+        @input="onInputChange"
         v-model="inputProps.initialValue"
     >
         <template slot-scope="{suggestion}">
@@ -63,7 +64,6 @@ new Vue({
             }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
             limit: limit ?? 5
         }|json_encode|raw }};
-        data.inputProps.onInputChange = this.onInputChange;
         {% endblock %}
         return data;
     },
