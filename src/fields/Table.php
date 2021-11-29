@@ -492,7 +492,7 @@ class Table extends Field
         $typeName = $this->handle . '_TableRowInput';
 
         if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
-            return $argumentType;
+            return Type::listOf($argumentType);
         }
 
         $contentFields = TableRow::prepareRowFieldDefinition($this->columns, false);
