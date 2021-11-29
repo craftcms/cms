@@ -408,7 +408,7 @@ li.sel a {
   font-size: 11px;
   margin-top: -1px;
   @include padding-left(4px);
-  color: $lightTextColor;
+  color: var(--ui-control-color);
   body.ltr & {
     content: "circlerarr";
   }
