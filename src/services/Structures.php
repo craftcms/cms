@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -492,6 +493,7 @@ class Structures extends Component
 
         $elementRecord = null;
 
+        /** @var Element $element */
         // Figure out what we're doing
         if ($mode !== self::MODE_INSERT) {
             // See if there's an existing structure element record

@@ -57,6 +57,9 @@
   --text-color: #{$textColor};
   --light-text-color: #{$lightTextColor};
   --hairline-color: #{$hairlineColor};
+  --ui-control-color: #{$grey400};
+  --ui-control-hover-color: #{$grey500};
+  --ui-control-active-color: #{$grey600};
 }
 
 body,
@@ -104,7 +107,8 @@ hr:first-child,
 fieldset:first-child,
 .field:first-child,
 .toolbar:first-child,
-.buttons:first-child {
+.buttons:first-child,
+.condition-container:first-child {
   margin-top: 0 !important;
 }
 
@@ -122,7 +126,8 @@ blockquote:last-child,
 fieldset:last-child,
 .field:last-child,
 .toolbar:last-child,
-.buttons:last-child {
+.buttons:last-child,
+.condition-container:last-child {
   margin-bottom: 0 !important;
 }
 
@@ -416,6 +421,10 @@ li.sel a {
 
 .go:hover:after {
   color: $linkColor;
+}
+
+button {
+  cursor: pointer;
 }
 
 /* revision button */
@@ -766,6 +775,9 @@ td.right {
 
 .notice {
   color: $noticeColor !important;
+  a {
+    text-decoration: underline;
+  }
 }
 
 .warning {
@@ -805,7 +817,7 @@ td.right {
 
 .icon.move:before {
   content: "move";
-  color: $mediumTextColor;
+  color: var(--ui-control-color);
 }
 
 .icon.move:not(.disabled):hover:before {
@@ -814,19 +826,24 @@ td.right {
 
 .icon.delete {
   display: inline-block;
-}
+  line-height: inherit;
 
-.icon.delete:before {
-  content: "remove";
-  color: $darkHairlineColor;
-}
+  &:before {
+    content: "remove";
+    color: var(--ui-control-color);
+  }
 
-.icon.delete:not(.disabled):hover:before {
-  color: $red600;
-}
+  &:not(.disabled) {
+    cursor: pointer;
 
-.icon.delete:not(.disabled):active:before {
-  color: darken($red600, 10%);
+    &:hover:before {
+      color: $red600;
+    }
+
+    &:active:before {
+      color: $red800;
+    }
+  }
 }
 
 .hidden {
@@ -867,7 +884,7 @@ td.right {
     vertical-align: baseline;
     width: 100%;
     line-height: 1.375;
-    color: $lightTextColor;
+    color: var(--ui-control-color);
   }
 
   &:not(.warning) {
@@ -934,6 +951,7 @@ td.right {
 
     .icon {
       @include margin-right(4px);
+      color: var(--ui-control-color);
     }
 
     .label {
@@ -959,91 +977,97 @@ td.right {
 
 .customize-sources-modal {
   @include padding-left(200px);
-}
+  overflow: visible !important;
 
-.customize-sources-modal > .spinner {
-  position: absolute;
-  top: calc(50% - 44px);
-  left: calc(50% - 12px);
-}
+  & > .cs-sidebar {
+    position: absolute;
+    top: 0;
+    @include left(0);
+    margin: 0;
+    padding: 10px 0;
+    border: none;
+    width: 200px;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    background-color: $grey050;
+    overflow: auto;
+    box-shadow: inset -1px 0 0 $hairlineColor;
 
-.customize-sources-modal > .cs-sidebar {
-  position: absolute;
-  top: 0;
-  @include left(0);
-  margin: 0;
-  padding: 10px 0;
-  border: none;
-  width: 200px;
-  height: calc(100% - 62px);
-  box-sizing: border-box;
-  background-color: $grey050;
-  overflow: auto;
-  box-shadow: inset -1px 0 0 $hairlineColor;
-}
+    & > .btn {
+      @include margin(10px, 0, 0, 14px);
+      display: block;
+      width: calc(100% - 28px);
+    }
+  }
 
-.customize-sources-modal > .cs-sidebar > .btn {
-  @include margin(10px, 0, 0, 14px);
+  & > .source-settings {
+    position: relative;
+    height: calc(100% - 62px);
+    box-sizing: border-box;
+    padding: 24px;
+    overflow: auto;
+  }
+
+  & > .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
 }
 
 .customize-sources-item {
+  display: flex;
+  width: calc(100% - 1px);
+  box-sizing: border-box;
+  align-items: center;
   position: relative;
   margin-top: -1px;
-  @include margin-right(1px);
-  @include padding(10px, 14px, 10px, 40px);
+  padding: 8px 14px;
   background-color: $grey100;
   border: solid $hairlineColor;
   border-width: 1px 0;
   user-select: none;
   cursor: default;
-}
 
-.customize-sources-item + .customize-sources-item:not(.heading) {
-  border-top: 1px solid $hairlineColor;
-}
+  & + .customize-sources-item {
+    &.heading {
+      margin-top: 10px;
+    }
 
-.customize-sources-item.sel {
-  background-color: $grey200;
-  z-index: 1;
-}
+    &:not(.heading) {
+      border-top: 1px solid $hairlineColor;
+    }
+  }
 
-.customize-sources-item .move {
-  display: block;
-  position: absolute;
-  @include left(7px);
-  top: 11px;
-  width: 24px;
-  text-align: center;
-}
+  &.sel {
+    background-color: $grey200;
+    z-index: 1;
+  }
 
-.customize-sources-item + .customize-sources-item.heading {
-  margin-top: 10px;
-}
+  .label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.customize-sources-item.heading .label {
-  text-transform: uppercase;
-  color: $lightTextColor;
-  font-size: 12px;
-  font-weight: bold;
-}
+  &.heading {
+    .label {
+      text-transform: uppercase;
+      color: $lightTextColor;
+      font-size: 12px;
+      font-weight: bold;
+    }
+  }
 
-.customize-sources-modal > .source-settings {
-  position: relative;
-  height: calc(100% - 62px);
-  box-sizing: border-box;
-  padding: 24px;
-  overflow: auto;
+  .move {
+    @include margin-left(7px);
+  }
 }
 
 .customize-sources-table-column .move {
   @include margin-right(10px);
-}
-
-.customize-sources-modal > .footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
 }
 
 /* ----------------------------------------
@@ -1204,6 +1228,10 @@ ul.icons {
 }
 
 .btn {
+  --ui-control-color: #{$grey600};
+  --ui-control-hover-color: #{$grey700};
+  --ui-control-active-color: #{$grey800};
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1300,6 +1328,28 @@ ul.icons {
 .menubtn:not(:empty):after,
 .menubtn.icon:after {
   @include margin-left(6px);
+}
+
+.btn:before,
+.btn:after {
+  color: var(--ui-control-color);
+}
+
+.btn:not(.disabled):not(.inactive) {
+  &:hover,
+  &.hover {
+    &:before,
+    &:after {
+      color: var(--ui-control-hover-color);
+    }
+  }
+  &:active,
+  &.active {
+    &:before,
+    &:after {
+      color: var(--ui-control-active-color);
+    }
+  }
 }
 
 .btn[data-icon]:before,
@@ -1504,7 +1554,7 @@ ul.icons {
       &:active,
       &.active {
         &:after {
-          border-color: $textColor;
+          border-color: var(--ui-control-active-color);
         }
       }
     }
@@ -2459,7 +2509,7 @@ $elementInnerSpacing: 5px;
     }
 
     .delete:before {
-      color: $darkHairlineColor;
+      color: var(--ui-control-color);
     }
 
     &.small,
@@ -3105,7 +3155,7 @@ ul.tree,
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
-  border-color: var(--light-text-color);
+  border-color: var(--ui-control-color);
 }
 
 .green,
@@ -3169,6 +3219,52 @@ ul.tree,
 .status.white,
 .status.disabled {
   opacity: 1;
+}
+
+/* ----------------------------------------
+/*  Condition builders
+/* ----------------------------------------*/
+
+.condition-container {
+  margin: 24px 0;
+}
+
+.condition:not(:empty) + .condition-footer .btn.add {
+  border-top-width: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.condition-footer {
+  .btn.add {
+    height: 48px;
+  }
+
+  .spinner {
+    @include margin-left(7px);
+  }
+}
+
+.condition-rule {
+  margin: 0;
+  padding: 7px 7px 0;
+  border: 1px solid $hairlineColor;
+  background-color: $grey050;
+
+  &:first-child {
+    border-top-left-radius: $largeBorderRadius;
+    border-top-right-radius: $largeBorderRadius;
+  }
+
+  & + .condition-rule {
+    border-top-width: 0;
+  }
+
+  .rule-body {
+    .lightswitch {
+      display: block;
+    }
+  }
 }
 
 /* ----------------------------------------
@@ -4293,6 +4389,21 @@ ul.tree,
   }
 }
 
+/* element filter HUD */
+.element-filter-hud {
+  &.loading .body {
+    padding: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .body,
+  .main {
+    overflow: visible;
+  }
+}
+
 /* logout warning/login/elevated session modals */
 .logoutwarningmodalshade,
 .loginmodalshade {
@@ -4418,7 +4529,7 @@ ul.tree,
               @include floatleft;
               @include margin(3px, 0, 0, -17px);
               font-size: 14px;
-              color: $lightTextColor;
+              color: var(--ui-control-color);
             }
 
             &.error:before {
@@ -4434,12 +4545,17 @@ ul.tree,
     }
 
     li {
-      a {
+      a,
+      .menu-option {
         @include menu-option-styles;
         font-size: 14px;
+        cursor: default;
 
         &:not(.flex) {
           display: block !important;
+          box-sizing: border-box;
+          width: calc(100% + 28px);
+          @include alignleft;
         }
 
         &.sel {
@@ -4494,7 +4610,7 @@ ul.tree,
     @include margin-right(10px);
     text-align: center;
     font-size: 14px;
-    color: $lightTextColor;
+    color: var(--ui-control-color);
   }
 }
 
@@ -4504,6 +4620,9 @@ ul.tree,
 
   --text-color: #{$white};
   --light-text-color: #{$grey100};
+  --ui-control-color: #{$grey050};
+  --ui-control-hover-color: #{$grey100};
+  --ui-control-active-color: #{$grey100};
 
   span.icon,
   &:before {
@@ -4522,14 +4641,17 @@ ul.tree,
   }
 }
 
-.menu--disclosure ul li > a {
-  &:hover {
-    @include disclosure-link-hover-styles;
-  }
+.menu--disclosure ul li {
+  & > a,
+  & > .menu-option {
+    &:hover {
+      @include disclosure-link-hover-styles;
+    }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
-    box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
+    body:not(.reduce-focus-visibility) &:focus,
+    body.reduce-focus-visibility &.focus-visible {
+      box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
+    }
   }
 }
 
@@ -5168,6 +5290,10 @@ body.reduce-focus-visibility {
     }
   }
 
+  &.clearable {
+    @include padding-right(22px);
+  }
+
   input {
     margin: 0;
     padding: 0;
@@ -5194,7 +5320,7 @@ body.reduce-focus-visibility {
       position: absolute;
       top: 9px;
       @include left(9px);
-      color: $mediumTextColor;
+      color: var(--ui-control-color);
     }
 
     .text {
@@ -5202,24 +5328,72 @@ body.reduce-focus-visibility {
     }
   }
 
-  &.clearable .text {
-    @include padding-right(22px);
-  }
-
   .clear {
     position: absolute;
-    top: 6px;
+    top: 5px;
     @include right(9px);
-    color: $lightTextColor;
+    color: var(--ui-control-color);
     cursor: pointer;
 
     &:hover {
-      color: $mediumTextColor;
+      color: var(--ui-control-hover-color);
+    }
+
+    &:active {
+      color: var(--ui-control-active-color);
     }
 
     &:before {
       @include icon;
       content: "remove";
+    }
+  }
+
+  &.has-filter-btn {
+    .text {
+      @include padding-right(26px);
+    }
+
+    .filter-btn {
+      position: absolute;
+      top: 4px;
+      @include right(4px);
+      padding: 0 7px 4px;
+      font-size: 14px;
+      line-height: 22px;
+      cursor: pointer;
+      border-radius: 13px;
+
+      &:before {
+        @include icon;
+        content: 'sliders';
+        color: $mediumTextColor;
+      }
+
+      &:hover {
+        background-color: $grey100;
+      }
+
+      &:active,
+      &.active {
+        background-color: $grey350;
+
+        &:before {
+          color: $white;
+        }
+      }
+    }
+
+    .text {
+      @include padding-left(26px);
+
+      &.clearable {
+        @include padding-right(55px);
+      }
+    }
+
+    .clear {
+      @include right(42px);
     }
   }
 }
@@ -5278,7 +5452,7 @@ body.reduce-focus-visibility {
   align-items: center;
   width: 24px;
   cursor: pointer;
-  color: $darkHairlineColor;
+  color: var(--ui-control-color);
   border: none;
   padding: 0;
   background: transparent;
@@ -5289,7 +5463,11 @@ body.reduce-focus-visibility {
   }
 
   &:hover {
-    color: $mediumTextColor;
+    color: var(--ui-control-hover-color);
+  }
+
+  &:active {
+    color: var(--ui-control-active-color);
   }
 }
 
@@ -5767,6 +5945,8 @@ ul.errors li {
 
   .autosuggest__results-item {
     @include menu-option-styles;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:hover,
     &.autosuggest__results-item-highlighted {
@@ -5946,8 +6126,18 @@ ul.errors li {
   .icon {
     display: block;
 
-    &:not(.error):not(:hover):before {
-      color: $darkHairlineColor;
+    &:not(.error) {
+      &:before {
+        color: var(--ui-control-color);
+      }
+
+      &:hover:before {
+        color: var(--ui-control-hover-color);
+      }
+
+      &:active:before {
+        color: var(--ui-control-active-color);
+      }
     }
 
     &.error:before {
@@ -6070,7 +6260,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     & > .settings {
       padding: 0 8px;
       height: 20px;
-      color: $mediumTextColor;
+      color: var(--ui-control-color);
 
       &:before {
         @include margin-right(0 !important);

@@ -12,7 +12,7 @@
                 ? (source.defaultSort is iterable ? source.defaultSort|join(':') : source.defaultSort)
                 : false,
             'sort-options': isTopLevel
-                ? craft.app.elementIndexes.getSourceSortOptions(elementType, key)
+                ? craft.app.elementSources.getSourceSortOptions(elementType, key)
                     |map(o => [o.label, o.attribute ?? o.orderBy])
                     |json_encode
                 : false,
@@ -45,7 +45,7 @@
 
 <ul>
     {% for source in sources %}
-        {% if source.heading is defined %}
+        {% if (source.type ?? null) == 'heading' %}
             <li class="heading"><span>{{ source.heading|t('site') }}</span></li>
         {% else %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}

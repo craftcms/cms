@@ -371,12 +371,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
     createNewElement: function(elementInfo) {
         var $element = elementInfo.$element.clone();
-
+        var removeText = Craft.t('app', 'Remove {label}', {
+            label: elementInfo.label,
+        });
         // Make a couple tweaks
         Craft.setElementSize($element, (this.settings.viewMode === 'large' ? 'large' : 'small'));
         $element.addClass('removable');
         $element.prepend(`<input type="hidden" name="${this.settings.name}${this.settings.single ? '' : '[]'}" value="${elementInfo.id}">` +
-            '<a class="delete icon" title="' + Craft.t('app', 'Remove') + '"></a>');
+            '<button type="button" class="delete icon" title="' + Craft.t('app', 'Remove') + '" aria-label="' + removeText + '"></button>');
 
         return $element;
     },

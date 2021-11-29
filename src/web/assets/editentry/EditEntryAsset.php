@@ -31,6 +31,6 @@ class EditEntryAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'EntryTypeSwitcher.min.js',
+        'EntryTypeSwitcher.js',
     ];
 }

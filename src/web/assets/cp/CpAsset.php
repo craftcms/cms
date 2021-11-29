@@ -75,15 +75,14 @@ class CpAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/Craft.css',
-        'css/charts.css',
+        'css/cp.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'js/Craft.min.js',
+        'cp.js',
     ];
 
     /**
@@ -115,6 +114,7 @@ JS;
             '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
             'Actions',
+            'Add…',
             'All',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
@@ -128,6 +128,7 @@ JS;
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
+            'Choose which user groups should have access to this source.',
             'Clear',
             'Close Preview',
             'Close',
@@ -141,6 +142,7 @@ JS;
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
+            'Delete custom source',
             'Delete folder',
             'Delete heading',
             'Delete their content',
@@ -175,7 +177,6 @@ JS;
             'From',
             'Give your tab a name.',
             'Handle',
-            'Header Column Heading',
             'Heading',
             'Hide nested sources',
             'Hide sidebar',
@@ -186,6 +187,7 @@ JS;
             'Keep both',
             'Keep me logged in',
             'Keep them',
+            'Label',
             'License transferred.',
             'Limit',
             'Loading',
@@ -195,12 +197,14 @@ JS;
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
             'More',
+            'More…',
             'Move down',
             'Move up',
             'Move',
             'Name',
             'New category',
             'New child',
+            'New custom source',
             'New entry',
             'New heading',
             'New order saved.',
@@ -224,6 +228,7 @@ JS;
             'Previous Page',
             'Really delete folder “{folder}”?',
             'Refresh',
+            'Remove {label}',
             'Remove',
             'Rename folder',
             'Rename',
@@ -271,6 +276,7 @@ JS;
             'Upload a file',
             'Upload failed for {filename}',
             'Upload files',
+            'User Groups',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your changes could not be stored.',
@@ -293,6 +299,7 @@ JS;
             '{first}-{last} of {total}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{type} Criteria',
             '{type} saved.',
             '“{name}” deleted.',
         ]);

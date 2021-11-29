@@ -39,7 +39,7 @@ class PluginsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'PluginManager.min.js',
+        'PluginManager.js',
     ];
 
     /**

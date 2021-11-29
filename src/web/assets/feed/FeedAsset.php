@@ -31,6 +31,6 @@ class FeedAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'FeedWidget.min.js',
+        'FeedWidget.js',
     ];
 }

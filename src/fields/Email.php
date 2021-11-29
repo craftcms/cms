@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -122,6 +123,14 @@ class Email extends Field implements PreviewableFieldInterface
             ['trim'],
             ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return TextFieldConditionRule::class;
     }
 
     /**

@@ -19,7 +19,9 @@
             label: "Base URL"|t('app'),
             id: 'site-baseUrl',
             class: 'ltr',
-            suggestions: craft.cp.getEnvSuggestions(true),
+            suggestEnvVars: true,
+            suggestAliases: true,
+            tip: null,
             value: defaultSiteUrl
         }) }}
 

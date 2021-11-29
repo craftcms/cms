@@ -342,8 +342,10 @@ class App
             @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
         }
 
-        // Try to disable the max execution time
-        @set_time_limit(0);
+        // Try to reset time limit
+        if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
+            Craft::warning('set_time_limit() is not available', __METHOD__);
+        }
     }
 
     /**

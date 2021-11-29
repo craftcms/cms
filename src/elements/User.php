@@ -9,6 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\conditions\elements\users\UserQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -226,8 +228,17 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
+     * @return UserQueryCondition
      */
-    protected static function defineSources(?string $context = null): array
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(UserQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSources(string $context): array
     {
         $sources = [
             [

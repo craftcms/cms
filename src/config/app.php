@@ -29,6 +29,9 @@ return [
         'composer' => [
             'class' => craft\services\Composer::class,
         ],
+        'conditions' => [
+            'class' => craft\services\Conditions::class,
+        ],
         'content' => [
             'class' => craft\services\Content::class,
         ],
@@ -41,8 +44,8 @@ return [
         'drafts' => [
             'class' => craft\services\Drafts::class,
         ],
-        'elementIndexes' => [
-            'class' => craft\services\ElementIndexes::class,
+        'elementSources' => [
+            'class' => craft\services\ElementSources::class,
         ],
         'elements' => [
             'class' => craft\services\Elements::class,

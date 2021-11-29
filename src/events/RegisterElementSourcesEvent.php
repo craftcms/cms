@@ -18,9 +18,9 @@ use yii\base\Event;
 class RegisterElementSourcesEvent extends Event
 {
     /**
-     * @var string|null The context ('index' or 'modal').
+     * @var string The context ('index' or 'modal').
      */
-    public ?string $context;
+    public string $context;
 
     /**
      * @var array List of registered sources for the element type.

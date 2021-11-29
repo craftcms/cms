@@ -124,7 +124,7 @@ class FocalPoint {
     }
     renderButton() {
         if (this.saving) {
-            this.$button.text(Craft.t('app', 'Saving...'));
+            this.$button.text(Craft.t('app', 'Saving…'));
         }
         else {
             if (this.visible) {

@@ -38,6 +38,6 @@ class UserPermissionsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'UserPermissions.min.js',
+        'UserPermissions.js',
     ];
 }

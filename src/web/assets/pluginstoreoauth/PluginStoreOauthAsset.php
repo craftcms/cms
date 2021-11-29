@@ -38,7 +38,7 @@ class PluginStoreOauthAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'parseFragmentString.min.js',
-        'PluginStoreOauthCallback.min.js',
+        'parseFragmentString.js',
+        'PluginStoreOauthCallback.js',
     ];
 }

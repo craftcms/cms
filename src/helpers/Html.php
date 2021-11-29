@@ -24,6 +24,21 @@ use yii\base\InvalidConfigException;
 class Html extends \yii\helpers\Html
 {
     /**
+     * @var array List of tag attributes that should be specially handled when their values are of array type.
+     * In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
+     * will be generated instead of one: `data-name="xyz" data-age="13"`.
+     * @since 4.0.0
+     */
+    public static $dataAttributes = [
+        'aria',
+        'data',
+        'data-hx',
+        'data-ng',
+        'hx',
+        'ng',
+    ];
+
+    /**
      * @var string[]
      * @see _sortedDataAttributes()
      */
@@ -845,5 +860,23 @@ class Html extends \yii\helpers\Html
     public static function widont(string $string): string
     {
         return preg_replace('/(?<=\S)\s+(\S+\s*)$/', '&nbsp;$1', $string);
+    }
+
+    /**
+     * Returns a visually-hidden input label.
+     *
+     * @param string $content
+     * @param string|null $for
+     * @param array $options
+     * @return string
+     * @since 4.0.0
+     */
+    public static function hiddenLabel(string $content, ?string $for = null, array $options = []): string
+    {
+        return static::label($content, $for, array_merge($options, [
+            'class' => array_merge(static::explodeClass($options['class'] ?? []), [
+                'visually-hidden',
+            ]),
+        ]));
     }
 }

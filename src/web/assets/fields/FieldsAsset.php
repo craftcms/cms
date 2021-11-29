@@ -31,6 +31,6 @@ class FieldsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'fields.min.js',
+        'fields.js',
     ];
 }

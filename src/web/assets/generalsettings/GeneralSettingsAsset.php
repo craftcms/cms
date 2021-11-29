@@ -38,6 +38,6 @@ class GeneralSettingsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'rebrand.min.js',
+        'rebrand.js',
     ];
 }
