@@ -8,7 +8,6 @@
 ### Changed
 - Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
 - Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
-- The `on` and `off` commands now support an `--env` option. When passed, the commands will update the environment variable(s) referenced by `system.live` (and `system.retryDuration` for the `off` command when `--retry` is passed), rather than the project config values directly. ([#9855](https://github.com/craftcms/cms/issues/9855))
 - Editable tables’ `template` columns now support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - Editable tables now support an `autosuggest` column type, which support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - The `cp.assets.edit.meta`, `cp.categories.edit.meta`, and `cp.entries.edit.meta` template hooks are now located after the native meta fields, rather than before. ([#10172](https://github.com/craftcms/cms/issues/10172))
