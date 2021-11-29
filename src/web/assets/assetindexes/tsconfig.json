@@ -1,4 +1,0 @@
-{
-  "extends": "@craftcms/webpack/tsconfig.json",
-  "include": ["src/**/*"]
-}
