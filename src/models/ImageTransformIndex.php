@@ -139,7 +139,7 @@ class ImageTransformIndex extends Model
             return $this->_transform;
         }
 
-        if (($this->_transform = ImageTransforms::normalizeTransform($this->transformString, Craft::$app->getImageTransforms())) === null) {
+        if (($this->_transform = ImageTransforms::normalizeTransform($this->transformString)) === null) {
             throw new InvalidConfigException('Invalid transform string: ' . $this->transformString);
         }
 
@@ -155,16 +155,4 @@ class ImageTransformIndex extends Model
     {
         $this->_transform = $transform;
     }
-
-    /**
-     * Return the image transformer for this transform.
-     *
-     * @return DriverInterface
-     * @since 4.0.0
-     */
-    public function getImageTransformer(): DriverInterface
-    {
-        return Craft::$app->getImageTransforms()->getImageTransformer($this->driver);
-    }
-
 }

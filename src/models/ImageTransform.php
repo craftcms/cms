@@ -9,9 +9,9 @@ declare(strict_types=1);
 namespace craft\models;
 
 use Craft;
-use craft\assets\imagetransforms\DefaultTransformer;
-use craft\base\DriverInterface;
+use craft\image\transforms\DefaultTransformer;
 use craft\base\Model;
+use craft\image\transforms\TransformerInterface;
 use craft\records\ImageTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
@@ -227,10 +227,10 @@ class ImageTransform extends Model
     /**
      * Return the image transformer for this transform.
      *
-     * @return DriverInterface
+     * @return TransformerInterface
      * @since 4.0.0
      */
-    public function getImageTransformer(): DriverInterface
+    public function getImageTransformer(): TransformerInterface
     {
         return Craft::$app->getImageTransforms()->getImageTransformer($this->driver);
     }
@@ -243,7 +243,7 @@ class ImageTransform extends Model
      */
     public function setDriver(string $imageTransformDriver): void
     {
-        if (!is_subclass_of($imageTransformDriver, DriverInterface::class)) {
+        if (!is_subclass_of($imageTransformDriver, TransformerInterface::class)) {
             Craft::warning($imageTransformDriver . ' is not a valid image transform driver.');
             $imageTransformDriver = self::DEFAULT_DRIVER;
         }

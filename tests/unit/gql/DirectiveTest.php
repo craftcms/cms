@@ -96,7 +96,7 @@ class DirectiveTest extends Unit
             'folderId' => 7,
             'getUrl' => function($parameters, $generateNow) use ($filename) {
                 if (is_array($parameters)) {
-                    $parameters = ImageTransforms::normalizeTransform($parameters, Craft::$app->getImageTransforms());
+                    $parameters = ImageTransforms::normalizeTransform($parameters);
                 }
 
                 if ($parameters instanceof ImageTransform) {

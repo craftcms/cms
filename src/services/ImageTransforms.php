@@ -9,8 +9,7 @@ declare(strict_types=1);
 namespace craft\services;
 
 use Craft;
-use craft\assets\imagetransforms\DefaultTransformer;
-use craft\base\DriverInterface;
+use craft\image\transforms\DefaultTransformer;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
 use craft\db\Query;
@@ -27,6 +26,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\image\transforms\EagerLoadTransformerInterface;
+use craft\image\transforms\TransformerInterface;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\records\ImageTransform as ImageTransformRecord;
@@ -463,7 +463,7 @@ class ImageTransforms extends Component
                 }
             }
 
-            $transform = TransformHelper::normalizeTransform($transform, $this);
+            $transform = TransformHelper::normalizeTransform($transform);
             $transformsByDriver[$transform->getDriver()][] = $transform;
 
             if (!isset($sizeValue)) {
@@ -483,21 +483,19 @@ class ImageTransforms extends Component
     /**
      * @param string $driver
      * @param array $config
-     * @return DriverInterface
+     * @return TransformerInterface
      * @throws InvalidConfigException
      * @since 4.0.0
      */
-    public function getImageTransformer(string $driver, array $config = []): DriverInterface
+    public function getImageTransformer(string $driver, array $config = []): TransformerInterface
     {
         // TODO events!
-        if (!is_subclass_of($driver, DriverInterface::class)) {
+        if (!is_subclass_of($driver, TransformerInterface::class)) {
             throw new ImageTransformException($driver . ' is not a valid image transform driver');
         }
 
         return Craft::createObject(array_merge(['class' => $driver], $config));
     }
-
-
 
     /**
      * Delete *ALL* transform data (including thumbs and sources) associated with the Asset.

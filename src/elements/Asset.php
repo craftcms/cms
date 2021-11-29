@@ -1058,7 +1058,7 @@ class Asset extends Element
             ($transform !== null || $this->_transform) &&
             Image::canManipulateAsImage($this->getExtension())
         ) {
-            $transform = ImageTransforms::normalizeTransform($transform ?? $this->_transform, Craft::$app->getImageTransforms());
+            $transform = ImageTransforms::normalizeTransform($transform ?? $this->_transform);
         } else {
             $transform = null;
         }
@@ -1227,7 +1227,7 @@ class Asset extends Element
      */
     public function setTransform($transform): Asset
     {
-        $this->_transform = ImageTransforms::normalizeTransform($transform, Craft::$app->getImageTransforms());
+        $this->_transform = ImageTransforms::normalizeTransform($transform);
 
         return $this;
     }
@@ -1273,7 +1273,7 @@ class Asset extends Element
             if (isset($transform['height'])) {
                 $transform['height'] = round((float)$transform['height']);
             }
-            $transform = ImageTransforms::normalizeTransform($transform, $imageTransformService);
+            $transform = ImageTransforms::normalizeTransform($transform);
         }
 
         if ($transform === null) {
@@ -1288,7 +1288,6 @@ class Asset extends Element
         }
 
         $imageTransformer = $transform->getImageTransformer();
-        $imageTransformer->getTransformUrl($this, $transform);
 
         if ($generateNow || !$imageTransformer instanceof DeferredTransformerInterface) {
             return $imageTransformer->getTransformUrl($this, $transform);
@@ -2141,7 +2140,7 @@ class Asset extends Element
             return [$this->_width, $this->_height];
         }
 
-        $transform = ImageTransforms::normalizeTransform($transform, Craft::$app->getImageTransforms());
+        $transform = ImageTransforms::normalizeTransform($transform);
 
         if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             $transformRatio = $transform->width / $transform->height;

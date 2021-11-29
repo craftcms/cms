@@ -17,7 +17,6 @@
 - Added `craft/models/ImageTransform::getDriver()`.
 - Added `craft/models/ImageTransform::getImageTransformer()`.
 - Added `craft/models/ImageTransform::setDriver()`.
-- Added `craft/models/ImageTransformIndex::getImageTransformer()`.
 - Added `craft/services/ImageTransforms::getImageTransformer()`.
 
 ### Changed

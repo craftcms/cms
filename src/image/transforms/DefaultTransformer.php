@@ -6,7 +6,7 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\assets\imagetransforms;
+namespace craft\image\transforms;
 
 use Craft;
 use craft\base\LocalFsInterface;
@@ -16,6 +16,7 @@ use craft\elements\Asset;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\GenerateTransformEvent;
+use craft\gql\types\DateTime;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
@@ -24,12 +25,12 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms as ImageTransformsHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
+use craft\helpers\Queue;
+use craft\helpers\UrlHelper;
 use craft\image\Raster;
-use craft\image\transforms\DeferredTransformerInterface;
-use craft\image\transforms\TransformerInterface;
-use craft\image\transforms\EagerLoadTransformerInterface;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
+use craft\queue\jobs\GeneratePendingTransforms;
 use craft\services\ImageTransforms;
 use yii\base\InvalidConfigException;
 
@@ -41,6 +42,17 @@ use yii\base\InvalidConfigException;
  */
 class DefaultTransformer implements TransformerInterface, DeferredTransformerInterface, EagerLoadTransformerInterface
 {
+    /**
+     * @param \craft\base\VolumeInterface $volume
+     * @param Asset $asset
+     * @param ImageTransformIndex $transformIndex
+     * @throws InvalidConfigException
+     */
+    protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
+    {
+        $asset->getVolume()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
+    }
+
     /**
      * @var ImageTransformIndex[]
      */
@@ -60,6 +72,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             $uri = $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
+            // TODO CHECK IT
             if ($fs instanceof LocalFsInterface && !$fs->fileExists($asset->folderPath . $uri)) {
                 $imageTransformIndex->fileExists = false;
                 $this->storeTransformIndexData($imageTransformIndex);
@@ -76,11 +89,10 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     public function invalidateAssetTransforms(Asset $asset): void
     {
-        $volume = $asset->getVolume();
         $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
 
         foreach ($transformIndexes as $transformIndex) {
-            $volume->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
+            $this->deleteImageTransform($asset, $transformIndex);
         }
 
         $this->deleteTransformIndexDataByAssetId($asset->id);
@@ -91,7 +103,22 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     public function getDeferredTransformUrl(Asset $asset, ImageTransform $imageTransform): string
     {
-        // TODO: Implement getDeferredTransformUrl() method.
+        $index = $this->getTransformIndex($asset, $imageTransform);
+
+        // Does the file actually exist?
+        if ($index->fileExists) {
+            return $this->getTransformUrl($asset, $imageTransform);
+        }
+
+        static $queued = null;
+
+        if (!$queued) {
+            Queue::push(new GeneratePendingTransforms(), 2048);
+            $queued = true;
+        }
+
+        // Return the temporary transform URL
+        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
     }
 
     /**
@@ -387,8 +414,6 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     protected function ensureTransformUrlByIndexModel(Asset $asset, ImageTransformIndex $index): string
     {
-        $imageTransformService = Craft::$app->getImageTransforms();
-
         // Make sure we're not in the middle of working on this transform from a separate request
         if ($index->inProgress) {
             for ($safety = 0; $safety < 100; $safety++) {
@@ -404,7 +429,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
                 App::maxPowerCaptain();
 
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                $index = $imageTransformService->getTransformIndexModelById($index->id);
+                $index = $this->getTransformIndexModelById($index->id);
 
                 // Is it being worked on right now?
                 if ($index->inProgress) {
@@ -415,7 +440,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
                         continue;
                     }
 
-                    $imageTransformService->storeTransformIndexData($index);
+                    $this->storeTransformIndexData($index);
                     break;
                 }
 
@@ -428,7 +453,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         if (!$index->fileExists) {
             // Mark the transform as in progress
             $index->inProgress = true;
-            $imageTransformService->storeTransformIndexData($index);
+            $this->storeTransformIndexData($index);
 
             // Generate the transform
             try {
@@ -442,12 +467,12 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
                     $index->error = true;
                 }
 
-                $imageTransformService->storeTransformIndexData($index);
+                $this->storeTransformIndexData($index);
             } catch (\Exception $e) {
                 $index->inProgress = false;
                 $index->fileExists = false;
                 $index->error = true;
-                $imageTransformService->storeTransformIndexData($index);
+                $this->storeTransformIndexData($index);
                 Craft::$app->getErrorHandler()->logException($e);
 
                 throw new ImageTransformException(Craft::t('app',
@@ -456,7 +481,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             }
         }
 
-        return $this->getTransformUrl($asset, $index);
+        return $this->getTransformUrl($asset, $index->getTransform());
     }
 
     /**
@@ -502,10 +527,10 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         $result = $query->one();
 
         if ($result) {
-            $transformIndex = new ImageTransformIndex($result);
+            $existingIndex = new ImageTransformIndex($result);
 
             if ($this->validateTransformIndexResult($result, $transform, $asset)) {
-                return $transformIndex;
+                return $existingIndex;
             }
 
             // Delete the out-of-date record
@@ -514,21 +539,26 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             ], [], Craft::$app->getImageTransforms()->db);
 
             // And the generated transform itself, too
-            $transform->getImageTransformer()->invalidateTransform($asset, $transformIndex);
-        } else {
-            // Create a new record
-            $transformIndex = new ImageTransformIndex([
-                'assetId' => $asset->id,
-                'format' => $transform->format,
-                'driver' => $transform->getDriver(),
-                'dateIndexed' => Db::prepareDateForDb(new DateTime()),
-                'transformString' => $transformString,
-                'fileExists' => false,
-                'inProgress' => false,
-            ]);
+            $this->deleteImageTransform($asset, $existingIndex);
         }
 
-        return $this->storeTransformIndexData($transformIndex);
+        // Create a new record
+        $newIndex = new ImageTransformIndex([
+            'assetId' => $asset->id,
+            'format' => $transform->format,
+            'driver' => $transform->getDriver(),
+            'dateIndexed' => Db::prepareDateForDb(new DateTime()),
+            'transformString' => $transformString,
+            'fileExists' => false,
+            'inProgress' => false,
+        ]);
+
+
+        if ($transform instanceof ImageTransform) {
+            $newIndex->setTransform($transform);
+        }
+
+        return $this->storeTransformIndexData($newIndex);
     }
 
     /**
@@ -541,6 +571,11 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     protected function validateTransformIndexResult(array $result, ImageTransform $transform, $asset): bool
     {
+        // If the transform hasn't been generated yet, it's probably not yet invalid.
+        if (empty($result['dateIndexed'])) {
+            return true;
+        }
+
         // If the asset has been modified since the time the index was created, it's no longer valid
         $dateModified = ArrayHelper::getValue($asset, 'dateModified');
         if ($result['dateIndexed'] < Db::prepareDateForDb($dateModified)) {
@@ -602,7 +637,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      *
      * @return array
      */
-    protected function getPendingTransformIndexIds(): array
+    public function getPendingTransformIndexIds(): array
     {
         return $this->_createTransformIndexQuery()
             ->select(['id'])
@@ -616,7 +651,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      * @param int $transformId
      * @return ImageTransformIndex|null
      */
-    protected function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
+    public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
     {
         $result = $this->_createTransformIndexQuery()
             ->where(['id' => $transformId])
@@ -693,7 +728,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
                 ->one();
         }
 
-        return $result ? Craft::createObject(ImageTransformIndex::class, $result) : null;
+        return $result ? Craft::createObject(array_merge(['class' => ImageTransformIndex::class], $result)) : null;
     }
 
     /**

@@ -52,7 +52,12 @@ class ImageTransforms
             unset($matches['height']);
         }
 
-        return Craft::createObject(ImageTransform::class, [
+        if (empty($matches['quality'])) {
+            unset($matches['quality']);
+        }
+
+        return Craft::createObject([
+            'class' => ImageTransform::class,
             'width' => $matches['width'] ?? null,
             'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
@@ -297,18 +302,6 @@ class ImageTransforms
         }
 
         return null;
-    }
-
-    /**
-     * Queue a pending transform job.
-     */
-    public static function queuePendingTransformJob(): void
-    {
-        static $queued = null;
-        if (!$queued) {
-            Queue::push(new GeneratePendingTransforms(), 2048);
-            $queued = true;
-        }
     }
 
     /**
