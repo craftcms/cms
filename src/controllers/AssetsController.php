@@ -8,6 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\ImageTransforms;
+use craft\image\transforms\DefaultTransformer;
 use craft\assets\previews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
@@ -1178,38 +1180,38 @@ class AssetsController extends Controller
      *
      * @param int|null $transformId
      * @return Response
-     * @throws BadRequestHttpException
      * @throws NotFoundHttpException if the transform can't be found
      * @throws ServerErrorHttpException if the transform can't be generated
-     * @throws ImageTransformException
      */
     public function actionGenerateTransform(?int $transformId = null): Response
     {
-        // If transform Id was not passed in, see if file id and handle were.
-        $imageTransformService = Craft::$app->getImageTransforms();
-
-        if ($transformId) {
-            $transformIndexModel = $imageTransformService->getTransformIndexModelById($transformId);
-        } else {
-            $assetId = $this->request->getRequiredBodyParam('assetId');
-            $handle = $this->request->getRequiredBodyParam('handle');
-            $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
-            if ($assetModel === null) {
-                throw new BadRequestHttpException('Invalid asset ID: ' . $assetId);
-            }
-            $transformIndexModel = $imageTransformService->getTransformIndex($assetModel, $handle);
-        }
-
-        if (!$transformIndexModel) {
-            throw new NotFoundHttpException('Image transform not found.');
-        }
-
         try {
-            $url = $imageTransformService->ensureTransformUrlByIndexModel($transformIndexModel);
+            // If transform Id was not passed in, see if file id and handle were.
+            $transformIndexModel = null;
+
+            if ($transformId) {
+                $transformer = Craft::createObject(DefaultTransformer::class);
+                $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
+                $assetId = $transformIndexModel->assetId;
+                $transform = $transformIndexModel->getTransform();
+            } else {
+                $assetId = $this->request->getRequiredBodyParam('assetId');
+                $handle = $this->request->getRequiredBodyParam('handle');
+                $transform = ImageTransforms::normalizeTransform($handle);
+                $transformer = $transform->getImageTransformer();
+            }
         } catch (\Exception $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             throw new ServerErrorHttpException('Image transform cannot be created.');
         }
+
+            $asset = Asset::findOne(['id' => $assetId]);
+
+            if (!$asset) {
+                throw new NotFoundHttpException();
+            }
+
+            $url = $transformer->getTransformUrl($asset, $transform);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);
