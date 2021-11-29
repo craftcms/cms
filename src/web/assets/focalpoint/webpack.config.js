@@ -8,5 +8,11 @@ module.exports = getConfig({
         entry: {
             FocalPoint: './FocalPoint.ts'
         },
+        output: {
+            library: {
+                name: 'Craft',
+                type: 'assign-properties',
+            },
+        }
     }
 });

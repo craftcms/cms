@@ -2,7 +2,7 @@ import './focal.scss';
 
 import JQEvent = JQuery.Event;
 
-class FocalPoint {
+export class FocalPoint {
     private readonly $target: JQuery;
     private readonly $focal: JQuery;
     private readonly $button: JQuery;

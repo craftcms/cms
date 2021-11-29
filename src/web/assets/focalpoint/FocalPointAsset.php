@@ -35,6 +35,6 @@ class FocalPointAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'FocalPoint.min.js',
+        'FocalPoint.js',
     ];
 }
