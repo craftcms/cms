@@ -18,7 +18,7 @@
 - Fixed a bug where Table fields could have an incorrect GraphQL input type definition. ([#10173](https://github.com/craftcms/cms/issues/10173))
 - Fixed a bug where structure element query params weren’t working if the passed-in element was missing its structure data. ([#10122](https://github.com/craftcms/cms/issues/10122))
 - Fixed a bug where `craft\base\Element::getChildren()` and `getDescendants()` could return results for elements without an ID.
-- Fixed an error that occurred when opening the timeline view in the debug toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
+- Fixed an error that occurred when opening the Timeline view in the Debug Toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
 
 ## 3.7.23 - 2021-11-26
 
