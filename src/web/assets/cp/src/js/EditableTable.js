@@ -1,5 +1,4 @@
-/** global: Craft */
-/** global: Garnish */
+/* jshint -W083 */
 /**
  * Editable table class
  */
@@ -50,12 +49,12 @@ Craft.EditableTable = Garnish.Base.extend({
             this.initialize();
         } else {
             // Give everything a chance to initialize
-            setTimeout(this.initializeIfVisible.bind(this), 500);
+            window.setTimeout(this.initializeIfVisible.bind(this), 500);
         }
 
         if (this.settings.minRows && this.rowCount < this.settings.minRows) {
             for (var i = this.rowCount; i < this.settings.minRows; i++) {
-                this.addRow()
+                this.addRow();
             }
         }
     },
@@ -281,9 +280,9 @@ Craft.EditableTable = Garnish.Base.extend({
     defaults: {
         rowIdPrefix: '',
         defaultValues: {},
-        allowAdd: true,
-        allowReorder: true,
-        allowDelete: true,
+        allowAdd: false,
+        allowReorder: false,
+        allowDelete: false,
         minRows: null,
         maxRows: null,
         onAddRow: $.noop,
@@ -579,7 +578,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
             return;
         }
 
-        setTimeout(function() {
+        window.setTimeout(function() {
             Craft.selectFullValue($textarea);
         }, 0);
     },

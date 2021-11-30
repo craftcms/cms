@@ -5,9 +5,9 @@
 {%- set initJs = not static and (initJs ?? true) -%}
 {%- set minRows = minRows ?? null %}
 {%- set maxRows = maxRows ?? null %}
-{%- set allowAdd = allowAdd ?? true %}
-{%- set allowDelete = allowDelete ?? true %}
-{%- set allowReorder = allowReorder ?? true %}
+{%- set allowAdd = allowAdd ?? false %}
+{%- set allowDelete = allowDelete ?? false %}
+{%- set allowReorder = allowReorder ?? false %}
 
 {%- set allowAdd = allowAdd and (maxRows and maxRows == rows|length) ? false : allowAdd %}
 {%- set allowReorder = allowReorder and (minRows == 1 and maxRows == 1 and rows|length == 1) ? false : allowReorder %}

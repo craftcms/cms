@@ -81,9 +81,9 @@ class Table extends Field
     ];
 
     /**
-     * @var array The default row values that new elements should have
+     * @var array|null The default row values that new elements should have
      */
-    public array $defaults = [];
+    public ?array $defaults = null;
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -296,6 +296,9 @@ class Table extends Field
             'id' => '__ID__',
             'name' => '__NAME__',
             'addRowLabel' => Craft::t('app', 'Add an option'),
+            'allowAdd' => true,
+            'allowReorder' => true,
+            'allowDelete' => true,
             'cols' => $dropdownSettingsCols,
             'initJs' => false,
         ]);
@@ -308,7 +311,7 @@ class Table extends Field
             Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->defaults, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($this->defaults ?? [], JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
@@ -325,8 +328,11 @@ class Table extends Field
             'instructions' => Craft::t('app', 'Define the default values for the field.'),
             'id' => 'defaults',
             'name' => 'defaults',
+            'allowAdd' => true,
+            'allowReorder' => true,
+            'allowDelete' => true,
             'cols' => $this->columns,
-            'rows' => $this->defaults,
+            'rows' => $this->defaults ?? [[]],
             'initJs' => false,
         ]);
 
@@ -387,7 +393,7 @@ class Table extends Field
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
         } else if ($value === null && $this->isFresh($element)) {
-            $value = array_values($this->defaults);
+            $value = array_values($this->defaults ?? []);
         }
 
         if (!is_array($value) || empty($this->columns)) {
