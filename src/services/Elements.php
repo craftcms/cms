@@ -1262,6 +1262,11 @@ class Elements extends Component
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
                     $siteClone->uid = $mainClone->uid;
+                    $siteClone->structureId = $mainClone->structureId;
+                    $siteClone->root = $mainClone->root;
+                    $siteClone->lft = $mainClone->lft;
+                    $siteClone->rgt = $mainClone->rgt;
+                    $siteClone->level = $mainClone->level;
                     $siteClone->enabled = $mainClone->enabled;
                     $siteClone->siteSettingsId = null;
                     $siteClone->contentId = null;

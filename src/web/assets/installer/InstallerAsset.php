@@ -40,7 +40,7 @@ class InstallerAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'install.min.js',
+        'install.js',
     ];
 
     /**

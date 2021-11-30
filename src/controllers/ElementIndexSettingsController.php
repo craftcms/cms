@@ -8,6 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\ElementInterface;
+use craft\helpers\ArrayHelper;
+use craft\models\UserGroup;
+use craft\services\ElementSources;
+use craft\services\ProjectConfig;
 use yii\web\Response;
 
 /**
@@ -42,40 +47,85 @@ class ElementIndexSettingsController extends BaseElementsController
     {
         $this->requirePermission('customizeSources');
 
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
+        $conditionsService = Craft::$app->getConditions();
+        $view = Craft::$app->getView();
 
         // Get the source info
-        $elementIndexesService = Craft::$app->getElementIndexes();
-        $sources = $elementIndexesService->getSources($elementType);
+        $sourcesService = Craft::$app->getElementSources();
+        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX);
 
         foreach ($sources as &$source) {
-            if (array_key_exists('heading', $source)) {
+            if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
             }
 
             // Available custom field attributes
             $source['availableTableAttributes'] = [];
-            foreach ($elementIndexesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
+            foreach ($sourcesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
                 $source['availableTableAttributes'][] = [$key, $labelInfo['label']];
             }
 
             // Selected table attributes
-            $tableAttributes = $elementIndexesService->getTableAttributes($elementType, $source['key']);
+            $tableAttributes = $sourcesService->getTableAttributes($elementType, $source['key']);
             array_shift($tableAttributes);
             $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
+
+            if ($source['type'] === ElementSources::TYPE_CUSTOM) {
+                if (isset($source['condition'])) {
+                    $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
+                    $view->startJsBuffer();
+                    $conditionBuilderHtml = $view->namespaceInputs(function() use ($condition) {
+                        return $condition->getBuilderHtml([
+                            'mainTag' => 'div',
+                            'projectConfigTypes' => true,
+                        ]);
+                    }, "sources[{$source['key']}][condition]");
+                    $conditionBuilderJs = $view->clearJsBuffer();
+                    $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
+                }
+
+                if (isset($source['userGroups']) && $source['userGroups'] === false) {
+                    $source['userGroups'] = [];
+                }
+            }
         }
         unset($source);
 
         // Get the available table attributes
         $availableTableAttributes = [];
 
-        foreach ($elementIndexesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
+        foreach ($sourcesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
+
+        $view->startJsBuffer();
+        $conditionBuilderHtml = $view->namespaceInputs(function() use ($elementType) {
+            return $elementType::createCondition()->getBuilderHtml([
+                'id' => '__ID__',
+                'mainTag' => 'div',
+                'projectConfigTypes' => true,
+            ]);
+        }, 'sources[__SOURCE_KEY__][condition]');
+        $conditionBuilderJs = $view->clearJsBuffer();
+
+        $userGroups = collect(Craft::$app->getUserGroups()->getAllGroups())
+            ->map(fn(UserGroup $group) => [
+                'label' => Craft::t('site', $group->name),
+                'value' => $group->uid,
+            ])
+            ->all();
 
         return $this->asJson([
             'sources' => $sources,
             'availableTableAttributes' => $availableTableAttributes,
+            'elementTypeName' => $elementType::displayName(),
+            'conditionBuilderHtml' => $conditionBuilderHtml,
+            'conditionBuilderJs' => $conditionBuilderJs,
+            'userGroups' => $userGroups,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 
@@ -90,33 +140,58 @@ class ElementIndexSettingsController extends BaseElementsController
 
         $elementType = $this->elementType();
 
+        // Get the old source configs
+        $projectConfig = Craft::$app->getProjectConfig();
+        $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
+        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
+
+        $conditionsService = Craft::$app->getConditions();
+
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
-        $sources = $this->request->getBodyParam('sources', []);
+        $sourceSettings = $this->request->getBodyParam('sources', []);
+        $newSourceConfigs = [];
 
         // Normalize to the way it's stored in the DB
-        foreach ($sourceOrder as $i => $source) {
+        foreach ($sourceOrder as $source) {
             if (isset($source['heading'])) {
-                $sourceOrder[$i] = ['heading', $source['heading']];
-            } else {
-                $sourceOrder[$i] = ['key', $source['key']];
+                $newSourceConfigs[] = [
+                    'type' => ElementSources::TYPE_HEADING,
+                    'heading' => $source['heading'],
+                ];
+            } else if (isset($source['key'])) {
+                $isCustom = strpos($source['key'], 'custom:') === 0;
+                $sourceConfig = [
+                    'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
+                    'key' => $source['key'],
+                ];
+
+                // Were new settings posted?
+                if (isset($sourceSettings[$source['key']])) {
+                    $postedSettings = $sourceSettings[$source['key']];
+                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? []));
+
+                    if ($isCustom) {
+                        $sourceConfig += [
+                            'label' => $postedSettings['label'],
+                            'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
+                        ];
+
+                        if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
+                            $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
+                        }
+                    }
+                } else if (isset($oldSourceConfigs[$source['key']])) {
+                    $sourceConfig += $oldSourceConfigs[$source['key']];
+                } else if ($isCustom) {
+                    // Ignore it
+                    continue;
+                }
+
+                $newSourceConfigs[] = $sourceConfig;
             }
         }
 
-        // Remove the blank table attributes
-        foreach ($sources as &$source) {
-            $source['tableAttributes'] = array_filter($source['tableAttributes']);
-        }
-        unset($source);
-
-        $settings = [
-            'sourceOrder' => $sourceOrder,
-            'sources' => $sources,
-        ];
-
-        if (Craft::$app->getElementIndexes()->saveSettings($elementType, $settings)) {
-            return $this->asJson(['success' => true]);
-        }
-
-        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
+        $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
+        return $this->asJson(['success' => true]);
     }
 }

@@ -1,7 +1,7 @@
 {% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
 
-{% if (suggestEnvVars ?? false) and suggestions is not defined %}
-    {% set suggestions = craft.cp.getEnvSuggestions(suggestAliases ?? false) %}
+{% if suggestEnvVars ?? false %}
+    {% set suggestions = (suggestions ?? [])|merge(craft.cp.getEnvSuggestions(suggestAliases ?? false)) %}
 {% endif %}
 
 {%- set id = id ?? "autosuggest#{random()}" %}
@@ -25,6 +25,7 @@
         @selected="onSelected"
         @focus="updateFilteredOptions"
         @blur="onBlur"
+        @input="onInputChange"
         v-model="inputProps.initialValue"
     >
         <template slot-scope="{suggestion}">
@@ -63,7 +64,6 @@ new Vue({
             }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
             limit: limit ?? 5
         }|json_encode|raw }};
-        data.inputProps.onInputChange = this.onInputChange;
         {% endblock %}
         return data;
     },

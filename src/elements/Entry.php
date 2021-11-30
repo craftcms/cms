@@ -13,6 +13,8 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\conditions\elements\entries\EntryQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -186,8 +188,17 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     * @return EntryQueryCondition
      */
-    protected static function defineSources(?string $context = null): array
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(EntryQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSources(string $context): array
     {
         if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();

@@ -19,6 +19,6 @@ class AxiosAsset extends AssetBundle
 
     /** @inheritdoc */
     public $js = [
-        'axios.min.js',
+        'axios.js',
     ];
 }
