@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\i18n\Formatter::willBeMisrepresented()`.
 - Added `craft\services\Config::setBooleanDotEnvVar()`.
 - Added `craft\web\twig\variables\Cp::field()`.
 
@@ -22,6 +23,7 @@
 - Fixed a bug where structure element query params weren’t working if the passed-in element was missing its structure data. ([#10122](https://github.com/craftcms/cms/issues/10122))
 - Fixed a bug where `craft\base\Element::getChildren()` and `getDescendants()` could return results for elements without an ID.
 - Fixed an error that occurred when opening the Timeline view in the Debug Toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
+- Fixed a bug where Number fields’ Default Value, Min Value, and Max Value settings could show values formatted in the wrong locale, leading to an error on save. ([#10184](https://github.com/craftcms/cms/issues/10184))
 
 ## 3.7.23 - 2021-11-26
 

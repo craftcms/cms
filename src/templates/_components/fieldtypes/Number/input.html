@@ -7,7 +7,9 @@
 {%- set hasPrefix = prefix is not same as(false) %}
 {%- set hasSuffix = suffix is not same as(false) %}
 
-{{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
+{% if formatNumber %}
+    {{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
+{% endif %}
 
 {% if hasPrefix or hasSuffix %}
     {{ tag('span', {
@@ -29,7 +31,7 @@
     <div>
         {{ text({
             id: id,
-            name: "#{field.handle}[value]",
+            name: formatNumber ? "#{field.handle}[value]" : field.handle,
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',
             size: field.size,
