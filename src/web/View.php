@@ -340,7 +340,7 @@ class View extends \yii\web\View
         set_error_handler(static function ($type, $msg) {
             if (E_USER_DEPRECATED === $type) {
                 $file = null;
-                $line = $null;
+                $line = null;
                 if (preg_match('/\(.*(".*") at line (\d+)\)\.$/', $msg, $matches)) {
                     $file = $matches[1] ?? null;
                     $line = $matches[2] ?? null;
