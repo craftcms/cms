@@ -21,6 +21,7 @@
 - Fixed a bug where structure element query params weren’t working if the passed-in element was missing its structure data. ([#10122](https://github.com/craftcms/cms/issues/10122))
 - Fixed a bug where `craft\base\Element::getChildren()` and `getDescendants()` could return results for elements without an ID.
 - Fixed an error that occurred when opening the Timeline view in the Debug Toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
+- Fixed an error that could occur when creating a Table field. ([#10186](https://github.com/craftcms/cms/issues/10186))
 
 ## 3.7.23 - 2021-11-26
 

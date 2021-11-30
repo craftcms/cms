@@ -71,11 +71,24 @@
             this.columnsData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody));
             var defaults = Craft.expandPostArray(Garnish.getPostData(this.defaultsTable.$tbody));
 
-            var i, key;
+            var i, r, key;
+
+            // If there are no columns, drop the defaults table rows and disable add row button
+            if (!Object.keys(this.columnsData).length) {
+                let $rows = this.defaultsTable.$tbody.children();
+                for (var r = 0; r < $rows.length; r++) {
+                  this.defaultsTable.deleteRow(this.defaultsTable.createRowObj($rows[r]));
+                }
+                this.defaultsTable.$addRowBtn.css('opacity', '0.2');
+                this.defaultsTable.$addRowBtn.css('pointer-events', 'none');
+                return;
+            }
 
             for (i = 0; i < this.columnsTableInputPath.length; i++) {
                 key = this.columnsTableInputPath[i];
-                this.columnsData = this.columnsData[key];
+                if (typeof this.columnsData[key] !== 'undefined') {
+                  this.columnsData = this.columnsData[key];
+                }
             }
 
             // Add in the dropdown options
