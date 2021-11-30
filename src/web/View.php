@@ -336,6 +336,13 @@ class View extends \yii\web\View
         $core = $twig->getExtension(CoreExtension::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
+        // Log Twig {% deprecation %} notices
+        set_error_handler(static function ($type, $msg) {
+            if (E_USER_DEPRECATED === $type) {
+                Craft::$app->getDeprecator()->log('twig.templates', $msg);
+            }
+        });
+
         return $twig;
     }
 
