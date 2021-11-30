@@ -512,9 +512,6 @@ class Cp
         $fieldAttributes = ArrayHelper::merge([
             'class' => $fieldClass,
             'id' => $fieldId,
-            'aria' => [
-                'describedby' => $instructions ? $instructionsId : false,
-            ],
         ], $config['fieldAttributes'] ?? []);
         $inputContainerAttributes = ArrayHelper::merge([
             'class' => array_filter([
