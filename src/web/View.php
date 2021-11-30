@@ -339,7 +339,13 @@ class View extends \yii\web\View
         // Log Twig {% deprecation %} notices
         set_error_handler(static function ($type, $msg) {
             if (E_USER_DEPRECATED === $type) {
-                Craft::$app->getDeprecator()->log('twig.templates', $msg);
+                $file = null;
+                $line = $null;
+                if (preg_match('/\(.*(".*") at line (\d+)\)\.$/', $msg, $matches)) {
+                    $file = $matches[1] ?? null;
+                    $line = $matches[2] ?? null;
+                }
+                Craft::$app->getDeprecator()->log('twig.templates', $msg, $file, $line);
             }
         });
 
