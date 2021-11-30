@@ -9,6 +9,7 @@
 ### Changed
 - Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
 - Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
+- `{% deprecated %}` tags now log proper Craft deprecation warnings rather than triggering an `E_USER_DEPRECATED` error. ([#10181](https://github.com/craftcms/cms/discussions/10181))
 - Editable tables’ `template` columns now support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - Editable tables now support an `autosuggest` column type, which support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - The `cp.assets.edit.meta`, `cp.categories.edit.meta`, and `cp.entries.edit.meta` template hooks are now located after the native meta fields, rather than before. ([#10172](https://github.com/craftcms/cms/issues/10172))
