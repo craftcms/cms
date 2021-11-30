@@ -366,13 +366,13 @@ class Assets
      */
     public static function parseFileLocation(string $location): array
     {
-        if (!preg_match('/^\{folder:(\d+)\}(.+)$/', $location, $matches)) {
+        if (!preg_match('/^{folder:(\d+)}(.+)$/', $location, $matches)) {
             throw new Exception('Invalid file location format: ' . $location);
         }
 
         [, $folderId, $filename] = $matches;
 
-        return [$folderId, $filename];
+        return [(int)$folderId, $filename];
     }
 
     /**

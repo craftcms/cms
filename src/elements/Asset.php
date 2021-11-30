@@ -1313,7 +1313,7 @@ class Asset extends Element
     public function getThumbUrl(int $size): ?string
     {
         if ($this->getWidth() && $this->getHeight()) {
-            [$width, $height] = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
+            [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
