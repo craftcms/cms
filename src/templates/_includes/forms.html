@@ -174,18 +174,8 @@
 
 
 {% macro dateTimeField(config) %}
-    {% set id = config.id ?? "datetime#{random()}" %}
-    {% set config = config|merge({
-        id: id,
-        instructionsId: config.instructionsId ?? "#{id}-instructions",
-    }) %}
-    {% set input %}
-        <div class="datetimewrapper">
-            {{ _self.date(config) }}
-            {{ _self.time(config) }}
-        </div>
-    {% endset %}
-    {{ _self.field(config, input) }}
+    {% set config = config|merge({id: config.id ?? "datetime#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/datetime') }}
 {% endmacro %}
 
 

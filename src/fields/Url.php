@@ -227,7 +227,7 @@ class Url extends Field implements PreviewableFieldInterface
 
         $input = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'describedBy' => $this->describedBy,
             'class' => ['flex-grow', 'fullwidth'],
             'type' => $valueType,
             'name' => "$this->handle[value]",

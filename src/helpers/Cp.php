@@ -466,11 +466,27 @@ class Cp
      */
     public static function fieldHtml(string $input, array $config = []): string
     {
-        // Set the ID and instructionsId before rendering the field so it's consistent
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
-        $instructionsId = $config['instructionsId'] = $config['instructionsId'] ?? "$id-instructions";
+
+        $instructionsId = $config['instructionsId'] ?? "$id-instructions";
+        $tipId = $config['tipId'] ?? "$id-tip";
+        $warningId = $config['warningId'] ?? "$id-warning";
+
+        $instructions = $config['instructions'] ?? null;
+        $tip = $config['tip'] ?? null;
+        $warning = $config['warning'] ?? null;
 
         if (StringHelper::startsWith($input, 'template:')) {
+            // Set a describedBy value in case the input template supports it
+            if (!isset($config['describedBy'])) {
+                $descriptorIds = array_filter([
+                    $instructions ? $instructionsId : null,
+                    $tip ? $tipId : null,
+                    $warning ? $warningId : null,
+                ]);
+                $config['describedBy'] = $descriptorIds ? implode(' ', $descriptorIds) : null;
+            }
+
             $input = static::renderTemplate(substr($input, 9), $config);
         }
 
@@ -496,10 +512,7 @@ class Cp
         }
 
         $required = (bool)($config['required'] ?? false);
-        $instructions = $config['instructions'] ?? null;
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
-        $tip = $config['tip'] ?? null;
-        $warning = $config['warning'] ?? null;
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
         $errors = $config['errors'] ?? null;
@@ -613,11 +626,13 @@ class Cp
             ($instructionsPosition === 'after' ? $instructionsHtml : '') .
             ($tip
                 ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
+                    'id' => $tipId,
                     'class' => ['notice', 'with-icon'],
                 ])
                 : '') .
             ($warning
                 ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($warning)), [
+                    'id' => $warningId,
                     'class' => ['warning', 'with-icon'],
                 ])
                 : '') .
@@ -785,13 +800,7 @@ class Cp
     public static function dateTimeFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
-        $config['instructionsId'] = $config['instructionsId'] ?? "{$config['id']}-instructions";
-        $input = Html::tag('div',
-            static::renderTemplate('_includes/forms/date', $config) .
-            static::renderTemplate('_includes/forms/time', $config),
-            ['class' => 'datetimewrapper']
-        );
-        return static::fieldHtml($input, $config);
+        return static::fieldHtml('template:_includes/forms/datetime', $config);
     }
 
     /**
