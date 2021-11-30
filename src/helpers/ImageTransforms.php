@@ -31,7 +31,7 @@ class ImageTransforms
     /**
      * @var string The pattern to use for matching against a transform string.
      */
-    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<driver>[a-z\-]+))?/i';
+    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?/i';
 
     /**
      * Create an AssetImageTransform model from a string.
@@ -64,7 +64,7 @@ class ImageTransforms
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'],
-            'driver' => $matches['driver'] ?? ImageTransform::DEFAULT_DRIVER,
+            'driver' => ImageTransform::DEFAULT_DRIVER,
         ]);
 
     }
@@ -241,8 +241,7 @@ class ImageTransforms
             '_' . $transform->mode .
             '_' . $transform->position .
             ($transform->quality ? '_' . $transform->quality : '') .
-            '_' . $transform->interlace .
-            ($driver !== ImageTransform::DEFAULT_DRIVER ? '_' . $driver : '');
+            '_' . $transform->interlace;
     }
 
     /**
