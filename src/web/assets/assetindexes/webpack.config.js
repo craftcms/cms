@@ -6,7 +6,13 @@ module.exports = getConfig({
     context: __dirname,
     config: {
         entry: {
-            AssetIndexer: './AssetIndexer.ts'
+            AssetIndexer: './AssetIndexer.ts',
         },
+        output: {
+            library: {
+                name: 'Craft',
+                type: 'assign-properties',
+              },
+        }
     }
 });

@@ -2902,7 +2902,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->descendantOf($this->getCanonical())
+            ->descendantOf($this)
             ->siteId($this->siteId)
             ->descendantDist($dist);
     }

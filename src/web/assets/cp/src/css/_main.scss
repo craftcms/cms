@@ -410,7 +410,7 @@ li.sel a {
   font-size: 11px;
   margin-top: -1px;
   @include padding-left(4px);
-  color: $lightTextColor;
+  color: var(--ui-control-color);
   body.ltr & {
     content: "circlerarr";
   }
@@ -5949,7 +5949,7 @@ ul.errors li {
     text-overflow: ellipsis;
 
     &:hover,
-    &.autosuggest__results-item-highlighted {
+    &.autosuggest__results-item--highlighted {
       @include menu-option-active-styles;
       cursor: pointer;
     }

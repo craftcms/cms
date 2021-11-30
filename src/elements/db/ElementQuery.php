@@ -2505,7 +2505,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         /** @var string|ElementInterface $class */
         if ($element instanceof ElementInterface && !$element->lft) {
-            $element = $element->id;
+            $element = $element->getCanonicalId();
+
+            if ($element === null) {
+                throw new QueryAbortedException();
+            }
         }
 
         if (!$element instanceof ElementInterface) {

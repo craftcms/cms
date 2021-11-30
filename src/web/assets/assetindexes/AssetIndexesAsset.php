@@ -31,6 +31,6 @@ class AssetIndexesAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'AssetIndexer.min.js',
+        'AssetIndexer.js',
     ];
 }
