@@ -479,10 +479,13 @@ class Cp
         $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
         $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
+
         if ($label === '__blank__') {
             $label = null;
         }
+
         $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
             if (!$site) {
@@ -491,6 +494,7 @@ class Cp
         } else {
             $site = null;
         }
+
         $required = (bool)($config['required'] ?? false);
         $instructions = $config['instructions'] ?? null;
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
@@ -499,33 +503,26 @@ class Cp
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
         $errors = $config['errors'] ?? null;
+
         $fieldClass = array_merge(array_filter([
             'field',
             ($config['first'] ?? false) ? 'first' : null,
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
+
         if (isset($config['attribute']) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
             $showAttribute = $currentUser->admin && $currentUser->getPreference('showFieldHandles');
         } else {
             $showAttribute = false;
         }
-        $fieldAttributes = ArrayHelper::merge([
-            'class' => $fieldClass,
-            'id' => $fieldId,
-        ], $config['fieldAttributes'] ?? []);
-        $inputContainerAttributes = ArrayHelper::merge([
-            'class' => array_filter([
-                'input',
-                $orientation,
-                $errors ? 'errors' : null,
-            ]),
-        ], $config['inputContainerAttributes'] ?? []);
+
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
                 'id' => $instructionsId,
                 'class' => ['instructions'],
             ])
             : '';
+
         $labelHtml = $label . (
             $required
                 ? Html::tag('span', Craft::t('app', 'Required'), [
@@ -540,7 +537,16 @@ class Cp
                 : ''
             );
 
-        return Html::tag($fieldset ? 'fieldset' : 'div',
+        $containerTag = $fieldset ? 'fieldset' : 'div';
+
+        return
+            Html::beginTag($containerTag, ArrayHelper::merge(
+                [
+                    'class' => $fieldClass,
+                    'id' => $fieldId,
+                ],
+                $config['fieldAttributes'] ?? []
+            )) .
             (($label && $fieldset)
                 ? Html::tag('legend', $labelHtml, [
                     'class' => ['visually-hidden'],
@@ -556,7 +562,8 @@ class Cp
                 ])
                 : '') .
             (($label || $showAttribute)
-                ? Html::tag('div',
+                ? (
+                    Html::beginTag('div', ['class' => 'heading']) .
                     ($label
                         ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
                             'id' => $labelId,
@@ -586,14 +593,21 @@ class Cp
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
                         ])
-                        : ''),
-                    [
-                        'class' => ['heading'],
-                    ]
+                        : '') .
+                    Html::endTag('div')
                 )
                 : '') .
             ($instructionsPosition === 'before' ? $instructionsHtml : '') .
-            Html::tag('div', $input, $inputContainerAttributes) .
+            Html::tag('div', $input, ArrayHelper::merge(
+                [
+                    'class' => array_filter([
+                        'input',
+                        $orientation,
+                        $errors ? 'errors' : null,
+                    ]),
+                ],
+                $config['inputContainerAttributes'] ?? []
+            )) .
             ($instructionsPosition === 'after' ? $instructionsHtml : '') .
             ($tip
                 ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
@@ -609,8 +623,8 @@ class Cp
                 ? static::renderTemplate('_includes/forms/errorList', [
                     'errors' => $errors,
                 ])
-                : ''),
-            $fieldAttributes);
+                : '') .
+            Html::endTag($containerTag);
     }
 
     /**
