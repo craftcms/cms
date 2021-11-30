@@ -564,6 +564,7 @@ class Cp
             (($label || $showAttribute)
                 ? (
                     Html::beginTag('div', ['class' => 'heading']) .
+                    ($config['headingPrefix'] ?? '') .
                     ($label
                         ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
                             'id' => $labelId,
@@ -594,6 +595,7 @@ class Cp
                             'value' => $config['attribute'],
                         ])
                         : '') .
+                    ($config['headingSuffix'] ?? '') .
                     Html::endTag('div')
                 )
                 : '') .

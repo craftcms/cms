@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\services\Config::setBooleanDotEnvVar()`.
+- Added `craft\web\twig\variables\Cp::field()`.
 
 ### Changed
 - Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
@@ -11,6 +12,7 @@
 - Editable tables’ `template` columns now support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - Editable tables now support an `autosuggest` column type, which support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - The `cp.assets.edit.meta`, `cp.categories.edit.meta`, and `cp.entries.edit.meta` template hooks are now located after the native meta fields, rather than before. ([#10172](https://github.com/craftcms/cms/issues/10172))
+- `craft\helpers\Cp::fieldHtml()` now supports `headingPrefix` and `headingSuffix` config keys.
 
 ### Fixed
 - Fixed an error that could occur when PHP’s `set_time_limit()` function was disabled. ([#10152](https://github.com/craftcms/cms/issues/10152))

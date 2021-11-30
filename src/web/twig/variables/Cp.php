@@ -17,8 +17,10 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -782,5 +784,20 @@ class Cp extends Component
         ]);
         $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
         return $event->formActions ?: null;
+    }
+
+    /**
+     * Renders a field’s HTML, for the given input HTML or a template.
+     *
+     * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.7.24
+     */
+    public function field(string $input, array $config = []): string
+    {
+        return CpHelper::fieldHtml($input, $config);
     }
 }

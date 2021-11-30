@@ -130,16 +130,7 @@
 
 
 {% macro field(config, input) %}
-    {% set id = config.id ?? "field#{random()}" %}
-    {% set config = config|merge({
-        id: id,
-        labelId: config.labelId ?? "#{id}-label",
-        instructionsId: config.instructionsId ?? "#{id}-instructions",
-    }) %}
-    {% if input starts with 'template:' %}
-        {% set input = include(input[9:], config) %}
-    {% endif %}
-    {% include "_includes/forms/field" with config|merge({ input: input }) only %}
+    {{ craft.cp.field(input, config)|raw }}
 {% endmacro %}
 
 
