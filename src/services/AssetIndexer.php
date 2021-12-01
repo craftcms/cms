@@ -354,7 +354,7 @@ class AssetIndexer extends Component
         $volumes = Craft::$app->getVolumes();
 
         foreach ($skippedItems as ['volumeId' => $volumeId, 'uri' => $uri]) {
-            $skipped[] = $volumes->getVolumeById($volumeId)->name . '/' . $uri;
+            $skipped[] = $volumes->getVolumeById((int)$volumeId)->name . '/' . $uri;
         }
 
         return $skipped;

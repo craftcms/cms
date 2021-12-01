@@ -541,6 +541,7 @@ class Volumes extends Component
             $volume = new MissingVolume($config);
         }
 
+        $volume->id = (int)$volume->id;
         return $volume;
     }
 
