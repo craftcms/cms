@@ -238,10 +238,9 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
-        $id = Html::id($this->handle);
         $variables = [
-            'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'id' => Html::id($this->handle),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement,
@@ -265,7 +264,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
 
         if ($this->showTimeZone) {
             $input .= ' ' . $view->renderTemplate('_includes/forms/timeZone', [
-                    'instructionsId' => "$id-instructions",
+                    'describedBy' => $this->describedBy,
                     'name' => "$this->handle[timezone]",
                     'value' => $value ? $value->getTimezone()->getName() : Craft::$app->getTimeZone(),
                 ]);
