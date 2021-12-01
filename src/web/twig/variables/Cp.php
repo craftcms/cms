@@ -39,14 +39,18 @@ class Cp extends Component
      * use craft\web\twig\variables\Cp;
      * use yii\base\Event;
      *
-     * Event::on(Cp::class, Cp::EVENT_REGISTER_FORM_ACTIONS, function(FormActionsEvent $event) {
-     *     if (Craft::$app->requestedRoute == 'entries/edit-entry') {
-     *         $event->formActions[] = [
-     *             'label' => 'Save and view entry',
-     *             'redirect' => Craft::$app->getSecurity()->hashData('{url}'),
-     *         ];
+     * Event::on(
+     *     Cp::class,
+     *     Cp::EVENT_REGISTER_FORM_ACTIONS,
+     *     function(FormActionsEvent $event) {
+     *         if (Craft::$app->requestedRoute == 'entries/edit-entry') {
+     *             $event->formActions[] = [
+     *                 'label' => 'Save and view entry',
+     *                 'redirect' => Craft::$app->getSecurity()->hashData('{url}'),
+     *             ];
+     *         }
      *     }
-     * });
+     * );
      * ```
      *
      * @see prepFormActions()
@@ -62,13 +66,17 @@ class Cp extends Component
      * use craft\web\twig\variables\Cp;
      * use yii\base\Event;
      *
-     * Event::on(Cp::class, Cp::EVENT_REGISTER_CP_NAV_ITEMS, function(RegisterCpNavItemsEvent $e) {
-     *     $e->navItems[] = [
-     *         'label' => 'Item Label',
-     *         'url' => 'my-module',
-     *         'icon' => '/path/to/icon.svg',
-     *     ];
-     * });
+     * Event::on(
+     *     Cp::class,
+     *     Cp::EVENT_REGISTER_CP_NAV_ITEMS,
+     *     function(RegisterCpNavItemsEvent $e) {
+     *         $e->navItems[] = [
+     *             'label' => 'Item Label',
+     *             'url' => 'my-module',
+     *             'icon' => '/path/to/icon.svg',
+     *         ];
+     *     }
+     * );
      * ```
      *
      * [[RegisterCpNavItemsEvent::$navItems]] is an array whose values are sub-arrays that define the nav items. Each sub-array can have the following keys:
@@ -97,13 +105,17 @@ class Cp extends Component
      * use craft\web\twig\variables\Cp;
      * use yii\base\Event;
      *
-     * Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS, function(RegisterCpSettingsEvent $e) {
-     *     $e->settings[Craft::t('app', 'Modules')] = [
-     *         'label' => 'Item Label',
-     *         'url' => 'my-module',
-     *         'icon' => '/path/to/icon.svg',
-     *     ];
-     * });
+     * Event::on(
+     *     Cp::class,
+     *     Cp::EVENT_REGISTER_CP_SETTINGS,
+     *     function(RegisterCpSettingsEvent $e) {
+     *         $e->settings[Craft::t('app', 'Modules')][] = [
+     *             'label' => 'Item Label',
+     *             'url' => 'my-module',
+     *             'icon' => '/path/to/icon.svg',
+     *         ];
+     *     }
+     * );
      * ```
      *
      * [[RegisterCpSettingsEvent::$settings]] is an array whose keys define the section labels, and values are sub-arrays that define the
