@@ -9,11 +9,13 @@ declare(strict_types=1);
 namespace craft\helpers;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
 use craft\errors\FsException;
+use craft\errors\VolumeException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\ImageTransformIndex;
@@ -785,16 +787,16 @@ class Assets
     /**
      * Save a file from a volume locally.
      *
-     * @param VolumeInterface $volume
+     * @param FsInterface $volume
      * @param string $uriPath
      * @param string $localPath
      * @return int
-     * @throws FsException if stream cannot be created.
+     * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(VolumeInterface $volume, string $uriPath, string $localPath): int
+    public static function downloadFile(FsInterface $fs, string $uriPath, string $localPath): int
     {
-        $stream = $volume->getFileStream($uriPath);
+        $stream = $fs->getFileStream($uriPath);
         $outputStream = fopen($localPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);

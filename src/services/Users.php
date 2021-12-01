@@ -16,7 +16,7 @@ use craft\elements\User;
 use craft\errors\ImageException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
-use craft\errors\FsException;
+use craft\errors\VolumeException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
 use craft\events\UserAssignGroupEvent;
@@ -467,7 +467,7 @@ class Users extends Component
      * @param string $fileLocation the local image path on server
      * @param string|null $filename name of the file to use, defaults to filename of `$fileLocation`
      * @throws ImageException if the file provided is not a manipulatable image
-     * @throws FsException if the user photo Volume is not provided or is invalid
+     * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
     public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null): void
     {
@@ -532,18 +532,18 @@ class Users extends Component
      * Returns the user photo volume.
      *
      * @return VolumeInterface
-     * @throws FsException if no user photo volume is set, or it's set to an invalid volume UID
+     * @throws VolumeException if no user photo volume is set, or it's set to an invalid volume UID
      */
     private function _userPhotoVolume(): VolumeInterface
     {
         $uid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
         if (!$uid) {
-            throw new FsException('No user photo volume is set.');
+            throw new VolumeException('No user photo volume is set.');
         }
 
         $volume = Craft::$app->getVolumes()->getVolumeByUid($uid);
         if ($volume === null) {
-            throw new FsException("Invalid volume UID: $uid");
+            throw new VolumeException("Invalid volume UID: $uid");
         }
 
         return $volume;
@@ -555,7 +555,7 @@ class Users extends Component
      * @param User $user
      * @param VolumeInterface $volume The user photo volume
      * @return int
-     * @throws FsException if the user photo volume doesn’t exist
+     * @throws VolumeException if the user photo volume doesn’t exist
      * @throws InvalidSubpathException if the user photo subpath can’t be resolved
      */
     private function _userPhotoFolderId(User $user, VolumeInterface $volume): int

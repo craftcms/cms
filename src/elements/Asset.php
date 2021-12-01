@@ -35,7 +35,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
 use craft\errors\FileException;
 use craft\errors\ImageTransformException;
-use craft\errors\FsException;
+use craft\errors\VolumeException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -1559,14 +1559,14 @@ class Asset extends Element
      * Get a temporary copy of the actual file.
      *
      * @return string
-     * @throws FsException If unable to fetch file from volume.
+     * @throws VolumeException If unable to fetch file from volume.
      * @throws InvalidConfigException If no volume can be found.
      */
     public function getCopyOfFile(): string
     {
         $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getFilesystem(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -1576,7 +1576,7 @@ class Asset extends Element
      *
      * @return resource
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws FsException if a stream cannot be created
+     * @throws VolumeException if a stream cannot be created
      */
     public function getStream()
     {
@@ -2191,7 +2191,7 @@ class Asset extends Element
     /**
      * Relocates the file after the element has been saved.
      *
-     * @throws FsException if a file operation errored
+     * @throws VolumeException if a file operation errored
      * @throws Exception if something else goes wrong
      */
     private function _relocateFile(): void
@@ -2257,7 +2257,7 @@ class Asset extends Element
                 $newVolume->getFilesystem()->writeFileFromStream($newPath, $stream, [
                     Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ]);
-            } catch (FsException $exception) {
+            } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
             } finally {
                 // If the volume has not already disconnected the stream, clean it up.

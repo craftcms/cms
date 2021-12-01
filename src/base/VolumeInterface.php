@@ -8,12 +8,7 @@ declare(strict_types=1);
 
 namespace craft\base;
 
-use craft\errors\FsException;
-use craft\errors\FsObjectNotFoundException;
-use craft\fs\Local;
 use craft\models\FieldLayout;
-use craft\models\FsListing;
-use Generator;
 
 /**
  * VolumeInterface defines the common interface to be implemented by volume classes.

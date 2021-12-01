@@ -13,9 +13,10 @@ use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\AssetNotIndexableException;
+use craft\errors\FsException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingFsFolderException;
-use craft\errors\FsException;
+use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -55,12 +56,13 @@ class AssetIndexer extends Component
      * @param VolumeInterface $volume The Volume to perform indexing on.
      * @param string $directory Optional path to get index list on a subfolder.
      * @return Generator|FsListing[]
+     * @throws FsException
      */
     public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): Generator
     {
         try {
-            $fileList = $volume->getFileList($directory);
-        } catch (FsException $exception) {
+            $fileList = $volume->getFilesystem()->getFileList($directory);
+        } catch (VolumeException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return;
         }
@@ -164,7 +166,7 @@ class AssetIndexer extends Component
         /** @var VolumeInterface $volume */
         foreach ($volumeList as $volume) {
             try {
-                $fileList = $volume->getFileList();
+                $fileList = $volume->getFilesystem()->getFileList();
             } catch (FsException $e) {
                 Craft::warning('Unable to list files in ' . $volume->handle . '.');
                 continue;
@@ -288,7 +290,7 @@ class AssetIndexer extends Component
      *
      * @param AssetIndexingSession $indexingSession
      * @return AssetIndexingSession
-     * @throws FsException if unable to index file because of Volume issue
+     * @throws VolumeException if unable to index file because of Volume issue
      * @since 4.0.0
      */
     public function processIndexSession(AssetIndexingSession $indexingSession): AssetIndexingSession
@@ -486,16 +488,17 @@ class AssetIndexer extends Component
      * @throws AssetDisallowedExtensionException if attempting to index an Asset with a disallowed extension
      * @throws InvalidConfigException if misconfigured volume
      * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
-     * @throws FsException if unable to read metadata.
+     * @throws VolumeException if unable to read metadata.
      */
     public function indexFile(VolumeInterface $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
+        $fs = $volume->getFilesystem();
         $listing = new FsListing([
             'dirname' => $path,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
-            'dateModified' => $volume->getDateModified($path),
-            'fileSize' => $volume->getFileSize($path),
+            'dateModified' => $fs->getDateModified($path),
+            'fileSize' => $fs->getFileSize($path),
         ]);
 
         return $this->indexFileByListing((int)$volume->id, $listing, $sessionId, $cacheImages, $createIfMissing);
@@ -509,7 +512,7 @@ class AssetIndexer extends Component
      * @param bool $createIfMissing
      * @return Asset
      * @throws AssetDisallowedExtensionException if attempting to index an Asset with a disallowed extension
-     * @throws FsException
+     * @throws VolumeException
      * @throws InvalidConfigException
      * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
      * @since 4.0.0
@@ -540,7 +543,7 @@ class AssetIndexer extends Component
      * @param bool $createIfMissing
      * @return VolumeFolder
      * @throws AssetNotIndexableException
-     * @throws FsException
+     * @throws VolumeException
      * @since 4.0.0
      */
     public function indexFolderByListing(int $volumeId, FsListing $listing, int $sessionId, bool $createIfMissing = true): VolumeFolder
@@ -572,7 +575,7 @@ class AssetIndexer extends Component
      * @throws AssetDisallowedExtensionException If the file being indexed has a disallowed extension
      * @throws InvalidConfigException
      * @throws MissingAssetException
-     * @throws FsException
+     * @throws VolumeException
      */
     public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
@@ -671,7 +674,7 @@ class AssetIndexer extends Component
                                 $dimensions = Image::imageSizeByStream($stream);
                                 fclose($stream);
                             }
-                        } catch (FsException $e) {
+                        } catch (VolumeException $e) {
                             Craft::info($e->getMessage());
                         }
                     }
@@ -718,7 +721,7 @@ class AssetIndexer extends Component
      * @param AssetIndexData $indexEntry
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
      * @return VolumeFolder
-     * @throws FsException
+     * @throws VolumeException
      * @throws AssetNotIndexableException
      * @since 4.0.0
      */

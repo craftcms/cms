@@ -13,8 +13,9 @@ use craft\base\LocalFsInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
-use craft\errors\ImageTransformException;
 use craft\errors\FsException;
+use craft\errors\ImageTransformException;
+use craft\errors\VolumeException;
 use craft\events\GenerateTransformEvent;
 use craft\gql\types\DateTime;
 use craft\helpers\App;
@@ -356,7 +357,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $volume->writeFileFromStream($transformPath, $stream, []);
+            $volume->getFilesystem()->writeFileFromStream($transformPath, $stream, []);
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
@@ -389,11 +390,12 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
 
             // Sanity check
             try {
-                if ($volume->fileExists($to)) {
+                $fs = $volume->getFilesystem();
+                if ($fs->fileExists($to)) {
                     return true;
                 }
 
-                $volume->copyFile($from, $to);
+                $fs->copyFile($from, $to);
             } catch (FsException $exception) {
                 throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);
             }

@@ -12,8 +12,10 @@ use craft\base\LocalFsInterface;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
-use craft\errors\ImageTransformException;
 use craft\errors\FsException;
+use craft\errors\ImageException;
+use craft\errors\ImageTransformException;
+use craft\errors\VolumeException;
 use craft\errors\FsObjectNotFoundException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
@@ -75,8 +77,6 @@ class ImageTransforms
      * @param Asset $asset
      * @return mixed
      * @throws AssetOperationException If attempting to detect an image format for a non-image.
-     * @throws FsException If unable to fetch file from volume.
-     * @throws InvalidConfigException If no volume can be found.
      */
     public static function detectTransformFormat(Asset $asset): string
     {
@@ -145,8 +145,6 @@ class ImageTransforms
      * @param Asset $asset
      * @return string
      * @throws FsObjectNotFoundException If the file cannot be found.
-     * @throws FsException If unable to fetch file from volume.
-     * @throws InvalidConfigException If no volume can be found.
      */
     public static function getLocalImageSource(Asset $asset): string
     {
@@ -308,7 +306,7 @@ class ImageTransforms
      *
      * @param string $source
      * @param string $destination
-     * @throws \craft\errors\ImageException
+     * @throws ImageException
      */
     public static function storeLocalSource(string $source, string $destination = ''): void
     {

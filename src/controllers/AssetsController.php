@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\errors\FsException;
 use craft\helpers\ImageTransforms;
 use craft\image\transforms\DefaultTransformer;
 use craft\assets\previews\Image as ImagePreview;
@@ -19,7 +20,7 @@ use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\UploadFailedException;
-use craft\errors\FsException;
+use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -208,7 +209,7 @@ class AssetsController extends Controller
      * @throws Exception
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws VolumeException
      * @throws Throwable
      * @throws DeprecationException
      * @throws ElementNotFoundException
@@ -393,7 +394,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws NotFoundHttpException if Asset cannot be found by id.
-     * @throws FsException
+     * @throws VolumeException
      */
     public function actionReplaceFile(): Response
     {
@@ -625,8 +626,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
-     * @throws InvalidConfigException
-     * @throws FsException
+     * @throws InvalidConfigException|VolumeException
      */
     public function actionRenameFolder(): Response
     {
@@ -663,7 +663,7 @@ class AssetsController extends Controller
      * @throws Exception
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws VolumeException
      * @throws Throwable
      * @throws ElementNotFoundException
      */
@@ -739,7 +739,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException if the folder to move, or the destination parent folder, cannot be found
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws VolumeException
      * @throws Throwable
      */
     public function actionMoveFolder(): Response
@@ -777,7 +777,7 @@ class AssetsController extends Controller
         if (!$existingFolder) {
             try {
                 $existingFolder = $targetVolume->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
-            } catch (FsException $exception) {
+            } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 return $this->asErrorJson(Craft::t('app', 'An error was encountered while attempting the operation.'));
             }
@@ -815,7 +815,7 @@ class AssetsController extends Controller
                 if ($force) {
                     try {
                         $assets->deleteFoldersByIds($existingFolder->id);
-                    } catch (FsException $exception) {
+                    } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
                         return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                     }
@@ -833,7 +833,7 @@ class AssetsController extends Controller
                 // An un-indexed folder is conflicting. If we're forcing things, just remove it.
                 try {
                     $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
-                } catch (FsException $exception) {
+                } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
                     return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                 }
@@ -1090,7 +1090,7 @@ class AssetsController extends Controller
      * @throws Exception
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws VolumeException
      * @throws RangeNotSatisfiableHttpException
      */
     public function actionDownloadAsset(): Response
@@ -1284,7 +1284,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws VolumeException
      */
     public function actionUpdateFocalPosition(): Response
     {
@@ -1333,7 +1333,7 @@ class AssetsController extends Controller
      * @param Asset $asset The asset whose volume should be checked
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws VolumeException
      * @since 3.4.8
      */
     protected function requireVolumePermissionByAsset(string $permissionName, Asset $asset): void
@@ -1376,7 +1376,7 @@ class AssetsController extends Controller
      * @param VolumeFolder $folder The folder whose volume should be checked
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws VolumeException
      * @since 3.4.8
      */
     protected function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder): void
