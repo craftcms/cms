@@ -5,6 +5,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\MemoizableArray;
+use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -24,8 +25,8 @@ use craft\models\FieldLayout;
 use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\volumes\Local;
-use craft\volumes\MissingVolume;
+use craft\fs\Local;
+use craft\fs\MissingFs;
 use Throwable;
 use yii\base\Component;
 use yii\base\UnknownPropertyException;
@@ -233,7 +234,7 @@ class Volumes extends Component
         if (!isset($this->_volumes)) {
             $volumes = [];
             foreach ($this->_createVolumeQuery()->all() as $result) {
-                $volumes[] = $this->createVolume($result);
+                $volumes[] = Craft::createObject(Volume::class, [$result]);
             }
             $this->_volumes = new MemoizableArray($volumes);
         }
@@ -296,12 +297,11 @@ class Volumes extends Component
         $config = [
             'name' => $volume->name,
             'handle' => $volume->handle,
-            'type' => get_class($volume),
+            'filesystem' => $volume->filesystem,
             'hasUrls' => $volume->hasUrls,
             'url' => $volume->url,
             'titleTranslationMethod' => $volume->titleTranslationMethod,
             'titleTranslationKeyFormat' => $volume->titleTranslationKeyFormat ?: null,
-            'settings' => ProjectConfigHelper::packAssociativeArrays($volume->getSettings()),
             'sortOrder' => (int)$volume->sortOrder,
         ];
 
@@ -407,13 +407,12 @@ class Volumes extends Component
 
             $volumeRecord->name = $data['name'];
             $volumeRecord->handle = $data['handle'];
-            $volumeRecord->type = $data['type'];
+            $volumeRecord->filesystem = $data['filesystem'];
             $volumeRecord->hasUrls = $data['hasUrls'];
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
             $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
-            $volumeRecord->settings = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
             $volumeRecord->uid = $volumeUid;
 
             if (!empty($data['fieldLayouts'])) {
@@ -512,37 +511,6 @@ class Volumes extends Component
         }
 
         return true;
-    }
-
-    /**
-     * Creates an asset volume with a given config.
-     *
-     * @param mixed $config The asset volume’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return VolumeInterface The asset volume
-     */
-    public function createVolume($config): VolumeInterface
-    {
-        if (is_string($config)) {
-            $config = ['type' => $config];
-        }
-
-        // JSON-decode the settings now so we don't have to do it twice in the event we need to remove the `path`
-        if (isset($config['settings']) && is_string($config['settings'])) {
-            $config['settings'] = Json::decode($config['settings']);
-        }
-
-        try {
-            $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
-        } catch (MissingComponentException $e) {
-            $config['errorMessage'] = $e->getMessage();
-            $config['expectedType'] = $config['type'];
-            unset($config['type']);
-
-            $volume = new MissingVolume($config);
-        }
-
-        $volume->id = (int)$volume->id;
-        return $volume;
     }
 
     /**
@@ -747,8 +715,7 @@ class Volumes extends Component
                 'titleTranslationKeyFormat',
                 'sortOrder',
                 'fieldLayoutId',
-                'type',
-                'settings',
+                'filesystem',
                 'uid',
             ])
             ->from([Table::VOLUMES])

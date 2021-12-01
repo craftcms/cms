@@ -15,8 +15,8 @@ use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\errors\InvalidSubpathException;
-use craft\errors\InvalidVolumeException;
-use craft\errors\VolumeObjectNotFoundException;
+use craft\errors\InvalidFsException;
+use craft\errors\FsObjectNotFoundException;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -332,7 +332,7 @@ class Assets extends BaseRelationField
             ]), [
                 'class' => ['warning', 'with-icon'],
             ]);
-        } catch (InvalidVolumeException $e) {
+        } catch (InvalidFsException $e) {
             return Html::tag('p', $e->getMessage(), [
                 'class' => ['warning', 'with-icon'],
             ]);
@@ -645,7 +645,7 @@ class Assets extends BaseRelationField
                     $asset->avoidFilenameConflicts = true;
                     try {
                         $assetsService->moveAsset($asset, $folder);
-                    } catch (VolumeObjectNotFoundException $e) {
+                    } catch (FsObjectNotFoundException $e) {
                         // Don't freak out about that.
                         Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
                         Craft::$app->getErrorHandler()->logException($e);
@@ -874,7 +874,7 @@ class Assets extends BaseRelationField
      * @param bool $createDynamicFolders whether missing folders should be created in the process
      * @return int
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
-     * @throws InvalidVolumeException if the volume root folder doesn’t exist
+     * @throws InvalidFsException if the volume root folder doesn’t exist
      */
     private function _resolveVolumePathToFolderId(string $uploadSource, ?string $subpath, ?ElementInterface $element, bool $createDynamicFolders): int
     {
@@ -884,7 +884,7 @@ class Assets extends BaseRelationField
 
         // Make sure the volume and root folder actually exists
         if ($volumeId === null || ($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId)) === null) {
-            throw new InvalidVolumeException();
+            throw new InvalidFsException();
         }
 
         // Are we looking for a subfolder?
@@ -974,7 +974,7 @@ class Assets extends BaseRelationField
      * @param bool $resolveSubtreeDefaultLocation Whether the folder should resolve to the default upload location for subtree fields.
      * @return int
      * @throws InvalidSubpathException if the folder subpath is not valid
-     * @throws InvalidVolumeException if there's a problem with the field's volume configuration
+     * @throws InvalidFsException if there's a problem with the field's volume configuration
      */
     private function _determineUploadFolderId(?ElementInterface $element = null, bool $createDynamicFolders = true, bool $resolveSubtreeDefaultLocation = false): int
     {
@@ -1007,12 +1007,12 @@ class Assets extends BaseRelationField
 
         try {
             if (!$uploadVolume) {
-                throw new InvalidVolumeException();
+                throw new InvalidFsException();
             }
 
             $folderId = $this->_resolveVolumePathToFolderId($uploadVolume, $subpath, $element, $createDynamicFolders);
-        } catch (InvalidVolumeException $e) {
-            throw new InvalidVolumeException(Craft::t('app', 'The {field} field’s {setting} setting is set to an invalid volume.', [
+        } catch (InvalidFsException $e) {
+            throw new InvalidFsException(Craft::t('app', 'The {field} field’s {setting} setting is set to an invalid volume.', [
                 'field' => $this->name,
                 'setting' => $settingName,
             ]), 0, $e);

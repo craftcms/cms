@@ -27,6 +27,11 @@ trait VolumeTrait
     public ?string $handle = null;
 
     /**
+     * @var string|null Filesystem handle
+     */
+    public ?string $filesystem = null;
+
+    /**
      * @var bool Whether the volume has a public URL
      */
     public bool $hasUrls = false;

@@ -1,10 +1,15 @@
 ### Added
+- Added `craft/base/Fs`.
 - Added `craft/base/FsInterface`.
+- Added `craft/base/FsTrait`.
 - Added `craft/base/LocalFsInterface`.
 - Added `craft/base/Image::heartbeat()`.
 - Added `craft/base/Image::setHeartbeatCallback()`.
 - Added `craft/base/Volume::getFilesystem()`.
+- Added `craft/base/Volume::setFilesystem()`.
 - Added `craft/base/VolumeInterface::getFilesystem()`.
+- Added `craft/db/Table::FILESYSTEMS`.
+- Added `craft/elements/Asset::getFilesystem()`.
 - Added `craft/fs/Local`.
 - Added `craft/helpers/FileHelper::deleteFileAfterRequest()`.
 - Added `craft/helpers/FileHelper::deleteQueuedFiles()`.
@@ -17,31 +22,61 @@
 - Added `craft/models/ImageTransform::getDriver()`.
 - Added `craft/models/ImageTransform::getImageTransformer()`.
 - Added `craft/models/ImageTransform::setDriver()`.
+- Added `craft/records/FileSystem`.
+- Added `craft/services/Filesystems`.
 - Added `craft/services/ImageTransforms::getImageTransformer()`.
+- Added `craft/services/ProjectConfig::PATH_FILESYSTEMS`.
 
 ### Changed
 - Images that are not web-safe now are always converted to JPG when transforming, if auto format is selected.
 - The `craft/assetpreviews` namespace was changed to `craft/assets/previews`.
+- Volumes are much thinner now, as all the file system operation are moved to a filesystem layer.
 - `craft/db/Table:ASSETTRANSFORMINDEX` has been renamed to `craft/db/Table:IMAGETRANSFORMINDEX`.
 - `craft/db/Table:ASSETTRANSFORMS` has been renamed to `craft/db/Table:IMAGETRANSFORMS`.
 - `craft/errors/AssetTransformException` is now `craft/errors/ImageTransformException`.
 - `craft/events/AssetTransformEvent` is now `craft/events/ImageTransformEvent`.
 - `craft/events/AssetTransformImageEvent` is now `craft/events/TransformImageEvent`.
 - `craft/events/ImageTransformEvent::$assetTransform` has been renamed to `$imageTransform`.
+- `craft/errors/InvalidVolumeException` is now `craft/errors/InvalidFsException`.
+- `craft/errors/MissingVolumeFolderException` is now `craft/errors/MissingFsFolderException`.
+- `craft/errors/VolumeException` is now `craft/errors/FilesystemException`.
+- `craft/errors/VolumeObjectExistsException` is now `craft/errors/FsObjectExistsException`.
+- `craft/errors/VolumeObjectNotFoundException` is now `craft/errors/FsObjectNotFoundException`.
 - `craft/helpers/Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` is expected instead.
 - `craft/helpers/Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` is expected instead.
 - `craft/models/AssetTransform` is now `craft/models/ImageTransform`.
 - `craft/models/AssetTransformIndex` is now `craft/models/ImageTransformIndex`.
 - `craft/models/ImageTransform::$dimensionChangeTime` has been renamed to `$parameterChangeTime`.
+- `craft/models/VolumeListing` is now `craft/models/FsListing`.
 - `craft/records/AssetTransform` is now `craft/records/ImageTransform`.
 - `craft/services/AssetTransforms` is now `craft/services/ImageTransforms`.
 - `craft/services/ImageTransforms::EVENT_AFTER_SAVE_ASSET_TRANSFORM` has been renamed to `EVENT_AFTER_SAVE_IMAGE_TRANSFORM`.
 - `craft/services/ImageTransforms::EVENT_BEFORE_SAVE_ASSET_TRANSFORM` has been renamed to `EVENT_BEFORE_SAVE_IMAGE_TRANSFORM`.
 - `craft/services/ImageTransforms::EVENT_AFTER_DELETE_ASSET_TRANSFORM` has been renamed to `EVENT_AFTER_DELETE_IMAGE_TRANSFORM`.
 - `craft/services/ImageTransforms::EVENT_BEFORE_DELETE_ASSET_TRANSFORM` has been renamed to `EVENT_BEFORE_DELETE_IMAGE_TRANSFORM`.
+- `craft/volumes/MissingVolume` is now `craft/fs/MissingFs`.
+- `craft/volumes/Temp` is now `craft/fs/Temp`.
 
 ### Removed
+- Removed `craft/base/LocalVolumeInterface`.
+- Removed `craft/base/VolumeInterface::getFileList()`.
+- Removed `craft/base/VolumeInterface::getFileSize()`.
+- Removed `craft/base/VolumeInterface::getDateModified()`.
+- Removed `craft/base/VolumeInterface::createFileByStream()`.
+- Removed `craft/base/VolumeInterface::updateFileByStream()`.
+- Removed `craft/base/VolumeInterface::writeFileFromStream()`.
+- Removed `craft/base/VolumeInterface::fileExists()`.
+- Removed `craft/base/VolumeInterface::deleteFile()`.
+- Removed `craft/base/VolumeInterface::renameFile()`.
+- Removed `craft/base/VolumeInterface::copyFile()`.
+- Removed `craft/base/VolumeInterface::saveFileLocally()`.
+- Removed `craft/base/VolumeInterface::getFileStream()`.
+- Removed `craft/base/VolumeInterface::directoryExists()`.
+- Removed `craft/base/VolumeInterface::createDirectory()`.
+- Removed `craft/base/VolumeInterface::deleteDirectory()`.
+- Removed `craft/base/VolumeInterface::renameDirectory()`.
 - Removed `craft/elements/Asset::getTransformSource()`.
+- Removed `craft/models/FsListing::getVolume()`.
 - Removed `craft/services/ImageTransforms::deleteQueuedSourceFiles()`.
 - Removed `craft/services/ImageTransforms::deleteTransformIndex()`.
 - Removed `craft/services/ImageTransforms::deleteTransformIndexDataByAssetId()`.
@@ -62,3 +97,5 @@
 - Removed `craft/services/ImageTransforms::storeTransformIndexData()`.
 - Removed `craft/services/ImageTransforms::setActiveTransformIndex()`.
 - Removed `craft/services/ImageTransforms::validateTransformIndexResult()`.
+- Removed `craft/services/Volumes::createVolume()`.
+- Removed `craft/volumes/Local`.

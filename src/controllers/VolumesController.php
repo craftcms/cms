@@ -14,8 +14,8 @@ use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use craft\volumes\Local;
-use craft\volumes\MissingVolume;
+use craft\fs\Local;
+use craft\fs\MissingFs;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -81,7 +81,7 @@ class VolumesController extends Controller
                     throw new NotFoundHttpException('Volume not found');
                 }
 
-                if ($volume instanceof MissingVolume) {
+                if ($volume instanceof MissingFs) {
                     $missingVolumePlaceholder = $volume->getPlaceholderHtml();
                     $volume = $volume->createFallback(Local::class);
                 }

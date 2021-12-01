@@ -25,7 +25,7 @@ use craft\models\ImageTransform;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
-use craft\volumes\Local;
+use craft\fs\Local;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 

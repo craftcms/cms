@@ -11,12 +11,11 @@ use craft\base\Model;
 use craft\base\VolumeInterface;
 
 /**
- * The VolumeListing model class.
+ * The FsListings model class.
  *
  * @property-read string $dirname The path to the file
  * @property-read string $basename
  * @property-read string $type "file" or "dir"
- * @property-read VolumeInterface $volume The volume containing the listing.
  * @property-read string $uri Listing URI
  * @property-read null|int $fileSize
  * @property-read bool $isDir
@@ -25,7 +24,7 @@ use craft\base\VolumeInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class VolumeListing extends Model
+class FsListing extends Model
 {
     /**
      * @var string The path for the listing
@@ -51,8 +50,6 @@ class VolumeListing extends Model
      * @var int|null Timestamp of date modified.
      */
     private ?int $dateModified = null;
-
-    private VolumeInterface $volume;
 
     /**
      * @inheritdoc
@@ -107,14 +104,6 @@ class VolumeListing extends Model
     public function getDateModified(): ?int
     {
         return $this->dateModified;
-    }
-
-    /**
-     * @return VolumeInterface
-     */
-    public function getVolume(): VolumeInterface
-    {
-        return $this->volume;
     }
 
     /**

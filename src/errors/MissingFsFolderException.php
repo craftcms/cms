@@ -17,7 +17,7 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MissingVolumeFolderException extends VolumeException
+class MissingFsFolderException extends FsException
 {
     /**
      * @var AssetIndexData

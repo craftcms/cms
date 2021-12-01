@@ -24,9 +24,9 @@ use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
 use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
-use craft\errors\VolumeException;
-use craft\errors\VolumeObjectExistsException;
-use craft\errors\VolumeObjectNotFoundException;
+use craft\errors\FsException;
+use craft\errors\FsObjectExistsException;
+use craft\errors\FsObjectNotFoundException;
 use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\DefineAssetThumbUrlEvent;
@@ -46,7 +46,7 @@ use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\volumes\Temp;
+use craft\fs\Temp;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -214,8 +214,8 @@ class Assets extends Component
      * Save an Asset folder.
      *
      * @param VolumeFolder $folder
-     * @throws VolumeObjectExistsException if a folder already exists with such a name
-     * @throws VolumeException if unable to create the directory on volume
+     * @throws FsObjectExistsException if a folder already exists with such a name
+     * @throws FsException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
      */
     public function createFolder(VolumeFolder $folder): void
@@ -232,7 +232,7 @@ class Assets extends Component
         ]);
 
         if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
-            throw new VolumeObjectExistsException(Craft::t('app',
+            throw new FsObjectExistsException(Craft::t('app',
                 'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]));
         }
@@ -240,7 +240,7 @@ class Assets extends Component
         $volume = $parent->getVolume();
         $path = rtrim($folder->path, '/');
 
-        $volume->createDirectory($path);
+        $volume->getFilesystem()->createDirectory($path);
 
         $this->storeFolderRecord($folder);
     }
@@ -252,8 +252,8 @@ class Assets extends Component
      * @param string $newName
      * @return string The new folder name after cleaning it.
      * @throws AssetOperationException If the folder to be renamed can't be found or trying to rename the top folder.
-     * @throws VolumeObjectExistsException
-     * @throws VolumeObjectNotFoundException
+     * @throws FsObjectExistsException
+     * @throws FsObjectNotFoundException
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -276,7 +276,7 @@ class Assets extends Component
         ]);
 
         if ($conflictingFolder) {
-            throw new VolumeObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
+            throw new FsObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
                 'folderName' => $folder->name,
             ]));
         }
@@ -286,7 +286,7 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
+        $volume->getFilesystem()->renameDirectory(rtrim($folder->path, '/'), $newName);
         $descendantFolders = $this->getAllDescendantFolders($folder);
 
         foreach ($descendantFolders as $descendantFolder) {
@@ -320,8 +320,8 @@ class Assets extends Component
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
-                    $volume->deleteDirectory($folder->path);
-                } catch (VolumeException $exception) {
+                    $volume->getFilesystem()->deleteDirectory($folder->path);
+                } catch (FsException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
                     // Carry on.
                 }
@@ -588,7 +588,7 @@ class Assets extends Component
      * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
      * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
-     * @throws VolumeException
+     * @throws FsException
      * @throws ImageTransformException
      */
     public function getAssetUrl(Asset $asset, $transform = null, ?bool $generateNow = null): ?string
@@ -664,8 +664,8 @@ class Assets extends Component
      * @return string|false thumbnail path, or `false` if it doesn't exist and $generate is `false`
      * @throws InvalidConfigException
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
-     * @throws VolumeException
-     * @throws VolumeObjectNotFoundException
+     * @throws FsException
+     * @throws FsObjectNotFoundException
      * @see getThumbUrl()
      */
     public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true)
@@ -785,7 +785,7 @@ class Assets extends Component
      * @return string If a suitable filename replacement cannot be found.
      * @throws AssetOperationException If a suitable filename replacement cannot be found.
      * @throws InvalidConfigException
-     * @throws VolumeException
+     * @throws FsException
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
@@ -822,7 +822,7 @@ class Assets extends Component
 
         // Check whether a filename we'd want to use does not exist
         $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
+            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->getFilesystem()->fileExists($folder->path . $filenameToTest);
         };
 
         if ($canUse($originalFilename)) {
@@ -870,7 +870,7 @@ class Assets extends Component
      * @param VolumeInterface $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return VolumeFolder
-     * @throws VolumeException if something went catastrophically wrong creating the folder.
+     * @throws FsException if something went catastrophically wrong creating the folder.
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): VolumeFolder
     {
@@ -948,7 +948,7 @@ class Assets extends Component
      *
      * @param User|null $user
      * @return VolumeFolder
-     * @throws VolumeException If no correct volume provided.
+     * @throws FsException If no correct volume provided.
      */
     public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
     {
@@ -972,7 +972,7 @@ class Assets extends Component
         if (isset($assetSettings['tempVolumeUid'])) {
             $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
             if (!$volume) {
-                throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
+                throw new FsException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
             }
             $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
                 $folderName;
@@ -1008,7 +1008,7 @@ class Assets extends Component
         try {
             FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
         } catch (Exception $exception) {
-            throw new VolumeException('Unable to create directory for temporary volume.');
+            throw new FsException('Unable to create directory for temporary volume.');
         }
 
         return $folder;

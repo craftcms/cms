@@ -9,8 +9,9 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\base\Volume;
 use craft\base\VolumeInterface;
-use craft\volumes\Temp;
+use craft\fs\Temp;
 use yii\base\InvalidConfigException;
 
 /**
@@ -83,7 +84,10 @@ class VolumeFolder extends Model
     public function getVolume(): VolumeInterface
     {
         if (!isset($this->volumeId)) {
-            return new Temp();
+            return Craft::createObject(Volume::class, [
+                'name' => Craft::t('app', 'Temporary volume'),
+                'filesystem' => Craft::createObject(Temp::class)
+            ]);
         }
 
         if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {

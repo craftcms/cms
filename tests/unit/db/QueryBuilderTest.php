@@ -14,7 +14,7 @@ use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
 use craft\test\mockclasses\serializable\Serializable;
-use craft\volumes\Local;
+use craft\fs\Local;
 use DateTime;
 use DateTimeZone;
 use Exception;

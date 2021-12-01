@@ -26,7 +26,7 @@ use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\TagGroup;
-use craft\volumes\Local;
+use craft\fs\Local;
 
 class CreateMutationsTest extends Unit
 {

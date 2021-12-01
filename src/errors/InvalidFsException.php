@@ -7,21 +7,19 @@
 
 namespace craft\errors;
 
-use yii\base\Exception;
-
 /**
- * Class VolumeException
+ * Class InvalidVolumeException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class VolumeException extends Exception
+class InvalidFsException extends FsException
 {
     /**
      * @return string the user-friendly name of this exception
      */
     public function getName(): string
     {
-        return 'Volume Exception';
+        return 'Invalid volume';
     }
 }

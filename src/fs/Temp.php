@@ -1,7 +1,7 @@
 <?php
 declare(strict_types = 1);
 
-namespace craft\volumes;
+namespace craft\fs;
 
 use Craft;
 
@@ -41,7 +41,7 @@ class Temp extends Local
             $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
         }
         if (!isset($config['name'])) {
-            $config['name'] = Craft::t('app', 'Temporary source');
+            $config['name'] = Craft::t('app', 'Temporary volume');
         }
 
         parent::__construct($config);

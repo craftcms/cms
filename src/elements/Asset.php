@@ -11,6 +11,9 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
+use craft\base\Fs;
+use craft\base\FsInterface;
+use craft\base\LocalFsInterface;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
@@ -32,7 +35,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
 use craft\errors\FileException;
 use craft\errors\ImageTransformException;
-use craft\errors\VolumeException;
+use craft\errors\FsException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -55,7 +58,7 @@ use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
-use craft\volumes\Temp;
+use craft\fs\Temp;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -1275,8 +1278,6 @@ class Asset extends Element
         // Normalize empty transform values
         $transform = $transform ?: null;
 
-        $imageTransformService = Craft::$app->getImageTransforms();
-
         if (is_array($transform)) {
             if (isset($transform['width'])) {
                 $transform['width'] = round((float)$transform['width']);
@@ -1545,10 +1546,10 @@ class Asset extends Element
      */
     public function getImageTransformSourcePath(): string
     {
-        $volume = $this->getVolume();
+        $fs = $this->getFilesystem();
 
-        if ($volume instanceof LocalVolumeInterface) {
-            return FileHelper::normalizePath($volume->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
+        if ($fs instanceof LocalFsInterface) {
+            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $this->id . '.' . $this->getExtension();
@@ -1558,7 +1559,7 @@ class Asset extends Element
      * Get a temporary copy of the actual file.
      *
      * @return string
-     * @throws VolumeException If unable to fetch file from volume.
+     * @throws FsException If unable to fetch file from volume.
      * @throws InvalidConfigException If no volume can be found.
      */
     public function getCopyOfFile(): string
@@ -1575,11 +1576,11 @@ class Asset extends Element
      *
      * @return resource
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws VolumeException if a stream cannot be created
+     * @throws FsException if a stream cannot be created
      */
     public function getStream()
     {
-        return $this->getVolume()->getFileStream($this->getPath());
+        return $this->getFilesystem()->getFileStream($this->getPath());
     }
 
     /**
@@ -2043,7 +2044,7 @@ class Asset extends Element
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getPath());
+            $this->getFilesystem()->deleteFile($this->getPath());
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -2104,6 +2105,17 @@ class Asset extends Element
         }
 
         return $attributes;
+    }
+
+    /**
+     * Get the filesystem.
+     *
+     * @return FsInterface
+     * @throws InvalidConfigException
+     */
+    public function getFilesystem(): FsInterface
+    {
+        return $this->getVolume()->getFilesystem();
     }
 
     /**
@@ -2179,7 +2191,7 @@ class Asset extends Element
     /**
      * Relocates the file after the element has been saved.
      *
-     * @throws VolumeException if a file operation errored
+     * @throws FsException if a file operation errored
      * @throws Exception if something else goes wrong
      */
     private function _relocateFile(): void
@@ -2209,7 +2221,7 @@ class Asset extends Element
 
         // Is this just a simple move/rename within the same volume?
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-            $oldVolume->renameFile($oldPath, $newPath);
+            $oldVolume->getFilesystem()->renameFile($oldPath, $newPath);
         } else {
             if (!$this->_validateTempFilePath()) {
                 Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
@@ -2235,17 +2247,17 @@ class Asset extends Element
 
             if ($this->folderId) {
                 // Delete the old file
-                $oldVolume->deleteFile($oldPath);
+                $oldVolume->getFilesystem()->deleteFile($oldPath);
             }
 
             $exception = null;
 
             // Upload the file to the new location
             try {
-                $newVolume->writeFileFromStream($newPath, $stream, [
-                    Volume::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
+                $newVolume->getFilesystem()->writeFileFromStream($newPath, $stream, [
+                    Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ]);
-            } catch (VolumeException $exception) {
+            } catch (FsException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
             } finally {
                 // If the volume has not already disconnected the stream, clean it up.

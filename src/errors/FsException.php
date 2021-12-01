@@ -7,19 +7,21 @@
 
 namespace craft\errors;
 
+use yii\base\Exception;
+
 /**
- * Class VolumeObjectNotFoundException
+ * Class FsException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class VolumeObjectNotFoundException extends VolumeException
+class FsException extends Exception
 {
     /**
      * @return string the user-friendly name of this exception
      */
     public function getName(): string
     {
-        return 'Volume object exists';
+        return 'Filesystem Exception';
     }
 }

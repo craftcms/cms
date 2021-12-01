@@ -13,8 +13,8 @@ use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
 use craft\errors\ImageTransformException;
-use craft\errors\VolumeException;
-use craft\errors\VolumeObjectNotFoundException;
+use craft\errors\FsException;
+use craft\errors\FsObjectNotFoundException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\queue\jobs\GeneratePendingTransforms;
@@ -75,7 +75,7 @@ class ImageTransforms
      * @param Asset $asset
      * @return mixed
      * @throws AssetOperationException If attempting to detect an image format for a non-image.
-     * @throws VolumeException If unable to fetch file from volume.
+     * @throws FsException If unable to fetch file from volume.
      * @throws InvalidConfigException If no volume can be found.
      */
     public static function detectTransformFormat(Asset $asset): string
@@ -144,8 +144,8 @@ class ImageTransforms
      *
      * @param Asset $asset
      * @return string
-     * @throws VolumeObjectNotFoundException If the file cannot be found.
-     * @throws VolumeException If unable to fetch file from volume.
+     * @throws FsObjectNotFoundException If the file cannot be found.
+     * @throws FsException If unable to fetch file from volume.
      * @throws InvalidConfigException If no volume can be found.
      */
     public static function getLocalImageSource(Asset $asset): string
@@ -190,7 +190,7 @@ class ImageTransforms
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
                             Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
                         }
-                        throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
+                        throw new FsException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
                             'file' => $asset->getFilename(),
                         ]));
                     }
@@ -214,7 +214,7 @@ class ImageTransforms
         }
 
         if (!is_file($imageSourcePath)) {
-            throw new VolumeObjectNotFoundException("The file \"{$asset->getFilename()}\" does not exist.");
+            throw new FsObjectNotFoundException("The file \"{$asset->getFilename()}\" does not exist.");
         }
 
         $asset->setTransformSource($imageSourcePath);

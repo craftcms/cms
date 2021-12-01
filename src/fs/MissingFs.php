@@ -6,23 +6,23 @@ declare(strict_types = 1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\volumes;
+namespace craft\fs;
 
+use craft\base\Fs;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
-use craft\base\Volume;
 use Generator;
 use yii\base\NotSupportedException;
 
 /**
- * MissingVolume represents a volume with an invalid class.
+ * MissingFs represents a volume with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  *
  * @property-read false $rootUrl
  */
-class MissingVolume extends Volume implements MissingComponentInterface
+class MissingFs extends Fs implements MissingComponentInterface
 {
     use MissingComponentTrait;
 

@@ -14,10 +14,10 @@ use craft\db\Table;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\MissingAssetException;
-use craft\errors\MissingVolumeFolderException;
-use craft\errors\VolumeObjectNotFoundException;
+use craft\errors\MissingFsFolderException;
+use craft\errors\FsObjectNotFoundException;
 use craft\helpers\Db;
-use craft\models\VolumeListing;
+use craft\models\FsListing;
 use Throwable;
 use yii\console\ExitCode;
 use yii\db\Exception;
@@ -132,7 +132,7 @@ class IndexAssetsController extends Controller
      * @param int $startAt
      * @return int
      * @throws MissingAssetException
-     * @throws VolumeObjectNotFoundException
+     * @throws FsObjectNotFoundException
      * @throws Exception
      */
     private function _indexAssets(array $volumes, string $path = '', int $startAt = 0): int
@@ -157,7 +157,7 @@ class IndexAssetsController extends Controller
             $missingRecords = [];
             $missingRecordsByFilename = [];
 
-            /** @var VolumeListing $item */
+            /** @var FsListing $item */
             foreach ($fileList as $item) {
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
@@ -170,16 +170,16 @@ class IndexAssetsController extends Controller
 
                 try {
                     if ($item->getIsDir()) {
-                        $assetIndexer->indexFolderByListing($item, $session->id, $this->createMissingAssets);
+                        $assetIndexer->indexFolderByListing((int)$volume->id, $item, $session->id, $this->createMissingAssets);
                     } else {
-                        $assetIndexer->indexFileByListing($item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                        $assetIndexer->indexFileByListing((int)$volume->id, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
                     }
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     $missingRecordsByFilename[$e->filename][] = $e;
                     continue;
-                } catch (MissingVolumeFolderException $e) {
+                } catch (MissingFsFolderException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     continue;
@@ -203,7 +203,7 @@ class IndexAssetsController extends Controller
                 $totalMissing = count($missingRecords);
                 $this->stdout(($totalMissing === 1 ? 'One record is missing:' : "$totalMissing records are missing:") . PHP_EOL, Console::FG_YELLOW);
                 foreach ($missingRecords as $e) {
-                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . ($e instanceof MissingVolumeFolderException ? '/' : '') . PHP_EOL);
+                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . ($e instanceof MissingFsFolderException ? '/' : '') . PHP_EOL);
                 }
                 $this->stdout(PHP_EOL);
             }

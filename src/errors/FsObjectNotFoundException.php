@@ -8,18 +8,18 @@
 namespace craft\errors;
 
 /**
- * Class VolumeObjectExistsException
+ * Class FsObjectNotFoundException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class VolumeObjectExistsException extends VolumeException
+class FsObjectNotFoundException extends FsException
 {
     /**
      * @return string the user-friendly name of this exception
      */
     public function getName(): string
     {
-        return 'Volume object not found';
+        return 'File system object not found!';
     }
 }

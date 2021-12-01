@@ -16,5 +16,10 @@ namespace craft\base;
  */
 interface LocalFsInterface
 {
-
+    /**
+     * Return the root path of the FS.
+     *
+     * @return string
+     */
+    public function getRootPath(): string;
 }

@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-use craft\volumes\Local;
+use craft\fs\Local;
 use crafttests\fixtures\VolumesFixture;
 
 return [

@@ -18,27 +18,18 @@ use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\InvalidConfigException;
 
 /**
- * Volume is the base class for classes representing volumes in terms of objects.
+ * Volume represents a volume created in a Craft installation.
  *
  * @mixin FieldLayoutBehavior
  */
-abstract class Volume extends SavableComponent implements VolumeInterface
+class Volume extends SavableComponent implements VolumeInterface
 {
     use VolumeTrait;
 
-    /* @since 4.0.0 */
-    public const CONFIG_MIMETYPE = 'mimetype';
-    /* @since 4.0.0 */
-    public const CONFIG_VISIBILITY = 'visibility';
-
-    /* @since 4.0.0 */
-    public const VISIBILITY_DEFAULT = 'default';
-    /* @since 4.0.0 */
-    public const VISIBILITY_HIDDEN = 'hidden';
-    /* @since 4.0.0 */
-    public const VISIBILITY_PUBLIC = 'public';
+    private ?FsInterface $_fs = null;
 
     /**
      * @inheritdoc
@@ -138,36 +129,30 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * @inheritdoc
+     * Set the filesystem.
+     *
+     * @param FsInterface $fs
      */
-    public function saveFileLocally(string $uriPath, string $targetPath): int
-    {
-        return Assets::downloadFile($this, $uriPath, $targetPath);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createFileByStream(string $path, $stream, array $config): void
-    {
-        $this->writeFileFromStream($path, $stream, $config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateFileByStream(string $path, $stream, array $config): void
-    {
-        $this->writeFileFromStream($path, $stream, $config);
+    public function setFilesystem(FsInterface $fs): void {
+        $this->_fs = $fs;
     }
 
     /**
      * Get the local file system.
-     * @return Local
+     * @return FsInterface
      * @since 4.0.0
      */
-    public function getFilesystem(): Local {
-        // TODO stub
-        return new Local();
+    public function getFilesystem(): FsInterface {
+        if ($this->_fs) {
+            return $this->_fs;
+        }
+
+        $fs = Craft::$app->getFilesystems()->getFilesystemByHandle($this->filesystem);
+
+        if (!$fs) {
+            throw new InvalidConfigException('No filesystem found by the handle ' . $this->filesystem);
+        }
+
+        return $this->_fs = $fs;
     }
 }

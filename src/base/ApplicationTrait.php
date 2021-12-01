@@ -43,6 +43,7 @@ use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
+use craft\services\Filesystems;
 use craft\services\ImageTransforms;
 use craft\services\Categories;
 use craft\services\Composer;
@@ -1025,6 +1026,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the filesystems service.
+     *
+     * @return Filesystems The filesystems service
+     */
+    public function getFilesystems(): Filesystems
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('filesystems');
+    }
+
+    /**
      * Returns the locale that should be used to define the formatter.
      *
      * @return Locale
@@ -1526,6 +1538,10 @@ trait ApplicationTrait
             ->onAdd(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
             ->onUpdate(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
             ->onRemove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleDeletedBlockType'))
+            // Filesystems
+            ->onAdd(ProjectConfig::PATH_FILESYSTEMS . '.{uid}', $this->_proxy('filesystems', 'handleChangeFilesystem'))
+            ->onUpdate(ProjectConfig::PATH_FILESYSTEMS . '.{uid}', $this->_proxy('filesystems', 'handleChangeFilesystem'))
+            ->onRemove(ProjectConfig::PATH_FILESYSTEMS . '.{uid}', $this->_proxy('filesystems', 'handleDeletedFilesystem'))
             // Volumes
             ->onAdd(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
             ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
