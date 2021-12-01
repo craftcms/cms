@@ -308,6 +308,7 @@ JS;
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
             'id' => $id,
+            'describedBy' => $this->describedBy,
             'field' => $this,
             'value' => $value,
             'formatNumber' => $formatNumber,
