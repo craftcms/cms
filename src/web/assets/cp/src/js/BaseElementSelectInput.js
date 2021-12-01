@@ -308,7 +308,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
             multiSelect: (this.settings.limit != 1),
             showSiteMenu: this.settings.showSiteMenu,
             disabledElementIds: this.getDisabledElementIds(),
-            onSelect: this.onModalSelect.bind(this)
+            onSelect: this.onModalSelect.bind(this),
+            triggerElement: this.$addElementBtn,
         }, this.settings.modalSettings);
     },
 
