@@ -471,15 +471,18 @@ class Cp
         $instructionsId = $config['instructionsId'] ?? "$id-instructions";
         $tipId = $config['tipId'] ?? "$id-tip";
         $warningId = $config['warningId'] ?? "$id-warning";
+        $errorsId = $config['errorsId'] ?? "$id-errors";
 
         $instructions = $config['instructions'] ?? null;
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
+        $errors = $config['errors'] ?? null;
 
         if (StringHelper::startsWith($input, 'template:')) {
             // Set a describedBy value in case the input template supports it
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
+                    $errors ? $errorsId : null,
                     $instructions ? $instructionsId : null,
                     $tip ? $tipId : null,
                     $warning ? $warningId : null,
@@ -515,7 +518,6 @@ class Cp
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
-        $errors = $config['errors'] ?? null;
 
         $fieldClass = array_merge(array_filter([
             'field',
@@ -624,24 +626,57 @@ class Cp
                 $config['inputContainerAttributes'] ?? []
             )) .
             ($instructionsPosition === 'after' ? $instructionsHtml : '') .
-            ($tip
-                ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
-                    'id' => $tipId,
-                    'class' => ['notice', 'with-icon'],
-                ])
-                : '') .
-            ($warning
-                ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($warning)), [
-                    'id' => $warningId,
-                    'class' => ['warning', 'with-icon'],
-                ])
-                : '') .
+            self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip'), $tip) .
+            self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning'), $warning) .
             ($errors
-                ? static::renderTemplate('_includes/forms/errorList', [
-                    'errors' => $errors,
-                ])
+                ? (
+                    Html::beginTag('div', [
+                        'id' => $errorsId,
+                        'class' => 'error-container',
+                    ]) .
+                    Html::tag('p', Craft::t('app', 'Errors:'), [
+                        'class' => 'visually-hidden',
+                    ]) .
+                    static::renderTemplate('_includes/forms/errorList', [
+                        'errors' => $errors,
+                    ]) .
+                    Html::endTag('div')
+                )
                 : '') .
             Html::endTag($containerTag);
+    }
+
+    /**
+     * Returns the HTML for a field tip/warning.
+     *
+     * @param string $id
+     * @param string $class
+     * @param string $label
+     * @param string|null $message
+     * @return string
+     */
+    private static function _noticeHtml(string $id, string $class, string $label, ?string $message): string
+    {
+        if (!$message) {
+            return '';
+        }
+
+        return
+            Html::beginTag('p', [
+                'id' => $id,
+                'class' => $class,
+            ]) .
+            Html::tag('span', '', [
+                'class' => 'icon',
+                'aria' => [
+                    'hidden' => 'true',
+                ],
+            ]) .
+            Html::tag('span', "$label:", [
+                'class' => 'visually-hidden',
+            ]) .
+            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($message)) .
+            Html::endTag('p');
     }
 
     /**

@@ -214,6 +214,7 @@ abstract class BaseField extends FieldLayoutElement
             'instructionsId' => $this->instructionsId(),
             'tipId' => $this->tipId(),
             'warningId' => $this->warningId(),
+            'errorsId' => $this->errorsId(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
@@ -300,6 +301,17 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the `id` of the field errors.
+     *
+     * @return string
+     * @since 3.7.24
+     */
+    protected function errorsId(): string
+    {
+        return $this->id() . '-errors';
+    }
+
+    /**
      * Returns the `aria-describedby` attribute value that should be set on the focusable input(s).
      *
      * @param ElementInterface|null $element The element the form is being rendered for
@@ -311,6 +323,7 @@ abstract class BaseField extends FieldLayoutElement
     protected function describedBy(ElementInterface $element = null, bool $static = false): ?string
     {
         $ids = array_filter([
+            (!$static && $this->errors($element)) ? $this->errorsId() : null,
             $this->instructions($element, $static) ? $this->instructionsId() : null,
             $this->tip($element, $static) ? $this->tipId() : null,
             $this->warning($element, $static) ? $this->warningId() : null,
