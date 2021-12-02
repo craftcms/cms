@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.24 - 2021-12-02
 
 ### Added
 - Added the `parseBooleanEnv` Twig filter.
