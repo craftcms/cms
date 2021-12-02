@@ -583,6 +583,7 @@ return [
     'Environment Variables' => 'משתני סביבה',
     'Error' => 'שגיאה',
     'Error:' => 'שגיאה:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'הרחב',
     'Expanded' => 'הורחב',

@@ -583,6 +583,7 @@ return [
     'Environment Variables' => 'Переменные среды',
     'Error' => 'Ошибка',
     'Error:' => 'Ошибка:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Развернуть',
     'Expanded' => 'Развернуто',

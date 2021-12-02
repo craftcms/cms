@@ -122,13 +122,12 @@ class StandardTextField extends StandardField
      */
     protected function inputHtml(ElementInterface $element = null, bool $static = false)
     {
-        $id = $this->id();
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => $this->type,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,
-            'id' => $id,
-            'instructionsId' => empty($this->instructions) ? null : "$id-instructions",
+            'id' => $this->id(),
+            'describedBy' => $this->describedBy($element, $static),
             'size' => $this->size,
             'name' => $this->name ?? $this->attribute(),
             'value' => $this->value($element),

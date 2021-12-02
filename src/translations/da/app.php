@@ -583,6 +583,7 @@ return [
     'Environment Variables' => 'Miljøvariabler',
     'Error' => 'Fejl',
     'Error:' => 'Fejl:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Udvid',
     'Expanded' => 'Udvidet',

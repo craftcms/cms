@@ -583,6 +583,7 @@ return [
     'Environment Variables' => 'Zmienne środowiskowe',
     'Error' => 'Błąd',
     'Error:' => 'Błąd:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Rozwiń',
     'Expanded' => 'Rozwinięto',

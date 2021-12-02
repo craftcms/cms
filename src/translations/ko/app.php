@@ -583,6 +583,7 @@ return [
     'Environment Variables' => '환경 변수',
     'Error' => '오류',
     'Error:' => '오류:',
+    'Errors:' => 'Errors:',
     'Excel' => '엑셀',
     'Expand' => '확장',
     'Expanded' => '확장됨',

@@ -583,6 +583,7 @@ return [
     'Environment Variables' => 'Premenné prostredia',
     'Error' => 'Chyba',
     'Error:' => 'Chyba:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Rozbaliť',
     'Expanded' => 'Rozbalené',

@@ -583,6 +583,7 @@ return [
     'Environment Variables' => '環境変数',
     'Error' => 'エラー',
     'Error:' => 'エラー:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => '展開する',
     'Expanded' => '展開済み',

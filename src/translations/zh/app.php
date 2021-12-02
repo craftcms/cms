@@ -583,6 +583,7 @@ return [
     'Environment Variables' => '环境变量',
     'Error' => '错误',
     'Error:' => '错误：',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => '扩展',
     'Expanded' => '扩展',
