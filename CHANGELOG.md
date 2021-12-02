@@ -1,5 +1,49 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.24 - 2021-12-02
+
+### Added
+- Added the `parseBooleanEnv` Twig filter.
+- Added `craft\base\FieldTrait::$describedBy`, which custom fields should reference when setting their input’s `aria-describedby` attribute. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- Added `craft\behaviors\EnvAttributeParserBehavior::getUnparsedAttribute()`.
+- Added `craft\fieldlayoutelements\BaseField::errorsId()`.
+- Added `craft\fieldlayoutelements\BaseField::instructions()`.
+- Added `craft\fieldlayoutelements\BaseField::instructionsId()`.
+- Added `craft\fieldlayoutelements\BaseField::tipId()`.
+- Added `craft\fieldlayoutelements\BaseField::warningId()`.
+- Added `craft\helpers\UrlHelper::encodeParams()`.
+- Added `craft\i18n\Formatter::willBeMisrepresented()`.
+- Added `craft\services\Config::setBooleanDotEnvVar()`.
+- Added `craft\services\Security::isSensitive()`.
+- Added `craft\web\twig\variables\Cp::field()`.
+
+### Changed
+- Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
+- Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
+- Improved built-in input descriptions for screen readers. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- URL fields now allow query strings to be appended to email addresses (e.g. `hello@example.com?subject=Check+this+out…`). ([#10193](https://github.com/craftcms/cms/discussions/10193))
+- `{% deprecated %}` tags now log proper Craft deprecation warnings rather than triggering an `E_USER_DEPRECATED` error. ([#10181](https://github.com/craftcms/cms/discussions/10181))
+- Editable tables’ `template` columns now support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
+- Editable tables now support an `autosuggest` column type, which support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
+- The `cp.assets.edit.meta`, `cp.categories.edit.meta`, and `cp.entries.edit.meta` template hooks are now located after the native meta fields, rather than before. ([#10172](https://github.com/craftcms/cms/issues/10172))
+- `craft\helpers\Cp::fieldHtml()` now supports `headingPrefix` and `headingSuffix` config keys.
+
+### Fixed
+- Fixed an error that could occur when PHP’s `set_time_limit()` function was disabled. ([#10152](https://github.com/craftcms/cms/issues/10152))
+- Fixed a bug where the `_includes/forms/autosuggest` template wasn’t respecting `suggestEnvVars` if `suggestions` was already defined.
+- Fixed a bug where Table fields could have an incorrect GraphQL input type definition. ([#10173](https://github.com/craftcms/cms/issues/10173))
+- Fixed a bug where structure element query params weren’t working if the passed-in element was missing its structure data. ([#10122](https://github.com/craftcms/cms/issues/10122))
+- Fixed a bug where `craft\base\Element::getChildren()` and `getDescendants()` could return results for elements without an ID.
+- Fixed an error that occurred when opening the Timeline view in the Debug Toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
+- Fixed a bug where Number fields’ Default Value, Min Value, and Max Value settings could show values formatted in the wrong locale, leading to an error on save. ([#10184](https://github.com/craftcms/cms/issues/10184))
+- Fixed an error that could occur when creating a Table field. ([#10186](https://github.com/craftcms/cms/issues/10186))
+- Fixed a bug where Matrix blocks within drafts could lose track of their canonical blocks when they were updated upstream, resulting in duplicated blocks. ([#10130](https://github.com/craftcms/cms/issues/10130))
+- Fixed a bug where disabled site handles referenced in `config/routes.php` were being treated as URL patterns. ([#10197](https://github.com/craftcms/cms/issues/10197))
+
+### Security
+- Fixed a bug where sensitive-sounding environment variables’ values could be included in validation errors.
+- The “Sendmail Command” email setting no longer allows arbitrary values. Now it can only be set to a known `sendmail` command, an environment variable, or its current value.
+
 ## 3.7.23 - 2021-11-26
 
 ### Added

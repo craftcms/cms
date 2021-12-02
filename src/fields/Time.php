@@ -130,10 +130,9 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
-        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/time', [
-            'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'id' => Html::id($this->handle),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
             'minTime' => $this->min,

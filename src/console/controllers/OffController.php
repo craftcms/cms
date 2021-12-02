@@ -8,8 +8,9 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\console\Controller;
 use craft\helpers\Console;
+use craft\helpers\StringHelper;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -18,7 +19,7 @@ use yii\console\ExitCode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.7
  */
-class OffController extends Controller
+class OffController extends BaseSystemStatusController
 {
     /**
      * @var int|null Number of seconds the `Retry-After` HTTP header should be set to for 503 responses.
@@ -61,27 +62,33 @@ class OffController extends Controller
     public function actionIndex(): int
     {
         // If the isSystemLive config setting is set, then we can’t control it from here
-        if (is_bool($live = Craft::$app->getConfig()->getGeneral()->isSystemLive)) {
+        if (is_bool(Craft::$app->getConfig()->getGeneral()->isSystemLive)) {
             $this->stderr('It\'s not possible to toggle the system status when the `isSystemLive` config setting is set.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        // Allow changes to the project config even if it’s supposed to be read only,
-        // and prevent changes from getting written to YAML
-        $projectConfig = Craft::$app->getProjectConfig();
-        $projectConfig->readOnly = false;
-        $projectConfig->writeYamlAutomatically = false;
-
         if (!Craft::$app->getIsLive()) {
             $this->stdout('The system is already offline.' . PHP_EOL, Console::FG_GREEN);
-        } else {
-            $projectConfig->set('system.live', false, null, false);
-            $this->stdout('The system is now offline.' . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
         }
 
+        try {
+            $this->set('system.live', false);
+        } catch (Throwable $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('The system is now offline.' . PHP_EOL, Console::FG_GREEN);
+
         if ($this->retry !== null) {
-            $retry = (int)$this->retry ?: null;
-            $projectConfig->set('system.retryDuration', $retry, null, false);
+            try {
+                $this->set('system.retryDuration', (int)$this->retry ?: null);
+            } catch (Throwable $e) {
+                $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
             $this->stdout(($this->retry ? "The retry duration is now set to $this->retry." : 'The retry duration has been removed.') . PHP_EOL, Console::FG_GREEN);
         }
 

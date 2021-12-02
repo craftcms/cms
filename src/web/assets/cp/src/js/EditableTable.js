@@ -262,7 +262,18 @@ Craft.EditableTable = Garnish.Base.extend({
         }
     },
 }, {
-    textualColTypes: ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'],
+    textualColTypes: [
+        'autosuggest',
+        'color',
+        'date',
+        'email',
+        'multiline',
+        'number',
+        'singleline',
+        'template',
+        'time',
+        'url',
+    ],
     defaults: {
         rowIdPrefix: '',
         defaultValues: {},
