@@ -576,9 +576,9 @@ class UrlHelperTest extends Unit
     {
         return [
             ['http://example.test', 'http://example.test?'],
-            ['http://example.test?foo=bar%2Bbaz', 'http://example.test?foo=bar baz'],
-            ['http://example.test?foo=bar%2Bbaz', 'http://example.test?foo=bar+baz'],
-            ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar baz#hash'],
+            ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar baz'],
+            ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
+            ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
         ];
     }
