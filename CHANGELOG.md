@@ -33,6 +33,7 @@
 - Fixed an error that occurred when opening the Timeline view in the Debug Toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
 - Fixed a bug where Number fields’ Default Value, Min Value, and Max Value settings could show values formatted in the wrong locale, leading to an error on save. ([#10184](https://github.com/craftcms/cms/issues/10184))
 - Fixed an error that could occur when creating a Table field. ([#10186](https://github.com/craftcms/cms/issues/10186))
+- Fixed a bug where Matrix blocks within drafts could lose track of their canonical blocks when they were updated upstream, resulting in duplicated blocks. ([#10130](https://github.com/craftcms/cms/issues/10130))
 
 ## 3.7.23 - 2021-11-26
 
