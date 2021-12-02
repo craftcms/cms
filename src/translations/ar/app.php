@@ -583,6 +583,7 @@ return [
     'Environment Variables' => 'متغيرات البيئة',
     'Error' => 'خطأ',
     'Error:' => 'خطأ:',
+    'Errors:' => 'Errors:',
     'Excel' => 'إكسل',
     'Expand' => 'توسيع',
     'Expanded' => 'توسيع',
