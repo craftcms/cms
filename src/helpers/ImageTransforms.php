@@ -182,7 +182,7 @@ class ImageTransforms
                         }
                     }
 
-                    Assets::downloadFile($volume, $asset->getPath(), $tempFilePath);
+                    Assets::downloadFile($fs, $asset->getPath(), $tempFilePath);
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
