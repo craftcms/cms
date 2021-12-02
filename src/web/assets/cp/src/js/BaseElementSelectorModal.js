@@ -27,7 +27,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         var $headingId = 'elementSelectorModalHeading-' + Date.now();
 
         // Build the modal
-        var $container = $('<div class="modal elementselectormodal" role="dialog" aria-modal="true" aria-labelledby="' + $headingId + '"></div>').appendTo(Garnish.$bod),
+        var $container = $('<div class="modal elementselectormodal" aria-labelledby="' + $headingId + '"></div>').appendTo(Garnish.$bod),
             $heading = $('<h2 id="' + $headingId + '" class="visually-hidden">' + this.settings.name + '</h2>').appendTo($container),
             $body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
             $footer = $('<div class="footer"/>').appendTo($container);
