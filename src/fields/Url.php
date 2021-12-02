@@ -168,7 +168,7 @@ class Url extends Field implements PreviewableFieldInterface
             }
         }
 
-        if ($value === '') {
+        if (!$value) {
             return null;
         }
 
@@ -233,7 +233,7 @@ class Url extends Field implements PreviewableFieldInterface
             'type' => $valueType,
             'name' => "$this->handle[value]",
             'inputmode' => $valueType,
-            'value' => UrlHelper::decodeParams($value),
+            'value' => $value,
             'inputAttributes' => [
                 'aria' => [
                     'label' => Craft::t('site', $this->name),

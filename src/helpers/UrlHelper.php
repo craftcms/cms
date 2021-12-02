@@ -200,30 +200,6 @@ class UrlHelper
     public static function encodeParams(string $url): string
     {
         [$url, $params, $fragment] = self::_extractParams($url);
-
-        foreach ($params as &$value) {
-            // decode first to prevent possible double-encoding
-            $value = urlencode(urldecode($value));
-        }
-
-        return self::_buildUrl($url, $params, $fragment);
-    }
-
-    /**
-     * Decodes a URL’s query string params.
-     *
-     * @param string $url
-     * @return string
-     * @since 3.7.24
-     */
-    public static function decodeParams(string $url): string
-    {
-        [$url, $params, $fragment] = self::_extractParams($url);
-
-        foreach ($params as &$value) {
-            $value = urldecode($value);
-        }
-
         return self::_buildUrl($url, $params, $fragment);
     }
 

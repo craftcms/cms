@@ -171,14 +171,6 @@ class UrlHelperTest extends Unit
     }
 
     /**
-     * @dataProvider decodeParamsDataProvider
-     */
-    public function testDecodeParams(string $expected, string $url)
-    {
-        $this->assertSame($expected, UrlHelper::decodeParams($url));
-    }
-
-    /**
      * Tests the UrlHelper::rootRelativeUrl() method.
      *
      * @dataProvider rootRelativeUrlDataProvider
@@ -588,18 +580,6 @@ class UrlHelperTest extends Unit
             ['http://example.test?foo=bar%2Bbaz', 'http://example.test?foo=bar+baz'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function decodeParamsDataProvider(): array
-    {
-        return [
-            ['http://example.test', 'http://example.test?'],
-            ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar%2Bbaz'],
-            ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
         ];
     }
 

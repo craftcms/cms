@@ -10,7 +10,6 @@
 - Added `craft\fieldlayoutelements\BaseField::instructionsId()`.
 - Added `craft\fieldlayoutelements\BaseField::tipId()`.
 - Added `craft\fieldlayoutelements\BaseField::warningId()`.
-- Added `craft\helpers\UrlHelper::decodeParams()`.
 - Added `craft\helpers\UrlHelper::encodeParams()`.
 - Added `craft\i18n\Formatter::willBeMisrepresented()`.
 - Added `craft\services\Config::setBooleanDotEnvVar()`.
