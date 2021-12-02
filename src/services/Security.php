@@ -169,22 +169,31 @@ class Security extends \yii\base\Security
     }
 
     /**
+     * Returns whether the given key appears to be sensitive.
+     *
+     * @param string $key
+     * @return bool
+     * @since 3.7.24
+     */
+    public function isSensitive(string $key): bool
+    {
+        return preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Inflector::camel2words($key, false));
+    }
+
+    /**
      * Checks the given key to see if it looks like it contains sensitive info, and if so, redacts the given value.
      *
-     * @param string $name
+     * @param string $key
      * @param string|array $value
      * @return string|array The possibly-redacted value
      */
-    public function redactIfSensitive(string $name, $value)
+    public function redactIfSensitive(string $key, $value)
     {
         if (is_array($value)) {
             foreach ($value as $n => &$v) {
                 $v = $this->redactIfSensitive($n, $v);
             }
-        } else if (
-            is_string($value) &&
-            preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Inflector::camel2words($name, false))
-        ) {
+        } else if (is_string($value) && $this->isSensitive($key)) {
             $value = str_repeat('•', strlen($value));
         }
 
