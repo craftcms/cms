@@ -46,6 +46,13 @@ trait FieldTrait
     public bool $searchable = false;
 
     /**
+     * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
+     * @see FieldInterface::getInputHtml()
+     * @since 3.7.24
+     */
+    public $describedBy;
+
+    /**
      * @var string The field’s translation method
      */
     public string $translationMethod = Field::TRANSLATION_METHOD_NONE;

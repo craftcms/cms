@@ -17,6 +17,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
 use RecursiveCallbackFilterIterator;
@@ -24,6 +25,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -42,14 +44,18 @@ class Cp extends Component
      * use craft\web\twig\variables\Cp;
      * use yii\base\Event;
      *
-     * Event::on(Cp::class, Cp::EVENT_REGISTER_FORM_ACTIONS, function(FormActionsEvent $event) {
-     *     if (Craft::$app->requestedRoute == 'entries/edit-entry') {
-     *         $event->formActions[] = [
-     *             'label' => 'Save and view entry',
-     *             'redirect' => Craft::$app->getSecurity()->hashData('{url}'),
-     *         ];
+     * Event::on(
+     *     Cp::class,
+     *     Cp::EVENT_REGISTER_FORM_ACTIONS,
+     *     function(FormActionsEvent $event) {
+     *         if (Craft::$app->requestedRoute == 'entries/edit-entry') {
+     *             $event->formActions[] = [
+     *                 'label' => 'Save and view entry',
+     *                 'redirect' => Craft::$app->getSecurity()->hashData('{url}'),
+     *             ];
+     *         }
      *     }
-     * });
+     * );
      * ```
      *
      * @see prepFormActions()
@@ -65,13 +71,17 @@ class Cp extends Component
      * use craft\web\twig\variables\Cp;
      * use yii\base\Event;
      *
-     * Event::on(Cp::class, Cp::EVENT_REGISTER_CP_NAV_ITEMS, function(RegisterCpNavItemsEvent $e) {
-     *     $e->navItems[] = [
-     *         'label' => 'Item Label',
-     *         'url' => 'my-module',
-     *         'icon' => '/path/to/icon.svg',
-     *     ];
-     * });
+     * Event::on(
+     *     Cp::class,
+     *     Cp::EVENT_REGISTER_CP_NAV_ITEMS,
+     *     function(RegisterCpNavItemsEvent $e) {
+     *         $e->navItems[] = [
+     *             'label' => 'Item Label',
+     *             'url' => 'my-module',
+     *             'icon' => '/path/to/icon.svg',
+     *         ];
+     *     }
+     * );
      * ```
      *
      * [[RegisterCpNavItemsEvent::$navItems]] is an array whose values are sub-arrays that define the nav items. Each sub-array can have the following keys:
@@ -100,13 +110,17 @@ class Cp extends Component
      * use craft\web\twig\variables\Cp;
      * use yii\base\Event;
      *
-     * Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS, function(RegisterCpSettingsEvent $e) {
-     *     $e->settings[Craft::t('app', 'Modules')] = [
-     *         'label' => 'Item Label',
-     *         'url' => 'my-module',
-     *         'icon' => '/path/to/icon.svg',
-     *     ];
-     * });
+     * Event::on(
+     *     Cp::class,
+     *     Cp::EVENT_REGISTER_CP_SETTINGS,
+     *     function(RegisterCpSettingsEvent $e) {
+     *         $e->settings[Craft::t('app', 'Modules')][] = [
+     *             'label' => 'Item Label',
+     *             'url' => 'my-module',
+     *             'icon' => '/path/to/icon.svg',
+     *         ];
+     *     }
+     * );
      * ```
      *
      * [[RegisterCpSettingsEvent::$settings]] is an array whose keys define the section labels, and values are sub-arrays that define the
@@ -781,5 +795,20 @@ class Cp extends Component
         ]);
         $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
         return $event->formActions ?: null;
+    }
+
+    /**
+     * Renders a field’s HTML, for the given input HTML or a template.
+     *
+     * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
+     * @param array $config
+     * @return string
+     * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.7.24
+     */
+    public function field(string $input, array $config = []): string
+    {
+        return CpHelper::fieldHtml($input, $config);
     }
 }

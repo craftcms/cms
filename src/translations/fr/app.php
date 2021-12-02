@@ -603,6 +603,7 @@ return [
     'Environment Variables' => 'Variables d’environnement',
     'Error' => 'Erreur',
     'Error:' => 'Erreur :',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Développer',
     'Expanded' => 'Développé',

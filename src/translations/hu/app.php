@@ -603,6 +603,7 @@ return [
     'Environment Variables' => 'Környezeti változók',
     'Error' => 'Hiba',
     'Error:' => 'Hiba:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Lenyitás',
     'Expanded' => 'Kibontva',

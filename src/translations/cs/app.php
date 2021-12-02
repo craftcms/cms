@@ -603,6 +603,7 @@ return [
     'Environment Variables' => 'Proměnné prostředí',
     'Error' => 'Chyba',
     'Error:' => 'Chyba:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Rozbalit',
     'Expanded' => 'Rozšířené',
