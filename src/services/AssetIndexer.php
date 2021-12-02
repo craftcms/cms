@@ -172,7 +172,7 @@ class AssetIndexer extends Component
                 continue;
             }
 
-            $total += $this->storeIndexList($fileList, $session->id, $volume->id);
+            $total += $this->storeIndexList($fileList, $session->id, (int)$volume->id);
         }
 
         $session->totalEntries = $total;
@@ -640,7 +640,7 @@ class AssetIndexer extends Component
             }
 
             $asset = new Asset();
-            $asset->setVolumeId($volume->id);
+            $asset->setVolumeId((int)$volume->id);
             $asset->folderId = $folderId;
             $asset->folderPath = $folder->path;
             $asset->setFilename($filename);
