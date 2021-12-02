@@ -173,7 +173,6 @@ class Local extends Fs implements LocalFsInterface
                 'type' => $listing->isDir() ? 'dir' : 'file',
                 'dateModified' => filemtime($listing->getRealPath()),
                 'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,
-                'volume' => $this,
             ]);
         }
     }
