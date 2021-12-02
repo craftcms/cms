@@ -122,4 +122,15 @@ class EnvAttributeParserBehavior extends Behavior
             $this->owner->$attribute = $value;
         }
     }
+
+    /**
+     * Returns the original value of an attribute, or `null` if it wasn’t set to an environment variable or alias.
+     *
+     * @param string $attribute
+     * @return string|null
+     */
+    public function getUnparsedAttribute(string $attribute): ?string
+    {
+        return $this->_values[$attribute] ?? null;
+    }
 }

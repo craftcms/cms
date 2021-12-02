@@ -5,6 +5,7 @@
 ### Added
 - Added the `parseBooleanEnv` Twig filter.
 - Added `craft\base\FieldTrait::$describedBy`, which custom fields should reference when setting their input’s `aria-describedby` attribute. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- Added `craft\behaviors\EnvAttributeParserBehavior::getUnparsedAttribute()`.
 - Added `craft\fieldlayoutelements\BaseField::errorsId()`.
 - Added `craft\fieldlayoutelements\BaseField::instructions()`.
 - Added `craft\fieldlayoutelements\BaseField::instructionsId()`.
@@ -41,6 +42,7 @@
 
 ### Security
 - Fixed a bug where sensitive-sounding environment variables’ values could be included in validation errors.
+- The “Sendmail Command” email setting no longer allows arbitrary values. Now it can only be set to a known `sendmail` command, an environment variable, or its current value.
 
 ## 3.7.23 - 2021-11-26
 
