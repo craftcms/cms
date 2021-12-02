@@ -70,7 +70,7 @@ class Routes extends Component
 
         // Check for any site-specific routes
         $sitesService = Craft::$app->getSites();
-        foreach ($sitesService->getAllSites() as $site) {
+        foreach ($sitesService->getAllSites(true) as $site) {
             if (
                 isset($routes[$site->handle]) &&
                 is_array($routes[$site->handle]) &&
