@@ -10,6 +10,8 @@
 - Added `craft\fieldlayoutelements\BaseField::instructionsId()`.
 - Added `craft\fieldlayoutelements\BaseField::tipId()`.
 - Added `craft\fieldlayoutelements\BaseField::warningId()`.
+- Added `craft\helpers\UrlHelper::decodeParams()`.
+- Added `craft\helpers\UrlHelper::encodeParams()`.
 - Added `craft\i18n\Formatter::willBeMisrepresented()`.
 - Added `craft\services\Config::setBooleanDotEnvVar()`.
 - Added `craft\web\twig\variables\Cp::field()`.
@@ -18,6 +20,7 @@
 - Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
 - Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
 - Improved built-in input descriptions for screen readers. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- URL fields now allow query strings to be appended to email addresses (e.g. `hello@example.com?subject=Check+this+out…`). ([#10193](https://github.com/craftcms/cms/discussions/10193))
 - `{% deprecated %}` tags now log proper Craft deprecation warnings rather than triggering an `E_USER_DEPRECATED` error. ([#10181](https://github.com/craftcms/cms/discussions/10181))
 - Editable tables’ `template` columns now support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - Editable tables now support an `autosuggest` column type, which support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))

@@ -191,6 +191,43 @@ class UrlHelper
     }
 
     /**
+     * Encodes a URL’s query string params.
+     *
+     * @param string $url
+     * @return string
+     * @since 3.7.24
+     */
+    public static function encodeParams(string $url): string
+    {
+        [$url, $params, $fragment] = self::_extractParams($url);
+
+        foreach ($params as &$value) {
+            // decode first to prevent possible double-encoding
+            $value = urlencode(urldecode($value));
+        }
+
+        return self::_buildUrl($url, $params, $fragment);
+    }
+
+    /**
+     * Decodes a URL’s query string params.
+     *
+     * @param string $url
+     * @return string
+     * @since 3.7.24
+     */
+    public static function decodeParams(string $url): string
+    {
+        [$url, $params, $fragment] = self::_extractParams($url);
+
+        foreach ($params as &$value) {
+            $value = urldecode($value);
+        }
+
+        return self::_buildUrl($url, $params, $fragment);
+    }
+
+    /**
      * Returns a root-relative URL based on the given URL.
      *
      * @param string $url
@@ -682,6 +719,19 @@ class UrlHelper
             }
         }
 
+        return self::_buildUrl($url, $params, $fragment);
+    }
+
+    /**
+     * Rebuilds a URL with params and a fragment.
+     *
+     * @param string $url
+     * @param array $params
+     * @param string|null $fragment
+     * @return string
+     */
+    private static function _buildUrl(string $url, array $params, ?string $fragment): string
+    {
         if (($query = static::buildQuery($params)) !== '') {
             $url .= '?' . $query;
         }

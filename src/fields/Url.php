@@ -20,6 +20,7 @@ use craft\validators\UrlValidator;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\db\Schema;
+use yii\validators\EmailValidator;
 
 /**
  * Url represents a URL field.
@@ -171,7 +172,7 @@ class Url extends Field implements PreviewableFieldInterface
             return null;
         }
 
-        return $value;
+        return UrlHelper::encodeParams($value);
     }
 
     /**
@@ -232,7 +233,7 @@ class Url extends Field implements PreviewableFieldInterface
             'type' => $valueType,
             'name' => "$this->handle[value]",
             'inputmode' => $valueType,
-            'value' => $value,
+            'value' => UrlHelper::decodeParams($value),
             'inputAttributes' => [
                 'aria' => [
                     'label' => Craft::t('site', $this->name),
@@ -296,8 +297,8 @@ JS;
                     $patterns[] = '^tel:[\d\+\(\)\-,;]+$';
                     break;
                 case self::TYPE_EMAIL:
-                    // Regex taken from EmailValidator::$pattern
-                    $patterns[] = '^mailto:[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$';
+                    $emailPattern = trim((new EmailValidator())->pattern, '/^$');
+                    $patterns[] = "^mailto:$emailPattern(\?.*)?$";
                     break;
             }
         }
