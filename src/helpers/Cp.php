@@ -672,7 +672,7 @@ class Cp
                     'hidden' => 'true',
                 ],
             ]) .
-            Html::tag('span', "$label:", [
+            Html::tag('span', "$label: ", [
                 'class' => 'visually-hidden',
             ]) .
             preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($message)) .
