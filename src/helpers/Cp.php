@@ -627,8 +627,8 @@ class Cp
                 $config['inputContainerAttributes'] ?? []
             )) .
             ($instructionsPosition === 'after' ? $instructionsHtml : '') .
-            self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip'), $tip) .
-            self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning'), $warning) .
+            self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
+            self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
             ($errors
                 ? (
                     Html::beginTag('div', [
@@ -673,7 +673,7 @@ class Cp
                     'hidden' => 'true',
                 ],
             ]) .
-            Html::tag('span', "$label: ", [
+            Html::tag('span', "$label ", [
                 'class' => 'visually-hidden',
             ]) .
             preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($message)) .
