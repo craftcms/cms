@@ -13,6 +13,7 @@
 - Added `craft\helpers\UrlHelper::encodeParams()`.
 - Added `craft\i18n\Formatter::willBeMisrepresented()`.
 - Added `craft\services\Config::setBooleanDotEnvVar()`.
+- Added `craft\services\Security::isSensitive()`.
 - Added `craft\web\twig\variables\Cp::field()`.
 
 ### Changed
@@ -37,6 +38,9 @@
 - Fixed an error that could occur when creating a Table field. ([#10186](https://github.com/craftcms/cms/issues/10186))
 - Fixed a bug where Matrix blocks within drafts could lose track of their canonical blocks when they were updated upstream, resulting in duplicated blocks. ([#10130](https://github.com/craftcms/cms/issues/10130))
 - Fixed a bug where disabled site handles referenced in `config/routes.php` were being treated as URL patterns. ([#10197](https://github.com/craftcms/cms/issues/10197))
+
+### Security
+- Fixed a bug where sensitive-sounding environment variables’ values could be included in validation errors.
 
 ## 3.7.23 - 2021-11-26
 

@@ -82,6 +82,7 @@ class EnvAttributeParserBehavior extends Behavior
     public function beforeValidate()
     {
         $this->_values = [];
+        $securityService = Craft::$app->getSecurity();
 
         foreach ($this->attributes as $i => $attribute) {
             if (is_string($i)) {
@@ -104,7 +105,7 @@ class EnvAttributeParserBehavior extends Behavior
                         $validator->defaultScheme = null;
                     }
 
-                    if (is_string($validator->message)) {
+                    if (is_string($validator->message) && !$securityService->isSensitive($value)) {
                         $validator->message = StringHelper::ensureRight($validator->message, ' ({value})');
                     }
                 }
