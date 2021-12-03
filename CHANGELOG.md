@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur if the `field()` macro in the `_includes/forms` control panel template was called withoun an `input` argument. ([#10208](https://github.com/craftcms/cms/issues/10208))
+
 ## 3.7.24 - 2021-12-02
 
 ### Added
