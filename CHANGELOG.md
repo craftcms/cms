@@ -3,7 +3,7 @@
 ## 3.7.24 - 2021-12-02
 
 ### Added
-- Added the `parseBooleanEnv` Twig filter.
+- Added the `parseBooleanEnv()` Twig function.
 - Added `craft\base\FieldTrait::$describedBy`, which custom fields should reference when setting their input’s `aria-describedby` attribute. ([#10183](https://github.com/craftcms/cms/pull/10183))
 - Added `craft\behaviors\EnvAttributeParserBehavior::getUnparsedAttribute()`.
 - Added `craft\fieldlayoutelements\BaseField::errorsId()`.
