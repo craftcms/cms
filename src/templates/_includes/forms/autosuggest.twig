@@ -124,6 +124,10 @@ new Vue({
             return score;
         },
         onSelected(option) {
+            if (!option) {
+                return;
+            }
+
             this.selected = option.item;
 
             // Bring focus back to the input if they selected an alias

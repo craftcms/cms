@@ -515,7 +515,7 @@ class App
      * Returns the `mailer` component config.
      *
      * @param MailSettings|null $settings The system mail settings
-     * @return array
+     * @return array{class: class-string<Mailer>}
      * @since 3.0.18
      */
     public static function mailerConfig(?MailSettings $settings = null): array
