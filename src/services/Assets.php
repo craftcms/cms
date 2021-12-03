@@ -586,13 +586,11 @@ class Assets extends Component
      *
      * @param Asset $asset
      * @param ImageTransform|string|array|null $transform
-     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
-     * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      * @throws VolumeException
      * @throws ImageTransformException
      */
-    public function getAssetUrl(Asset $asset, $transform = null, ?bool $generateNow = null): ?string
+    public function getAssetUrl(Asset $asset, $transform = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new DefineAssetUrlEvent([
@@ -612,7 +610,7 @@ class Assets extends Component
             return AssetsHelper::generateUrl($volume, $asset);
         }
 
-        return $asset->getUrl($transform, $generateNow);
+        return $asset->getUrl($transform);
     }
 
     /**

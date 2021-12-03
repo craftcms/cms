@@ -325,9 +325,7 @@
 
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
-- Deprecated `craft\base\VolumeInterface::createFileByStream()`.
-- Deprecated `craft\base\VolumeInterface::saveFileLocally()`.
-- Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
+- Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
 - Deprecated `craft\fieldlayoutelements\StandardField`. `craft\fieldlayoutelements\BaseNativeField` should be used instead.
 - Deprecated `craft\fieldlayoutelements\StandardTextField`. `craft\fieldlayoutelements\TextField` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.

@@ -1252,12 +1252,10 @@ class Asset extends Element
      * @param string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
-     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
-     * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl($transform = null, ?bool $generateNow = null): ?string
+    public function getUrl($transform = null): ?string
     {
         $volume = $this->getVolume();
 
@@ -1295,10 +1293,7 @@ class Asset extends Element
             $transform = $this->_transform;
         }
 
-        if ($generateNow === null) {
-            $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        }
-
+        $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         $imageTransformer = $transform->getImageTransformer();
 
         if ($generateNow || !$imageTransformer instanceof DeferredTransformerInterface) {
