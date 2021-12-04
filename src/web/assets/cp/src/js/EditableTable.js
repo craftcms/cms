@@ -1,5 +1,4 @@
-/** global: Craft */
-/** global: Garnish */
+/* jshint -W083 */
 /**
  * Editable table class
  */
@@ -50,12 +49,12 @@ Craft.EditableTable = Garnish.Base.extend({
             this.initialize();
         } else {
             // Give everything a chance to initialize
-            setTimeout(this.initializeIfVisible.bind(this), 500);
+            window.setTimeout(this.initializeIfVisible.bind(this), 500);
         }
 
         if (this.settings.minRows && this.rowCount < this.settings.minRows) {
             for (var i = this.rowCount; i < this.settings.minRows; i++) {
-                this.addRow()
+                this.addRow();
             }
         }
     },
@@ -102,6 +101,10 @@ Craft.EditableTable = Garnish.Base.extend({
         }
     },
     canDeleteRow: function() {
+        if (!this.settings.allowDelete) {
+            return false;
+        }
+
         return (this.rowCount > this.settings.minRows);
     },
     deleteRow: function(row) {
@@ -125,7 +128,7 @@ Craft.EditableTable = Garnish.Base.extend({
         row.destroy();
     },
     canAddRow: function() {
-        if (this.settings.staticRows) {
+        if (!this.settings.allowAdd) {
             return false;
         }
 
@@ -168,7 +171,7 @@ Craft.EditableTable = Garnish.Base.extend({
     },
 
     createRow: function(rowId, columns, baseName, values) {
-        return Craft.EditableTable.createRow(rowId, columns, baseName, values);
+        return Craft.EditableTable.createRow(rowId, columns, baseName, values, this.settings.allowReorder, this.settings.allowDelete);
     },
 
     createRowObj: function($tr) {
@@ -277,14 +280,16 @@ Craft.EditableTable = Garnish.Base.extend({
     defaults: {
         rowIdPrefix: '',
         defaultValues: {},
-        staticRows: false,
+        allowAdd: false,
+        allowReorder: false,
+        allowDelete: false,
         minRows: null,
         maxRows: null,
         onAddRow: $.noop,
         onDeleteRow: $.noop
     },
 
-    createRow: function(rowId, columns, baseName, values) {
+    createRow: function(rowId, columns, baseName, values, allowReorder, allowDelete) {
         var $tr = $('<tr/>', {
             'data-id': rowId
         });
@@ -402,23 +407,27 @@ Craft.EditableTable = Garnish.Base.extend({
             $cell.appendTo($tr);
         }
 
-        $('<td/>', {
-            'class': 'thin action'
-        }).append(
-            $('<a/>', {
-                'class': 'move icon',
-                'title': Craft.t('app', 'Reorder')
-            })
-        ).appendTo($tr);
+        if (allowReorder) {
+            $('<td/>', {
+                'class': 'thin action'
+            }).append(
+                $('<a/>', {
+                    'class': 'move icon',
+                    'title': Craft.t('app', 'Reorder')
+                })
+            ).appendTo($tr);
+        }
 
-        $('<td/>', {
-            'class': 'thin action'
-        }).append(
-            $('<a/>', {
-                'class': 'delete icon',
-                'title': Craft.t('app', 'Delete')
-            })
-        ).appendTo($tr);
+        if (allowDelete) {
+            $('<td/>', {
+                'class': 'thin action'
+            }).append(
+                $('<a/>', {
+                    'class': 'delete icon',
+                    'title': Craft.t('app', 'Delete')
+                })
+            ).appendTo($tr);
+        }
 
         return $tr;
     }
@@ -569,7 +578,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
             return;
         }
 
-        setTimeout(function() {
+        window.setTimeout(function() {
             Craft.selectFullValue($textarea);
         }, 0);
     },

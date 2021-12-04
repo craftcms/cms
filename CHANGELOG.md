@@ -199,6 +199,7 @@
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - GraphQL field types that can’t be null now specify so in their type declaration.
+- Editable tables now support `allowAdd`, `allowDelete`, and `allowReorder` settings, replacing `staticRows`. ([#10163](https://github.com/craftcms/cms/pull/10163))
 - Elements’ `searchScore` GraphQL fields are now returned as integers.
 - Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
 - Plugins’ `$description` properties must now have a `?string` type declaration.
@@ -388,6 +389,7 @@
 - Removed Matrix block queries’ `ownerLocale` param. The `site` or `siteId` param can be used instead.
 - Removed Matrix block queries’ `ownerSite` param. The `site` param can be used instead.
 - Removed Matrix block queries’ `ownerSiteId` param. The `siteId` param can be used instead.
+- Removed support for the `staticRows` editable table setting. `allowAdd`, `allowDelete`, and `allowReorder` can be used instead.
 - Removed support for the `CRAFT_LOCALE` PHP constant. `CRAFT_SITE` can be used instead.
 - Removed `Craft::Client`. `Pro` can be used instead.
 - Removed `Craft::Personal`. `Solo` can be used instead.
