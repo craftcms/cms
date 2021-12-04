@@ -130,16 +130,7 @@
 
 
 {% macro field(config, input) %}
-    {% set id = config.id ?? "field#{random()}" %}
-    {% set config = config|merge({
-        id: id,
-        labelId: config.labelId ?? "#{id}-label",
-        instructionsId: config.instructionsId ?? "#{id}-instructions",
-    }) %}
-    {% if input starts with 'template:' %}
-        {% set input = include(input[9:], config) %}
-    {% endif %}
-    {% include "_includes/forms/field" with config|merge({ input: input }) only %}
+    {{ craft.cp.field(input ?? '', config)|raw }}
 {% endmacro %}
 
 
@@ -183,18 +174,8 @@
 
 
 {% macro dateTimeField(config) %}
-    {% set id = config.id ?? "datetime#{random()}" %}
-    {% set config = config|merge({
-        id: id,
-        instructionsId: config.instructionsId ?? "#{id}-instructions",
-    }) %}
-    {% set input %}
-        <div class="datetimewrapper">
-            {{ _self.date(config) }}
-            {{ _self.time(config) }}
-        </div>
-    {% endset %}
-    {{ _self.field(config, input) }}
+    {% set config = config|merge({id: config.id ?? "datetime#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/datetime') }}
 {% endmacro %}
 
 
@@ -214,7 +195,9 @@
     {% set config = config|merge({id: config.id ?? "selectize#{random()}"}) %}
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
-            tip: 'This can be set to an environment variable with a value of one of the selectable option values.'|t('app'),
+            tip: (config.allowedEnvValues is not defined)
+            ? 'This can be set to an environment variable with a value of one of the selectable option values.'|t('app')
+            : 'This can be set to an environment variable.'|t('app'),
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/selectize') }}
