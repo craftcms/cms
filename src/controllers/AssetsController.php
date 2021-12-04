@@ -815,7 +815,7 @@ class AssetsController extends Controller
                         $assets->deleteFoldersByIds($existingFolder->id);
                     } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
-                        return $this->asErrorJson(Craft::t('app', 'Unable to delete directory while moving assets.'));
+                        return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                     }
                 } else {
                     // Or build a map of existing folders for file move
@@ -833,7 +833,7 @@ class AssetsController extends Controller
                     $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
                 } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
-                    return $this->asErrorJson(Craft::t('app', 'Unable to delete directory while moving assets.'));
+                    return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                 }
             }
 

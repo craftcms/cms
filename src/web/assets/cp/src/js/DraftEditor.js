@@ -881,8 +881,11 @@ Craft.DraftEditor = Garnish.Base.extend({
                         $('<div/>', {
                             class: 'status-badge modified',
                             title: Craft.t('app', 'This field has been modified.'),
-                            'aria-label': Craft.t('app', 'This field has been modified.'),
-                        })
+                        }),
+                        $('<span/>', {
+                            class: 'visually-hidden',
+                            html: Craft.t('app', 'This field has been modified.'),
+                        }),
                     );
                 }
 

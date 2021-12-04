@@ -9,8 +9,8 @@ namespace craft\web\assets\installer;
 
 use Craft;
 use craft\helpers\Json;
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Installer
@@ -33,14 +33,14 @@ class InstallerAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'install.css',
+        'css/install.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'install.min.js',
+        'install.js',
     ];
 
     /**

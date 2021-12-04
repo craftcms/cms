@@ -240,10 +240,10 @@ class App
         switch ($unit) {
             case 'g':
                 $value *= 1024;
-            // no break (cumulative multiplier)
+            // no break
             case 'm':
                 $value *= 1024;
-            // no break (cumulative multiplier)
+            // no break
             case 'k':
                 $value *= 1024;
         }
@@ -342,8 +342,10 @@ class App
             @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
         }
 
-        // Try to disable the max execution time
-        @set_time_limit(0);
+        // Try to reset time limit
+        if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
+            Craft::warning('set_time_limit() is not available', __METHOD__);
+        }
     }
 
     /**
@@ -513,7 +515,7 @@ class App
      * Returns the `mailer` component config.
      *
      * @param MailSettings|null $settings The system mail settings
-     * @return array
+     * @return array{class: class-string<Mailer>}
      * @since 3.0.18
      */
     public static function mailerConfig(?MailSettings $settings = null): array

@@ -13,6 +13,8 @@ use craft\base\Field;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
+use craft\conditions\elements\assets\AssetQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
@@ -212,6 +214,15 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @return AssetQueryCondition
+     */
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(AssetQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.4.0
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle)
@@ -280,7 +291,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(?string $context = null): array
+    protected static function defineSources(string $context): array
     {
         $volumes = Craft::$app->getVolumes();
 
@@ -2123,7 +2134,7 @@ class Asset extends Element
      */
     private function _dimensions($transform = null): array
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return [null, null];
         }
 

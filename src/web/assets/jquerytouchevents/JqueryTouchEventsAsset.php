@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\jquerytouchevents;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * JqueryTouchEvents asset bundle.
@@ -17,7 +17,7 @@ class JqueryTouchEventsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@lib/jquery-touch-events';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

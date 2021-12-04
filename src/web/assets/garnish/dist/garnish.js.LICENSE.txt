@@ -1,0 +1,14 @@
+/*!
+	Base.js, version 1.1a
+	Copyright 2006-2010, Dean Edwards
+	License: http://www.opensource.org/licenses/mit-license.php
+*/
+
+/**
+ * Garnish UI toolkit
+ *
+ * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
+ * @author    Brandon Kelly <brandon@pixelandtonic.com>
+ * @version   0.1.48
+ * @license   MIT
+ */

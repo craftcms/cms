@@ -8,7 +8,7 @@
 namespace craft\gql\interfaces;
 
 use craft\gql\base\InterfaceType;
-use craft\gql\base\NonGeneratedTypeInterface;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
@@ -24,7 +24,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class Element extends InterfaceType implements NonGeneratedTypeInterface
+class Element extends InterfaceType implements SingularTypeInterface
 {
     /**
      * @inheritdoc

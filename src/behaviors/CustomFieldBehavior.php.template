@@ -21,7 +21,12 @@ class CustomFieldBehavior extends Behavior
     /**
      * @var bool Whether the behavior should provide methods based on the field handles.
      */
-    public $hasMethods = false;
+    public bool $hasMethods = false;
+
+    /**
+     * @var bool Whether properties on the class should be settable directly.
+     */
+    public bool $canSetProperties = true;
 
     /**
      * @var string[] List of supported field handles.
@@ -35,7 +40,7 @@ class CustomFieldBehavior extends Behavior
     /**
      * @var array Additional custom field values we don’t know about yet.
      */
-    private $_customFieldValues = [];
+    private array $_customFieldValues = [];
 
     /**
      * @inheritdoc
@@ -52,7 +57,7 @@ class CustomFieldBehavior extends Behavior
     /**
      * @inheritdoc
      */
-    public function hasMethod($name)
+    public function hasMethod($name): bool
     {
         if ($this->hasMethods && isset(self::$fieldHandles[$name])) {
             return true;
@@ -63,7 +68,7 @@ class CustomFieldBehavior extends Behavior
     /**
      * @inheritdoc
      */
-    public function __isset($name)
+    public function __isset($name): bool
     {
         if (isset(self::$fieldHandles[$name])) {
             return true;
@@ -97,7 +102,7 @@ class CustomFieldBehavior extends Behavior
     /**
      * @inheritdoc
      */
-    public function canGetProperty($name, $checkVars = true)
+    public function canGetProperty($name, $checkVars = true): bool
     {
         if ($checkVars && isset(self::$fieldHandles[$name])) {
             return true;
@@ -108,8 +113,11 @@ class CustomFieldBehavior extends Behavior
     /**
      * @inheritdoc
      */
-    public function canSetProperty($name, $checkVars = true)
+    public function canSetProperty($name, $checkVars = true): bool
     {
+        if (!$this->canSetProperties) {
+            return false;
+        }
         if ($checkVars && isset(self::$fieldHandles[$name])) {
             return true;
         }

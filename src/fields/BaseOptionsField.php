@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\OptionsFieldConditionRule;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
@@ -224,6 +225,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'id' => 'options',
             'name' => 'options',
             'addRowLabel' => Craft::t('app', 'Add an option'),
+            'allowAdd' => true,
+            'allowReorder' => true,
+            'allowDelete' => true,
             'cols' => $cols,
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
@@ -332,6 +336,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         return implode(' ', $keywords);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return OptionsFieldConditionRule::class;
     }
 
     /**

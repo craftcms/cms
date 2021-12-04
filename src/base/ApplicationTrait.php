@@ -46,13 +46,14 @@ use craft\services\Assets;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
 use craft\services\Composer;
+use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
-use craft\services\ElementIndexes;
 use craft\services\Elements;
+use craft\services\ElementSources;
 use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Gc;
@@ -82,6 +83,7 @@ use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
 use craft\services\Volumes;
+use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
@@ -114,13 +116,14 @@ use yii\web\ServerErrorHttpException;
  * @property-read Assets $assets The assets service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
+ * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
  * @property-read Content $content The content service
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
- * @property-read ElementIndexes $elementIndexes The element indexes service
+ * @property-read ElementSources $elementSources The element sources service
  * @property-read Elements $elements The elements service
  * @property-read Entries $entries The entries service
  * @property-read Fields $fields The fields service
@@ -161,6 +164,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Utilities $utilities The utilities service
  * @property-read View $view The view component
  * @property-read Volumes $volumes The volumes service
+ * @property-read Webpack $webpack The webpack service
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
  * @property-read bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
  * @property-read bool $hasWrongEdition Whether Craft is running with the wrong edition
@@ -599,7 +603,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)$this->getProjectConfig()->get('system.live');
+        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
     }
 
     /**
@@ -887,6 +891,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the conditions service.
+     *
+     * @return Conditions The conditions service
+     * @since 4.0.0
+     */
+    public function getConditions(): Conditions
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('conditions');
+    }
+
+    /**
      * Returns the config service.
      *
      * @return Config The config service
@@ -956,12 +972,12 @@ trait ApplicationTrait
     /**
      * Returns the element indexes service.
      *
-     * @return ElementIndexes The element indexes service
+     * @return ElementSources The element indexes service
      */
-    public function getElementIndexes(): ElementIndexes
+    public function getElementSources(): ElementSources
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('elementIndexes');
+        return $this->get('elementSources');
     }
 
     /**
@@ -1353,6 +1369,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the webpack service.
+     *
+     * @return Webpack The volumes service
+     * @since 3.7.22
+     */
+    public function getWebpack(): Webpack
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('webpack');
+    }
+
+    /**
      * Initializes things that should happen before the main Application::init()
      */
     private function _preInit(): void
@@ -1413,14 +1441,11 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        $timezone = $this->getConfig()->getGeneral()->timezone;
+        /** @var WebApplication|ConsoleApplication $this */
+        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
-        if (!$timezone) {
-            $timezone = $this->getProjectConfig()->get('system.timeZone');
-        }
-
-        if ($timezone) {
-            $this->setTimeZone($timezone);
+        if ($timeZone) {
+            $this->setTimeZone(Craft::parseEnv($timeZone));
         }
     }
 

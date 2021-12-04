@@ -238,10 +238,23 @@ class CustomField extends BaseField
 
         $view = Craft::$app->getView();
         $view->registerDeltaName($this->_field->handle);
+
         if (empty($element->id) || $element->isFieldEmpty($this->_field->handle)) {
             $view->setInitialDeltaValue($this->_field->handle, null);
         }
-        return $this->_field->getInputHtml($value, $element);
+
+        $required = $this->_field->required;
+        $describedBy = $this->_field->describedBy;
+
+        $this->_field->required = $this->required;
+        $this->_field->describedBy = $this->describedBy($element, $static);
+
+        $html = $this->_field->getInputHtml($value, $element);
+
+        $this->_field->required = $required;
+        $this->_field->describedBy = $describedBy;
+
+        return $html;
     }
 
     /**

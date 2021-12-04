@@ -1,3 +1,5 @@
+import './user-permissions.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

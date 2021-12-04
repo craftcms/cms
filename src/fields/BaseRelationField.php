@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\RelationalFieldConditionRule;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
@@ -32,6 +33,7 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
+use craft\services\ElementSources;
 use craft\validators\ArrayValidator;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -459,6 +461,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function getQueryConditionRuleType()
+    {
+        return [
+            'class' => RelationalFieldConditionRule::class,
+            'elementType' => static::elementType(),
+            'sources' => (array)$this->inputSources(),
+            'criteria' => $this->inputSelectionCriteria(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         if (empty($value)) {
@@ -786,23 +801,11 @@ JS;
      */
     public function getSourceOptions(): array
     {
-        $options = [];
-        $optionNames = [];
-
-        foreach ($this->availableSources() as $source) {
-            // Make sure it's not a heading
-            if (!isset($source['heading'])) {
-                $options[] = [
-                    'label' => $source['label'],
-                    'value' => $source['key'],
-                ];
-                $optionNames[] = $source['label'];
-            }
-        }
-
-        // Sort alphabetically
-        array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
-
+        $options = array_map(
+            fn($s) => ['label' => $s['label'], 'value' => $s['key']],
+            $this->availableSources()
+        );
+        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
         return $options;
     }
 
@@ -895,6 +898,14 @@ JS;
     }
 
     /**
+     * @inheritdoc
+     */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
      * Returns an array of variables that should be passed to the settings template.
      *
      * @return array
@@ -965,6 +976,7 @@ JS;
             'id' => Html::id($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'elements' => $value,
             'sources' => $this->inputSources($element),
@@ -1081,7 +1093,10 @@ JS;
      */
     protected function availableSources(): array
     {
-        return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
+        return ArrayHelper::where(
+            Craft::$app->getElementSources()->getSources(static::elementType(), 'modal'),
+            fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
+        );
     }
 
     /**

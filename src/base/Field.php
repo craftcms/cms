@@ -254,6 +254,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'attributes',
                 'behavior',
                 'behaviors',
+                'canSetProperties',
                 'children',
                 'contentTable',
                 'dateCreated',
@@ -266,6 +267,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'errorSummary',
                 'fieldValue',
                 'fieldValues',
+                'hasMethods',
                 'id',
                 'language',
                 'level',
@@ -581,6 +583,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
         $to->setFieldValue($this->handle, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return null;
     }
 
     /**

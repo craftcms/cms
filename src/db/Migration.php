@@ -475,27 +475,6 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Creates and executes a SQL statement for converting a column type to JSON.
-     *
-     * @param string $table The table whose column is to be changed. The table name will be properly quoted by the method.
-     * @param string $column The name of the column to be changed. The name will be properly quoted by the method.
-     * @since 4.0.0
-     */
-    public function convertColumnToJson(string $table, string $column): void
-    {
-        if ($this->db->getIsPgsql()) {
-            // h/t https://stackoverflow.com/a/31493531/1688568
-            $this->execute(
-                'ALTER TABLE ' . $this->db->quoteTableName($table) . ' ALTER COLUMN ' .
-                $this->db->quoteColumnName($column) . ' TYPE JSON USING ' .
-                $this->db->quoteColumnName($column) . '::JSON;'
-            );
-        } else {
-            $this->alterColumn($table, $column, $this->json());
-        }
-    }
-
-    /**
      * @param Throwable|Exception $e
      */
     private function _printException($e): void

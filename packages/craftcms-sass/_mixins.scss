@@ -178,7 +178,7 @@ $radioSize: 16px;
   opacity: 0.8;
 }
 
-@mixin angle($dir: down, $color: $mediumTextColor) {
+@mixin angle($dir: down, $color: var(--ui-control-color)) {
   display: block;
   content: '';
   font-size: 0;

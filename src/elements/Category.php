@@ -9,6 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\conditions\elements\categories\CategoryQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -131,6 +133,15 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @return CategoryQueryCondition
+     */
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(CategoryQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function gqlTypeNameByContext($context): string
@@ -162,7 +173,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(?string $context = null): array
+    protected static function defineSources(string $context): array
     {
         $sources = [];
 
@@ -254,7 +265,7 @@ class Category extends Element
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
                 if (Craft::$app->getIsMultiSite()) {
-                    $newChildUrl .= '/' . $site->handle;
+                    $newChildUrl .= '?site=' . $site->handle;
                 }
 
                 $actions[] = $elementsService->createAction([

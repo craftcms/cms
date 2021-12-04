@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\conditions\elements\fields\LightswitchFieldConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
@@ -129,7 +130,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
             'id' => $id,
             'labelId' => "$id-label",
-            'instructionsId' => "$id-instructions",
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'on' => (bool)$value,
             'onLabel' => $this->onLabel,
@@ -160,6 +161,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         }
 
         return (bool)$value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return LightswitchFieldConditionRule::class;
     }
 
     /**

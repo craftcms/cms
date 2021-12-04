@@ -237,7 +237,7 @@ class EntryRevisionsController extends BaseEntriesController
 
             $entry->enabled = $enabled;
             /** @var Entry|DraftBehavior $draft */
-            $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId());
+            $draft = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [], $provisional);
         } else {
             $transaction = null;
 
@@ -606,7 +606,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Prevent the last entry type's field layout from being used
         $draft->fieldLayoutId = null;
         // Default to a temp slug to avoid slug validation errors
-        $draft->slug = $this->request->getBodyParam('slug') ?: (ElementHelper::isTempSlug($draft->slug)
+        $draft->slug = $this->request->getBodyParam('slug') ?: ($draft->slug !== null && ElementHelper::isTempSlug($draft->slug)
             ? $draft->slug
             : ElementHelper::tempSlug());
         if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
@@ -651,8 +651,11 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Draft meta
-        /** @var Entry|DraftBehavior $draft */
-        $draft->draftName = $this->request->getBodyParam('draftName') ?? $draft->draftName;
-        $draft->draftNotes = $this->request->getBodyParam('notes') ?? $draft->draftNotes;
+        /** @var DraftBehavior|null $behavior */
+        $behavior = $draft->getBehavior('draft');
+        if ($behavior) {
+            $behavior->draftName = $this->request->getBodyParam('draftName') ?? $behavior->draftName;
+            $behavior->draftNotes = $this->request->getBodyParam('notes') ?? $behavior->draftNotes;
+        }
     }
 }

@@ -15,6 +15,7 @@ use craft\elements\User;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
+use yii\db\Expression;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
@@ -71,6 +72,46 @@ class UserQuery extends ElementQuery
      * @used-by admin()
      */
     public ?bool $admin = null;
+
+    /**
+     * @var bool|null Whether to only return users that are authors of an entry.
+     * ---
+     * ```php
+     * // fetch all authors
+     * $authors = \craft\elements\User::find()
+     *     ->authors()
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch all authors #}
+     * {% set authors = craft.users()
+     *   .authors()
+     *   .all()%}
+     * ```
+     * @used-by authors()
+     * @since 4.0.0
+     */
+    public ?bool $authors = null;
+
+    /**
+     * @var bool|null Whether to only return users that have uploaded an asset.
+     * ---
+     * ```php
+     * // fetch all users who have uploaded an asset
+     * $uploaders = \craft\elements\User::find()
+     *     ->assetUploaders()
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch all users who have uploaded an asset #}
+     * {% set uploaders = craft.users()
+     *   .assetUploaders()
+     *   .all()%}
+     * ```
+     * @used-by assetUploaders()
+     * @since 4.0.0
+     */
+    public ?bool $assetUploaders = null;
 
     /**
      * @var bool|null Whether to only return users that have (or don’t have) user photos.
@@ -205,6 +246,66 @@ class UserQuery extends ElementQuery
     public function admin(bool $value = true): self
     {
         $this->admin = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only users that are authors of an entry.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch authors #}
+     * {% set {elements-var} = {twig-method}
+     *   .authors()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch authors
+     * ${elements-var} = {element-class}::find()
+     *     ->authors()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $authors
+     * @since 4.0.0
+     */
+    public function authors(?bool $value = true): self
+    {
+        $this->authors = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only users that have uploaded an asset.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all users who have uploaded an asset #}
+     * {% set {elements-var} = {twig-method}
+     *   .assetUploaders()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all users who have uploaded an asset
+     * ${elements-var} = {element-class}::find()
+     *     ->assetUploaders()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $assetUploaders
+     * @since 4.0.0
+     */
+    public function assetUploaders(?bool $value = true): self
+    {
+        $this->assetUploaders = $value;
         return $this;
     }
 
@@ -655,6 +756,24 @@ class UserQuery extends ElementQuery
 
         if (is_bool($this->admin)) {
             $this->subQuery->andWhere(['users.admin' => $this->admin]);
+        }
+
+        if (is_bool($this->authors)) {
+            $this->subQuery->andWhere([
+                $this->authors ? 'exists' : 'not exists',
+                (new Query())
+                    ->from(Table::ENTRIES)
+                    ->where(['authorId' => new Expression('[[elements.id]]')])
+            ]);
+        }
+
+        if (is_bool($this->assetUploaders)) {
+            $this->subQuery->andWhere([
+                $this->assetUploaders ? 'exists' : 'not exists',
+                (new Query())
+                    ->from(Table::ASSETS)
+                    ->where(['uploaderId' => new Expression('[[elements.id]]')])
+            ]);
         }
 
         if (is_bool($this->hasPhoto)) {

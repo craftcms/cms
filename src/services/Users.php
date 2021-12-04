@@ -341,7 +341,7 @@ class Users extends Component
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-            'preferences' => $preferences,
+            'preferences' => Json::encode($preferences),
         ], true, [], false);
     }
 
@@ -440,6 +440,24 @@ class Users extends Component
     {
         $fePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
         return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
+    }
+
+    /**
+     * Removes credentials for a user.
+     *
+     * @param User $user The user that should have credentials removed.
+     * @return bool Whether the user's credentials were successfully removed.
+     * @throws UserNotFoundException
+     * @since 4.0.0
+     */
+    public function removeCredentials(User $user): bool
+    {
+        $userRecord = $this->_getUserRecordById($user->id);
+        $userRecord->active = false;
+        $userRecord->pending = false;
+        $userRecord->password = null;
+        $userRecord->verificationCode = null;
+        return $userRecord->save();
     }
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
+use craft\conditions\QueryConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
@@ -228,6 +229,14 @@ interface ElementInterface extends ComponentInterface
     public static function findAll($criteria = null): array;
 
     /**
+     * Returns an element query condition for the element type.
+     *
+     * @return QueryConditionInterface
+     * @since 4.0.0
+     */
+    public static function createCondition(): QueryConditionInterface;
+
+    /**
      * Returns all of the possible statuses that elements of this type may have.
      *
      * This method will be called when populating the Status menu on element indexes, for element types whose
@@ -281,10 +290,10 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string|null $context The context ('index' or 'modal').
+     * @param string $context The context ('index', 'modal', or 'settings').
      * @return array The sources.
      */
-    public static function sources(?string $context = null): array;
+    public static function sources(string $context): array;
 
     /**
      * Returns all of the field layouts associated with elements from the given source.

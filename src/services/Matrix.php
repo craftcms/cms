@@ -831,7 +831,11 @@ class Matrix extends Component
                     $target->updatingFromDerivative &&
                     $block->getCanonical() !== $block // in case the canonical block is soft-deleted
                 ) {
-                    if (!empty($target->newSiteIds) || $source->isFieldModified($field->handle, true)) {
+                    if (
+                        $source->getIsRevision() ||
+                        !empty($target->newSiteIds) ||
+                        $source->isFieldModified($field->handle, true)
+                    ) {
                         /** @var MatrixBlock $newBlock */
                         $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
                         $newBlockId = $newBlock->id;
@@ -897,6 +901,7 @@ class Matrix extends Component
                         continue;
                     }
 
+                    $otherTargets[$otherSource->siteId]->updatingFromDerivative = $target->updatingFromDerivative;
                     $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to

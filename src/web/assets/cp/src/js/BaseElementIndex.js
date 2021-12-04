@@ -32,7 +32,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     $toolbar: null,
     toolbarOffset: null,
 
+    $searchContainer: null,
     $search: null,
+    $filterBtn: null,
     searching: false,
     searchText: null,
     trashed: false,
@@ -82,6 +84,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     _ignoreFailedRequest: false,
     _cancelToken: null,
 
+    filterHuds: null,
+
     /**
      * Constructor
      */
@@ -115,10 +119,15 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.$statusMenuContainer = this.$statusMenuBtn.parent();
         this.$siteMenuBtn = this.$container.find('.sitemenubtn:first');
         this.$sortMenuBtn = this.$toolbar.find('.sortmenubtn:first');
-        this.$search = this.$toolbar.find('.search:first input:first');
-        this.$clearSearchBtn = this.$toolbar.find('.search:first > .clear');
+
+        this.$searchContainer = this.$toolbar.find('.search:first')
+        this.$search = this.$searchContainer.children('input:first');
+        this.$filterBtn = this.$searchContainer.children('.filter-btn:first');
+        this.$clearSearchBtn = this.$searchContainer.children('.clear:first');
+
         this.$sidebar = this.$container.find('.sidebar:first');
         this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
+
         this.$elements = this.$container.find('.elements:first');
         this.$countSpinner = this.$container.find('#count-spinner');
         this.$countContainer = this.$container.find('#count-container');
@@ -250,6 +259,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         if (!Garnish.isMobileBrowser(true)) {
             this.$search.trigger('focus');
         }
+
+        // Filter HUDs
+        this.filterHuds = {};
+        this.addListener(this.$filterBtn, 'click', 'showFilterHud');
 
         // Initialize the sort menu
         // ---------------------------------------------------------------------
@@ -649,6 +662,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 this.instanceState.collapsedElementIds = [];
             }
             params.collapsedElementIds = this.instanceState.collapsedElementIds;
+        }
+
+        if (this.filterHuds[this.sourceKey] && this.filterHuds[this.sourceKey].serialized) {
+            params.condition = this.filterHuds[this.sourceKey].serialized;
         }
 
         // Give plugins a chance to hook in here
@@ -1072,6 +1089,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
         this.selectViewMode(viewMode);
+
+        // Filter HUD
+        // ----------------------------------------------------------------------
+
+        this.updateFilterBtn();
 
         this.onSelectSource();
 
@@ -2061,7 +2083,34 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
             return $ul;
         }
-    }
+    },
+
+    showFilterHud: function() {
+        if (!this.filterHuds[this.sourceKey]) {
+            this.filterHuds[this.sourceKey] = new FilterHud(this, this.sourceKey);
+            this.updateFilterBtn();
+        } else {
+            this.filterHuds[this.sourceKey].show();
+        }
+    },
+
+    updateFilterBtn: function() {
+        this.$filterBtn.removeClass('active');
+
+        if (this.filterHuds[this.sourceKey]) {
+            this.$filterBtn
+                .attr('aria-controls', this.filterHuds[this.sourceKey].id)
+                .attr('aria-expanded', this.filterHuds[this.sourceKey].showing ? 'true' : 'false');
+
+            if (this.filterHuds[this.sourceKey].showing || this.filterHuds[this.sourceKey].hasRules()) {
+                this.$filterBtn.addClass('active');
+            }
+        } else {
+            this.$filterBtn
+                .attr('aria-controls', null)
+                .attr('aria-expanded', null);
+        }
+    },
 }, {
     defaults: {
         context: 'index',
@@ -2093,3 +2142,173 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         onAfterAction: $.noop
     }
 });
+
+const FilterHud = Garnish.HUD.extend({
+    elementIndex: null,
+    sourceKey: null,
+    id: null,
+    loading: true,
+    serialized: null,
+    $clearBtn: null,
+    cleared: false,
+
+    init: function(elementIndex, sourceKey) {
+        this.elementIndex = elementIndex;
+        this.sourceKey = sourceKey;
+        this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
+
+        const $loadingContent = $('<div/>').append(
+            $('<div/>', {
+                class: 'spinner',
+            })
+        ).append(
+            $('<div/>', {
+                text: Craft.t('app', 'Loading'),
+                class: 'visually-hidden',
+                'aria-role': 'alert',
+            })
+        );
+
+        this.base(this.elementIndex.$filterBtn, $loadingContent, {
+            hudClass: 'hud element-filter-hud loading',
+        });
+
+        this.$hud.attr({
+            id: this.id,
+            'aria-live': 'polite',
+            'aria-busy': 'false',
+        });
+        this.$tip.remove();
+        this.$tip = null;
+
+        this.$body.on('submit', ev => {
+            ev.preventDefault();
+            this.hide();
+        });
+
+        Craft.sendActionRequest('POST', 'element-indexes/filter-hud', {
+            data: {
+                elementType: this.elementIndex.elementType,
+                source: this.sourceKey,
+                baseInputName: `${this.id}-condition`,
+                id: `${this.id}-condition`,
+            },
+        }).then(response => {
+            this.loading = false;
+            this.$hud.removeClass('loading');
+            $loadingContent.remove();
+
+            this.$main.append(response.data.hudHtml);
+            Craft.appendHeadHtml(response.data.headHtml);
+            Craft.appendFootHtml(response.data.bodyHtml);
+
+            const $btnContainer = $('<div/>', {
+                class: 'flex flex-nowrap',
+            }).appendTo(this.$main);
+            $('<div/>', {
+                class: 'flex-grow',
+            }).appendTo($btnContainer);
+            this.$clearBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn',
+                text: Craft.t('app', 'Cancel'),
+            }).appendTo($btnContainer);
+            $('<button/>', {
+                type: 'submit',
+                class: 'btn secondary',
+                text: Craft.t('app', 'Apply'),
+            }).appendTo($btnContainer);
+            this.$clearBtn.on('click', () => {
+                this.clear();
+            });
+
+            this.$hud.find('.condition-container').on('htmx:beforeRequest', () => {
+                this.setBusy();
+            });
+
+            this.$hud.find('.condition-container').on('htmx:load', () => {
+                this.setReady();
+            });
+
+            this.setFocus();
+        }).catch(() => {
+            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+        });
+    },
+
+    addListener: function(elem, events, data, func) {
+        if (elem === this.$main && events === 'resize') {
+            return;
+        }
+        this.base(elem, events, data, func);
+    },
+
+    setBusy: function() {
+        this.$hud.attr('aria-busy', 'true');
+
+        $('<div/>', {
+            class: 'visually-hidden',
+            text: Craft.t('app', 'Loading'),
+        }).insertAfter(this.$main.find('.htmx-indicator'));
+    },
+
+    setReady: function() {
+        this.$hud.attr('aria-busy', 'false');
+    },
+
+    setFocus: function() {
+        this.$main.find('.condition-footer .add').focus();
+    },
+
+    clear: function() {
+        this.cleared = true;
+        this.hide();
+    },
+
+    updateSizeAndPositionInternal: function() {
+        const searchOffset = this.elementIndex.$searchContainer.offset();
+
+        this.$hud.css({
+            width: this.elementIndex.$searchContainer.outerWidth() - 2,
+            top: searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
+            left: searchOffset.left + 1,
+        });
+    },
+
+    onShow: function() {
+        this.base();
+
+        // Cancel => Clear
+        if (this.$clearBtn) {
+            this.$clearBtn.text(Craft.t('app', 'Clear'));
+        }
+
+        this.elementIndex.updateFilterBtn();
+        this.setFocus();
+    },
+
+    onHide: function() {
+        this.base();
+
+        // If something changed, update the elements
+        if (this.serialized !== (this.serialized = this.serialize())) {
+            this.elementIndex.updateElements();
+        }
+
+        if (this.cleared) {
+            delete this.elementIndex.filterHuds[this.elementIndex.sourceKey];
+            this.destroy();
+        }
+
+        this.elementIndex.updateFilterBtn();
+        this.elementIndex.$filterBtn.focus();
+    },
+
+    hasRules: function() {
+        return this.$main.has('.condition-rule').length !== 0;
+    },
+
+    serialize: function() {
+        return (!this.cleared && this.hasRules()) ? this.$body.serialize() : null;
+    }
+})

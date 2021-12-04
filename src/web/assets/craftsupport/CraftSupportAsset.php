@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\craftsupport;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Craft Support widget
@@ -32,14 +32,14 @@ class CraftSupportAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'CraftSupportWidget.css',
+        'css/CraftSupportWidget.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'CraftSupportWidget.min.js',
+        'CraftSupportWidget.js',
     ];
 
     /**

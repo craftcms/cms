@@ -35,7 +35,7 @@ Craft.CP = Garnish.Base.extend({
     fixedHeader: false,
 
     breadcrumbListWidth: 0,
-    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item data-wrapper><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t('app', 'More')}…</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
+    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item data-wrapper><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t('app', 'More…')}</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
 
     tabManager: null,
 
@@ -565,13 +565,14 @@ Craft.CP = Garnish.Base.extend({
     breadcrumbItemsWrap: function() {
         if (!this.$breadcrumbItems[0]) return;
 
-        const listWidth = this.$breadcrumbList[0].offsetWidth;
+        const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
         let totalItemWidth = 0;
         
         // Iterate through all list items (inclusive of more button)
-        this.$breadcrumbList.find('li').each(function() {
-            totalItemWidth += $(this)[0].offsetWidth;
-        });
+        const $items = this.$breadcrumbList.find('li');
+        for (let i = 0; i < $items.length; i++) {
+            totalItemWidth += $items.get(i).getBoundingClientRect().width;
+        }
 
         this.breadcrumbListWidth = listWidth;
 

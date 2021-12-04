@@ -535,11 +535,10 @@ class ElementHelper
      */
     public static function findSource(string $elementType, string $sourceKey, ?string $context = null): ?array
     {
-        /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
-        $sources = $elementType::sources($context);
+        $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
 
-        while (!empty($path)) {
+        while ($path) {
             $key = array_shift($path);
             $source = null;
 

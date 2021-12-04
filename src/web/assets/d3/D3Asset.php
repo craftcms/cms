@@ -11,14 +11,19 @@ use Craft;
 use craft\helpers\ChartHelper;
 use craft\helpers\Json;
 use craft\i18n\Locale;
+use craft\web\AssetBundle;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * D3 asset bundle.
  */
 class D3Asset extends AssetBundle
 {
+    /**
+     * @inheritdoc
+     */
+    public $sourcePath = __DIR__ . '/dist';
+
     /**
      * @var array The default language format files to use
      */
@@ -35,8 +40,6 @@ class D3Asset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/d3';
-
         $this->js = [
             'd3.js',
         ];
@@ -79,7 +82,7 @@ class D3Asset extends AssetBundle
         ];
 
         $js = 'window.d3FormatLocaleDefinition = ' . Json::encode($localeDef) . ";\n" .
-            'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef(Craft::getAlias('@lib/d3-time-format')) . ";\n" .
+            'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef($this->sourcePath . '/d3-time-format/locale') . ";\n" .
             'window.d3Formats = ' . Json::encode(ChartHelper::formats()) . ';';
 
         $view->registerJs($js, View::POS_BEGIN);

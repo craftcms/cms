@@ -252,7 +252,7 @@ class Install extends Migration
             'file' => $this->string()->notNull(),
             'line' => $this->smallInteger()->unsigned(),
             'message' => $this->text(),
-            'traces' => $this->json(),
+            'traces' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -267,14 +267,6 @@ class Install extends Migration
             'trackChanges' => $this->boolean()->notNull()->defaultValue(false),
             'dateLastMerged' => $this->dateTime(),
             'saved' => $this->boolean()->notNull()->defaultValue(true),
-        ]);
-        $this->createTable(Table::ELEMENTINDEXSETTINGS, [
-            'id' => $this->primaryKey(),
-            'type' => $this->string()->notNull(),
-            'settings' => $this->json(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
         ]);
         $this->createTable(Table::ELEMENTS, [
             'id' => $this->primaryKey(),
@@ -389,7 +381,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'layoutId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
-            'elements' => $this->json(),
+            'elements' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -407,7 +399,7 @@ class Install extends Migration
             'translationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->text(),
             'type' => $this->string()->notNull(),
-            'settings' => $this->json(),
+            'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -437,7 +429,7 @@ class Install extends Migration
         $this->createTable(Table::GQLSCHEMAS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
-            'scope' => $this->json(),
+            'scope' => $this->text(),
             'isPublic' => $this->boolean()->notNull()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -547,7 +539,7 @@ class Install extends Migration
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
             'propagationMethod' => $this->string()->defaultValue(Section::PROPAGATION_METHOD_ALL)->notNull(),
             'defaultPlacement' => $this->enum('defaultPlacement', [Section::DEFAULT_PLACEMENT_BEGINNING, Section::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
-            'previewTargets' => $this->json(),
+            'previewTargets' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
@@ -647,7 +639,7 @@ class Install extends Migration
         $this->createTable(Table::TOKENS, [
             'id' => $this->primaryKey(),
             'token' => $this->char(32)->notNull(),
-            'route' => $this->json(),
+            'route' => $this->text(),
             'usageLimit' => $this->tinyInteger()->unsigned(),
             'usageCount' => $this->tinyInteger()->unsigned(),
             'expiryDate' => $this->dateTime()->notNull(),
@@ -697,7 +689,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::USERPREFERENCES, [
             'userId' => $this->primaryKey(),
-            'preferences' => $this->json(),
+            'preferences' => $this->text(),
         ]);
         $this->createTable(Table::USERS, [
             'id' => $this->integer()->notNull(),
@@ -748,7 +740,7 @@ class Install extends Migration
             'url' => $this->string(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
-            'settings' => $this->json(),
+            'settings' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -761,7 +753,7 @@ class Install extends Migration
             'type' => $this->string()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'colspan' => $this->tinyInteger(),
-            'settings' => $this->json(),
+            'settings' => $this->text(),
             'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -800,7 +792,6 @@ class Install extends Migration
         $this->createIndex(null, Table::DEPRECATIONERRORS, ['key', 'fingerprint'], true);
         $this->createIndex(null, Table::DRAFTS, ['creatorId', 'provisional'], false);
         $this->createIndex(null, Table::DRAFTS, ['saved'], false);
-        $this->createIndex(null, Table::ELEMENTINDEXSETTINGS, ['type'], true);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);

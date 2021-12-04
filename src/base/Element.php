@@ -12,6 +12,8 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\conditions\elements\ElementQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -648,7 +650,15 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function sources(?string $context = null): array
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(ElementQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function sources(string $context): array
     {
         $sources = static::defineSources($context);
 
@@ -665,11 +675,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the sources that elements of this type may belong to.
      *
-     * @param string|null $context The context ('index' or 'modal').
+     * @param string $context The context ('index', 'modal', or 'settings').
      * @return array The sources.
      * @see sources()
      */
-    protected static function defineSources(?string $context = null): array
+    protected static function defineSources(string $context): array
     {
         return [];
     }
@@ -838,7 +848,7 @@ abstract class Element extends Component implements ElementInterface
 
         if ($viewState['mode'] === 'table') {
             // Get the table columns
-            $variables['attributes'] = Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
+            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(static::class, $sourceKey);
 
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
@@ -907,7 +917,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
+        $tableAttributes = Craft::$app->getElementSources()->getAvailableTableAttributes(static::class);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -1487,7 +1497,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // See if it's a source-specific sort option
-        foreach (Craft::$app->getElementIndexes()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
+        foreach (Craft::$app->getElementSources()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
             if ($sortOption['attribute'] === $viewState['order']) {
                 return $sortOption['orderBy'];
             }
@@ -1739,7 +1749,11 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            return $this->getFieldValue($name);
+            $value = $this->getFieldValue($name);
+            if (is_object($value)) {
+                $value = clone $value;
+            }
+            return $value;
         }
 
         return parent::__get($name);
@@ -1786,7 +1800,10 @@ abstract class Element extends Component implements ElementInterface
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        $behaviors['customFields'] = CustomFieldBehavior::class;
+        $behaviors['customFields'] = [
+            'class' => CustomFieldBehavior::class,
+            'canSetProperties' => false,
+        ];
         return $behaviors;
     }
 
@@ -2885,7 +2902,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->descendantOf($this->getCanonical())
+            ->descendantOf($this)
             ->siteId($this->siteId)
             ->descendantDist($dist);
     }
@@ -2965,7 +2982,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $descendants = $this->getDescendants();
         if (is_array($descendants)) {
-            return !empty($descendants);
+            return (bool)$descendants;
         }
         return $descendants->exists();
     }

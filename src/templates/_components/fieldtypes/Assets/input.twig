@@ -20,7 +20,15 @@
 
     {% if sources %}
         <div class="flex{% if limit and elements|length >= limit %} hidden{% endif %}">
-            <button type="button" class="btn add icon dashed">{{ selectionLabel }}</button>
+            {{ tag('button', {
+                type: 'button',
+                text: selectionLabel,
+                class: ['btn', 'add', 'icon', 'dashed'],
+                aria: {
+                    label: selectionLabel,
+                    describedby: describedBy ?? false,
+                },
+            }) }}
         </div>
     {% endif %}
 </div>

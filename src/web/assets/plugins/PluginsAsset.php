@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\plugins;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Plugins page
@@ -32,14 +32,14 @@ class PluginsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'plugins.css',
+        'css/PluginManager.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'PluginManager.min.js',
+        'PluginManager.js',
     ];
 
     /**

@@ -163,6 +163,14 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * @dataProvider encodeParamsDataProvider
+     */
+    public function testEncodeParams(string $expected, string $url)
+    {
+        $this->assertSame($expected, UrlHelper::encodeParams($url));
+    }
+
+    /**
      * Tests the UrlHelper::rootRelativeUrl() method.
      *
      * @dataProvider rootRelativeUrlDataProvider
@@ -558,6 +566,20 @@ class UrlHelperTest extends Unit
                 self::ABSOLUTE_URL_HTTPS_WWW,
                 'sftp',
             ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function encodeParamsDataProvider(): array
+    {
+        return [
+            ['http://example.test', 'http://example.test?'],
+            ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar baz'],
+            ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
+            ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
+            ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
         ];
     }
 
