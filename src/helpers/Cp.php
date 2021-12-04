@@ -467,7 +467,6 @@ class Cp
     public static function fieldHtml(string $input, array $config = []): string
     {
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
-
         $instructionsId = $config['instructionsId'] ?? "$id-instructions";
         $tipId = $config['tipId'] ?? "$id-tip";
         $warningId = $config['warningId'] ?? "$id-warning";
