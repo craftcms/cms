@@ -474,12 +474,11 @@ class Assets extends BaseRelationField
      * Resolve source path for uploading for this field.
      *
      * @param ElementInterface|null $element
-     * @param bool $resolveSubtreeDefaultLocation Whether the folder should resolve to the default upload location for subtree fields.
      * @return int
      */
-    public function resolveDynamicPathToFolderId(?ElementInterface $element = null, bool $resolveSubtreeDefaultLocation = false): int
+    public function resolveDynamicPathToFolderId(?ElementInterface $element = null): int
     {
-        return $this->_determineUploadFolderId($element, true, $resolveSubtreeDefaultLocation);
+        return $this->_determineUploadFolderId($element, true, true);
     }
 
     /**
