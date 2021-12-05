@@ -1,91 +1,108 @@
 {% extends "_components/fieldtypes/elementfieldsettings" %}
-
 {% import "_includes/forms" as forms %}
 
-{% set fileKindOptions = field.getFileKindOptions() %}
-{% set isMatrix = 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
-
-{% macro uploadLocationInput(name, field, inputSourceOptions) %}
-    {% from "_includes/forms" import select, text %}
-    <div class="flex">
-        <div>
-            {{ select({
-                id: name~'Source',
-                name: name~'Source',
-                options: inputSourceOptions,
-                value: field[name~'Source'],
-            }) }}
-        </div>
-        <div class="flex-grow">
-            {{ text({
-                id: name~'Subpath',
-                class: 'ltr',
-                name: name~'Subpath',
-                value: field[name~'Subpath'],
-                placeholder: "path/to/subfolder"|t('app')
-            }) }}
-        </div>
-    </div>
+{% macro uploadLocationField(config) %}
+    {% embed '_includes/forms/field' with config %}
+        {% block input %}
+            {% import '_includes/forms' as forms %}
+            <div class="flex flex-nowrap">
+                <div>
+                    {{ forms.select({
+                        name: "#{config.name}Source",
+                        options: config.sourceOptions,
+                        value: config.sourceValue,
+                        describedBy: describedBy,
+                    }) }}
+                </div>
+                <div class="flex-grow">
+                    {{ forms.text({
+                        class: 'ltr',
+                        name: "#{config.name}Subpath",
+                        value: config.subpathValue,
+                        placeholder: "path/to/subfolder"|t('app'),
+                        describedBy: describedBy,
+                    }) }}
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
 {% endmacro %}
 
-{% from _self import uploadLocationInput %}
+{% set dynamicPathTip = "The path can contain variables like `{slug}` or `{author.username}`."|t('app') %}
+{% if 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
+    {% set dynamicPathTip = dynamicPathTip|replace({
+        '{slug}': '{owner.slug}',
+        '{author.username}': '{owner.author.username}'
+    }) %}
+{% endif %}
 
 
 {% block fieldSettings %}
-    {{ forms.selectField({
-        label: 'Field mode'|t('app'),
-        id: 'fieldMode',
-        name: 'fieldMode',
-        class: 'assets-field-mode',
-        value: field.fieldMode,
-        options: fieldModeOptions,
-        toggle: true,
-        targetPrefix: 'field-mode-'
+    {{ forms.checkboxField({
+        label: 'Restrict assets to a single location'|t('app'),
+        name: 'restrictLocation',
+        checked: field.restrictLocation,
+        toggle: 'restricted-location-settings',
+        reverseToggle: 'unrestricted-location-settings'
     }) }}
 
-    {% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t('app') %}
-    {% if isMatrix %}
-        {% set uploadLocationNote = uploadLocationNote|replace({
-            '{slug}': '{owner.slug}',
-            '{author.username}': '{owner.author.username}'
-        }) %}
-    {% endif %}
-
-    <div id="field-mode-singleFolder" {% if field.fieldMode != 'singleFolder' %}class="hidden"{% endif %}>
-        {{ forms.field({
+    {% tag('div') with {
+        id: 'restricted-location-settings',
+        class: not field.restrictLocation ? 'hidden' : false,
+    } %}
+        {{ _self.uploadLocationField({
             label: 'Asset Location'|t('app'),
-            instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
-            errors: field.getErrors('singleUploadLocationSubpath')
-        }, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
-    </div>
+            instructions: 'The location where assets can be selected from.'|t('app'),
+            tip: dynamicPathTip,
+            name: 'restrictedLocation',
+            sourceOptions: sourceOptions,
+            sourceValue: field.restrictedLocationSource,
+            subpathValue: field.restrictedLocationSubpath,
+            errors: field.getErrors('restrictedLocationSubpath')
+        }) }}
 
-    <div id="field-mode-normal" {% if field.fieldMode != 'normal' %}class="hidden"{% endif %}>
+        {{ forms.checkboxField({
+            label: 'Allow subfolders'|t('app'),
+            name: 'allowSubfolders',
+            checked: field.allowSubfolders,
+            toggle: 'allow-subfolders-settings',
+        }) }}
+
+        {% tag('div') with {
+            id: 'allow-subfolders-settings',
+            class: not field.allowSubfolders ? 'hidden' : false,
+        } %}
+            {{ forms.textField({
+                class: 'ltr',
+                name: 'restrictedDefaultUploadSubpath',
+                label: 'Default Upload Location'|t('app'),
+                value: field.restrictedDefaultUploadSubpath,
+                instructions: 'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'|t('app'),
+                tip: dynamicPathTip,
+                placeholder: 'path/to/subfolder'|t('app'),
+            }) }}
+        {% endtag %}
+    {% endtag %}
+
+    {% tag('div') with {
+        id: 'unrestricted-location-settings',
+        class: field.restrictLocation ? 'hidden' : false,
+    } %}
         {{ block('sourcesField') }}
 
-        {{ forms.field({
-            label: 'Default Asset Location'|t('app'),
-            instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.'|t('app') ~' '~ uploadLocationNote,
+        {{ _self.uploadLocationField({
+            label: 'Default Upload Location'|t('app'),
+            instructions: 'Where assets should be stored when they are uploaded directly to the field.'|t('app'),
+            tip: dynamicPathTip,
+            name: 'defaultUploadLocation',
+            sourceOptions: sourceOptions,
+            sourceValue: field.defaultUploadLocationSource,
+            subpathValue: field.defaultUploadLocationSubpath,
             errors: field.getErrors('defaultUploadLocationSubpath')
-        }, uploadLocationInput('defaultUploadLocation', field, sourceOptions)) }}
-    </div>
-
-    <div id="field-mode-subtree" {% if field.fieldMode != 'subtree' %}class="hidden"{% endif %}>
-        {{ forms.field({
-            label: 'Asset subtree'|t('app'),
-            instructions: 'Assets in this field will be contained to this path and its subfolders.'|t('app') ~' '~ uploadLocationNote,
-            errors: field.getErrors('subtree')
-        }, uploadLocationInput('subtree', field, sourceOptions)) }}
-
-        {{ forms.textField({
-            id: 'subtreeDefaultLocation',
-            class: 'ltr',
-            name: 'subtreeDefaultLocation',
-            label: 'Default Asset Location'|t('app'),
-            value: field.subtreeDefaultLocation,
-            instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form. This setting is applied on top of the selected subtree.'|t('app') ~' '~ uploadLocationNote,
-            placeholder: "path/to/subfolder"|t('app')
         }) }}
-    </div>
+    {% endtag %}
+
+    <hr>
 
     {{ forms.checkboxField({
         label: 'Show unpermitted volumes'|t('app'),
@@ -114,7 +131,7 @@
     }) }}
 
     <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
-        {% for option in fileKindOptions %}
+        {% for option in field.getFileKindOptions() %}
             {{ forms.checkboxField({
                 label: option.label,
                 id: 'allowedKinds-'~option.value,
@@ -158,11 +175,3 @@
 
     {{ block('advancedSettings') }}
 {% endblock %}
-
-{% js %}
-    const prefix = 'folder-settings-';
-
-    $('.assets-field-mode').change(ev => {
-        $('.folder-settings').addClass('hidden').filter('.mode-' + ev.target.value).removeClass('hidden');
-    });
-{% endjs %}
