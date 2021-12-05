@@ -478,7 +478,7 @@ class Assets extends BaseRelationField
      */
     public function resolveDynamicPathToFolderId(?ElementInterface $element = null): int
     {
-        return $this->_determineUploadFolderId($element, true, true);
+        return $this->_determineUploadFolderId($element);
     }
 
     /**
@@ -526,7 +526,7 @@ class Assets extends BaseRelationField
         $assetsService = Craft::$app->getAssets();
 
         $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
-            return $_targetFolderId ?? ($_targetFolderId = $this->_determineUploadFolderId($element, $isCanonical, true));
+            return $_targetFolderId ?? ($_targetFolderId = $this->_determineUploadFolderId($element, $isCanonical));
         };
 
         // Folder creation and file uploads have been handles for propagating elements already.
@@ -645,7 +645,7 @@ class Assets extends BaseRelationField
      */
     protected function inputSources(?ElementInterface $element = null)
     {
-        $folderId = $this->_determineUploadFolderId($element, false);
+        $folderId = $this->_determineUploadFolderId($element, false, false);
         Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
 
         $assetsService = Craft::$app->getAssets();
@@ -923,7 +923,7 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the folder subpath is not valid
      * @throws InvalidVolumeException if there's a problem with the field's volume configuration
      */
-    private function _determineUploadFolderId(?ElementInterface $element = null, bool $createDynamicFolders = true, bool $resolveSubtreeDefaultLocation = false): int
+    private function _determineUploadFolderId(?ElementInterface $element = null, bool $createDynamicFolders = true, bool $resolveSubtreeDefaultLocation = true): int
     {
         $userFolder = null;
         $folderId = null;
