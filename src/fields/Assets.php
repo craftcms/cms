@@ -526,9 +526,8 @@ class Assets extends BaseRelationField
         $query = $element->getFieldValue($this->handle);
         $assetsService = Craft::$app->getAssets();
 
-        $getTargetFolderId = function() use ($element, $isCanonical): int {
-            static $targetFolderId;
-            return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, $isCanonical, true);
+        $getTargetFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+            return $_targetFolderId ?? ($_targetFolderId = $this->_determineUploadFolderId($element, $isCanonical, true));
         };
 
         // Folder creation and file uploads have been handles for propagating elements already.
