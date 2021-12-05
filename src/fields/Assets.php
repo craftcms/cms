@@ -525,7 +525,7 @@ class Assets extends BaseRelationField
         $query = $element->getFieldValue($this->handle);
         $assetsService = Craft::$app->getAssets();
 
-        $getTargetFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+        $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
             return $_targetFolderId ?? ($_targetFolderId = $this->_determineUploadFolderId($element, $isCanonical, true));
         };
 
@@ -535,7 +535,7 @@ class Assets extends BaseRelationField
             $uploadedFiles = $this->_getUploadedFiles($element);
 
             if (!empty($uploadedFiles)) {
-                $targetFolderId = $getTargetFolderId();
+                $uploadFolderId = $getUploadFolderId();
 
                 // Convert them to assets
                 $assetIds = [];
@@ -549,12 +549,12 @@ class Assets extends BaseRelationField
                         FileHelper::writeToFile($tempPath, $file['data']);
                     }
 
-                    $folder = $assetsService->getFolderById($targetFolderId);
+                    $uploadFolder = $assetsService->getFolderById($uploadFolderId);
                     $asset = new Asset();
                     $asset->tempFilePath = $tempPath;
                     $asset->setFilename($file['filename']);
-                    $asset->newFolderId = $targetFolderId;
-                    $asset->setVolumeId($folder->volumeId);
+                    $asset->newFolderId = $uploadFolderId;
+                    $asset->setVolumeId($uploadFolder->volumeId);
                     $asset->uploaderId = Craft::$app->getUser()->getId();
                     $asset->avoidFilenameConflicts = true;
                     $asset->setScenario(Asset::SCENARIO_CREATE);
@@ -590,9 +590,9 @@ class Assets extends BaseRelationField
         if (!empty($assets)) {
             // Only enforce the restricted asset location for canonical elements
             if ($this->restrictLocation && $isCanonical) {
-                $targetFolderId = $getTargetFolderId();
-                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
-                    return $asset->folderId != $targetFolderId;
+                $uploadFolderId = $getUploadFolderId();
+                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($uploadFolderId) {
+                    return $asset->folderId != $uploadFolderId;
                 });
             } else {
                 // Find the files with temp sources and just move those.
@@ -603,13 +603,13 @@ class Assets extends BaseRelationField
             }
 
             if (!empty($assetsToMove)) {
-                $folder = $assetsService->getFolderById($getTargetFolderId());
+                $uploadFolder = $assetsService->getFolderById($getUploadFolderId());
 
                 // Resolve all conflicts by keeping both
                 foreach ($assetsToMove as $asset) {
                     $asset->avoidFilenameConflicts = true;
                     try {
-                        $assetsService->moveAsset($asset, $folder);
+                        $assetsService->moveAsset($asset, $uploadFolder);
                     } catch (VolumeObjectNotFoundException $e) {
                         // Don't freak out about that.
                         Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
