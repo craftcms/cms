@@ -127,10 +127,14 @@
 - Added `craft\helpers\Html::hiddenLabel()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
+- Added `craft\helpers\ProjectConfig::encodeValueAsString()`.
+- Added `craft\helpers\ProjectConfig::ensureAllSectionsProcessed()`.
 - Added `craft\i18n\Translation`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS`, which replaces `EVENT_DEFINE_STANDARD_FIELDS`.
 - Added `craft\models\FieldLayout::getAvailableNativeFields()`.
+- Added `craft\models\ProjectConfigData`.
+- Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
@@ -150,7 +154,10 @@
 - Added `craft\services\Config::CATEGORY_CUSTOM`.
 - Added `craft\services\Config::getCustom()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
+- Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
+- Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
+- Added `craft\services\ProjectConfig::getIsApplyingExternalChanges()`.
 - Added `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_DATE_MODIFIED`.
 - Added `craft\services\ProjectConfig::PATH_ELEMENT_SOURCES`.
@@ -176,6 +183,8 @@
 - Added `craft\services\ProjectConfig::PATH_USER_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_USERS`.
 - Added `craft\services\ProjectConfig::PATH_VOLUMES`.
+- Added `craft\services\ProjectConfig::regenerateExternalConfig()`.
+- Added `craft\services\ProjectConfig::rememberAppliedChanges()`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
@@ -341,6 +350,10 @@
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
 - Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
+- Deprecated `craft\services\ProjectConfig::applyYamlChanges()`. `applyExternalChanges()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChanges()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::regenerateYamlFromConfig()`. `regenerateExternalConfig()` should be used instead.
 
 ### Removed
 - Removed the `--type` option from `migrate/*` commands. `--track` or `--plugin` can be used instead.

@@ -54,7 +54,7 @@ class ConfigSyncController extends BaseUpdaterController
             $projectConfig->forceUpdate = true;
         }
 
-        $projectConfig->applyYamlChanges();
+        $projectConfig->applyExternalChanges();
         return $this->sendFinished();
     }
 
@@ -66,7 +66,7 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function actionRegenerateYaml(): Response
     {
-        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        Craft::$app->getProjectConfig()->regenerateExternalConfig();
 
         return $this->sendFinished();
     }

@@ -544,15 +544,13 @@ class Plugins extends Component
         }
 
         // Add the plugin to the project config
-        if (!$projectConfig->get($configKey, true)) {
-            $pluginData = [
-                'edition' => $edition,
-                'enabled' => true,
-                'schemaVersion' => $plugin->schemaVersion,
-            ];
+        $pluginData = [
+            'edition' => $edition,
+            'enabled' => true,
+            'schemaVersion' => $plugin->schemaVersion,
+        ];
 
-            $projectConfig->set($configKey, $pluginData, "Install plugin “{$handle}”");
-        }
+        $projectConfig->set($configKey, $pluginData, "Install plugin “{$handle}”");
 
         $this->_enabledPluginInfo[$handle] = $info;
         $this->_registerPlugin($plugin);
@@ -1413,7 +1411,7 @@ class Plugins extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $configKey = ProjectConfig::PATH_PLUGINS . '.' . $handle;
-        $data = $projectConfig->get($configKey) ?? $projectConfig->get($configKey, true);
+        $data = $projectConfig->get($configKey);
 
         if (!empty($data['settings'])) {
             $data['settings'] = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
