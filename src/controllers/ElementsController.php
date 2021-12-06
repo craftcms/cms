@@ -56,7 +56,7 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetModalBody(): Response
     {
-        $sourceKeys = $this->request->getParam('sources');
+        $sourceKeys = $providedSourceKeys = $this->request->getParam('sources');
         $elementType = $this->elementType();
         $context = $this->context();
 
@@ -91,6 +91,9 @@ class ElementsController extends BaseElementsController
                         $sources[] = $source;
                     }
                 }
+
+                // Sort it by the original order
+                ArrayHelper::multisort($sources, 'key', [$providedSourceKeys]);
             }
         } else {
             $sources = Craft::$app->getElementSources()->getSources($elementType);

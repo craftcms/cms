@@ -1,15 +1,11 @@
 {% extends "_components/fieldtypes/elementfieldsettings" %}
-
 {% import "_includes/forms" as forms %}
-
-{% set fileKindOptions = field.getFileKindOptions() %}
-{% set isMatrix = 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
 
 {% macro uploadLocationField(config) %}
     {% embed '_includes/forms/field' with config %}
         {% block input %}
             {% import '_includes/forms' as forms %}
-            <div class="flex">
+            <div class="flex flex-nowrap">
                 <div>
                     {{ forms.select({
                         name: "#{config.name}Source",
@@ -32,52 +28,81 @@
     {% endembed %}
 {% endmacro %}
 
+{% set dynamicPathTip = "The path can contain variables like `{slug}` or `{author.username}`."|t('app') %}
+{% if 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
+    {% set dynamicPathTip = dynamicPathTip|replace({
+        '{slug}': '{owner.slug}',
+        '{author.username}': '{owner.author.username}'
+    }) %}
+{% endif %}
+
 
 {% block fieldSettings %}
     {{ forms.checkboxField({
-        label: 'Restrict assets to a single folder'|t('app'),
-        id: 'useSingleFolder-toggle',
-        name: 'useSingleFolder',
-        class: 'use-single-folder-cb',
-        value: 1,
-        checked: field.useSingleFolder,
-        toggle: 'single-folder-settings',
-        reverseToggle: 'multi-folder-settings'
+        label: 'Restrict assets to a single location'|t('app'),
+        name: 'restrictLocation',
+        checked: field.restrictLocation,
+        toggle: 'restricted-location-settings',
+        reverseToggle: 'unrestricted-location-settings'
     }) }}
 
-    {% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t('app') %}
-    {% if isMatrix %}
-        {% set uploadLocationNote = uploadLocationNote|replace({
-            '{slug}': '{owner.slug}',
-            '{author.username}': '{owner.author.username}'
-        }) %}
-    {% endif %}
+    {% tag('div') with {
+        id: 'restricted-location-settings',
+        class: not field.restrictLocation ? 'hidden' : false,
+    } %}
+        {{ _self.uploadLocationField({
+            label: 'Asset Location'|t('app'),
+            instructions: 'The location where assets can be selected from.'|t('app'),
+            tip: dynamicPathTip,
+            name: 'restrictedLocation',
+            sourceOptions: sourceOptions,
+            sourceValue: field.restrictedLocationSource,
+            subpathValue: field.restrictedLocationSubpath,
+            errors: field.getErrors('restrictedLocationSubpath')
+        }) }}
 
-    <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
+        {{ forms.checkboxField({
+            label: 'Allow subfolders'|t('app'),
+            name: 'allowSubfolders',
+            checked: field.allowSubfolders,
+            toggle: 'allow-subfolders-settings',
+        }) }}
+
+        {% tag('div') with {
+            id: 'allow-subfolders-settings',
+            class: not field.allowSubfolders ? 'hidden' : false,
+        } %}
+            {{ forms.textField({
+                class: 'ltr',
+                name: 'restrictedDefaultUploadSubpath',
+                label: 'Default Upload Location'|t('app'),
+                value: field.restrictedDefaultUploadSubpath,
+                instructions: 'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'|t('app'),
+                tip: dynamicPathTip,
+                placeholder: 'path/to/subfolder'|t('app'),
+            }) }}
+        {% endtag %}
+    {% endtag %}
+
+    {% tag('div') with {
+        id: 'unrestricted-location-settings',
+        class: field.restrictLocation ? 'hidden' : false,
+    } %}
         {{ block('sourcesField') }}
 
         {{ _self.uploadLocationField({
-            label: 'Default Asset Location'|t('app'),
-            instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.'|t('app') ~' '~ uploadLocationNote,
+            label: 'Default Upload Location'|t('app'),
+            instructions: 'Where assets should be stored when they are uploaded directly to the field.'|t('app'),
+            tip: dynamicPathTip,
             name: 'defaultUploadLocation',
             sourceOptions: sourceOptions,
             sourceValue: field.defaultUploadLocationSource,
             subpathValue: field.defaultUploadLocationSubpath,
-            errors: field.getErrors('defaultUploadLocationSubpath'),
+            errors: field.getErrors('defaultUploadLocationSubpath')
         }) }}
-    </div>
+    {% endtag %}
 
-    <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
-        {{ _self.uploadLocationField({
-            label: 'Asset Location'|t('app'),
-            instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
-            name: 'singleUploadLocation',
-            sourceOptions: sourceOptions,
-            sourceValue: field.singleUploadLocationSource,
-            subpathValue: field.singleUploadLocationSubpath,
-            errors: field.getErrors('singleUploadLocationSubpath'),
-        }) }}
-    </div>
+    <hr>
 
     {{ forms.checkboxField({
         label: 'Show unpermitted volumes'|t('app'),
@@ -106,7 +131,7 @@
     }) }}
 
     <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
-        {% for option in fileKindOptions %}
+        {% for option in field.getFileKindOptions() %}
             {{ forms.checkboxField({
                 label: option.label,
                 id: 'allowedKinds-'~option.value,
