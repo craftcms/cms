@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\data\SingleOptionFieldData;
-use craft\helpers\Html;
 
 /**
  * RadioButtons represents a Radio Buttons field.
