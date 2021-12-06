@@ -590,9 +590,24 @@ class Assets extends BaseRelationField
         if (!empty($assets)) {
             // Only enforce the restricted asset location for canonical elements
             if ($this->restrictLocation && $isCanonical) {
-                $uploadFolderId = $getUploadFolderId();
-                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($uploadFolderId) {
-                    return $asset->folderId != $uploadFolderId;
+                if (!$this->allowSubfolders) {
+                    $rootRestrictedFolderId = $getUploadFolderId();
+                } else {
+                    $rootRestrictedFolderId = $this->_determineUploadFolderId($element, true, false);
+                }
+
+                $assetsToMove = array_filter($assets, function(Asset $asset) use ($rootRestrictedFolderId, $assetsService) {
+                    if ($asset->folderId === $rootRestrictedFolderId) {
+                        return false;
+                    }
+                    if (!$this->allowSubfolders) {
+                        return true;
+                    }
+                    $rootRestrictedFolder = $assetsService->getFolderById($rootRestrictedFolderId);
+                    return (
+                        $asset->volumeId !== $rootRestrictedFolder->volumeId ||
+                        !StringHelper::startsWith($asset->folderPath, $rootRestrictedFolder->path)
+                    );
                 });
             } else {
                 // Find the files with temp sources and just move those.
