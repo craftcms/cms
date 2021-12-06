@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\conditions\ConditionInterface;
 use craft\conditions\ConditionRuleInterface;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\web\Controller;
 
