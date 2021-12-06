@@ -157,7 +157,7 @@
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
-- Added `craft\services\ProjectConfig::getIsApplyingExternalChangers()`.
+- Added `craft\services\ProjectConfig::getIsApplyingExternalChanges()`.
 - Added `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_DATE_MODIFIED`.
 - Added `craft\services\ProjectConfig::PATH_ELEMENT_SOURCES`.
@@ -352,7 +352,7 @@
 - Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
 - Deprecated `craft\services\ProjectConfig::applyYamlChanges()`. `applyExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
-- Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChangers()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::regenerateYamlFromConfig()`. `regenerateExternalConfig()` should be used instead.
 
 ### Removed

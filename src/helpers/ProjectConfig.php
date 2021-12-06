@@ -27,6 +27,7 @@ class ProjectConfig
      *
      * @param $value
      * @return string
+     * @since 4.0.0
      */
     public static function encodeValueAsString($value): string
     {
@@ -144,7 +145,9 @@ class ProjectConfig
     }
 
     /**
-     * Ensure all seection config changes are processed immediately in a safe manner.
+     * Ensure all section config changes are processed immediately in a safe manner.
+     *
+     * @since 4.0.0
      */
     public static function ensureAllSectionsProcessed(): void
     {

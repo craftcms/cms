@@ -1648,6 +1648,7 @@ class ProjectConfig extends Component
      * @param mixed $oldValue
      * @param mixed $newValue
      * @param string|null $message message describing the changes made.
+     * @since 4.0.0
      */
     public function rememberAppliedChanges(string $path, $oldValue, $newValue, ?string $message = null): void
     {
