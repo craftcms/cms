@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -20,12 +20,14 @@ class ReadOnlyProjectConfigData extends Model
 {
     protected array $data;
 
-    public function __construct(array $data = []) {
+    public function __construct(array $data = [])
+    {
         $this->data = $data;
         parent::__construct();
     }
 
-    public function get($path) {
+    public function get($path)
+    {
         return $this->traverseDataArray($this->data, $path);
     }
 

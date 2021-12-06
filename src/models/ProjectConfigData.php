@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -103,7 +103,6 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
                 $projectConfig->updateParsedConfigTimesAfterRequest();
             }
         }
-
     }
 
     /**
@@ -127,7 +126,8 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      * @param $path
      * @return mixed|null
      */
-    protected function delete($path) {
+    protected function delete($path)
+    {
         return $this->traverseDataArray($this->data, $path, null, true);
     }
 
