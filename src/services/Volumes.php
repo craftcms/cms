@@ -28,7 +28,6 @@ use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use Throwable;
 use yii\base\Component;
-use yii\base\UnknownPropertyException;
 
 /**
  * Class AssetVolumesService

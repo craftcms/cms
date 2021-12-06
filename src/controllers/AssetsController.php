@@ -1306,6 +1306,7 @@ class AssetsController extends Controller
 
         return $this->asJson(['success' => true]);
     }
+
     /**
      * Sends a broken image response based on a given exception.
      *

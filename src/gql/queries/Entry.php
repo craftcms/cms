@@ -12,10 +12,8 @@ use craft\gql\base\Query;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\helpers\Gql as GqlHelper;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 

@@ -9,7 +9,6 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\helpers\Console;
-use craft\helpers\StringHelper;
 use Throwable;
 use yii\console\ExitCode;
 

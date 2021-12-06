@@ -16,7 +16,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
-use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
