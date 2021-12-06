@@ -77,7 +77,7 @@ class Matrix extends InputObjectType
             },
         ]));
 
-        $inputType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
             'fields' => function() use ($blockContainerInputType) {
                 return [
@@ -93,8 +93,6 @@ class Matrix extends InputObjectType
             },
             'normalizeValue' => [self::class, 'normalizeValue'],
         ]));
-
-        return $inputType;
     }
 
     /**

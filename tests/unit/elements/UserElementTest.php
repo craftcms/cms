@@ -104,7 +104,7 @@ class UserElementTest extends TestCase
         ]);
 
         self::assertSame(
-            '["TOKEN",null,"Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)"]',
+            '["TOKEN",null,"' . md5('Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)') . '"]',
             $this->activeUser->getAuthKey()
         );
 
@@ -158,7 +158,7 @@ class UserElementTest extends TestCase
         ]);
         self::assertTrue(
             $this->activeUser->validateAuthKey(
-                '["EXAMPLE_TOKEN",null,"' . $validUserAgent . '"]'
+                '["EXAMPLE_TOKEN",null,"' . md5($validUserAgent) . '"]'
             )
         );
     }

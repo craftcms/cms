@@ -18,11 +18,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 abstract class Resolver
 {
     /**
-     * @var array Cache fields by context.
-     */
-    protected static array $eagerLoadableFieldsByContext;
-
-    /**
      * Resolve a field to its value.
      *
      * @param mixed $source The parent data source to use for resolving this field

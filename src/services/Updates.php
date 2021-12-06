@@ -9,13 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\PluginInterface;
-use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
@@ -106,7 +105,7 @@ class Updates extends Component
 
         try {
             $updateData = Craft::$app->getApi()->getUpdates();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
             $updateData = [];
         }
@@ -255,7 +254,7 @@ class Updates extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw new MigrateException($name, $handle, null, 0, $e);
         }
@@ -366,8 +365,8 @@ class Updates extends Component
         // Only update the schema version if it's changed from what's in the file,
         // so we don't accidentally overwrite other pending changes
         $projectConfig = Craft::$app->getProjectConfig();
-        if ($projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true) !== $info->schemaVersion) {
-            Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion, 'Update Craft schema version');
+        if ($projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true) !== $info->schemaVersion) {
+            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_SCHEMA_VERSION, $info->schemaVersion, 'Update Craft schema version');
         }
 
         $this->_isCraftUpdatePending = null;

@@ -52,7 +52,7 @@ class Edit extends ElementAction
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         validateSelection: function(\$selectedItems)
         {

@@ -29,6 +29,7 @@ use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -44,30 +45,28 @@ class Categories extends Component
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is saved.
      */
-    const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
+    public const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
 
     /**
      * @event CategoryGroupEvent The event that is triggered after a category group is saved.
      */
-    const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
+    public const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
      */
-    const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
+    public const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event CategoryGroupEvent The event that is triggered after a category group is deleted.
      */
-    const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
-
-    const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
+    public const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
 
     /**
      * @var MemoizableArray<CategoryGroup>|null
@@ -239,7 +238,7 @@ class Categories extends Component
      * @param bool $runValidation Whether the category group should be validated
      * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
@@ -275,7 +274,7 @@ class Categories extends Component
             }
         }
 
-        $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid;
+        $configPath = ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save category group “{$group->handle}”");
 
@@ -455,7 +454,7 @@ class Categories extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -490,7 +489,7 @@ class Categories extends Component
      *
      * @param int $groupId The category group's ID
      * @return bool Whether the category group was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.0.12
      */
     public function deleteGroupById(int $groupId): bool
@@ -523,7 +522,7 @@ class Categories extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid, "Delete category group “{$group->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid, "Delete category group “{$group->handle}”");
         return true;
     }
 
@@ -598,7 +597,7 @@ class Categories extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -628,7 +627,7 @@ class Categories extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
+        $categoryGroups = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -640,7 +639,7 @@ class Categories extends Component
                     foreach ($categoryGroup['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -667,12 +666,12 @@ class Categories extends Component
         $siteUid = $event->site->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $categoryGroups = $projectConfig->get(self::CONFIG_CATEGORYROUP_KEY);
+        $categoryGroups = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
         // Loop through the category groups and prune the UID from field layouts.
         if (is_array($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
-                $projectConfig->remove(self::CONFIG_CATEGORYROUP_KEY . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid, 'Prune deleted site settings');
+                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid, 'Prune deleted site settings');
             }
         }
     }

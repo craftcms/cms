@@ -9,10 +9,12 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
+use craft\models\EntryType as EntryTypeModel;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
@@ -273,18 +275,23 @@ class Gql
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
-     * @param callable $resolveFunction The resolver function to use to resolve a specific type.
+     * @param ?callable $resolveFunction The resolver function to use to resolve a specific type. If not provided,
+     * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
-    public static function getUnionType(string $typeName, array $includedTypes, callable $resolveFunction)
+    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null)
     {
-        $unionType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
+        if (!$resolveFunction) {
+            $resolveFunction = function(ElementInterface $value) {
+                return $value->getGqlTypeName();
+            };
+        }
+
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new UnionType([
             'name' => $typeName,
             'types' => $includedTypes,
             'resolveType' => $resolveFunction,
         ]));
-
-        return $unionType;
     }
 
     /**
@@ -551,6 +558,19 @@ class Gql
         return static function($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
         };
+    }
+
+    /**
+     * Return all entry types a given (or loaded) schema contains.
+     *
+     * @return EntryTypeModel[]
+     */
+    public static function getSchemaContainedEntryTypes(?GqlSchema $schema = null): array
+    {
+        return array_filter(
+            Craft::$app->getSections()->getAllEntryTypes(),
+            static fn($entryType) => self::isSchemaAwareOf(EntryElement::gqlScopesByContext($entryType), $schema)
+        );
     }
 
     /**

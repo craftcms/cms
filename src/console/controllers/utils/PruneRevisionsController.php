@@ -101,11 +101,11 @@ class PruneRevisionsController extends Controller
             $elementType = $element['type'];
             $deleteCount = $element['count'] - $this->maxRevisions;
 
-            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ({$deleteCount} revisions) ... ");
+            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ($deleteCount revisions) ... ");
 
             $extraRevisions = $elementType::find()
                 ->revisionOf($element['id'])
-                ->siteId('*')
+                ->site('*')
                 ->unique()
                 ->status(null)
                 ->orderBy(['num' => SORT_DESC])

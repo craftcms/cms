@@ -21,6 +21,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
@@ -42,28 +43,28 @@ class Connection extends \yii\db\Connection
 {
     use PrimaryReplicaTrait;
 
-    const DRIVER_MYSQL = 'mysql';
-    const DRIVER_PGSQL = 'pgsql';
+    public const DRIVER_MYSQL = 'mysql';
+    public const DRIVER_PGSQL = 'pgsql';
 
     /**
      * @event BackupEvent The event that is triggered before the backup is created.
      */
-    const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
+    public const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
 
     /**
      * @event BackupEvent The event that is triggered after the backup is created.
      */
-    const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
+    public const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
 
     /**
      * @event RestoreEvent The event that is triggered before the restore is started.
      */
-    const EVENT_BEFORE_RESTORE_BACKUP = 'beforeRestoreBackup';
+    public const EVENT_BEFORE_RESTORE_BACKUP = 'beforeRestoreBackup';
 
     /**
      * @event RestoreEvent The event that is triggered after the restore occurred.
      */
-    const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
+    public const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
     /**
      * @var bool|null whether the database supports 4+ byte characters
@@ -118,7 +119,7 @@ class Connection extends \yii\db\Connection
     /**
      * @inheritdoc
      * @throws DbConnectException if there are any issues
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function open(): void
     {
@@ -145,7 +146,7 @@ class Connection extends \yii\db\Connection
 
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
         }
@@ -173,12 +174,13 @@ class Connection extends \yii\db\Connection
         $systemName = mb_strtolower(FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
             'asciiOnly' => true,
         ]));
-        $filename = ($systemName ? $systemName . '--' : '') . gmdate('Y-m-d-His') . '--v' . Craft::$app->getVersion();
+        $version = Craft::$app->getInfo()->version ?? Craft::$app->getVersion();
+        $filename = ($systemName ? "$systemName--" : '') . gmdate('Y-m-d-His') . "--v$version";
         $backupPath = Craft::$app->getPath()->getDbBackupPath();
-        $path = $backupPath . '/' . $filename . '.sql';
+        $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '.sql';
         $i = 0;
         while (file_exists($path)) {
-            $path = $backupPath . '/' . $filename . '--' . ++$i . '.sql';
+            $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '--' . ++$i . '.sql';
         }
         return $path;
     }

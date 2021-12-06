@@ -38,7 +38,7 @@ class UserPermissions extends Component
     /**
      * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
      */
-    const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+    public const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
 
     /**
      * @var string[][]
@@ -358,7 +358,7 @@ class UserPermissions extends Component
 
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-        $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
+        $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
 
         return true;

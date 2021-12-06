@@ -55,9 +55,8 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/radioGroup', [
-            'instructionsId' => "$id-instructions",
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
             'options' => $this->translatedOptions(),

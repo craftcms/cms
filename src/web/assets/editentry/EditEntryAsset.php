@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\editentry;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Edit Entry page
@@ -31,6 +31,6 @@ class EditEntryAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'EntryTypeSwitcher.min.js',
+        'EntryTypeSwitcher.js',
     ];
 }

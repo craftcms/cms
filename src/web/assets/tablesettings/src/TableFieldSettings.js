@@ -46,6 +46,9 @@
                 defaultValues: {
                     type: 'singleline'
                 },
+                allowAdd: true,
+                allowReorder: true,
+                allowDelete: true,
                 onAddRow: this.onAddColumn.bind(this),
                 onDeleteRow: this.reconstructDefaultsTable.bind(this)
             });
@@ -53,7 +56,10 @@
 
         initDefaultsTable: function() {
             this.defaultsTable = new Craft.EditableTable(this.defaultsTableId, this.defaultsTableName, this.columnsData, {
-                rowIdPrefix: 'row'
+                rowIdPrefix: 'row',
+                allowAdd: true,
+                allowReorder: true,
+                allowDelete: true,
             });
         },
 
@@ -63,31 +69,42 @@
         },
 
         initColumnSettingInputs: function($container) {
-            var $textareas = $container.find('td:first-child textarea, td:nth-child(3) textarea');
+            const $textareas = $container.find('td:first-child textarea, td:nth-child(3) textarea');
             this.addListener($textareas, 'input', 'reconstructDefaultsTable');
         },
 
         reconstructDefaultsTable: function() {
             this.columnsData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody));
-            var defaults = Craft.expandPostArray(Garnish.getPostData(this.defaultsTable.$tbody));
+            let defaults = Craft.expandPostArray(Garnish.getPostData(this.defaultsTable.$tbody));
 
-            var i, key;
+            // If there are no columns, drop the defaults table rows and disable add row button
+            if (!Object.keys(this.columnsData).length) {
+                const $rows = this.defaultsTable.$tbody.children();
+                for (let r = 0; r < $rows.length; r++) {
+                  this.defaultsTable.deleteRow(this.defaultsTable.createRowObj($rows[r]));
+                }
+                this.defaultsTable.$addRowBtn.css('opacity', '0.2');
+                this.defaultsTable.$addRowBtn.css('pointer-events', 'none');
+                return;
+            }
 
-            for (i = 0; i < this.columnsTableInputPath.length; i++) {
-                key = this.columnsTableInputPath[i];
-                this.columnsData = this.columnsData[key];
+            for (let i = 0; i < this.columnsTableInputPath.length; i++) {
+                const key = this.columnsTableInputPath[i];
+                if (typeof this.columnsData[key] !== 'undefined') {
+                  this.columnsData = this.columnsData[key];
+                }
             }
 
             // Add in the dropdown options
             for (let colId in this.columnsData) {
                 if (this.columnsData.hasOwnProperty(colId) && this.columnsData[colId].type === 'select') {
-                    var rowObj = this.columnsTable.$tbody.find('tr[data-id="' + colId + '"]').data('editable-table-row');
+                    const rowObj = this.columnsTable.$tbody.find('tr[data-id="' + colId + '"]').data('editable-table-row');
                     this.columnsData[colId].options = rowObj.options || [];
                 }
             }
 
-            for (i = 0; i < this.defaultsTableInputPath.length; i++) {
-                key = this.defaultsTableInputPath[i];
+            for (let i = 0; i < this.defaultsTableInputPath.length; i++) {
+                const key = this.defaultsTableInputPath[i];
 
                 if (typeof defaults[key] === 'undefined') {
                     defaults = {};
@@ -97,7 +114,7 @@
                 }
             }
 
-            var theadHtml = '<thead>' +
+            let theadHtml = '<thead>' +
                 '<tr>';
 
             for (let colId in this.columnsData) {
@@ -112,14 +129,14 @@
                 '</tr>' +
                 '</thead>';
 
-            var $table = $('<table/>', {
+            const $table = $('<table/>', {
                 id: this.defaultsTableId,
                 'class': 'editable fullwidth'
             }).append(theadHtml);
 
-            var $tbody = $('<tbody/>').appendTo($table);
+            const $tbody = $('<tbody/>').appendTo($table);
 
-            for (var rowId in defaults) {
+            for (let rowId in defaults) {
                 if (!defaults.hasOwnProperty(rowId)) {
                     continue;
                 }
@@ -134,7 +151,7 @@
         }
     });
 
-    var ColumnTable = Craft.EditableTable.extend({
+    const ColumnTable = Craft.EditableTable.extend({
         fieldSettings: null,
 
         init: function(fieldSettings, id, baseName, columns, settings) {
@@ -172,8 +189,8 @@
                 this.options = this.table.fieldSettings.columnsData[this.id].options || null;
             }
 
-            var $typeCell = this.$tr.find('td:nth-child(4)');
-            var $typeSelectContainer = $typeCell.find('.select');
+            const $typeCell = this.$tr.find('td:nth-child(4)');
+            const $typeSelectContainer = $typeCell.find('.select');
             this.$settingsBtn = $typeCell.find('.settings');
 
             if (!this.$settingsBtn.length) {
@@ -207,9 +224,9 @@
 
         showSettingsModal: function(ev) {
             if (!this.settingsModal) {
-                var id = 'dropdownsettingsmodal' + Math.floor(Math.random() * 1000000);
-                var $modal = $('<div/>', {'class': 'modal dropdownsettingsmodal'}).appendTo(Garnish.$bod);
-                var $body = $('<div/>', {'class': 'body'})
+                const id = 'dropdownsettingsmodal' + Math.floor(Math.random() * 1000000);
+                const $modal = $('<div/>', {'class': 'modal dropdownsettingsmodal'}).appendTo(Garnish.$bod);
+                const $body = $('<div/>', {'class': 'body'})
                     .appendTo($modal)
                     .html(this.table.fieldSettings.dropdownSettingsHtml.replace(/__ID__/g, id));
 
@@ -219,9 +236,8 @@
                 });
 
                 if (this.options && this.options.length) {
-                    var row;
-                    for (var i = 0; i < this.options.length; i++) {
-                        row = this.optionsTable.addRow(false);
+                    for (let i = 0; i < this.options.length; i++) {
+                        const row = this.optionsTable.addRow(false);
                         row.$tr.find('.option-label textarea').val(this.options[i].label);
                         row.$tr.find('.option-value textarea').val(this.options[i].value);
                         row.$tr.find('.option-default input[type="checkbox"]').prop('checked', !!this.options[i].default);
@@ -230,7 +246,7 @@
                     this.optionsTable.addRow(false);
                 }
 
-                var $closeButton = $('<button/>', {
+                const $closeButton = $('<button/>', {
                     type: 'button',
                     class: 'btn submit',
                     text: Craft.t('app', 'Done')
@@ -260,8 +276,8 @@
 
         handleSettingsModalHide: function() {
             this.options = [];
-            var $rows = this.optionsTable.$table.find('tbody tr');
-            for (var i = 0; i < $rows.length; i++) {
+            const $rows = this.optionsTable.$table.find('tbody tr');
+            for (let i = 0; i < $rows.length; i++) {
                 let $row = $rows.eq(i);
                 this.options.push({
                     label: $row.find('.option-label textarea').val(),

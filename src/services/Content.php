@@ -30,12 +30,12 @@ class Content extends Component
     /**
      * @event ElementContentEvent The event that is triggered before an element's content is saved.
      */
-    const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
+    public const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
 
     /**
      * @event ElementContentEvent The event that is triggered after an element's content is saved.
      */
-    const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
+    public const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 
     /**
      * @var Connection|array|string The database connection to use

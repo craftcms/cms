@@ -19,6 +19,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\services\ElementSources;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -55,7 +56,7 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetModalBody(): Response
     {
-        $sourceKeys = $this->request->getParam('sources');
+        $sourceKeys = $providedSourceKeys = $this->request->getParam('sources');
         $elementType = $this->elementType();
         $context = $this->context();
 
@@ -67,51 +68,50 @@ class ElementsController extends BaseElementsController
 
         if (is_array($sourceKeys)) {
             $sourceKeys = array_flip($sourceKeys);
-            $allSources = Craft::$app->getElementIndexes()->getSources($elementType);
+            $allSources = Craft::$app->getElementSources()->getSources($elementType);
             $sources = [];
-            $nextHeading = null;
 
             foreach ($allSources as $source) {
-                if (isset($source['heading'])) {
-                    // Queue the heading up to be included only if one of the following sources were requested
-                    $nextHeading = $source;
-                } else if (isset($sourceKeys[$source['key']])) {
-                    if ($nextHeading !== null) {
-                        $sources[] = $nextHeading;
-                        $nextHeading = null;
-                    }
+                if ($source['type'] === ElementSources::TYPE_HEADING) {
                     $sources[] = $source;
+                } else if (isset($sourceKeys[$source['key']])) {
+                    $sources[] = $source;
+                    // Unset so we can keep track of which keys couldn't be found
                     unset($sourceKeys[$source['key']]);
                 }
             }
+
+            $sources = ElementSources::filterExtraHeadings($sources);
 
             // Did we miss any source keys? (This could happen if some are nested)
             if (!empty($sourceKeys)) {
                 foreach (array_keys($sourceKeys) as $key) {
                     $source = ElementHelper::findSource($elementType, $key, $context);
                     if ($source !== null) {
-                        $sources[$key] = $source;
+                        $sources[] = $source;
                     }
                 }
+
+                // Sort it by the original order
+                ArrayHelper::multisort($sources, 'key', [$providedSourceKeys]);
             }
         } else {
-            $sources = Craft::$app->getElementIndexes()->getSources($elementType);
+            $sources = Craft::$app->getElementSources()->getSources($elementType);
         }
 
-        // Figure out if we should be showing the sidebar
-        $foundSource = false;
-        $showSidebar = false;
-        foreach ($sources as $source) {
-            // Make sure it's not a heading
-            if (!isset($source['heading'])) {
-                // If this is the second non-heading source we've come across, or it has nested sources, then we've seen enough
-                if ($foundSource || !empty($source['nested'])) {
-                    $showSidebar = true;
-                    break;
+        // Show the sidebar if there are at least two (non-heading) sources
+        $showSidebar = (function() use ($sources): bool {
+            $foundSource = false;
+            foreach ($sources as $source) {
+                if ($source['type'] !== ElementSources::TYPE_HEADING) {
+                    if ($foundSource || !empty($source['nested'])) {
+                        return true;
+                    }
+                    $foundSource = true;
                 }
-                $foundSource = true;
             }
-        }
+            return false;
+        })();
 
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/modalbody', [
@@ -158,7 +158,7 @@ class ElementsController extends BaseElementsController
         // Normalize the DateTime attributes
         foreach ($element->datetimeAttributes() as $attribute) {
             if (isset($params[$attribute])) {
-                $params[$attribute] = DateTimeHelper::toDateTime($params[$attribute]);
+                $params[$attribute] = DateTimeHelper::toDateTime($params[$attribute]) ?: null;
             }
         }
 
@@ -187,7 +187,7 @@ class ElementsController extends BaseElementsController
         $sourceKey = $this->request->getBodyParam('includeTableAttributesForSource');
 
         if ($sourceKey) {
-            $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
+            $attributes = Craft::$app->getElementSources()->getTableAttributes(get_class($element), $sourceKey);
 
             // Drop the first one
             array_shift($attributes);

@@ -13,10 +13,12 @@ use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\errors\DeprecationException;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use DateTime;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
@@ -86,6 +88,10 @@ class Deprecator extends Component
             return;
         }
 
+        if ($this->logTarget === 'logs') {
+            Craft::warning($message, 'deprecation-error');
+        }
+
         // Get the debug backtrace
         $traces = debug_backtrace();
 
@@ -103,7 +109,7 @@ class Deprecator extends Component
         $this->_requestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
-            'lastOccurrence' => new \DateTime(),
+            'lastOccurrence' => new DateTime(),
             'file' => $file,
             'line' => $line,
             'message' => $message,
@@ -129,7 +135,7 @@ class Deprecator extends Component
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
-                    'traces' => $log->traces,
+                    'traces' => Json::encode($log->traces),
                 ]);
                 $log->id = $db->getLastInsertID();
             } catch (Exception $e) {

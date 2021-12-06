@@ -12,6 +12,7 @@ use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\TableRow;
 
 /**
@@ -46,12 +47,12 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
     {
         /** @var TableField $context */
         $typeName = self::getName($context);
-        $contentFields = TableRow::prepareRowFieldDefinition($context->columns, $typeName);
+        $contentFields = TableRow::prepareRowFieldDefinition($context->columns);
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
             'name' => $typeName,
-            'fields' => function() use ($contentFields) {
-                return $contentFields;
+            'fields' => function() use ($contentFields, $typeName) {
+                return TypeManager::prepareFieldDefinitions($contentFields, $typeName);
             },
         ]));
     }

@@ -8,6 +8,9 @@
         rows: rows,
         addRowLabel: 'Add a column'|t('app'),
         initJs: false,
+        allowAdd: true,
+        allowReorder: true,
+        allowDelete: true,
     } %}
         {% block tablecell %}
             {% if colId == 'type' %}

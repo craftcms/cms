@@ -31,6 +31,11 @@ class Draft extends Entry
                 'type' => Type::nonNull(Type::id()),
                 'description' => 'The ID of the draft.',
             ],
+            'provisional' => [
+                'name' => 'provisional',
+                'type' => Type::boolean(),
+                'description' => 'Whether a provisional draft should be looked up.',
+            ],
             'draftName' => [
                 'name' => 'draftName',
                 'type' => Type::string(),

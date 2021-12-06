@@ -8,12 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\services\Fields;
-use craft\services\Gql as GqlService;
 use craft\services\ProjectConfig as ProjectConfigService;
-use craft\services\Sections;
-use craft\services\Sites;
-use craft\services\UserGroups;
+use StdClass;
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
 use yii\caching\ExpressionDependency;
@@ -80,17 +76,17 @@ class ProjectConfig
 
         static::$_processedFields = true;
 
-        $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true) ?? [];
-        $allFields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY, true) ?? [];
+        $allGroups = $projectConfig->get(ProjectConfigService::PATH_FIELD_GROUPS, true) ?? [];
+        $allFields = $projectConfig->get(ProjectConfigService::PATH_FIELDS, true) ?? [];
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
+            $projectConfig->processConfigChanges(ProjectConfigService::PATH_FIELD_GROUPS . '.' . $groupUid);
         }
 
         foreach ($allFields as $fieldUid => $fieldData) {
             // Ensure field is processed
-            $projectConfig->processConfigChanges(Fields::CONFIG_FIELDS_KEY . '.' . $fieldUid);
+            $projectConfig->processConfigChanges(ProjectConfigService::PATH_FIELDS . '.' . $fieldUid);
         }
     }
 
@@ -109,17 +105,17 @@ class ProjectConfig
 
         static::$_processedSites = true;
 
-        $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true) ?? [];
-        $allSites = $projectConfig->get(Sites::CONFIG_SITES_KEY, true) ?? [];
+        $allGroups = $projectConfig->get(ProjectConfigService::PATH_SITE_GROUPS, true) ?? [];
+        $allSites = $projectConfig->get(ProjectConfigService::PATH_SITES, true) ?? [];
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid, $force);
+            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITE_GROUPS . '.' . $groupUid, $force);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid, $force);
+            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITES . '.' . $siteUid, $force);
         }
     }
 
@@ -136,11 +132,11 @@ class ProjectConfig
 
         static::$_processedUserGroups = true;
 
-        $allGroups = $projectConfig->get(UserGroups::CONFIG_USERPGROUPS_KEY, true);
+        $allGroups = $projectConfig->get(ProjectConfigService::PATH_USER_GROUPS, true);
 
         if (is_array($allGroups)) {
             foreach ($allGroups as $groupUid => $groupData) {
-                $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.';
+                $path = ProjectConfigService::PATH_USER_GROUPS . '.';
                 // Ensure group is processed
                 $projectConfig->processConfigChanges($path . $groupUid);
             }
@@ -160,11 +156,11 @@ class ProjectConfig
 
         static::$_processedSections = true;
 
-        $allSections = $projectConfig->get(Sections::CONFIG_SECTIONS_KEY, true);
+        $allSections = $projectConfig->get(ProjectConfigService::PATH_SECTIONS, true);
 
         if (is_array($allSections)) {
             foreach ($allSections as $sectionUid => $sectionData) {
-                $path = Sections::CONFIG_SECTIONS_KEY . '.';
+                $path = ProjectConfigService::PATH_SECTIONS . '.';
                 // Ensure section is processed
                 $projectConfig->processConfigChanges($path . $sectionUid);
             }
@@ -184,11 +180,11 @@ class ProjectConfig
 
         static::$_processedGqlSchemas = true;
 
-        $allSchemas = $projectConfig->get(GqlService::CONFIG_GQL_SCHEMAS_KEY, true);
+        $allSchemas = $projectConfig->get(ProjectConfigService::PATH_GRAPHQL_SCHEMAS, true);
 
         if (is_array($allSchemas)) {
             foreach ($allSchemas as $schemaUid => $schema) {
-                $path = GqlService::CONFIG_GQL_SCHEMAS_KEY . '.';
+                $path = ProjectConfigService::PATH_GRAPHQL_SCHEMAS . '.';
                 // Ensure schema is processed
                 $projectConfig->processConfigChanges($path . $schemaUid);
             }
@@ -242,7 +238,7 @@ class ProjectConfig
     private static function _cleanupConfigValue($value)
     {
         // Only scalars, arrays and simple objects allowed.
-        if ($value instanceof \StdClass) {
+        if ($value instanceof StdClass) {
             $value = (array)$value;
         }
 
@@ -253,10 +249,10 @@ class ProjectConfig
 
         if (is_array($value)) {
             // Is this a packed array?
-            if (isset($value[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+            if (isset($value[ProjectConfigService::ASSOC_KEY])) {
                 $cleanPackedArray = [];
 
-                foreach ($value[ProjectConfigService::CONFIG_ASSOC_KEY] as $pKey => $pArray) {
+                foreach ($value[ProjectConfigService::ASSOC_KEY] as $pKey => $pArray) {
                     // Make sure it has a value
                     if (isset($pArray[1])) {
                         $pArray[1] = self::_cleanupConfigValue($pArray[1]);
@@ -270,7 +266,7 @@ class ProjectConfig
 
                 if (!empty($cleanPackedArray)) {
                     ksort($cleanPackedArray, SORT_NATURAL);
-                    $value[ProjectConfigService::CONFIG_ASSOC_KEY] = $cleanPackedArray;
+                    $value[ProjectConfigService::ASSOC_KEY] = $cleanPackedArray;
                 } else {
                     // Set $value to an empty array so it doesn't make it into the final config
                     $value = [];
@@ -348,7 +344,7 @@ class ProjectConfig
         }
 
         // Make sure this isn't already packed
-        if (isset($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+        if (isset($array[ProjectConfigService::ASSOC_KEY])) {
             Craft::warning('Attempting to pack an already-packed associative array.');
             return $array;
         }
@@ -357,7 +353,7 @@ class ProjectConfig
         foreach ($array as $key => $value) {
             $packed[] = [$key, $value];
         }
-        return [ProjectConfigService::CONFIG_ASSOC_KEY => $packed];
+        return [ProjectConfigService::ASSOC_KEY => $packed];
     }
 
     /**
@@ -389,10 +385,10 @@ class ProjectConfig
      */
     public static function unpackAssociativeArray(array $array, bool $recursive = true): array
     {
-        if (isset($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+        if (isset($array[ProjectConfigService::ASSOC_KEY])) {
             $associative = [];
-            if (!empty($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
-                foreach ($array[ProjectConfigService::CONFIG_ASSOC_KEY] as $items) {
+            if (!empty($array[ProjectConfigService::ASSOC_KEY])) {
+                foreach ($array[ProjectConfigService::ASSOC_KEY] as $items) {
                     if (!isset($items[0], $items[1])) {
                         Craft::warning('Skipping incomplete packed associative array data', __METHOD__);
                         continue;
@@ -505,7 +501,7 @@ class ProjectConfig
      * @param array $item
      * @return bool
      */
-    private static function isComponentArray(array &$item): bool
+    private static function isComponentArray(array $item): bool
     {
         if (empty($item)) {
             return false;

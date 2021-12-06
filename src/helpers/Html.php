@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -22,6 +23,21 @@ use yii\base\InvalidConfigException;
  */
 class Html extends \yii\helpers\Html
 {
+    /**
+     * @var array List of tag attributes that should be specially handled when their values are of array type.
+     * In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
+     * will be generated instead of one: `data-name="xyz" data-age="13"`.
+     * @since 4.0.0
+     */
+    public static $dataAttributes = [
+        'aria',
+        'data',
+        'data-hx',
+        'data-ng',
+        'hx',
+        'ng',
+    ];
+
     /**
      * @var string[]
      * @see _sortedDataAttributes()
@@ -232,8 +248,8 @@ class Html extends \yii\helpers\Html
             }
 
             // Find the closing tag
-            if (($htmlEnd = stripos($tag, "</{$type}>", $cursor)) === false) {
-                throw new InvalidArgumentException("Could not find a </{$type}> tag in string: {$tag}");
+            if (($htmlEnd = stripos($tag, "</$type>", $cursor)) === false) {
+                throw new InvalidArgumentException("Could not find a </$type> tag in string: $tag");
             }
 
             $end = $htmlEnd + strlen($type) + 3;
@@ -330,7 +346,7 @@ class Html extends \yii\helpers\Html
      * @param int|null $end The end position of the attribute in the given HTML
      * @return array|null The name and value of the attribute, or `false` if no complete attribute was found
      * @throws InvalidArgumentException if `$html` doesn't begin with a valid HTML attribute
-     * @since 3.6.12
+     * @since 3.7.0
      */
     public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
     {
@@ -348,8 +364,9 @@ class Html extends \yii\helpers\Html
 
         // Does the tag have an explicit value?
         $offset += strlen($match[0][0]);
-        if (isset($html[$offset]) && $html[$offset] === '=') {
-            $offset++;
+
+        if (preg_match('/\s*=\s*/A', $html, $m, 0, $offset)) {
+            $offset += strlen($m[0]);
 
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
@@ -363,7 +380,7 @@ class Html extends \yii\helpers\Html
                 if (isset($m[1]) && $m[1] !== '') {
                     $value = $m[1];
                 }
-            } else if (preg_match('/[^ >]+/A', $html, $m, 0, $offset)) {
+            } else if (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
                 $value = $m[0];
             }
@@ -551,12 +568,16 @@ class Html extends \yii\helpers\Html
      * Namespaces an input name.
      *
      * @param string $inputName The input name
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced input name
      * @since 3.5.0
      */
-    public static function namespaceInputName(string $inputName, string $namespace): string
+    public static function namespaceInputName(string $inputName, ?string $namespace): string
     {
+        if ($namespace === null) {
+            return $inputName;
+        }
+
         return preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace . '[$1]$2', $inputName);
     }
 
@@ -564,12 +585,16 @@ class Html extends \yii\helpers\Html
      * Namespaces an ID.
      *
      * @param string $id The ID
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced ID
      * @since 3.5.0
      */
-    public static function namespaceId(string $id, string $namespace): string
+    public static function namespaceId(string $id, ?string $namespace): string
     {
+        if ($namespace === null) {
+            return static::id($id);
+        }
+
         return static::id("$namespace-$id");
     }
 
@@ -761,7 +786,7 @@ class Html extends \yii\helpers\Html
      * @param array $markers
      * @return string
      */
-    private static function _restoreTextareas(string $html, array &$markers): string
+    private static function _restoreTextareas(string $html, array $markers): string
     {
         return str_replace(array_keys($markers), array_values($markers), $html);
     }
@@ -781,8 +806,7 @@ class Html extends \yii\helpers\Html
         // Remove comments, title & desc
         $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
         $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
-        $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
-        return $svg;
+        return preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
     }
 
     /**
@@ -803,7 +827,7 @@ class Html extends \yii\helpers\Html
         if ($mimeType === null) {
             try {
                 $mimeType = FileHelper::getMimeType($file);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
                 Craft::$app->getErrorHandler()->logException($e);
             }
@@ -836,5 +860,23 @@ class Html extends \yii\helpers\Html
     public static function widont(string $string): string
     {
         return preg_replace('/(?<=\S)\s+(\S+\s*)$/', '&nbsp;$1', $string);
+    }
+
+    /**
+     * Returns a visually-hidden input label.
+     *
+     * @param string $content
+     * @param string|null $for
+     * @param array $options
+     * @return string
+     * @since 4.0.0
+     */
+    public static function hiddenLabel(string $content, ?string $for = null, array $options = []): string
+    {
+        return static::label($content, $for, array_merge($options, [
+            'class' => array_merge(static::explodeClass($options['class'] ?? []), [
+                'visually-hidden',
+            ]),
+        ]));
     }
 }

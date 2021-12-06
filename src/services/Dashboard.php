@@ -26,6 +26,7 @@ use craft\widgets\NewUsers as NewUsersWidget;
 use craft\widgets\QuickPost as QuickPostWidget;
 use craft\widgets\RecentEntries as RecentEntriesWidget;
 use craft\widgets\Updates as UpdatesWidget;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -58,27 +59,27 @@ class Dashboard extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
+    public const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
 
     /**
      * @event WidgetEvent The event that is triggered before a widget is saved.
      */
-    const EVENT_BEFORE_SAVE_WIDGET = 'beforeSaveWidget';
+    public const EVENT_BEFORE_SAVE_WIDGET = 'beforeSaveWidget';
 
     /**
      * @event WidgetEvent The event that is triggered after a widget is saved.
      */
-    const EVENT_AFTER_SAVE_WIDGET = 'afterSaveWidget';
+    public const EVENT_AFTER_SAVE_WIDGET = 'afterSaveWidget';
 
     /**
      * @event WidgetEvent The event that is triggered before a widget is deleted.
      */
-    const EVENT_BEFORE_DELETE_WIDGET = 'beforeDeleteWidget';
+    public const EVENT_BEFORE_DELETE_WIDGET = 'beforeDeleteWidget';
 
     /**
      * @event WidgetEvent The event that is triggered after a widget is deleted.
      */
-    const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
+    public const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
 
     /**
      * Returns all available widget type classes.
@@ -186,7 +187,7 @@ class Dashboard extends Component
      * @param WidgetInterface $widget The widget to be saved
      * @param bool $runValidation Whether the widget should be validated
      * @return bool Whether the widget was saved successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
@@ -236,7 +237,7 @@ class Dashboard extends Component
             $widget->afterSave($isNewWidget);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -273,7 +274,7 @@ class Dashboard extends Component
      *
      * @param WidgetInterface $widget The widget to be deleted
      * @return bool Whether the widget was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteWidget(WidgetInterface $widget): bool
     {
@@ -294,7 +295,7 @@ class Dashboard extends Component
             $widgetRecord->delete();
             $widget->afterDelete();
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -315,7 +316,7 @@ class Dashboard extends Component
      *
      * @param int[] $widgetIds The widget IDs
      * @return bool Whether the widgets were reordered successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function reorderWidgets(array $widgetIds): bool
     {
@@ -329,7 +330,7 @@ class Dashboard extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -425,7 +426,7 @@ class Dashboard extends Component
      */
     private function _noWidgetExists(int $widgetId): void
     {
-        throw new WidgetNotFoundException("No widget exists with the ID '{$widgetId}'");
+        throw new WidgetNotFoundException("No widget exists with the ID '$widgetId'");
     }
 
     /**

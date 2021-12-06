@@ -9,6 +9,7 @@ namespace craft\gql\resolvers\elements;
 
 use craft\db\Table;
 use craft\elements\Category as CategoryElement;
+use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
@@ -35,7 +36,7 @@ class Category extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (is_array($query)) {
+        if (!$query instanceof ElementQuery) {
             return $query;
         }
 

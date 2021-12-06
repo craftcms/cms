@@ -284,6 +284,23 @@ class Formatter extends \yii\i18n\Formatter
     }
 
     /**
+     * Returns whether the given number will be misrepresented when formatted.
+     *
+     * @param mixed $value the value to be formatted.
+     * @return bool
+     * @see isNormalizedValueMispresented()
+     * @since 3.7.24
+     */
+    public function willBeMisrepresented($value): bool
+    {
+        if ($value === null) {
+            return false;
+        }
+
+        return $this->isNormalizedValueMispresented($value, $this->normalizeNumericValue($value));
+    }
+
+    /**
      * Formats a value as a date, using a PHP date format.
      *
      * @param int|string|DateTime $value

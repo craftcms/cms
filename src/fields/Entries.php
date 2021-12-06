@@ -77,7 +77,7 @@ class Entries extends BaseRelationField
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(EntryInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(EntryInterface::getType())),
             'args' => EntryArguments::getArguments(),
             'resolve' => EntryResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),

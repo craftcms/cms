@@ -73,6 +73,16 @@ class ResponseTest extends Unit
     }
 
     /**
+     * @param string $expected
+     * @param mixed $url
+     * @dataProvider testRedirectDataProvider
+     */
+    public function testRedirect(string $expected, $url)
+    {
+        $this->assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
+    }
+
+    /**
      * @return array
      */
     public function getContentTypeDataProvider(): array
@@ -95,5 +105,20 @@ class ResponseTest extends Unit
     {
         parent::_before();
         $this->response = new Response();
+    }
+
+    /**
+     * @return array
+     */
+    public function testRedirectDataProvider(): array
+    {
+        return [
+            ['https://test.craftcms.test/', ''],
+            ['http://some-external-domain.com', 'http://some-external-domain.com'],
+            ['https://test.craftcms.test:80/', '/'],
+            ['https://test.craftcms.test:80/something-relative', '/something-relative'],
+            ['https://test.craftcms.test/actions/foo/bar', ['foo/bar']],
+            ['https://test.craftcms.test/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
+        ];
     }
 }

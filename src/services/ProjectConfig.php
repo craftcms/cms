@@ -25,10 +25,12 @@ use craft\helpers\StringHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
@@ -44,75 +46,77 @@ use yii\web\ServerErrorHttpException;
  */
 class ProjectConfig extends Component
 {
-    // Cache settings
-    // -------------------------------------------------------------------------
-
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied.
      */
-    const CACHE_KEY = 'projectConfig:files';
+    public const CACHE_KEY = 'projectConfig:files';
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied or ignored.
      *
      * @since 3.5.0
      */
-    const IGNORE_CACHE_KEY = 'projectConfig:ignore';
+    public const IGNORE_CACHE_KEY = 'projectConfig:ignore';
     /**
      * The cache key that is used to store the loaded project config data.
      */
-    const STORED_CACHE_KEY = 'projectConfig:internal';
+    public const STORED_CACHE_KEY = 'projectConfig:internal';
     /**
      * The cache key that is used to store whether there were any issues writing the project config files out.
      *
      * @since 3.5.0
      */
-    const FILE_ISSUES_CACHE_KEY = 'projectConfig:fileIssues';
+    public const FILE_ISSUES_CACHE_KEY = 'projectConfig:fileIssues';
     /**
      * The cache key that is used to store the current project config diff
      *
      * @since 3.5.8
      */
-    const DIFF_CACHE_KEY = 'projectConfig:diff';
+    public const DIFF_CACHE_KEY = 'projectConfig:diff';
     /**
      * The duration that project config caches should be cached.
      */
-    const CACHE_DURATION = 31536000; // 1 year
+    public const CACHE_DURATION = 31536000; // 1 year
     /**
      * @var string Filename for base config file
      * @since 3.1.0
      */
-    const CONFIG_FILENAME = 'project.yaml';
+    public const CONFIG_FILENAME = 'project.yaml';
     /**
      * Filename for base config delta files
      *
      * @since 3.4.0
      */
-    const CONFIG_DELTA_FILENAME = 'delta.yaml';
-    /**
-     * The project config key that Craft system info is stored at.
-     *
-     * @since 3.5.8
-     */
-    const CONFIG_SYSTEM = 'system';
-    /**
-     * The project config key that the Craft schema version is stored at.
-     */
-    const CONFIG_SCHEMA_VERSION_KEY = self::CONFIG_SYSTEM . '.schemaVersion';
+    public const CONFIG_DELTA_FILENAME = 'delta.yaml';
     /**
      * The array key to use for signaling ordered-to-associative array conversion.
-     *
-     * @since 3.4.0
      */
-    const CONFIG_ASSOC_KEY = '__assoc__';
-    /**
-     * @since 3.4.0
-     * @deprecated in 3.5.0
-     */
-    const CONFIG_ALL_KEY = '__all__';
-    /**
-     * The project config key that Craft uses to store project config names.
-     */
-    const CONFIG_NAMES_KEY = 'meta.__names__';
+    public const ASSOC_KEY = '__assoc__';
+
+    public const PATH_CATEGORY_GROUPS = 'categoryGroups';
+    public const PATH_DATE_MODIFIED = 'dateModified';
+    public const PATH_ELEMENT_SOURCES = 'elementSources';
+    public const PATH_ENTRY_TYPES = 'entryTypes';
+    public const PATH_FIELDS = 'fields';
+    public const PATH_FIELD_GROUPS = 'fieldGroups';
+    public const PATH_GLOBAL_SETS = 'globalSets';
+    public const PATH_GRAPHQL = 'graphql';
+    public const PATH_GRAPHQL_PUBLIC_TOKEN = self::PATH_GRAPHQL . '.' . 'publicToken';
+    public const PATH_GRAPHQL_SCHEMAS = self::PATH_GRAPHQL . '.' . 'schemas';
+    public const PATH_IMAGE_TRANSFORMS = 'imageTransforms';
+    public const PATH_MATRIX_BLOCK_TYPES = 'matrixBlockTypes';
+    public const PATH_META_NAMES = 'meta.__names__';
+    public const PATH_PLUGINS = 'plugins';
+    public const PATH_ROUTES = 'routes';
+    public const PATH_SCHEMA_VERSION = self::PATH_SYSTEM . '.schemaVersion';
+    public const PATH_SECTIONS = 'sections';
+    public const PATH_SITES = 'sites';
+    public const PATH_SITE_GROUPS = 'siteGroups';
+    public const PATH_SYSTEM = 'system';
+    public const PATH_TAG_GROUPS = 'tagGroups';
+    public const PATH_USERS = 'users';
+    public const PATH_USER_FIELD_LAYOUTS = self::PATH_USERS . '.' . 'fieldLayouts';
+    public const PATH_USER_GROUPS = self::PATH_USERS . '.groups';
+    public const PATH_VOLUMES = 'volumes';
 
     // Regexp patterns
     // -------------------------------------------------------------------------
@@ -120,7 +124,7 @@ class ProjectConfig extends Component
     /**
      * Regexp pattern to determine a string that could be used as an UID.
      */
-    const UID_PATTERN = '[a-zA-Z0-9_-]+';
+    public const UID_PATTERN = '[a-zA-Z0-9_-]+';
 
     // Events
     // -------------------------------------------------------------------------
@@ -140,7 +144,7 @@ class ProjectConfig extends Component
      * });
      * ```
      */
-    const EVENT_ADD_ITEM = 'addItem';
+    public const EVENT_ADD_ITEM = 'addItem';
 
     /**
      * @event ConfigEvent The event that is triggered when an item is updated in the config.
@@ -157,7 +161,7 @@ class ProjectConfig extends Component
      * });
      * ```
      */
-    const EVENT_UPDATE_ITEM = 'updateItem';
+    public const EVENT_UPDATE_ITEM = 'updateItem';
 
     /**
      * @event ConfigEvent The event that is triggered when an item is removed from the config.
@@ -174,12 +178,12 @@ class ProjectConfig extends Component
      * });
      * ```
      */
-    const EVENT_REMOVE_ITEM = 'removeItem';
+    public const EVENT_REMOVE_ITEM = 'removeItem';
 
     /**
      * @event Event The event that is triggered after pending project config file changes have been applied.
      */
-    const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
+    public const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
 
     /**
      * @event RebuildConfigEvent The event that is triggered when the project config is being rebuilt.
@@ -199,7 +203,7 @@ class ProjectConfig extends Component
      *
      * @since 3.1.20
      */
-    const EVENT_REBUILD = 'rebuild';
+    public const EVENT_REBUILD = 'rebuild';
 
     /**
      * @var bool Whether project config changes should be written to YAML files automatically.
@@ -223,7 +227,7 @@ class ProjectConfig extends Component
     public string $folderName = 'project';
 
     /**
-     * @var int The maximum number of project.yaml deltas to store in storage/config-backups/
+     * @var int The maximum number of project.yaml deltas to store in storage/config-deltas/
      * @since 3.4.0
      */
     public int $maxDeltas = 50;
@@ -442,11 +446,11 @@ class ProjectConfig extends Component
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws ServerErrorHttpException
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function set(string $path, $value, ?string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
     {
-        if (\is_array($value)) {
+        if (is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
@@ -466,7 +470,7 @@ class ProjectConfig extends Component
 
             if ($updateTimestamp && !$this->_timestampUpdated) {
                 $this->_timestampUpdated = true;
-                $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
+                $this->set(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
             }
 
             $valueHasChanged = true;
@@ -496,6 +500,7 @@ class ProjectConfig extends Component
 
     /**
      * Regenerates `project.yaml` based on the loaded project config.
+     *
      * @deprecated in 4.0.0. use [[regenerateExternalConfig()]] instead.
      */
     public function regenerateYamlFromConfig(): void
@@ -506,6 +511,7 @@ class ProjectConfig extends Component
 
     /**
      * Regenerates the external config based on the loaded project config.
+     *
      * @since 4.0.0
      */
     public function regenerateExternalConfig(): void
@@ -925,7 +931,7 @@ class ProjectConfig extends Component
      */
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
     {
-        $incomingSchema = (string)$this->getExternalConfig()->get(self::CONFIG_SCHEMA_VERSION_KEY);
+        $incomingSchema = (string)$this->getExternalConfig()->get(self::PATH_SCHEMA_VERSION);
         $existingSchema = Craft::$app->schemaVersion;
 
         // Compare existing Craft schema version with the one that is being applied.
@@ -940,8 +946,8 @@ class ProjectConfig extends Component
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            $incomingSchema = (string)$this->getExternalConfig()->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion');
-            $existingSchema = (string)$plugin->schemaVersion;
+            $incomingSchema = (string)$this->getExternalConfig()->get(self::PATH_PLUGINS . '.' . $plugin->handle . '.schemaVersion');
+            $existingSchema = $plugin->schemaVersion;
 
             // Compare existing plugin schema version with the one that is being applied.
             if ($incomingSchema && !version_compare($existingSchema, $incomingSchema, '=')) {
@@ -1161,7 +1167,7 @@ class ProjectConfig extends Component
     /**
      * Rebuilds the project config from the current state in the database.
      *
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.1.20
      */
     public function rebuild(): void
@@ -1173,23 +1179,24 @@ class ProjectConfig extends Component
         $this->readOnly = false;
 
         $config = $this->getInternalConfig()->export();
-        $config['dateModified'] = DateTimeHelper::currentTimeStamp();
-        $config[self::CONFIG_SYSTEM] = $this->_systemConfig($config[self::CONFIG_SYSTEM] ?? []);
-        $config[Sites::CONFIG_SITEGROUP_KEY] = $this->_getSiteGroupData();
-        $config[Sites::CONFIG_SITES_KEY] = $this->_getSiteData();
-        $config[Sections::CONFIG_SECTIONS_KEY] = $this->_getSectionData();
-        $config[Sections::CONFIG_ENTRYTYPES_KEY] = $this->_getEntryTypeData();
-        $config[Fields::CONFIG_FIELDGROUP_KEY] = $this->_getFieldGroupData();
-        $config[Fields::CONFIG_FIELDS_KEY] = $this->_getFieldData();
-        $config[Matrix::CONFIG_BLOCKTYPE_KEY] = $this->_getMatrixBlockTypeData();
-        $config[Volumes::CONFIG_VOLUME_KEY] = $this->_getVolumeData();
-        $config[Categories::CONFIG_CATEGORYROUP_KEY] = $this->_getCategoryGroupData();
-        $config[Tags::CONFIG_TAGGROUP_KEY] = $this->_getTagGroupData();
-        $config[Users::CONFIG_USERS_KEY] = $this->_getUserData($config[Users::CONFIG_USERS_KEY] ?? []);
-        $config[Globals::CONFIG_GLOBALSETS_KEY] = $this->_getGlobalSetData();
-        $config[Plugins::CONFIG_PLUGINS_KEY] = $this->_getPluginData($config[Plugins::CONFIG_PLUGINS_KEY] ?? []);
-        $config[AssetTransforms::CONFIG_TRANSFORM_KEY] = $this->_getTransformData();
-        $config[Gql::CONFIG_GQL_KEY] = $this->_getGqlData();
+        $config[self::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
+        $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
+        $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
+        $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
+        $config[self::PATH_FIELDS] = $this->_getFieldData();
+        $config[self::PATH_FIELD_GROUPS] = $this->_getFieldGroupData();
+        $config[self::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
+        $config[self::PATH_GRAPHQL] = $this->_getGqlData();
+        $config[self::PATH_IMAGE_TRANSFORMS] = $this->_getTransformData();
+        $config[self::PATH_MATRIX_BLOCK_TYPES] = $this->_getMatrixBlockTypeData();
+        $config[self::PATH_PLUGINS] = $this->_getPluginData($config[self::PATH_PLUGINS] ?? []);
+        $config[self::PATH_SECTIONS] = $this->_getSectionData();
+        $config[self::PATH_SITES] = $this->_getSiteData();
+        $config[self::PATH_SITE_GROUPS] = $this->_getSiteGroupData();
+        $config[self::PATH_SYSTEM] = $this->_systemConfig($config[self::PATH_SYSTEM] ?? []);
+        $config[self::PATH_TAG_GROUPS] = $this->_getTagGroupData();
+        $config[self::PATH_USERS] = $this->_getUserData($config[self::PATH_USERS] ?? []);
+        $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
         $event = new RebuildConfigEvent([
@@ -1566,7 +1573,7 @@ class ProjectConfig extends Component
                 'except' => ['.*', '.*/'],
             ]);
 
-            $projectConfigNames = $this->getInternalConfig()->get(self::CONFIG_NAMES_KEY);
+            $projectConfigNames = $this->getInternalConfig()->get(self::PATH_META_NAMES);
 
             $uids = [];
             $replacements = [];
@@ -1590,7 +1597,7 @@ class ProjectConfig extends Component
 
                 FileHelper::writeToFile($filePath, $yamlContent);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
@@ -1598,7 +1605,7 @@ class ProjectConfig extends Component
                     FileHelper::clearDirectory($basePath, [
                         'except' => ['.*', '.*/'],
                     ]);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // oh well
                 }
             }
@@ -1617,7 +1624,7 @@ class ProjectConfig extends Component
     {
         if (!$this->readOnly) {
             foreach ($this->getCurrentWorkingConfig()->getProjectConfigNameChanges() as $uid => $name) {
-                $this->set(self::CONFIG_NAMES_KEY . '.' . $uid, $name);
+                $this->set(self::PATH_META_NAMES . '.' . $uid, $name);
             }
         }
     }
@@ -1849,6 +1856,25 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Returns element source data.
+     *
+     * @param array $sourceConfigs
+     * @return array
+     */
+    private function _getElementSourceData(array $sourceConfigs): array
+    {
+        $conditionsService = Craft::$app->getConditions();
+        foreach ($sourceConfigs as &$elementTypeConfigs) {
+            foreach ($elementTypeConfigs as &$config) {
+                if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
+                    $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                }
+            }
+        }
+        return $sourceConfigs;
+    }
+
+    /**
      * Return entry type data config array.
      *
      * @return array
@@ -2065,7 +2091,7 @@ class ProjectConfig extends Component
         $data = [
             'schemas' => [],
             'publicToken' => [
-                'enabled' => (bool)($publicToken->enabled ?? false),
+                'enabled' => $publicToken->enabled ?? false,
                 'expiryDate' => ($publicToken->expiryDate ?? false) ? $publicToken->expiryDate->getTimestamp() : null,
             ],
         ];

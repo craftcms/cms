@@ -56,7 +56,7 @@ class SystemSettingsController extends Controller
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
-            'system' => Craft::$app->getProjectConfig()->get('system'),
+            'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
         ]);
     }
 
@@ -72,9 +72,14 @@ class SystemSettingsController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
         $systemSettings = $projectConfig->get('system');
         $systemSettings['name'] = $this->request->getBodyParam('name');
-        $systemSettings['live'] = (bool)$this->request->getBodyParam('live');
+        $systemSettings['live'] = $this->request->getBodyParam('live');
         $systemSettings['retryDuration'] = (int)$this->request->getBodyParam('retryDuration') ?: null;
         $systemSettings['timeZone'] = $this->request->getBodyParam('timeZone');
+
+        if (strpos($systemSettings['live'], '$') !== 0) {
+            $systemSettings['live'] = (bool)$systemSettings['live'];
+        }
+
         $projectConfig->set('system', $systemSettings, 'Update system settings.');
 
         $this->setSuccessFlash(Craft::t('app', 'General settings saved.'));

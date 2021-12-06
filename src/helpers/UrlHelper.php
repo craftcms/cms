@@ -191,6 +191,19 @@ class UrlHelper
     }
 
     /**
+     * Encodes a URL’s query string params.
+     *
+     * @param string $url
+     * @return string
+     * @since 3.7.24
+     */
+    public static function encodeParams(string $url): string
+    {
+        [$url, $params, $fragment] = self::_extractParams($url);
+        return self::_buildUrl($url, $params, $fragment);
+    }
+
+    /**
      * Returns a root-relative URL based on the given URL.
      *
      * @param string $url
@@ -458,8 +471,8 @@ class UrlHelper
             }
         }
 
-        // Use the request's base URL as a fallback
-        return static::baseRequestUrl();
+        // Use @web as a fallback
+        return Craft::getAlias('@web');
     }
 
     /**
@@ -475,23 +488,8 @@ class UrlHelper
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
 
-        // Use the request's base URL as a fallback
-        return static::baseRequestUrl();
-    }
-
-    /**
-     * Returns the base URL (with a trailing slash) for the current request.
-     *
-     * @return string
-     */
-    public static function baseRequestUrl(): string
-    {
-        $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return '/';
-        }
-
-        return rtrim($request->getHostInfo() . $request->getBaseUrl(), '/') . '/';
+        // Use @web as a fallback
+        return Craft::getAlias('@web');
     }
 
     /**
@@ -652,6 +650,19 @@ class UrlHelper
             }
         }
 
+        return self::_buildUrl($url, $params, $fragment);
+    }
+
+    /**
+     * Rebuilds a URL with params and a fragment.
+     *
+     * @param string $url
+     * @param array $params
+     * @param string|null $fragment
+     * @return string
+     */
+    private static function _buildUrl(string $url, array $params, ?string $fragment): string
+    {
         if (($query = static::buildQuery($params)) !== '') {
             $url .= '?' . $query;
         }

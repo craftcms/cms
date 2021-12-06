@@ -38,6 +38,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -64,24 +65,24 @@ class UsersController extends Controller
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
-    const EVENT_LOGIN_FAILURE = 'loginFailure';
+    public const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     /**
      * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
      */
-    const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
+    public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     /**
      * @event UserEvent The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
      * @since 3.5.13
      */
-    const EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterBeforeGroupsAndPermissions';
+    public const EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterBeforeGroupsAndPermissions';
 
     /**
      * @event UserEvent The event that is triggered after user groups and permissions have been assigned to the user getting saved
      * @since 3.5.13
      */
-    const EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterAssignGroupsAndPermissions';
+    public const EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterAssignGroupsAndPermissions';
 
     /**
      * @event DefineUserContentSummaryEvent The event that is triggered when defining a summary of content owned by a user(s), before they are deleted
@@ -99,13 +100,13 @@ class UsersController extends Controller
      *
      * @since 3.0.13
      */
-    const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
+    public const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
     /**
      * @event InvalidUserTokenEvent The event that is triggered when an invalid user token is sent.
      * @since 3.6.5
      */
-    const EVENT_INVALID_USER_TOKEN = 'invalidUserToken';
+    public const EVENT_INVALID_USER_TOKEN = 'invalidUserToken';
 
     /**
      * @inheritdoc
@@ -532,7 +533,7 @@ class UsersController extends Controller
             return $this->_renderSetPasswordTemplate([
                 'code' => $code,
                 'id' => $uid,
-                'newUser' => $user->password ? false : true,
+                'newUser' => !$user->password,
             ]);
         }
 
@@ -566,7 +567,7 @@ class UsersController extends Controller
                 'errors' => $errors,
                 'code' => $code,
                 'id' => $uid,
-                'newUser' => $user->password ? false : true,
+                'newUser' => !$user->password,
             ]);
         }
 
@@ -1211,18 +1212,27 @@ class UsersController extends Controller
         $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
         $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
 
-        // There are some things only admins can change
-        if ($currentUser && $currentUser->admin) {
+        // New users should always be initially saved in a pending state,
+        // even if an admin is doing this and opted to not send the verification email
+        if ($isNewUser) {
+            $user->pending = true;
+        }
+
+        if ($canAdministrateUsers) {
             $user->passwordResetRequired = (bool)$this->request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
+        }
 
-            // Is their admin status changing?
-            if (($adminParam = $this->request->getBodyParam('admin', $user->admin)) != $user->admin) {
-                // Making someone an admin requires an elevated session
-                if ($adminParam) {
-                    $this->requireElevatedSession();
-                }
-
-                $user->admin = (bool)$adminParam;
+        // Is their admin status changing?
+        if (
+            $currentUser &&
+            $currentUser->admin &&
+            ($adminParam = $this->request->getBodyParam('admin', $user->admin)) != $user->admin
+        ) {
+            if ($adminParam) {
+                $this->requireElevatedSession();
+                $user->admin = true;
+            } else {
+                $user->admin = false;
             }
         }
 
@@ -1445,8 +1455,8 @@ class UsersController extends Controller
             return $this->asJson([
                 'html' => $this->_renderPhotoTemplate($user),
             ]);
-        } catch (\Throwable $exception) {
-            if (isset($fileLocation)) {
+        } catch (Throwable $exception) {
+            if (isset($fileLocation) && file_exists($fileLocation)) {
                 FileHelper::unlink($fileLocation);
             }
 
@@ -1625,7 +1635,7 @@ class UsersController extends Controller
             $entryCount = Entry::find()
                 ->sectionId($section->id)
                 ->authorId($userIds)
-                ->siteId('*')
+                ->site('*')
                 ->unique()
                 ->status(null)
                 ->count();
@@ -1973,7 +1983,7 @@ class UsersController extends Controller
 
     /**
      * @param User $user
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _processUserPhoto(User $user): void
     {
@@ -2026,7 +2036,7 @@ class UsersController extends Controller
         if ($newPhoto) {
             try {
                 $users->saveUserPhoto($fileLocation, $user, $filename);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 if (file_exists($fileLocation)) {
                     FileHelper::unlink($fileLocation);
                 }
@@ -2127,7 +2137,7 @@ class UsersController extends Controller
                 // Make sure the current user is in the group or has permission to assign it
                 if (
                     !$currentUser->isInGroup($groupId) &&
-                    !$currentUser->can("assignUserGroup:{$group->uid}")
+                    !$currentUser->can("assignUserGroup:$group->uid")
                 ) {
                     throw new ForbiddenHttpException("Your account doesn't have permission to assign user group “{$group->name}” to a user.");
                 }

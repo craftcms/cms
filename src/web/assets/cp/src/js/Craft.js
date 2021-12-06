@@ -376,7 +376,7 @@ $.extend(Craft,
          * @return string
          */
         formatInputId: function(inputName) {
-            return this.rtrim(inputName.replace(/[\[\]\\]+/g, '-'), '-');
+            return this.rtrim(inputName.replace(/[^\w]+/g, '-'), '-');
         },
 
         /**
@@ -1468,6 +1468,17 @@ $.extend(Craft,
             return asciiStr;
         },
 
+        uuid: function() {
+            if (typeof crypto.randomUUID === 'function') {
+                return crypto.randomUUID();
+            }
+
+            // h/t https://stackoverflow.com/a/2117523/1688568
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+              (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        },
+
         randomString: function(length) {
             // h/t https://stackoverflow.com/a/1349426/1688568
             var result = '';
@@ -1559,8 +1570,10 @@ $.extend(Craft,
             $('.lightswitch', $container).lightswitch();
             $('.nicetext', $container).nicetext();
             $('.formsubmit', $container).formsubmit();
-            $('.menubtn', $container).menubtn();
+            $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
+            $('[data-disclosure-trigger]', $container).disclosureMenu();
             $('.datetimewrapper', $container).datetime();
+            $('.datewrapper > input[type="date"], .timewrapper > input[type="time"]', $container).datetimeinput();
 
             // Open outbound links in new windows
             // hat tip: https://stackoverflow.com/a/2911045/1688568
@@ -2140,6 +2153,20 @@ $.extend($.fn,
             });
         },
 
+        disclosureMenu: function() {
+            return this.each(function() {
+                var $trigger = $(this);
+                var $disclosureId = $trigger.attr('aria-controls');
+
+                // Only instantiate element if there is a reference to disclosure content
+                if ($disclosureId) {
+                    var settings = {};
+
+                    new Garnish.DisclosureMenu($trigger, settings);
+                }
+            });
+        },
+
         datetime: function() {
             return this.each(function() {
                 let $wrapper = $(this);
@@ -2163,10 +2190,10 @@ $.extend($.fn,
                                 .appendTo($wrapper)
                                 .on('click', () => {
                                     for (let i = 0; i < $inputs.length; i++) {
-                                        $inputs.eq(i).val('');
+                                        $inputs.eq(i).val('').trigger('input').trigger('change');
                                     }
                                     $btn.remove();
-                                    $inputs.first().focus();
+                                    $inputs.first().filter('[type="text"]').focus();
                                 })
                         }
                     } else {
@@ -2174,6 +2201,21 @@ $.extend($.fn,
                     }
                 };
                 $inputs.on('change', checkValue);
+                checkValue();
+            });
+        },
+
+        datetimeinput: function() {
+            return this.each(function() {
+                const $input = $(this);
+                const checkValue = () => {
+                    if ($input.val() === '') {
+                        $input.addClass('empty-value');
+                    } else {
+                        $input.removeClass('empty-value');
+                    }
+                };
+                $input.on('input', checkValue);
                 checkValue();
             });
         },

@@ -22,6 +22,7 @@ use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
 use yii\db\Query;
 use yii\db\QueryInterface;
+use function twig_get_attribute;
 
 /**
  * Class Template
@@ -31,12 +32,12 @@ use yii\db\QueryInterface;
  */
 class Template
 {
-    const PROFILE_TYPE_TEMPLATE = 'template';
-    const PROFILE_TYPE_BLOCK = 'block';
-    const PROFILE_TYPE_MACRO = 'macro';
+    public const PROFILE_TYPE_TEMPLATE = 'template';
+    public const PROFILE_TYPE_BLOCK = 'block';
+    public const PROFILE_TYPE_MACRO = 'macro';
 
-    const PROFILE_STAGE_BEGIN = 'begin';
-    const PROFILE_STAGE_END = 'end';
+    public const PROFILE_STAGE_BEGIN = 'begin';
+    public const PROFILE_STAGE_END = 'end';
 
     /**
      * @var bool Whether to enable profiling for this request
@@ -97,7 +98,7 @@ class Template
         }
 
         try {
-            return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+            return twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
         } catch (UnknownMethodException $e) {
             // Copy twig_get_attribute()'s BadMethodCallException handling
             if ($ignoreStrictCheck || !$env->isStrictVariables()) {
@@ -225,7 +226,7 @@ class Template
      */
     private static function _profileToken(string $type, string $name, int $count): string
     {
-        return "render {$type}: {$name}" . ($count === 1 ? '' : " ({$count})");
+        return "render $type: $name" . ($count === 1 ? '' : " ($count)");
     }
 
     /**

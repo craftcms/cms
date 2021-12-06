@@ -19,6 +19,7 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\CategoryGroup;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Category
@@ -73,7 +74,7 @@ class Category extends Mutation
      *
      * @param CategoryGroup $categoryGroup
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public static function createSaveMutation(CategoryGroup $categoryGroup): array
     {

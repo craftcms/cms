@@ -1,7 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Element Monitor
+ * Element draft editor
  */
 Craft.DraftEditor = Garnish.Base.extend({
     $revisionBtn: null,
@@ -36,11 +36,16 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     duplicatedElements: null,
     errors: null,
+    httpStatus: null,
+    httpError: null,
 
     openingPreview: false,
     preview: null,
     previewToken: null,
+    scrollY: null,
     createdProvisionalDraft: false,
+
+    bc: null,
 
     init: function(settings) {
         this.setSettings(settings, Craft.DraftEditor.defaults);
@@ -109,6 +114,22 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.addListener(this.$statusIcon, 'click', () => {
             this.showStatusHud(this.$statusIcon);
         });
+
+        if (typeof BroadcastChannel !== 'undefined' && !this.settings.revisionId) {
+            this.bc = new BroadcastChannel('DraftEditor');
+            this.bc.onmessage = ev => {
+                if (
+                  ev.data.event === 'saveDraft' &&
+                  ev.data.canonicalId === this.settings.sourceId &&
+                  (
+                    ev.data.draftId === this.settings.draftId ||
+                    (ev.data.isProvisionalDraft && !this.settings.draftId)
+                  )
+                ) {
+                    window.location.reload();
+                }
+            };
+        }
     },
 
     listenForChanges: function() {
@@ -231,9 +252,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         }
 
         // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
-        const originalEnabledValue = (this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses))
-            ? '1'
-            : (this.settings.enabledForSite ? '-' : '');
+        const siteStatusValues = Object.values(this.settings.siteStatuses);
+        const hasEnabled = siteStatusValues.includes(true);
+        const hasDisabled = siteStatusValues.includes(false);
+        const originalEnabledValue = (hasEnabled && hasDisabled) ? '-' : (hasEnabled ? '1' : '');
         const originalSerializedStatus = encodeURIComponent(`enabledForSite[${this.settings.siteId}]`) +
             '=' + (this.settings.enabledForSite ? '1' : '');
 
@@ -256,7 +278,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         }
 
         // Are there additional sites that can be added?
-        if (this.settings.addlSiteIds && this.settings.addlSiteIds.length) {
+        if (this.settings.addlSites && this.settings.addlSites.length) {
             this._createAddlSiteField();
         }
 
@@ -326,14 +348,14 @@ Craft.DraftEditor = Garnish.Base.extend({
         });
     },
 
-    _createSiteStatusField: function(site) {
+    _createSiteStatusField: function(site, status) {
         const $field = Craft.ui.createLightswitchField({
             id: `enabledForSite-${site.id}`,
             label: Craft.t('app', 'Enabled for {site}', {site: site.name}),
             name: `enabledForSite[${site.id}]`,
-            on: this.settings.siteStatuses.hasOwnProperty(site.id)
-                ? this.settings.siteStatuses[site.id]
-                : true,
+            on: typeof status != 'undefined'
+                ? status
+                : (this.settings.siteStatuses.hasOwnProperty(site.id) ? this.settings.siteStatuses[site.id] : true),
             disabled: !!this.settings.revisionId,
         });
 
@@ -356,8 +378,8 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     _createAddlSiteField: function() {
-        const addlSites = Craft.sites.filter(s => {
-            return !this.siteIds.includes(s.id) && this.settings.addlSiteIds.includes(s.id);
+        const addlSites = Craft.sites.filter(site => {
+            return !this.siteIds.includes(site.id) && this.settings.addlSites.some(s => s.siteId == site.id);
         });
 
         if (!addlSites.length) {
@@ -387,7 +409,9 @@ Craft.DraftEditor = Garnish.Base.extend({
                 return;
             }
 
-            this._createSiteStatusField(site);
+            const addlSiteInfo = this.settings.addlSites.find(s => s.siteId == site.id);
+            this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
+            this._updateGlobalStatus();
 
             $addlSiteSelect
                 .val('')
@@ -415,19 +439,32 @@ Craft.DraftEditor = Garnish.Base.extend({
         if (this.errors === null) {
             bodyHtml = `<p>${this._saveSuccessMessage()}</p>`;
         } else {
-            bodyHtml = `<p class="error">${this._saveFailMessage()}</p>`;
+            bodyHtml = `<p class="error"><strong>${this._saveFailMessage()}</strong></p>`;
 
             if (this.errors.length) {
                 bodyHtml += '<ul class="errors">' +
                     this.errors.map(e => `<li>${Craft.escapeHtml(e)}</li>`).join('') +
                     '</ul>';
             }
+
+            if (this.httpError) {
+                bodyHtml += `<p class="http-error code">${Craft.escapeHtml(this.httpError)}</p>`;
+            }
+
+            if (this.httpStatus === 400) {
+                bodyHtml += `<button class="btn refresh-btn">${Craft.t('app', 'Refresh')}</button>`;
+            }
         }
 
         const hud = new Garnish.HUD(target, bodyHtml, {
+            hudClass: 'hud revision-status-hud',
             onHide: function() {
                 hud.destroy();
             }
+        });
+
+        hud.$mainContainer.find('.refresh-btn').on('click', () => {
+            window.location.reload();
         });
     },
 
@@ -561,6 +598,12 @@ Craft.DraftEditor = Garnish.Base.extend({
                     }
                 });
             }
+            this.preview.on('close', () => {
+                if (this.scrollY) {
+                    window.scrollTo(0, this.scrollY);
+                    this.scrollY = null;
+                }
+            });
         }
         return this.preview;
     },
@@ -570,6 +613,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.openingPreview = true;
             this.ensureIsDraftOrRevision(true)
                 .then(() => {
+                    this.scrollY = window.scrollY;
                     this.getPreview().open();
                     this.openingPreview = false;
                     resolve();
@@ -628,7 +672,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         const data = this.serializeForm(true);
         if (force || data !== (this.lastSerializedValue || Craft.cp.$primaryForm.data('initialSerializedValue'))) {
             const provisional = (!this.settings.draftId || this.settings.isProvisionalDraft) && !this.settings.revisionId;
-            this.saveDraft(data, provisional);
+            this.saveDraft(data, provisional)
+              .catch(e => {
+                  console.warn('Couldn’t save draft:', e);
+              });
         }
     },
 
@@ -652,7 +699,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         return new Promise((resolve, reject) => {
             // Ignore if we're already submitting the main form
             if (this.submittingForm) {
-                reject();
+                reject('Form already being submitted.');
                 return;
             }
 
@@ -666,6 +713,8 @@ Craft.DraftEditor = Garnish.Base.extend({
             this.lastSerializedValue = data;
             this.saving = true;
             this.errors = null;
+            this.httpStatus = null;
+            this.httpError = null;
             this.cancelToken = axios.CancelToken.source();
             this.spinners().removeClass('hidden');
 
@@ -704,7 +753,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                 if (response.data.errors) {
                     this.errors = response.data.errors;
                     this._showFailStatus();
-                    reject();
+                    reject(response.data.errors);
                 }
 
                 const createdProvisionalDraft = !this.settings.draftId;
@@ -726,7 +775,6 @@ Craft.DraftEditor = Garnish.Base.extend({
                     if (createdProvisionalDraft) {
                         this.$revisionLabel.append(
                             $('<span/>', {
-                                class: 'extralight',
                                 text: ` — ${Craft.t('app', 'Edited')}`,
                             })
                         );
@@ -827,26 +875,43 @@ Craft.DraftEditor = Garnish.Base.extend({
                 const selectors = response.data.modifiedAttributes.map(attr => `[name="${attr}"],[name^="${attr}["]`)
                     .concat(modifiedFieldNames.map(name => `[name="${name}"]`));
 
-                const $fields = $(selectors.join(',')).closest('.field').filter(':not(:has(> .status-badge))');
+                const $fields = $(selectors.join(',')).parents().filter('.field:not(:has(> .status-badge))');
                 for (let i = 0; i < $fields.length; i++) {
                     $fields.eq(i).prepend(
                         $('<div/>', {
                             class: 'status-badge modified',
                             title: Craft.t('app', 'This field has been modified.'),
-                            'aria-label': Craft.t('app', 'This field has been modified.'),
-                        })
+                        }),
+                        $('<span/>', {
+                            class: 'visually-hidden',
+                            html: Craft.t('app', 'This field has been modified.'),
+                        }),
                     );
                 }
 
                 this.afterUpdate(data);
+
+                if (this.bc) {
+                    this.bc.postMessage({
+                        event: 'saveDraft',
+                        canonicalId: this.settings.sourceId,
+                        draftId: this.settings.draftId,
+                        isProvisionalDraft: this.settings.isProvisionalDraft,
+                    });
+                }
+
                 resolve();
-            }).catch(() => {
+            }).catch(e => {
                 this._afterSaveRequest();
 
                 if (!this.ignoreFailedRequest) {
                     this.errors = [];
+                    if (e && e.response) {
+                        this.httpStatus = e.response.status;
+                        this.httpError = e.response.data ? e.response.data.error : null;
+                    }
                     this._showFailStatus();
-                    reject();
+                    reject(e);
                 }
 
                 this.ignoreFailedRequest = false;
@@ -918,8 +983,13 @@ Craft.DraftEditor = Garnish.Base.extend({
                         return pre + this.duplicatedElements[id] + post;
                     })
                     // &fields[...=X
-                    .replace(new RegExp(`(&fields${lb}[^=]+=)(${idsRE})\\b`, 'g'), (m, pre, id) => {
-                        return pre + this.duplicatedElements[id];
+                    .replace(new RegExp(`&(fields${lb}[^=]+)=(${idsRE})\\b`, 'g'), (m, name, id) => {
+                        // Ignore param names that end in `[enabled]`, `[type]`, etc.
+                        // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
+                        if (name.match(new RegExp(`${lb}(enabled|sordOrder|type|typeId)${rb}$`))) {
+                            return m;
+                        }
+                        return `&${name}=${this.duplicatedElements[id]}`;
                     })
             )) {
                 break;
@@ -1071,7 +1141,8 @@ Craft.DraftEditor = Garnish.Base.extend({
             !this.settings.isUnpublishedDraft &&
             !this.settings.isProvisionalDraft &&
             (typeof ev.autosave === 'undefined' || ev.autosave) &&
-            (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction))
+            (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction)) &&
+            this.enableAutosave
         ) {
             this.checkForm(true);
             return;
@@ -1105,7 +1176,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         isLive: false,
         isProvisionalDraft: false,
         siteStatuses: null,
-        addlSiteIds: [],
+        addlSites: [],
         cpEditUrl: null,
         draftId: null,
         revisionId: null,

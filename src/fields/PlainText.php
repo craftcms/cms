@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\conditions\elements\fields\TextFieldConditionRule;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use LitEmoji\LitEmoji;
@@ -195,7 +196,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             return Schema::TYPE_TEXT;
         }
 
-        return Schema::TYPE_STRING . "({$bytes})";
+        return Schema::TYPE_STRING . "($bytes)";
     }
 
     /**
@@ -221,6 +222,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
+            'orientation' => $this->getOrientation($element),
         ]);
     }
 
@@ -255,7 +257,14 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     protected function searchKeywords($value, ElementInterface $element): string
     {
         $value = (string)$value;
-        $value = LitEmoji::unicodeToShortcode($value);
-        return $value;
+        return LitEmoji::unicodeToShortcode($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType(): ?string
+    {
+        return TextFieldConditionRule::class;
     }
 }

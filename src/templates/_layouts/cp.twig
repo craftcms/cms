@@ -137,29 +137,39 @@
                     <button type="button" id="announcements-btn" class="btn hidden" aria-label="{{ 'What’s New'|t('app') }}" title="{{ 'What’s New'|t('app') }}">
                         {{ svg('@app/icons/gift.svg') }}
                     </button>
-                    <button type="button" id="user-info" class="btn menubtn" aria-label="{{ 'My Account'|t('app') }}" title="{{ 'My Account'|t('app') }}" data-menu-anchor=".header-photo">
-                        {{ userPhoto }}
-                    </button>
-                    <div class="menu" data-align="right">
-                        <ul>
-                            <li>
-                                <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
-                                    {% if currentUser.photoId %}
-                                        {{ userPhoto }}
-                                    {% endif %}
-                                    <div class="flex-grow">
-                                        <div>{{ currentUser.username }}</div>
-                                        {% if not craft.app.config.general.useEmailAsUsername %}
-                                            <div class="light smalltext">{{ currentUser.email }}</div>
+
+                    {# New account dropdown #}
+                    <div class="account-toggle-wrapper" data-wrapper>
+                        <button 
+                            id="user-info"
+                            aria-controls="account-menu" 
+                            class="btn menu-toggle" 
+                            aria-label="{{ 'My Account'|t('app') }}" 
+                            title="{{ 'My Account'|t('app') }}"
+                            data-disclosure-trigger>
+                            {{ userPhoto }}
+                        </button>
+                        <div id="account-menu" class="menu menu--disclosure" data-align="right" data-align-to=".header-photo">
+                            <ul>
+                                <li>
+                                    <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
+                                        {% if currentUser.photoId %}
+                                            {{ userPhoto }}
                                         {% endif %}
-                                    </div>
-                                </a>
-                            </li>
-                        </ul>
-                        <hr>
-                        <ul>
-                            <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-                        </ul>
+                                        <div class="flex-grow">
+                                            <div>{{ currentUser.username }}</div>
+                                            {% if not craft.app.config.general.useEmailAsUsername %}
+                                                <div class="smalltext">{{ currentUser.email }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <hr>
+                            <ul>
+                                <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -258,8 +268,13 @@
             </div><!-- #main-container -->
 
             <footer id="global-footer">
-                <div id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}" aria-label="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
-                    <div class="edition-name">{{ editionName }}</div>
+                {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) %}
+                <div id="edition-logo" title="{{ fullEditionName }}">
+                    <div class="edition-name" aria-hidden="true">{{ editionName }}</div>
+                    {{ tag('span', {
+                        class: 'visually-hidden',
+                        text: fullEditionName,
+                    }) }}
                     {% if isTrial %}
                         <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                     {% endif %}

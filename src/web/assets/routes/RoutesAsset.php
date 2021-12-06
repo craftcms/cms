@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\routes;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Routes page
@@ -31,13 +31,13 @@ class RoutesAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'routes.css',
+        'css/routes.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'routes.min.js',
+        'routes.js',
     ];
 }

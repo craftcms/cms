@@ -70,7 +70,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param string $key the column name whose result will be used to index the array
      * @param mixed $value the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
-     * @return self<T> the filtered array
+     * @return self the filtered array
      */
     public function where(string $key, $value = true, bool $strict = false): self
     {
@@ -92,7 +92,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param string $key the column name whose result will be used to index the array
      * @param mixed[] $values the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
-     * @return self<T> the filtered array
+     * @return self the filtered array
      */
     public function whereIn(string $key, array $values, bool $strict = false): self
     {

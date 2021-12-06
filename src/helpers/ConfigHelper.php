@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use DateInterval;
 use yii\base\InvalidConfigException;
 
 /**
@@ -42,10 +43,10 @@ class ConfigHelper
         }
 
         if (is_string($value)) {
-            $value = new \DateInterval($value);
+            $value = new DateInterval($value);
         }
 
-        if (!$value instanceof \DateInterval) {
+        if (!$value instanceof DateInterval) {
             throw new InvalidConfigException("Unable to convert to seconds.");
         }
 

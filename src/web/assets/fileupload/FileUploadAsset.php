@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\fileupload;
 
+use craft\web\AssetBundle;
 use craft\web\assets\jqueryui\JqueryUiAsset;
-use yii\web\AssetBundle;
 
 /**
  * File Upload asset bundle.
@@ -20,7 +20,7 @@ class FileUploadAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/fileupload';
+        $this->sourcePath = __DIR__ . '/dist';
 
         $this->depends = [
             JqueryUiAsset::class,

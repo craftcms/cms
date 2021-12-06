@@ -19,6 +19,7 @@ use craft\helpers\FileHelper;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
@@ -79,7 +80,7 @@ class MigrateController extends BaseMigrateController
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
+    public const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
      * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
@@ -152,7 +153,6 @@ class MigrateController extends BaseMigrateController
             $options[] = 'noBackup';
             $options[] = 'noContent';
         } else {
-            $options[] = 'type';
             $options[] = 'track';
             $options[] = 'plugin';
         }
@@ -166,7 +166,6 @@ class MigrateController extends BaseMigrateController
     public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
-        $aliases['t'] = 'type';
         $aliases['p'] = 'plugin';
 
         return $aliases;
@@ -183,29 +182,6 @@ class MigrateController extends BaseMigrateController
         }
 
         if ($action->id !== 'all') {
-            // Validate $type
-            if ($this->type) {
-                switch ($this->type) {
-                    case 'app':
-                        $this->track = MigrationManager::TRACK_CRAFT;
-                        $new = "--track=$this->track";
-                        break;
-                    case 'content':
-                        $this->track = MigrationManager::TRACK_CONTENT;
-                        $new = "--track=$this->track";
-                        break;
-                    case 'plugin':
-                        $this->track = null;
-                        $new = "--plugin=$this->plugin";
-                        break;
-                    default:
-                        $this->stderr("Invalid --type option. Allowed values are 'app', 'plugin', or 'content'." . PHP_EOL, Console::FG_RED);
-                        return false;
-                }
-
-                $this->stdout("The --type option has been deprecated. Use $new instead." . PHP_EOL, Console::FG_YELLOW);
-            }
-
             if ($this->plugin) {
                 $this->track = "plugin:$this->plugin";
             } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
@@ -307,26 +283,33 @@ class MigrateController extends BaseMigrateController
      */
     public function actionAll(): int
     {
-        /** @var MigrationManager[] $migrators */
-        $migrators = [
-            MigrationManager::TRACK_CRAFT => Craft::$app->getMigrator(),
-        ];
-
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
-        foreach ($plugins as $plugin) {
-            $migrators["plugin:$plugin->id"] = $plugin->getMigrator();
-        }
-
-        if (!$this->noContent) {
-            $migrators[MigrationManager::TRACK_CONTENT] = Craft::$app->getContentMigrator();
+        if ($this->noContent) {
+            $this->stdout("Checking for pending Craft and plugin migrations ...\n");
+        } else {
+            $this->stdout("Checking for pending migrations ...\n");
         }
 
         $migrationsByTrack = [];
+        $updatesService = Craft::$app->getUpdates();
 
-        foreach ($migrators as $track => $migrator) {
-            $migrations = $migrator->getNewMigrations();
-            if (!empty($migrations)) {
-                $migrationsByTrack[$track] = $migrations;
+        $craftMigrations = Craft::$app->getMigrator()->getNewMigrations();
+        if (!empty($craftMigrations) || $updatesService->getIsCraftUpdatePending()) {
+            $migrationsByTrack[MigrationManager::TRACK_CRAFT] = $craftMigrations;
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        $plugins = $pluginsService->getAllPlugins();
+        foreach ($plugins as $plugin) {
+            $pluginMigrations = $plugin->getMigrator()->getNewMigrations();
+            if (!empty($pluginMigrations) || $pluginsService->isPluginUpdatePending($plugin)) {
+                $migrationsByTrack["plugin:$plugin->id"] = $pluginMigrations;
+            }
+        }
+
+        if (!$this->noContent) {
+            $contentMigrations = Craft::$app->getContentMigrator()->getNewMigrations();
+            if (!empty($contentMigrations)) {
+                $migrationsByTrack[MigrationManager::TRACK_CONTENT] = $contentMigrations;
             }
         }
 
@@ -420,6 +403,19 @@ class MigrateController extends BaseMigrateController
      */
     public function actionUp($limit = 0): int
     {
+        switch ($this->track) {
+            case MigrationManager::TRACK_CRAFT:
+                $this->stdout("Checking for pending Craft migrations ...\n");
+                break;
+            case MigrationManager::TRACK_CONTENT:
+                $this->stdout("Checking for pending content migrations ...\n");
+                break;
+            default:
+                if ($this->plugin instanceof PluginInterface) {
+                    $this->stdout("Checking for pending {$this->plugin->name} migrations ...\n");
+                }
+        }
+
         $res = parent::actionUp($limit) ?? ExitCode::OK;
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
@@ -533,9 +529,7 @@ class MigrateController extends BaseMigrateController
         $history = $this->getMigrator()->getMigrationHistory((int)$limit);
 
         // Convert values to unix timestamps
-        $history = array_map('strtotime', $history);
-
-        return $history;
+        return array_map('strtotime', $history);
     }
 
     /**
@@ -555,10 +549,30 @@ class MigrateController extends BaseMigrateController
     }
 
     /**
+     * Not supported.
+     */
+    public function actionFresh()
+    {
+        $this->stderr('This command is not supported.' . PHP_EOL, Console::FG_RED);
+        return ExitCode::OK;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function truncateDatabase(): void
     {
-        $this->getMigrator()->truncateHistory();
+        throw new NotSupportedException('This command is not implemented in ' . get_class($this));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function stdout($string)
+    {
+        if (strpos($string, 'Yii Migration Tool') === 0) {
+            return false;
+        }
+        return parent::stdout(...func_get_args());
     }
 }

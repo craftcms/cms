@@ -12,6 +12,7 @@ use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
+use ReflectionFunction;
 use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Action;
@@ -62,7 +63,7 @@ class Controller extends YiiController
      * );
      * ```
      */
-    const EVENT_DEFINE_ACTIONS = 'defineActions';
+    public const EVENT_DEFINE_ACTIONS = 'defineActions';
 
     /**
      * @var array Custom actions that should be available.
@@ -71,7 +72,7 @@ class Controller extends YiiController
     private array $_actions;
 
     /**
-     * @var \ReflectionFunction[] Memoized reflection objects
+     * @var ReflectionFunction[] Memoized reflection objects
      * @see getActionMethodReflection()
      */
     private array $_reflections = [];
@@ -135,7 +136,7 @@ class Controller extends YiiController
             }
 
             if (!isset($action['action'])) {
-                throw new InvalidConfigException("Action '{$id}' is missing an 'action' key.");
+                throw new InvalidConfigException("Action '$id' is missing an 'action' key.");
             }
 
             if (is_callable($action['action'])) {
@@ -314,16 +315,16 @@ class Controller extends YiiController
 
     /**
      * @param Action $action
-     * @return \ReflectionMethod
+     * @return ReflectionMethod
      */
     protected function getActionMethodReflection($action): ReflectionMethod
     {
         if ($action instanceof CallableAction) {
             if (!isset($this->_reflections[$action->id])) {
                 if (is_array($action->callable)) {
-                    $this->_reflections[$action->id] = new \ReflectionMethod($action->callable[0], $action->callable[1]);
+                    $this->_reflections[$action->id] = new ReflectionMethod($action->callable[0], $action->callable[1]);
                 } else {
-                    $this->_reflections[$action->id] = new \ReflectionFunction($action->callable);
+                    $this->_reflections[$action->id] = new ReflectionFunction($action->callable);
                 }
             }
             return $this->_reflections[$action->id];
@@ -402,6 +403,7 @@ class Controller extends YiiController
         $error = null;
 
         if ($options['validator'] && !$options['validator']($input, $error)) {
+            /** @var string|null $error */
             $this->stdout(($error ?? $options['error']) . PHP_EOL);
             goto top;
         }
@@ -415,5 +417,22 @@ class Controller extends YiiController
         }
 
         return $input;
+    }
+
+    /**
+     * Outputs a table via [[Console::table()]].
+     *
+     * @param string[]|array[] $headers The table headers
+     * @param array[] $data The table data
+     * @param array $options
+     * @since 3.7.23
+     */
+    public function table(array $headers, array $data, array $options = []): void
+    {
+        $options += [
+            'colors' => $this->isColorEnabled(),
+        ];
+
+        Console::table($headers, $data, $options);
     }
 }

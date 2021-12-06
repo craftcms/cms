@@ -31,21 +31,21 @@ use craft\validators\UniqueValidator;
  */
 class Section extends Model
 {
-    const TYPE_SINGLE = 'single';
-    const TYPE_CHANNEL = 'channel';
-    const TYPE_STRUCTURE = 'structure';
+    public const TYPE_SINGLE = 'single';
+    public const TYPE_CHANNEL = 'channel';
+    public const TYPE_STRUCTURE = 'structure';
 
-    const PROPAGATION_METHOD_NONE = 'none';
-    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
-    const PROPAGATION_METHOD_LANGUAGE = 'language';
-    const PROPAGATION_METHOD_ALL = 'all';
+    public const PROPAGATION_METHOD_NONE = 'none';
+    public const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    public const PROPAGATION_METHOD_LANGUAGE = 'language';
+    public const PROPAGATION_METHOD_ALL = 'all';
     /** @since 3.5.0 */
-    const PROPAGATION_METHOD_CUSTOM = 'custom';
+    public const PROPAGATION_METHOD_CUSTOM = 'custom';
 
     /** @since 3.7.0 */
-    const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
-    const DEFAULT_PLACEMENT_END = 'end';
+    public const DEFAULT_PLACEMENT_END = 'end';
 
     /**
      * @var int|null ID
@@ -207,7 +207,7 @@ class Section extends Model
 
         foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
-                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
+                $this->addModelErrors($siteSettings, "siteSettings[$i]");
             }
         }
     }
@@ -364,7 +364,7 @@ class Section extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
-            'enableVersioning' => (bool)$this->enableVersioning,
+            'enableVersioning' => $this->enableVersioning,
             'propagationMethod' => $this->propagationMethod,
             'siteSettings' => [],
             'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,

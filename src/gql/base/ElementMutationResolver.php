@@ -31,7 +31,7 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Constant used to reference content fields in resolution data storage.
      */
-    const CONTENT_FIELD_KEY = '_contentFields';
+    public const CONTENT_FIELD_KEY = '_contentFields';
 
     /**
      * @event MutationPopulateElementEvent The event that is triggered before populating an element when resolving a mutation
@@ -51,7 +51,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * });
      * ```
      */
-    const EVENT_BEFORE_POPULATE_ELEMENT = 'beforeMutationPopulateElement';
+    public const EVENT_BEFORE_POPULATE_ELEMENT = 'beforeMutationPopulateElement';
 
     /**
      * @event MutationPopulateElementEvent The event that is triggered after populating an element when resolving a mutation
@@ -72,7 +72,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * });
      * ```
      */
-    const EVENT_AFTER_POPULATE_ELEMENT = 'afterMutationPopulateElement';
+    public const EVENT_AFTER_POPULATE_ELEMENT = 'afterMutationPopulateElement';
 
     /**
      * A list of attributes that are unchangeable by mutations.

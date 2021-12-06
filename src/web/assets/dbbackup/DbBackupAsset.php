@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\dbbackup;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the DB Backup utility
@@ -31,6 +31,6 @@ class DbBackupAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'DbBackupUtility.min.js',
+        'DbBackupUtility.js',
     ];
 }

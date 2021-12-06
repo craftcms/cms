@@ -7,6 +7,7 @@
 
 namespace craft\gql\resolvers\elements;
 
+use craft\elements\db\ElementQuery;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\base\ElementResolver;
 
@@ -32,7 +33,7 @@ class MatrixBlock extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (is_array($query)) {
+        if (!$query instanceof ElementQuery) {
             return $query;
         }
 

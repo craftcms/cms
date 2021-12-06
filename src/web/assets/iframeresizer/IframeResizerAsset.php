@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\iframeresizer;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Iframe Resizer asset bundle.
@@ -19,7 +19,7 @@ class IframeResizerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@lib/iframe-resizer';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

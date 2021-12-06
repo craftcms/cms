@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use Throwable;
 
 /**
  * Updates Craft and plugins.
@@ -42,7 +43,7 @@ trait BackupTrait
 
         try {
             $this->backupPath = Craft::$app->getDb()->backup();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
 
             if (!$this->_backupWarning()) {

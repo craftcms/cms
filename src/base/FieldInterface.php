@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\conditions\QueryConditionRuleInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldGroup;
@@ -194,7 +195,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```html
      * <textarea id="foo" name="foo"></textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('foo');
+     *   var textarea = document.getElementById('foo');
      * </script>
      * ```
      *
@@ -203,7 +204,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```html
      * <textarea id="namespace-foo" name="namespace[foo]"></textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('foo');
+     *   var textarea = document.getElementById('foo');
      * </script>
      * ```
      *
@@ -243,7 +244,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```twig
      * <textarea id="{{ id }}" name="{{ name }}">{{ value }}</textarea>
      * <script type="text/javascript">
-     *     var textarea = document.getElementById('{{ namespacedId }}');
+     *   var textarea = document.getElementById('{{ namespacedId }}');
      * </script>
      * ```
      *
@@ -366,6 +367,15 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.7.0
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void;
+
+    /**
+     * Returns the condition rule class that should be used for this field.
+     *
+     * The rule class must be an instance of [[\craft\conditions\elements\fields\FieldConditionRuleInterface]].
+     *
+     * @return string|array{class: string}|null
+     */
+    public function getQueryConditionRuleType();
 
     /**
      * Modifies an element query.

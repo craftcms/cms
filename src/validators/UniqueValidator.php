@@ -93,7 +93,7 @@ class UniqueValidator extends YiiUniqueValidator
                 $a = is_int($k) ? $v : $k;
                 $originalAttributes[$a] = $model->$a;
                 $model->$a = mb_strtolower($model->$a);
-                $newTargetAttributes[$a] = "lower([[{$v}]])";
+                $newTargetAttributes[$a] = "lower([[$v]])";
             }
             $this->targetAttribute = $newTargetAttributes;
         }

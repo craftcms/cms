@@ -15,6 +15,7 @@ use craft\helpers\Db;
 use craft\models\TagGroup;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class SaveTag
@@ -35,7 +36,7 @@ class Tag extends ElementMutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return TagElement
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo): TagElement
     {
@@ -78,7 +79,7 @@ class Tag extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {

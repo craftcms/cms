@@ -46,12 +46,12 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
 
         $typeName = UserElement::gqlTypeNameByContext(null);
         $contentFieldGqlTypes = self::getContentFields($context);
-        $userFields = TypeManager::prepareFieldDefinitions(array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+        $userFields = array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
             'name' => $typeName,
-            'fields' => function() use ($userFields) {
-                return $userFields;
+            'fields' => function() use ($userFields, $typeName) {
+                return TypeManager::prepareFieldDefinitions($userFields, $typeName);
             },
         ]));
     }

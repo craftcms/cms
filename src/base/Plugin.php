@@ -39,13 +39,13 @@ class Plugin extends Module implements PluginInterface
      *
      * @since 3.0.16
      */
-    const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
+    public const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
      * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved.
      * @since 3.0.16
      */
-    const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
+    public const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
      * @inheritdoc
@@ -72,7 +72,6 @@ class Plugin extends Module implements PluginInterface
         // init() method needs to call Craft::t() or Plugin::getInstance().
 
         $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? $id);
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $this->sourceLanguage = ArrayHelper::remove($config, 'sourceLanguage', $this->sourceLanguage);
 
         if (($basePath = ArrayHelper::remove($config, 'basePath')) !== null) {
@@ -214,7 +213,6 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 

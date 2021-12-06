@@ -111,7 +111,7 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'plainSettings' => 'plain',
                     'associativeSettings' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['some', 'thing'],
                             ['foo', ['bar', 'baz']]
                         ]
@@ -132,11 +132,11 @@ class ProjectConfigHelperTest extends Unit
                 ],
                 [
                     'test' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             [
                                 'rootA',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                    ProjectConfig::ASSOC_KEY => [
                                         ['label', 'childA']
                                     ]
                                 ]
@@ -144,7 +144,7 @@ class ProjectConfigHelperTest extends Unit
                             [
                                 'rootB',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                    ProjectConfig::ASSOC_KEY => [
                                         ['label', 'childB']
                                     ]
                                 ]
@@ -195,14 +195,14 @@ class ProjectConfigHelperTest extends Unit
             [
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
                             ['baz', 0],
                         ]
                     ],
                     'b' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
                         ]
@@ -210,7 +210,7 @@ class ProjectConfigHelperTest extends Unit
                 ],
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             2 => ['baz', 0],
                         ]
                     ],

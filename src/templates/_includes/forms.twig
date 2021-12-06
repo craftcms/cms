@@ -51,6 +51,11 @@
 {% endmacro %}
 
 
+{% macro selectize(config) %}
+    {% include "_includes/forms/selectize" with config only %}
+{% endmacro %}
+
+
 {% macro multiselect(config) %}
     {% include "_includes/forms/multiselect" with config only %}
 {% endmacro %}
@@ -111,6 +116,11 @@
 {% endmacro %}
 
 
+{% macro booleanMenu(config) %}
+    {% include "_includes/forms/booleanMenu" with config only %}
+{% endmacro %}
+
+
 {% macro fieldLayoutDesigner(config) %}
     {% include "_includes/forms/fieldLayoutDesigner" with config only %}
 {% endmacro %}
@@ -120,16 +130,7 @@
 
 
 {% macro field(config, input) %}
-    {% set id = config.id ?? "field#{random()}" %}
-    {% set config = config|merge({
-        id: id,
-        labelId: config.labelId ?? "#{id}-label",
-        instructionsId: config.instructionsId ?? "#{id}-instructions",
-    }) %}
-    {% if input starts with 'template:' %}
-        {% set input = include(input[9:], config) %}
-    {% endif %}
-    {% include "_includes/forms/field" with config|merge({ input: input }) only %}
+    {{ craft.cp.field(input ?? '', config)|raw }}
 {% endmacro %}
 
 
@@ -173,18 +174,8 @@
 
 
 {% macro dateTimeField(config) %}
-    {% set id = config.id ?? "datetime#{random()}" %}
-    {% set config = config|merge({
-        id: id,
-        instructionsId: config.instructionsId ?? "#{id}-instructions",
-    }) %}
-    {% set input %}
-        <div class="datetimewrapper">
-            {{ _self.date(config) }}
-            {{ _self.time(config) }}
-        </div>
-    {% endset %}
-    {{ _self.field(config, input) }}
+    {% set config = config|merge({id: config.id ?? "datetime#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/datetime') }}
 {% endmacro %}
 
 
@@ -197,6 +188,19 @@
 {% macro selectField(config) %}
     {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/select') }}
+{% endmacro %}
+
+
+{% macro selectizeField(config) %}
+    {% set config = config|merge({id: config.id ?? "selectize#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: (config.allowedEnvValues is not defined)
+            ? 'This can be set to an environment variable with a value of one of the selectable option values.'|t('app')
+            : 'This can be set to an environment variable.'|t('app'),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/selectize') }}
 {% endmacro %}
 
 
@@ -283,9 +287,12 @@
         {% if config.tip is not defined and value[0:1] not in ['$', '@'] %}
             {% set config = config|merge({
                 tip: ((config.suggestAliases ?? false)
-                    ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
-                    : 'This can be set to an environment variable.'|t('app'))
-                    ~ ' <a href="https://craftcms.com/docs/3.x/config/#environmental-configuration" class="go">' ~ 'Learn more'|t('app') ~ '</a>'
+                ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
+                : 'This can be set to an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
+                    href: 'https://craftcms.com/docs/3.x/config/#environmental-configuration',
+                    class: 'go',
+                    text: 'Learn more'|t('app'),
+                }),
             }) %}
         {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') and craft.app.request.isWebAliasSetDynamically %}
             {% set config = config|merge({
@@ -300,7 +307,27 @@
 
 {% macro timeZoneField(config) %}
     {% set config = config|merge({id: config.id ?? "timezone#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a value of a [supported time zone]({url}).'|t('app', {
+                url: 'https://www.php.net/manual/en/timezones.php',
+            }),
+        }) %}
+    {% endif %}
     {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro booleanMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "booleanmenu#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a boolean value ({examples}).'|t('app', {
+                examples: '`yes`/`no`/`true`/`false`/`on`/`off`/`0`/`1`',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/booleanMenu') }}
 {% endmacro %}
 
 
@@ -321,9 +348,9 @@
 
 {% macro shortcutText(key, shift, alt) %}
     {%- switch craft.app.request.getClientOs() %}
-        {%- case 'Mac' %}
-            {{- (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}
-        {%- default %}
-            {{- 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}
+    {%- case 'Mac' %}
+        {{- (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}
+    {%- default %}
+        {{- 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}
     {%- endswitch %}
 {%- endmacro %}

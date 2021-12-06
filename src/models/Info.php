@@ -50,9 +50,9 @@ class Info extends Model
     public string $configVersion = '000000000000';
 
     /**
-     * @var string Field version
+     * @var string|null Field version
      */
-    public string $fieldVersion = '000000000000';
+    public ?string $fieldVersion = null;
 
     /**
      * @var DateTime|null Date updated

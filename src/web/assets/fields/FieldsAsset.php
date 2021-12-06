@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\fields;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Fields index page
@@ -31,6 +31,6 @@ class FieldsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'fields.min.js',
+        'fields.js',
     ];
 }

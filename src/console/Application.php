@@ -14,6 +14,9 @@ use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
+use IntlDateFormatter;
+use IntlException;
+use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\console\controllers\CacheController;
@@ -78,7 +81,7 @@ class Application extends \yii\console\Application
                     $e = null;
                     try {
                         (new Query())->from([Table::INFO])->where(['id' => 1])->one();
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         $e = $e->getPrevious() ?? $e;
                     }
                     Console::outputWarning("Craft can’t fetch the `$infoTable` table row." . ($e ? PHP_EOL . 'Exception: ' . $e->getMessage() : ''), false);
@@ -100,9 +103,9 @@ class Application extends \yii\console\Application
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
-                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
-            } catch (\IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
+                new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            } catch (IntlException $e) {
+                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }

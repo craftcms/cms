@@ -48,7 +48,7 @@ class TokenTest extends Unit
         $tokenRec = Token::findOne(['token' => $token]);
 
         // And does it match
-        self::assertSame(['do/stuff'], $tokenRec->route);
+        self::assertSame('do/stuff', $tokenRec->route);
         self::assertSame(1, $tokenRec->usageLimit);
         self::assertSame(0, $tokenRec->usageCount);
         self::assertSame($dt->format('Y-m-d H:i:s'), $tokenRec->expiryDate);

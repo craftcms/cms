@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\errors\MigrationException;
 use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -31,8 +32,8 @@ use craft\services\Config;
 use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
-use craft\services\ElementIndexes;
 use craft\services\Elements;
+use craft\services\ElementSources;
 use craft\services\Entries;
 use craft\services\EntryRevisions;
 use craft\services\Fields;
@@ -92,12 +93,12 @@ class TestSetup
     /**
      * @since 3.6.0
      */
-    const SITE_URL = 'https://test.craftcms.test/';
+    public const SITE_URL = 'https://test.craftcms.test/';
 
     /**
      * @since 3.6.0
      */
-    const USERNAME = 'craftcms';
+    public const USERNAME = 'craftcms';
 
     /**
      * @var array Project Config data
@@ -177,7 +178,7 @@ class TestSetup
      *
      * @return bool
      * @throws InvalidConfigException
-     * @throws \craft\errors\MigrationException
+     * @throws MigrationException
      */
     public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false): bool
     {
@@ -250,7 +251,7 @@ class TestSetup
             require $srcPath . '/config/app.php',
             require $srcPath . '/config/app.' . $appType . '.php',
             $configService->getConfigFromFile('app'),
-            $configService->getConfigFromFile("app.{$appType}")
+            $configService->getConfigFromFile("app.$appType")
         );
 
         if (defined('CRAFT_SITE')) {
@@ -574,7 +575,7 @@ class TestSetup
             [MigrationManager::class, ['getContentMigrator', 'contentMigrator']],
             [Dashboard::class, ['getDashboard', 'dashboard']],
             [Deprecator::class, ['getDeprecator', 'deprecator']],
-            [ElementIndexes::class, ['getElementIndexes', 'elementIndexes']],
+            [ElementSources::class, ['getElementSources', 'elementSources']],
             [Elements::class, ['getElements', 'elements']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],
             [Entries::class, ['getEntries', 'entries']],

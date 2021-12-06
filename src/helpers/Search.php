@@ -60,7 +60,7 @@ class Search
         if (is_array($ignore) && !empty($ignore)) {
             foreach ($ignore as $word) {
                 $word = preg_quote(static::normalizeKeywords($word, [], true, $language), '/');
-                $str = preg_replace("/\b{$word}\b/u", '', $str);
+                $str = preg_replace("/\b$word\b/u", '', $str);
             }
         }
 

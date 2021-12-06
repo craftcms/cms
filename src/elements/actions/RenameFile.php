@@ -38,7 +38,7 @@ class RenameFile extends ElementAction
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         validateSelection: function(\$selectedItems)
         {
@@ -55,7 +55,7 @@ class RenameFile extends ElementAction
                 oldName = oldName.split('?').shift();
             }
 
-            var newName = prompt({$prompt}, oldName);
+            var newName = prompt($prompt, oldName);
 
             if (!newName || newName == oldName)
             {

@@ -17,13 +17,13 @@ namespace craft\enums;
  */
 abstract class LicenseKeyStatus
 {
-    const Valid = 'valid';
+    public const Valid = 'valid';
     /**
      * @since 3.6.0
      */
-    const Trial = 'trial';
-    const Invalid = 'invalid';
-    const Mismatched = 'mismatched';
-    const Astray = 'astray';
-    const Unknown = 'unknown';
+    public const Trial = 'trial';
+    public const Invalid = 'invalid';
+    public const Mismatched = 'mismatched';
+    public const Astray = 'astray';
+    public const Unknown = 'unknown';
 }

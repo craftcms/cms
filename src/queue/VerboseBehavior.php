@@ -33,6 +33,6 @@ class VerboseBehavior extends \yii\queue\cli\VerboseBehavior
             $extra .= ', pid: ' . $pid;
         }
 
-        return " [{$event->id}] {$description} ({$extra})";
+        return " [$event->id] $description ($extra)";
     }
 }

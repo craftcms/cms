@@ -41,13 +41,13 @@ class SuspendUsers extends ElementAction
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: true,
         validateSelection: function(\$selectedItems)
         {
             for (var i = 0; i < \$selectedItems.length; i++)
             {
-                if (\$selectedItems.eq(i).find('.element').data('id') == {$userId})
+                if (\$selectedItems.eq(i).find('.element').data('id') == $userId)
                 {
                     return false;
                 }

@@ -70,9 +70,9 @@ class ElementQueryConditionBuilder extends Component
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
+    public const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
 
-    const LOCALIZED_NODENAME = 'localized';
+    public const LOCALIZED_NODENAME = 'localized';
 
     /**
      * @var ResolveInfo
@@ -350,9 +350,7 @@ class ElementQueryConditionBuilder extends Component
             return [];
         }
 
-        $arguments = [GqlHelper::prepareTransformArguments($arguments)];
-
-        return $arguments;
+        return [GqlHelper::prepareTransformArguments($arguments)];
     }
 
     /**
@@ -486,7 +484,7 @@ class ElementQueryConditionBuilder extends Component
                         }
 
                         // For relational fields, prepare the arguments.
-                        if ($craftContentField instanceof BaseRelationField) {
+                        if ($craftContentField instanceof EagerLoadingFieldInterface) {
                             $arguments = $this->_argumentManager->prepareArguments($arguments);
                         }
                     }

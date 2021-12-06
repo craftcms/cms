@@ -22,7 +22,7 @@ class UrlValidator extends YiiUrlValidator
     /**
      * @since 3.6.0
      */
-    const URL_PATTERN = '^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$';
+    public const URL_PATTERN = '^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$';
 
     /**
      * @var bool Whether the value can begin with an alias

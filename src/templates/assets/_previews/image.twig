@@ -1,9 +1,33 @@
-<img id="preview-image" src="{{ url }}" width="{{ asset.width }}" height="{{ asset.height }}" data-maxWidth="{{ asset.width }}" data-maxHeight="{{ asset.height }}" onload="resizePreviewImage()" />
+<div class="button-fade asset-image-preview">
+    <div class="buttons">
+        <div class="btn" id="toggle-focal">
+        </div>
+    </div>
+    <img id="preview-image"
+         src="{{ url }}"
+         width="{{ asset.width }}"
+         height="{{ asset.height }}"
+         data-uid="{{ asset.uid }}"
+         data-focal="{{ asset.focalPoint|join(';') }}"
+         data-maxWidth="{{ asset.width }}"
+         data-maxHeight="{{ asset.height }}"
+         onload="resizePreviewImage()" />
+</div>
+
+{% do view.registerAssetBundle("craft\\web\\assets\\focalpoint\\FocalPointAsset") %}
+{% do view.registerTranslations('app', [
+    'Enable focal point',
+    'Disable focal point',
+    'Saving…',
+]) %}
 
 {% js %}
+const focalPoint = new Craft.FocalPoint(Craft.PreviewFileModal.openInstance.$container.find('.asset-image-preview'), $('#toggle-focal'), {{ editFocal|default(false) }});
+
 function resizePreviewImage() {
     var instance = Craft.PreviewFileModal.openInstance;
     var containerHeight = Garnish.$win.height() * 0.66;
+
     var containerWidth = Math.min(containerHeight / 3 * 4, Garnish.$win.width() - instance.settings.minGutter * 2);
     containerHeight = containerWidth / 4 * 3;
 
@@ -49,8 +73,8 @@ function resizePreviewImage() {
         }
 
         instance._resizeContainer(containerWidth, containerHeight);
-
         $img.css({'width': containerWidth, 'height': containerHeight});
+        focalPoint.renderFocal();
     }
 }
 {% endjs %}

@@ -59,7 +59,7 @@ trait MissingComponentTrait
      */
     public function getPlaceholderHtml(): string
     {
-        $error = $this->errorMessage ?? "Unable to find component class '{$this->expectedType}'.";
+        $error = $this->errorMessage ?? "Unable to find component class '$this->expectedType'.";
         $showPlugin = false;
         $isComposerInstalled = false;
         $isInstalled = false;
@@ -82,7 +82,7 @@ trait MissingComponentTrait
                     $name = 'Redactor';
                     $handle = 'redactor';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/redactor.svg';
-                    $error = "Support for {$name} fields has been moved to a plugin.";
+                    $error = "Support for $name fields has been moved to a plugin.";
                     break;
                 case 'craft\awss3\Volume':
                     $showPlugin = true;
@@ -90,7 +90,7 @@ trait MissingComponentTrait
                     $name = 'Amazon S3';
                     $handle = 'aws-s3';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/aws-s3.svg';
-                    $error = "Support for {$name} volumes has been moved to a plugin.";
+                    $error = "Support for $name volumes has been moved to a plugin.";
                     break;
                 case 'craft\googlecloud\Volume':
                     $showPlugin = true;
@@ -98,7 +98,7 @@ trait MissingComponentTrait
                     $name = 'Google Cloud Storage';
                     $handle = 'google-cloud';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/google-cloud.svg';
-                    $error = "Support for {$name} volumes has been moved to a plugin.";
+                    $error = "Support for $name volumes has been moved to a plugin.";
                     break;
                 case 'craft\rackspace\Volume':
                     $showPlugin = true;
@@ -106,7 +106,7 @@ trait MissingComponentTrait
                     $name = 'Rackspace Cloud Files';
                     $handle = 'rackspace';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/rackspace.svg';
-                    $error = "Support for {$name} volumes has been moved to a plugin.";
+                    $error = "Support for $name volumes has been moved to a plugin.";
                     break;
                 default:
                     if ($handle = $pluginsService->getPluginHandleByClass($this->expectedType)) {

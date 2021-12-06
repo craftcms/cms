@@ -29,7 +29,7 @@ class SystemMessages extends Component
     /**
      * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
      */
-    const EVENT_REGISTER_MESSAGES = 'registerMessages';
+    public const EVENT_REGISTER_MESSAGES = 'registerMessages';
 
     /**
      * @var SystemMessage[]|null
@@ -183,7 +183,7 @@ class SystemMessages extends Component
             ->andWhere([
                 'or',
                 ['language' => [$language, $languageId]],
-                ['like', 'language', "{$languageId}%", false],
+                ['like', 'language', "$languageId%", false],
             ])
             ->orderBy(new Expression('case when ([[language]] = :language) then 0 when ([[language]] = :languageId) then 1 else 2 end', [
                 'language' => $language,

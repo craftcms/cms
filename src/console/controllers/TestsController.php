@@ -47,7 +47,7 @@ class TestsController extends Controller
 
         $handle = opendir($src);
         if ($handle === false) {
-            throw new InvalidArgumentException("Unable to open directory: {$src}");
+            throw new InvalidArgumentException("Unable to open directory: $src");
         }
 
         while (($file = readdir($handle)) !== false) {
@@ -69,7 +69,7 @@ class TestsController extends Controller
             $this->stdout('The following files/folders will be overwritten:' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
 
             foreach ($conflicts as $file) {
-                $this->stdout("- {$file}" . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout("- $file" . PHP_EOL, Console::FG_YELLOW);
             }
 
             $this->stdout(PHP_EOL);
@@ -83,7 +83,7 @@ class TestsController extends Controller
         // Confirm
         $this->stdout('The following files/folders will be created:' . PHP_EOL . PHP_EOL);
         foreach ($plan as $file) {
-            $this->stdout("- {$file}" . PHP_EOL);
+            $this->stdout("- $file" . PHP_EOL);
         }
         $this->stdout(PHP_EOL);
         if (!$this->confirm('Continue?', true)) {

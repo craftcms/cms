@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use PDOException;
 use yii\base\ErrorException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
@@ -29,10 +30,10 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\mysql\Schema
 {
-    const TYPE_TINYTEXT = 'tinytext';
-    const TYPE_MEDIUMTEXT = 'mediumtext';
-    const TYPE_LONGTEXT = 'longtext';
-    const TYPE_ENUM = 'enum';
+    public const TYPE_TINYTEXT = 'tinytext';
+    public const TYPE_MEDIUMTEXT = 'mediumtext';
+    public const TYPE_LONGTEXT = 'longtext';
+    public const TYPE_ENUM = 'enum';
 
     /**
      * @inheritdoc
@@ -193,7 +194,7 @@ class Schema extends \yii\db\mysql\Schema
         $ignoreTableArgs = [];
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoreTableArgs[] = "--ignore-table={database}.{$table}";
+            $ignoreTableArgs[] = "--ignore-table={database}.$table";
         }
 
         $schemaDump = 'mysqldump' .
@@ -342,7 +343,7 @@ SQL;
             }
         } catch (\Exception $e) {
             $previous = $e->getPrevious();
-            if (!$previous instanceof \PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
+            if (!$previous instanceof PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
                 throw $e;
             }
 

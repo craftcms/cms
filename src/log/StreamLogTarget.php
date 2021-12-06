@@ -114,7 +114,7 @@ class StreamLogTarget extends BaseTarget
         if (!isset($this->fp)) {
             $this->fp = @fopen($this->url, 'w');
             if ($this->fp === false) {
-                throw new InvalidConfigException("Unable to open '{$this->url}' for writing.");
+                throw new InvalidConfigException("Unable to open '$this->url' for writing.");
             }
             $this->openedFp = true;
         }

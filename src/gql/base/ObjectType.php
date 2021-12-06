@@ -12,6 +12,7 @@ use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class ObjectType
@@ -46,7 +47,7 @@ abstract class ObjectType extends GqlObjectType
         try {
             $value = $this->resolve($source, $arguments, $context, $resolveInfo);
             $value = GqlHelper::applyDirectives($source, $resolveInfo, $value);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new GqlException($exception->getMessage(), 0, $exception);
         }
 
@@ -74,8 +75,6 @@ abstract class ObjectType extends GqlObjectType
             $result = $source[$fieldName] ?? null;
         }
 
-        $result = $result instanceof ElementQueryInterface ? $result->all() : $result;
-
-        return $result;
+        return $result instanceof ElementQueryInterface ? $result->all() : $result;
     }
 }

@@ -30,7 +30,10 @@ return [
             'class' => craft\services\Categories::class,
         ],
         'composer' => [
-            'class' => \craft\services\Composer::class,
+            'class' => craft\services\Composer::class,
+        ],
+        'conditions' => [
+            'class' => craft\services\Conditions::class,
         ],
         'content' => [
             'class' => craft\services\Content::class,
@@ -44,8 +47,8 @@ return [
         'drafts' => [
             'class' => craft\services\Drafts::class,
         ],
-        'elementIndexes' => [
-            'class' => craft\services\ElementIndexes::class,
+        'elementSources' => [
+            'class' => craft\services\ElementSources::class,
         ],
         'elements' => [
             'class' => craft\services\Elements::class,
@@ -150,6 +153,9 @@ return [
         ],
         'utilities' => [
             'class' => craft\services\Utilities::class,
+        ],
+        'webpack' => [
+            'class' => craft\services\Webpack::class,
         ],
         'contentMigrator' => [
             'class' => craft\db\MigrationManager::class,

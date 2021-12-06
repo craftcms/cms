@@ -27,6 +27,7 @@ use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -63,8 +64,6 @@ class Matrix extends Component
      * @var string[]
      */
     private array $_uniqueBlockTypeAndFieldHandles = [];
-
-    const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
 
 
     /**
@@ -204,7 +203,7 @@ class Matrix extends Component
      * Defaults to `true`.
      * @return bool
      * @throws Exception if an error occurs when saving the block type
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveBlockType(MatrixBlockType $blockType, bool $runValidation = true): bool
     {
@@ -213,7 +212,7 @@ class Matrix extends Component
         }
 
         $isNewBlockType = $blockType->getIsNew();
-        $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
+        $configPath = ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $blockType->uid;
         $configData = $blockType->getConfig();
         $field = $blockType->getField();
 
@@ -317,7 +316,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -347,7 +346,7 @@ class Matrix extends Component
      */
     public function deleteBlockType(MatrixBlockType $blockType): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, "Delete matrix block type “{$blockType->handle}” for parent field “{$blockType->getField()->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $blockType->uid, "Delete matrix block type “{$blockType->handle}” for parent field “{$blockType->getField()->handle}”");
         return true;
     }
 
@@ -355,7 +354,7 @@ class Matrix extends Component
      * Handle block type change
      *
      * @param ConfigEvent $event
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function handleDeletedBlockType(ConfigEvent $event): void
     {
@@ -433,7 +432,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -502,7 +501,7 @@ class Matrix extends Component
      * @param MatrixField $matrixField The Matrix field
      * @param bool $validate Whether the settings should be validated before being saved.
      * @return bool Whether the settings saved successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
@@ -564,7 +563,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -583,7 +582,7 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field.
      * @return bool Whether the field was deleted successfully.
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteMatrixField(MatrixField $matrixField): bool
     {
@@ -613,7 +612,7 @@ class Matrix extends Component
             $transaction->commit();
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -657,7 +656,7 @@ class Matrix extends Component
      *
      * @param MatrixField $field The Matrix field
      * @param ElementInterface $owner The element the field is associated with
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveField(MatrixField $field, ElementInterface $owner): void
     {
@@ -779,7 +778,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -801,7 +800,7 @@ class Matrix extends Component
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.2.0
      */
     public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
@@ -828,8 +827,15 @@ class Matrix extends Component
                     'propagating' => false,
                 ];
 
-                if ($target->updatingFromDerivative && $block->getIsDerivative()) {
-                    if ($block->getOwner()->isFieldModified($field->handle)) {
+                if (
+                    $target->updatingFromDerivative &&
+                    $block->getCanonical() !== $block // in case the canonical block is soft-deleted
+                ) {
+                    if (
+                        $source->getIsRevision() ||
+                        !empty($target->newSiteIds) ||
+                        $source->isFieldModified($field->handle, true)
+                    ) {
                         /** @var MatrixBlock $newBlock */
                         $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
                         $newBlockId = $newBlock->id;
@@ -849,7 +855,7 @@ class Matrix extends Component
             $this->_deleteOtherBlocks($field, $target, $newBlockIds);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -895,6 +901,7 @@ class Matrix extends Component
                         continue;
                     }
 
+                    $otherTargets[$otherSource->siteId]->updatingFromDerivative = $target->updatingFromDerivative;
                     $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to
@@ -925,6 +932,7 @@ class Matrix extends Component
             ->ignorePlaceholders()
             ->indexBy('siteId')
             ->all();
+        $localizedOwners[$owner->siteId] = $owner;
 
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()

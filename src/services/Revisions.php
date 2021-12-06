@@ -18,9 +18,10 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
+use Throwable;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception;
 
 /**
  * Revisions service.
@@ -34,22 +35,22 @@ class Revisions extends Component
     /**
      * @event DraftEvent The event that is triggered before a revision is created.
      */
-    const EVENT_BEFORE_CREATE_REVISION = 'beforeCreateRevision';
+    public const EVENT_BEFORE_CREATE_REVISION = 'beforeCreateRevision';
 
     /**
      * @event DraftEvent The event that is triggered after a revision is created.
      */
-    const EVENT_AFTER_CREATE_REVISION = 'afterCreateRevision';
+    public const EVENT_AFTER_CREATE_REVISION = 'afterCreateRevision';
 
     /**
      * @event DraftEvent The event that is triggered before an element is reverted to a revision.
      */
-    const EVENT_BEFORE_REVERT_TO_REVISION = 'beforeRevertToRevision';
+    public const EVENT_BEFORE_REVERT_TO_REVISION = 'beforeRevertToRevision';
 
     /**
      * @event DraftEvent The event that is triggered after an element is reverted to a revision.
      */
-    const EVENT_AFTER_REVERT_TO_REVISION = 'afterRevertToRevision';
+    public const EVENT_AFTER_REVERT_TO_REVISION = 'afterRevertToRevision';
 
     /**
      * Creates a new revision for the given element.
@@ -62,7 +63,7 @@ class Revisions extends Component
      * @param array $newAttributes any attributes to apply to the draft
      * @param bool $force Whether to force a new revision even if the element doesn't appear to have changed since the last revision
      * @return ElementInterface The new revision
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function createRevision(ElementInterface $canonical, ?int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
@@ -73,7 +74,7 @@ class Revisions extends Component
 
         $lockKey = 'revision:' . $canonical->id;
         $mutex = Craft::$app->getMutex();
-        if (!$mutex->acquire($lockKey)) {
+        if (!$mutex->acquire($lockKey, 3)) {
             throw new Exception('Could not acquire a lock to save a revision for element ' . $canonical->id);
         }
 
@@ -167,7 +168,7 @@ class Revisions extends Component
             $revision = $elementsService->duplicateElement($canonical, $newAttributes);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             $mutex->release($lockKey);
             throw $e;
@@ -205,7 +206,7 @@ class Revisions extends Component
      * @param int $creatorId The user ID that the new revision should be attributed to
      * @return ElementInterface The new source element
      * @throws InvalidElementException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
@@ -226,7 +227,7 @@ class Revisions extends Component
         // "Duplicate" the revision with the source element's ID, UID, and content ID
         $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
-            'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
+            'revisionNotes' => Craft::t('app', 'Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
         ]);
 
         // Fire an 'afterRevertToRevision' event

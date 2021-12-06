@@ -39,7 +39,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
@@ -79,22 +79,22 @@ class Asset extends Element
             ],
             'folderId' => [
                 'name' => 'folderId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the folder that the asset belongs to.',
             ],
             'filename' => [
                 'name' => 'filename',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The filename of the asset file.',
             ],
             'extension' => [
                 'name' => 'extension',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The file extension for the asset file.',
             ],
             'hasFocalPoint' => [
                 'name' => 'hasFocalPoint',
-                'type' => Type::boolean(),
+                'type' => Type::nonNull(Type::boolean()),
                 'description' => 'Whether a user-defined focal point is set on the asset.',
             ],
             'focalPoint' => [
@@ -104,7 +104,7 @@ class Asset extends Element
             ],
             'kind' => [
                 'name' => 'kind',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The file kind.',
             ],
             'size' => [
@@ -159,7 +159,7 @@ class Asset extends Element
                 'args' => [
                     'sizes' => [
                         'name' => 'sizes',
-                        'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.',
+                        'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the intended 1x width.',
                         'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
                     ],
                 ],
@@ -190,7 +190,7 @@ class Asset extends Element
             ],
             'path' => [
                 'name' => 'path',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The asset\'s path in the volume.',
             ],
             'dateModified' => [
