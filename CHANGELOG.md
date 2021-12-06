@@ -100,6 +100,11 @@
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
+- Added `craft\fields\Assets::$allowSubfolders`.
+- Added `craft\fields\Assets::$restrictedDefaulUploadSubpath`.
+- Added `craft\fields\Assets::$restrictedLocationSource`, which replaces `$singleUploadLocationSource`.
+- Added `craft\fields\Assets::$restrictedLocationSubpath`, which replaces `$singleUploadLocationSubpath`.
+- Added `craft\fields\Assets::$restrictLocation`, which replaces `$useSingleFolder`.
 - Added `craft\gql\base\SingularTypeInterface`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
@@ -188,6 +193,7 @@
 - Users are no longer required to have a username or email.
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
+- Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
 - When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
@@ -448,6 +454,9 @@
 - Removed `craft\events\SearchEvent::setElementIds()`.
 - Removed `craft\feeds\Feeds`.
 - Removed `craft\feeds\GuzzleClient`.
+- Removed `craft\fields\Assets::$singleUploadLocationSource`. `$restrictedLocationSource` can be used instead.
+- Removed `craft\fields\Assets::$singleUploadLocationSubpath`. `$restrictedLocationSubpath` can be used instead.
+- Removed `craft\fields\Assets::$useSingleFolder`. `$restrictLocation` can be used instead.
 - Removed `craft\fields\BaseOptionsField::optionLabel()`.
 - Removed `craft\fields\BaseRelationField::inputSiteId()`. `targetSiteId()` can be used instead.
 - Removed `craft\fields\Matrix::$localizeBlocks`. `$propagationMethod` can be used instead.
