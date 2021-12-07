@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved the accessibility of the “Default Asset Location” and “Asset Location” Assets field settings.
+- Element indexes now keep track of recent sort selections and factor them into the new element order. ([#10203](https://github.com/craftcms/cms/issues/10203))
 - A `describedBy` variable is now available for `input` blocks rendered when embedding the `_includes/forms/field` control panel template.
 
 ### Fixed
