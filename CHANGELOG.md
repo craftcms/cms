@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.25 - 2021-12-07
 
 ### Changed
 - Improved the accessibility of the “Default Asset Location” and “Asset Location” Assets field settings.
