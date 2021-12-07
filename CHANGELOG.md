@@ -10,6 +10,7 @@
 - Fixed an error that could occur if the `field()` macro in the `_includes/forms` control panel template was called withoun an `input` argument. ([#10208](https://github.com/craftcms/cms/issues/10208))
 - Fixed a bug where the `migrate/fresh` command was erasing all migration history and attempting to reapply migrations. ([#10209](https://github.com/craftcms/cms/issues/10209))
 - Fixed a JavaScript error that occurred when pressing <kbd>Return</kbd> on an autosuggest input when no option was selected.
+- Fixed a bug where Edit Category pages could have two sets of “Preview” and “View” buttons. ([#10215](https://github.com/craftcms/cms/issues/10215))
 
 ## 3.7.24 - 2021-12-02
 

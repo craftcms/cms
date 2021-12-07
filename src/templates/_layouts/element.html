@@ -71,7 +71,7 @@
     {% set isNewlySupportedSite = false %}
 {% endif %}
 
-{% set previewTargets = element.getPreviewTargets() %}
+{% set previewTargets = saveDraftAction ? element.getPreviewTargets() : [] %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% set canDeleteDraft = (
