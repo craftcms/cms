@@ -8,8 +8,10 @@
 namespace craftunit\gql;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\events\DefineGqlTypeFieldsEvent;
 use craft\gql\TypeManager;
+use craft\services\Gql;
 use yii\base\Event;
 
 class TypeManagerTest extends Unit
@@ -19,8 +21,11 @@ class TypeManagerTest extends Unit
      */
     protected $tester;
 
+    private ?Gql $_gqlService = null;
+
     protected function _before()
     {
+        $this->_gqlService = Craft::$app->getGql();
     }
 
     protected function _after()
@@ -38,27 +43,27 @@ class TypeManagerTest extends Unit
      */
     public function testFieldModification($fields, $callback, $result)
     {
-        TypeManager::flush();
+        $this->_gqlService->flushCaches();
         Event::on(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, $callback);
-        $fields = TypeManager::prepareFieldDefinitions($fields, 'someName');
+        $fields = $this->_gqlService->prepareFieldDefinitions($fields, 'someName');
         Event::off(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, $callback);
 
         self::assertSame($fields, $result);
     }
 
     /**
-     * Test whether the cache works.
+     * Test whether the cache works and flushing the GQL cache flushes it too.
      */
     public function testFieldCache()
     {
-        TypeManager::flush();
+        $this->_gqlService->flushCaches();
         $cachedName = 'someName';
         $fields= ['ok'];
 
-        TypeManager::prepareFieldDefinitions([], $cachedName);
-        self::assertNotSame($fields, TypeManager::prepareFieldDefinitions($fields, $cachedName));
-        TypeManager::flush();
-        self::assertSame($fields, TypeManager::prepareFieldDefinitions($fields, $cachedName));
+        $this->_gqlService->prepareFieldDefinitions([], $cachedName);
+        self::assertNotSame($fields, $this->_gqlService->prepareFieldDefinitions($fields, $cachedName));
+        Craft::$app->getGql()->flushCaches();
+        self::assertSame($fields, $this->_gqlService->prepareFieldDefinitions($fields, $cachedName));
     }
 
     public function fieldModificationDataProvider()
