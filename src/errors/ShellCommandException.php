@@ -44,7 +44,7 @@ class ShellCommandException extends Exception
         $execCommand = $command->getExecCommand();
 
         if ($execCommand !== false) {
-            return new static($execCommand, $command->getExitCode(), $command->getStdErr());
+            return new self($execCommand, $command->getExitCode(), $command->getStdErr());
         }
 
         return false;
@@ -66,7 +66,7 @@ class ShellCommandException extends Exception
         $this->error = $error;
 
         if ($message === null) {
-            $message = "The shell command \"$command\" failed with exit code {$exitCode}" . ($error ? ": {$error}" : '.');
+            $message = "The shell command \"$command\" failed with exit code $exitCode" . ($error ? ": $error" : '.');
         }
 
         parent::__construct($message, $code);

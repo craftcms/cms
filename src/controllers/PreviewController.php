@@ -10,6 +10,8 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\web\Controller;
+use Exception;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -47,7 +49,7 @@ class PreviewController extends Controller
      *
      * @throws ServerErrorHttpException if the token couldn't be created
      * @throws BadRequestHttpException
-     * @throws \Exception
+     * @throws Exception
      * @return Response
      */
     public function actionCreateToken(): Response
@@ -97,7 +99,7 @@ class PreviewController extends Controller
      * @param bool $provisional
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionPreview(
         string $elementType,
@@ -106,8 +108,7 @@ class PreviewController extends Controller
         ?int $draftId = null,
         ?int $revisionId = null,
         bool $provisional = false
-    ): Response
-    {
+    ): Response {
         // Make sure a token was used to get here
         $this->requireToken();
 
@@ -129,6 +130,16 @@ class PreviewController extends Controller
         $element = $query->one();
 
         if ($element) {
+            if (!$element->lft && $element->getIsDerivative()) {
+                // See if we can add structure data to it
+                $canonical = $element->getCanonical(true);
+                $element->structureId = $canonical->structureId;
+                $element->root = $canonical->root;
+                $element->lft = $canonical->lft;
+                $element->rgt = $canonical->rgt;
+                $element->level = $canonical->level;
+            }
+
             $element->previewing = true;
             Craft::$app->getElements()->setPlaceholderElement($element);
         }

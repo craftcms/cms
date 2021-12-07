@@ -8,27 +8,34 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\console\Controller;
 use craft\helpers\Console;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
- * Takes the system online
+ * Takes the system online.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.7
  */
-class OnController extends Controller
+class OnController extends BaseSystemStatusController
 {
     /**
      * Turns the system on.
+     *
+     * **Example**
+     *
+     * ```
+     * $ php craft on
+     * The system is now online.
+     * ```
      *
      * @return int
      */
     public function actionIndex(): int
     {
-        // If the isSystemLive config setting is set, then we can't control it from here
-        if (is_bool($live = Craft::$app->getConfig()->getGeneral()->isSystemLive)) {
+        // If the isSystemLive config setting is set, then we can’t control it from here
+        if (is_bool(Craft::$app->getConfig()->getGeneral()->isSystemLive)) {
             $this->stderr('It\'s not possible to toggle the system status when the `isSystemLive` config setting is set.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -38,13 +45,12 @@ class OnController extends Controller
             return ExitCode::OK;
         }
 
-        // Allow changes to the project config even if it's supposed to be read only,
-        // and prevent changes from getting written to YAML
-        $projectConfig = Craft::$app->getProjectConfig();
-        $projectConfig->readOnly = false;
-        $projectConfig->writeYamlAutomatically = false;
-
-        $projectConfig->set('system.live', true, null, false);
+        try {
+            $this->set('system.live', true);
+        } catch (Throwable $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
 
         $this->stdout('The system is now online.' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;

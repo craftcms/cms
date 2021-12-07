@@ -9,6 +9,7 @@ namespace craft\gql\base;
 
 use craft\base\Component;
 use craft\helpers\Gql;
+use Exception;
 use GraphQL\Error\Error;
 
 /**
@@ -103,7 +104,7 @@ abstract class MutationResolver extends Component
      *
      * @param string $scope
      * @param string $action
-     * @throws \Exception if reasons
+     * @throws Exception if reasons
      */
     protected function requireSchemaAction(string $scope, string $action): void
     {

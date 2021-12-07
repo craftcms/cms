@@ -30,12 +30,19 @@ class PruneRevisionsController extends Controller
     public int $maxRevisions;
 
     /**
+     * @var bool Whether this is a dry run.
+     * @since 3.7.9
+     */
+    public $dryRun = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'maxRevisions';
+        $options[] = 'dryRun';
         return $options;
     }
 
@@ -93,19 +100,31 @@ class PruneRevisionsController extends Controller
             /** @var ElementInterface|string $elementType */
             $elementType = $element['type'];
             $deleteCount = $element['count'] - $this->maxRevisions;
-            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ({$deleteCount} revisions) ... ");
+
+            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ($deleteCount revisions) ... ");
+
             $extraRevisions = $elementType::find()
                 ->revisionOf($element['id'])
-                ->siteId('*')
+                ->site('*')
                 ->unique()
                 ->status(null)
                 ->orderBy(['num' => SORT_DESC])
                 ->offset($this->maxRevisions)
                 ->all();
-            foreach ($extraRevisions as $extraRevision) {
-                $elementsService->deleteElement($extraRevision, true);
+
+            if (!$this->dryRun) {
+                foreach ($extraRevisions as $extraRevision) {
+                    $elementsService->deleteElement($extraRevision, true);
+                }
             }
-            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+
+            $this->stdout('done', Console::FG_GREEN);
+
+            if (count($extraRevisions) !== $deleteCount) {
+                $this->stdout(' (found ' . count($extraRevisions) . ')', Console::FG_RED);
+            }
+
+            $this->stdout(PHP_EOL);
         }
 
         $this->stdout(PHP_EOL . 'Finished pruning revisions' . PHP_EOL . PHP_EOL, Console::FG_GREEN);

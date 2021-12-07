@@ -15,8 +15,6 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,
  * cropping and deleting site logos and icons.
@@ -31,6 +29,15 @@ class RebrandController extends Controller
      * @var array Allowed types of site images.
      */
     private array $_allowedTypes = ['logo', 'icon'];
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        Craft::$app->requireEdition(Craft::Pro);
+        return parent::beforeAction($action);
+    }
 
     /**
      * Handles control panel logo and site icon uploads.

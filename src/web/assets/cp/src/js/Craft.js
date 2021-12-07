@@ -164,70 +164,96 @@ $.extend(Craft,
             const type = typeof token[1] !== 'undefined' ? Craft.trim(token[1]) : 'none';
             switch (type) {
                 case 'number':
-                    let format = typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
-                    if (format !== null && format !== 'integer') {
-                        throw `Message format 'number' is only supported for integer values.`;
-                    }
-                    let number = Craft.formatNumber(arg);
-                    let pos;
-                    if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
-                        number += `.${arg.substr(pos + 1)}`;
-                    }
-
-                    return number;
+                    return (() => {
+                        let format = typeof token[2] !== 'undefined' ? Craft.trim(token[2]) : null;
+                        if (format !== null && format !== 'integer') {
+                            throw `Message format 'number' is only supported for integer values.`;
+                        }
+                        let number = Craft.formatNumber(arg);
+                        let pos;
+                        if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
+                            number += `.${arg.substr(pos + 1)}`;
+                        }
+                        return number;
+                    })();
                 case 'none':
                     return arg;
-                case 'plural':
-                    /* http://icu-project.org/apiref/icu4c/classicu_1_1PluralFormat.html
-                    pluralStyle = [offsetValue] (selector '{' message '}')+
-                    offsetValue = "offset:" number
-                    selector = explicitValue | keyword
-                    explicitValue = '=' number  // adjacent, no white space in between
-                    keyword = [^[[:Pattern_Syntax:][:Pattern_White_Space:]]]+
-                    message: see MessageFormat
-                    */
-                    if (typeof token[2] === 'undefined') {
-                        return false;
-                    }
-                    let plural = this._tokenizePattern(token[2]);
-                    const c = plural.length;
-                    let message = false;
-                    let offset = 0;
-                    for (let i = 0; i + 1 < c; i++) {
-                        if (typeof plural[i] === 'object' || typeof plural[i + 1] !== 'object') {
+                case 'select':
+                    return (() => {
+                        /* http://icu-project.org/apiref/icu4c/classicu_1_1SelectFormat.html
+                        selectStyle = (selector '{' message '}')+
+                        */
+                        if (typeof token[2] === 'undefined') {
                             return false;
                         }
-                        let selector = Craft.trim(plural[i++]);
-                        let selectorChars = [...selector];
-
-                        if (i === 1 && selector.substring(0, 7) === 'offset:') {
-                            let pos = [...selector.replace(/[\n\r\t]/g, ' ')].indexOf(' ', 7);
-                            if (pos === -1) {
-                                throw 'Message pattern is invalid.';
+                        let select = this._tokenizePattern(token[2]);
+                        let c = select.length;
+                        let message = false;
+                        for (let i = 0; i + 1 < c; i++) {
+                            if (Garnish.isArray(select[i]) || !Garnish.isArray(select[i + 1])) {
+                                return false;
                             }
-                            let offset = parseInt(Craft.trim(selectorChars.slice(7, pos).join('')));
-                            selector = Craft.trim(selectorChars.slice(pos + 1, pos + 1 + selectorChars.length).join(''));
+                            let selector = Craft.trim(select[i++]);
+                            if (message === false && selector === 'other' || selector == arg) {
+                                message = select[i].join(',');
+                            }
                         }
-                        if (
-                            message === false &&
-                            selector === 'other' ||
-                            selector[0] === '=' && parseInt(selectorChars.slice(1, 1 + selectorChars.length).join('')) === arg ||
-                            selector === 'one' && arg - offset === 1
-                        ) {
-                            message = (typeof plural[i] === 'string' ? [plural[i]] : plural[i]).map((p) => {
-                                return p.replace('#', arg - offset);
-                            }).join(',');
+                        if (message === false) {
+                            return false;
                         }
-                    }
-                    if (message !== false) {
                         return this.formatMessage(message, args);
-                    }
-                    break;
+                    })();
+                case 'plural':
+                    return (() => {
+                        /* http://icu-project.org/apiref/icu4c/classicu_1_1PluralFormat.html
+                        pluralStyle = [offsetValue] (selector '{' message '}')+
+                        offsetValue = "offset:" number
+                        selector = explicitValue | keyword
+                        explicitValue = '=' number  // adjacent, no white space in between
+                        keyword = [^[[:Pattern_Syntax:][:Pattern_White_Space:]]]+
+                        message: see MessageFormat
+                        */
+                        if (typeof token[2] === 'undefined') {
+                            return false;
+                        }
+                        let plural = this._tokenizePattern(token[2]);
+                        const c = plural.length;
+                        let message = false;
+                        let offset = 0;
+                        for (let i = 0; i + 1 < c; i++) {
+                            if (typeof plural[i] === 'object' || typeof plural[i + 1] !== 'object') {
+                                return false;
+                            }
+                            let selector = Craft.trim(plural[i++]);
+                            let selectorChars = [...selector];
+
+                            if (i === 1 && selector.substring(0, 7) === 'offset:') {
+                                let pos = [...selector.replace(/[\n\r\t]/g, ' ')].indexOf(' ', 7);
+                                if (pos === -1) {
+                                    throw 'Message pattern is invalid.';
+                                }
+                                offset = parseInt(Craft.trim(selectorChars.slice(7, pos).join('')));
+                                selector = Craft.trim(selectorChars.slice(pos + 1, pos + 1 + selectorChars.length).join(''));
+                            }
+                            if (
+                              message === false &&
+                              selector === 'other' ||
+                              selector[0] === '=' && parseInt(selectorChars.slice(1, 1 + selectorChars.length).join('')) === arg ||
+                              selector === 'one' && arg - offset === 1
+                            ) {
+                                message = (typeof plural[i] === 'string' ? [plural[i]] : plural[i]).map((p) => {
+                                    return p.replace('#', arg - offset);
+                                }).join(',');
+                            }
+                        }
+                        if (message === false) {
+                            return false;
+                        }
+                        return this.formatMessage(message, args);
+                    })();
                 default:
                     throw `Message format '${type}' is not supported.`;
             }
-
-            return false;
         },
 
         formatDate: function(date) {
@@ -350,7 +376,7 @@ $.extend(Craft,
          * @return string
          */
         formatInputId: function(inputName) {
-            return this.rtrim(inputName.replace(/[\[\]\\]+/g, '-'), '-');
+            return this.rtrim(inputName.replace(/[^\w]+/g, '-'), '-');
         },
 
         /**
@@ -1442,6 +1468,17 @@ $.extend(Craft,
             return asciiStr;
         },
 
+        uuid: function() {
+            if (typeof crypto.randomUUID === 'function') {
+                return crypto.randomUUID();
+            }
+
+            // h/t https://stackoverflow.com/a/2117523/1688568
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+              (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        },
+
         randomString: function(length) {
             // h/t https://stackoverflow.com/a/1349426/1688568
             var result = '';
@@ -1533,8 +1570,10 @@ $.extend(Craft,
             $('.lightswitch', $container).lightswitch();
             $('.nicetext', $container).nicetext();
             $('.formsubmit', $container).formsubmit();
-            $('.menubtn', $container).menubtn();
+            $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
+            $('[data-disclosure-trigger]', $container).disclosureMenu();
             $('.datetimewrapper', $container).datetime();
+            $('.datewrapper > input[type="date"], .timewrapper > input[type="time"]', $container).datetimeinput();
 
             // Open outbound links in new windows
             // hat tip: https://stackoverflow.com/a/2911045/1688568
@@ -2114,6 +2153,20 @@ $.extend($.fn,
             });
         },
 
+        disclosureMenu: function() {
+            return this.each(function() {
+                var $trigger = $(this);
+                var $disclosureId = $trigger.attr('aria-controls');
+
+                // Only instantiate element if there is a reference to disclosure content
+                if ($disclosureId) {
+                    var settings = {};
+
+                    new Garnish.DisclosureMenu($trigger, settings);
+                }
+            });
+        },
+
         datetime: function() {
             return this.each(function() {
                 let $wrapper = $(this);
@@ -2137,10 +2190,10 @@ $.extend($.fn,
                                 .appendTo($wrapper)
                                 .on('click', () => {
                                     for (let i = 0; i < $inputs.length; i++) {
-                                        $inputs.eq(i).val('');
+                                        $inputs.eq(i).val('').trigger('input').trigger('change');
                                     }
                                     $btn.remove();
-                                    $inputs.first().focus();
+                                    $inputs.first().filter('[type="text"]').focus();
                                 })
                         }
                     } else {
@@ -2148,6 +2201,21 @@ $.extend($.fn,
                     }
                 };
                 $inputs.on('change', checkValue);
+                checkValue();
+            });
+        },
+
+        datetimeinput: function() {
+            return this.each(function() {
+                const $input = $(this);
+                const checkValue = () => {
+                    if ($input.val() === '') {
+                        $input.addClass('empty-value');
+                    } else {
+                        $input.removeClass('empty-value');
+                    }
+                };
+                $input.on('input', checkValue);
                 checkValue();
             });
         },

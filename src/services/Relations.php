@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\helpers\Db;
+use Throwable;
 use yii\base\Component;
 
 /**
@@ -31,7 +32,7 @@ class Relations extends Component
      * @param BaseRelationField $field
      * @param ElementInterface $source
      * @param array $targetIds
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds): void
     {
@@ -115,7 +116,7 @@ class Relations extends Component
                 }
 
                 $transaction->commit();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $transaction->rollBack();
                 throw $e;
             }

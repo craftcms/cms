@@ -157,7 +157,7 @@ class InstallController extends Controller
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it's not already set to an alias or environment variable
-        if ($site->baseUrl[0] !== '@' && $site->baseUrl[0] !== '$') {
+        if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
                 $site->baseUrl = '$PRIMARY_SITE_URL';
@@ -181,7 +181,7 @@ class InstallController extends Controller
         try {
             $migrator->migrateUp($migration);
         } catch (MigrationException $e) {
-            $this->stderr('*** failed to install Craft: ' . $e->getMessage(). PHP_EOL . PHP_EOL, Console::FG_RED);
+            $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -208,6 +208,6 @@ class InstallController extends Controller
     public function actionPlugin(string $handle): int
     {
         Console::outputWarning("The install/plugin command is deprecated.\nRunning plugin/install instead...");
-        return Craft::$app->runAction('plugin/install', [$handle]);
+        return $this->run('plugin/install', [$handle]);
     }
 }

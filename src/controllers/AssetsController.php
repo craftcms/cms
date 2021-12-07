@@ -8,16 +8,21 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
+use craft\errors\AssetTransformException;
+use craft\errors\DeprecationException;
+use craft\errors\ElementNotFoundException;
+use craft\errors\SiteNotFoundException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -27,13 +32,18 @@ use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use Throwable;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidRouteException;
 use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
+use yii\web\RangeNotSatisfiableHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
@@ -66,7 +76,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException if `$assetId` is invalid
      * @throws ForbiddenHttpException if the user isn't permitted to edit the asset
      * @throws InvalidConfigException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @since 3.4.0
      */
     public function actionEditAsset(int $assetId, ?Asset $asset = null, ?string $site = null): Response
@@ -77,7 +87,7 @@ class AssetsController extends Controller
             $siteHandle = $site;
             $site = $sitesService->getSiteByHandle($siteHandle);
             if (!$site) {
-                throw new BadRequestHttpException("Invalid site handle: {$siteHandle}");
+                throw new BadRequestHttpException("Invalid site handle: $siteHandle");
             }
             if (!in_array($site->id, $editableSiteIds, false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
@@ -95,7 +105,7 @@ class AssetsController extends Controller
                 ->siteId($site->id)
                 ->one();
             if ($asset === null) {
-                throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+                throw new BadRequestHttpException("Invalid asset ID: $assetId");
             }
         }
 
@@ -117,7 +127,7 @@ class AssetsController extends Controller
             ],
         ];
 
-        $subfolders = explode('/', trim($asset->folderPath, '/'));
+        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $asset->folderPath));
         foreach ($subfolders as $subfolder) {
             $uri .= "/$subfolder";
             $crumbs[] = [
@@ -129,8 +139,8 @@ class AssetsController extends Controller
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
         $canReplaceFile = (
-            $userSession->checkPermission("replaceFilesInVolume:{$volume->uid}") &&
-            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}"))
+            $userSession->checkPermission("replaceFilesInVolume:$volume->uid") &&
+            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:$volume->uid"))
         );
 
         // See if the user is allowed to delete the asset
@@ -180,7 +190,7 @@ class AssetsController extends Controller
 
         $asset = Asset::findOne($assetId);
         if ($asset === null) {
-            throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
         return $this->asJson([
@@ -198,9 +208,9 @@ class AssetsController extends Controller
      * @throws InvalidConfigException
      * @throws VolumeException
      * @throws Throwable
-     * @throws \craft\errors\DeprecationException
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\InvalidRouteException
+     * @throws DeprecationException
+     * @throws ElementNotFoundException
+     * @throws InvalidRouteException
      * @since 3.4.0
      */
     public function actionSaveAsset(): ?Response
@@ -221,7 +231,7 @@ class AssetsController extends Controller
             ->one();
 
         if ($asset === null) {
-            throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
         $this->requireVolumePermissionByAsset('saveAssetInVolume', $asset);
@@ -333,7 +343,7 @@ class AssetsController extends Controller
 
             $asset = new Asset();
             $asset->tempFilePath = $tempPath;
-            $asset->filename = $filename;
+            $asset->setFilename($filename);
             $asset->newFolderId = $folder->id;
             $asset->setVolumeId($folder->volumeId);
             $asset->uploaderId = Craft::$app->getUser()->getId();
@@ -363,7 +373,7 @@ class AssetsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'filename' => $asset->filename,
+                'filename' => $asset->getFilename(),
                 'assetId' => $asset->id,
             ]);
         } catch (Throwable $e) {
@@ -444,7 +454,7 @@ class AssetsController extends Controller
                 // If we have an actual asset for which to replace the file, just do it.
                 if (!empty($assetToReplace)) {
                     $tempPath = $sourceAsset->getCopyOfFile();
-                    $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->filename);
+                    $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->getFilename());
                     Craft::$app->getElements()->deleteElement($sourceAsset);
                 } else {
                     // If all we have is the filename, then make sure that the destination is empty and go for it.
@@ -467,7 +477,7 @@ class AssetsController extends Controller
         return $this->asJson([
             'success' => true,
             'assetId' => $assetId,
-            'filename' => $resultingAsset->filename,
+            'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
             'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
@@ -653,7 +663,7 @@ class AssetsController extends Controller
      * @throws InvalidConfigException
      * @throws VolumeException
      * @throws Throwable
-     * @throws \craft\errors\ElementNotFoundException
+     * @throws ElementNotFoundException
      */
     public function actionMoveAsset(): Response
     {
@@ -678,7 +688,7 @@ class AssetsController extends Controller
         }
 
         // Get the target filename
-        $filename = $this->request->getBodyParam('filename', $asset->filename);
+        $filename = $this->request->getBodyParam('filename') ?? $asset->getFilename();
 
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
         $this->requireVolumePermissionByFolder('saveAssetInVolume', $folder);
@@ -691,7 +701,7 @@ class AssetsController extends Controller
             $conflictingAsset = Asset::find()
                 ->select(['elements.id'])
                 ->folderId($folderId)
-                ->filename(Db::escapeParam($asset->filename))
+                ->filename(Db::escapeParam($asset->getFilename()))
                 ->one();
 
             // If there's an Asset conflicting, then merge and replace file.
@@ -699,7 +709,7 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
-                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->filename);
+                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->getFilename());
             }
         }
 
@@ -805,7 +815,7 @@ class AssetsController extends Controller
                         $assets->deleteFoldersByIds($existingFolder->id);
                     } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
-                        return $this->asErrorJson(Craft::t('app', 'Unable to delete directory while moving assets.'));
+                        return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                     }
                 } else {
                     // Or build a map of existing folders for file move
@@ -823,7 +833,7 @@ class AssetsController extends Controller
                     $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
                 } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
-                    return $this->asErrorJson(Craft::t('app', 'Unable to delete directory while moving assets.'));
+                    return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                 }
             }
 
@@ -856,9 +866,9 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the Asset is missing.
      * @throws Exception
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function actionImageEditor(): Response
     {
@@ -967,7 +977,7 @@ class AssetsController extends Controller
             if (strtolower($asset->getExtension()) === 'svg') {
                 unlink($imageCopy);
                 $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
-                $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);
+                $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
             }
 
             [$originalImageWidth, $originalImageHeight] = $imageSize;
@@ -1026,6 +1036,8 @@ class AssetsController extends Controller
                 $image->saveAs($imageCopy);
             }
 
+            $output = [];
+
             if ($replace) {
                 $oldFocal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
                 $focalChanged = $focal !== $oldFocal;
@@ -1039,7 +1051,7 @@ class AssetsController extends Controller
 
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
-                    $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+                    $assets->replaceAssetFile($asset, $imageCopy, $asset->getFilename());
                 } else if ($focalChanged) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
@@ -1049,19 +1061,22 @@ class AssetsController extends Controller
                 $newAsset->setScenario(Asset::SCENARIO_CREATE);
 
                 $newAsset->tempFilePath = $imageCopy;
-                $newAsset->filename = $asset->filename;
+                $newAsset->setFilename($asset->getFilename());
                 $newAsset->newFolderId = $folder->id;
                 $newAsset->setVolumeId($folder->volumeId);
                 $newAsset->setFocalPoint($focal);
 
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
+
+                $output['elementId'] = $newAsset->id;
             }
         } catch (Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
-        return $this->asJson(['success' => true]);
+        $output['success'] = true;
+        return $this->asJson($output);
     }
 
     /**
@@ -1074,7 +1089,7 @@ class AssetsController extends Controller
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws VolumeException
-     * @throws \yii\web\RangeNotSatisfiableHttpException
+     * @throws RangeNotSatisfiableHttpException
      */
     public function actionDownloadAsset(): Response
     {
@@ -1098,7 +1113,7 @@ class AssetsController extends Controller
         if (count($assets) === 1) {
             $asset = reset($assets);
             return $this->response
-                ->sendStreamAsFile($asset->getStream(), $asset->filename, [
+                ->sendStreamAsFile($asset->getStream(), $asset->getFilename(), [
                     'fileSize' => $asset->size,
                     'mimeType' => $asset->getMimeType(),
                 ]);
@@ -1166,7 +1181,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException if the transform can't be found
      * @throws ServerErrorHttpException if the transform can't be generated
-     * @throws \craft\errors\AssetTransformException
+     * @throws AssetTransformException
      */
     public function actionGenerateTransform(?int $transformId = null): Response
     {
@@ -1225,11 +1240,25 @@ class AssetsController extends Controller
 
         $previewHtml = null;
 
-        // todo: we should be passing the asset into getPreviewHtml(), not the constructor
         $previewHandler = Craft::$app->getAssets()->getAssetPreviewHandler($asset);
+        $variables = [];
+
+        if ($previewHandler instanceof ImagePreview) {
+            if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
+                $variables['editFocal'] = true;
+
+                try {
+                    $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
+                    $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
+                } catch (ForbiddenHttpException $exception) {
+                    $variables['editFocal'] = false;
+                }
+            }
+        }
+
         if ($previewHandler) {
             try {
-                $previewHtml = $previewHandler->getPreviewHtml();
+                $previewHtml = $previewHandler->getPreviewHtml($variables);
             } catch (NotSupportedException $e) {
                 // No big deal
             }
@@ -1244,6 +1273,38 @@ class AssetsController extends Controller
             'footHtml' => $view->getBodyHtml(),
             'requestId' => $requestId,
         ]);
+    }
+
+    /**
+     * Update an asset's focal point position.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws VolumeException
+     */
+    public function actionUpdateFocalPosition(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $assetUid = Craft::$app->getRequest()->getRequiredBodyParam('assetUid');
+        $focalData = Craft::$app->getRequest()->getRequiredBodyParam('focal');
+
+        $asset = Asset::find()->uid($assetUid)->one();
+
+        if (!$asset) {
+            throw new BadRequestHttpException("Invalid asset UID: $assetUid");
+        }
+
+        $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
+
+        $asset->setFocalPoint($focalData);
+        Craft::$app->getElements()->saveElement($asset);
+
+        return $this->asJson(['success' => true]);
     }
 
     /**

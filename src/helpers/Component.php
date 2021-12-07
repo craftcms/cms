@@ -39,21 +39,21 @@ class Component
             if (!$throwException) {
                 return false;
             }
-            throw new MissingComponentException("Unable to find component class '{$class}'.");
+            throw new MissingComponentException("Unable to find component class '$class'.");
         }
 
         if (!is_subclass_of($class, ComponentInterface::class)) {
             if (!$throwException) {
                 return false;
             }
-            throw new InvalidConfigException("Component class '{$class}' does not implement ComponentInterface.");
+            throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
         }
 
         if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
             if (!$throwException) {
                 return false;
             }
-            throw new InvalidConfigException("Component class '{$class}' is not an instance of '{$instanceOf}'.");
+            throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
         }
 
         // If it comes from a plugin, make sure the plugin is installed
@@ -66,9 +66,9 @@ class Component
             $pluginInfo = $pluginsService->getComposerPluginInfo($pluginHandle);
             $pluginName = $pluginInfo['name'] ?? $pluginHandle;
             if ($pluginsService->isPluginInstalled($pluginHandle)) {
-                $message = "Component class '{$class}' belongs to a disabled plugin ({$pluginName}).";
+                $message = "Component class '$class' belongs to a disabled plugin ($pluginName).";
             } else {
-                $message = "Component class '{$class}' belongs to an uninstalled plugin ({$pluginName}).";
+                $message = "Component class '$class' belongs to an uninstalled plugin ($pluginName).";
             }
             throw new MissingComponentException($message);
         }
@@ -155,12 +155,12 @@ class Component
         $icon = Craft::getAlias($icon);
 
         if (!is_file($icon)) {
-            Craft::warning("Icon file doesn't exist: {$icon}", __METHOD__);
+            Craft::warning("Icon file doesn't exist: $icon", __METHOD__);
             return self::_defaultIconSvg($label);
         }
 
         if (!FileHelper::isSvg($icon)) {
-            Craft::warning("Icon file is not an SVG: {$icon}", __METHOD__);
+            Craft::warning("Icon file is not an SVG: $icon", __METHOD__);
             return self::_defaultIconSvg($label);
         }
 
@@ -175,7 +175,7 @@ class Component
      */
     private static function _defaultIconSvg(string $label): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $label,
         ]);
     }

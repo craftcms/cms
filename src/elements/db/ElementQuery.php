@@ -15,6 +15,7 @@ use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\cache\ElementQueryTagDependency;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -29,6 +30,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\search\SearchQuery;
+use ReflectionClass;
 use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
@@ -41,7 +43,7 @@ use yii\db\ExpressionInterface;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
- * @property string|Site $site The site or site handle that the elements should be returned in
+ * @property-write string|string[]|Site $site The site(s) that resulting elements must be returned in
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -53,19 +55,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @event Event An event that is triggered at the beginning of preparing an element query for the query builder.
      */
-    const EVENT_BEFORE_PREPARE = 'beforePrepare';
+    public const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
     /**
      * @event Event An event that is triggered at the end of preparing an element query for the query builder.
      */
-    const EVENT_AFTER_PREPARE = 'afterPrepare';
+    public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
     /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      *
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
-    const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+    public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
      * @var string The name of the [[ElementInterface]] class.
@@ -460,6 +462,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     private ?array $_searchScores = null;
 
     /**
+     * @var string[]|null
+     * @see getCacheTags()
+     */
+    private $_cacheTags;
+
+    /**
      * Constructor
      *
      * @param string $elementType The element type class associated with this query
@@ -587,7 +595,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        /** @noinspection PhpUndefinedClassInspection */
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
             'hasMethods' => true,
@@ -1256,6 +1263,18 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     */
+    public function cache($duration = true, $dependency = null)
+    {
+        if ($dependency === null) {
+            $dependency = new ElementQueryTagDependency($this);
+        }
+
+        return parent::cache($duration, $dependency);
+    }
+
+    /**
+     * @inheritdoc
      * @throws QueryAbortedException if it can be determined that there won’t be any results
      */
     public function prepare($builder): Query
@@ -1283,6 +1302,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
             throw new QueryAbortedException($e->getMessage(), 0, $e);
         }
+
+        // Clear out the previous cache tags
+        $this->_cacheTags = null;
 
         // Normalize the orderBy param in case it was set directly
         if (!empty($this->orderBy)) {
@@ -1396,6 +1418,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->_applyUniqueParam($builder->db);
 
+        // Pass along the cache info
+        if ($this->queryCacheDuration !== null) {
+            $this->query->cache($this->queryCacheDuration, $this->queryCacheDependency);
+        }
+
         // Pass the query back
         return $this->query;
     }
@@ -1506,7 +1533,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function exists($db = null): bool
     {
-        return ($this->getCachedResult() !== null) ?: parent::exists($db);
+        return $this->getCachedResult() !== null || parent::exists($db);
     }
 
     /**
@@ -1574,7 +1601,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Clears the cached result.
+     * Clears the [cached result](https://craftcms.com/docs/3.x/element-queries.html#cache).
      *
      * @see getCachedResult()
      * @see setCachedResult()
@@ -1610,7 +1637,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $names = [];
 
         // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
-        foreach ((new \ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $dec = $property->getDeclaringClass();
                 if (
@@ -1625,22 +1652,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Add custom field properties
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
-        foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (
-                !$property->isStatic() &&
-                !in_array($property->getName(), [
-                    'hasMethods',
-                    'owner',
-                    // avoid conflicts with ElementQuery getters
-                    'iterator',
-                    'cachedResult',
-                    'criteria',
-                    'behaviors',
-                    'behavior',
-                    'rawSql',
-                ], true)
-            ) {
-                $names[] = $property->getName();
+        foreach ((new ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $name = $property->getName();
+                if (
+                    !in_array($name, ['canSetProperties', 'hasMethods', 'owner']) &&
+                    !method_exists($this, "get$name")
+                ) {
+                    $names[] = $property->getName();
+                }
             }
         }
 
@@ -1861,7 +1881,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $elementsService = Craft::$app->getElements();
         if ($elementsService->getIsCollectingCacheTags()) {
-            $cacheTags = [
+            $elementsService->collectCacheTags($this->getCacheTags());
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getCacheTags(): array
+    {
+        if ($this->_cacheTags === null) {
+            $this->_cacheTags = [
                 'element',
                 "element::$this->elementType",
             ];
@@ -1869,22 +1901,26 @@ class ElementQuery extends Query implements ElementQueryInterface
             // If specific IDs were requested, then use those
             if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
                 $queryTags = (array)$this->id;
-            } else if ($this->drafts) {
-                $queryTags = ['drafts'];
-            } else if ($this->revisions) {
-                $queryTags = ['revisions'];
             } else {
-                $queryTags = $this->cacheTags() ?: ['*'];
+                $queryTags = $this->cacheTags();
+                if (!empty($queryTags)) {
+                    if ($this->drafts !== false) {
+                        $queryTags[] = 'drafts';
+                    }
+                    if ($this->revisions !== false) {
+                        $queryTags[] = 'revisions';
+                    }
+                } else {
+                    $queryTags[] = '*';
+                }
             }
 
             foreach ($queryTags as $tag) {
-                $cacheTags[] = "element::$this->elementType::$tag";
+                $this->_cacheTags[] = "element::$this->elementType::$tag";
             }
-
-            $elementsService->collectCacheTags($cacheTags);
         }
 
-        return true;
+        return $this->_cacheTags;
     }
 
     /**
@@ -1968,8 +2004,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     protected function joinElementTable(string $table): void
     {
         $joinTable = [$table => "{{%$table}}"];
-        $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
-        $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
+        $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
+        $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
     }
 
     /**
@@ -2087,7 +2123,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $exception = null;
                 try {
                     $field->modifyElementsQuery($this, $fieldAttributeValue);
-                } catch (QueryAbortedException $exception) {}
+                } catch (QueryAbortedException $exception) {
+                }
 
                 // Set it back
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
@@ -2168,7 +2205,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         return (
             !$this->trashed &&
-            ($this->withStructure || ($this->withStructure !== false && $this->structureId))
+            !$this->revisions &&
+            ($this->withStructure ?? (bool)$this->structureId)
         );
     }
 
@@ -2195,7 +2233,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             foreach ($structureParams as $param) {
                 if ($this->$param !== null) {
-                    throw new QueryAbortedException("Unable to apply the '{$param}' param because 'structureId' isn't set");
+                    throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
 
@@ -2211,12 +2249,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
         if ($this->structureId) {
-            $this->query->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            $this->query->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[subquery.elementsId]]',
                 ['structureelements.structureId' => $this->structureId],
             ]);
-            $this->subQuery->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            $this->subQuery->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
                 ['structureelements.structureId' => $this->structureId],
@@ -2363,13 +2401,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams(): void
     {
         if ($this->drafts !== false) {
-            if ($this->drafts === true) {
-                $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-                $this->query->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            } else {
-                $this->subQuery->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-                $this->query->leftJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            }
+            $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
 
             $this->query->addSelect([
                 'elements.draftId',
@@ -2400,7 +2434,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['drafts.provisional' => $this->provisionalDrafts],
                 ]);
             }
-
 
             if ($this->savedDraftsOnly) {
                 $this->subQuery->andWhere([
@@ -2464,25 +2497,47 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _normalizeStructureParamValue(string $property, string $class): ElementInterface
     {
+        $element = $this->$property;
+
+        if ($element === false) {
+            throw new QueryAbortedException();
+        }
+
         /** @var string|ElementInterface $class */
-        if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
-            $this->$property = $class::find()
-                ->id($this->$property)
+        if ($element instanceof ElementInterface && !$element->lft) {
+            $element = $element->getCanonicalId();
+
+            if ($element === null) {
+                throw new QueryAbortedException();
+            }
+        }
+
+        if (!$element instanceof ElementInterface) {
+            $element = $class::find()
+                ->id($element)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
                 ->status(null)
                 ->one();
 
-            if ($this->$property === null) {
+            if ($element === null) {
                 $this->$property = false;
+                throw new QueryAbortedException();
             }
         }
 
-        if ($this->$property === false) {
-            throw new QueryAbortedException();
+        if (!$element->lft) {
+            if ($element->getIsDerivative()) {
+                $element = $element->getCanonical(true);
+            }
+
+            if (!$element->lft) {
+                $this->$property = false;
+                throw new QueryAbortedException();
+            }
         }
 
-        return $this->$property;
+        return $this->$property = $element;
     }
 
     /**
@@ -2497,15 +2552,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_searchScores = null;
 
         if ($this->search) {
-            // Get the element IDs
-            $elementIdsQuery = clone $this;
-            $elementIds = $elementIdsQuery
-                ->search(null)
-                ->offset(null)
-                ->limit(null)
-                ->ids();
-
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
+            $searchResults = Craft::$app->getSearch()->searchElements($this);
 
             // No results?
             if (empty($searchResults)) {
@@ -2729,7 +2776,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $caseParams = [];
         foreach ($preferSites as $index => $siteId) {
             $param = 'preferSites' . $index;
-            $caseSql .= " when [[elements_sites.siteId]] = :{$param} then {$index}";
+            $caseSql .= " when [[elements_sites.siteId]] = :$param then $index";
             $caseParams[$param] = $siteId;
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
@@ -2751,11 +2798,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         $qSubElements = $db->quoteTableName('subElements');
         $qTmpElements = $db->quoteTableName('tmpElements');
         $q = $qElements[0];
-        $subSelectSql = str_replace("{$qElements}.", "{$qSubElements}.", $subSelectSql);
-        $subSelectSql = str_replace("{$q} {$qElements}", "{$q} {$qSubElements}", $subSelectSql);
+        $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
+        $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
-        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
+        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ($subSelectSql)"));
     }
 
     /**

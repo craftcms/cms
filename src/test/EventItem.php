@@ -19,8 +19,8 @@ use craft\base\Model;
  */
 class EventItem extends Model
 {
-    const TYPE_CLASS = 'class';
-    const TYPE_OTHERVALUE = 'othervalue';
+    public const TYPE_CLASS = 'class';
+    public const TYPE_OTHERVALUE = 'othervalue';
 
     /**
      * @var string

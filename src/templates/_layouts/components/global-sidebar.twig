@@ -8,7 +8,7 @@
             {% endif %}
         </div>
         <div id="system-name">
-            <h2>{{ systemName }}</h2>
+            <span class="h2">{{ systemName }}</span>
         </div>
     </a>
 
@@ -31,7 +31,7 @@
                             {%- elseif item.fontIcon is defined -%}
                                 <span data-icon="{{ item.fontIcon }}"></span>
                             {%- else -%}
-                                {% include "_includes/defaulticon.svg" with { label: item.label } %}
+                                {% include "_includes/defaulticon.svg.twig" with { label: item.label } %}
                             {%- endif -%}
                         </span>
 
@@ -75,6 +75,12 @@
     </nav>
 
     {% if currentUser.admin and devMode %}
-        <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}" aria-label="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
+        {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
+        <div id="devmode">
+            {{ tag('span', {
+                class: 'visually-hidden',
+                text: devModeText
+            }) }}
+        </div>
     {% endif %}
 </header>

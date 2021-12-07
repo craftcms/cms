@@ -7,8 +7,8 @@
 
 namespace craft\db;
 
-use Craft;
 use craft\helpers\Db;
+use DateTime;
 use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
@@ -118,7 +118,7 @@ trait SoftDeleteTrait
             'class' => SoftDeleteBehavior::class,
             'softDeleteAttributeValues' => [
                 'dateDeleted' => function() {
-                    return Db::prepareDateForDb(new \DateTime());
+                    return Db::prepareDateForDb(new DateTime());
                 },
             ],
         ];

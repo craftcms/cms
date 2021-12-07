@@ -26,8 +26,8 @@ use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
+use Throwable;
 use yii\base\Component;
-use yii\base\UnknownPropertyException;
 
 /**
  * Class AssetVolumesService
@@ -43,11 +43,11 @@ use yii\base\UnknownPropertyException;
  * @property-read string[] $allVolumeTypes
  * @property-read int $totalVolumes
  * @property-read array $viewableVolumeIds
- * @property-read \craft\base\VolumeInterface[] $allVolumes
+ * @property-read VolumeInterface[] $allVolumes
  * @property-read int[] $publicVolumeIds
  * @property-read int $totalViewableVolumes
- * @property-read \craft\base\VolumeInterface[] $publicVolumes
- * @property-read \craft\base\VolumeInterface[] $viewableVolumes
+ * @property-read VolumeInterface[] $publicVolumes
+ * @property-read VolumeInterface[] $viewableVolumes
  */
 class Volumes extends Component
 {
@@ -99,10 +99,8 @@ class Volumes extends Component
      */
     public const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
 
-    public const CONFIG_VOLUME_KEY = 'volumes';
-
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<VolumeInterface>|null
      * @see _volumes()
      */
     private ?MemoizableArray $_volumes = null;
@@ -227,7 +225,7 @@ class Volumes extends Component
     /**
      * Returns a memoizable array of all volumes.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<VolumeInterface>
      */
     private function _volumes(): MemoizableArray
     {
@@ -298,7 +296,7 @@ class Volumes extends Component
             'name' => $volume->name,
             'handle' => $volume->handle,
             'type' => get_class($volume),
-            'hasUrls' => (bool)$volume->hasUrls,
+            'hasUrls' => $volume->hasUrls,
             'url' => $volume->url,
             'titleTranslationMethod' => $volume->titleTranslationMethod,
             'titleTranslationKeyFormat' => $volume->titleTranslationKeyFormat ?: null,
@@ -345,7 +343,7 @@ class Volumes extends Component
      * @param VolumeInterface $volume the volume to be saved.
      * @param bool $runValidation Whether the volume should be validated
      * @return bool Whether the volume was saved successfully
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
@@ -377,7 +375,7 @@ class Volumes extends Component
             $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
         }
 
-        $configPath = self::CONFIG_VOLUME_KEY . '.' . $volume->uid;
+        $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
         $configData = $this->createVolumeConfig($volume);
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$volume->handle}” volume");
 
@@ -459,7 +457,7 @@ class Volumes extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -497,7 +495,7 @@ class Volumes extends Component
      *
      * @param array $volumeIds
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function reorderVolumes(array $volumeIds): bool
     {
@@ -508,7 +506,7 @@ class Volumes extends Component
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
                 $volumeUid = $uidsByIds[$volumeId];
-                $projectConfig->set(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1, "Reorder volumes");
+                $projectConfig->set(ProjectConfig::PATH_VOLUMES . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1, "Reorder volumes");
             }
         }
 
@@ -534,20 +532,7 @@ class Volumes extends Component
 
         try {
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
-        } catch (UnknownPropertyException $e) {
-            // Special case for Local volumes that are being converted to something else
-            // https://github.com/craftcms/cms/issues/5277
-            if (
-                isset($originalConfig['settings']['path']) && $originalConfig['type'] === Local::class
-            ) {
-                unset($originalConfig['settings']['path']);
-                return $this->createVolume($originalConfig);
-            }
-            throw $e;
         } catch (MissingComponentException $e) {
-            // Revert to the original config if it was overridden
-            $config = $originalConfig ?? $config;
-
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
@@ -589,7 +574,7 @@ class Volumes extends Component
      *
      * @param int $volumeId
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteVolumeById(int $volumeId): bool
     {
@@ -607,7 +592,7 @@ class Volumes extends Component
      *
      * @param VolumeInterface $volume The volume to delete
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteVolume(VolumeInterface $volume): bool
     {
@@ -622,7 +607,7 @@ class Volumes extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_VOLUME_KEY . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
         return true;
     }
 
@@ -681,7 +666,7 @@ class Volumes extends Component
             $volume->afterDelete();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -711,7 +696,7 @@ class Volumes extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $volumes = $projectConfig->get(self::CONFIG_VOLUME_KEY);
+        $volumes = $projectConfig->get(ProjectConfig::PATH_VOLUMES);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -723,7 +708,7 @@ class Volumes extends Component
                     foreach ($volume['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_VOLUME_KEY . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_VOLUMES . '.' . $volumeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }

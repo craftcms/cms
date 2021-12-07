@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\xregexp;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Xregexp asset bundle.
@@ -19,7 +19,7 @@ class XregexpAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = '@lib/xregexp';
+        $this->sourcePath = __dir__ . '/dist';
 
         $this->js = [
             'xregexp-all.js',

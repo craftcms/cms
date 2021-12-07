@@ -7,13 +7,15 @@
 
 namespace craft\fields\data;
 
+use ArrayObject;
+
 /**
  * Multi-select option field data class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class MultiOptionsFieldData extends \ArrayObject
+class MultiOptionsFieldData extends ArrayObject
 {
     /**
      * @var OptionData[]

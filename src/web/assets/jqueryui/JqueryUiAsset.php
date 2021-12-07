@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\jqueryui;
 
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -18,7 +18,7 @@ class JqueryUiAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@lib/jquery-ui';
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc

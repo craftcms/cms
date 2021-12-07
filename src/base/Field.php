@@ -26,6 +26,8 @@ use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use DateTime;
+use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
@@ -46,45 +48,49 @@ abstract class Field extends SavableComponent implements FieldInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @event FieldElementEvent The event that is triggered before the element is saved
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
+     * @event FieldElementEvent The event that is triggered before the element is saved.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
      */
-    const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
+    public const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is saved
+     * @event FieldElementEvent The event that is triggered after the element is saved.
      */
-    const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
+    public const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites
+     * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites.
      * @since 3.2.0
      */
-    const EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
+    public const EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
 
     /**
-     * @event FieldElementEvent The event that is triggered before the element is deleted
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
+     * @event FieldElementEvent The event that is triggered before the element is deleted.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
      */
-    const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
+    public const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is deleted
+     * @event FieldElementEvent The event that is triggered after the element is deleted.
      */
-    const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
+    public const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
 
     /**
-     * @event FieldElementEvent The event that is triggered before the element is restored
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting restored.
+     * @event FieldElementEvent The event that is triggered before the element is restored.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting restored.
+     *
      * @since 3.1.0
      */
-    const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
+    public const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
 
     /**
-     * @event FieldElementEvent The event that is triggered after the element is restored
+     * @event FieldElementEvent The event that is triggered after the element is restored.
      * @since 3.1.0
      */
-    const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
+    public const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
 
     /**
      * @event DefineFieldKeywordsEvent The event that is triggered when defining the field’s search keywords for an
@@ -112,22 +118,22 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @since 3.5.0
      */
-    const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
+    public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
      * @event DefineFieldHtmlEvent The event that is triggered when defining the field’s input HTML.
      * @since 3.5.0
      */
-    const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
+    public const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
     // Translation methods
     // -------------------------------------------------------------------------
 
-    const TRANSLATION_METHOD_NONE = 'none';
-    const TRANSLATION_METHOD_SITE = 'site';
-    const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
-    const TRANSLATION_METHOD_LANGUAGE = 'language';
-    const TRANSLATION_METHOD_CUSTOM = 'custom';
+    public const TRANSLATION_METHOD_NONE = 'none';
+    public const TRANSLATION_METHOD_SITE = 'site';
+    public const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
+    public const TRANSLATION_METHOD_LANGUAGE = 'language';
+    public const TRANSLATION_METHOD_CUSTOM = 'custom';
 
     /**
      * @inheritdoc
@@ -180,8 +186,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function __toString(): string
     {
         try {
-            return (string)Craft::t('site', $this->name) ?: static::class;
-        } catch (\Exception $e) {
+            return Craft::t('site', $this->name) ?: static::class;
+        } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -248,6 +254,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'attributes',
                 'behavior',
                 'behaviors',
+                'canSetProperties',
                 'children',
                 'contentTable',
                 'dateCreated',
@@ -260,6 +267,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'errorSummary',
                 'fieldValue',
                 'fieldValues',
+                'hasMethods',
                 'id',
                 'language',
                 'level',
@@ -561,7 +569,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
             return Db::prepareDateForDb($value);
         }
 
@@ -575,6 +583,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
         $to->setFieldValue($this->handle, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return null;
     }
 
     /**
@@ -780,7 +796,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
      * should not be allowed in the GraphQL context.
      *
-     * @return array|false
+     * @return array|null
      * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions(): ?array
@@ -823,7 +839,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         if ($element) {
-            return $element->getHasFreshContent();
+            return $element->getIsFresh();
         }
 
         return true;

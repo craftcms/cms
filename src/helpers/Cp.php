@@ -30,16 +30,16 @@ class Cp
     /**
      * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
-    const EVENT_REGISTER_ALERTS = 'registerAlerts';
+    public const EVENT_REGISTER_ALERTS = 'registerAlerts';
 
     /**
      * @since 3.5.8
      */
-    const ELEMENT_SIZE_SMALL = 'small';
+    public const ELEMENT_SIZE_SMALL = 'small';
     /**
      * @since 3.5.8
      */
-    const ELEMENT_SIZE_LARGE = 'large';
+    public const ELEMENT_SIZE_LARGE = 'large';
 
     /**
      * Renders a control panel template.
@@ -220,9 +220,7 @@ class Cp
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        $alerts = array_merge($alerts, $event->alerts);
-
-        return $alerts;
+        return array_merge($alerts, $event->alerts);
     }
 
     /**
@@ -250,8 +248,7 @@ class Cp
         bool $showLabel = true,
         bool $showDraftName = true,
         bool $single = false
-    ): string
-    {
+    ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
@@ -339,9 +336,15 @@ class Cp
 
         if ($context === 'field' && $inputName !== null) {
             $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
-                Html::tag('a', '', [
+                Html::tag('button', '', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
+                    'type' => 'button',
+                    'aria' => [
+                        'label' => Craft::t('app', 'Remove {label}', [
+                            'label' => $label,
+                        ]),
+                    ],
                 ]);
         }
 
@@ -419,8 +422,7 @@ class Cp
         bool $showThumb = true,
         bool $showLabel = true,
         bool $showDraftName = true
-    ): string
-    {
+    ): string {
         if (empty($elements)) {
             return '';
         }
@@ -456,11 +458,29 @@ class Cp
      */
     public static function fieldHtml(string $input, array $config = []): string
     {
-        // Set the ID and instructionsId before rendering the field so it's consistent
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
-        $instructionsId = $config['instructionsId'] = $config['instructionsId'] ?? "$id-instructions";
+        $instructionsId = $config['instructionsId'] ?? "$id-instructions";
+        $tipId = $config['tipId'] ?? "$id-tip";
+        $warningId = $config['warningId'] ?? "$id-warning";
+        $errorsId = $config['errorsId'] ?? "$id-errors";
+
+        $instructions = $config['instructions'] ?? null;
+        $tip = $config['tip'] ?? null;
+        $warning = $config['warning'] ?? null;
+        $errors = $config['errors'] ?? null;
 
         if (StringHelper::startsWith($input, 'template:')) {
+            // Set a describedBy value in case the input template supports it
+            if (!isset($config['describedBy'])) {
+                $descriptorIds = array_filter([
+                    $errors ? $errorsId : null,
+                    $instructions ? $instructionsId : null,
+                    $tip ? $tipId : null,
+                    $warning ? $warningId : null,
+                ]);
+                $config['describedBy'] = $descriptorIds ? implode(' ', $descriptorIds) : null;
+            }
+
             $input = static::renderTemplate(substr($input, 9), $config);
         }
 
@@ -469,10 +489,13 @@ class Cp
         $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
         $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
+
         if ($label === '__blank__') {
             $label = null;
         }
+
         $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
             if (!$site) {
@@ -481,38 +504,24 @@ class Cp
         } else {
             $site = null;
         }
+
         $required = (bool)($config['required'] ?? false);
-        $instructions = $config['instructions'] ?? null;
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
-        $tip = $config['tip'] ?? null;
-        $warning = $config['warning'] ?? null;
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
-        $errors = $config['errors'] ?? null;
+
         $fieldClass = array_merge(array_filter([
             'field',
             ($config['first'] ?? false) ? 'first' : null,
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
+
         if (isset($config['attribute']) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
             $showAttribute = $currentUser->admin && $currentUser->getPreference('showFieldHandles');
         } else {
             $showAttribute = false;
         }
-        $fieldAttributes = ArrayHelper::merge([
-            'class' => $fieldClass,
-            'id' => $fieldId,
-            'aria' => [
-                'describedby' => $instructions ? $instructionsId : false,
-            ],
-        ], $config['fieldAttributes'] ?? []);
-        $inputContainerAttributes = ArrayHelper::merge([
-            'class' => array_filter([
-                'input',
-                $orientation,
-                $errors ? 'errors' : null,
-            ]),
-        ], $config['inputContainerAttributes'] ?? []);
+
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
                 'id' => $instructionsId,
@@ -520,23 +529,55 @@ class Cp
             ])
             : '';
 
-        return Html::tag($fieldset ? 'fieldset' : 'div',
+        $labelHtml = $label . (
+            $required
+                ? Html::tag('span', Craft::t('app', 'Required'), [
+                    'class' => ['visually-hidden'],
+                ]) .
+                Html::tag('span', '', [
+                    'class' => ['required'],
+                    'aria' => [
+                        'hidden' => 'true',
+                    ],
+                ])
+                : ''
+            );
+
+        $containerTag = $fieldset ? 'fieldset' : 'div';
+
+        return
+            Html::beginTag($containerTag, ArrayHelper::merge(
+                [
+                    'class' => $fieldClass,
+                    'id' => $fieldId,
+                ],
+                $config['fieldAttributes'] ?? []
+            )) .
+            (($label && $fieldset)
+                ? Html::tag('legend', $labelHtml, [
+                    'class' => ['visually-hidden'],
+                ])
+                : '') .
             ($status
                 ? Html::tag('div', '', [
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
-                    'aria' => [
-                        'label' => $status[1],
-                    ],
+                ]) .
+                Html::tag('span', $status[1], [
+                    'class' => 'visually-hidden',
                 ])
                 : '') .
             (($label || $showAttribute)
-                ? Html::tag('div',
+                ? (
+                    Html::beginTag('div', ['class' => 'heading']) .
+                    ($config['headingPrefix'] ?? '') .
                     ($label
-                        ? Html::tag($fieldset ? 'legend' : 'label', $label, ArrayHelper::merge([
+                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
                             'id' => $labelId,
-                            'class' => $required ? ['required'] : [],
                             'for' => !$fieldset ? $id : null,
+                            'aria' => [
+                                'hidden' => $fieldset ? 'true' : null,
+                            ],
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
@@ -559,31 +600,74 @@ class Cp
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
                         ])
-                        : ''),
-                    [
-                        'class' => ['heading'],
-                    ]
+                        : '') .
+                    ($config['headingSuffix'] ?? '') .
+                    Html::endTag('div')
                 )
                 : '') .
             ($instructionsPosition === 'before' ? $instructionsHtml : '') .
-            Html::tag('div', $input, $inputContainerAttributes) .
+            Html::tag('div', $input, ArrayHelper::merge(
+                [
+                    'class' => array_filter([
+                        'input',
+                        $orientation,
+                        $errors ? 'errors' : null,
+                    ]),
+                ],
+                $config['inputContainerAttributes'] ?? []
+            )) .
             ($instructionsPosition === 'after' ? $instructionsHtml : '') .
-            ($tip
-                ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
-                    'class' => ['notice', 'with-icon'],
-                ])
-                : '') .
-            ($warning
-                ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($warning)), [
-                    'class' => ['warning', 'with-icon'],
-                ])
-                : '') .
+            self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
+            self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
             ($errors
-                ? static::renderTemplate('_includes/forms/errorList', [
-                    'errors' => $errors,
-                ])
-                : ''),
-            $fieldAttributes);
+                ? (
+                    Html::beginTag('div', [
+                        'id' => $errorsId,
+                        'class' => 'error-container',
+                    ]) .
+                    Html::tag('p', Craft::t('app', 'Errors:'), [
+                        'class' => 'visually-hidden',
+                    ]) .
+                    static::renderTemplate('_includes/forms/errorList', [
+                        'errors' => $errors,
+                    ]) .
+                    Html::endTag('div')
+                )
+                : '') .
+            Html::endTag($containerTag);
+    }
+
+    /**
+     * Returns the HTML for a field tip/warning.
+     *
+     * @param string $id
+     * @param string $class
+     * @param string $label
+     * @param string|null $message
+     * @return string
+     */
+    private static function _noticeHtml(string $id, string $class, string $label, ?string $message): string
+    {
+        if (!$message) {
+            return '';
+        }
+
+        return
+            Html::beginTag('p', [
+                'id' => $id,
+                'class' => $class,
+            ]) .
+            Html::tag('span', '', [
+                'class' => 'icon',
+                'aria' => [
+                    'hidden' => 'true',
+                ],
+            ]) .
+            Html::tag('span', "$label ", [
+                'class' => 'visually-hidden',
+            ]) .
+            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($message)) .
+            Html::endTag('p');
     }
 
     /**
@@ -656,6 +740,19 @@ class Cp
     }
 
     /**
+     * Renders a lightswitch input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function lightswitchHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/lightswitch', $config);
+    }
+
+    /**
      * Renders a lightswitch field’s HTML.
      *
      * @param array $config
@@ -704,6 +801,45 @@ class Cp
     }
 
     /**
+     * Renders a multi-select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public static function multiSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/multiselect', $config);
+    }
+
+    /**
+     * Renders a multi-select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function multiSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'multiselect' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/multiselect', $config);
+    }
+
+    /**
+     * Renders a text input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function textHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/text', $config);
+    }
+
+    /**
      * Renders a text field’s HTML.
      *
      * @param array $config
@@ -732,6 +868,60 @@ class Cp
     }
 
     /**
+     * Returns a date input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function dateHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/date', $config);
+    }
+
+    /**
+     * Returns a date field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function dateFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'date' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/date', $config);
+    }
+
+    /**
+     * Returns a time input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function timeHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/time', $config);
+    }
+
+    /**
+     * Returns a date field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function timeFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'time' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/time', $config);
+    }
+
+    /**
      * Renders a date + time field’s HTML.
      *
      * @param array $config
@@ -742,13 +932,20 @@ class Cp
     public static function dateTimeFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
-        $config['instructionsId'] = $config['instructionsId'] ?? "{$config['id']}-instructions";
-        $input = Html::tag('div',
-            static::renderTemplate('_includes/forms/date', $config) .
-            static::renderTemplate('_includes/forms/time', $config),
-            ['class' => 'datetimewrapper']
-        );
-        return static::fieldHtml($input, $config);
+        return static::fieldHtml('template:_includes/forms/datetime', $config);
+    }
+
+    /**
+     * Renders an element select input’s HTML
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function elementSelectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/elementSelect', $config);
     }
 
     /**

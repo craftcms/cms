@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\GqlException;
+use craft\errors\MissingComponentException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
@@ -19,7 +20,10 @@ use craft\models\GqlToken;
 use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
+use Throwable;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -154,13 +158,13 @@ class GraphqlController extends Controller
         }
 
         // Generate all transforms immediately
-        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
+        $generalConfig->generateTransformsBeforePageLoad = true;
 
         // Check for the cache-bust header
-        $gqlCacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache', null, true);
-        if ($gqlCacheHeader === 'no-cache') {
-            $cacheSetting = Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching;
-            Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = false;
+        $noCache = $this->request->getHeaders()->get('x-craft-gql-cache', null, true) === 'no-cache';
+        if ($noCache) {
+            $cacheSetting = $generalConfig->enableGraphqlCaching;
+            $generalConfig->enableGraphqlCaching = false;
         }
 
         $result = [];
@@ -170,7 +174,7 @@ class GraphqlController extends Controller
                     throw new InvalidValueException('No GraphQL query was supplied');
                 }
                 $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::$app->getErrorHandler()->logException($e);
                 $result[$key] = [
                     'errors' => [
@@ -184,8 +188,8 @@ class GraphqlController extends Controller
             }
         }
 
-        if ($gqlCacheHeader === 'no-cache') {
-            Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = $cacheSetting;
+        if ($noCache) {
+            $generalConfig->enableGraphqlCaching = $cacheSetting;
         }
 
         return $this->asJson($singleQuery ? reset($result) : $result);
@@ -267,7 +271,7 @@ class GraphqlController extends Controller
     {
         try {
             $token = $gqlService->getPublicToken();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::warning('Could not obtain the public token: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
             return null;
@@ -279,7 +283,7 @@ class GraphqlController extends Controller
     /**
      * @return Response
      * @throws ForbiddenHttpException
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      * @throws BadRequestHttpException
      */
     public function actionGraphiql(): Response
@@ -299,7 +303,7 @@ class GraphqlController extends Controller
             } catch (InvalidArgumentException $e) {
                 throw new BadRequestHttpException('Invalid token UID.');
             }
-            Craft::$app->getSession()->authorize("graphql-schema:{$schemaUid}");
+            Craft::$app->getSession()->authorize("graphql-schema:$schemaUid");
         } else {
             $selectedSchema = GqlHelper::createFullAccessSchema();
         }
@@ -426,8 +430,8 @@ class GraphqlController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\base\Exception
+     * @throws MissingComponentException
+     * @throws Exception
      * @since 3.4.0
      */
     public function actionSaveToken(): ?Response
@@ -620,8 +624,8 @@ class GraphqlController extends Controller
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\base\Exception
+     * @throws MissingComponentException
+     * @throws Exception
      * @since 3.4.0
      */
     public function actionSaveSchema(): ?Response

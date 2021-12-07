@@ -8,11 +8,14 @@
 namespace craft\helpers;
 
 use Craft;
+use HTMLPurifier_Config;
+use IteratorAggregate;
 use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use const ENT_COMPAT;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -22,12 +25,12 @@ use yii\base\InvalidConfigException;
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
-    const UTF8 = 'UTF-8';
+    public const UTF8 = 'UTF-8';
 
     /**
      * @since 3.0.37
      */
-    const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
+    public const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
     /**
      * @var array Character mappings
@@ -335,7 +338,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         // Otherwise set HTMLPurifier to the actual string encoding
-        $config = \HTMLPurifier_Config::createDefault();
+        $config = HTMLPurifier_Config::createDefault();
         $config->set('Core.Encoding', static::encoding($str));
 
         // Clean it
@@ -593,7 +596,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The encoded string.
      * @since 3.3.0
      */
-    public static function htmlEncode(string $str, int $flags = \ENT_COMPAT): string
+    public static function htmlEncode(string $str, int $flags = ENT_COMPAT): string
     {
         return (string)BaseStringy::create($str)->htmlEncode($flags);
     }
@@ -1642,12 +1645,10 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toPascalCase(string $str): string
     {
         $words = self::toWords($str, true, true);
-        $string = implode('', array_map([
+        return implode('', array_map([
             static::class,
             'upperCaseFirst',
         ], $words));
-
-        return $string;
     }
 
     /**
@@ -1689,7 +1690,7 @@ class StringHelper extends \yii\helpers\StringHelper
             return (string)$object;
         }
 
-        if (is_array($object) || $object instanceof \IteratorAggregate) {
+        if (is_array($object) || $object instanceof IteratorAggregate) {
             $stringValues = [];
 
             foreach ($object as $value) {

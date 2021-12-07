@@ -37,7 +37,7 @@ class Gc extends Component
     /**
      * @event Event The event that is triggered when running garbage collection.
      */
-    const EVENT_RUN = 'run';
+    public const EVENT_RUN = 'run';
 
     /**
      * @var int the probability (parts per million) that garbage collection (GC) should be performed
@@ -132,7 +132,9 @@ class Gc extends Component
         }
 
         $folders = (new Query())->select(['id', 'path'])->from([Table::VOLUMEFOLDERS])->where(['volumeId' => $volumeIds])->all();
-        usort($folders, function ($a, $b) { return substr_count($a['path'], '/') < substr_count($b['path'], '/');});
+        usort($folders, function($a, $b) {
+            return substr_count($a['path'], '/') < substr_count($b['path'], '/');
+        });
 
         foreach ($folders as $folder) {
             VolumeFolder::deleteAll(['id' => $folder['id']]);

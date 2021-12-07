@@ -12,6 +12,7 @@ use Craft;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\models\AssetTransform;
+use craft\models\AssetTransformIndex;
 use craft\services\AssetTransforms;
 use craft\test\TestCase;
 use UnitTester;
@@ -39,12 +40,17 @@ class AssetElementTest extends TestCase
             'getVolume' => $this->make(Volume::class, [
                'hasUrls' => true
             ]),
-            'folderId' => 2
+            'folderId' => 2,
+            'filename' => 'foo.jpg',
         ]);
 
         $this->tester->mockCraftMethods('assetTransforms', [
             'normalizeTransform' => Expected::once(new AssetTransform()),
             'extendTransform' => Expected::once(new AssetTransform())
+        ]);
+
+        $this->tester->mockCraftMethods('assets', [
+            'getAssetUrl' => Expected::once('/foo.jpg'),
         ]);
 
         $asset->getUrl([

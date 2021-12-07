@@ -9,7 +9,6 @@ namespace craft\web\twig\tokenparsers;
 
 use Craft;
 use craft\web\twig\nodes\RegisterResourceNode;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;

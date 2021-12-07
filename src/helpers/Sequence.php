@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use Throwable;
 use yii\db\Exception;
 
 /**
@@ -41,14 +42,14 @@ class Sequence
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
      * @return int|string
      * @throws Exception if a lock could not be acquired for the sequence
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public static function next(string $name, ?int $length = null)
     {
         $mutex = Craft::$app->getMutex();
         $lockName = 'seq--' . str_replace(['/', '\\'], '-', $name);
 
-        if (!$mutex->acquire($lockName, 5)) {
+        if (!$mutex->acquire($lockName, 3)) {
             throw new Exception('Could not acquire a lock for the sequence "' . $name . '".');
         }
 
@@ -67,7 +68,7 @@ class Sequence
                     'name' => $name,
                 ], [], false);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $mutex->release($lockName);
             throw $e;
         }

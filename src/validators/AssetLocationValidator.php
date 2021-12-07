@@ -136,7 +136,7 @@ class AssetLocationValidator extends Validator
         }
 
         // Update the newLocation attribute in case the filename changed
-        $model->$attribute = "{folder:{$folderId}}{$suggestedFilename}";
+        $model->$attribute = "{folder:$folderId}$suggestedFilename";
     }
 
     /**

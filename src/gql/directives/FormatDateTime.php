@@ -12,6 +12,7 @@ use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
+use DateTime;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -26,8 +27,8 @@ use GraphQL\Type\Definition\Type;
  */
 class FormatDateTime extends Directive
 {
-    const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
-    const DEFAULT_TIMEZONE = 'UTC';
+    public const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
+    public const DEFAULT_TIMEZONE = 'UTC';
 
     /**
      * @inheritdoc
@@ -38,7 +39,7 @@ class FormatDateTime extends Directive
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+        return GqlEntityRegistry::createEntity(static::name(), new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
@@ -53,7 +54,7 @@ class FormatDateTime extends Directive
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
-                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimeZone(),
+                    'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to ' . self::defaultTimeZone() . ' if no timezone set on the field.',
                     'defaultValue' => self::defaultTimeZone(),
                 ]),
                 new FieldArgument([
@@ -64,8 +65,6 @@ class FormatDateTime extends Directive
             ],
             'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.',
         ]));
-
-        return $type;
     }
 
     /**
@@ -81,10 +80,9 @@ class FormatDateTime extends Directive
      */
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
-        if ($value instanceof \DateTime) {
-            /** @var \DateTime $value */
+        if ($value instanceof DateTime) {
+            /** @var DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
-            $timezone = $arguments['timezone'] ?? self::defaultTimeZone();
 
             // Is this a custom PHP date format?
             if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -102,7 +100,16 @@ class FormatDateTime extends Directive
             }
 
             $formatter->datetimeFormat = $format;
+
+            // Leave timezone alone, unless directed to modify with arguments.
+            if (!empty($arguments['timezone'])) {
+                $timezone = $arguments['timezone'];
+            } else {
+                $timezone = $value->getTimezone()->getName();
+            }
+
             $formatter->timeZone = $timezone;
+
             $value = $formatter->asDatetime($value, $format);
         }
 
@@ -116,6 +123,6 @@ class FormatDateTime extends Directive
      */
     public static function defaultTimeZone(): string
     {
-        return Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimezone() : self::DEFAULT_TIMEZONE;
+        return Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : self::DEFAULT_TIMEZONE;
     }
 }

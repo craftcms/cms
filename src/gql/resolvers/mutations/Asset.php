@@ -21,6 +21,8 @@ use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use Throwable;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -42,7 +44,7 @@ class Asset extends ElementMutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return AssetElement
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): AssetElement
     {
@@ -113,7 +115,7 @@ class Asset extends ElementMutationResolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
@@ -134,7 +136,7 @@ class Asset extends ElementMutationResolver
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
@@ -163,7 +165,7 @@ class Asset extends ElementMutationResolver
      * @param AssetElement $asset
      * @param array $fileInformation
      * @return bool
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     protected function handleUpload(AssetElement $asset, array $fileInformation): bool
     {
@@ -225,7 +227,7 @@ class Asset extends ElementMutationResolver
         }
 
         $asset->tempFilePath = $tempPath;
-        $asset->filename = $filename;
+        $asset->setFilename($filename);
         $asset->avoidFilenameConflicts = true;
 
         return true;

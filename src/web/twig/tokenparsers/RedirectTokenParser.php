@@ -9,7 +9,6 @@ namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\RedirectNode;
 use Twig\Node\Expression\ConstantExpression;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

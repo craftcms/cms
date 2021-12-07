@@ -38,7 +38,7 @@ class Entry extends Structure
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
@@ -70,25 +70,47 @@ class Entry extends Structure
     public static function getFieldDefinitions(): array
     {
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields(), [
+            'canonicalId' => [
+                'name' => 'canonicalId',
+                'type' => Type::int(),
+                'description' => 'Returns the entry’s canonical ID.',
+            ],
+            'canonicalUid' => [
+                'name' => 'canonicalUid',
+                'type' => Type::string(),
+                'description' => 'Returns the entry’s canonical UUID.',
+            ],
+            'sourceId' => [
+                'name' => 'sourceId',
+                'type' => Type::int(),
+                'description' => 'Returns the entry’s canonical ID.',
+                'deprecationReason' => 'this field has been deprecated since Craft 3.7.7. Use `canonicalId` instead.',
+            ],
+            'sourceUid' => [
+                'name' => 'sourceUid',
+                'type' => Type::string(),
+                'description' => 'Returns the entry’s canonical UUID.',
+                'deprecationReason' => 'this field has been deprecated since Craft 3.7.7. Use `canonicalUid` instead.',
+            ],
             'sectionId' => [
                 'name' => 'sectionId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the section that contains the entry.',
             ],
             'sectionHandle' => [
                 'name' => 'sectionHandle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the section that contains the entry.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],
             'typeId' => [
                 'name' => 'typeId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the entry type that contains the entry.',
             ],
             'typeHandle' => [
                 'name' => 'typeHandle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the entry type that contains the entry.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],
@@ -105,28 +127,28 @@ class Entry extends Structure
             'children' => [
                 'name' => 'children',
                 'args' => EntryArguments::getArguments(),
-                'type' => Type::listOf(EntryInterface::getType()),
+                'type' => Type::nonNull(Type::listOf(EntryInterface::getType())),
                 'description' => 'The entry’s children, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'descendants' => [
                 'name' => 'descendants',
                 'args' => EntryArguments::getArguments(),
-                'type' => Type::listOf(EntryInterface::getType()),
+                'type' => Type::nonNull(Type::listOf(EntryInterface::getType())),
                 'description' => 'The entry’s descendants, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'parent' => [
                 'name' => 'parent',
                 'args' => EntryArguments::getArguments(),
-                'type' => EntryInterface::getType(),
+                'type' => Type::nonNull(EntryInterface::getType()),
                 'description' => 'The entry’s parent, if the section is a structure.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'ancestors' => [
                 'name' => 'ancestors',
                 'args' => EntryArguments::getArguments(),
-                'type' => Type::listOf(EntryInterface::getType()),
+                'type' => Type::nonNull(Type::listOf(EntryInterface::getType())),
                 'description' => 'The entry’s ancestors, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
@@ -138,7 +160,7 @@ class Entry extends Structure
             'localized' => [
                 'name' => 'localized',
                 'args' => EntryArguments::getArguments(),
-                'type' => Type::listOf(static::getType()),
+                'type' => Type::nonNull(Type::listOf(static::getType())),
                 'description' => 'The same element in other locales.',
                 'complexity' => Gql::eagerLoadComplexity(),
             ],

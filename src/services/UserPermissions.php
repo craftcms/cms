@@ -38,7 +38,7 @@ class UserPermissions extends Component
     /**
      * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
      */
-    const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+    public const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
 
     /**
      * @var string[][]
@@ -132,7 +132,7 @@ class UserPermissions extends Component
                         ],
                         'administrateUsers' => [
                             'label' => Craft::t('app', 'Administrate users'),
-                            'info' => Craft::t('app', 'Includes activating user accounts, resetting passwords, and changing email addresses.'),
+                            'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
                             'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
                         ],
                         'impersonateUsers' => [
@@ -358,7 +358,7 @@ class UserPermissions extends Component
 
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-        $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
+        $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
 
         return true;

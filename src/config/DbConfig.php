@@ -25,12 +25,12 @@ class DbConfig extends BaseObject
     /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
      */
-    const DRIVER_MYSQL = 'mysql';
+    public const DRIVER_MYSQL = 'mysql';
 
     /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_PGSQL]] instead.
      */
-    const DRIVER_PGSQL = 'pgsql';
+    public const DRIVER_PGSQL = 'pgsql';
 
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
@@ -207,7 +207,7 @@ class DbConfig extends BaseObject
 
         if ($this->driver === Connection::DRIVER_MYSQL && $this->unixSocket) {
             $this->unixSocket = strtolower($this->unixSocket);
-            $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database}";
+            $this->dsn = "$this->driver:unix_socket=$this->unixSocket;dbname=$this->database";
             return;
         }
 
@@ -222,6 +222,6 @@ class DbConfig extends BaseObject
                     break;
             }
         }
-        $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port}";
+        $this->dsn = "$this->driver:host=$this->server;dbname=$this->database;port=$this->port";
     }
 }

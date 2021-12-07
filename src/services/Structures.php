@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -16,7 +17,7 @@ use craft\events\MoveElementEvent;
 use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
-use yii\base\BaseObject;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -32,31 +33,31 @@ class Structures extends Component
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      */
-    const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
+    public const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
     /**
      * @event MoveElementEvent The event that is triggered after an element is moved.
      */
-    const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
+    public const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
 
     /**
      * @since 3.4.21
      */
-    const MODE_INSERT = 'insert';
+    public const MODE_INSERT = 'insert';
     /**
      * @since 3.4.21
      */
-    const MODE_UPDATE = 'update';
+    public const MODE_UPDATE = 'update';
     /**
      * @since 3.4.21
      */
-    const MODE_AUTO = 'auto';
+    public const MODE_AUTO = 'auto';
 
     /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
      * @since 3.0.19
      */
-    public int $mutexTimeout = 0;
+    public int $mutexTimeout = 3;
 
     /**
      * @var StructureElement[]
@@ -202,7 +203,7 @@ class Structures extends Component
                 ->one();
 
             if (!$structureRecord) {
-                throw new StructureNotFoundException("No structure exists with the ID '{$structure->id}'");
+                throw new StructureNotFoundException("No structure exists with the ID '$structure->id'");
             }
         } else {
             $structureRecord = new StructureRecord();
@@ -398,6 +399,31 @@ class Structures extends Component
     }
 
     /**
+     * Removes an element from a given structure.
+     *
+     * @param int $structureId
+     * @param ElementInterface $element
+     * @return bool
+     * @throws Exception
+     * @since 3.7.19
+     */
+    public function remove(int $structureId, ElementInterface $element): bool
+    {
+        $elementRecord = $this->_getElementRecord($structureId, $element);
+
+        if ($elementRecord && !$elementRecord->delete()) {
+            return false;
+        }
+
+        $element->root = null;
+        $element->lft = null;
+        $element->rgt = null;
+        $element->level = null;
+
+        return true;
+    }
+
+    /**
      * Returns a structure element record from given structure and element IDs.
      *
      * @param int $structureId
@@ -454,7 +480,7 @@ class Structures extends Component
      * @param string $action
      * @param string $mode
      * @return bool Whether it was done
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _doIt(int $structureId, ElementInterface $element, StructureElement $targetElementRecord, string $action, string $mode): bool
     {
@@ -467,6 +493,7 @@ class Structures extends Component
 
         $elementRecord = null;
 
+        /** @var Element $element */
         // Figure out what we're doing
         if ($mode !== self::MODE_INSERT) {
             // See if there's an existing structure element record
@@ -529,7 +556,7 @@ class Structures extends Component
             $element->afterMoveInStructure($structureId);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             $mutex->release($lockName);
             throw $e;

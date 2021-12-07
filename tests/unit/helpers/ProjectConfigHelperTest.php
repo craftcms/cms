@@ -84,6 +84,16 @@ class ProjectConfigHelperTest extends Unit
     }
 
     /**
+     * @param $incomingData
+     * @param $expectedResult
+     * @dataProvider encodeTestDataProvider
+     */
+    public function testEncodeData($incomingData, $expectedResult)
+    {
+        self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
+    }
+
+    /**
      * @return array
      */
     public function packedUnpackedDataProvider(): array
@@ -101,7 +111,7 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'plainSettings' => 'plain',
                     'associativeSettings' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['some', 'thing'],
                             ['foo', ['bar', 'baz']]
                         ]
@@ -122,11 +132,11 @@ class ProjectConfigHelperTest extends Unit
                 ],
                 [
                     'test' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             [
                                 'rootA',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                    ProjectConfig::ASSOC_KEY => [
                                         ['label', 'childA']
                                     ]
                                 ]
@@ -134,7 +144,7 @@ class ProjectConfigHelperTest extends Unit
                             [
                                 'rootB',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                    ProjectConfig::ASSOC_KEY => [
                                         ['label', 'childB']
                                     ]
                                 ]
@@ -185,14 +195,14 @@ class ProjectConfigHelperTest extends Unit
             [
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
                             ['baz', 0],
                         ]
                     ],
                     'b' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
                         ]
@@ -200,7 +210,7 @@ class ProjectConfigHelperTest extends Unit
                 ],
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             2 => ['baz', 0],
                         ]
                     ],
@@ -357,6 +367,44 @@ class ProjectConfigHelperTest extends Unit
                         'dateModified' => 4
                     ]
                 ],
+            ],
+        ];
+    }
+
+    public function encodeTestDataProvider()
+    {
+        return [
+            [
+                'foo',
+                '"foo"'
+            ],
+            [
+                true,
+                'true'
+            ],
+            [
+                null,
+                'null'
+            ],
+            [
+                false,
+                'false'
+            ],
+            [
+                2.5,
+                '2.5'
+            ],
+            [
+                0,
+                '0'
+            ],
+            [
+                2,
+                '2'
+            ],
+            [
+                2.0,
+                '2.0'
             ],
         ];
     }

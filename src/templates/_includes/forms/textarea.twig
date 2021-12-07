@@ -1,0 +1,33 @@
+{%- set class = (class ?? [])|explodeClass|merge([
+    'text',
+    (disabled ?? false) ? 'disabled',
+    not (cols ?? false) ? 'fullwidth',
+]|filter) %}
+
+{%- set inputAttributes = {
+    class: class,
+    id: id ?? false,
+    inputmode: inputmode ?? false,
+    rows: rows ?? 2,
+    cols: cols ?? 50,
+    name: name ?? false,
+    maxlength: maxlength ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    readonly: readonly ?? false,
+    title: title ?? false,
+    placeholder: placeholder ?? false,
+    text: value ?? '',
+    aria: {
+        describedby: describedBy ?? false,
+    },
+    data: {
+        'show-chars-left': showCharsLeft ?? false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{%- endif %}
+
+{{- tag('textarea', inputAttributes) }}

@@ -13,6 +13,7 @@ use craft\elements\GlobalSet;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use DateTime;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
@@ -191,7 +192,7 @@ class GlobalsController extends Controller
                 'name' => $siteCookieName,
                 'value' => $site->id,
                 'httpOnly' => false,
-                'expire' => (new \DateTime('+1 year'))->getTimestamp(),
+                'expire' => (new DateTime('+1 year'))->getTimestamp(),
             ]));
             $this->response->getRawCookies()->add($cookie);
         } else {
@@ -221,7 +222,9 @@ class GlobalsController extends Controller
         }
 
         // Prep the form tabs & content
-        $form = $globalSet->getFieldLayout()->createForm($globalSet);
+        $form = $globalSet->getFieldLayout()->createForm($globalSet, false, [
+            'registerDeltas' => true,
+        ]);
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', [

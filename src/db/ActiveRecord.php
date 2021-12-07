@@ -11,7 +11,7 @@ use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use yii\db\Schema;
+use DateTime;
 
 /**
  * Active Record base class.
@@ -32,7 +32,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @see behaviors()
      * @since 3.4.0
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @inheritdoc
@@ -94,7 +94,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     protected function prepareForDb(): void
     {
-        $now = Db::prepareDateForDb(new \DateTime());
+        $now = Db::prepareDateForDb(new DateTime());
 
         if ($this->getIsNewRecord()) {
             if ($this->hasAttribute('dateCreated') && !isset($this->dateCreated)) {

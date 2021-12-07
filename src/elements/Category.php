@@ -9,6 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\conditions\elements\categories\CategoryQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -131,6 +133,15 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @return CategoryQueryCondition
+     */
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(CategoryQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public static function gqlTypeNameByContext($context): string
@@ -162,7 +173,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources(?string $context = null): array
+    protected static function defineSources(string $context): array
     {
         $sources = [];
 
@@ -179,7 +190,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() ? true : Craft::$app->getUser()->checkPermission('editCategories:' . $group->uid),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission('editCategories:' . $group->uid),
             ];
         }
 
@@ -254,7 +265,7 @@ class Category extends Element
                 $newChildUrl = 'categories/' . $group->handle . '/new';
 
                 if (Craft::$app->getIsMultiSite()) {
-                    $newChildUrl .= '/' . $site->handle;
+                    $newChildUrl .= '?site=' . $site->handle;
                 }
 
                 $actions[] = $elementsService->createAction([
@@ -332,7 +343,6 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'title' => ['label' => Craft::t('app', 'Category')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -466,14 +476,20 @@ class Category extends Element
     protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();
+        $path = "categories/$group->handle";
 
-        $url = UrlHelper::cpUrl('categories/' . $group->handle . '/' . $this->id . ($this->slug ? '-' . $this->slug : ''));
-
-        if (Craft::$app->getIsMultiSite()) {
-            $url .= '/' . $this->getSite()->handle;
+        if ($this->id) {
+            $path .= "/$this->id" . ($this->slug ? "-$this->slug" : '');
+        } else {
+            $path .= '/new';
         }
 
-        return $url;
+        $params = [];
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::cpUrl($path, $params);
     }
 
     /**

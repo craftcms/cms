@@ -54,7 +54,7 @@ class Utilities extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
+    public const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
 
     /**
      * Returns all available utility type classes.

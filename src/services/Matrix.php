@@ -20,8 +20,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\MigrationHelper;
-use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
 use craft\models\MatrixBlockType;
@@ -29,6 +27,7 @@ use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -65,8 +64,6 @@ class Matrix extends Component
      * @var string[]
      */
     private array $_uniqueBlockTypeAndFieldHandles = [];
-
-    const CONFIG_BLOCKTYPE_KEY = 'matrixBlockTypes';
 
 
     /**
@@ -143,11 +140,9 @@ class Matrix extends Component
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
      * @param MatrixBlockType $blockType The block type.
-     * @param bool $validateUniques Whether the Name and Handle attributes should be validated to
-     * ensure they’re unique. Defaults to `true`.
      * @return bool Whether the block type validated.
      */
-    public function validateBlockType(MatrixBlockType $blockType, bool $validateUniques = true): bool
+    public function validateBlockType(MatrixBlockType $blockType): bool
     {
         $validates = true;
 
@@ -157,24 +152,10 @@ class Matrix extends Component
         $blockTypeRecord->name = $blockType->name;
         $blockTypeRecord->handle = $blockType->handle;
 
-        $blockTypeRecord->validateUniques = $validateUniques;
-
         if (!$blockTypeRecord->validate()) {
             $validates = false;
             $blockType->addErrors($blockTypeRecord->getErrors());
         }
-
-        $blockTypeRecord->validateUniques = true;
-
-        // Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
-        // handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
-        // field handle validation takes its length into account.
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-
-        $contentService->fieldContext = StringHelper::randomString(10);
-        $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
         foreach ($blockType->getFields() as $field) {
             // Hack to allow blank field names
@@ -211,9 +192,6 @@ class Matrix extends Component
             }
         }
 
-        $contentService->fieldContext = $originalFieldContext;
-        $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-
         return $validates;
     }
 
@@ -225,7 +203,7 @@ class Matrix extends Component
      * Defaults to `true`.
      * @return bool
      * @throws Exception if an error occurs when saving the block type
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveBlockType(MatrixBlockType $blockType, bool $runValidation = true): bool
     {
@@ -234,7 +212,7 @@ class Matrix extends Component
         }
 
         $isNewBlockType = $blockType->getIsNew();
-        $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
+        $configPath = ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $blockType->uid;
         $configData = $blockType->getConfig();
         $field = $blockType->getField();
 
@@ -338,7 +316,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -368,7 +346,7 @@ class Matrix extends Component
      */
     public function deleteBlockType(MatrixBlockType $blockType): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid, "Delete matrix block type “{$blockType->handle}” for parent field “{$blockType->getField()->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.' . $blockType->uid, "Delete matrix block type “{$blockType->handle}” for parent field “{$blockType->getField()->handle}”");
         return true;
     }
 
@@ -376,7 +354,7 @@ class Matrix extends Component
      * Handle block type change
      *
      * @param ConfigEvent $event
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function handleDeletedBlockType(ConfigEvent $event): void
     {
@@ -420,18 +398,22 @@ class Matrix extends Component
             if ($matrixField instanceof MatrixField) {
                 $contentService->contentTable = $matrixField->contentTable;
 
-                // Set the new fieldColumnPrefix
-                $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
-                Craft::$app->getContent()->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
+                // Set the new fieldColumnPrefix + oldFieldColumnPrefix
+                $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+                $originalOldFieldColumnPrefix = $fieldsService->oldFieldColumnPrefix;
+
+                $contentService->fieldColumnPrefix = "field_{$blockType->handle}_";
+                $fieldsService->oldFieldColumnPrefix = "field_{$blockType->handle}_";
 
                 // Now delete the block type fields
                 foreach ($blockType->getFields() as $field) {
-                    Craft::$app->getFields()->deleteField($field);
+                    $fieldsService->deleteField($field);
                 }
 
                 // Restore the contentTable and the fieldColumnPrefix to original values.
-                Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
                 $contentService->contentTable = $originalContentTable;
+                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+                $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
                 // Delete the field layout
                 $fieldLayoutId = (new Query())
@@ -441,7 +423,7 @@ class Matrix extends Component
                     ->scalar();
 
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                $fieldsService->deleteLayoutById($fieldLayoutId);
 
                 // Finally delete the actual block type
                 Db::delete(Table::MATRIXBLOCKTYPES, [
@@ -450,7 +432,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -485,7 +467,7 @@ class Matrix extends Component
         $uniqueAttributeValues = [];
 
         foreach ($matrixField->getBlockTypes() as $blockType) {
-            if (!$this->validateBlockType($blockType, false)) {
+            if (!$this->validateBlockType($blockType)) {
                 // Don't break out of the loop because we still want to get validation errors for the remaining block
                 // types.
                 $validates = false;
@@ -519,7 +501,7 @@ class Matrix extends Component
      * @param MatrixField $matrixField The Matrix field
      * @param bool $validate Whether the settings should be validated before being saved.
      * @return bool Whether the settings saved successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
@@ -538,14 +520,14 @@ class Matrix extends Component
             if (!$db->tableExists($matrixField->contentTable)) {
                 $oldContentTable = $matrixField->oldSettings['contentTable'] ?? null;
                 if ($oldContentTable && $db->tableExists($oldContentTable)) {
-                    MigrationHelper::renameTable($oldContentTable, $matrixField->contentTable);
+                    Db::renameTable($oldContentTable, $matrixField->contentTable);
                 } else {
                     $this->_createContentTable($matrixField->contentTable);
                 }
             }
 
-            // Only make block type changes if we're not in the middle of applying YAML changes
-            if (!Craft::$app->getProjectConfig()->getIsApplyingYamlChanges()) {
+            // Only make block type changes if we're not in the middle of applying external changes
+            if (!Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()) {
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
                 $oldBlockTypesById = [];
@@ -581,7 +563,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -600,7 +582,7 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field.
      * @return bool Whether the field was deleted successfully.
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deleteMatrixField(MatrixField $matrixField): bool
     {
@@ -630,7 +612,7 @@ class Matrix extends Component
             $transaction->commit();
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -674,7 +656,7 @@ class Matrix extends Component
      *
      * @param MatrixField $field The Matrix field
      * @param ElementInterface $owner The element the field is associated with
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveField(MatrixField $field, ElementInterface $owner): void
     {
@@ -796,7 +778,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -818,7 +800,7 @@ class Matrix extends Component
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.2.0
      */
     public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
@@ -845,22 +827,35 @@ class Matrix extends Component
                     'propagating' => false,
                 ];
 
-                if ($target->updatingFromDerivative && $block->getIsDerivative()) {
-                    /** @var MatrixBlock $newBlock */
-                    $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
+                if (
+                    $target->updatingFromDerivative &&
+                    $block->getCanonical() !== $block // in case the canonical block is soft-deleted
+                ) {
+                    if (
+                        $source->getIsRevision() ||
+                        !empty($target->newSiteIds) ||
+                        $source->isFieldModified($field->handle, true)
+                    ) {
+                        /** @var MatrixBlock $newBlock */
+                        $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
+                        $newBlockId = $newBlock->id;
+                    } else {
+                        $newBlockId = $block->getCanonicalId();
+                    }
                 } else {
                     /** @var MatrixBlock $newBlock */
                     $newBlock = $elementsService->duplicateElement($block, $newAttributes);
+                    $newBlockId = $newBlock->id;
                 }
 
-                $newBlockIds[] = $newBlock->id;
+                $newBlockIds[] = $newBlockId;
             }
 
             // Delete any blocks that shouldn't be there anymore
             $this->_deleteOtherBlocks($field, $target, $newBlockIds);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -906,6 +901,7 @@ class Matrix extends Component
                         continue;
                     }
 
+                    $otherTargets[$otherSource->siteId]->updatingFromDerivative = $target->updatingFromDerivative;
                     $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to
@@ -925,10 +921,23 @@ class Matrix extends Component
      */
     public function mergeCanonicalChanges(MatrixField $field, ElementInterface $owner): void
     {
+        // Get the owner across all sites
+        $localizedOwners = $owner::find()
+            ->id($owner->id ?: false)
+            ->siteId(['not', $owner->siteId])
+            ->drafts($owner->getIsDraft())
+            ->provisionalDrafts($owner->isProvisionalDraft)
+            ->revisions($owner->getIsRevision())
+            ->status(null)
+            ->ignorePlaceholders()
+            ->indexBy('siteId')
+            ->all();
+        $localizedOwners[$owner->siteId] = $owner;
+
         // Get the canonical owner across all sites
         $canonicalOwners = $owner::find()
             ->id($owner->getCanonicalId())
-            ->siteId('*')
+            ->siteId(array_keys($localizedOwners))
             ->status(null)
             ->ignorePlaceholders()
             ->all();
@@ -972,7 +981,7 @@ class Matrix extends Component
                         if ($derivativeBlock->dateUpdated == $derivativeBlock->dateCreated) {
                             $elementsService->deleteElement($derivativeBlock);
                         }
-                    } else if (!$derivativeBlock->trashed) {
+                    } else if (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
                         // Merge the upstream changes into the derivative block
                         $elementsService->mergeCanonicalChanges($derivativeBlock);
                     }
@@ -981,8 +990,8 @@ class Matrix extends Component
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
                         'ownerId' => $owner->id,
-                        'owner' => $owner,
-                        'siteId' => $canonicalOwner->siteId,
+                        'owner' => $localizedOwners[$canonicalBlock->siteId],
+                        'siteId' => $canonicalBlock->siteId,
                         'propagating' => false,
                     ]);
                 }
@@ -1012,9 +1021,10 @@ class Matrix extends Component
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
         $siteIds = [];
 
+        $view = Craft::$app->getView();
+        $elementsService = Craft::$app->getElements();
+
         if ($propagationMethod === MatrixField::PROPAGATION_METHOD_CUSTOM && $propagationKeyFormat !== null) {
-            $view = Craft::$app->getView();
-            $elementsService = Craft::$app->getElements();
             $propagationKey = $view->renderObjectTemplate($propagationKeyFormat, $owner);
         }
 

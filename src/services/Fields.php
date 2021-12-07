@@ -59,6 +59,7 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -95,96 +96,93 @@ class Fields extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
+    public const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
      */
-    const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
+    public const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
 
     /**
      * @event FieldGroupEvent The event that is triggered after a field group is saved.
      */
-    const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
+    public const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is deleted.
      */
-    const EVENT_BEFORE_DELETE_FIELD_GROUP = 'beforeDeleteFieldGroup';
+    public const EVENT_BEFORE_DELETE_FIELD_GROUP = 'beforeDeleteFieldGroup';
 
     /**
      * @event FieldGroupEvent The event that is triggered after a field group is deleted.
      */
-    const EVENT_AFTER_DELETE_FIELD_GROUP = 'afterDeleteFieldGroup';
+    public const EVENT_AFTER_DELETE_FIELD_GROUP = 'afterDeleteFieldGroup';
 
     /**
      * @event FieldEvent The event that is triggered before a field is saved.
      */
-    const EVENT_BEFORE_SAVE_FIELD = 'beforeSaveField';
+    public const EVENT_BEFORE_SAVE_FIELD = 'beforeSaveField';
 
     /**
      * @event FieldEvent The event that is triggered after a field is saved.
      */
-    const EVENT_AFTER_SAVE_FIELD = 'afterSaveField';
+    public const EVENT_AFTER_SAVE_FIELD = 'afterSaveField';
 
     /**
      * @event FieldEvent The event that is triggered before a field is deleted.
      */
-    const EVENT_BEFORE_DELETE_FIELD = 'beforeDeleteField';
+    public const EVENT_BEFORE_DELETE_FIELD = 'beforeDeleteField';
 
     /**
      * @event FieldEvent The event that is triggered before a field delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_FIELD_DELETE = 'beforeApplyFieldDelete';
+    public const EVENT_BEFORE_APPLY_FIELD_DELETE = 'beforeApplyFieldDelete';
 
     /**
      * @event FieldEvent The event that is triggered after a field is deleted.
      */
-    const EVENT_AFTER_DELETE_FIELD = 'afterDeleteField';
+    public const EVENT_AFTER_DELETE_FIELD = 'afterDeleteField';
 
     /**
      * @event FieldLayoutEvent The event that is triggered before a field layout is saved.
      */
-    const EVENT_BEFORE_SAVE_FIELD_LAYOUT = 'beforeSaveFieldLayout';
+    public const EVENT_BEFORE_SAVE_FIELD_LAYOUT = 'beforeSaveFieldLayout';
 
     /**
      * @event FieldLayoutEvent The event that is triggered after a field layout is saved.
      */
-    const EVENT_AFTER_SAVE_FIELD_LAYOUT = 'afterSaveFieldLayout';
+    public const EVENT_AFTER_SAVE_FIELD_LAYOUT = 'afterSaveFieldLayout';
 
     /**
      * @event FieldLayoutEvent The event that is triggered before a field layout is deleted.
      */
-    const EVENT_BEFORE_DELETE_FIELD_LAYOUT = 'beforeDeleteFieldLayout';
+    public const EVENT_BEFORE_DELETE_FIELD_LAYOUT = 'beforeDeleteFieldLayout';
 
     /**
      * @event FieldLayoutEvent The event that is triggered after a field layout is deleted.
      */
-    const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
-
-    const CONFIG_FIELDGROUP_KEY = 'fieldGroups';
-    const CONFIG_FIELDS_KEY = 'fields';
+    public const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
 
     /**
-     * @var string
+     * @var string|null
      */
-    public string $oldFieldColumnPrefix = 'field_';
+    public ?string $oldFieldColumnPrefix = null;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<FieldGroup>|null
      * @see _groups()
      */
     private ?MemoizableArray $_groups = null;
 
     /**
-     * @var MemoizableArray|null
+     * @var MemoizableArray<FieldInterface>|null
      * @see _fields()
      */
     private ?MemoizableArray $_fields = null;
@@ -222,7 +220,7 @@ class Fields extends Component
     /**
      * Returns a memoizable array of all field groups.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<FieldGroup>
      */
     private function _groups(): MemoizableArray
     {
@@ -298,7 +296,7 @@ class Fields extends Component
             $group->uid = StringHelper::UUID();
         }
 
-        $configPath = self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid;
+        $configPath = ProjectConfig::PATH_FIELD_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field group “{$group->name}”");
 
@@ -435,7 +433,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, "Delete the “{$group->name}” field group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_FIELD_GROUPS . '.' . $group->uid, "Delete the “{$group->name}” field group");
         return true;
     }
 
@@ -596,7 +594,7 @@ class Fields extends Component
      * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      *
-     * @return MemoizableArray
+     * @return MemoizableArray<FieldInterface>
      */
     private function _fields($context = null): MemoizableArray
     {
@@ -764,7 +762,7 @@ class Fields extends Component
             'handle' => $field->handle,
             'columnSuffix' => $field->columnSuffix,
             'instructions' => $field->instructions,
-            'searchable' => (bool)$field->searchable,
+            'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => get_class($field),
@@ -787,7 +785,7 @@ class Fields extends Component
      * @param FieldInterface $field The Field to be saved
      * @param bool $runValidation Whether the field should be validated
      * @return bool Whether the field was saved successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
@@ -815,7 +813,7 @@ class Fields extends Component
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
-            $configPath = self::CONFIG_FIELDS_KEY . '.' . $field->uid;
+            $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
             Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
         } else {
             // Otherwise just save it to the DB
@@ -864,7 +862,7 @@ class Fields extends Component
      * Handle field changes.
      *
      * @param ConfigEvent $event
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function handleChangedField(ConfigEvent $event): void
     {
@@ -900,7 +898,7 @@ class Fields extends Component
      *
      * @param FieldInterface $field The field
      * @return bool Whether the field was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteField(FieldInterface $field): bool
     {
@@ -916,7 +914,7 @@ class Fields extends Component
         }
 
         if ($field->context === 'global') {
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid, "Delete the “{$field->handle}” field");
+            Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_FIELDS . '.' . $field->uid, "Delete the “{$field->handle}” field");
         } else {
             $this->applyFieldDelete($field->uid);
         }
@@ -939,7 +937,7 @@ class Fields extends Component
      * Applies a field delete to the database.
      *
      * @param string $fieldUid
-     * @throws \Throwable if database error
+     * @throws Throwable if database error
      * @since 3.1.0
      */
     public function applyFieldDelete(string $fieldUid): void
@@ -975,7 +973,7 @@ class Fields extends Component
             $field->afterDelete();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1008,9 +1006,10 @@ class Fields extends Component
     {
         $contentService = Craft::$app->getContent();
         $db = Craft::$app->getDb();
+        $columnPrefix = $this->oldFieldColumnPrefix ?? $contentService->fieldColumnPrefix;
 
         if ($columnSuffix === null) {
-            $column = ElementHelper::fieldColumn(null, $handle, null);
+            $column = ElementHelper::fieldColumn($columnPrefix, $handle, null);
             if (!isset($newColumns[$column]) && $db->columnExists($contentService->contentTable, $column)) {
                 $db->createCommand()
                     ->dropColumn($contentService->contentTable, $column)
@@ -1018,10 +1017,11 @@ class Fields extends Component
             }
         } else {
             $allColumns = array_keys($db->getSchema()->getTableSchema($contentService->contentTable)->columns);
+            $qColumnPrefix = preg_quote($columnPrefix, '/');
             $qHandle = preg_quote($handle, '/');
             $qColumnSuffix = preg_quote($columnSuffix, '/');
             foreach ($allColumns as $column) {
-                if (!isset($newColumns[$column]) && preg_match("/[\b_]$qHandle(_\w+)?_$qColumnSuffix\$/", $column)) {
+                if (!isset($newColumns[$column]) && preg_match("/^$qColumnPrefix$qHandle(_\w+)?_$qColumnSuffix\$/", $column)) {
                     $db->createCommand()
                         ->dropColumn($contentService->contentTable, $column)
                         ->execute();
@@ -1083,7 +1083,9 @@ class Fields extends Component
             ->one();
 
         if (!$result) {
-            return $this->_layoutsByType[$type] = new FieldLayout();
+            return $this->_layoutsByType[$type] = new FieldLayout([
+                'type' => $type,
+            ]);
         }
 
         $id = $result['id'];
@@ -1613,6 +1615,24 @@ class Fields extends Component
     }
 
     /**
+     * Returns the current field version.
+     *
+     * @return string|null
+     * @since 3.7.21
+     */
+    public function getFieldVersion(): ?string
+    {
+        $fieldVersion = Craft::$app->getInfo()->fieldVersion;
+
+        // If it doesn't start with `2@`, then it needs to be updated
+        if ($fieldVersion === null || strpos($fieldVersion, '2@') !== 0) {
+            return null;
+        }
+
+        return $fieldVersion;
+    }
+
+    /**
      * Sets a new field version, so the CustomFieldBehavior class
      * will get regenerated on the next request.
      *
@@ -1624,7 +1644,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = StringHelper::randomString(12);
+        $info->fieldVersion = '2@' . StringHelper::randomString(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 
@@ -1642,7 +1662,7 @@ class Fields extends Component
 
         // Ensure we have the field group in the place first
         if ($groupUid) {
-            Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
+            Craft::$app->getProjectConfig()->processConfigChanges(ProjectConfig::PATH_FIELD_GROUPS . '.' . $groupUid);
         }
 
         $db = Craft::$app->getDb();
@@ -1668,14 +1688,14 @@ class Fields extends Component
                 if (is_array($columnType)) {
                     foreach ($columnType as $i => $type) {
                         [$key, $type] = explode(':', $type, 2);
-                        $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
+                        $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
                         $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null, $i !== 0 ? $key : null);
                         $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
                         $newColumns[$newColumn] = true;
                     }
                 } else {
-                    $oldColumn = !$isNewField ? ElementHelper::fieldColumn(null, $oldHandle, $oldColumnSuffix) : null;
-                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);;
+                    $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix) : null;
+                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);
                     $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
                 }
@@ -1717,7 +1737,7 @@ class Fields extends Component
             $fieldRecord->save(false);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -1936,7 +1956,7 @@ class Fields extends Component
 
         if (is_numeric($criteria)) {
             $query->where(['id' => $criteria]);
-        } else if (\is_string($criteria)) {
+        } else if (is_string($criteria)) {
             $query->where(['uid' => $criteria]);
         }
 

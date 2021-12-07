@@ -7,6 +7,8 @@
 
 namespace craft\gql\types\elements;
 
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -50,7 +52,14 @@ class Entry extends Element
                 return $source->getType()->handle;
             case 'draftName':
             case 'draftNotes':
+                /** @var DraftBehavior|EntryElement $source */
                 return $source->getIsDraft() ? $source->{$fieldName} : null;
+            case 'draftCreator':
+                /** @var DraftBehavior|EntryElement $source */
+                return $source->getIsDraft() ? $source->getCreator() : null;
+            case 'revisionCreator':
+                /** @var RevisionBehavior|EntryElement $source */
+                return $source->getIsRevision() ? $source->getCreator() : null;
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

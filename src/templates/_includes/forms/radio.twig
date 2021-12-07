@@ -1,0 +1,30 @@
+{% set id = id ?? "radio#{random()}" %}
+{% set label = radioLabel ?? label ?? null %}
+
+{% set containerAttributes = {
+    for: id,
+}|merge(containerAttributes ?? []) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% set inputAttributes = {
+    type: 'radio',
+    id: id,
+    class: (class ?? [])|explodeClass|merge(['radio']),
+    name: name ?? false,
+    value: value ?? '1',
+    checked: checked ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    aria: {
+        describedby: describedBy ?? false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{{ tag('input', inputAttributes) }}
+
+{% tag 'label' with containerAttributes %}
+    {{ label|raw }}
+{% endtag %}

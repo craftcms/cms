@@ -12,13 +12,18 @@ use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
+use DateTime;
+use DateTimeZone;
 use PDO;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
+use yii\db\pgsql\Schema as YiiPgqslSchema;
 use yii\db\Query as YiiQuery;
 use yii\db\Schema;
 
@@ -30,8 +35,8 @@ use yii\db\Schema;
  */
 class Db
 {
-    const SIMPLE_TYPE_NUMERIC = 'numeric';
-    const SIMPLE_TYPE_TEXTUAL = 'textual';
+    public const SIMPLE_TYPE_NUMERIC = 'numeric';
+    public const SIMPLE_TYPE_TEXTUAL = 'textual';
 
     /**
      * @var array
@@ -117,13 +122,13 @@ class Db
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
             return static::prepareDateForDb($value);
         }
 
         // If this isn’t a JSON column and the value is an object or array, JSON-encode it
         if (
-            !in_array($columnType, [Schema::TYPE_JSON, \yii\db\pgsql\Schema::TYPE_JSONB]) &&
+            !in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB]) &&
             (is_object($value) || is_array($value))
         ) {
             return Json::encode($value);
@@ -147,7 +152,7 @@ class Db
         }
 
         $date = clone $date;
-        $date->setTimezone(new \DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone('UTC'));
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -215,17 +220,17 @@ class Db
 
         // Decimal or int?
         if ($decimals > 0) {
-            return Schema::TYPE_DECIMAL . "({$length},{$decimals})";
+            return Schema::TYPE_DECIMAL . "($length,$decimals)";
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
         foreach (self::$_integerSizeRanges as $type => [$typeMin, $typeMax]) {
             if ($min >= $typeMin && $max <= $typeMax) {
-                return $type . "({$length})";
+                return $type . "($length)";
             }
         }
 
-        throw new Exception("No integer column type can contain numbers between {$min} and {$max}");
+        throw new Exception("No integer column type can contain numbers between $min and $max");
     }
 
     /**
@@ -488,7 +493,7 @@ class Db
             $caseInsensitive = false;
         }
 
-        $caseColumn = $caseInsensitive ? "lower([[{$column}]])" : $column;
+        $caseColumn = $caseInsensitive ? "lower([[$column]])" : $column;
 
         $inVals = [];
         $notInVals = [];
@@ -504,7 +509,7 @@ class Db
                     if ($operator === '!=') {
                         $val = !$val;
                     }
-                    $condition[] = [$column => (bool)$val];
+                    $condition[] = [$column => $val];
                     continue;
                 }
 
@@ -604,7 +609,7 @@ class Db
      * [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * @param string $column The database column that the param is targeting.
-     * @param string|array|\DateTime $value The param value
+     * @param string|array|DateTime $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return mixed
@@ -670,7 +675,7 @@ class Db
     {
         self::_normalizeEmptyValue($value);
         $operator = self::_parseParamOperator($value, '=');
-        $value = $value === ':empty:' ? false : (bool)$value;
+        $value = !($value === ':empty:') && $value;
         if ($operator === '!=') {
             $value = !$value;
         }
@@ -720,7 +725,7 @@ class Db
             $db = self::db();
         }
 
-        /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
+        /** @var MysqlSchema|PgsqlSchema $schema */
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
@@ -917,19 +922,133 @@ class Db
      *
      * @param string $table the table where the data will be deleted from
      * @param Connection|null $db The database connection to use
-     * @return int The number of rows affected by the execution
      * @throws DbException if execution failed
      * @since 3.6.8
      */
-    public static function truncateTable(string $table, ?Connection $db = null): int
+    public static function truncateTable(string $table, ?Connection $db = null): void
     {
         if ($db === null) {
             $db = self::db();
         }
 
-        return $db->createCommand()
+        $db->createCommand()
             ->truncateTable($table)
             ->execute();
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping an index if it exists.
+     *
+     * @param string $table The table that the index was created for.
+     * @param string|string[] $columns The column(s) that are included in the index. If there are multiple columns, separate them
+     * by commas or use an array.
+     * @param bool $unique Whether the index has a UNIQUE constraint.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function dropIndexIfExists(string $table, $columns, bool $unique = false, ?Connection $db = null): void
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $indexName = static::findIndex($table, $columns, $unique, $db);
+
+        if ($indexName) {
+            $db->createCommand()
+                ->dropIndex($indexName, $table)
+                ->execute();
+        }
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping a foreign key if it exists.
+     *
+     * @param string $table The table that the foreign key was created for.
+     * @param string|string[] $columns The column(s) that are included in the foreign key. If there are multiple columns, separate them
+     * by commas or use an array.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function dropForeignKeyIfExists(string $table, $columns, ?Connection $db = null): void
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $fkName = static::findForeignKey($table, $columns, $db);
+
+        if ($fkName) {
+            $db->createCommand()
+                ->dropForeignKey($fkName, $table)
+                ->execute();
+        }
+    }
+
+    /**
+     * Drops all the foreign keys that reference a table.
+     *
+     * @param string $table The table that the foreign keys should reference.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function dropAllForeignKeysToTable(string $table, ?Connection $db = null): void
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $schema = $db->getSchema();
+        $rawTableName = $schema->getRawTableName($table);
+
+        foreach ($schema->getTableSchemas() as $otherTable) {
+            foreach ($otherTable->foreignKeys as $fkName => $fk) {
+                if ($fk[0] === $rawTableName) {
+                    $db->createCommand()
+                        ->dropForeignKey($fkName, $otherTable->name)
+                        ->execute();
+                }
+            }
+        }
+    }
+
+    /**
+     * Renames a table and its corresponding sequence (if PostgreSQL).
+     *
+     * @param string $table The table to be renamed.
+     * @param string $newName The new table name.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function renameTable(string $table, string $newName, ?Connection $db = null): void
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $schema = $db->getSchema();
+        $rawOldName = $schema->getRawTableName($table);
+        $rawNewName = $schema->getRawTableName($newName);
+
+        // Rename the table
+        $db->createCommand()
+            ->renameTable($rawOldName, $rawNewName)
+            ->execute();
+
+        if ($db->getIsPgsql()) {
+            // Rename the corresponding sequence if there is one
+            // see https://www.postgresql.org/message-id/200308211224.06775.jgardner%40jonathangardner.net
+            $transaction = $db->beginTransaction();
+            try {
+                $db->createCommand()
+                    ->renameSequence("{$rawOldName}_id_seq", "{$rawNewName}_id_seq")
+                    ->execute();
+                $transaction->commit();
+            } catch (Throwable $e) {
+                // Silently fail. The sequence probably doesn't exist
+                $transaction->rollBack();
+            }
+        }
     }
 
     /**
@@ -1060,9 +1179,13 @@ class Db
                 $parsed[$n] = $v;
             }
         }
+
         if ($key === null) {
+            // todo: remove comment when phpstan#5401 is fixed
+            /** @phpstan-ignore-next-line */
             return $parsed;
         }
+
         return false;
     }
 
@@ -1142,7 +1265,7 @@ class Db
             }
         }
 
-        $config['dsn'] = "{$driver}:" . implode(';', $dsnParams);
+        $config['dsn'] = "$driver:" . implode(';', $dsnParams);
 
         return $config;
     }
@@ -1187,7 +1310,7 @@ class Db
             return [];
         }
 
-        if ($value instanceof \DateTime) {
+        if ($value instanceof DateTime) {
             return [$value];
         }
 
@@ -1403,5 +1526,79 @@ class Db
         }
 
         return $result;
+    }
+
+    /**
+     * Looks for an index on the given table with the given columns and unique property, and returns its name,
+     * or null if no match is found.
+     *
+     * @param string $tableName The table that the index was created for.
+     * @param string|string[] $columns The column(s) that are included in the index. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @param bool $unique Whether the index has a UNIQUE constraint.
+     * @param Connection|null $db The database connection.
+     * @return string|null The index name, or `null` if there isn’t a matching one.
+     * @since 4.0.0
+     */
+    public static function findIndex(string $tableName, $columns, bool $unique = false, ?Connection $db = null): ?string
+    {
+        if (is_string($columns)) {
+            $columns = StringHelper::split($columns);
+        }
+
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        foreach ($db->getSchema()->findIndexes($tableName) as $name => $index) {
+            if ($index['columns'] === $columns && $index['unique'] === $unique) {
+                return $name;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Looks for a foreign key on the given table with the given columns, and returns its name, or null if no
+     * match is found.
+     *
+     * @param string $tableName The table that the foreign key is on
+     * @param string|string[] $columns The column(s) that are included in the foreign key. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @param Connection|null $db The database connection.
+     * @return string|null The foreign key name, or `null` if there isn’t a matching one.
+     * @since 4.0.0
+     */
+    public static function findForeignKey(string $tableName, $columns, ?Connection $db = null): ?string
+    {
+        if (is_string($columns)) {
+            $columns = StringHelper::split($columns);
+        }
+
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $schema = $db->getSchema();
+        $tableName = $schema->getRawTableName($tableName);
+        $table = $schema->getTableSchema($tableName);
+
+        foreach ($table->foreignKeys as $name => $fk) {
+            $fkColumns = [];
+
+            foreach ($fk as $count => $value) {
+                if ($count !== 0) {
+                    $fkColumns[] = $count;
+                }
+            }
+
+            // Could be a composite key, so make sure all required values exist!
+            if (count(array_intersect($fkColumns, $columns)) === count($columns)) {
+                return $name;
+            }
+        }
+
+        return null;
     }
 }

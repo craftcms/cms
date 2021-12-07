@@ -7,8 +7,6 @@
 
 namespace craft\gql\handlers;
 
-use craft\gql\base\ArgumentHandler;
-
 /**
  * Class SiteId
  *

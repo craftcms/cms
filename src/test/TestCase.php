@@ -11,6 +11,7 @@ use Closure;
 use Codeception\Test\Unit;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionMethod;
 use ReflectionObject;
 
 /**
@@ -126,14 +127,14 @@ class TestCase extends Unit
     }
 
     /**
-     * @param \ReflectionMethod $method
+     * @param ReflectionMethod $method
      * @param $object
      * @param array $args
      * @param bool $revoke
      * @return mixed
      * @throws ReflectionException
      */
-    private function _invokeMethodInternal(\ReflectionMethod $method, $object = null, array $args = [], bool $revoke = true)
+    private function _invokeMethodInternal(ReflectionMethod $method, $object = null, array $args = [], bool $revoke = true)
     {
         $method->setAccessible(true);
         $result = $method->invokeArgs($object, $args);

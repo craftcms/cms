@@ -36,7 +36,7 @@ class Category extends Structure
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
@@ -70,26 +70,26 @@ class Category extends Structure
         return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the group that contains the category.',
             ],
             'groupHandle' => [
                 'name' => 'groupHandle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the group that contains the category.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],
             'children' => [
                 'name' => 'children',
                 'args' => CategoryArguments::getArguments(),
-                'type' => Type::listOf(static::getType()),
+                'type' => Type::nonNull(Type::listOf(static::getType())),
                 'description' => 'The category’s children.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'parent' => [
                 'name' => 'parent',
                 'args' => CategoryArguments::getArguments(),
-                'type' => static::getType(),
+                'type' => Type::nonNull(static::getType()),
                 'description' => 'The category’s parent.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
@@ -101,7 +101,7 @@ class Category extends Structure
             'localized' => [
                 'name' => 'localized',
                 'args' => CategoryArguments::getArguments(),
-                'type' => Type::listOf(static::getType()),
+                'type' => Type::nonNull(Type::listOf(static::getType())),
                 'description' => 'The same element in other locales.',
                 'complexity' => Gql::eagerLoadComplexity(),
             ],

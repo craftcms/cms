@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use Throwable;
 use yii\web\Cookie;
 use yii\web\CookieCollection;
 use yii\web\HttpException;
@@ -23,7 +24,7 @@ class Response extends \yii\web\Response
     /**
      * @since 3.4.0
      */
-    const FORMAT_CSV = 'csv';
+    public const FORMAT_CSV = 'csv';
 
     /**
      * @var bool whether the response has been prepared.
@@ -164,7 +165,10 @@ class Response extends \yii\web\Response
      */
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
-        $url = UrlHelper::url($url);
+        if (is_string($url)) {
+            $url = UrlHelper::url($url);
+        }
+
         return parent::redirect($url, $statusCode, $checkAjax);
     }
 
@@ -204,7 +208,7 @@ class Response extends \yii\web\Response
      * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
      *
      * @see http://stackoverflow.com/a/141026
-     * @throws \Throwable An exception will be thrown if content has already been output.
+     * @throws Throwable An exception will be thrown if content has already been output.
      */
     public function sendAndClose(): void
     {

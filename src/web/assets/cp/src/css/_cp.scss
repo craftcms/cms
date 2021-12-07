@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 :root {
   --padding: 24px;
@@ -7,10 +7,15 @@
 }
 
 $sidebarWidth: 226px;
+$sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
+
+// Colors
+$badgeBackgroundColor: $grey200;
+$badgeColor: $grey800;
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -19,15 +24,40 @@ html {
 
 body {
   min-height: 100vh;
+}
 
+body {
   :focus {
     outline-style: solid;
     outline-color: transparent;
+    box-shadow: $darkFocusRing;
+  }
+}
+
+.reduce-focus-visibility {
+  :focus:not(.focus-visible) {
+    box-shadow: none;
   }
 
-  &:not(.reduce-focus-visibility) :focus,
-  &.reduce-focus-visibility :focus-visible {
+  .focus-visible {
     box-shadow: $darkFocusRing;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: $sidebarZIndex + 1;
+
+  &:focus {
+    left: 0;
+    width: auto;
+    height: auto;
+    background-color: $grey100 !important;
   }
 }
 
@@ -52,8 +82,9 @@ $sidebarLinkStaticColor: $grey100;
 $sidebarLinkSecondaryColor: $grey200;
 
 #global-sidebar {
+  --is-always-visible: true;
   position: fixed;
-  z-index: 100;
+  z-index: $sidebarZIndex;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -64,16 +95,9 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
-  body:not(.reduce-focus-visibility) & {
-    :focus {
-      box-shadow: $lightFocusRing;
-    }
-  }
-
-  body.reduce-focus-visibility & {
-    :focus-visible {
-      box-shadow: $lightFocusRing;
-    }
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &.focus-visible {
+    box-shadow: $lightFocusRing;
   }
 
   a {
@@ -121,6 +145,10 @@ $sidebarLinkSecondaryColor: $grey200;
   .light {
     color: $grey400;
   }
+
+  @media only screen and (max-width: $minFullUiWidth - 1px) {
+    --is-always-visible: false;
+  }
 }
 
 $systemInfoBgColor: darken($grey800, 5%);
@@ -164,7 +192,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #system-name {
-  h2 {
+  h2,
+  .h2 {
     margin: 0;
     width: 100%;
     overflow: hidden;
@@ -291,8 +320,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       .badge {
         @include margin-right(0);
-        background-color: transparentize($white, 0.5);
-        color: $grey800;
+        background-color: $badgeBackgroundColor;
+        color: $badgeColor;
       }
     }
 
@@ -455,13 +484,19 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #global-header {
+  width: 100%;
   margin-bottom: 14px;
   @include pane;
   background: $grey050;
 
   .flex {
-    height: 50px;
     align-items: center;
+  }
+
+  .btn {
+    --ui-control-color: #{$grey400};
+    --ui-control-hover-color: #{$grey500};
+    --ui-control-active-color: #{$grey600};
   }
 }
 
@@ -470,12 +505,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: row;
   align-items: center;
   font-size: 13px;
+  margin: 0 !important;
 
   &.empty {
     display: none;
   }
 
-  a {
+  a,
+  button {
     color: $lightTextColor;
     transition: color linear 100ms;
 
@@ -487,26 +524,48 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   nav {
     margin: 0;
+  }
+}
 
-    ul {
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
+.breadcrumb-list {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: wrap;
 
-      li {
-        display: inline-flex;
-        align-items: center;
+  li {
+    display: inline-flex;
+    align-items: center;
 
-        a {
-          padding: 15px 0;
-        }
+    a,
+    button {
+      padding: 15px 0;
+    }
 
-        &:after {
-          margin: 0 7px;
-          @include angle(right, $mediumHairlineColor);
-        }
+    button {
+      cursor: pointer;
+    }
+
+    &:after {
+      margin: 0 7px;
+      @include angle(right, $mediumHairlineColor);
+    }
+  }
+
+  & .menu--disclosure {
+    li {
+      display: block;
+
+      &::after {
+        content: none;
       }
     }
+  }
+}
+
+li.breadcrumb-toggle-wrapper {
+  &::after {
+    content: none;
   }
 }
 
@@ -534,7 +593,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   svg {
     width: 22px;
     height: 22px;
-    @include svg-mask($darkHairlineColor);
+    @include svg-mask(var(--ui-control-color));
   }
 
   &:hover,
@@ -554,11 +613,23 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-top: 20px;
     }
 
-    .timestamp {
+    .announcement-label-container {
       margin-top: -3px;
-      font-size: 12px;
-      color: $lightTextColor;
+      display: flex;
+      align-items: center;
       margin-bottom: 3px;
+
+      .announcement-icon svg {
+        display: block;
+        width: 15px;
+        height: 15px;
+      }
+
+      .announcement-label {
+        margin-left: 5px;
+        font-size: 12px;
+        color: $lightTextColor;
+      }
     }
 
     h2 {
@@ -584,6 +655,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
+.breadcrumb-toggle-wrapper,
+.account-toggle-wrapper {
+  position: relative;
+}
+
 #user-info {
   display: flex;
   flex-direction: row;
@@ -594,15 +670,16 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   border-radius: 0;
 
   &:after {
-    border-color: $mediumHairlineColor;
+    border-color: var(--ui-control-color);
     transition: border-color linear 100ms;
   }
 
-  &:hover,
-  &.active {
-    &:after {
-      border-color: $darkHairlineColor;
-    }
+  &:hover:after {
+    border-color: var(--ui-control-hover-color);
+  }
+
+  &[aria-expanded=true]:after {
+    border-color: var(--ui-control-active-color);
   }
 }
 
@@ -613,6 +690,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     display: block;
     width: 30px;
     height: 30px;
+    max-width: none;
     border-radius: 50%;
     box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 0 0 transparentize($grey900, 1);
     transition: box-shadow linear 150ms;
@@ -757,8 +835,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-$toolbarIconColor: darken($inputColor, 10%);
-
 #toolbar {
   flex: 1;
   align-items: flex-start;
@@ -773,34 +849,34 @@ $toolbarIconColor: darken($inputColor, 10%);
   .menubtn:after,
   [data-icon]:before,
   [data-icon-after]:after {
-    color: $toolbarIconColor;
+    color: var(--ui-control-color);
   }
 
   .text {
     border-radius: $largeBorderRadius;
 
     &::-webkit-input-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &:-ms-input-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &::-ms-input-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &:-moz-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &::-moz-placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &::placeholder {
-      color: $toolbarIconColor;
+      color: $lightTextColor;
     }
 
     &:not(:focus) {
@@ -961,7 +1037,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     &.read-only {
       padding-top: 8px;
       padding-bottom: 8px;
-      color: $lightTextColor;
+      color: $mediumTextColor;
       background-color: transparent;
     }
 
@@ -1016,12 +1092,12 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     & > .field  > .status-badge {
-      @include left(-2px);
+      @include left(-1px);
     }
 
     .text::placeholder,
-    .datewrapper .text:placeholder-shown + div[data-icon],
-    .timewrapper .text:placeholder-shown + div[data-icon] {
+    .datewrapper .text + div[data-icon],
+    .timewrapper .text + div[data-icon] {
       color: $grey300;
     }
 
@@ -1190,8 +1266,8 @@ $toolbarIconColor: darken($inputColor, 10%);
   #crumbs,
   #header,
   #main-content {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 
   #tabs ul li {
@@ -1338,11 +1414,11 @@ $toolbarIconColor: darken($inputColor, 10%);
 
           &.icon-mask {
             svg {
-              @include svg-mask($mediumTextColor);
+              @include svg-mask(var(--ui-control-color));
             }
 
             span[data-icon] {
-              color: $mediumTextColor;
+              color: var(--ui-control-color);
             }
           }
 

@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 
@@ -34,6 +33,6 @@ class RestoreController extends Controller
     public function actionDb(?string $path = null): int
     {
         Console::outputWarning("The restore command is deprecated.\nRunning db/restore instead...");
-        return Craft::$app->runAction('db/restore', func_get_args());
+        return $this->run('db/restore', func_get_args());
     }
 }

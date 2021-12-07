@@ -7,6 +7,7 @@
 
 namespace craft\validators;
 
+use Countable;
 use Craft;
 use yii\validators\Validator;
 
@@ -101,7 +102,7 @@ class ArrayValidator extends Validator
      */
     protected function validateValue($value): ?array
     {
-        if (!$value instanceof \Countable && !is_array($value)) {
+        if (!$value instanceof Countable && !is_array($value)) {
             return [$this->message, []];
         }
 

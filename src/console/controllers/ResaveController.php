@@ -251,13 +251,14 @@ class ResaveController extends Controller
     }
 
     /**
-     * @param string|ElementInterface $elementType The element type that should be resaved
+     * @param string $elementType The element type that should be resaved
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
+        /** @var string|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
@@ -357,7 +358,7 @@ class ResaveController extends Controller
         }
 
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
-        $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("Resaving $count $elementsText ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
@@ -365,7 +366,7 @@ class ResaveController extends Controller
         $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count) {
             if ($e->query === $query) {
                 $element = $e->element;
-                $this->stdout("    - [{$e->position}/{$count}] Resaving {$element} ({$element->id}) ... ");
+                $this->stdout("    - [$e->position/$count] Resaving $element ($element->id) ... ");
             }
         };
 
@@ -392,7 +393,7 @@ class ResaveController extends Controller
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $this->stdout("Done resaving {$elementsText}." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("Done resaving $elementsText." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
     }
 }

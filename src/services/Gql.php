@@ -23,7 +23,7 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\gql\ArgumentManager;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\base\InterfaceType;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\ParseRefs;
@@ -61,6 +61,7 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
+use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
@@ -78,6 +79,7 @@ use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -109,7 +111,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
+    public const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
 
     /**
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
@@ -135,7 +137,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
+    public const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
 
     /**
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
@@ -160,7 +162,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_REGISTER_GQL_MUTATIONS = 'registerGqlMutations';
+    public const EVENT_REGISTER_GQL_MUTATIONS = 'registerGqlMutations';
 
     /**
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
@@ -182,13 +184,13 @@ class Gql extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
+    public const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
 
     /**
      * @event RegisterGqlSchemaComponentsEvent The event that is triggered when registering GraphQL schema components.
      * @since 3.5.0
      */
-    const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
+    public const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
 
     /**
      * @event DefineGqlValidationRulesEvent The event that is triggered when defining validation rules to be used.
@@ -209,7 +211,7 @@ class Gql extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
+    public const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
 
     /**
      * @event ExecuteGqlQueryEvent The event that is triggered before executing the GraphQL query.
@@ -233,7 +235,7 @@ class Gql extends Component
      *
      * @since 3.3.11
      */
-    const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
+    public const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
 
     /**
      * @event ExecuteGqlQueryEvent The event that is triggered after executing the GraphQL query.
@@ -256,69 +258,54 @@ class Gql extends Component
      *
      * @since 3.3.11
      */
-    const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
+    public const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
 
     /**
      * @since 3.3.12
      */
-    const CACHE_TAG = 'graphql';
-
-    /**
-     * @since 3.5.0
-     */
-    const CONFIG_GQL_KEY = 'graphql';
-
-    /**
-     * @since 3.4.0
-     */
-    const CONFIG_GQL_SCHEMAS_KEY = self::CONFIG_GQL_KEY . '.' . 'schemas';
-
-    /**
-     * @since 3.5.0
-     */
-    const CONFIG_GQL_PUBLIC_TOKEN_KEY = self::CONFIG_GQL_KEY . '.' . 'publicToken';
+    public const CACHE_TAG = 'graphql';
 
     /**
      * The field name to use when fetching count of related elements
      *
      * @since 3.4.0
      */
-    const GRAPHQL_COUNT_FIELD = '_count';
+    public const GRAPHQL_COUNT_FIELD = '_count';
 
     /**
      * Complexity value for accessing a simple field.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = 1;
+    public const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = 1;
 
     /**
      * Complexity value for accessing a field that will trigger a single query for the request.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_QUERY = 10;
+    public const GRAPHQL_COMPLEXITY_QUERY = 10;
 
     /**
      * Complexity value for accessing a field that will add an instance of eager-loading for the request.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
+    public const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
 
     /**
      * Complexity value for accessing a field that will likely trigger a CPU heavy operation.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
+    public const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
 
     /**
      * Complexity value for accessing a field that will trigger a query for every parent returned.
      *
      * @since 3.6.0
      */
-    const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
+    public const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
 
     /**
      * @var Schema|null Currently loaded schema definition
@@ -395,7 +382,7 @@ class Gql extends Component
             try {
                 $this->_schemaDef = new Schema($schemaConfig);
                 $this->_schemaDef->getTypeMap();
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
             }
         }
@@ -467,8 +454,7 @@ class Gql extends Component
         ?array $variables = null,
         ?string $operationName = null,
         bool $debugMode = false
-    ): array
-    {
+    ): array {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
             'query' => $query,
@@ -872,10 +858,10 @@ class Gql extends Component
         if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
             $data = [
                 'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
-                'enabled' => (bool)$token->enabled,
+                'enabled' => $token->enabled,
             ];
 
-            Craft::$app->getProjectConfig()->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
+            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
 
             return true;
         }
@@ -965,7 +951,7 @@ class Gql extends Component
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
 
-        $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
+        $configPath = ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid;
         $configData = $schema->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
@@ -996,7 +982,7 @@ class Gql extends Component
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
             $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? $data['scope'] : [];
+            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode($data['scope']) : [];
 
             // Save the schema record
             $schemaRecord->save(false);
@@ -1020,7 +1006,7 @@ class Gql extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1055,7 +1041,7 @@ class Gql extends Component
      */
     public function deleteSchema(GqlSchema $schema): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
         return true;
     }
 
@@ -1085,7 +1071,7 @@ class Gql extends Component
             ]);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1246,8 +1232,7 @@ class Gql extends Component
         $context,
         ?array $variables = null,
         ?string $operationName = null
-    ): ?string
-    {
+    ): ?string {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -1274,7 +1259,7 @@ class Gql extends Component
                 '::' . serialize($context) .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;
         }
@@ -1313,7 +1298,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var InterfaceType $type */
+            /** @var SingularTypeInterface $type */
             TypeLoader::registerType($type::getName(), $type . '::getType');
         }
 
@@ -1630,7 +1615,7 @@ class Gql extends Component
      */
     private function _createTokenQuery(): DbQuery
     {
-        $query = (new DbQuery())
+        return (new DbQuery())
             ->select([
                 'id',
                 'schemaId',
@@ -1643,8 +1628,6 @@ class Gql extends Component
                 'uid',
             ])
             ->from([Table::GQLTOKENS]);
-
-        return $query;
     }
 
     /**
@@ -1654,7 +1637,7 @@ class Gql extends Component
      */
     private function _createSchemaQuery(): DbQuery
     {
-        $query = (new DbQuery())
+        return (new DbQuery())
             ->select([
                 'id',
                 'name',
@@ -1663,8 +1646,6 @@ class Gql extends Component
                 'uid',
             ])
             ->from([Table::GQLSCHEMAS]);
-
-        return $query;
     }
 
     /**
@@ -1726,7 +1707,7 @@ class Gql extends Component
         }
 
         $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = (bool)$token->enabled;
+        $tokenRecord->enabled = $token->enabled;
         $tokenRecord->expiryDate = $token->expiryDate;
         $tokenRecord->lastUsed = $token->lastUsed;
         $tokenRecord->schemaId = $token->schemaId;

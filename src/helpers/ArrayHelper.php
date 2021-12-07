@@ -7,7 +7,10 @@
 
 namespace craft\helpers;
 
+use Closure;
 use Craft;
+use Illuminate\Support\Collection;
+use Traversable;
 
 /**
  * Class ArrayHelper
@@ -108,8 +111,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * Array keys are preserved by default.
      *
-     * @param array|\Traversable $array the array that needs to be indexed or grouped
-     * @param string|\Closure $key the column name or anonymous function which result will be used to index the array
+     * @param array|Traversable $array the array that needs to be indexed or grouped
+     * @param string|Closure $key the column name or anonymous function which result will be used to index the array
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
@@ -141,8 +144,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * Array keys are preserved by default.
      *
-     * @param array|\Traversable $array the array that needs to be indexed or grouped
-     * @param string|\Closure $key the column name or anonymous function which result will be used to index the array
+     * @param array|Traversable $array the array that needs to be indexed or grouped
+     * @param string|Closure $key the column name or anonymous function which result will be used to index the array
      * @param mixed[] $values the range of values that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
      * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
@@ -189,7 +192,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * ```
      *
-     * @param array|\Traversable $array the array that needs to be indexed or grouped
+     * @param array|Traversable $array the array that needs to be indexed or grouped
      * @param array $conditions An array of key/value pairs of allowed values. Values can be arrays to allow multiple values.
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return array the filtered array
@@ -228,8 +231,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns the first value in a given array where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
      *
-     * @param array|\Traversable $array the array that the value will be searched for in
-     * @param string|\Closure $key the column name or anonymous function which must be set to $value
+     * @param array|Traversable $array the array that the value will be searched for in
+     * @param string|Closure $key the column name or anonymous function which must be set to $value
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return mixed the value, or null if it can't be found
@@ -252,8 +255,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns whether the given array contains any values where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
      *
-     * @param array|\Traversable $array the array that the value will be searched for in
-     * @param string|\Closure $key the column name or anonymous function which must be set to $value
+     * @param array|Traversable $array the array that the value will be searched for in
+     * @param string|Closure $key the column name or anonymous function which must be set to $value
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return bool whether the value exists in the array
@@ -405,11 +408,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function isNumeric(array $array): bool
     {
-        foreach ($array as $val) {
-            if (!is_numeric($val)) {
-                return false;
-            }
-        }
-        return true;
+        return (new Collection($array))->every(fn($v) => is_numeric($v));
     }
 }

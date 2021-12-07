@@ -18,12 +18,14 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
+use craft\web\assets\focusvisible\FocusVisibleAsset;
 use craft\web\assets\garnish\GarnishAsset;
 use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
@@ -34,7 +36,6 @@ use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -54,6 +55,7 @@ class CpAsset extends AssetBundle
         AxiosAsset::class,
         D3Asset::class,
         ElementResizeDetectorAsset::class,
+        FocusVisibleAsset::class,
         GarnishAsset::class,
         JqueryAsset::class,
         JqueryTouchEventsAsset::class,
@@ -73,15 +75,14 @@ class CpAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'css/craft.css',
-        'css/charts.css',
+        'css/cp.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'js/Craft.min.js',
+        'cp.js',
     ];
 
     /**
@@ -98,7 +99,7 @@ class CpAsset extends AssetBundle
         // Define the Craft object
         $craftJson = Json::encode($this->_craftData(), JSON_UNESCAPED_UNICODE);
         $js = <<<JS
-window.Craft = {$craftJson};
+window.Craft = $craftJson;
 JS;
         $view->registerJs($js, View::POS_HEAD);
     }
@@ -113,6 +114,7 @@ JS;
             '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
             'Actions',
+            'Add…',
             'All',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
@@ -126,6 +128,7 @@ JS;
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
+            'Choose which user groups should have access to this source.',
             'Clear',
             'Close Preview',
             'Close',
@@ -139,6 +142,7 @@ JS;
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
+            'Delete custom source',
             'Delete folder',
             'Delete heading',
             'Delete their content',
@@ -173,7 +177,6 @@ JS;
             'From',
             'Give your tab a name.',
             'Handle',
-            'Header Column Heading',
             'Heading',
             'Hide nested sources',
             'Hide sidebar',
@@ -184,6 +187,7 @@ JS;
             'Keep both',
             'Keep me logged in',
             'Keep them',
+            'Label',
             'License transferred.',
             'Limit',
             'Loading',
@@ -193,12 +197,14 @@ JS;
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
             'More',
+            'More…',
             'Move down',
             'Move up',
             'Move',
             'Name',
             'New category',
             'New child',
+            'New custom source',
             'New entry',
             'New heading',
             'New order saved.',
@@ -222,6 +228,7 @@ JS;
             'Previous Page',
             'Really delete folder “{folder}”?',
             'Refresh',
+            'Remove {label}',
             'Remove',
             'Rename folder',
             'Rename',
@@ -269,6 +276,7 @@ JS;
             'Upload a file',
             'Upload failed for {filename}',
             'Upload files',
+            'User Groups',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your changes could not be stored.',
@@ -291,6 +299,7 @@ JS;
             '{first}-{last} of {total}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{type} Criteria',
             '{type} saved.',
             '“{name}” deleted.',
         ]);
@@ -326,11 +335,11 @@ JS;
             'actionUrl' => UrlHelper::actionUrl(),
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
-            'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
-            'announcements' => $upToDate ? $this->_announcements() : [],
+            'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
+            'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
-            'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
+            'autosaveDrafts' => $generalConfig->autosaveDrafts,
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
@@ -353,10 +362,10 @@ JS;
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
-            'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
+            'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
             'modifiedDeltaNames' => $request->getBodyParam('modifiedDeltaNames', []),
-            'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
+            'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
             'pageTrigger' => $generalConfig->getPageTrigger(),
@@ -371,7 +380,7 @@ JS;
             'registeredJsFiles' => ['' => ''], // force encode as JS object
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
-            'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
+            'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'scriptName' => basename($request->getScriptFile()),
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
@@ -383,7 +392,7 @@ JS;
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
-            'usePathInfo' => (bool)$generalConfig->usePathInfo,
+            'usePathInfo' => $generalConfig->usePathInfo,
             'username' => $currentUser->username ?? null,
         ];
 
@@ -393,11 +402,6 @@ JS;
         }
 
         return $data;
-    }
-
-    private function _announcements(): array
-    {
-        return Craft::$app->getAnnouncements()->get();
     }
 
     private function _datepickerOptions(Locale $formattingLocale, Locale $locale, ?User $currentUser, GeneralConfig $generalConfig): array

@@ -105,7 +105,7 @@ class CustomField extends BaseField
      */
     public function setFieldUid(string $uid): void
     {
-        if (($field = \Craft::$app->getFields()->getFieldByUid($uid)) === null) {
+        if (($field = Craft::$app->getFields()->getFieldByUid($uid)) === null) {
             throw new InvalidArgumentException("Invalid field UID: $uid");
         }
         $this->_field = $field;
@@ -207,12 +207,12 @@ class CustomField extends BaseField
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $view = Craft::$app->getView();
-        $registerDeltas = ($element->id ?? false) && $view->getIsDeltaRegistrationActive();
-        $view->setIsDeltaRegistrationActive(!$static);
+        $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+        $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive && ($element->id ?? false) && !$static);
         $html = $view->namespaceInputs(function() use ($element, $static) {
             return (string)parent::formHtml($element, $static);
         }, 'fields');
-        $view->setIsDeltaRegistrationActive($registerDeltas);
+        $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
         return $html;
     }
@@ -238,10 +238,23 @@ class CustomField extends BaseField
 
         $view = Craft::$app->getView();
         $view->registerDeltaName($this->_field->handle);
+
         if (empty($element->id) || $element->isFieldEmpty($this->_field->handle)) {
             $view->setInitialDeltaValue($this->_field->handle, null);
         }
-        return $this->_field->getInputHtml($value, $element);
+
+        $required = $this->_field->required;
+        $describedBy = $this->_field->describedBy;
+
+        $this->_field->required = $this->required;
+        $this->_field->describedBy = $this->describedBy($element, $static);
+
+        $html = $this->_field->getInputHtml($value, $element);
+
+        $this->_field->required = $required;
+        $this->_field->describedBy = $describedBy;
+
+        return $html;
     }
 
     /**

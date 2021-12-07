@@ -1,3 +1,5 @@
+import './pluginstore-oauth-callback.scss';
+
 (function($) {
     Craft.PluginStoreOauthCallback = Garnish.Base.extend({
         $graphic: null,

@@ -63,21 +63,17 @@ class PhpInfo extends Utility
         $envVals = [];
         $serverVals = [];
 
-        if (isset($_ENV)) {
-            foreach ($_ENV as $key => $value) {
-                if (is_array($value)) {
-                    $envVals[$key] = $value;
-                    $_ENV[$key] = 'Array';
-                }
+        foreach ($_ENV as $key => $value) {
+            if (is_array($value)) {
+                $envVals[$key] = $value;
+                $_ENV[$key] = 'Array';
             }
         }
 
-        if (isset($_SERVER)) {
-            foreach ($_SERVER as $key => $value) {
-                if (is_array($value)) {
-                    $serverVals[$key] = $value;
-                    $_SERVER[$key] = 'Array';
-                }
+        foreach ($_SERVER as $key => $value) {
+            if (is_array($value)) {
+                $serverVals[$key] = $value;
+                $_SERVER[$key] = 'Array';
             }
         }
 

@@ -7,9 +7,14 @@ Craft.CP = Garnish.Base.extend({
     authManager: null,
 
     $nav: null,
+    $navToggle: null,
+    $globalSidebar: null,
+    $globalContainer: null,
     $mainContainer: null,
     $alerts: null,
     $crumbs: null,
+    $breadcrumbList: null,
+    $breadcrumbItems: null,
     $notificationContainer: null,
     $main: null,
     $primaryForm: null,
@@ -26,7 +31,11 @@ Craft.CP = Garnish.Base.extend({
     $deltaForms: null,
     $collapsibleTables: null,
 
+    isMobile: null,
     fixedHeader: false,
+
+    breadcrumbListWidth: 0,
+    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item data-wrapper><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t('app', 'More…')}</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
 
     tabManager: null,
 
@@ -43,6 +52,8 @@ Craft.CP = Garnish.Base.extend({
     includingDetailsOnUpdatesCheck: false,
     checkForUpdatesCallbacks: null,
 
+    resizeTimeout: null,
+
     init: function() {
         // Is this session going to expire?
         if (Craft.remainingSessionTime !== 0) {
@@ -51,9 +62,14 @@ Craft.CP = Garnish.Base.extend({
 
         // Find all the key elements
         this.$nav = $('#nav');
+        this.$navToggle = $('#nav-toggle');
+        this.$globalSidebar = $('#global-sidebar');
+        this.$globalContainer = $('#global-container');
         this.$mainContainer = $('#main-container');
         this.$alerts = $('#alerts');
         this.$crumbs = $('#crumbs');
+        this.$breadcrumbList = $('.breadcrumb-list');
+        this.$breadcrumbItems = $('.breadcrumb-list li');
         this.$notificationContainer = $('#notifications');
         this.$main = $('#main');
         this.$primaryForm = $('#main-form');
@@ -65,6 +81,8 @@ Craft.CP = Garnish.Base.extend({
         this.$sidebar = $('#sidebar');
         this.$contentContainer = $('#content-container');
         this.$collapsibleTables = $('table.collapsible');
+
+        this.isMobile = Garnish.isMobileBrowser();
 
         this.updateSidebarMenuLabel();
 
@@ -81,7 +99,7 @@ Craft.CP = Garnish.Base.extend({
             $instructions.remove();
         }
 
-        if (this.$header.length) {
+        if (!this.isMobile && this.$header.length) {
             this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
             this.updateFixedHeader();
         }
@@ -92,9 +110,16 @@ Craft.CP = Garnish.Base.extend({
                 // Ignore element resizes
                 if (ev.target === window) {
                     this.handleWindowResize();
+
+                    clearTimeout(this.resizeTimeout);
+                    var cp = this;
+                    this.resizeTimeout = setTimeout(function() {
+                        cp.setSidebarNavAttributes();
+                    }, 100);
                 }
             });
             this.handleWindowResize();
+            this.setSidebarNavAttributes();
 
             // Fade the notification out two seconds after page load
             var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -114,7 +139,7 @@ Craft.CP = Garnish.Base.extend({
         }
 
         // Toggles
-        this.addListener($('#nav-toggle'), 'click', 'toggleNav');
+        this.addListener(this.$navToggle, 'click', 'toggleNav');
         this.addListener($('#sidebar-toggle'), 'click', 'toggleSidebar');
 
         // Does this page have a primary form?
@@ -194,14 +219,15 @@ Craft.CP = Garnish.Base.extend({
             this.addListener($btn, 'click', () => {
                 if (!hud) {
                     let contents = '';
-                    Craft.group(Craft.announcements, 'timestamp').forEach(([announcements, timestamp]) => {
-                        announcements.forEach((a, i) => {
-                            contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
-                                (i === 0 ? `<div class="timestamp">${a.timestamp}</div>` : '') +
-                                `<h2>${a.heading}</h2>` +
-                                `<p>${a.body}</p>` +
-                                '</div>';
-                        });
+                    Craft.announcements.forEach(a => {
+                        contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                            '<div class="announcement-label-container">' +
+                            `<div class="announcement-icon">${a.icon}</div>` +
+                            `<div class="announcement-label">${a.label}</div>` +
+                            '</div>' +
+                            `<h2>${a.heading}</h2>` +
+                            `<p>${a.body}</p>` +
+                            '</div>';
                     });
                     hud = new Garnish.HUD($btn, `<div id="announcements">${contents}</div>`, {
                         onShow: () => {
@@ -356,7 +382,58 @@ Craft.CP = Garnish.Base.extend({
     },
 
     toggleNav: function() {
-        Garnish.$bod.toggleClass('showing-nav');
+        const isExpanded = this.navIsExpanded();
+
+        if (isExpanded === null) return;
+
+        if (isExpanded) {
+            this.disableGlobalSidebarLinks();
+            this.$navToggle.focus();
+            this.$navToggle.attr('aria-expanded', 'false');
+            Garnish.$bod.removeClass('showing-nav');
+        } else {
+            this.enableGlobalSidebarLinks();
+            this.$globalSidebar.find(':focusable')[0].focus();
+            this.$navToggle.attr('aria-expanded', 'true');
+            Garnish.$bod.addClass('showing-nav');
+        }
+    },
+
+    enableGlobalSidebarLinks: function() {
+        const focusableItems = this.$globalSidebar.find(':focusable');
+        
+        $(focusableItems).each(function() {
+            $(this).attr('tabindex', '0');
+        });
+    },
+
+    disableGlobalSidebarLinks: function() {
+        const focusableItems = this.$globalSidebar.find(':focusable');
+        
+        $(focusableItems).each(function() {
+            $(this).attr('tabindex', '-1');
+        });
+    },
+
+    setSidebarNavAttributes: function() {
+        const isExpanded = this.navIsExpanded();
+
+        if (isExpanded === null) return;
+
+        if (!isExpanded) {
+            this.disableGlobalSidebarLinks();
+        } else {
+            this.enableGlobalSidebarLinks();
+        }
+    },
+
+    navIsExpanded: function() {
+        if (!this.$globalSidebar[0]) return null;
+
+        const isAlwaysVisible = getComputedStyle(this.$globalSidebar[0]).getPropertyValue('--is-always-visible').trim();
+
+        return this.$navToggle.attr('aria-expanded') === 'true'
+            || isAlwaysVisible === 'true';
     },
 
     toggleSidebar: function() {
@@ -482,6 +559,63 @@ Craft.CP = Garnish.Base.extend({
 
     handleWindowResize: function() {
         this.updateResponsiveTables();
+        this.handleBreadcrumbVisibility();
+    },
+
+    breadcrumbItemsWrap: function() {
+        if (!this.$breadcrumbItems[0]) return;
+
+        const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
+        let totalItemWidth = 0;
+        
+        // Iterate through all list items (inclusive of more button)
+        const $items = this.$breadcrumbList.find('li');
+        for (let i = 0; i < $items.length; i++) {
+            totalItemWidth += $items.get(i).getBoundingClientRect().width;
+        }
+
+        this.breadcrumbListWidth = listWidth;
+
+        return totalItemWidth > listWidth;
+    },
+
+    handleBreadcrumbVisibility: function() {
+        if (!this.breadcrumbItemsWrap()) return;
+
+        if (this.$breadcrumbList.find('[data-disclosure-item]').length === 0) {
+            this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
+        }
+
+        const triggerWidth = this.$breadcrumbList.find('[data-disclosure-item]')[0].offsetWidth;
+        let visibleItemWidth = triggerWidth;
+        let finalIndex;
+        let newWidth;
+        const listWidth = this.breadcrumbListWidth;
+
+        // Find breadcrumbs that should remain visible without overflowing
+        this.$breadcrumbItems.each(function(index) {
+            newWidth = visibleItemWidth + this.offsetWidth;
+
+            if (newWidth < listWidth) {
+                finalIndex = index;
+                visibleItemWidth += this.offsetWidth;
+            } else {
+                return false;
+            }
+        });
+
+        // Separate breadcrums that should remain visible vs. hidden
+        const shownItems = this.$breadcrumbItems.slice(0, finalIndex + 1);
+        const hiddenItems = this.$breadcrumbItems.slice(finalIndex + 1);
+        
+        // Empty list DOM and add shown items and trigger item
+        this.$breadcrumbList.html('');
+        this.$breadcrumbList.append(shownItems);
+        this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
+        
+        // Add hidden items to disclosure menu and initialize
+        this.$breadcrumbList.find('[data-disclosure-menu] ul').append(hiddenItems);
+        this.$breadcrumbList.find('[data-disclosure-trigger]').disclosureMenu();
     },
 
     updateResponsiveTables: function() {
@@ -522,6 +656,10 @@ Craft.CP = Garnish.Base.extend({
     },
 
     updateFixedHeader: function() {
+        if (this.isMobile) {
+            return;
+        }
+
         // Have we scrolled passed the top of #main?
         if (this.$main.length && this.$headerContainer[0].getBoundingClientRect().top < 0) {
             if (!this.fixedHeader) {

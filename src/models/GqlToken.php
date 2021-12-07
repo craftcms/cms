@@ -26,7 +26,7 @@ class GqlToken extends Model
     /**
      * The public access token value.
      */
-    const PUBLIC_TOKEN = '__PUBLIC__';
+    public const PUBLIC_TOKEN = '__PUBLIC__';
 
     /**
      * @var int|null ID

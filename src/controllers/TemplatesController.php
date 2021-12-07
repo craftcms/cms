@@ -11,11 +11,14 @@ use Craft;
 use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\Path;
 use craft\helpers\Template;
 use craft\web\Controller;
 use craft\web\View;
 use ErrorException;
+use RequirementsChecker;
 use yii\base\UserException;
+use yii\web\ErrorHandler;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -87,6 +90,7 @@ class TemplatesController extends Controller
                 Craft::$app->getConfig()->getGeneral()->headlessMode &&
                 $this->request->getIsSiteRequest()
             ) ||
+            !Path::ensurePathIsContained($template) || // avoid the Craft::warning() from View::_validateTemplateName()
             !$this->getView()->doesTemplateExist($template)
         ) {
             throw new NotFoundHttpException('Template not found: ' . $template);
@@ -133,7 +137,7 @@ class TemplatesController extends Controller
     public function actionRequirementsCheck(): ?Response
     {
         // Run the requirements checker
-        $reqCheck = new \RequirementsChecker();
+        $reqCheck = new RequirementsChecker();
         $dbConfig = Craft::$app->getConfig()->getDb();
         $reqCheck->dsn = $dbConfig->dsn;
         $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
@@ -174,7 +178,7 @@ class TemplatesController extends Controller
      */
     public function actionRenderError(): Response
     {
-        /** @var $errorHandler \yii\web\ErrorHandler */
+        /** @var ErrorHandler $errorHandler */
         $errorHandler = Craft::$app->getErrorHandler();
         $exception = $errorHandler->exception;
 

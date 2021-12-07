@@ -201,7 +201,7 @@ class Assets extends Component
         $asset->newFolderId = $folder->id;
 
         // If the filename hasn’t changed, then we can use the `move` scenario
-        if ($filename === '' || $filename === $asset->filename) {
+        if ($filename === '' || $filename === $asset->getFilename()) {
             $asset->setScenario(Asset::SCENARIO_MOVE);
         } else {
             $asset->newFilename = $filename;
@@ -262,14 +262,13 @@ class Assets extends Component
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new AssetOperationException(Craft::t('app',
-                'No folder exists with the ID “{id}”',
-                ['id' => $folderId]));
+            throw new AssetOperationException(Craft::t('app', 'No folder exists with the ID “{id}”', [
+                'id' => $folderId,
+            ]));
         }
 
         if (!$folder->parentId) {
-            throw new AssetOperationException(Craft::t('app',
-                'It’s not possible to rename the top folder of a Volume.'));
+            throw new AssetOperationException(Craft::t('app', 'It’s not possible to rename the top folder of a Volume.'));
         }
 
         $conflictingFolder = $this->findFolder([
@@ -278,9 +277,9 @@ class Assets extends Component
         ]);
 
         if ($conflictingFolder) {
-            throw new VolumeObjectExistsException(Craft::t('app',
-                'A folder with the name “{folderName}” already exists in the folder.',
-                ['folderName' => $folder->name]));
+            throw new VolumeObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
+                'folderName' => $folder->name,
+            ]));
         }
 
         $parentFolderPath = dirname($folder->path);
@@ -607,7 +606,7 @@ class Assets extends Component
             return $event->url;
         }
 
-        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->getFilename(), PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);
@@ -748,7 +747,7 @@ class Assets extends Component
         }
 
         $dir = Craft::$app->getPath()->getAssetThumbsPath() . DIRECTORY_SEPARATOR . $asset->id;
-        $path = $dir . DIRECTORY_SEPARATOR . "thumb-{$width}x{$height}.{$ext}";
+        $path = $dir . DIRECTORY_SEPARATOR . "thumb-{$width}x$height.$ext";
 
         if (!file_exists($path) || $asset->dateModified->getTimestamp() > filemtime($path)) {
             // Bail if we're not ready to generate it yet
@@ -810,7 +809,7 @@ class Assets extends Component
             $textSize = '14';
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($ext) . '</text>';
         $svg = str_replace('<!-- EXT -->', $textNode, $svg);
 
         FileHelper::writeToFile($path, $svg);
@@ -1048,7 +1047,7 @@ class Assets extends Component
         try {
             FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
         } catch (Exception $exception) {
-            throw new VolumeException(Craft::t('app', 'Unable to create directory for temporary volume.'));
+            throw new VolumeException('Unable to create directory for temporary volume.');
         }
 
         return $folder;

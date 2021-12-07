@@ -8,8 +8,8 @@
 namespace craft\gql\arguments\elements;
 
 use Craft;
+use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\User as UserElement;
-use craft\fields\Matrix;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
@@ -72,14 +72,12 @@ class User extends ElementArguments
     public static function getContentArguments(): array
     {
         $contentArguments = [];
+
         $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();
 
         foreach ($contentFields as $contentField) {
-            if (!$contentField instanceof Matrix) {
-                $contentArguments[$contentField->handle] = [
-                    'name' => $contentField->handle,
-                    'type' => Type::listOf(QueryArgument::getType()),
-                ];
+            if (!$contentField instanceof GqlInlineFragmentFieldInterface) {
+                $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
             }
         }
 

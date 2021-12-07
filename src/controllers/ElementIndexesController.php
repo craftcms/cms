@@ -12,6 +12,8 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
+use craft\conditions\QueryConditionInterface;
+use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
@@ -19,6 +21,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ElementHelper;
+use craft\services\ElementSources;
 use yii\base\InvalidValueException;
 use yii\db\Expression;
 use yii\web\BadRequestHttpException;
@@ -91,12 +94,15 @@ class ElementIndexesController extends BaseElementsController
         $this->context = $this->context();
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
-        $this->viewState = $this->viewState();
-        $this->elementQuery = $this->elementQuery();
 
-        if ($this->includeActions() && isset($this->sourceKey)) {
-            $this->actions = $this->availableActions();
-            $this->exporters = $this->availableExporters();
+        if ($action->id !== 'filter-hud') {
+            $this->viewState = $this->viewState();
+            $this->elementQuery = $this->elementQuery();
+
+            if ($this->includeActions() && isset($this->sourceKey)) {
+                $this->actions = $this->availableActions();
+                $this->exporters = $this->availableExporters();
+            }
         }
 
         return true;
@@ -248,6 +254,20 @@ class ElementIndexesController extends BaseElementsController
         if ($success) {
             // Send a new set of elements
             $responseData = array_merge($responseData, $this->elementResponseData(true, true));
+
+            // Send updated badge counts
+            /** @var string|ElementInterface $elementType */
+            $elementType = $this->elementType;
+            $formatter = Craft::$app->getFormatter();
+            foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
+                if (isset($source['key'])) {
+                    if (isset($source['badgeCount'])) {
+                        $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
+                    } else {
+                        $responseData['badgeCounts'][$source['key']] = null;
+                    }
+                }
+            }
         }
 
         return $this->asJson($responseData);
@@ -262,7 +282,7 @@ class ElementIndexesController extends BaseElementsController
     {
         $this->requireAcceptsJson();
 
-        $sources = Craft::$app->getElementIndexes()->getSources($this->elementType, $this->context);
+        $sources = Craft::$app->getElementSources()->getSources($this->elementType, $this->context);
 
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources', [
@@ -356,6 +376,48 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Creates a filter HUD’s contents.
+     *
+     * @since 4.0.0
+     */
+    public function actionFilterHud(): Response
+    {
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType();
+        $id = $this->request->getRequiredBodyParam('id');
+        $condition = $elementType::createCondition();
+
+        // Filter out any condition rules that touch the same query params as the source criteria
+        $source = $this->source();
+        if ($source['type'] === ElementSources::TYPE_NATIVE) {
+            $queryParams = array_keys($source['criteria'] ?? []);
+        } else {
+            /** @var QueryConditionInterface $sourceCondition */
+            $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
+            $queryParams = [];
+            foreach ($sourceCondition->getConditionRules() as $rule) {
+                /** @var QueryConditionRuleInterface $rule */
+                foreach ($rule->getExclusiveQueryParams() as $param) {
+                    $queryParams[] = $param;
+                }
+            }
+        }
+
+        $html = $condition->getBuilderHtml([
+            'mainTag' => 'div',
+            'id' => $id,
+            'queryParams' => $queryParams,
+        ]);
+
+        $view = Craft::$app->getView();
+        return $this->asJson([
+            'hudHtml' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
      * Identify whether index actions should be included in the element index
      *
      * @return bool
@@ -415,8 +477,16 @@ class ElementIndexesController extends BaseElementsController
         $query = $elementType::find();
 
         // Does the source specify any criteria attributes?
-        if (isset($this->source['criteria'])) {
-            Craft::configure($query, $this->source['criteria']);
+        switch ($this->source['type']) {
+            case ElementSources::TYPE_NATIVE:
+                if (isset($this->source['criteria'])) {
+                    Craft::configure($query, $this->source['criteria']);
+                }
+                break;
+            case ElementSources::TYPE_CUSTOM:
+                /** @var QueryConditionInterface $condition */
+                $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
+                $condition->modifyQuery($query);
         }
 
         // Override with the request's params
@@ -435,6 +505,15 @@ class ElementIndexesController extends BaseElementsController
                 }
             }
             Craft::configure($query, $criteria);
+        }
+
+        // Override with the custom filters
+        $conditionStr = $this->request->getBodyParam('condition');
+        if ($conditionStr) {
+            parse_str($conditionStr, $conditionConfig);
+            /** @var QueryConditionInterface $condition */
+            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+            $condition->modifyQuery($query);
         }
 
         // Exclude descendants of the collapsed element IDs

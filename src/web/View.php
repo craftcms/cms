@@ -17,9 +17,12 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
+use craft\web\twig\GlobalsExtension;
 use craft\web\twig\TemplateLoader;
+use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
@@ -57,42 +60,42 @@ class View extends \yii\web\View
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      */
-    const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
+    public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
      */
-    const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
+    public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
      */
-    const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
+    public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a template gets rendered
      */
-    const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
+    public const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered before a page template gets rendered
      */
-    const EVENT_BEFORE_RENDER_PAGE_TEMPLATE = 'beforeRenderPageTemplate';
+    public const EVENT_BEFORE_RENDER_PAGE_TEMPLATE = 'beforeRenderPageTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a page template gets rendered
      */
-    const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
+    public const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
 
     /**
      * @const TEMPLATE_MODE_CP
      */
-    const TEMPLATE_MODE_CP = 'cp';
+    public const TEMPLATE_MODE_CP = 'cp';
 
     /**
      * @const TEMPLATE_MODE_SITE
      */
-    const TEMPLATE_MODE_SITE = 'site';
+    public const TEMPLATE_MODE_SITE = 'site';
 
     /**
      * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.
@@ -295,6 +298,12 @@ class View extends \yii\web\View
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
 
+        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+            $twig->addExtension(new CpExtension());
+        } else {
+            $twig->addExtension(new GlobalsExtension());
+        }
+
         if (YII_DEBUG) {
             $twig->addExtension(new DebugExtension());
         }
@@ -377,22 +386,14 @@ class View extends \yii\web\View
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
 
-        $e = null;
         try {
             $output = $this->getTwig()->render($template, $variables);
-        } catch (\Throwable $e) {
-            // throw it later
-        }
-
-        $this->_renderingTemplate = $renderingTemplate;
-        $this->setTemplateMode($oldTemplateMode);
-
-        if ($e !== null) {
-            throw $e;
+        } finally {
+            $this->_renderingTemplate = $renderingTemplate;
+            $this->setTemplateMode($oldTemplateMode);
         }
 
         $this->afterRenderTemplate($template, $variables, $templateMode, $output);
-
         return $output;
     }
 
@@ -437,25 +438,17 @@ class View extends \yii\web\View
         $isRenderingPageTemplate = $this->_isRenderingPageTemplate;
         $this->_isRenderingPageTemplate = true;
 
-        $e = null;
         try {
             $this->beginPage();
             echo $this->renderTemplate($template, $variables);
             $this->endPage();
-        } catch (\Throwable $e) {
-            // throw it later
-        }
-
-        $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
-        $this->setTemplateMode($oldTemplateMode);
-        $output = ob_get_clean();
-
-        if ($e !== null) {
-            throw $e;
+        } finally {
+            $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
+            $this->setTemplateMode($oldTemplateMode);
+            $output = ob_get_clean();
         }
 
         $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
-
         return $output;
     }
 
@@ -484,22 +477,13 @@ class View extends \yii\web\View
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
-        $e = null;
         try {
-            $result = $twig->createTemplate($template)->render($variables);
-        } catch (\Throwable $e) {
-            // throw it later
+            return $twig->createTemplate($template)->render($variables);
+        } finally {
+            $this->_renderingTemplate = $lastRenderingTemplate;
+            $twig->setDefaultEscaperStrategy();
+            $this->setTemplateMode($oldTemplateMode);
         }
-
-        $this->_renderingTemplate = $lastRenderingTemplate;
-        $twig->setDefaultEscaperStrategy();
-        $this->setTemplateMode($oldTemplateMode);
-
-        if ($e !== null) {
-            throw $e;
-        }
-
-        return $result;
     }
 
     /**
@@ -519,7 +503,7 @@ class View extends \yii\web\View
      * @param string $templateMode The template mode to use.
      * @return string The rendered template.
      * @throws Exception in case of failure
-     * @throws \Throwable in case of failure
+     * @throws Throwable in case of failure
      */
     public function renderObjectTemplate(string $template, $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {
@@ -543,7 +527,6 @@ class View extends \yii\web\View
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
-        $e = null;
         try {
             // Is this the first time we've parsed this template?
             $cacheKey = md5($template);
@@ -569,7 +552,7 @@ class View extends \yii\web\View
                     if (is_int($field)) {
                         $field = $definition;
                     }
-                    if (strpos($template, $field) !== false) {
+                    if (preg_match('/\b' . preg_quote($field, '/') . '\b/', $template)) {
                         $extra[] = $field;
                     }
                 }
@@ -582,25 +565,17 @@ class View extends \yii\web\View
             // Render it!
             /** @var TwigTemplate $templateObj */
             $templateObj = $this->_objectTemplates[$cacheKey];
-            $output = $templateObj->render($variables);
-        } catch (\Throwable $e) {
-            // throw it later
+            return $templateObj->render($variables);
+        } finally {
+            $this->_renderingTemplate = $lastRenderingTemplate;
+            $twig->setDefaultEscaperStrategy();
+            $this->setTemplateMode($oldTemplateMode);
+
+            // Re-enable strict variables
+            if ($strictVariables) {
+                $twig->enableStrictVariables();
+            }
         }
-
-        $this->_renderingTemplate = $lastRenderingTemplate;
-        $twig->setDefaultEscaperStrategy();
-        $this->setTemplateMode($oldTemplateMode);
-
-        // Re-enable strict variables
-        if ($strictVariables) {
-            $twig->enableStrictVariables();
-        }
-
-        if ($e !== null) {
-            throw $e;
-        }
-
-        return $output;
     }
 
     /**
@@ -784,20 +759,11 @@ class View extends \yii\web\View
         $oldTemplateMode = $this->getTemplateMode();
         $this->setTemplateMode($templateMode);
 
-        $e = null;
         try {
-            $path = $this->_resolveTemplateInternal($name);
-        } catch (\Throwable $e) {
-            // throw it later
+            return $this->_resolveTemplateInternal($name);
+        } finally {
+            $this->setTemplateMode($oldTemplateMode);
         }
-
-        $this->setTemplateMode($oldTemplateMode);
-
-        if ($e !== null) {
-            throw $e;
-        }
-
-        return $path;
     }
 
     /**
@@ -1170,7 +1136,7 @@ class View extends \yii\web\View
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$jsCategory}][{$jsMessage}] = {$jsTranslation};";
+                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[$jsCategory][$jsMessage] = $jsTranslation;";
             }
         }
 
@@ -1179,10 +1145,10 @@ class View extends \yii\web\View
         }
 
         $js = <<<JS
-if (typeof Craft.translations[{$jsCategory}] === 'undefined') {
-    Craft.translations[{$jsCategory}] = {};
+if (typeof Craft.translations[$jsCategory] === 'undefined') {
+    Craft.translations[$jsCategory] = {};
 }
-{$js}
+$js
 JS;
 
         $this->registerJs($js, self::POS_BEGIN);
@@ -1878,7 +1844,7 @@ JS;
         }
 
         if (Path::ensurePathIsContained($name) === false) {
-            Craft::error('Someone tried to load a template outside the templates folder: ' . $name);
+            Craft::warning('Someone tried to load a template outside the templates folder: ' . $name);
             throw new TwigLoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
         }
     }
@@ -2009,7 +1975,9 @@ JS;
         foreach (array_keys($names) as $name) {
             if ($name) {
                 $jsName = Json::encode(str_replace(['<', '>'], '', $name));
-                $js .= "  Craft.{$property}[{$jsName}] = true;\n";
+                // WARNING: the curly braces are needed here no matter what PhpStorm thinks
+                // https://youtrack.jetbrains.com/issue/WI-60044
+                $js .= "  Craft.{$property}[$jsName] = true;\n";
             }
         }
         $js .= '}';
@@ -2022,7 +1990,7 @@ JS;
      * @param array $context
      * @return string|null
      */
-    private function _getCpElementHtml(array &$context): ?string
+    private function _getCpElementHtml(array $context): ?string
     {
         if (!isset($context['element'])) {
             return null;

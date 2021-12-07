@@ -50,11 +50,6 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Determines which site should be selected when querying multi-site elements.',
             ],
-            'enabledForSite' => [
-                'name' => 'enabledForSite',
-                'type' => Type::boolean(),
-                'description' => 'Narrows the query results based on whether the elements are enabled in the site they’re being queried in, per the `site` argument.',
-            ],
             'title' => [
                 'name' => 'title',
                 'type' => Type::listOf(Type::string()),
@@ -209,7 +204,7 @@ abstract class ElementArguments extends Arguments
             'draftOf' => [
                 'name' => 'draftOf',
                 'type' => QueryArgument::getType(),
-                'description' => 'The source element ID that drafts should be returned for. Set to `false` to fetch unpublished drafts.',
+                'description' => 'Narrows the query results to only drafts of a given element.  Set to `false` to fetch unpublished drafts.',
             ],
             'draftId' => [
                 'name' => 'draftId',
@@ -224,7 +219,7 @@ abstract class ElementArguments extends Arguments
             'provisionalDrafts' => [
                 'name' => 'provisionalDrafts',
                 'type' => Type::boolean(),
-                'description' => 'Whether provisional drafts should be returned.'
+                'description' => 'Whether provisional drafts should be returned.',
             ],
         ];
     }

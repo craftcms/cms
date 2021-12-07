@@ -9,7 +9,6 @@ namespace craft\base;
 
 use craft\errors\ImageException;
 use craft\helpers\Image as ImageHelper;
-use craft\image\Svg;
 use yii\base\BaseObject;
 
 /**

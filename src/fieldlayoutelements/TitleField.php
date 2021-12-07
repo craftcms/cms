@@ -16,7 +16,7 @@ use craft\base\ElementInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class TitleField extends StandardTextField
+class TitleField extends TextField
 {
     /**
      * @inheritdoc

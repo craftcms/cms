@@ -85,7 +85,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: true,
         validateSelection: function(\$selectedItems)
         {
@@ -110,12 +110,12 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
                         contentSummary: response,
                         onSubmit: function()
                         {
-                            Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
+                            Craft.elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
                             modal.hide();
         
                             return false;
                         },
-                        redirect: {$redirect}
+                        redirect: $redirect
                     });                    
                 }
             });

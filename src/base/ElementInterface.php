@@ -7,10 +7,13 @@
 
 namespace craft\base;
 
+use craft\behaviors\CustomFieldBehavior;
+use craft\conditions\QueryConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use Twig\Markup;
 
 
@@ -19,7 +22,7 @@ use Twig\Markup;
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
  * @mixin ElementTrait
- * @mixin \craft\behaviors\CustomFieldBehavior
+ * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -226,6 +229,14 @@ interface ElementInterface extends ComponentInterface
     public static function findAll($criteria = null): array;
 
     /**
+     * Returns an element query condition for the element type.
+     *
+     * @return QueryConditionInterface
+     * @since 4.0.0
+     */
+    public static function createCondition(): QueryConditionInterface;
+
+    /**
      * Returns all of the possible statuses that elements of this type may have.
      *
      * This method will be called when populating the Status menu on element indexes, for element types whose
@@ -234,7 +245,8 @@ interface ElementInterface extends ComponentInterface
      * It should return an array whose keys are the status values, and values are the human-facing status labels, or an array
      * with the following keys:
      * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color (green, orange, red, yellow, pink, purple, blue, turquoise, light, grey, black, or white)
+     * - **`color`** – The status color. Possible values include `green`, `orange`, `red`, `yellow`, `pink`, `purple`, `blue`,
+     *   `turquoise`, `light`, `grey`, `black`, and `white`.
      * You can customize the database query condition that should be applied for your custom statuses from
      * [[\craft\elements\db\ElementQuery::statusCondition()]].
      *
@@ -251,24 +263,26 @@ interface ElementInterface extends ComponentInterface
      * Each item in the array should be set to an array that has the following keys:
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
-     * - **`label`** – The human-facing label of the source.
+     * - **`label`** – The human-facing label of the source.
+     * - **`status`** – The status color that should be shown beside the source label. Possible values include `green`,
+     *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
      * - **`sites`** – An array of site IDs that the source should be shown for, on multi-site element indexes. (Optional;
      *   by default the source will be shown for all sites.)
-     * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
+     * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
      *   (Optional)
-     * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
+     * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
      *   HTML, where each key is the name of the attribute (without the “data-” prefix), and each value is the value of
      *   the attribute. (Optional)
-     * - **`defaultSort`** – A string identifying the sort attribute that should be selected by default, or an array where
+     * - **`defaultSort`** – A string identifying the sort attribute that should be selected by default, or an array where
      *   the first value identifies the sort attribute, and the second determines which direction to sort by. (Optional)
-     * - **`hasThumbs`** – A bool that defines whether this source supports Thumbs View. (Use your element’s
+     * - **`hasThumbs`** – A bool that defines whether this source supports Thumbs View. (Use your element’s
      *   [[getThumbUrl()]] method to define your elements’ thumb URL.) (Optional)
-     * - **`structureId`** – The ID of the Structure that contains the elements in this source. If set, Structure View
+     * - **`structureId`** – The ID of the Structure that contains the elements in this source. If set, Structure View
      *   will be available to this source. (Optional)
-     * - **`newChildUrl`** – The URL that should be loaded when a user selects the “New child” menu option on an
+     * - **`newChildUrl`** – The URL that should be loaded when a user selects the “New child” menu option on an
      *   element in this source while it is in Structure View. (Optional)
-     * - **`nested`** – An array of sources that are nested within this one. Each nested source can have the same keys
+     * - **`nested`** – An array of sources that are nested within this one. Each nested source can have the same keys
      *   as top-level sources.
      *
      * ::: tip
@@ -276,10 +290,10 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string|null $context The context ('index' or 'modal').
+     * @param string $context The context ('index', 'modal', or 'settings').
      * @return array The sources.
      */
-    public static function sources(?string $context = null): array;
+    public static function sources(string $context): array;
 
     /**
      * Returns all of the field layouts associated with elements from the given source.
@@ -416,11 +430,6 @@ interface ElementInterface extends ComponentInterface
      *
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
-     *
-     * The first item in the array will determine the first table column’s header (and which
-     * [[\craft\base\ElementInterface::sortOptions()|sort option]] it should be mapped to, if any), however it
-     * doesn’t have any effect on the table body, because the first column is reserved for displaying whatever
-     * the elements’ [[\craft\base\ElementInterface::getUiLabel()|getUiLabel()]] methods return.
      *
      * @return array The table attributes.
      */
@@ -559,7 +568,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the canonical version of the element.
      *
-     * If this is a draft or revision, the source element will be returned.
+     * If this is a draft or revision, the canonical element will be returned.
      *
      * @param bool $anySite Whether the canonical element can be retrieved in any site
      * @return static
@@ -578,7 +587,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s canonical ID.
      *
-     * If this is a draft or revision, the source element’s ID will be returned.
+     * If this is a draft or revision, the canonical element’s ID will be returned.
      *
      * @return int|null
      * @since 3.7.0
@@ -594,6 +603,16 @@ interface ElementInterface extends ComponentInterface
     public function setCanonicalId(?int $canonicalId): void;
 
     /**
+     * Returns the element’s canonical UUID.
+     *
+     * If this is a draft or revision, the canonical element’s UUID will be returned.
+     *
+     * @return string|null
+     * @since 3.7.11
+     */
+    public function getCanonicalUid(): ?string;
+
+    /**
      * Returns whether the element is an unpublished draft.
      *
      * @return bool
@@ -602,7 +621,7 @@ interface ElementInterface extends ComponentInterface
     public function getIsUnpublishedDraft(): bool;
 
     /**
-     * Merges changes from a given canonical element into this one.
+     * Merges changes from the canonical element into this one.
      *
      * @see \craft\services\Elements::mergeCanonicalChanges()
      * @since 3.7.0
@@ -1173,19 +1192,21 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the field handles that have changed for this element.
      *
+     * @param bool $anySite Whether to check for fields that have changed across any site
      * @return string[]
      * @since 3.7.0
      */
-    public function getModifiedFields(): array;
+    public function getModifiedFields(bool $anySite = false): array;
 
     /**
      * Returns whether a field value has changed for this element.
      *
      * @param string $fieldHandle
+     * @param bool $anySite Whether to check if the field has changed across any site
      * @return bool
      * @since 3.7.0
      */
-    public function isFieldModified(string $fieldHandle): bool;
+    public function isFieldModified(string $fieldHandle, bool $anySite = false): bool;
 
     /**
      * Returns whether a custom field value has changed since the element was first loaded.
@@ -1280,9 +1301,9 @@ interface ElementInterface extends ComponentInterface
      * Returns the eager-loaded elements for a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
-     * @return ElementInterface[]|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     * @return Collection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
-    public function getEagerLoadedElements(string $handle): ?array;
+    public function getEagerLoadedElements(string $handle): ?Collection;
 
     /**
      * Sets some eager-loaded elements on a given handle.
@@ -1311,11 +1332,20 @@ interface ElementInterface extends ComponentInterface
     public function setEagerLoadedElementCount(string $handle, int $count): void;
 
     /**
-     * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
+     * Returns whether the element is "fresh" (not yet explicitly saved, and without validation errors).
      *
-     * @return bool Whether the element’s content is fresh
+     * @return bool
+     * @since 3.7.14
      */
-    public function getHasFreshContent(): bool;
+    public function getIsFresh(): bool;
+
+    /**
+     * Sets whether the element is "fresh" (not yet explicitly saved, and without validation errors).
+     *
+     * @param bool $isFresh
+     * @since 3.7.14
+     */
+    public function setIsFresh(bool $isFresh = true): void;
 
     /**
      * Sets the revision creator ID to be saved.

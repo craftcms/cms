@@ -32,6 +32,8 @@ Craft.PasswordInput = Garnish.Base.extend({
         this.initInputFocusEvents(this.$passwordInput);
         this.addListener(this.$showPasswordToggle, 'click', 'onClick');
         this.hidePassword();
+
+        this.addListener(this.$passwordWrapper.closest('form'), 'submit', 'hidePassword');
     },
 
     setCurrentInput: function($input) {
@@ -70,7 +72,10 @@ Craft.PasswordInput = Garnish.Base.extend({
 
         if (!this.$textInput) {
             this.$textInput = this.$passwordInput.clone(true);
-            this.$textInput.attr('type', 'text');
+            this.$textInput.attr({
+                type: 'text',
+                autocapitalize: 'off',
+            });
             this.initInputFocusEvents(this.$textInput);
         }
 

@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\RelationalFieldConditionRule;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
@@ -32,8 +33,11 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
+use craft\services\ElementSources;
 use craft\validators\ArrayValidator;
+use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -50,7 +54,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
      * @since 3.4.16
      */
-    const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+    public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
     /**
      * @inheritdoc
@@ -320,7 +324,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             /** @var Element $related */
             if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
-                    $element->addModelErrors($related, "{$this->handle}[{$i}]");
+                    $element->addModelErrors($related, "$this->handle[$i]");
                     $errorCount++;
                 }
             }
@@ -457,6 +461,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function getQueryConditionRuleType()
+    {
+        return [
+            'class' => RelationalFieldConditionRule::class,
+            'elementType' => static::elementType(),
+            'sources' => (array)$this->inputSources(),
+            'criteria' => $this->inputSelectionCriteria(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         if (empty($value)) {
@@ -531,6 +548,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         $criteria = [
+            'drafts' => null,
             'status' => null,
         ];
 
@@ -600,7 +618,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $view = Craft::$app->getView();
         $id = Html::id($this->handle);
-        $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
+        $html = "<div id='$id' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
             $html .= Cp::elementHtml($relatedElement);
@@ -610,7 +628,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $nsId = $view->namespaceInputId($id);
         $js = <<<JS
-(new Craft.ElementThumbLoader()).load($('#{$nsId}'));
+(new Craft.ElementThumbLoader()).load($('#$nsId'));
 JS;
         $view->registerJs($js);
 
@@ -632,13 +650,13 @@ JS;
     /**
      * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param ElementInterface[] $elements
+     * @param Collection $elements
      * @return string
      * @since 3.6.3
      */
-    protected function tableAttributeHtml(array $elements): string
+    protected function tableAttributeHtml(Collection $elements): string
     {
-        return Cp::elementPreviewHtml($elements);
+        return Cp::elementPreviewHtml($elements->all());
     }
 
     /**
@@ -757,7 +775,7 @@ JS;
                 $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
-                    $timestamp = Db::prepareDateForDb(new \DateTime());
+                    $timestamp = Db::prepareDateForDb(new DateTime());
 
                     foreach ($siteIds as $siteId) {
                         Db::upsert(DbTable::CHANGEDFIELDS, [
@@ -783,23 +801,11 @@ JS;
      */
     public function getSourceOptions(): array
     {
-        $options = [];
-        $optionNames = [];
-
-        foreach ($this->availableSources() as $source) {
-            // Make sure it's not a heading
-            if (!isset($source['heading'])) {
-                $options[] = [
-                    'label' => $source['label'],
-                    'value' => $source['key'],
-                ];
-                $optionNames[] = $source['label'];
-            }
-        }
-
-        // Sort alphabetically
-        array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
-
+        $options = array_map(
+            fn($s) => ['label' => $s['label'], 'value' => $s['key']],
+            $this->availableSources()
+        );
+        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
         return $options;
     }
 
@@ -892,6 +898,14 @@ JS;
     }
 
     /**
+     * @inheritdoc
+     */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
      * Returns an array of variables that should be passed to the settings template.
      *
      * @return array
@@ -919,9 +933,7 @@ JS;
     protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
     {
         if ($value instanceof ElementQueryInterface) {
-            $value = $value
-                ->status(null)
-                ->all();
+            $value = $value->all();
         } else if (!is_array($value)) {
             $value = [];
         }
@@ -964,12 +976,13 @@ JS;
             'id' => Html::id($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'elements' => $value,
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
-            'allowSelfRelations' => (bool)$this->allowSelfRelations,
+            'allowSelfRelations' => $this->allowSelfRelations,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->limit : null,
@@ -1080,7 +1093,10 @@ JS;
      */
     protected function availableSources(): array
     {
-        return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
+        return ArrayHelper::where(
+            Craft::$app->getElementSources()->getSources(static::elementType(), 'modal'),
+            fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
+        );
     }
 
     /**
@@ -1094,8 +1110,9 @@ JS;
     {
         $clone = clone $query;
         $clone
+            ->drafts(null)
             ->status(null)
-            ->siteId('*')
+            ->site('*')
             ->limit(null)
             ->unique();
         if ($element !== null) {

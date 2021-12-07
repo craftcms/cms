@@ -61,12 +61,12 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
         $typeName = CategoryElement::gqlTypeNameByContext($context);
         $contentFieldGqlTypes = self::getContentFields($context);
 
-        $categoryGroupFields = TypeManager::prepareFieldDefinitions(array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+        $categoryGroupFields = array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Category([
             'name' => $typeName,
-            'fields' => function() use ($categoryGroupFields) {
-                return $categoryGroupFields;
+            'fields' => function() use ($categoryGroupFields, $typeName) {
+                return TypeManager::prepareFieldDefinitions($categoryGroupFields, $typeName);
             },
         ]));
     }

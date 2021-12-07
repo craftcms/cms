@@ -1,0 +1,294 @@
+{% import "_includes/forms" as forms %}
+
+{% set decimals = not field.getErrors('decimals') ? field.decimals : null %}
+
+{% macro numberField(config, decimals) %}
+    {% from '_includes/forms' import textField %}
+    {# Only format the value if it isn’t going to be misrepresented #}
+    {% if not craft.app.formatter.willBeMisrepresented(config.value) %}
+        {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+        {% set config = config|merge({
+            name: "#{config.name}[value]",
+            value: config.value|number(decimals),
+        }) %}
+    {% endif %}
+    {{ textField(config) }}
+{% endmacro %}
+
+{{ _self.numberField({
+    label: "Default Value"|t('app'),
+    id: 'defaultValue',
+    name: 'defaultValue',
+    value: field.defaultValue,
+    size: 5,
+    errors: field.getErrors('defaultValue')
+}, decimals) }}
+
+{{ _self.numberField({
+    label: "Min Value"|t('app'),
+    id: 'min',
+    name: 'min',
+    value: field.min,
+    size: 5,
+    errors: field.getErrors('min')
+}, decimals) }}
+
+{{ _self.numberField({
+    label: "Max Value"|t('app'),
+    id: 'max',
+    name: 'max',
+    value: field.max,
+    size: 5,
+    errors: field.getErrors('max')
+}, decimals) }}
+
+{{ forms.textField({
+    label: "Decimal Points"|t('app'),
+    id: 'decimals',
+    name: 'decimals',
+    value: field.decimals,
+    size: 1,
+    errors: field.getErrors('decimals')
+}) }}
+
+{{ forms.textField({
+    label: "Size"|t('app'),
+    id: 'size',
+    name: 'size',
+    value: field.size,
+    size: 2,
+    errors: field.getErrors('size')
+}) }}
+
+{{ forms.textField({
+    label: "Prefix Text"|t('app'),
+    instructions: "Text that should be shown before the input."|t('app'),
+    id: 'prefix',
+    name: 'prefix',
+    value: field.prefix,
+    errors: field.getErrors('prefix')
+}) }}
+
+{{ forms.textField({
+    label: "Suffix Text"|t('app'),
+    instructions: "Text that should be shown after the input."|t('app'),
+    id: 'suffix',
+    name: 'suffix',
+    value: field.suffix,
+    errors: field.getErrors('suffix')
+}) }}
+
+{% set previewFormatInput %}
+    <div class="flex">
+        {{ forms.select({
+            id: 'preview-format',
+            name: 'previewFormat',
+            options: [
+                {label: 'As decimal numbers'|t('app'), value: 'decimal'},
+                {label: 'As currency values'|t('app'), value: 'currency'},
+                {label: 'Unformatted'|t('app'), value: 'none'},
+            ],
+            value: field.previewFormat,
+            toggle: true,
+            targetPrefix: 'preview-format-',
+        }) }}
+        <div id="preview-format-currency"{% if field.previewFormat != 'currency' %} class="hidden"{% endif %}>
+            {{ forms.select({
+                id: 'preview-currency',
+                name: 'previewCurrency',
+                size: 3,
+                options: [
+                    {label: 'Choose a currency…'|t('app'), value: ''},
+                    {label: 'AED', value: 'AED'},
+                    {label: 'AFN', value: 'AFN'},
+                    {label: 'ALL', value: 'ALL'},
+                    {label: 'AMD', value: 'AMD'},
+                    {label: 'ANG', value: 'ANG'},
+                    {label: 'AOA', value: 'AOA'},
+                    {label: 'ARS', value: 'ARS'},
+                    {label: 'AUD', value: 'AUD'},
+                    {label: 'AWG', value: 'AWG'},
+                    {label: 'AZN', value: 'AZN'},
+                    {label: 'BAM', value: 'BAM'},
+                    {label: 'BBD', value: 'BBD'},
+                    {label: 'BDT', value: 'BDT'},
+                    {label: 'BGN', value: 'BGN'},
+                    {label: 'BHD', value: 'BHD'},
+                    {label: 'BIF', value: 'BIF'},
+                    {label: 'BMD', value: 'BMD'},
+                    {label: 'BND', value: 'BND'},
+                    {label: 'BOB', value: 'BOB'},
+                    {label: 'BOV', value: 'BOV'},
+                    {label: 'BRL', value: 'BRL'},
+                    {label: 'BSD', value: 'BSD'},
+                    {label: 'BTN', value: 'BTN'},
+                    {label: 'BWP', value: 'BWP'},
+                    {label: 'BYN', value: 'BYN'},
+                    {label: 'BYR', value: 'BYR'},
+                    {label: 'BZD', value: 'BZD'},
+                    {label: 'CAD', value: 'CAD'},
+                    {label: 'CDF', value: 'CDF'},
+                    {label: 'CHE', value: 'CHE'},
+                    {label: 'CHF', value: 'CHF'},
+                    {label: 'CHW', value: 'CHW'},
+                    {label: 'CLF', value: 'CLF'},
+                    {label: 'CLP', value: 'CLP'},
+                    {label: 'CNY', value: 'CNY'},
+                    {label: 'COP', value: 'COP'},
+                    {label: 'COU', value: 'COU'},
+                    {label: 'CRC', value: 'CRC'},
+                    {label: 'CUC', value: 'CUC'},
+                    {label: 'CUP', value: 'CUP'},
+                    {label: 'CVE', value: 'CVE'},
+                    {label: 'CZK', value: 'CZK'},
+                    {label: 'DJF', value: 'DJF'},
+                    {label: 'DKK', value: 'DKK'},
+                    {label: 'DOP', value: 'DOP'},
+                    {label: 'DZD', value: 'DZD'},
+                    {label: 'EGP', value: 'EGP'},
+                    {label: 'ERN', value: 'ERN'},
+                    {label: 'ETB', value: 'ETB'},
+                    {label: 'EUR', value: 'EUR'},
+                    {label: 'FJD', value: 'FJD'},
+                    {label: 'FKP', value: 'FKP'},
+                    {label: 'GBP', value: 'GBP'},
+                    {label: 'GEL', value: 'GEL'},
+                    {label: 'GHS', value: 'GHS'},
+                    {label: 'GIP', value: 'GIP'},
+                    {label: 'GMD', value: 'GMD'},
+                    {label: 'GNF', value: 'GNF'},
+                    {label: 'GTQ', value: 'GTQ'},
+                    {label: 'GYD', value: 'GYD'},
+                    {label: 'HKD', value: 'HKD'},
+                    {label: 'HNL', value: 'HNL'},
+                    {label: 'HRK', value: 'HRK'},
+                    {label: 'HTG', value: 'HTG'},
+                    {label: 'HUF', value: 'HUF'},
+                    {label: 'IDR', value: 'IDR'},
+                    {label: 'ILS', value: 'ILS'},
+                    {label: 'INR', value: 'INR'},
+                    {label: 'IQD', value: 'IQD'},
+                    {label: 'IRR', value: 'IRR'},
+                    {label: 'ISK', value: 'ISK'},
+                    {label: 'JMD', value: 'JMD'},
+                    {label: 'JOD', value: 'JOD'},
+                    {label: 'JPY', value: 'JPY'},
+                    {label: 'KES', value: 'KES'},
+                    {label: 'KGS', value: 'KGS'},
+                    {label: 'KHR', value: 'KHR'},
+                    {label: 'KMF', value: 'KMF'},
+                    {label: 'KPW', value: 'KPW'},
+                    {label: 'KRW', value: 'KRW'},
+                    {label: 'KWD', value: 'KWD'},
+                    {label: 'KYD', value: 'KYD'},
+                    {label: 'KZT', value: 'KZT'},
+                    {label: 'LAK', value: 'LAK'},
+                    {label: 'LBP', value: 'LBP'},
+                    {label: 'LKR', value: 'LKR'},
+                    {label: 'LRD', value: 'LRD'},
+                    {label: 'LSL', value: 'LSL'},
+                    {label: 'LYD', value: 'LYD'},
+                    {label: 'MAD', value: 'MAD'},
+                    {label: 'MDL', value: 'MDL'},
+                    {label: 'MGA', value: 'MGA'},
+                    {label: 'MKD', value: 'MKD'},
+                    {label: 'MMK', value: 'MMK'},
+                    {label: 'MNT', value: 'MNT'},
+                    {label: 'MOP', value: 'MOP'},
+                    {label: 'MRO', value: 'MRO'},
+                    {label: 'MUR', value: 'MUR'},
+                    {label: 'MVR', value: 'MVR'},
+                    {label: 'MWK', value: 'MWK'},
+                    {label: 'MXN', value: 'MXN'},
+                    {label: 'MXV', value: 'MXV'},
+                    {label: 'MYR', value: 'MYR'},
+                    {label: 'MZN', value: 'MZN'},
+                    {label: 'NAD', value: 'NAD'},
+                    {label: 'NGN', value: 'NGN'},
+                    {label: 'NIO', value: 'NIO'},
+                    {label: 'NOK', value: 'NOK'},
+                    {label: 'NPR', value: 'NPR'},
+                    {label: 'NZD', value: 'NZD'},
+                    {label: 'OMR', value: 'OMR'},
+                    {label: 'PAB', value: 'PAB'},
+                    {label: 'PEN', value: 'PEN'},
+                    {label: 'PGK', value: 'PGK'},
+                    {label: 'PHP', value: 'PHP'},
+                    {label: 'PKR', value: 'PKR'},
+                    {label: 'PLN', value: 'PLN'},
+                    {label: 'PYG', value: 'PYG'},
+                    {label: 'QAR', value: 'QAR'},
+                    {label: 'RON', value: 'RON'},
+                    {label: 'RSD', value: 'RSD'},
+                    {label: 'RUB', value: 'RUB'},
+                    {label: 'RWF', value: 'RWF'},
+                    {label: 'SAR', value: 'SAR'},
+                    {label: 'SBD', value: 'SBD'},
+                    {label: 'SCR', value: 'SCR'},
+                    {label: 'SDG', value: 'SDG'},
+                    {label: 'SEK', value: 'SEK'},
+                    {label: 'SGD', value: 'SGD'},
+                    {label: 'SHP', value: 'SHP'},
+                    {label: 'SLL', value: 'SLL'},
+                    {label: 'SOS', value: 'SOS'},
+                    {label: 'SRD', value: 'SRD'},
+                    {label: 'SSP', value: 'SSP'},
+                    {label: 'STD', value: 'STD'},
+                    {label: 'SVC', value: 'SVC'},
+                    {label: 'SYP', value: 'SYP'},
+                    {label: 'SZL', value: 'SZL'},
+                    {label: 'THB', value: 'THB'},
+                    {label: 'TJS', value: 'TJS'},
+                    {label: 'TMT', value: 'TMT'},
+                    {label: 'TND', value: 'TND'},
+                    {label: 'TOP', value: 'TOP'},
+                    {label: 'TRY', value: 'TRY'},
+                    {label: 'TTD', value: 'TTD'},
+                    {label: 'TWD', value: 'TWD'},
+                    {label: 'TZS', value: 'TZS'},
+                    {label: 'UAH', value: 'UAH'},
+                    {label: 'UGX', value: 'UGX'},
+                    {label: 'USD', value: 'USD'},
+                    {label: 'USN', value: 'USN'},
+                    {label: 'UYI', value: 'UYI'},
+                    {label: 'UYU', value: 'UYU'},
+                    {label: 'UZS', value: 'UZS'},
+                    {label: 'VEF', value: 'VEF'},
+                    {label: 'VND', value: 'VND'},
+                    {label: 'VUV', value: 'VUV'},
+                    {label: 'WST', value: 'WST'},
+                    {label: 'XAF', value: 'XAF'},
+                    {label: 'XAG', value: 'XAG'},
+                    {label: 'XAU', value: 'XAU'},
+                    {label: 'XBA', value: 'XBA'},
+                    {label: 'XBB', value: 'XBB'},
+                    {label: 'XBC', value: 'XBC'},
+                    {label: 'XBD', value: 'XBD'},
+                    {label: 'XCD', value: 'XCD'},
+                    {label: 'XDR', value: 'XDR'},
+                    {label: 'XOF', value: 'XOF'},
+                    {label: 'XPD', value: 'XPD'},
+                    {label: 'XPF', value: 'XPF'},
+                    {label: 'XPT', value: 'XPT'},
+                    {label: 'XSU', value: 'XSU'},
+                    {label: 'XTS', value: 'XTS'},
+                    {label: 'XUA', value: 'XUA'},
+                    {label: 'YER', value: 'YER'},
+                    {label: 'ZAR', value: 'ZAR'},
+                    {label: 'ZMW', value: 'ZMW'},
+                    {label: 'ZWL', value: 'ZWL'},
+                ],
+                value: field.previewCurrency,
+            }) }}
+        </div>
+    </div>
+{% endset %}
+
+<hr>
+
+{{ forms.field({
+    id: 'preview-format',
+    label: 'Preview Format'|t('app'),
+    instructions: 'How field values will be formatted within element indexes.'|t('app'),
+    errors: field.getErrors('previewFormat')|merge(field.getErrors('previewCurrency')),
+}, previewFormatInput) }}

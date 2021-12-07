@@ -71,9 +71,7 @@ class AssetManager extends \yii\web\AssetManager
                 'hash' => $hash,
                 'path' => $alias,
             ], true, [], false);
-        } catch (DbException $e) {
-            // Craft is either not installed or not updated to 3.0.3+ yet
-        } catch (DbConnectException $e) {
+        } catch (DbException | DbConnectException $e) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         }
 

@@ -25,9 +25,9 @@ use craft\models\CategoryGroup;
 use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
-use craft\services\Plugins;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -143,7 +143,6 @@ class Install extends Migration
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ASSETTRANSFORMINDEX, [
@@ -184,7 +183,6 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::CATEGORYGROUPS, [
@@ -254,7 +252,7 @@ class Install extends Migration
             'file' => $this->string()->notNull(),
             'line' => $this->smallInteger()->unsigned(),
             'message' => $this->text(),
-            'traces' => $this->json(),
+            'traces' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -269,14 +267,6 @@ class Install extends Migration
             'trackChanges' => $this->boolean()->notNull()->defaultValue(false),
             'dateLastMerged' => $this->dateTime(),
             'saved' => $this->boolean()->notNull()->defaultValue(true),
-        ]);
-        $this->createTable(Table::ELEMENTINDEXSETTINGS, [
-            'id' => $this->primaryKey(),
-            'type' => $this->string()->notNull(),
-            'settings' => $this->json(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
         ]);
         $this->createTable(Table::ELEMENTS, [
             'id' => $this->primaryKey(),
@@ -342,7 +332,6 @@ class Install extends Migration
             'deletedWithEntryType' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ENTRYTYPES, [
@@ -392,7 +381,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'layoutId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
-            'elements' => $this->json(),
+            'elements' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -410,7 +399,7 @@ class Install extends Migration
             'translationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->text(),
             'type' => $this->string()->notNull(),
-            'settings' => $this->json(),
+            'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -440,7 +429,7 @@ class Install extends Migration
         $this->createTable(Table::GQLSCHEMAS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
-            'scope' => $this->json(),
+            'scope' => $this->text(),
             'isPublic' => $this->boolean()->notNull()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -466,7 +455,6 @@ class Install extends Migration
             'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::MATRIXBLOCKTYPES, [
@@ -551,7 +539,7 @@ class Install extends Migration
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
             'propagationMethod' => $this->string()->defaultValue(Section::PROPAGATION_METHOD_ALL)->notNull(),
             'defaultPlacement' => $this->enum('defaultPlacement', [Section::DEFAULT_PLACEMENT_BEGINNING, Section::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
-            'previewTargets' => $this->json(),
+            'previewTargets' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
@@ -646,13 +634,12 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::TOKENS, [
             'id' => $this->primaryKey(),
             'token' => $this->char(32)->notNull(),
-            'route' => $this->json(),
+            'route' => $this->text(),
             'usageLimit' => $this->tinyInteger()->unsigned(),
             'usageCount' => $this->tinyInteger()->unsigned(),
             'expiryDate' => $this->dateTime()->notNull(),
@@ -702,20 +689,21 @@ class Install extends Migration
         ]);
         $this->createTable(Table::USERPREFERENCES, [
             'userId' => $this->primaryKey(),
-            'preferences' => $this->json(),
+            'preferences' => $this->text(),
         ]);
         $this->createTable(Table::USERS, [
             'id' => $this->integer()->notNull(),
-            'username' => $this->string(100)->notNull(),
             'photoId' => $this->integer(),
-            'firstName' => $this->string(100),
-            'lastName' => $this->string(100),
-            'email' => $this->string()->notNull(),
-            'password' => $this->string(),
-            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'active' => $this->boolean()->defaultValue(false)->notNull(),
+            'pending' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
-            'pending' => $this->boolean()->defaultValue(false)->notNull(),
+            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'username' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
+            'email' => $this->string(),
+            'password' => $this->string(),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
@@ -730,7 +718,6 @@ class Install extends Migration
             'lastPasswordChangeDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::VOLUMEFOLDERS, [
@@ -753,7 +740,7 @@ class Install extends Migration
             'url' => $this->string(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
-            'settings' => $this->json(),
+            'settings' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -766,7 +753,7 @@ class Install extends Migration
             'type' => $this->string()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'colspan' => $this->tinyInteger(),
-            'settings' => $this->json(),
+            'settings' => $this->text(),
             'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -805,13 +792,12 @@ class Install extends Migration
         $this->createIndex(null, Table::DEPRECATIONERRORS, ['key', 'fingerprint'], true);
         $this->createIndex(null, Table::DRAFTS, ['creatorId', 'provisional'], false);
         $this->createIndex(null, Table::DRAFTS, ['saved'], false);
-        $this->createIndex(null, Table::ELEMENTINDEXSETTINGS, ['type'], true);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
-        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);
@@ -901,7 +887,10 @@ class Install extends Migration
         $this->createIndex(null, Table::USERPERMISSIONS_USERGROUPS, ['groupId'], false);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], true);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['userId'], false);
-        $this->createIndex(null, Table::USERS, ['uid'], false);
+        $this->createIndex(null, Table::USERS, ['active'], false);
+        $this->createIndex(null, Table::USERS, ['locked'], false);
+        $this->createIndex(null, Table::USERS, ['pending'], false);
+        $this->createIndex(null, Table::USERS, ['suspended'], false);
         $this->createIndex(null, Table::USERS, ['verificationCode'], false);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], true);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['parentId'], false);
@@ -1071,14 +1060,14 @@ class Install extends Migration
 
         $applyExistingProjectConfig = false;
 
-        if ($this->applyProjectConfigYaml && $projectConfig->getDoesYamlExist()) {
+        if ($this->applyProjectConfigYaml && $projectConfig->getDoesExternalConfigExist()) {
             try {
-                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
-                $craftSchemaVersion = (string)Craft::$app->schemaVersion;
+                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
+                $craftSchemaVersion = Craft::$app->schemaVersion;
 
                 // Compare existing Craft schema version with the one that is being applied.
                 if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
-                    throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
+                    throw new InvalidConfigException("Craft is installed at the wrong schema version ($craftSchemaVersion, but project.yaml lists $expectedSchemaVersion).");
                 }
 
                 // Make sure at least sites are processed
@@ -1086,7 +1075,7 @@ class Install extends Migration
 
                 $this->_installPlugins();
                 $applyExistingProjectConfig = true;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 echo "    > can't apply existing project config: {$e->getMessage()}\n";
                 Craft::$app->getErrorHandler()->logException($e);
 
@@ -1105,7 +1094,7 @@ class Install extends Migration
         if ($applyExistingProjectConfig) {
             // Save the existing system settings
             echo '    > applying existing project config ... ';
-            $projectConfig->applyYamlChanges();
+            $projectConfig->applyExternalChanges();
             echo "done\n";
         } else {
             // Save the default system settings
@@ -1135,10 +1124,11 @@ class Install extends Migration
         // Save the first user
         echo '    > saving the first user ... ';
         $user = new User([
+            'active' => true,
+            'admin' => true,
             'username' => $this->username,
             'newPassword' => $this->password,
             'email' => $this->email,
-            'admin' => true,
         ]);
         Craft::$app->getElements()->saveElement($user);
         echo "done\n";
@@ -1157,22 +1147,22 @@ class Install extends Migration
     /**
      * Attempts to install any plugins listed in project.yaml.
      *
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _installPlugins(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = Craft::$app->getPlugins();
-        $pluginConfigs = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? [];
+        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         // Make sure that all to-be-installed plugins actually exist,
         // and that they have the same schema as project.yaml
         foreach ($pluginConfigs as $handle => $config) {
             $plugin = $pluginsService->createPlugin($handle);
-            $expectedSchemaVersion = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true);
+            $expectedSchemaVersion = $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true);
 
             if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
-                throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
+                throw new InvalidPluginException($handle, "$handle is installed at the wrong schema version ($plugin->schemaVersion, but project.yaml lists $expectedSchemaVersion).");
             }
         }
 
@@ -1181,22 +1171,15 @@ class Install extends Migration
         $tempResponse = new Response(['isSent' => true]);
         Craft::$app->set('response', $tempResponse);
 
-        $e = null;
-
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
-                echo "    > installing {$handle} ... ";
+                echo "    > installing $handle ... ";
                 $pluginsService->installPlugin($handle);
                 echo "done\n";
             }
-        } catch (\Throwable $e) {
-        }
-
-        // Put the real response back
-        Craft::$app->set('response', $realResponse);
-
-        if ($e !== null) {
-            throw $e;
+        } finally {
+            // Put the real response back
+            Craft::$app->set('response', $realResponse);
         }
     }
 

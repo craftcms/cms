@@ -8,7 +8,7 @@
 namespace craft\gql\base;
 
 /**
- * Class GeneratorInterface
+ * GeneratorInterface defines the common interface to be implemented by GraphQL type generator classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0

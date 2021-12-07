@@ -1,0 +1,13 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.selectizeField({
+    label: 'Sendmail Command'|t('app'),
+    instructions: 'The command to run Sendmail with.'|t('app'),
+    id: 'command',
+    name: 'command',
+    options: commandOptions,
+    includeEnvVars: true,
+    allowedEnvValues: null,
+    value: adapter.command,
+    errors: adapter.getErrors('command')
+}) }}

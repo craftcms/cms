@@ -15,6 +15,8 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Translation;
+use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
@@ -36,7 +38,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @see isFailed()
      */
-    const STATUS_FAILED = 4;
+    public const STATUS_FAILED = 4;
 
     /**
      * @var Connection|array|string The database connection to use
@@ -53,7 +55,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
-    public int $mutexTimeout = 3;
+    public int $mutexTimeout = 5;
 
     /**
      * @var string The table name the queue is stored in.
@@ -406,8 +408,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
-            'progressLabel' => $result['progressLabel'],
-            'description' => $result['description'],
+            'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+            'description' => Translation::translate((string)$result['description']) ?: null,
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
@@ -463,8 +465,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'progressLabel' => $result['progressLabel'],
-                'description' => $result['description'],
+                'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+                'description' => Translation::translate((string)$result['description']) ?: null,
                 'error' => $result['error'],
             ];
         }
@@ -488,7 +490,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 }
                 Db::update($this->tableName, [
                     'fail' => true,
-                    'dateFailed' => Db::prepareDateForDb(new \DateTime()),
+                    'dateFailed' => Db::prepareDateForDb(new DateTime()),
                     'error' => $event->error ? $this->_truncateErrorMessage($event->error->getMessage()) : null,
                 ], [
                     'id' => $event->id,
@@ -595,11 +597,11 @@ EOD;
                     ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit(1)
-                    ->one($this->db);
+                    ->one($this->db) ?: null;
             });
 
             if (is_array($payload)) {
-                $payload['dateReserved'] = new \DateTime();
+                $payload['dateReserved'] = new DateTime();
                 $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
                 $payload['attempt'] = (int)$payload['attempt'] + 1;
                 Db::update($this->tableName, [
@@ -623,10 +625,10 @@ EOD;
     /**
      * Checks if $job is a resource and if so, convert it to a serialized format.
      *
-     * @param string $job
+     * @param string|resource $job
      * @return string
      */
-    private function _jobData(string $job): string
+    private function _jobData($job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);

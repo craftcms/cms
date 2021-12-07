@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\tablesettings;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for Table field settings
@@ -31,6 +31,6 @@ class TableSettingsAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'TableFieldSettings.min.js',
+        'TableFieldSettings.js',
     ];
 }

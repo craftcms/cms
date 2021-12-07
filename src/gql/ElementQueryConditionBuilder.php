@@ -70,9 +70,9 @@ class ElementQueryConditionBuilder extends Component
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
+    public const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
 
-    const LOCALIZED_NODENAME = 'localized';
+    public const LOCALIZED_NODENAME = 'localized';
 
     /**
      * @var ResolveInfo
@@ -194,11 +194,9 @@ class ElementQueryConditionBuilder extends Component
         if ($argumentNode->kind === 'ObjectValue') {
             /** @var ObjectValueNode $argumentNode */
             $extractedValue = [];
-
             foreach ($argumentNode->fields as $fieldNode) {
                 $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
             }
-
             return $extractedValue;
         }
 
@@ -208,29 +206,26 @@ class ElementQueryConditionBuilder extends Component
 
             switch ($argumentNodeValue->kind) {
                 case 'Variable':
-                    $extractedValue = $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
-                    break;
+                    return $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
                 case 'ListValue':
                     $extractedValue = [];
-
                     foreach ($argumentNodeValue->values as $value) {
                         $extractedValue[] = $this->_extractArgumentValue($value);
                     }
-                    break;
+                    return $extractedValue;
                 case 'ObjectValue':
+                    $extractedValue = [];
                     foreach ($argumentNodeValue->fields as $fieldNode) {
                         $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
                     }
-                    break;
+                    return $extractedValue;
                 default:
-                    $extractedValue = $argumentNodeValue->value;
+                    return $argumentNodeValue->value;
             }
-        } else {
-            $value = $argumentNode->value ?? null;
-            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$value : $value;
         }
 
-        return $extractedValue;
+        $value = $argumentNode->value ?? null;
+        return $argumentNode->kind === 'IntValue' ? (int)$value : $value;
     }
 
     /**
@@ -355,9 +350,7 @@ class ElementQueryConditionBuilder extends Component
             return [];
         }
 
-        $arguments = [GqlHelper::prepareTransformArguments($arguments)];
-
-        return $arguments;
+        return [GqlHelper::prepareTransformArguments($arguments)];
     }
 
     /**
@@ -491,7 +484,7 @@ class ElementQueryConditionBuilder extends Component
                         }
 
                         // For relational fields, prepare the arguments.
-                        if ($craftContentField instanceof BaseRelationField) {
+                        if ($craftContentField instanceof EagerLoadingFieldInterface) {
                             $arguments = $this->_argumentManager->prepareArguments($arguments);
                         }
                     }
@@ -514,7 +507,6 @@ class ElementQueryConditionBuilder extends Component
                     if (!$transformableAssetProperty) {
                         /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
                         if ($wrappingFragment) {
-                            // TODO: In Craft 4, get rid of all closures
                             $plan->when = function(Element $element) use ($wrappingFragment) {
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                             };

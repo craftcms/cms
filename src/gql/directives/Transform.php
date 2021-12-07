@@ -46,7 +46,7 @@ class Transform extends Directive
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+        return GqlEntityRegistry::createEntity(static::name(), new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
@@ -54,8 +54,6 @@ class Transform extends Directive
             'args' => TransformArguments::getArguments(),
             'description' => 'This directive is used to return a URL for an [asset transform](https://craftcms.com/docs/3.x/image-transforms.html). It accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.',
         ]));
-
-        return $type;
     }
 
     /**
@@ -88,7 +86,7 @@ class Transform extends Directive
         }
 
         if ($onAssetElementList) {
-            foreach ($value as &$asset) {
+            foreach ($value as $asset) {
                 // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
                 if ($asset instanceof Asset) {
                     $asset->setTransform($transform);

@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\conditions\elements\fields\LightswitchFieldConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
@@ -77,6 +78,9 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
                 unset($config[$name]);
             }
         }
+        if (array_key_exists('default', $config) && !is_bool($config['default'])) {
+            $config['default'] = (bool)$config['default'];
+        }
 
         parent::__construct($config);
     }
@@ -126,7 +130,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
             'id' => $id,
             'labelId' => "$id-label",
-            'instructionsId' => "$id-instructions",
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'on' => (bool)$value,
             'onLabel' => $this->onLabel,
@@ -162,6 +166,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
+    public function getQueryConditionRuleType()
+    {
+        return LightswitchFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
@@ -170,7 +182,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         }
 
         $column = ElementHelper::fieldColumnFromField($this);
-        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, (bool)$this->default));
+        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, $this->default));
     }
 
     /**

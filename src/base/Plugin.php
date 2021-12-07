@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
-use craft\errors\MigrationException;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
@@ -36,17 +35,17 @@ class Plugin extends Module implements PluginInterface
     /**
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
      *
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the plugin’s settings from saving.
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the plugin’s settings from saving.
      *
      * @since 3.0.16
      */
-    const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
+    public const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved
+     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved.
      * @since 3.0.16
      */
-    const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
+    public const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
      * @inheritdoc
@@ -73,7 +72,6 @@ class Plugin extends Module implements PluginInterface
         // init() method needs to call Craft::t() or Plugin::getInstance().
 
         $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? $id);
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $this->sourceLanguage = ArrayHelper::remove($config, 'sourceLanguage', $this->sourceLanguage);
 
         if (($basePath = ArrayHelper::remove($config, 'basePath')) !== null) {
@@ -215,7 +213,6 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 

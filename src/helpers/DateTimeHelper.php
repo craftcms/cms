@@ -13,6 +13,8 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
+use Exception;
+use Throwable;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 
@@ -27,31 +29,31 @@ class DateTimeHelper
     /**
      * @var int Number of seconds in a minute.
      */
-    const SECONDS_MINUTE = 60;
+    public const SECONDS_MINUTE = 60;
 
     /**
      * @var int Number of seconds in an hour.
      */
-    const SECONDS_HOUR = 3600;
+    public const SECONDS_HOUR = 3600;
 
     /**
      * @var int Number of seconds in a day.
      */
-    const SECONDS_DAY = 86400;
+    public const SECONDS_DAY = 86400;
 
     /**
      * @var int The number of seconds in a month.
      *
      * Based on a 30.4368 day month, with the product rounded.
      */
-    const SECONDS_MONTH = 2629740;
+    public const SECONDS_MONTH = 2629740;
 
     /**
      * @var int The number of seconds in a year.
      *
      * Based on a 365.2416 day year, with the product rounded.
      */
-    const SECONDS_YEAR = 31556874;
+    public const SECONDS_YEAR = 31556874;
 
     /**
      * @var array Translation pairs for [[translateDate()]]
@@ -80,7 +82,7 @@ class DateTimeHelper
      * the timezone was not specified. If this is `false`, UTC will be assumed.
      * @param bool $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
-     * @throws \Exception
+     * @throws Exception
      */
     public static function toDateTime($value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true)
     {
@@ -439,7 +441,7 @@ class DateTimeHelper
 
         try {
             $earliestTimestamp = $now->modify("-$timeInterval")->getTimestamp();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new InvalidArgumentException("Invalid time interval: $timeInterval", 0, $e);
         }
 

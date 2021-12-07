@@ -30,17 +30,17 @@ use yii\base\InvalidArgumentException;
  */
 class Assets
 {
-    const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
+    public const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
      */
-    const EVENT_SET_FILENAME = 'setFilename';
+    public const EVENT_SET_FILENAME = 'setFilename';
 
     /**
      * @event RegisterAssetFileKindsEvent The event that is triggered when registering asset file kinds.
      */
-    const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
+    public const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
 
     /**
      * @var array Supported file kinds
@@ -90,7 +90,7 @@ class Assets
         $folderPath = $asset->folderPath;
         $appendix = static::urlAppendix($volume, $asset, $transformIndex);
 
-        return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->filename) . $appendix);
+        return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->getFilename()) . $appendix);
     }
 
     /**
@@ -116,7 +116,7 @@ class Assets
             $v .= ",{$fp['x']},{$fp['y']}";
         }
 
-        return "?$v";
+        return "?v=$v";
     }
 
     /**
@@ -571,7 +571,6 @@ class Assets
                         'avi',
                         'fla',
                         'flv',
-                        'flv',
                         'm1s',
                         'm2s',
                         'm2t',
@@ -581,7 +580,6 @@ class Assets
                         'mng',
                         'mov',
                         'mp2v',
-                        'mp4',
                         'mp4',
                         'mpeg',
                         'mpg',

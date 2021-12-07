@@ -12,6 +12,7 @@ use craft\console\Application as ConsoleApplication;
 use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
 use craft\db\MigrationManager;
+use craft\db\mysql\Schema;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -45,13 +46,14 @@ use craft\services\Assets;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
 use craft\services\Composer;
+use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
-use craft\services\ElementIndexes;
 use craft\services\Elements;
+use craft\services\ElementSources;
 use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Gc;
@@ -81,16 +83,20 @@ use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
 use craft\services\Volumes;
+use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\View;
+use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\caching\Cache;
+use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
 use yii\mutex\Mutex;
@@ -110,13 +116,14 @@ use yii\web\ServerErrorHttpException;
  * @property-read Assets $assets The assets service
  * @property-read Categories $categories The categories service
  * @property-read Composer $composer The Composer service
+ * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
  * @property-read Content $content The content service
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
- * @property-read ElementIndexes $elementIndexes The element indexes service
+ * @property-read ElementSources $elementSources The element sources service
  * @property-read Elements $elements The elements service
  * @property-read Entries $entries The entries service
  * @property-read Fields $fields The fields service
@@ -157,6 +164,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Utilities $utilities The utilities service
  * @property-read View $view The view component
  * @property-read Volumes $volumes The volumes service
+ * @property-read Webpack $webpack The webpack service
  * @property-read bool $canTestEditions Whether Craft is running on a domain that is eligible to test out the editions
  * @property-read bool $canUpgradeEdition Whether Craft is eligible to be upgraded to a different edition
  * @property-read bool $hasWrongEdition Whether Craft is running with the wrong edition
@@ -521,12 +529,12 @@ trait ApplicationTrait
      */
     public function requireEdition(int $edition, bool $orBetter = true): void
     {
-        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingYamlChanges()) {
+        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
                 $editionName = App::editionName($edition);
-                throw new WrongEditionException("Craft {$editionName} is required for this");
+                throw new WrongEditionException("Craft $editionName is required for this");
             }
         }
     }
@@ -564,7 +572,7 @@ trait ApplicationTrait
     public function getCanTestEditions(): bool
     {
         $request = $this->getRequest();
-        if ($request->getIsConsoleRequest()) {
+        if ($request instanceof ConsoleRequest) {
             return false;
         }
 
@@ -595,7 +603,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)$this->getProjectConfig()->get('system.live');
+        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
     }
 
     /**
@@ -607,7 +615,7 @@ trait ApplicationTrait
      */
     public function getIsInMaintenanceMode(): bool
     {
-        return (bool)$this->getInfo()->maintenance;
+        return $this->getInfo()->maintenance;
     }
 
     /**
@@ -653,12 +661,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException $e) {
-            if ($throwException) {
-                throw $e;
-            }
-            return $this->_info = new Info();
-        } catch (DbConnectException $e) {
+        } catch (DbException | DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -667,7 +670,7 @@ trait ApplicationTrait
 
         if (!$row) {
             $tableName = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
-            throw new ServerErrorHttpException("The {$tableName} table is missing its row");
+            throw new ServerErrorHttpException("The $tableName table is missing its row");
         }
 
         return $this->_info = new Info($row);
@@ -782,7 +785,7 @@ trait ApplicationTrait
      */
     public function getYiiVersion(): string
     {
-        return \Yii::getVersion();
+        return Yii::getVersion();
     }
 
     /**
@@ -793,16 +796,9 @@ trait ApplicationTrait
      */
     public function getIsDbConnectionValid(): bool
     {
-        $e = null;
         try {
             $this->getDb()->open();
-        } catch (DbConnectException $e) {
-            // throw it later
-        } catch (InvalidConfigException $e) {
-            // throw it later
-        }
-
-        if ($e !== null) {
+        } catch (DbConnectException | InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -895,6 +891,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the conditions service.
+     *
+     * @return Conditions The conditions service
+     * @since 4.0.0
+     */
+    public function getConditions(): Conditions
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('conditions');
+    }
+
+    /**
      * Returns the config service.
      *
      * @return Config The config service
@@ -964,12 +972,12 @@ trait ApplicationTrait
     /**
      * Returns the element indexes service.
      *
-     * @return ElementIndexes The element indexes service
+     * @return ElementSources The element indexes service
      */
-    public function getElementIndexes(): ElementIndexes
+    public function getElementSources(): ElementSources
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('elementIndexes');
+        return $this->get('elementSources');
     }
 
     /**
@@ -1175,7 +1183,7 @@ trait ApplicationTrait
     /**
      * Returns the queue service.
      *
-     * @return Queue|QueueInterface The queue service
+     * @return Queue The queue service
      */
     public function getQueue(): Queue
     {
@@ -1361,10 +1369,28 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the webpack service.
+     *
+     * @return Webpack The volumes service
+     * @since 3.7.22
+     */
+    public function getWebpack(): Webpack
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('webpack');
+    }
+
+    /**
      * Initializes things that should happen before the main Application::init()
      */
     private function _preInit(): void
     {
+        // Add support for MySQL-specific column types
+        ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_TINYTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
+        ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_MEDIUMTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
+        ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_LONGTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
+        ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_ENUM] = ColumnSchemaBuilder::CATEGORY_STRING;
+
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
         $request = $this->getRequest();
@@ -1377,8 +1403,9 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        if ($request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
+        $response = $this->getResponse();
+        if ($response instanceof WebResponse) {
+            $response->setNoCacheHeaders();
         }
     }
 
@@ -1414,14 +1441,11 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        $timezone = $this->getConfig()->getGeneral()->timezone;
+        /** @var WebApplication|ConsoleApplication $this */
+        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
-        if (!$timezone) {
-            $timezone = $this->getProjectConfig()->get('system.timeZone');
-        }
-
-        if ($timezone) {
-            $this->setTimeZone($timezone);
+        if ($timeZone) {
+            $this->setTimeZone(Craft::parseEnv($timeZone));
         }
     }
 
@@ -1434,7 +1458,7 @@ trait ApplicationTrait
     private function _setMaintenanceMode(bool $value): bool
     {
         $info = $this->getInfo();
-        if ((bool)$info->maintenance === $value) {
+        if ($info->maintenance === $value) {
             return true;
         }
         $info->maintenance = $value;
@@ -1465,7 +1489,7 @@ trait ApplicationTrait
      */
     private function _registerFieldLayoutListener(): void
     {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $event->sender;
 
@@ -1491,72 +1515,72 @@ trait ApplicationTrait
     {
         $this->getProjectConfig()
             // Field groups
-            ->onAdd(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
-            ->onUpdate(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
-            ->onRemove(Fields::CONFIG_FIELDGROUP_KEY . '.{uid}', $this->_proxy('fields', 'handleDeletedGroup'))
+            ->onAdd(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
+            ->onUpdate(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
+            ->onRemove(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleDeletedGroup'))
             // Fields
-            ->onAdd(Fields::CONFIG_FIELDS_KEY . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
-            ->onUpdate(Fields::CONFIG_FIELDS_KEY . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
-            ->onRemove(Fields::CONFIG_FIELDS_KEY . '.{uid}', $this->_proxy('fields', 'handleDeletedField'))
+            ->onAdd(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
+            ->onUpdate(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
+            ->onRemove(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleDeletedField'))
             // Block types
-            ->onAdd(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
-            ->onUpdate(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
-            ->onRemove(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', $this->_proxy('matrix', 'handleDeletedBlockType'))
+            ->onAdd(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
+            ->onUpdate(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
+            ->onRemove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleDeletedBlockType'))
             // Volumes
-            ->onAdd(Volumes::CONFIG_VOLUME_KEY . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
-            ->onUpdate(Volumes::CONFIG_VOLUME_KEY . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
-            ->onRemove(Volumes::CONFIG_VOLUME_KEY . '.{uid}', $this->_proxy('volumes', 'handleDeletedVolume'))
+            ->onAdd(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
+            ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
+            ->onRemove(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleDeletedVolume'))
             // Transforms
-            ->onAdd(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
-            ->onUpdate(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
-            ->onRemove(AssetTransforms::CONFIG_TRANSFORM_KEY . '.{uid}', $this->_proxy('assetTransforms', 'handleDeletedTransform'))
+            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
+            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
+            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleDeletedTransform'))
             // Site groups
-            ->onAdd(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
-            ->onUpdate(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
-            ->onRemove(Sites::CONFIG_SITEGROUP_KEY . '.{uid}', $this->_proxy('sites', 'handleDeletedGroup'))
+            ->onAdd(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
+            ->onUpdate(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
+            ->onRemove(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleDeletedGroup'))
             // Sites
-            ->onAdd(Sites::CONFIG_SITES_KEY . '.{uid}', $this->_proxy('sites', 'handleChangedSite'))
-            ->onUpdate(Sites::CONFIG_SITES_KEY . '.{uid}', $this->_proxy('sites', 'handleChangedSite'))
-            ->onRemove(Sites::CONFIG_SITES_KEY . '.{uid}', $this->_proxy('sites', 'handleDeletedSite'))
+            ->onAdd(ProjectConfig::PATH_SITES . '.{uid}', $this->_proxy('sites', 'handleChangedSite'))
+            ->onUpdate(ProjectConfig::PATH_SITES . '.{uid}', $this->_proxy('sites', 'handleChangedSite'))
+            ->onRemove(ProjectConfig::PATH_SITES . '.{uid}', $this->_proxy('sites', 'handleDeletedSite'))
             // Tags
-            ->onAdd(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', $this->_proxy('tags', 'handleChangedTagGroup'))
-            ->onUpdate(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', $this->_proxy('tags', 'handleChangedTagGroup'))
-            ->onRemove(Tags::CONFIG_TAGGROUP_KEY . '.{uid}', $this->_proxy('tags', 'handleDeletedTagGroup'))
+            ->onAdd(ProjectConfig::PATH_TAG_GROUPS . '.{uid}', $this->_proxy('tags', 'handleChangedTagGroup'))
+            ->onUpdate(ProjectConfig::PATH_TAG_GROUPS . '.{uid}', $this->_proxy('tags', 'handleChangedTagGroup'))
+            ->onRemove(ProjectConfig::PATH_TAG_GROUPS . '.{uid}', $this->_proxy('tags', 'handleDeletedTagGroup'))
             // Categories
-            ->onAdd(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', $this->_proxy('categories', 'handleChangedCategoryGroup'))
-            ->onUpdate(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', $this->_proxy('categories', 'handleChangedCategoryGroup'))
-            ->onRemove(Categories::CONFIG_CATEGORYROUP_KEY . '.{uid}', $this->_proxy('categories', 'handleDeletedCategoryGroup'))
+            ->onAdd(ProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', $this->_proxy('categories', 'handleChangedCategoryGroup'))
+            ->onUpdate(ProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', $this->_proxy('categories', 'handleChangedCategoryGroup'))
+            ->onRemove(ProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', $this->_proxy('categories', 'handleDeletedCategoryGroup'))
             // User group permissions
-            ->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
-            ->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
-            ->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
+            ->onAdd(ProjectConfig::PATH_USER_GROUPS . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
+            ->onUpdate(ProjectConfig::PATH_USER_GROUPS . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
+            ->onRemove(ProjectConfig::PATH_USER_GROUPS . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
             // User groups
-            ->onAdd(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', $this->_proxy('userGroups', 'handleChangedUserGroup'))
-            ->onUpdate(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', $this->_proxy('userGroups', 'handleChangedUserGroup'))
-            ->onRemove(UserGroups::CONFIG_USERPGROUPS_KEY . '.{uid}', $this->_proxy('userGroups', 'handleDeletedUserGroup'))
+            ->onAdd(ProjectConfig::PATH_USER_GROUPS . '.{uid}', $this->_proxy('userGroups', 'handleChangedUserGroup'))
+            ->onUpdate(ProjectConfig::PATH_USER_GROUPS . '.{uid}', $this->_proxy('userGroups', 'handleChangedUserGroup'))
+            ->onRemove(ProjectConfig::PATH_USER_GROUPS . '.{uid}', $this->_proxy('userGroups', 'handleDeletedUserGroup'))
             // User field layout
-            ->onAdd(Users::CONFIG_USERLAYOUT_KEY, $this->_proxy('users', 'handleChangedUserFieldLayout'))
-            ->onUpdate(Users::CONFIG_USERLAYOUT_KEY, $this->_proxy('users', 'handleChangedUserFieldLayout'))
-            ->onRemove(Users::CONFIG_USERLAYOUT_KEY, $this->_proxy('users', 'handleChangedUserFieldLayout'))
+            ->onAdd(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->_proxy('users', 'handleChangedUserFieldLayout'))
+            ->onUpdate(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->_proxy('users', 'handleChangedUserFieldLayout'))
+            ->onRemove(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->_proxy('users', 'handleChangedUserFieldLayout'))
             // Global sets
-            ->onAdd(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
-            ->onUpdate(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
-            ->onRemove(Globals::CONFIG_GLOBALSETS_KEY . '.{uid}', $this->_proxy('globals', 'handleDeletedGlobalSet'))
+            ->onAdd(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
+            ->onUpdate(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
+            ->onRemove(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleDeletedGlobalSet'))
             // Sections
-            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
-            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
-            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', $this->_proxy('sections', 'handleDeletedSection'))
+            ->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
+            ->onUpdate(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleChangedSection'))
+            ->onRemove(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('sections', 'handleDeletedSection'))
             // Entry types
-            ->onAdd(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
-            ->onUpdate(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
-            ->onRemove(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', $this->_proxy('sections', 'handleDeletedEntryType'))
+            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
+            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleChangedEntryType'))
+            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('sections', 'handleDeletedEntryType'))
             // GraphQL schemas
-            ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
-            ->onUpdate(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
-            ->onRemove(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', $this->_proxy('gql', 'handleDeletedSchema'))
+            ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
+            ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
+            ->onRemove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleDeletedSchema'))
             // GraphQL public token
-            ->onAdd(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, $this->_proxy('gql', 'handleChangedPublicToken'))
-            ->onUpdate(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, $this->_proxy('gql', 'handleChangedPublicToken'));
+            ->onAdd(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'))
+            ->onUpdate(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'));
 
         // Prune deleted fields from their layouts
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, function(FieldEvent $event) {

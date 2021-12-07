@@ -15,5 +15,4 @@ return [
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
     'securityKey' => getenv('SECURITY_KEY'),
-    'useProjectConfigFile' => isset(Craft::$instance) && Craft::$instance->_getConfig('projectConfig') !== null,
 ];

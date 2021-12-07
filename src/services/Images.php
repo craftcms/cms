@@ -18,6 +18,7 @@ use craft\image\Svg;
 use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Imagick\Imagick;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -33,9 +34,9 @@ use yii\base\Exception;
  */
 class Images extends Component
 {
-    const DRIVER_GD = 'gd';
-    const DRIVER_IMAGICK = 'imagick';
-    const MINIMUM_IMAGICK_VERSION = '6.2.9';
+    public const DRIVER_GD = 'gd';
+    public const DRIVER_IMAGICK = 'imagick';
+    public const MINIMUM_IMAGICK_VERSION = '6.2.9';
 
     /**
      * @var array Image formats that can be manipulated.
@@ -102,7 +103,7 @@ class Images extends Component
         $version = App::extensionVersion('imagick');
         try {
             $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
         return $version;
     }
@@ -141,7 +142,6 @@ class Images extends Component
 
         // Taken from Imagick\Imagine() constructor.
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
-        /** @noinspection PhpStaticAsDynamicMethodCallInspection */
         $versionString = \Imagick::getVersion()['versionString'];
         [$this->_imagickVersion] = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
@@ -312,7 +312,7 @@ class Images extends Component
             }
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), __METHOD__);
         }
 

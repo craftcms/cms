@@ -10,7 +10,6 @@ namespace craft\web\twig\tokenparsers;
 use craft\web\twig\nodes\SwitchNode;
 use Twig\Error\SyntaxError;
 use Twig\Node\Node;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

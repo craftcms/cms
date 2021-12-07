@@ -23,7 +23,7 @@ class Image extends AssetPreviewHandler
     /**
      * @inheritdoc
      */
-    public function getPreviewHtml(): string
+    public function getPreviewHtml(array $variables = []): string
     {
         $volume = $this->asset->getVolume();
 
@@ -37,9 +37,11 @@ class Image extends AssetPreviewHandler
             ], null, false);
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/image', [
-            'asset' => $this->asset,
-            'url' => $url,
-        ]);
+        return Craft::$app->getView()->renderTemplate('assets/_previews/image',
+            array_merge([
+                'asset' => $this->asset,
+                'url' => $url,
+            ], $variables)
+        );
     }
 }

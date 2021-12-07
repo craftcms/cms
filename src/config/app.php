@@ -5,7 +5,7 @@ return [
     'name' => 'Craft CMS',
     'version' => '4.0.0-alpha',
     'schemaVersion' => '4.0.0',
-    'minVersionRequired' => '2.7.0-beta.3',
+    'minVersionRequired' => '3.7.11',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
@@ -30,7 +30,10 @@ return [
             'class' => craft\services\Categories::class,
         ],
         'composer' => [
-            'class' => \craft\services\Composer::class,
+            'class' => craft\services\Composer::class,
+        ],
+        'conditions' => [
+            'class' => craft\services\Conditions::class,
         ],
         'content' => [
             'class' => craft\services\Content::class,
@@ -44,8 +47,8 @@ return [
         'drafts' => [
             'class' => craft\services\Drafts::class,
         ],
-        'elementIndexes' => [
-            'class' => craft\services\ElementIndexes::class,
+        'elementSources' => [
+            'class' => craft\services\ElementSources::class,
         ],
         'elements' => [
             'class' => craft\services\Elements::class,
@@ -151,6 +154,9 @@ return [
         'utilities' => [
             'class' => craft\services\Utilities::class,
         ],
+        'webpack' => [
+            'class' => craft\services\Webpack::class,
+        ],
         'contentMigrator' => [
             'class' => craft\db\MigrationManager::class,
             'track' => craft\db\MigrationManager::TRACK_CONTENT,
@@ -165,7 +171,7 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : (defined('CRAFT_LOCALE') ? CRAFT_LOCALE : null),
+            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : null,
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

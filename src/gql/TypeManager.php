@@ -48,7 +48,7 @@ class TypeManager extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_TYPE_FIELDS = 'defineGqlTypeFields';
+    public const EVENT_DEFINE_GQL_TYPE_FIELDS = 'defineGqlTypeFields';
 
     /**
      * Prepare field definitions for a GraphQL type by giving plugins a chance to modify them.
@@ -66,7 +66,8 @@ class TypeManager extends Component
 
     /**
      * Flush all prepared field definitions.
-     * @deprecated in 4.0.0. Type Manager caches are now flushed when `craft\services\gql::flushCaches()` is called.
+     *
+     * @deprecated in 4.0.0. `craft\services\Gql::flushCaches()` should be used instead.
      */
     public static function flush(): void
     {

@@ -21,8 +21,13 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use IntlDateFormatter;
+use IntlException;
+use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\ExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
@@ -74,12 +79,12 @@ class Application extends \yii\web\Application
      * });
      * ```
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
      */
-    const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
+    public const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
     /**
      * Initializes the application.
@@ -121,9 +126,9 @@ class Application extends \yii\web\Application
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
-                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
-            } catch (\IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
+                new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            } catch (IntlException $e) {
+                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -136,7 +141,7 @@ class Application extends \yii\web\Application
      * @param bool $skipSpecialHandling Whether to skip the special case request handling stuff and go straight to
      * the normal routing logic
      * @return Response the resulting response
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function handleRequest($request, bool $skipSpecialHandling = false): Response
     {
@@ -145,7 +150,17 @@ class Application extends \yii\web\Application
             $this->_processResourceRequest($request);
 
             // Disable read/write splitting for POST requests
-            if ($this->getRequest()->getIsPost()) {
+            if (
+                $request->getIsPost() &&
+                !in_array($request->getActionSegments(), [
+                    ['element-indexes', 'count-elements'],
+                    ['element-indexes', 'data'],
+                    ['element-indexes', 'export'],
+                    ['element-indexes', 'get-elements'],
+                    ['element-indexes', 'get-more-elements'],
+                    ['element-indexes', 'get-source-tree-html'],
+                ])
+            ) {
                 $this->getDb()->enableReplicas = false;
             }
 
@@ -168,6 +183,7 @@ class Application extends \yii\web\Application
 
             // Prevent some possible XSS attack vectors
             if ($request->getIsCpRequest()) {
+                $headers->add('Content-Security-Policy', "frame-ancestors 'self'");
                 $headers->set('X-Frame-Options', 'SAMEORIGIN');
                 $headers->set('X-Content-Type-Options', 'nosniff');
             }
@@ -260,7 +276,7 @@ class Application extends \yii\web\Application
         // If we're still here, finally let Yii do it's thing.
         try {
             return parent::handleRequest($request);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->_unregisterDebugModule();
             throw $e;
         }
@@ -304,11 +320,11 @@ class Application extends \yii\web\Application
         }
 
         // Override where Yii should find its asset deps
-        $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
-        Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
-        Craft::setAlias('@bower/punycode', $libPath . '/punycode');
-        Craft::setAlias('@bower/yii2-pjax', $libPath . '/yii2-pjax');
+        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
+        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
+        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
+        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
+        Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
     }
 
     /**
@@ -333,7 +349,7 @@ class Application extends \yii\web\Application
      *
      * @throws ErrorException
      * @throws InvalidConfigException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     protected function ensureResourcePathExists(): void
     {
@@ -406,7 +422,7 @@ class Application extends \yii\web\Application
         }
 
         $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
-        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
+        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,$svg");
 
         $this->setModule('debug', [
             'class' => DebugModule::class,
@@ -461,12 +477,12 @@ class Application extends \yii\web\Application
     {
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
-        $pathInfo = $request->getPathInfo();
-        if (strpos('/' . $pathInfo, $resourceBaseUri . '/') !== 0) {
+        $requestPath = $request->getFullPath();
+        if (strpos('/' . $requestPath, $resourceBaseUri . '/') !== 0) {
             return;
         }
 
-        $resourceUri = substr($pathInfo, strlen($resourceBaseUri));
+        $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
 
@@ -492,18 +508,14 @@ class Application extends \yii\web\Application
         // Publish the directory
         [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
 
-        // Make sure the hashes match
-        if (basename($publishedDir) !== $hash) {
-            throw new NotFoundHttpException("$filePath does not exist.");
-        }
-
         $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
             throw new NotFoundHttpException("$filePath does not exist.");
         }
 
+        // Don't send cache headers here, in case we're in the middle of deploying an update across multiple
+        // servers and this one hasn't been updated yet (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
         $this->getResponse()
-            ->setCacheHeaders()
             ->sendFile($publishedPath, null, ['inline' => true]);
         $this->end();
     }
@@ -515,7 +527,7 @@ class Application extends \yii\web\Application
      * @return null|Response
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
+     * @throws ExitException
      */
     private function _processInstallRequest(Request $request): ?Response
     {
@@ -572,7 +584,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      * @return Response|null
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     private function _processActionRequest(Request $request): ?Response
     {
@@ -583,7 +595,7 @@ class Application extends \yii\web\Application
                 Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
                 return $this->runAction($route, $_GET);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {
                     throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);

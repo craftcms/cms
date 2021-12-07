@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
+use Throwable;
 use yii\base\Exception;
 use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
@@ -31,11 +32,11 @@ use yii\web\Response;
  */
 abstract class BaseUpdaterController extends Controller
 {
-    const ACTION_PRECHECK = 'precheck';
-    const ACTION_RECHECK_COMPOSER = 'recheck-composer';
-    const ACTION_COMPOSER_INSTALL = 'composer-install';
-    const ACTION_COMPOSER_REMOVE = 'composer-remove';
-    const ACTION_FINISH = 'finish';
+    public const ACTION_PRECHECK = 'precheck';
+    public const ACTION_RECHECK_COMPOSER = 'recheck-composer';
+    public const ACTION_COMPOSER_INSTALL = 'composer-install';
+    public const ACTION_COMPOSER_REMOVE = 'composer-remove';
+    public const ACTION_FINISH = 'finish';
 
     /**
      * @inheritdoc
@@ -70,7 +71,6 @@ abstract class BaseUpdaterController extends Controller
                 throw new BadRequestHttpException();
             }
 
-            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->data = Json::decode($data);
         }
 
@@ -94,7 +94,7 @@ abstract class BaseUpdaterController extends Controller
         $state['data'] = $this->_hashedData();
         $idJs = Json::encode($this->id);
         $stateJs = Json::encode($state);
-        $this->getView()->registerJs("Craft.updater = (new Craft.Updater({$idJs})).setState($stateJs);");
+        $this->getView()->registerJs("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
         return $this->renderTemplate('_special/updater', [
             'title' => $this->pageTitle(),
@@ -169,7 +169,7 @@ abstract class BaseUpdaterController extends Controller
         try {
             Craft::$app->getComposer()->install($this->data['requirements'], $io);
             Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
 
@@ -200,7 +200,7 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getComposer()->uninstall($packages, $io);
             Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
             $this->data['removed'] = true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io->getOutput());
@@ -242,9 +242,10 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Returns the initial state for the updater JS.
      *
+     * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
      * @return array
      */
-    abstract protected function initialState(): array;
+    abstract protected function initialState(bool $force = false): array;
 
     /**
      * Returns the real initial state for the updater JS.
@@ -275,6 +276,25 @@ abstract class BaseUpdaterController extends Controller
      * @return array
      */
     abstract protected function postComposerInstallState(): array;
+
+    /**
+     * Returns the return URL provided by the `return` body param, if it’s a valid URL.
+     *
+     * @return string|null
+     * @throws BadRequestHttpException if the `return` body param isn’t a valid URL.
+     * @since 3.7.17
+     */
+    protected function findReturnUrl(): ?string
+    {
+        $returnUrl = $this->request->getBodyParam('return');
+        if ($returnUrl === null) {
+            return null;
+        }
+        if (strpos($returnUrl, '{') !== false) {
+            throw new BadRequestHttpException("Invalid return URL: $returnUrl");
+        }
+        return $returnUrl;
+    }
 
     /**
      * Returns the return URL that should be passed with a finished state.
@@ -358,12 +378,12 @@ abstract class BaseUpdaterController extends Controller
      * Sends an "error" state response for a Composer error
      *
      * @param string $error The status message to show
-     * @param \Throwable $e The exception that was thrown
+     * @param Throwable $e The exception that was thrown
      * @param string $output The Composer output
      * @param array $state
      * @return Response
      */
-    protected function sendComposerError(string $error, \Throwable $e, string $output, array $state = []): Response
+    protected function sendComposerError(string $error, Throwable $e, string $output, array $state = []): Response
     {
         $state['error'] = $error;
         $state['errorDetails'] = $this->_composerErrorDetails($e, $output);
@@ -476,11 +496,11 @@ abstract class BaseUpdaterController extends Controller
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
             $ownerHandle = $e->ownerHandle;
-            /** @var \Throwable $e */
+            /** @var Throwable $e */
             $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
-                /** @var \Throwable|null $previous */
+                /** @var Throwable|null $previous */
                 $previous = $e->getPrevious();
                 $migration = $e->migration;
                 $output = $e->output;
@@ -555,17 +575,17 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getPlugins()->installPlugin($handle, $edition);
             $success = true;
             $errorDetails = null;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
             Craft::$app->set('response', $response);
             $this->response = $response;
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
-                /** @var \Throwable $e */
+                /** @var Throwable $e */
                 $e = $e->getPrevious();
                 if ($e instanceof MigrationException) {
-                    /** @var \Throwable|null $previous */
+                    /** @var Throwable|null $previous */
                     $previous = $e->getPrevious();
                     $migration = $e->migration;
                     $output = $e->output;
@@ -601,11 +621,11 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Throwable $e The exception that was thrown
+     * @param Throwable $e The exception that was thrown
      * @param string $output The Composer output
      * @return string
      */
-    private function _composerErrorDetails(\Throwable $e, string $output): string
+    private function _composerErrorDetails(Throwable $e, string $output): string
     {
         $details = [];
 

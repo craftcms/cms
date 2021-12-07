@@ -10,7 +10,7 @@ namespace craft\gql\base;
 use craft\gql\ArgumentManager;
 
 /**
- * Class ArgumentHandlerInterface
+ * ArgumentHandlerInterface defines the common interface to be implemented by all argument handler classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0

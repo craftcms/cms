@@ -12,17 +12,21 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\conditions\elements\fields\DateFieldConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use DateTimeZone;
+use GraphQL\Type\Definition\ResolveInfo;
 use yii\db\Schema;
 
 /**
@@ -235,10 +239,9 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
-        $id = Html::id($this->handle);
         $variables = [
-            'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'id' => Html::id($this->handle),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement,
@@ -262,7 +265,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
 
         if ($this->showTimeZone) {
             $input .= ' ' . $view->renderTemplate('_includes/forms/timeZone', [
-                    'instructionsId' => "$id-instructions",
+                    'describedBy' => $this->describedBy,
                     'name' => "$this->handle[timezone]",
                     'value' => $value ? $value->getTimezone()->getName() : Craft::$app->getTimeZone(),
                 ]);
@@ -332,7 +335,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             $value = $value['date'];
         }
 
-        if (!$value || (is_array($value) && empty($value['date']))) {
+        if (
+            !$value ||
+            (is_array($value) && empty($value['date']) && empty($value['time']) && empty($value['datetime']))
+        ) {
             return null;
         }
 
@@ -372,6 +378,14 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
+    public function getQueryConditionRuleType()
+    {
+        return DateFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function modifyElementsQuery(ElementQueryInterface $query, $value): void
     {
         /** @var ElementQuery $query */
@@ -386,7 +400,21 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getContentGqlType()
     {
-        return DateTimeType::getType();
+        return [
+            'name' => $this->handle,
+            'type' => DateTimeType::getType(),
+            'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) {
+                $fieldName = Gql::getFieldNameWithAlias($resolveInfo, $source, $context);
+                $value = $source->getFieldValue($fieldName);
+
+                // Set the timezone, unless it has been already set by the field itself.
+                if (!$this->showTimeZone && $value instanceof DateTime) {
+                    $value->setTimeZone(new DateTimeZone(FormatDateTime::defaultTimezone()));
+                }
+
+                return Gql::applyDirectives($source, $resolveInfo, $value);
+            },
+        ];
     }
 
     /**

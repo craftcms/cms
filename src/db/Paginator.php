@@ -31,8 +31,8 @@ use yii\di\Instance;
  * ```
  * ```twig
  * {% set paginator = create('craft\\db\\Paginator', [query, {
- *     pageSize: 10,
- *     currentPage: craft.app.request.pageNum,
+ *   pageSize: 10,
+ *   currentPage: craft.app.request.pageNum,
  * }]) %}
  *
  * {% set pageResults = paginator.getPageResults() %}

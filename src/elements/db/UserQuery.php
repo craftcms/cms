@@ -15,11 +15,12 @@ use craft\elements\User;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
+use yii\db\Expression;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
- * @property string|string[]|UserGroup $group The handle(s) of the tag group(s) that resulting users must belong to.
+ * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, ?Connection $db = null)
@@ -60,8 +61,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch all the admins #}
      * {% set admins = craft.users()
-     *     .admin()
-     *     .all()%}
+     *   .admin()
+     *   .all()%}
      *
      * {# fetch all the non-admins #}
      * {% set nonAdmins = craft.users()
@@ -71,6 +72,46 @@ class UserQuery extends ElementQuery
      * @used-by admin()
      */
     public ?bool $admin = null;
+
+    /**
+     * @var bool|null Whether to only return users that are authors of an entry.
+     * ---
+     * ```php
+     * // fetch all authors
+     * $authors = \craft\elements\User::find()
+     *     ->authors()
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch all authors #}
+     * {% set authors = craft.users()
+     *   .authors()
+     *   .all()%}
+     * ```
+     * @used-by authors()
+     * @since 4.0.0
+     */
+    public ?bool $authors = null;
+
+    /**
+     * @var bool|null Whether to only return users that have uploaded an asset.
+     * ---
+     * ```php
+     * // fetch all users who have uploaded an asset
+     * $uploaders = \craft\elements\User::find()
+     *     ->assetUploaders()
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch all users who have uploaded an asset #}
+     * {% set uploaders = craft.users()
+     *   .assetUploaders()
+     *   .all()%}
+     * ```
+     * @used-by assetUploaders()
+     * @since 4.0.0
+     */
+    public ?bool $assetUploaders = null;
 
     /**
      * @var bool|null Whether to only return users that have (or don’t have) user photos.
@@ -90,8 +131,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with control panel access #}
      * {% set admins = craft.users()
-     *     .can('accessCp')
-     *     .all() %}
+     *   .can('accessCp')
+     *   .all() %}
      * ```
      * @used-by can()
      */
@@ -109,8 +150,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch the authors #}
      * {% set admins = craft.users()
-     *     .group('authors')
-     *     .all() %}
+     *   .group('authors')
+     *   .all() %}
      * ```
      * @used-by group()
      * @used-by groupId()
@@ -159,26 +200,13 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with their user groups #}
      * {% set users = craft.users()
-     *     .withGroups()
-     *     .all() %}
+     *   .withGroups()
+     *   .all() %}
      * ```
      * @used-by withGroups()
      * @since 3.6.0
      */
     public bool $withGroups = false;
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default status
-        if (!isset($config['status'])) {
-            $config['status'] = [User::STATUS_ACTIVE];
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * @inheritdoc
@@ -200,8 +228,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch admins #}
      * {% set {elements-var} = {twig-method}
-     *     .admin()
-     *     .all() %}
+     *   .admin()
+     *   .all() %}
      * ```
      *
      * ```php
@@ -222,6 +250,66 @@ class UserQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results to only users that are authors of an entry.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch authors #}
+     * {% set {elements-var} = {twig-method}
+     *   .authors()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch authors
+     * ${elements-var} = {element-class}::find()
+     *     ->authors()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $authors
+     * @since 4.0.0
+     */
+    public function authors(?bool $value = true): self
+    {
+        $this->authors = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only users that have uploaded an asset.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all users who have uploaded an asset #}
+     * {% set {elements-var} = {twig-method}
+     *   .assetUploaders()
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all users who have uploaded an asset
+     * ${elements-var} = {element-class}::find()
+     *     ->assetUploaders()
+     *     ->all();
+     * ```
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $assetUploaders
+     * @since 4.0.0
+     */
+    public function assetUploaders(?bool $value = true): self
+    {
+        $this->assetUploaders = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results to only users that have (or don’t have) a user photo.
      *
      * ---
@@ -229,8 +317,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users with photos #}
      * {% set {elements-var} = {twig-method}
-     *     .hasPhoto()
-     *     .all() %}
+     *   .hasPhoto()
+     *   .all() %}
      * ```
      *
      * ```php
@@ -260,8 +348,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users that can access the control panel #}
      * {% set {elements-var} = {twig-method}
-     *     .can('accessCp')
-     *     .all() %}
+     *   .can('accessCp')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -299,8 +387,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users in the Foo user group #}
      * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
+     *   .group('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -348,8 +436,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users in a group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
+     *   .groupId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -385,8 +473,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch users with a .co.uk domain on their email address #}
      * {% set {elements-var} = {twig-method}
-     *     .email('*.co.uk')
-     *     .all() %}
+     *   .email('*.co.uk')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -424,8 +512,8 @@ class UserQuery extends ElementQuery
      *
      * {# Fetch that user #}
      * {% set {element-var} = {twig-method}
-     *     .username(requestedUsername|literal)
-     *     .one() %}
+     *   .username(requestedUsername|literal)
+     *   .one() %}
      * ```
      *
      * ```php
@@ -463,8 +551,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch all the Jane's #}
      * {% set {elements-var} = {twig-method}
-     *     .firstName('Jane')
-     *     .all() %}
+     *   .firstName('Jane')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -499,8 +587,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch all the Doe's #}
      * {% set {elements-var} = {twig-method}
-     *     .lastName('Doe')
-     *     .all() %}
+     *   .lastName('Doe')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -538,8 +626,8 @@ class UserQuery extends ElementQuery
      * {% set aWeekAgo = date('7 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .lastLoginDate(">= #{aWeekAgo}")
-     *     .all() %}
+     *   .lastLoginDate(">= #{aWeekAgo}")
+     *   .all() %}
      * ```
      *
      * ```php
@@ -579,8 +667,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# Fetch active and locked users #}
      * {% set {elements-var} = {twig-method}
-     *     .status(['active', 'locked'])
-     *     .all() %}
+     *   .status(['active', 'locked'])
+     *   .all() %}
      * ```
      *
      * ```php
@@ -618,8 +706,8 @@ class UserQuery extends ElementQuery
      * ```twig
      * {# fetch users with their user groups #}
      * {% set users = craft.users()
-     *     .withGroups()
-     *     .all() %}
+     *   .withGroups()
+     *   .all() %}
      * ```
      *
      * @param bool $value The property value (defaults to true)
@@ -646,23 +734,46 @@ class UserQuery extends ElementQuery
         $this->joinElementTable('users');
 
         $this->query->select([
-            'users.username',
             'users.photoId',
+            'users.pending',
+            'users.locked',
+            'users.suspended',
+            'users.admin',
+            'users.username',
             'users.firstName',
             'users.lastName',
             'users.email',
             'users.unverifiedEmail',
-            'users.admin',
-            'users.locked',
-            'users.pending',
-            'users.suspended',
             'users.lastLoginDate',
             'users.lockoutDate',
             'users.hasDashboard',
         ]);
 
+        // todo: cleanup after next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::USERS, 'active')) {
+            $this->query->addSelect(['users.active']);
+        }
+
         if (is_bool($this->admin)) {
             $this->subQuery->andWhere(['users.admin' => $this->admin]);
+        }
+
+        if (is_bool($this->authors)) {
+            $this->subQuery->andWhere([
+                $this->authors ? 'exists' : 'not exists',
+                (new Query())
+                    ->from(Table::ENTRIES)
+                    ->where(['authorId' => new Expression('[[elements.id]]')])
+            ]);
+        }
+
+        if (is_bool($this->assetUploaders)) {
+            $this->subQuery->andWhere([
+                $this->assetUploaders ? 'exists' : 'not exists',
+                (new Query())
+                    ->from(Table::ASSETS)
+                    ->where(['uploaderId' => new Expression('[[elements.id]]')])
+            ]);
         }
 
         if (is_bool($this->hasPhoto)) {
@@ -716,19 +827,21 @@ class UserQuery extends ElementQuery
     protected function statusCondition(string $status)
     {
         switch ($status) {
+            case User::STATUS_INACTIVE:
+                return [
+                    'users.active' => false,
+                    'users.pending' => false,
+                ];
             case User::STATUS_ACTIVE:
                 return [
-                    'users.suspended' => false,
-                    'users.pending' => false,
+                    'users.active' => true,
                 ];
             case User::STATUS_PENDING:
                 return [
-                    'users.suspended' => false,
                     'users.pending' => true,
                 ];
             case User::STATUS_LOCKED:
                 return [
-                    'users.suspended' => false,
                     'users.locked' => true,
                 ];
             case User::STATUS_SUSPENDED:

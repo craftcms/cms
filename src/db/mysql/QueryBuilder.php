@@ -103,7 +103,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         $replacePhName = self::PARAM_PREFIX . count($params);
         $params[$replacePhName] = $replace;
 
-        $sql = "UPDATE {$table} SET {$column} = REPLACE({$column}, {$findPhName}, {$replacePhName})";
+        $sql = "UPDATE $table SET $column = REPLACE($column, $findPhName, $replacePhName)";
         $where = $this->buildWhere($condition, $params);
 
         return $where === '' ? $sql : $sql . ' ' . $where;

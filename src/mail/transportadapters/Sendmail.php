@@ -9,19 +9,22 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\StringHelper;
+use Swift_SendmailTransport;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @mixin EnvAttributeParserBehavior
  */
 class Sendmail extends BaseTransportAdapter
 {
     /**
      * @since 3.4.0
      */
-    const DEFAULT_COMMAND = '/usr/sbin/sendmail -bs';
+    public const DEFAULT_COMMAND = '/usr/sbin/sendmail -bs';
 
     /**
      * @var string|null The command to pass to the transport
@@ -77,6 +80,16 @@ class Sendmail extends BaseTransportAdapter
     {
         $rules = parent::defineRules();
         $rules[] = [['command'], 'trim'];
+        $rules[] = [
+            ['command'],
+            'in',
+            'range' => function() {
+                return $this->_allowedCommands();
+            },
+            'when' => function() {
+                return $this->getUnparsedAttribute('command') === null;
+            },
+        ];
         return $rules;
     }
 
@@ -94,9 +107,21 @@ class Sendmail extends BaseTransportAdapter
      */
     public function getSettingsHtml(): ?string
     {
+        $commandOptions = array_map(function(string $command) {
+            return [
+                'label' => $command,
+                'value' => $command,
+                'data' => [
+                    'data' => [
+                        'hint' => null,
+                    ],
+                ],
+            ];
+        }, $this->_allowedCommands());
+
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Sendmail/settings', [
             'adapter' => $this,
-            'defaultCommand' => self::DEFAULT_COMMAND,
+            'commandOptions' => $commandOptions,
         ]);
     }
 
@@ -106,8 +131,26 @@ class Sendmail extends BaseTransportAdapter
     public function defineTransport()
     {
         return [
-            'class' => \Swift_SendmailTransport::class,
+            'class' => Swift_SendmailTransport::class,
             'command' => $this->command ? Craft::parseEnv($this->command) : self::DEFAULT_COMMAND,
         ];
+    }
+
+    /**
+     * Returns the allowed command values.
+     *
+     * @return string[]
+     */
+    private function _allowedCommands(): array
+    {
+        // Grab the current value from the project config rather than $this->command, so we don't risk
+        // polluting the allowed commands with a tampered value that came from the post data
+        $command = Craft::$app->getProjectConfig()->get('email.transportSettings.command');
+
+        return array_unique(array_filter([
+            !StringHelper::startsWith($command, '$') ? $command : null,
+            self::DEFAULT_COMMAND,
+            ini_get('sendmail_path'),
+        ]));
     }
 }

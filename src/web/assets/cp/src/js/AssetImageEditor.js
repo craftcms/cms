@@ -1308,7 +1308,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
                 return;
             }
 
-            this.onSave();
+            this.onSave(data);
             this.hide();
             Craft.cp.runQueue();
         });
@@ -1448,8 +1448,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
     /**
      * onSave callback.
      */
-    onSave: function() {
-        this.settings.onSave();
+    onSave: function(data) {
+        this.settings.onSave(data);
         this.trigger('save');
     },
 

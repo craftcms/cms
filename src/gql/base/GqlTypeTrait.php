@@ -20,27 +20,6 @@ use GraphQL\Type\Definition\Type;
 trait GqlTypeTrait
 {
     /**
-     * List of fields for this type.
-     *
-     * @return array
-     */
-    public static function getFieldDefinitions(): array
-    {
-        return [
-            'id' => [
-                'name' => 'id',
-                'type' => Type::id(),
-                'description' => 'The id of the entity',
-            ],
-            'uid' => [
-                'name' => 'uid',
-                'type' => Type::string(),
-                'description' => 'The uid of the entity',
-            ],
-        ];
-    }
-
-    /**
      * Returns an instance of this schema object's type as provided by entity registry
      *
      * @param array|null $fields optional fields to use
@@ -49,6 +28,7 @@ trait GqlTypeTrait
     public static function getType(?array $fields = null): Type
     {
         return GqlEntityRegistry::getEntity(static::class) ?: GqlEntityRegistry::createEntity(static::class, new GqlObjectType([
+            /** @phpstan-ignore-next-line */
             'name' => static::getName(),
             'fields' => $fields ?: (static::class . '::getFieldDefinitions'),
         ]));

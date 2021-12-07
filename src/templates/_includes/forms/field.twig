@@ -1,0 +1,36 @@
+{%- set id = id ?? "field#{random()}" %}
+{%- set instructionsId = instructionsId ?? "#{id}-instructions" %}
+{%- set tipId = tipId ?? "#{id}-tip" %}
+{%- set warningId = warningId ?? "#{id}-warning" %}
+{%- set errorsId = errorsId ?? "#{id}-errors" %}
+
+{%- set fieldLabel = fieldLabel ?? label ?? block('label') ?? null %}
+{%- set instructions = instructions ?? block('instructions') ?? null %}
+{%- set tip = tip ?? block('tip') ?? null %}
+{%- set warning = warning ?? block('warning') ?? null %}
+{%- set errors = errors ?? null %}
+
+{%- set describedBy = describedBy ?? [
+    errors ? errorsId : null,
+    instructions ? instructionsId : null,
+    tip ? tipId : null,
+    warning ? warningId : null,
+]|filter|join(' ') ?: null %}
+
+{%- if block('heading') is defined %}
+    {#- Extract whatever HTML comes before and after parent() #}
+    {%- set heading %}{% block heading %}<!-- HEADING -->{% endblock %}{% endset %}
+    {%- set headingParts = heading|split('<!-- HEADING -->', 2) %}
+    {%- set headingPrefix = headingParts[0] ?? null %}
+    {%- set headingSuffix = headingParts[1] ?? null %}
+{%- endif %}
+
+{%- if block('attr') is defined %}
+    {%- set fieldAttributes = (fieldAttributes ?? {})|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{%- endif %}
+
+{%- if block('input') is defined %}
+    {%- set input %}{% block input %}{{ input|raw }}{% endblock %}{% endset %}
+{%- endif %}
+
+{{ craft.cp.field(input, _context)|raw }}

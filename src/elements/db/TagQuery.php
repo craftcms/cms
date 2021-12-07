@@ -19,7 +19,7 @@ use yii\db\Connection;
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.
  *
- * @property string|string[]|TagGroup $group The handle(s) of the tag group(s) that resulting tags must belong to.
+ * @property-write string|string[]|TagGroup|null $group The tag group(s) that resulting tags must belong to
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
  * @method Tag|array|null nth(int $n, ?Connection $db = null)
@@ -57,8 +57,8 @@ class TagQuery extends ElementQuery
      * ```twig
      * {# fetch tags in the Topics group #}
      * {% set tags = craft.tags()
-     *     .group('topics')
-     *     .all() %}
+     *   .group('topics')
+     *   .all() %}
      * ```
      * @used-by group()
      * @used-by groupId()
@@ -95,8 +95,8 @@ class TagQuery extends ElementQuery
      * ```twig
      * {# Fetch tags in the Foo group #}
      * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
+     *   .group('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -144,8 +144,8 @@ class TagQuery extends ElementQuery
      * ```twig
      * {# Fetch tags in the group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
+     *   .groupId(1)
+     *   .all() %}
      * ```
      *
      * ```php

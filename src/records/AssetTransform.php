@@ -9,6 +9,7 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
+use DateTime;
 
 /**
  * Class AssetTransform record.
@@ -23,7 +24,7 @@ use craft\db\Table;
  * @property string $format Format
  * @property string $interlace Interlace
  * @property int $quality Quality
- * @property \DateTime $dimensionChangeTime Dimension change time
+ * @property DateTime $dimensionChangeTime Dimension change time
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

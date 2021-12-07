@@ -11,6 +11,7 @@ use Craft;
 use craft\base\RequestTrait;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
@@ -50,11 +51,11 @@ class Request extends \yii\web\Request
 {
     use RequestTrait;
 
-    const CP_PATH_LOGIN = 'login';
-    const CP_PATH_LOGOUT = 'logout';
-    const CP_PATH_SET_PASSWORD = 'set-password';
-    const CP_PATH_VERIFY_EMAIL = 'verify-email';
-    const CP_PATH_UPDATE = 'update';
+    public const CP_PATH_LOGIN = 'login';
+    public const CP_PATH_LOGOUT = 'logout';
+    public const CP_PATH_SET_PASSWORD = 'set-password';
+    public const CP_PATH_VERIFY_EMAIL = 'verify-email';
+    public const CP_PATH_UPDATE = 'update';
 
     /**
      * @inheritdoc
@@ -321,7 +322,7 @@ class Request extends \yii\web\Request
             // "/page/2"-style pagination URLs
             $pageTrigger = preg_quote($pageTrigger, '/');
 
-            if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $this->_path, $match)) {
+            if (preg_match("/^(?:(.*)\/)?$pageTrigger(\d+)$/", $this->_path, $match)) {
                 // Capture the page num
                 $this->_pageNum = (int)$match[2];
 
@@ -633,6 +634,18 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Overrides whether this request should be treated as an action request.
+     *
+     * @param bool $isActionRequest
+     * @see checkIfActionRequest()
+     * @since 3.7.8
+     */
+    public function setIsActionRequest(bool $isActionRequest): void
+    {
+        $this->_isActionRequest = $isActionRequest;
+    }
+
+    /**
      * Returns whether this was a Login request.
      *
      * @return bool
@@ -652,7 +665,7 @@ class Request extends \yii\web\Request
     public function getActionSegments(): ?array
     {
         $this->checkIfActionRequest();
-        return $this->_actionSegments;
+        return $this->_isActionRequest ? $this->_actionSegments : null;
     }
 
     /**
@@ -1504,9 +1517,8 @@ class Request extends \yii\web\Request
             $hostName &&
             $parsed['host'] !== $hostName &&
             (
-                !function_exists('idn_to_ascii') ||
+                !App::supportsIdn() ||
                 !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
-                !defined('INTL_IDNA_VARIANT_UTS46') ||
                 idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
             )
         ) {
@@ -1721,6 +1733,9 @@ class Request extends \yii\web\Request
             return $this->_utf8Value($params[$name]);
         }
 
+        // Normalize foo[bar][baz] => foo.bar.baz
+        $name = $this->_normalizeParam($name);
+
         // Maybe they're looking for a nested param?
         if (StringHelper::contains($name, '.')) {
             $path = explode('.', $name);
@@ -1738,6 +1753,20 @@ class Request extends \yii\web\Request
         }
 
         return $defaultValue;
+    }
+
+    /**
+     * Normalizes a nested param name into dot notation.
+     *
+     * @param string $name
+     * @return string
+     */
+    private function _normalizeParam(string $name): string
+    {
+        if (preg_match('/^\w+(?:\[[^\[\]]+\])+$/', $name)) {
+            $name = rtrim(preg_replace('/[\[\]]+/', '.', $name), '.');
+        }
+        return $name;
     }
 
     /**

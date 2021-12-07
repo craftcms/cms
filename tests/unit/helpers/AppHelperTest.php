@@ -35,21 +35,6 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testIsNitro()
-    {
-        $old = $_SERVER['CRAFT_NITRO'] ?? false;
-        $_SERVER['CRAFT_NITRO'] = '1';
-        self::assertTrue(App::isNitro());
-        if ($old !== false) {
-            $_SERVER['CRAFT_NITRO'] = $old;
-        } else {
-            unset($_SERVER['CRAFT_NITRO']);
-        }
-    }
-
-    /**
-     *
-     */
     public function testEditions()
     {
         self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
@@ -177,7 +162,9 @@ class AppHelperTest extends TestCase
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $generalConfig->phpMaxMemoryLimit = '512M';
 
-        ini_set('memory_limit', '256M');
+        if (@ini_set('memory_limit', '256M') === false) {
+            $this->markTestSkipped('Unable to set memory_limit');
+        }
 
         App::maxPowerCaptain();
 
@@ -308,9 +295,9 @@ class AppHelperTest extends TestCase
         return [
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
             ['dbConfig', ['class', 'dsn', 'password', 'username', 'charset', 'tablePrefix', 'schemaMap', 'commandMap', 'attributes', 'enableSchemaCache']],
+            ['dbMutexConfig', ['class', 'db']],
             ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',]],
             ['cacheConfig', ['class', 'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
-            ['mutexConfig', ['class', 'fileMode', 'dirMode']],
             ['logConfig', ['class']],
             ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
             ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],

@@ -13,8 +13,9 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\conditions\elements\entries\EntryQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -45,6 +46,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\Structures;
+use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use yii\base\Exception;
@@ -62,9 +64,9 @@ use yii\db\Expression;
  */
 class Entry extends Element
 {
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
     /**
      * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
@@ -72,7 +74,7 @@ class Entry extends Element
      * @see getAvailableEntryTypes()
      * @since 3.6.0
      */
-    const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+    public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /**
      * @inheritdoc
@@ -186,8 +188,17 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     * @return EntryQueryCondition
      */
-    protected static function defineSources(?string $context = null): array
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(EntryQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSources(string $context): array
     {
         if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -456,9 +467,9 @@ class Entry extends Element
                 }
 
                 // Delete?
-                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
-                    $actions[] = Delete::class;
+                $actions[] = Delete::class;
 
+                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
                     if (
                         $section->type === Section::TYPE_STRUCTURE &&
                         $section->maxLevels != 1 &&
@@ -547,7 +558,6 @@ class Entry extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Entry')],
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
@@ -601,14 +611,16 @@ class Entry extends Element
     public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         if ($handle === 'author') {
-            // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+            $sourceElementsWithAuthors = array_filter($sourceElements, function(Entry $entry) {
+                return $entry->authorId !== null;
+            });
 
-            $map = (new Query())
-                ->select(['id as source', 'authorId as target'])
-                ->from([Table::ENTRIES])
-                ->where(['and', ['id' => $sourceElementIds], ['not', ['authorId' => null]]])
-                ->all();
+            $map = array_map(function(Entry $entry) {
+                return [
+                    'source' => $entry->id,
+                    'target' => $entry->authorId
+                ];
+            }, $sourceElementsWithAuthors);
 
             return [
                 'elementType' => User::class,
@@ -734,7 +746,7 @@ class Entry extends Element
      * ```
      * ```twig
      * {% if entry.expiryDate %}
-     *     {{ entry.expiryDate|date('short') }}
+     *   {{ entry.expiryDate|date('short') }}
      * {% endif %}
      * ```
      */
@@ -814,11 +826,33 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'postDate' => Craft::t('app', 'Post Date'),
+            'expiryDate' => Craft::t('app', 'Expiry Date'),
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'typeId', 'authorId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+
+        $rules[] = [
+            ['postDate'],
+            DateCompareValidator::class,
+            'operator' => '<',
+            'compareAttribute' => 'expiryDate',
+            'when' => function() {
+                return $this->postDate && $this->expiryDate;
+            },
+            'on' => self::SCENARIO_LIVE,
+        ];
 
         if ($this->getSection()->type !== Section::TYPE_SINGLE) {
             $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
@@ -847,10 +881,10 @@ class Entry extends Element
                 $currentSites = static::find()
                     ->status(null)
                     ->id($this->id)
-                    ->siteId('*')
+                    ->site('*')
                     ->select('elements_sites.siteId')
-                    ->drafts($this->getIsDraft())
-                    ->provisionalDrafts($this->isProvisionalDraft)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->revisions($this->getIsRevision())
                     ->column();
             } else {
@@ -862,10 +896,10 @@ class Entry extends Element
                 array_push($currentSites, ...static::find()
                     ->status(null)
                     ->id($this->duplicateOf->id)
-                    ->siteId('*')
+                    ->site('*')
                     ->select('elements_sites.siteId')
-                    ->drafts($this->duplicateOf->getIsDraft())
-                    ->provisionalDrafts($this->duplicateOf->isProvisionalDraft)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->revisions($this->duplicateOf->getIsRevision())
                     ->column()
                 );
@@ -1111,10 +1145,10 @@ class Entry extends Element
      * ```
      * ```twig{1}
      * {% switch entry.type.handle %}
-     *     {% case 'article' %}
-     *         {% include "news/_article" %}
-     *     {% case 'link' %}
-     *         {% include "news/_link" %}
+     *   {% case 'article' %}
+     *     {% include "news/_article" %}
+     *   {% case 'link' %}
+     *     {% include "news/_link" %}
      * {% endswitch %}
      * ```
      *
@@ -1130,9 +1164,9 @@ class Entry extends Element
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
         if (!isset($this->typeId) || !isset($sectionEntryTypes[$this->typeId])) {
-            Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
+            Craft::warning("Entry $this->id has an invalid entry type ID: $this->typeId");
             if (empty($sectionEntryTypes)) {
-                throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
+                throw new InvalidConfigException("Section $this->sectionId has no entry types");
             }
             return reset($sectionEntryTypes);
         }
@@ -1178,6 +1212,7 @@ class Entry extends Element
     public function setAuthor(?User $author = null): void
     {
         $this->_author = $author;
+        $this->authorId = $author->id;
     }
 
     /**
@@ -1215,7 +1250,7 @@ class Entry extends Element
      * ```
      * ```twig{1}
      * {% if entry.isEditable %}
-     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     *   <a href="{{ entry.cpEditUrl }}">Edit</a>
      * {% endif %}
      * ```
      */
@@ -1262,7 +1297,7 @@ class Entry extends Element
         $userSession = Craft::$app->getUser();
         $userId = $userSession->getId();
 
-        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft()) {
+        if ($this->getIsDraft()) {
             /** @var Entry|DraftBehavior $this */
             return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
         }
@@ -1286,7 +1321,7 @@ class Entry extends Element
      * ```
      * ```twig{2}
      * {% if entry.isEditable %}
-     *     <a href="{{ entry.cpEditUrl }}">Edit</a>
+     *   <a href="{{ entry.cpEditUrl }}">Edit</a>
      * {% endif %}
      * ```
      */
@@ -1520,6 +1555,17 @@ EOD;
             $this->authorId = Craft::$app->getUser()->getId();
         }
 
+        if ($this->scenario === self::SCENARIO_LIVE && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = new DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // ...unless an expiry date is set in the past
+            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+            }
+        }
+
         return parent::beforeValidate();
     }
 
@@ -1534,20 +1580,20 @@ EOD;
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new UnsupportedSiteException($this, $this->siteId, "The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+            throw new UnsupportedSiteException($this, $this->siteId, "The section '$section->name' is not enabled for the site '$this->siteId'");
         }
 
         // Make sure the entry has at least one revision if the section has versioning enabled
         if ($this->_shouldSaveRevision()) {
             $hasRevisions = self::find()
                 ->revisionOf($this)
-                ->siteId('*')
+                ->site('*')
                 ->status(null)
                 ->exists();
             if (!$hasRevisions) {
                 $currentEntry = self::find()
                     ->id($this->id)
-                    ->siteId('*')
+                    ->site('*')
                     ->status(null)
                     ->one();
 
@@ -1569,6 +1615,8 @@ EOD;
                     if ($this->newParentId) {
                         $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
                             'preferSites' => [$this->siteId],
+                            'drafts' => null,
+                            'draftOf' => false,
                         ]);
 
                         if (!$parentEntry) {
@@ -1590,13 +1638,6 @@ EOD;
         }
 
         $this->updateTitle();
-
-        if ($this->enabled && !$this->postDate) {
-            // Default the post date to the current date/time
-            $this->postDate = new DateTime();
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-        }
 
         return parent::beforeSave($isNew);
     }
@@ -1633,23 +1674,10 @@ EOD;
 
             $record->save(false);
 
-            if (!$this->duplicateOf && $section->type == Section::TYPE_STRUCTURE) {
+            if ($this->getIsCanonical() && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->_hasNewParent()) {
-                    $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
-                    if (!$this->newParentId) {
-                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
-                            Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
-                        } else {
-                            Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
-                        }
-                    } else {
-                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
-                            Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
-                        } else {
-                            Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
-                        }
-                    }
+                    $this->_placeInStructure($isNew, $section);
                 }
 
                 // Update the entry's descendants, who may be using this entry's URI in their own URIs
@@ -1662,6 +1690,40 @@ EOD;
         }
 
         parent::afterSave($isNew);
+    }
+
+    private function _placeInStructure(bool $isNew, Section $section): void
+    {
+        // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
+        if ($this->isProvisionalDraft) {
+            $canonicalParentId = Entry::find()
+                ->select(['elements.id'])
+                ->ancestorOf($this->getCanonicalId())
+                ->ancestorDist(1)
+                ->anyStatus()
+                ->scalar();
+
+            if ($this->newParentId == $canonicalParentId) {
+                Craft::$app->getStructures()->remove($this->structureId, $this);
+                return;
+            }
+        }
+
+        $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
+
+        if (!$this->newParentId) {
+            if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+            } else {
+                Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+            }
+        } else {
+            if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+            } else {
+                Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+            }
+        }
     }
 
     /**
@@ -1749,7 +1811,7 @@ EOD;
                 $drafts = static::find()
                     ->draftOf($this)
                     ->status(null)
-                    ->siteId('*')
+                    ->site('*')
                     ->unique()
                     ->all();
                 $structuresService = Craft::$app->getStructures();
@@ -1789,13 +1851,16 @@ EOD;
      */
     private function _checkForNewParent(): bool
     {
-        // Make sure this is a Structure section
-        if ($this->getSection()->type != Section::TYPE_STRUCTURE) {
+        // Make sure this is a Structure section, and that it’s either a canonical entry or provisional drafT
+        if (!(
+            $this->getSection()->type === Section::TYPE_STRUCTURE &&
+            ($this->getIsCanonical() || $this->isProvisionalDraft)
+        )) {
             return false;
         }
 
-        // Is it a brand new entry?
-        if (!isset($this->id)) {
+        // Is it a brand new (non-provisional) entry?
+        if (!isset($this->id) && !$this->isProvisionalDraft) {
             return true;
         }
 
@@ -1804,24 +1869,31 @@ EOD;
             return false;
         }
 
+        // If this is a provisional draft, but doesn't actually exist in the structure yet, check based on the canonical entry
+        if ($this->isProvisionalDraft && !$this->lft) {
+            $entry = $this->getCanonical(true);
+        } else {
+            $entry = $this;
+        }
+
         // Is it set to the top level now, but it hadn't been before?
-        if (!$this->newParentId && $this->level != 1) {
+        if (!$this->newParentId && $entry->level != 1) {
             return true;
         }
 
         // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId && $this->level == 1) {
+        if ($this->newParentId && $entry->level == 1) {
             return true;
         }
 
         // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentQuery = self::find();
-        $oldParentQuery->ancestorOf($this);
-        $oldParentQuery->ancestorDist(1);
-        $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->status(null);
-        $oldParentQuery->select('elements.id');
-        $oldParentId = $oldParentQuery->scalar();
+        $oldParentId = self::find()
+            ->ancestorOf($entry)
+            ->ancestorDist(1)
+            ->siteId($entry->siteId)
+            ->status(null)
+            ->select('elements.id')
+            ->scalar();
 
         return $this->newParentId != $oldParentId;
     }
@@ -1851,7 +1923,6 @@ EOD;
      */
     private static function _getGqlIdentifierByContext(EntryType $context): string
     {
-        $gqlIdentifier = $context->getSection()->handle . '_' . $context->handle;
-        return $gqlIdentifier;
+        return $context->getSection()->handle . '_' . $context->handle;
     }
 }

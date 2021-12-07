@@ -147,6 +147,7 @@ class SearchQuery
 
             if ($appendToPrevious) {
                 /** @noinspection PhpUndefinedVariableInspection */
+                /** @phpstan-ignore-next-line */
                 $previousToken->terms[] = $term;
             } else {
                 $this->_tokens[] = $term;
