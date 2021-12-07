@@ -1,4 +1,4 @@
-class AuthenticatorFormHandler
+export class AuthenticatorFormHandler
 {
 
     readonly endpoint = 'authentication/update-authenticator-settings';
@@ -127,5 +127,3 @@ class AuthenticatorFormHandler
         this.$container.fadeTo(100, 1);
     }
 }
-
-new AuthenticatorFormHandler();

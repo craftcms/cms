@@ -7,7 +7,15 @@ module.exports = getConfig({
     config: {
         entry: {
             AccountSettingsForm: './AccountSettingsForm.js',
-            profile: './profile.js'
+            profile: './profile.js',
+            webAuthn: './WebAuthnFormHandler.ts',
+            authForm: './AuthenticatorFormHandler.ts',
         },
+        output: {
+            library: {
+                name: 'Craft',
+                type: 'assign-properties',
+            },
+        }
     }
 });

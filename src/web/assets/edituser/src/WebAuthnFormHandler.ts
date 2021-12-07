@@ -7,7 +7,7 @@ interface CraftUserInfo
     uid: string
 }
 
-class WebAuthnFormHandler
+export class WebAuthnFormHandler
 {
     readonly attachEndpoint = 'authentication/attach-web-authn-credentials';
     private disabled = false;
@@ -156,6 +156,7 @@ class WebAuthnFormHandler
         for (const excluded of optionData.excludeCredentials) {
             // Adjust for the proprietary base64 encode thing.
             if (excluded.id.replace(/[-_=+\/]/g, '') !== credentialId.replace(/[-_=+\/]/g, '')) {
+                // @ts-ignore
                 newExcluded.push(excluded);
             }
         }
@@ -164,5 +165,3 @@ class WebAuthnFormHandler
         WebAuthnFormHandler.$button.data('credential-options', optionData);
     }
 }
-
-new WebAuthnFormHandler();

@@ -40,10 +40,10 @@ class EditUserAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'AccountSettingsForm.min.js',
-        'AuthenticatorFormHandler.min.js',
-        'WebAuthnFormHandler.min.js',
-        'profile.min.js',
+        'AccountSettingsForm.js',
+        'profile.js',
+        'webAuthn.js',
+        'authForm.js',
     ];
 
     /**

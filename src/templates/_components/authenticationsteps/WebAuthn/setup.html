@@ -39,7 +39,7 @@
         emptyMessage: Craft.t('app', 'No credentials exist yet.'),
         tableData: {{ tableData|json_encode|raw }},
         padded: true,
-        deleteCallback: WebAuthnFormHandler.removeExcludedCredential,
+        deleteCallback: Craft.WebAuthnFormHandler.removeExcludedCredential,
         beforeDelete: id => new Promise((resolve) => Craft.elevatedSessionManager.requireElevatedSession(() => resolve(true), () => resolve(false)))
     });
 {% endjs %}
