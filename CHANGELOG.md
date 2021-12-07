@@ -1,9 +1,25 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.25 - 2021-12-07
+
+### Changed
+- Improved the accessibility of the “Default Asset Location” and “Asset Location” Assets field settings.
+- Element indexes now keep track of recent sort selections and factor them into the new element order. ([#10203](https://github.com/craftcms/cms/issues/10203))
+- The “View” button and “View” menu options on Edit Entry pages now use `<a>` tags. ([#10220](https://github.com/craftcms/cms/discussions/10220))
+- A `describedBy` variable is now available for `input` blocks rendered when embedding the `_includes/forms/field` control panel template.
+- `craft\services\Tokens::createToken()` and `createPreviewToken()` now have `$token` arguments, which accept pre-generated tokens.
+
+### Fixed
+- Fixed an error that could occur if the `field()` macro in the `_includes/forms` control panel template was called withoun an `input` argument. ([#10208](https://github.com/craftcms/cms/issues/10208))
+- Fixed a bug where the `migrate/fresh` command was erasing all migration history and attempting to reapply migrations. ([#10209](https://github.com/craftcms/cms/issues/10209))
+- Fixed a JavaScript error that occurred when pressing <kbd>Return</kbd> on an autosuggest input when no option was selected.
+- Fixed a bug where Edit Category pages could have two sets of “Preview” and “View” buttons. ([#10215](https://github.com/craftcms/cms/issues/10215))
+- Fixed a bug where boolean menus weren’t showing the “No” option as selected when the value was `false`.
+
 ## 3.7.24 - 2021-12-02
 
 ### Added
-- Added the `parseBooleanEnv` Twig filter.
+- Added the `parseBooleanEnv()` Twig function.
 - Added `craft\base\FieldTrait::$describedBy`, which custom fields should reference when setting their input’s `aria-describedby` attribute. ([#10183](https://github.com/craftcms/cms/pull/10183))
 - Added `craft\behaviors\EnvAttributeParserBehavior::getUnparsedAttribute()`.
 - Added `craft\fieldlayoutelements\BaseField::errorsId()`.

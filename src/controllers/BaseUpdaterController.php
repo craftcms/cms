@@ -13,7 +13,6 @@ use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\Json;
-use craft\validators\UrlValidator;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
