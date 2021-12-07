@@ -174,7 +174,9 @@
         }|filter,
         rows: siteRows,
         fullWidth: not headlessMode,
-        staticRows: true,
+        allowAdd: false,
+        allowDelete: false,
+        allowReorder: false,
         errors: siteErrors|unique
     }) }}
 
@@ -249,6 +251,9 @@
             defaultValues: {
                 refresh: true,
             },
+            allowAdd: true,
+            allowReorder: true,
+            allowDelete: true,
             rows: section.previewTargets,
             errors: section.getErrors('previewTargets')
         }) }}

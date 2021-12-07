@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 /* widgets */
 .widget {
@@ -138,7 +138,7 @@
 .widgetmanagerhud-icon svg {
   width: 16px;
   height: 16px;
-  @include svg-mask($mediumTextColor);
+  @include svg-mask(var(--ui-control-color));
 }
 
 /* New Widget Menu */

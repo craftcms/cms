@@ -1,3 +1,5 @@
+import './routes.scss';
+
 (function($) {
     /** global: Craft */
     /** global: Garnish */

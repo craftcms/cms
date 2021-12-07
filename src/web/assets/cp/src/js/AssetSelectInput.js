@@ -27,19 +27,30 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
      */
     _onKeyDown: function(ev) {
         if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
-            if (Craft.PreviewFileModal.openInstance) {
-                Craft.PreviewFileModal.openInstance.selfDestruct();
-            } else {
-                var $element = this.elementSelect.$focusedItem;
-
-                if ($element.length) {
-                    this._loadPreview($element);
-                }
-            }
-
+            this.openPreview();
             ev.stopPropagation();
-
             return false;
+        }
+    },
+    
+    onAddElements: function () {
+        this.$elements.find('.elementthumb').addClass('open-preview').on('mousedown touchstart', (ev) => {
+            this.elementSelect.focusItem($(ev.target).parent());
+            this.openPreview();
+            ev.stopPropagation();
+        });
+        this.base();
+    },
+
+    openPreview: function() {
+        if (Craft.PreviewFileModal.openInstance) {
+            Craft.PreviewFileModal.openInstance.selfDestruct();
+        } else {
+            var $element = this.elementSelect.$focusedItem;
+
+            if ($element.length) {
+                this._loadPreview($element);
+            }
         }
     },
 
@@ -60,7 +71,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
      * @private
      */
     _loadPreview: function($element) {
-        var settings = {};
+        var settings = {
+            minGutter: 50
+        };
 
         if ($element.data('image-width')) {
             settings.startingWidth = $element.data('image-width');
@@ -109,6 +122,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 type: 'button',
                 class: 'btn dashed',
                 'data-icon': 'upload',
+                'aria-label': this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
                 text: this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
             }).insertAfter(this.$addElementBtn);
             options.fileInput = $('<input/>', {
@@ -147,6 +161,25 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 this.$uploadBtn.next('input[type=file]').trigger('click');
             });
         }
+    },
+
+    replaceElement: function(elementId, replaceWithId) {
+        var parameters = {
+            elementId: replaceWithId,
+            siteId: this.settings.criteria.siteId,
+            size: this.settings.viewMode
+        };
+
+        Craft.postActionRequest('elements/get-element-html', parameters, data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
+                this.removeElement($existing);
+                let elementInfo = Craft.getElementInfo(data.html);
+                this.selectElements([elementInfo]);
+            }
+        });
     },
 
     refreshThumbnail: function(elementId) {

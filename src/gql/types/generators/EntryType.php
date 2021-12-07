@@ -7,7 +7,6 @@
 
 namespace craft\gql\types\generators;
 
-use Craft;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
@@ -34,16 +33,11 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateTypes($context = null): array
     {
-        $entryTypes = Craft::$app->getSections()->getAllEntryTypes();
         $gqlTypes = [];
 
+        $entryTypes = GqlHelper::getSchemaContainedEntryTypes();
+
         foreach ($entryTypes as $entryType) {
-            $requiredContexts = EntryElement::gqlScopesByContext($entryType);
-
-            if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
-                continue;
-            }
-
             // Generate a type for each entry type
             $type = static::generateType($entryType);
             $gqlTypes[$type->name] = $type;
@@ -65,12 +59,12 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
         }
 
         $contentFieldGqlTypes = self::getContentFields($context);
-        $entryTypeFields = TypeManager::prepareFieldDefinitions(array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+        $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
         return GqlEntityRegistry::createEntity($typeName, new Entry([
             'name' => $typeName,
-            'fields' => function() use ($entryTypeFields) {
-                return $entryTypeFields;
+            'fields' => function() use ($entryTypeFields, $typeName) {
+                return TypeManager::prepareFieldDefinitions($entryTypeFields, $typeName);
             },
         ]));
     }

@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\updater;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Updater
@@ -32,14 +32,14 @@ class UpdaterAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'update.css',
+        'css/Updater.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'Updater.min.js',
+        'Updater.js',
     ];
 
     /**

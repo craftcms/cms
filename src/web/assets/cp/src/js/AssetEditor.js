@@ -9,6 +9,7 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend({
     originalBasename: null,
     originalExtension: null,
     reloadIndex: false,
+    replaceAsset: null,
 
     init: function(element, settings) {
         this.on('updateForm', () => {
@@ -24,7 +25,11 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend({
                 if (this.settings.elementIndex) {
                     this.settings.elementIndex.updateElements();
                 } else if (this.settings.input) {
-                    this.settings.input.refreshThumbnail(this.$element.data('id'));
+                    if (this.replaceAsset) {
+                        this.settings.input.replaceElement(this.$element.data('id'), this.replaceAsset);
+                    } else {
+                        this.settings.input.refreshThumbnail(this.$element.data('id'));
+                    }
                 }
             }
         });
@@ -36,7 +41,12 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend({
 
     showImageEditor: function() {
         new Craft.AssetImageEditor(this.$element.data('id'), {
-            onSave: () => {
+
+            onSave: (data) => {
+                if (data.elementId) {
+                    this.settings.elementId = this.replaceAsset = data.elementId;
+                }
+
                 this.reloadIndex = true;
                 this.load();
             },

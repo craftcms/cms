@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\OptionsFieldConditionRule;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
@@ -224,6 +225,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'id' => 'options',
             'name' => 'options',
             'addRowLabel' => Craft::t('app', 'Add an option'),
+            'allowAdd' => true,
+            'allowReorder' => true,
+            'allowDelete' => true,
             'cols' => $cols,
             'rows' => $rows,
             'errors' => $this->getErrors('options'),
@@ -336,6 +340,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
     /**
      * @inheritdoc
+     */
+    public function getQueryConditionRuleType()
+    {
+        return OptionsFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.4.6
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value): void
@@ -344,12 +356,12 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($this->multi) {
             if (is_string($value)) {
                 if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
-                    $value = "{$match[1]}*\"{$match[2]}\"*";
+                    $value = "$match[1]*\"$match[2]\"*";
                 }
             } else if (is_array($value)) {
                 foreach ($value as &$v) {
                     if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
-                        $v = "{$match[1]}*\"{$match[2]}\"*";
+                        $v = "$match[1]*\"$match[2]\"*";
                     }
                 }
             }

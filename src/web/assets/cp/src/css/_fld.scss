@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 $base: 24px;
 $tabPadding: 14px;
@@ -228,7 +228,7 @@ $gridColor: hsl(212, 50%, 95%);
     }
 
     svg {
-      @include svg-mask($lightTextColor);
+      @include svg-mask(var(--ui-control-color));
     }
   }
 
@@ -255,7 +255,7 @@ $gridColor: hsl(212, 50%, 95%);
       margin: 0;
 
       & + .fld-required-indicator {
-        color: $textColor;
+        color: var(--ui-control-color);
       }
     }
 

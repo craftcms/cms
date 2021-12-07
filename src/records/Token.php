@@ -10,6 +10,7 @@ namespace craft\records;
 use craft\db\ActiveRecord;
 use craft\db\Table;
 use craft\validators\DateTimeValidator;
+use DateTime;
 
 /**
  * Token record.
@@ -19,7 +20,7 @@ use craft\validators\DateTimeValidator;
  * @property array $route Route
  * @property int $usageLimit Usage limit
  * @property int $usageCount Usage count
- * @property \DateTime $expiryDate Expiry date
+ * @property DateTime $expiryDate Expiry date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

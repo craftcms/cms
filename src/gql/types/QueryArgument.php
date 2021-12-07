@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,6 +9,7 @@
 namespace craft\gql\types;
 
 use craft\errors\GqlException;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\BooleanValueNode;
 use GraphQL\Language\AST\IntValueNode;
@@ -15,12 +17,12 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 /**
- * Class QueryArgument
+ * Class QueryArgument implements the QueryArgument scalar type for GraphQL which can be a string, a number or a boolean value.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.14
  */
-class QueryArgument extends ScalarType
+class QueryArgument extends ScalarType implements SingularTypeInterface
 {
     /**
      * @var string
@@ -87,7 +89,7 @@ class QueryArgument extends ScalarType
     public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return (string)$valueNode->value;
+            return $valueNode->value;
         }
 
         if ($valueNode instanceof IntValueNode) {
@@ -95,7 +97,7 @@ class QueryArgument extends ScalarType
         }
 
         if ($valueNode instanceof BooleanValueNode) {
-            return (bool)$valueNode->value;
+            return $valueNode->value;
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.

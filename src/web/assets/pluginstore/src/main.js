@@ -219,7 +219,7 @@ Garnish.$doc.ready(function() {
 
                 this.$on('craftIdChange', function() {
                     if (this.craftId) {
-                        $('.label', $craftId).html(this.craftId.username)
+                        $('.label', $craftId).text(this.craftId.username)
 
                         $craftId.removeClass('hidden')
                         $craftIdConnectForm.addClass('hidden')

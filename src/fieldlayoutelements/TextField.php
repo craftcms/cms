@@ -122,13 +122,12 @@ class TextField extends BaseNativeField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $id = $this->id();
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => $this->type,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,
-            'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'id' => $this->id(),
+            'describedBy' => $this->describedBy($element, $static),
             'size' => $this->size,
             'name' => $this->name ?? $this->attribute(),
             'value' => $this->value($element),
@@ -138,6 +137,7 @@ class TextField extends BaseNativeField
             'autocapitalize' => $this->autocapitalize,
             'disabled' => $static || $this->disabled,
             'readonly' => $this->readonly,
+            'required' => !$static && $this->required,
             'title' => $this->title,
             'placeholder' => $this->placeholder,
             'step' => $this->step,

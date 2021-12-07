@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\ElementMutationResolver;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class SaveGlobalSet
@@ -28,7 +29,7 @@ class GlobalSet extends ElementMutationResolver
      * @param $context
      * @param ResolveInfo $resolveInfo
      * @return GlobalSetElement
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
     public function saveGlobalSet($source, array $arguments, $context, ResolveInfo $resolveInfo): GlobalSetElement
     {

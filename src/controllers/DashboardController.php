@@ -22,6 +22,7 @@ use craft\web\UploadedFile;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -375,7 +376,7 @@ class DashboardController extends Controller
                 try {
                     $backupPath = Craft::$app->getDb()->backup();
                     $zip->addFile($backupPath, basename($backupPath));
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Craft::warning('Error adding database backup to support request: ' . $e->getMessage(), __METHOD__);
                     $getHelpModel->message .= "\n\n---\n\nError adding database backup: " . $e->getMessage();
                 }
@@ -399,7 +400,7 @@ class DashboardController extends Controller
                 'contents' => fopen($zipPath, 'rb'),
                 'filename' => 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->getName()) . '.zip',
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::warning('Error creating support zip: ' . $e->getMessage(), __METHOD__);
             $getHelpModel->message .= "\n\n---\n\nError creating zip: " . $e->getMessage();
         }

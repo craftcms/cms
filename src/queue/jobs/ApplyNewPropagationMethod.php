@@ -49,9 +49,11 @@ class ApplyNewPropagationMethod extends BaseJob
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
-            ->siteId('*')
+            ->site('*')
             ->unique()
-            ->status(null);
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null);
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
@@ -97,18 +99,22 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->siteId($otherSiteIds)
                     ->structureId($element->structureId)
                     ->status(null)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->orderBy(null)
                     ->indexBy('siteId')
                     ->all();
 
-                if (!empty($otherSiteElements)) {
-                    // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
-                    Db::update(Table::ELEMENTS_SITES, [
-                        'uri' => null,
-                    ], [
-                        'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
-                    ], [], false);
+                if (empty($otherSiteElements)) {
+                    return;
                 }
+
+                // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
+                Db::update(Table::ELEMENTS_SITES, [
+                    'uri' => null,
+                ], [
+                    'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
+                ], [], false);
 
                 // Duplicate those elements so their content can live on
                 while (!empty($otherSiteElements)) {
@@ -134,12 +140,15 @@ class ApplyNewPropagationMethod extends BaseJob
                             $structuresService->moveAfter($element->structureId, $newElement, $element, Structures::MODE_INSERT);
                         } else {
                             // Append the clone to the source's parent
-                            $parentId = $element
-                                ->getAncestors(1)
+                            $parentId = $elementType::find()
+                                ->ancestorOf($element->id)
+                                ->ancestorDist(1)
                                 ->select(['elements.id'])
-                                ->siteId('*')
+                                ->site('*')
                                 ->unique()
-                                ->anyStatus()
+                                ->status(null)
+                                ->drafts(null)
+                                ->provisionalDrafts(null)
                                 ->scalar();
 
                             if ($parentId !== false) {

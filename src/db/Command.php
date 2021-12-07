@@ -9,6 +9,7 @@ namespace craft\db;
 
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use DateTime;
 
 /**
  * @inheritdoc
@@ -29,7 +30,7 @@ class Command extends \yii\db\Command
     {
         if ($includeAuditColumns) {
             $tableSchema = $this->db->getTableSchema($table);
-            $now = Db::prepareDateForDb(new \DateTime());
+            $now = Db::prepareDateForDb(new DateTime());
 
             if (isset($tableSchema->columns['dateCreated']) && empty($columns['dateCreated'])) {
                 $columns['dateCreated'] = $now;
@@ -78,7 +79,7 @@ class Command extends \yii\db\Command
                     $columns[] = 'uid';
                 }
 
-                $date = Db::prepareDateForDb(new \DateTime());
+                $date = Db::prepareDateForDb(new DateTime());
 
                 foreach ($rows as &$row) {
                     if ($hasDateCreated) {
@@ -121,7 +122,7 @@ class Command extends \yii\db\Command
 
         if ($includeAuditColumns) {
             $tableSchema = $this->db->getTableSchema($table);
-            $now = Db::prepareDateForDb(new \DateTime());
+            $now = Db::prepareDateForDb(new DateTime());
 
             $defaultValues = [];
 
@@ -167,7 +168,7 @@ class Command extends \yii\db\Command
             !isset($columns['dateUpdated']) &&
             isset($this->db->getTableSchema($table)->columns['dateUpdated'])
         ) {
-            $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
+            $columns['dateUpdated'] = Db::prepareDateForDb(new DateTime());
         }
 
         parent::update($table, $columns, $condition, $params);
@@ -259,7 +260,7 @@ class Command extends \yii\db\Command
     public function softDelete(string $table, $condition = '', array $params = []): Command
     {
         return $this->update($table, [
-            'dateDeleted' => Db::prepareDateForDb(new \DateTime()),
+            'dateDeleted' => Db::prepareDateForDb(new DateTime()),
         ], $condition, $params, false);
     }
 

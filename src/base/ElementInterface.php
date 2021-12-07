@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\behaviors\CustomFieldBehavior;
+use craft\conditions\QueryConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
@@ -20,7 +22,7 @@ use Twig\Markup;
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
  * @mixin ElementTrait
- * @mixin \craft\behaviors\CustomFieldBehavior
+ * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -227,6 +229,14 @@ interface ElementInterface extends ComponentInterface
     public static function findAll($criteria = null): array;
 
     /**
+     * Returns an element query condition for the element type.
+     *
+     * @return QueryConditionInterface
+     * @since 4.0.0
+     */
+    public static function createCondition(): QueryConditionInterface;
+
+    /**
      * Returns all of the possible statuses that elements of this type may have.
      *
      * This method will be called when populating the Status menu on element indexes, for element types whose
@@ -280,10 +290,10 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string|null $context The context ('index' or 'modal').
+     * @param string $context The context ('index', 'modal', or 'settings').
      * @return array The sources.
      */
-    public static function sources(?string $context = null): array;
+    public static function sources(string $context): array;
 
     /**
      * Returns all of the field layouts associated with elements from the given source.
@@ -1182,19 +1192,21 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the field handles that have changed for this element.
      *
+     * @param bool $anySite Whether to check for fields that have changed across any site
      * @return string[]
      * @since 3.7.0
      */
-    public function getModifiedFields(): array;
+    public function getModifiedFields(bool $anySite = false): array;
 
     /**
      * Returns whether a field value has changed for this element.
      *
      * @param string $fieldHandle
+     * @param bool $anySite Whether to check if the field has changed across any site
      * @return bool
      * @since 3.7.0
      */
-    public function isFieldModified(string $fieldHandle): bool;
+    public function isFieldModified(string $fieldHandle, bool $anySite = false): bool;
 
     /**
      * Returns whether a custom field value has changed since the element was first loaded.
@@ -1320,11 +1332,20 @@ interface ElementInterface extends ComponentInterface
     public function setEagerLoadedElementCount(string $handle, int $count): void;
 
     /**
-     * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
+     * Returns whether the element is "fresh" (not yet explicitly saved, and without validation errors).
      *
-     * @return bool Whether the element’s content is fresh
+     * @return bool
+     * @since 3.7.14
      */
-    public function getHasFreshContent(): bool;
+    public function getIsFresh(): bool;
+
+    /**
+     * Sets whether the element is "fresh" (not yet explicitly saved, and without validation errors).
+     *
+     * @param bool $isFresh
+     * @since 3.7.14
+     */
+    public function setIsFresh(bool $isFresh = true): void;
 
     /**
      * Sets the revision creator ID to be saved.

@@ -17,6 +17,7 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
+use Throwable;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -37,7 +38,7 @@ class CategoriesController extends Controller
     /**
      * @event ElementEvent The event that is triggered when a category’s template is rendered for Live Preview.
      */
-    const EVENT_PREVIEW_CATEGORY = 'previewCategory';
+    public const EVENT_PREVIEW_CATEGORY = 'previewCategory';
 
     /**
      * @inheritdoc
@@ -465,7 +466,7 @@ class CategoriesController extends Controller
                 ]);
 
                 return null;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
         }

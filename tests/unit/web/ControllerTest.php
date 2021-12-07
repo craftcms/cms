@@ -17,7 +17,6 @@ use UnitTester;
 use yii\base\Action;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidRouteException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 
@@ -53,22 +52,6 @@ class ControllerTest extends Unit
         });
 
         self::assertTrue($this->controller->beforeAction(new Action('allow-anonymous', $this->controller)));
-    }
-
-    /**
-     * @throws InvalidRouteException
-     */
-    public function testRunActionJsonError()
-    {
-        // We accept JSON.
-        Craft::$app->getRequest()->setAcceptableContentTypes(['application/json' => true]);
-        Craft::$app->getRequest()->headers->set('Accept', 'application/json');
-
-        /* @var Response $resp */
-        $resp = $this->controller->runAction('me-dont-exist');
-
-        // As long as this is set. We can expect yii to do its thing.
-        self::assertSame(Response::FORMAT_JSON, $resp->format);
     }
 
     /**

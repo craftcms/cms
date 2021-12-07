@@ -126,9 +126,7 @@ class User extends \yii\web\User
         // Strip out any tags that may have gotten in there by accident
         // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
         // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
-        $url = str_replace(['{', '}'], '', $url);
-
-        return $url;
+        return str_replace(['{', '}'], '', $url);
     }
 
     /**
@@ -162,15 +160,15 @@ class User extends \yii\web\User
      * ```
      * ```twig{5}
      * <form method="post" action="" accept-charset="UTF-8">
-     *     {{ csrfInput() }}
-     *     {{ actionInput('users/login') }}
+     *   {{ csrfInput() }}
+     *   {{ actionInput('users/login') }}
      *
-     *     {% set username = craft.app.user.rememberedUsername %}
-     *     <input type="text" name="loginName" value="{{ username }}">
+     *   {% set username = craft.app.user.rememberedUsername %}
+     *   <input type="text" name="loginName" value="{{ username }}">
      *
-     *     <input type="password" name="password">
+     *   <input type="password" name="password">
      *
-     *     <input type="submit" value="Login">
+     *   <input type="submit" value="Login">
      * </form>
      * ```
      *
@@ -191,13 +189,13 @@ class User extends \yii\web\User
      * ```
      * ```twig
      * {% if craft.app.user.isGuest %}
-     *     <a href="{{ url(craft.app.config.general.getLoginPath()) }}">
-     *         Login
-     *     </a>
+     *   <a href="{{ url(craft.app.config.general.getLoginPath()) }}">
+     *     Login
+     *   </a>
      * {% else %}
-     *     <a href="{{ url(craft.app.config.general.getLogoutPath()) }}">
-     *         Logout
-     *     </a>
+     *   <a href="{{ url(craft.app.config.general.getLogoutPath()) }}">
+     *     Logout
+     *   </a>
      * {% endif %}
      * ```
      */

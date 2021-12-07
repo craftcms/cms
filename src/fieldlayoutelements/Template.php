@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\web\View;
+use Throwable;
 
 /**
  * Template represents a UI element based on a custom template that can be included in field layouts.
@@ -92,7 +93,7 @@ class Template extends BaseUiElement
                 'element' => $element,
                 'static' => $static,
             ], View::TEMPLATE_MODE_SITE));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return $this->_error($e->getMessage(), 'error');
         }
 

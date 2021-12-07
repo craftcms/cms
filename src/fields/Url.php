@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\TextFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -20,6 +21,7 @@ use craft\validators\UrlValidator;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\db\Schema;
+use yii\validators\EmailValidator;
 
 /**
  * Url represents a URL field.
@@ -32,15 +34,15 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @since 3.6.0
      */
-    const TYPE_URL = 'url';
+    public const TYPE_URL = 'url';
     /**
      * @since 3.6.0
      */
-    const TYPE_TEL = 'tel';
+    public const TYPE_TEL = 'tel';
     /**
      * @since 3.6.0
      */
-    const TYPE_EMAIL = 'email';
+    public const TYPE_EMAIL = 'email';
 
     /**
      * @inheritdoc
@@ -110,7 +112,7 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING . "({$this->maxLength})";
+        return Schema::TYPE_STRING . "($this->maxLength)";
     }
 
     /**
@@ -173,11 +175,11 @@ class Url extends Field implements PreviewableFieldInterface
             }
         }
 
-        if ($value === '') {
+        if (!$value) {
             return null;
         }
 
-        return $value;
+        return UrlHelper::encodeParams($value);
     }
 
     /**
@@ -233,7 +235,7 @@ class Url extends Field implements PreviewableFieldInterface
 
         $input = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'describedBy' => $this->describedBy,
             'class' => ['flex-grow', 'fullwidth'],
             'type' => $valueType,
             'name' => "$this->handle[value]",
@@ -302,8 +304,8 @@ JS;
                     $patterns[] = '^tel:[\d\+\(\)\-,;]+$';
                     break;
                 case self::TYPE_EMAIL:
-                    // Regex taken from EmailValidator::$pattern
-                    $patterns[] = '^mailto:[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$';
+                    $emailPattern = trim((new EmailValidator())->pattern, '/^$');
+                    $patterns[] = "^mailto:$emailPattern(\?.*)?$";
                     break;
             }
         }
@@ -320,13 +322,21 @@ JS;
     /**
      * @inheritdoc
      */
+    public function getQueryConditionRuleType()
+    {
+        return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
         }
         $value = Html::encode($value);
-        return "<a href=\"{$value}\" target=\"_blank\">{$value}</a>";
+        return "<a href=\"$value\" target=\"_blank\">$value</a>";
     }
 
     /**

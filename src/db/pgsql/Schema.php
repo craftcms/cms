@@ -121,7 +121,7 @@ class Schema extends \yii\db\pgsql\Schema
         $ignoredTableArgs = [];
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoredTableArgs[] = "--exclude-table-data '{schema}.{$table}'";
+            $ignoredTableArgs[] = "--exclude-table-data '{schema}.$table'";
         }
 
         return $this->_pgpasswordCommand() .
@@ -250,8 +250,8 @@ from
     LEFT JOIN pg_attribute fa ON fa.attrelid=ct.confrelid AND fa.attnum = ct.confkey[ct.s]
 WHERE
     ct.contype='f'
-    AND c.relname={$tableName}
-    AND ns.nspname={$tableSchema}
+    AND c.relname=$tableName
+    AND ns.nspname=$tableSchema
 ORDER BY 
     fns.nspname, fc.relname, a.attnum
 SQL;

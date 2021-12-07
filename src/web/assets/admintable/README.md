@@ -26,7 +26,7 @@ The only markup that is required is an element to mount the table on.
 
 ## Javascript
 
-The table is initialised via javascript.
+The table is initialised via JavaScript.
 
 ```js
 new Craft.VueAdminTable({...options...});
@@ -51,6 +51,7 @@ new Craft.VueAdminTable({...options...});
 | deleteSuccessMessage      | String   | `“{name}” deleted.`                          | Message to be displayed as the success notice after successful deletion.                                                                 |
 | emptyMessage              | String   | `No data available.`                         | Message to be displayed when there are no rows in the table data.                                                                        |
 | fullPage                  | Bool     | `false`                                      | Set to this to true when the table is the only element on the template. Sets the correct styling classes.                                |
+| fullPane                  | Bool     | `true`                                       | Set this to false when the table isn’t the only UI component in its content pane.                                                        |
 | minItems                  | Int      | `null`                                       | The minimum number of items allowed in the table.                                                                                        |
 | padded                    | Bool     | `false`                                      | Set this to true to add padding around the table.                                                                                        |
 | perPage                   | Int      | `null`                                       | Used with `tableDataEndpoint` to define the number of rows to show per page.                                                             |

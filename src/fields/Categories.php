@@ -168,6 +168,13 @@ class Categories extends BaseRelationField
         return $variables;
     }
 
+    public function getEagerLoadingMap(array $sourceElements)
+    {
+        $map = parent::getEagerLoadingMap($sourceElements);
+        $map['criteria']['orderBy'] = ['structureelements.lft' => SORT_ASC];
+        return $map;
+    }
+
     /**
      * @inheritdoc
      */
@@ -184,7 +191,7 @@ class Categories extends BaseRelationField
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(CategoryInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(CategoryInterface::getType())),
             'args' => CategoryArguments::getArguments(),
             'resolve' => CategoryResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),

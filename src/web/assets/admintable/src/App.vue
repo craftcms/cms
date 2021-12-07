@@ -52,7 +52,7 @@
             </div>
 
             <div class="tableview" :class="{ loading: isLoading, hidden: this.isEmpty }">
-                <div class="tablepane vue-admin-tablepane">
+                <div :class="{ 'vue-admin-tablepane': true, 'tablepane': fullPane }">
                     <vuetable
                             ref="vuetable"
                             :append-params="appendParams"
@@ -214,6 +214,10 @@
             fullPage: {
                 type: Boolean,
                 default: false,
+            },
+            fullPane: {
+                type: Boolean,
+                default: true,
             },
             itemLabels: {
                 type: Object,

@@ -132,7 +132,7 @@ class Tags extends BaseRelationField
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(TagInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(TagInterface::getType())),
             'args' => TagArguments::getArguments(),
             'resolve' => TagResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),

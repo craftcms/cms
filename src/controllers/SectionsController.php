@@ -138,7 +138,7 @@ class SectionsController extends Controller
         $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
-            $section->maxLevels = $this->request->getBodyParam('maxLevels');
+            $section->maxLevels = $this->request->getBodyParam('maxLevels') ?: null;
             $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
         }
 

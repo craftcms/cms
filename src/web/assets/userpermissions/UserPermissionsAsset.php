@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\userpermissions;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for user permissions
@@ -31,13 +31,13 @@ class UserPermissionsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'user-permissions.css',
+        'css/UserPermissions.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'UserPermissions.min.js',
+        'UserPermissions.js',
     ];
 }

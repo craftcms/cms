@@ -24,7 +24,9 @@ use yii\db\Connection;
 /**
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
- * @property string|string[]|MatrixBlockType $type The handle(s) of the block type(s) that resulting Matrix blocks must have
+ * @property-write ElementInterface $owner The owner element the Matrix blocks must belong to
+ * @property-write string|string[]|MatrixBlockType|null $type The block type(s) that resulting Matrix blocks must have
+ * @property-write string|string[]|MatrixField|null $field The field the Matrix blocks must belong to
  * @method MatrixBlock[]|array all($db = null)
  * @method MatrixBlock|array|null one($db = null)
  * @method MatrixBlock|array|null nth(int $n, ?Connection $db = null)
@@ -88,8 +90,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# fetch the entry's text blocks #}
      * {% set blocks = entry.myMatrixField
-     *     .type('text')
-     *     .all() %}
+     *   .type('text')
+     *   .all() %}
      * ```
      * @used-by MatrixBlockQuery::type()
      * @used-by typeId()
@@ -102,8 +104,20 @@ class MatrixBlockQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
+            case 'field':
+                $this->field($value);
+                break;
+            case 'owner':
+                $this->owner($value);
+                break;
             case 'type':
                 $this->type($value);
+                break;
+            case 'ownerSite':
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
+                break;
+            case 'ownerLocale':
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -128,8 +142,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch {elements} in the Foo field #}
      * {% set {elements-var} = {twig-method}
-     *     .field('foo')
-     *     .all() %}
+     *   .field('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -189,8 +203,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks in the field with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .fieldId(1)
-     *     .all() %}
+     *   .fieldId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -227,8 +241,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks created for an element with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .ownerId(1)
-     *     .all() %}
+     *   .ownerId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -256,8 +270,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks created for this entry #}
      * {% set {elements-var} = {twig-method}
-     *     .owner(myEntry)
-     *     .all() %}
+     *   .owner(myEntry)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -338,8 +352,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks with a Foo block type #}
      * {% set {elements-var} = myEntry.myMatrixField
-     *     .type('foo')
-     *     .all() %}
+     *   .type('foo')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -387,8 +401,8 @@ class MatrixBlockQuery extends ElementQuery
      * ```twig
      * {# Fetch Matrix blocks of the block type with an ID of 1 #}
      * {% set {elements-var} = myEntry.myMatrixField
-     *     .typeId(1)
-     *     .all() %}
+     *   .typeId(1)
+     *   .all() %}
      * ```
      *
      * ```php
@@ -530,6 +544,11 @@ class MatrixBlockQuery extends ElementQuery
         // This method won't get called if $this->fieldId isn't set to a single int
         /** @var MatrixField $matrixField */
         $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
+
+        if (!empty($this->typeId) && ArrayHelper::isNumeric($this->typeId)) {
+            return $matrixField->getBlockTypeFields($this->typeId);
+        }
+
         return $matrixField->getBlockTypeFields();
     }
 

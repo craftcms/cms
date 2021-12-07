@@ -7,6 +7,8 @@
     not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
+{%- set orientation = orientation ?? inputAttributes.dir ?? craft.app.locale.getOrientation() %}
+
 {%- set inputAttributes = {
     class: class,
     type: type,
@@ -19,7 +21,7 @@
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
     autocomplete: autocomplete is boolean ? (autocomplete ? 'on' : 'off') : autocomplete,
     autocorrect: (autocorrect ?? true) ? false : 'off',
-    autocapitalize: (autocapitalize ?? true) ? false : 'off',
+    autocapitalize: (autocapitalize ?? true) ? false : 'none',
     disabled: disabled ?? false,
     readonly: readonly ?? false,
     title: title ?? false,
@@ -27,8 +29,9 @@
     step: step ?? false,
     min: min ?? false,
     max: max ?? false,
+    dir: orientation,
     aria: {
-        describedby: instructionsId ?? false,
+        describedby: describedBy ?? false,
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
@@ -42,7 +45,7 @@
             'show-chars-left': showCharsLeft,
         },
         style: {
-            ("padding-#{craft.app.locale.getOrientation() == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
+            ("padding-#{orientation == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
         },
     }, recursive=true) %}
 {%- endif %}

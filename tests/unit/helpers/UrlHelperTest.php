@@ -163,6 +163,14 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * @dataProvider encodeParamsDataProvider
+     */
+    public function testEncodeParams(string $expected, string $url)
+    {
+        $this->assertSame($expected, UrlHelper::encodeParams($url));
+    }
+
+    /**
      * Tests the UrlHelper::rootRelativeUrl() method.
      *
      * @dataProvider rootRelativeUrlDataProvider
@@ -349,19 +357,19 @@ class UrlHelperTest extends Unit
     public function cpUrlCreationDataProvider(): array
     {
         return [
-            'test-empty' => ['{siteUrl}{cpTrigger}', '', []],
+            'test-empty' => ['{cpUrl}', '', []],
             'test-simple-endpoint' => [
-                '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             'test-preexisting-endpoints' => [
-                '{siteUrl}{cpTrigger}/nav?param3=entry3&param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
                 ['param1' => 'entry1', 'param2' => 'entry2']
             ],
             [
-                '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
@@ -562,6 +570,20 @@ class UrlHelperTest extends Unit
     }
 
     /**
+     * @return array
+     */
+    public function encodeParamsDataProvider(): array
+    {
+        return [
+            ['http://example.test', 'http://example.test?'],
+            ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar baz'],
+            ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
+            ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
+            ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+        ];
+    }
+
+    /**
      * Tests for UrlHelper::rootRelativeUrl()
      *
      * @return array
@@ -655,6 +677,7 @@ class UrlHelperTest extends Unit
         if ($scheme === 'http') {
             $siteUrl = str_replace('https', 'http', $siteUrl);
         }
-        return str_replace(['{siteUrl}', '{cpTrigger}'], [$siteUrl, $this->cpTrigger], $url);
+        $cpUrl = rtrim($siteUrl, '/') . ":80/$this->cpTrigger";
+        return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);
     }
 }

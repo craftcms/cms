@@ -8,7 +8,8 @@
 namespace craft\gql\base;
 
 /**
- * Class SingleGeneratorInterface
+ * SingleGeneratorInterface defines the common interface to be implemented by generator classes that support generating
+ * a single GraphQL type at a time.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

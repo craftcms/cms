@@ -18,6 +18,7 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
 use craft\gql\handlers\SiteId;
+use yii\base\InvalidConfigException;
 
 /**
  * Class ArgumentManager
@@ -46,7 +47,7 @@ class ArgumentManager extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
+    public const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
     private array $_argumentHandlers = [];
 
@@ -113,7 +114,7 @@ class ArgumentManager extends Component
      *
      * @param $arguments
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function prepareArguments($arguments): array
     {

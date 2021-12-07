@@ -86,7 +86,7 @@ abstract class ElementResolver extends Resolver
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
         // If that's already preloaded, then, uhh, skip the preloading?
-        if (is_array($query)) {
+        if (!$query instanceof ElementQuery) {
             return $query;
         }
 
@@ -97,7 +97,7 @@ abstract class ElementResolver extends Resolver
             $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $fieldContext);
 
             // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
-            // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
+            // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition knows where it's at.
             if (($fieldContext !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
                 $parentField = $field;
             }

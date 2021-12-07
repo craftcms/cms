@@ -25,22 +25,22 @@ use yii\base\UnknownPropertyException;
  */
 class GeneralConfig extends BaseObject
 {
-    const IMAGE_DRIVER_AUTO = 'auto';
-    const IMAGE_DRIVER_GD = 'gd';
-    const IMAGE_DRIVER_IMAGICK = 'imagick';
+    public const IMAGE_DRIVER_AUTO = 'auto';
+    public const IMAGE_DRIVER_GD = 'gd';
+    public const IMAGE_DRIVER_IMAGICK = 'imagick';
 
     /**
      * @since 3.6.0
      */
-    const CAMEL_CASE = 'camel';
+    public const CAMEL_CASE = 'camel';
     /**
      * @since 3.6.0
      */
-    const PASCAL_CASE = 'pascal';
+    public const PASCAL_CASE = 'pascal';
     /**
      * @since 3.6.0
      */
-    const SNAKE_CASE = 'snake';
+    public const SNAKE_CASE = 'snake';
 
     private static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
@@ -829,7 +829,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Security
-     * @defaultAlt 5 minutes
+     * @defaultAlt 1 hour
      */
     public $invalidLoginWindowDuration = 3600;
 
@@ -1566,7 +1566,7 @@ class GeneralConfig extends BaseObject
      * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
      * than the visible portion of the iframe.
      *
-     * If you have a [decoupled front-end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * If you have a [decoupled front end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
      * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
      * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
      * `x-craft-live-preview` query string parameter.
@@ -1669,22 +1669,12 @@ class GeneralConfig extends BaseObject
     public $verifyEmailSuccessPath = '';
 
     /**
-     * @var array Stores any custom config settings
-     */
-    private array $_customSettings = [];
-
-    /**
      * @inheritdoc
      */
     public function __get($name)
     {
         if (isset(self::$renamedSettings[$name])) {
-            $newName = self::$renamedSettings[$name];
-            return $this->$newName;
-        }
-
-        if (array_key_exists($name, $this->_customSettings)) {
-            return $this->_customSettings[$name];
+            return $this->{self::$renamedSettings[$name]};
         }
 
         return parent::__get($name);
@@ -1697,7 +1687,7 @@ class GeneralConfig extends BaseObject
     {
         if (isset(self::$renamedSettings[$name])) {
             $newName = self::$renamedSettings[$name];
-            $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
+            $configFilePath = Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
             Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
             $this->$newName = $value;
             return;
@@ -1706,7 +1696,7 @@ class GeneralConfig extends BaseObject
         try {
             parent::__set($name, $value);
         } catch (UnknownPropertyException $e) {
-            $this->_customSettings[$name] = $value;
+            throw new UnknownPropertyException("Invalid general config setting: $name. You can set custom config settings from config/custom.php.");
         }
     }
 
@@ -1715,8 +1705,8 @@ class GeneralConfig extends BaseObject
      */
     public function __isset($name)
     {
-        if (array_key_exists($name, $this->_customSettings)) {
-            return $this->_customSettings[$name] !== null;
+        if (isset(self::$renamedSettings[$name])) {
+            return isset($this->{self::$renamedSettings[$name]});
         }
 
         return parent::__isset($name);

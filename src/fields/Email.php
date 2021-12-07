@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\conditions\elements\fields\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -101,11 +102,10 @@ class Email extends Field implements PreviewableFieldInterface
      */
     protected function inputHtml($value, ?ElementInterface $element = null): string
     {
-        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'email',
-            'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'id' => Html::id($this->handle),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'inputmode' => 'email',
             'placeholder' => Craft::t('site', $this->placeholder),
@@ -127,12 +127,20 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function getQueryConditionRuleType()
+    {
+        return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
         }
         $value = Html::encode($value);
-        return "<a href=\"mailto:{$value}\">{$value}</a>";
+        return "<a href=\"mailto:$value\">$value</a>";
     }
 }

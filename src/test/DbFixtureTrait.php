@@ -8,13 +8,14 @@
 namespace craft\test;
 
 use yii\db\Connection;
+use yii\test\DbFixture;
 
 /**
  * trait DbFixtureTrait
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.6.0
- * @mixin \yii\test\DbFixture
+ * @mixin DbFixture
  */
 trait DbFixtureTrait
 {

@@ -20,7 +20,7 @@
     {%- if showAllOption %}
         <div>
             {% include "_includes/forms/checkbox" with {
-                instructionsId: instructionsId ?? false,
+                describedBy: describedBy ?? false,
                 class: 'all',
                 label: raw("<b>#{allLabel}</b>"),
                 name: name ?? null,

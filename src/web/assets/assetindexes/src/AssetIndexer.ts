@@ -47,7 +47,7 @@ type ConcurrentTask = {
 
 // Asset Indexer
 // =====================================================================================
-class AssetIndexer {
+export class AssetIndexer {
     private $indexingSessionTable: JQuery;
     private _currentIndexingSession: number | null = null;
     private _maxConcurrentConnections: number;
@@ -403,7 +403,7 @@ class AssetIndexer {
      * @param sessionId
      */
     public pruneWaitingTasks(sessionId: number): void {
-        const newTaskList = [];
+        const newTaskList: ConcurrentTask[] = [];
         let modified = false;
 
         this._prunedSessionIds.push(sessionId);

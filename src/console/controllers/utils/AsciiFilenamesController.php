@@ -13,6 +13,7 @@ use craft\elements\Asset;
 use craft\errors\InvalidElementException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
+use Throwable;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -84,14 +85,14 @@ EOD;
             $asset->newFilename = FileHelper::sanitizeFilename($asset->getFilename(), [
                 'asciiOnly' => true,
             ]);
-            $this->stdout("    - Renaming {$asset->getFilename()} to {$asset->newFilename} ... ");
+            $this->stdout("    - Renaming {$asset->getFilename()} to $asset->newFilename ... ");
             try {
                 if (!Craft::$app->getElements()->saveElement($asset)) {
                     throw new InvalidElementException($asset, implode(', ', $asset->getFirstErrors()));
                 }
                 $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
                 $successCount++;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 if (!$e instanceof InvalidElementException) {
                     Craft::$app->getErrorHandler()->logException($e);

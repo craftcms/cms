@@ -75,7 +75,7 @@ class Delete extends ElementAction implements DeleteActionInterface
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         validateSelection: function(\$selectedItems)
         {
             for (let i = 0; i < \$selectedItems.length; i++) {

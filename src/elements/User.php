@@ -9,6 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\conditions\elements\users\UserQueryCondition;
+use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -42,6 +44,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use DateInterval;
 use DateTime;
+use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -80,21 +83,21 @@ class User extends Element implements IdentityInterface
      * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
      * something if there is an authentication error.
      */
-    const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
+    public const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
 
     /**
      * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
      * @since 3.7.0
      */
-    const EVENT_DEFINE_NAME = 'defineName';
+    public const EVENT_DEFINE_NAME = 'defineName';
 
     /**
      * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
      * @since 3.7.0
      */
-    const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
+    public const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
 
-    const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+    public const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
     // User statuses
     // -------------------------------------------------------------------------
@@ -102,30 +105,30 @@ class User extends Element implements IdentityInterface
     /**
      * @since 4.0.0
      */
-    const STATUS_INACTIVE = 'inactive';
-    const STATUS_ACTIVE = 'active';
-    const STATUS_LOCKED = 'locked';
-    const STATUS_SUSPENDED = 'suspended';
-    const STATUS_PENDING = 'pending';
+    public const STATUS_INACTIVE = 'inactive';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_LOCKED = 'locked';
+    public const STATUS_SUSPENDED = 'suspended';
+    public const STATUS_PENDING = 'pending';
 
     // Authentication error codes
     // -------------------------------------------------------------------------
 
-    const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
-    const AUTH_PENDING_VERIFICATION = 'pending_verification';
-    const AUTH_ACCOUNT_LOCKED = 'account_locked';
-    const AUTH_ACCOUNT_COOLDOWN = 'account_cooldown';
-    const AUTH_PASSWORD_RESET_REQUIRED = 'password_reset_required';
-    const AUTH_ACCOUNT_SUSPENDED = 'account_suspended';
-    const AUTH_NO_CP_ACCESS = 'no_cp_access';
-    const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
-    const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
+    public const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
+    public const AUTH_PENDING_VERIFICATION = 'pending_verification';
+    public const AUTH_ACCOUNT_LOCKED = 'account_locked';
+    public const AUTH_ACCOUNT_COOLDOWN = 'account_cooldown';
+    public const AUTH_PASSWORD_RESET_REQUIRED = 'password_reset_required';
+    public const AUTH_ACCOUNT_SUSPENDED = 'account_suspended';
+    public const AUTH_NO_CP_ACCESS = 'no_cp_access';
+    public const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
+    public const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    const SCENARIO_REGISTRATION = 'registration';
-    const SCENARIO_PASSWORD = 'password';
+    public const SCENARIO_REGISTRATION = 'registration';
+    public const SCENARIO_PASSWORD = 'password';
 
     /**
      * @inheritdoc
@@ -230,8 +233,17 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
+     * @return UserQueryCondition
      */
-    protected static function defineSources(?string $context = null): array
+    public static function createCondition(): QueryConditionInterface
+    {
+        return Craft::createObject(UserQueryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSources(string $context): array
     {
         $sources = [
             [
@@ -728,7 +740,7 @@ class User extends Element implements IdentityInterface
             if (($name = $this->getName()) !== '') {
                 return $name;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
 
@@ -945,7 +957,7 @@ class User extends Element implements IdentityInterface
         return json_encode([
             $token,
             null,
-            $userAgent,
+            md5($userAgent),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
@@ -1805,7 +1817,7 @@ class User extends Element implements IdentityInterface
             } else {
                 // Delete the entries
                 $entryQuery = Entry::find()
-                    ->siteId('*')
+                    ->site('*')
                     ->unique()
                     ->authorId($this->id)
                     ->status(null);
@@ -1816,7 +1828,7 @@ class User extends Element implements IdentityInterface
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1839,7 +1851,7 @@ class User extends Element implements IdentityInterface
 
         $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
-        if ($userAgent !== $requestUserAgent) {
+        if (!hash_equals($userAgent, md5($requestUserAgent))) {
             Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
             return false;
         }

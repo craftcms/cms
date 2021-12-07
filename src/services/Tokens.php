@@ -66,7 +66,7 @@ class Tokens extends Component
 
         $tokenRecord = new TokenRecord();
         $tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32);
-        $tokenRecord->route = (array)$route;
+        $tokenRecord->route = $route;
 
         if ($usageLimit !== null) {
             $tokenRecord->usageCount = 0;
@@ -137,7 +137,7 @@ class Tokens extends Component
             }
         }
 
-        return Json::decode($result['route']);
+        return (array)Json::decodeIfJson($result['route']);
     }
 
     /**

@@ -217,9 +217,7 @@ class ElementHelper
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
 
         // Remove any leading/trailing/double slashes
-        $uri = preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
-
-        return $uri;
+        return preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
     }
 
     /**
@@ -287,23 +285,26 @@ class ElementHelper
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
         $sites = [];
-        $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(), 'id', 'uid');
+        $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(true), 'id', 'uid');
 
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {
                 $site = [
-                    'siteId' => $site,
+                    'siteId' => (int)$site,
                 ];
-            } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
+            } else {
+                if (!isset($site['siteId'])) {
+                    throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
+                }
+                $site['siteId'] = (int)$site['siteId'];
             }
 
             $site['siteUid'] = $siteUidMap[$site['siteId']];
 
-            $site = array_merge([
+            $site += [
                 'propagate' => true,
                 'enabledByDefault' => true,
-            ], $site);
+            ];
 
             if ($withUnpropagatedSites || $site['propagate']) {
                 $sites[] = $site;
@@ -432,6 +433,32 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given element (or its root element if a block element) is a canonical element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.17
+     */
+    public static function isCanonical(ElementInterface $element): bool
+    {
+        $root = static::rootElement($element);
+        return $root->getIsCanonical();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a derivative of another element.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.7.17
+     */
+    public static function isDerivative(ElementInterface $element): bool
+    {
+        $root = static::rootElement($element);
+        return $root->getIsDerivative();
+    }
+
+    /**
      * Returns whether the given derivative element is outdated compared to its canonical element.
      *
      * @param ElementInterface $element
@@ -508,11 +535,11 @@ class ElementHelper
      */
     public static function findSource(string $elementType, string $sourceKey, ?string $context = null): ?array
     {
-        /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
-        $sources = $elementType::sources($context);
+        $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
+        $rootSource = null;
 
-        while (!empty($path)) {
+        while ($path) {
             $key = array_shift($path);
             $source = null;
 
@@ -529,8 +556,9 @@ class ElementHelper
 
             // Is that the end of the path?
             if (empty($path)) {
-                // If this is a nested source, set the full path on it so we don't forget it
-                if ($source['key'] !== $sourceKey) {
+                // Is this a nested source?
+                if (isset($rootSource)) {
+                    $source['type'] = $rootSource['type'];
                     $source['keyPath'] = $sourceKey;
                 }
 
@@ -538,6 +566,9 @@ class ElementHelper
             }
 
             // Prepare for searching nested sources
+            if ($rootSource === null) {
+                $rootSource = $source;
+            }
             $sources = $source['nested'] ?? [];
         }
 

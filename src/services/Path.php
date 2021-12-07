@@ -573,4 +573,30 @@ class Path extends Component
     {
         return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath() . DIRECTORY_SEPARATOR . 'license.key';
     }
+
+    /**
+     * Returns an array of all system directories.
+     *
+     * @return string[]
+     * @since 3.7.17
+     */
+    public function getSystemPaths(): array
+    {
+        return [
+            Craft::getAlias('@contentMigrations'),
+            Craft::getAlias('@lib'),
+            $this->getComposerBackupsPath(false),
+            $this->getConfigBackupPath(false),
+            $this->getConfigDeltaPath(false),
+            $this->getConfigPath(),
+            $this->getDbBackupPath(false),
+            $this->getLogPath(false),
+            $this->getRebrandPath(false),
+            $this->getRuntimePath(false),
+            $this->getSiteTemplatesPath(),
+            $this->getSiteTranslationsPath(),
+            $this->getTestsPath(),
+            $this->getVendorPath(),
+        ];
+    }
 }

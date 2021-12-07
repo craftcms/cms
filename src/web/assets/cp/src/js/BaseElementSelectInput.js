@@ -207,7 +207,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         });
 
         this.$elements = this.$elements.add($elements);
+
         this.updateAddElementsBtn();
+
+        this.onAddElements();
     },
 
     createElementEditor: function($element, settings) {
@@ -368,12 +371,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
     createNewElement: function(elementInfo) {
         var $element = elementInfo.$element.clone();
-
+        var removeText = Craft.t('app', 'Remove {label}', {
+            label: elementInfo.label,
+        });
         // Make a couple tweaks
         Craft.setElementSize($element, (this.settings.viewMode === 'large' ? 'large' : 'small'));
         $element.addClass('removable');
         $element.prepend(`<input type="hidden" name="${this.settings.name}${this.settings.single ? '' : '[]'}" value="${elementInfo.id}">` +
-            '<a class="delete icon" title="' + Craft.t('app', 'Remove') + '"></a>');
+            '<button type="button" class="delete icon" title="' + Craft.t('app', 'Remove') + '" aria-label="' + removeText + '"></button>');
 
         return $element;
     },
@@ -432,6 +437,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
     },
 
+    onAddElements: function () {
+        this.trigger('addElements');
+        this.settings.onAddElements();
+    },
+
     onRemoveElements: function() {
         this.trigger('removeElements');
         this.settings.onRemoveElements();
@@ -456,6 +466,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         showSiteMenu: false,
         modalStorageKey: null,
         modalSettings: {},
+        onAddElements: $.noop,
         onSelectElements: $.noop,
         onRemoveElements: $.noop,
         sortable: true,

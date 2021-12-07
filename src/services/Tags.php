@@ -22,6 +22,7 @@ use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use Throwable;
 use yii\base\Component;
 
 /**
@@ -36,30 +37,28 @@ class Tags extends Component
     /**
      * @event TagGroupEvent The event that is triggered before a tag group is saved.
      */
-    const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
+    public const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
 
     /**
      * @event TagGroupEvent The event that is triggered after a tag group is saved.
      */
-    const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
+    public const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
 
     /**
      * @event TagGroupEvent The event that is triggered before a tag group is deleted.
      */
-    const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
+    public const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
     /**
      * @event TagGroupEvent The event that is triggered before a tag group delete is applied to the database.
      * @since 3.1.0
      */
-    const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
+    public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
     /**
      * @event TagGroupEvent The event that is triggered after a tag group is deleted.
      */
-    const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
-
-    const CONFIG_TAGGROUP_KEY = 'tagGroups';
+    public const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
 
     /**
      * @var MemoizableArray<TagGroup>|null
@@ -182,7 +181,7 @@ class Tags extends Component
      * @param bool $runValidation Whether the tag group should be validated
      * @return bool Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true): bool
     {
@@ -207,7 +206,7 @@ class Tags extends Component
             $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }
 
-        $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid;
+        $configPath = ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid;
         $configData = $tagGroup->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
@@ -262,7 +261,7 @@ class Tags extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -297,7 +296,7 @@ class Tags extends Component
      *
      * @param int $groupId The tag group's ID
      * @return bool Whether the tag group was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      * @since 3.0.12
      */
     public function deleteTagGroupById(int $groupId): bool
@@ -320,7 +319,7 @@ class Tags extends Component
      *
      * @param TagGroup $tagGroup The tag group
      * @return bool Whether the tag group was deleted successfully
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function deleteTagGroup(TagGroup $tagGroup): bool
     {
@@ -335,7 +334,7 @@ class Tags extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
         return true;
     }
 
@@ -388,7 +387,7 @@ class Tags extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -418,7 +417,7 @@ class Tags extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $tagGroups = $projectConfig->get(self::CONFIG_TAGGROUP_KEY);
+        $tagGroups = $projectConfig->get(ProjectConfig::PATH_TAG_GROUPS);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
@@ -430,7 +429,7 @@ class Tags extends Component
                     foreach ($tagGroup['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
+                                $projectConfig->remove(ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }

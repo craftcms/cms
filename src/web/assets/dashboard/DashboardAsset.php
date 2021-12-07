@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\dashboard;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Dashboard
@@ -32,14 +32,14 @@ class DashboardAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'dashboard.css',
+        'css/Dashboard.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'Dashboard.min.js',
+        'Dashboard.js',
     ];
 
     /**

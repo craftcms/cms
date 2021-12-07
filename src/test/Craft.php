@@ -26,6 +26,7 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use DateTime;
+use Exception;
 use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionException;
 use Throwable;
@@ -342,11 +343,10 @@ class Craft extends Yii2
     public function expectEvent(
         string $class,
         string $eventName,
-               $callback,
+        $callback,
         string $eventInstance = '',
-        array  $eventValues = []
-    ): void
-    {
+        array $eventValues = []
+    ): void {
         // Add this event.
         $eventTriggered = false;
 
@@ -468,7 +468,7 @@ class Craft extends Yii2
      * @param string $dateOne
      * @param string $dateTwo
      * @param float $secondsDelta
-     * @throws \Exception
+     * @throws Exception
      */
     public function assertEqualDates(TestInterface $test, string $dateOne, string $dateTwo, float $secondsDelta = 5.0): void
     {

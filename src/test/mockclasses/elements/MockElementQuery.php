@@ -20,7 +20,7 @@ use craft\helpers\StringHelper;
  */
 class MockElementQuery extends ElementQuery
 {
-    const CLASS_TEMPLATE_FILE = '../../templates/mockElementQuery.tpl';
+    public const CLASS_TEMPLATE_FILE = '../../templates/mockElementQuery.tpl';
 
     /**
      * The "elements" to return when invoking `one()` or `all()`

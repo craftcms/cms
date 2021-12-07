@@ -747,7 +747,7 @@ class Assets extends Component
         }
 
         $dir = Craft::$app->getPath()->getAssetThumbsPath() . DIRECTORY_SEPARATOR . $asset->id;
-        $path = $dir . DIRECTORY_SEPARATOR . "thumb-{$width}x{$height}.{$ext}";
+        $path = $dir . DIRECTORY_SEPARATOR . "thumb-{$width}x$height.$ext";
 
         if (!file_exists($path) || $asset->dateModified->getTimestamp() > filemtime($path)) {
             // Bail if we're not ready to generate it yet
@@ -809,7 +809,7 @@ class Assets extends Component
             $textSize = '14';
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($ext) . '</text>';
         $svg = str_replace('<!-- EXT -->', $textNode, $svg);
 
         FileHelper::writeToFile($path, $svg);
@@ -1047,7 +1047,7 @@ class Assets extends Component
         try {
             FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
         } catch (Exception $exception) {
-            throw new VolumeException(Craft::t('app', 'Unable to create directory for temporary volume.'));
+            throw new VolumeException('Unable to create directory for temporary volume.');
         }
 
         return $folder;

@@ -30,9 +30,9 @@ use craft\validators\UniqueValidator;
 class CategoryGroup extends Model
 {
     /** @since 3.7.0 */
-    const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
-    const DEFAULT_PLACEMENT_END = 'end';
+    public const DEFAULT_PLACEMENT_END = 'end';
 
     /**
      * @var int|null ID
@@ -145,7 +145,7 @@ class CategoryGroup extends Model
     {
         foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
-                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
+                $this->addModelErrors($siteSettings, "siteSettings[$i]");
             }
         }
     }

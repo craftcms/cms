@@ -219,7 +219,7 @@ class EntryType extends Model
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
-            'hasTitleField' => (bool)$this->hasTitleField,
+            'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'titleFormat' => $this->titleFormat ?: null,

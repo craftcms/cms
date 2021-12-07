@@ -94,6 +94,11 @@ $mediumTextColor: $grey550;
 $lightTextColor: $grey500;
 $linkColor: $blue800;
 
+// menu colors
+$menuOptionColor: $textColor;
+$menuOptionActiveColor: $white;
+$menuOptionActiveBackgroundColor: $grey350;
+
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
 $mediumHairlineColor: transparentize($grey600, 0.75);
@@ -122,6 +127,7 @@ $smallBorderRadius: 3px;
 $mediumBorderRadius: 4px;
 $largeBorderRadius: 5px;
 
+$menuBorderRadius: $mediumBorderRadius;
 $checkboxSize: 16px;
 $radioSize: 16px;
 
@@ -172,7 +178,7 @@ $radioSize: 16px;
   opacity: 0.8;
 }
 
-@mixin angle($dir: down, $color: $mediumTextColor) {
+@mixin angle($dir: down, $color: var(--ui-control-color)) {
   display: block;
   content: '';
   font-size: 0;
@@ -493,7 +499,7 @@ $radioSize: 16px;
 
 @mixin menu-styles {
   z-index: 100;
-  border-radius: $mediumBorderRadius;
+  border-radius: $menuBorderRadius;
   padding: 0 14px;
   overflow: auto;
   background: $white;
@@ -504,13 +510,18 @@ $radioSize: 16px;
 @mixin menu-option-styles {
   margin: 0 -14px;
   padding: 10px 14px;
-  color: $textColor;
+  color: $menuOptionColor;
   text-decoration: none;
   white-space: nowrap;
 }
 
 @mixin menu-option-active-styles {
-  color: $textColor;
+  color: $menuOptionActiveColor;
+  background-color: $menuOptionActiveBackgroundColor;
+}
+
+@mixin disclosure-link-hover-styles {
+  color: $menuOptionColor;
   background-color: $grey050;
 }
 

@@ -7,8 +7,8 @@
 
 namespace craft\web\assets\deprecationerrors;
 
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use yii\web\AssetBundle;
 
 /**
  * Asset bundle for the Deprecation Warnings utility
@@ -31,13 +31,13 @@ class DeprecationErrorsAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'deprecator.css',
+        'css/deprecator.css',
     ];
 
     /**
      * @inheritdoc
      */
     public $js = [
-        'deprecator.min.js',
+        'deprecator.js',
     ];
 }

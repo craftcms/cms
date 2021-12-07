@@ -9,6 +9,7 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
+use DateTime;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -18,8 +19,8 @@ use yii\db\ActiveQueryInterface;
  * @property int $sectionId Section ID
  * @property int $typeId Type ID
  * @property int|null $authorId Author ID
- * @property \DateTime $postDate Post date
- * @property \DateTime $expiryDate Expiry date
+ * @property DateTime $postDate Post date
+ * @property DateTime $expiryDate Expiry date
  * @property Element $element Element
  * @property Section $section Section
  * @property EntryType $type Type
