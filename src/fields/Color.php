@@ -137,10 +137,9 @@ class Color extends Field implements PreviewableFieldInterface
     protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         /** @var ColorData|null $value */
-        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
-            'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'id' => Html::id($this->handle),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value ? $value->getHex() : null,
         ]);

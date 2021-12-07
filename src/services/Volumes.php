@@ -29,7 +29,6 @@ use craft\fs\Local;
 use craft\fs\MissingFs;
 use Throwable;
 use yii\base\Component;
-use yii\base\UnknownPropertyException;
 
 /**
  * Class AssetVolumesService

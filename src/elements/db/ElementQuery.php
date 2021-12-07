@@ -1601,7 +1601,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Clears the cached result.
+     * Clears the [cached result](https://craftcms.com/docs/3.x/element-queries.html#cache).
      *
      * @see getCachedResult()
      * @see setCachedResult()

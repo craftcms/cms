@@ -58,7 +58,7 @@ class Entry extends Element
                 /** @var DraftBehavior|EntryElement $source */
                 return $source->getIsDraft() ? $source->getCreator() : null;
             case 'revisionCreator':
-                /** @var RevisionBehavior|EntryElement $s   ource */
+                /** @var RevisionBehavior|EntryElement $source */
                 return $source->getIsRevision() ? $source->getCreator() : null;
         }
 

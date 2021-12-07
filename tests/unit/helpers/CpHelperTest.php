@@ -119,9 +119,15 @@ class CpHelperTest extends Unit
         self::assertStringContainsString('id="inst-id"', $withInstructions);
         self::assertStringContainsString('<p><strong>Test</strong></p>', $withInstructions);
         // tip
-        self::assertStringContainsString('<p class="notice with-icon"><strong>Test</strong></p>', Cp::fieldHtml('<input>', ['tip' => '**Test**']));
-        // tip
-        self::assertStringContainsString('<p class="warning with-icon"><strong>Test</strong></p>', Cp::fieldHtml('<input>', ['warning' => '**Test**']));
+        self::assertStringContainsString('<p id="tip" class="notice"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><strong>Test</strong></p>', Cp::fieldHtml('<input>', [
+            'tipId' => 'tip',
+            'tip' => '**Test**',
+        ]));
+        // warning
+        self::assertStringContainsString('<p id="warning" class="warning"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><strong>Test</strong></p>', Cp::fieldHtml('<input>', [
+            'warningId' => 'warning',
+            'warning' => '**Test**',
+        ]));
         // errors
         $withErrors = Cp::fieldHtml('<input>', ['errors' => ['Very bad', 'Very, very bad']]);
         self::assertStringContainsString('has-errors', $withErrors);

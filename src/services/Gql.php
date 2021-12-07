@@ -23,7 +23,6 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\gql\ArgumentManager;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\base\InterfaceType;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;

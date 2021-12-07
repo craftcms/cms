@@ -537,7 +537,7 @@ class ElementHelper
     {
         $path = explode('/', $sourceKey);
         $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
-        $parentSourceType = null;
+        $rootSource = null;
 
         while ($path) {
             $key = array_shift($path);
@@ -556,20 +556,20 @@ class ElementHelper
 
             // Is that the end of the path?
             if (empty($path)) {
-                // If this is a nested source, set the full path on it so we don't forget it
-                if ($source['key'] !== $sourceKey) {
+                // Is this a nested source?
+                if (isset($rootSource)) {
+                    $source['type'] = $rootSource['type'];
                     $source['keyPath'] = $sourceKey;
                 }
 
-                if (empty($source['type']) && $parentSourceType) {
-                    $source['type'] = $parentSourceType;
-                }
                 return $source;
             }
 
             // Prepare for searching nested sources
+            if ($rootSource === null) {
+                $rootSource = $source;
+            }
             $sources = $source['nested'] ?? [];
-            $parentSourceType = $source['type'] ?? $parentSourceType;
         }
 
         return null;

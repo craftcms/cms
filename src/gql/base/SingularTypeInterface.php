@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,8 +8,6 @@ declare(strict_types=1);
 
 namespace craft\gql\base;
 
-use craft\gql\GqlEntityRegistry;
-use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**

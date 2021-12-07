@@ -84,6 +84,16 @@ class ProjectConfigHelperTest extends Unit
     }
 
     /**
+     * @param $incomingData
+     * @param $expectedResult
+     * @dataProvider encodeTestDataProvider
+     */
+    public function testEncodeData($incomingData, $expectedResult)
+    {
+        self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
+    }
+
+    /**
      * @return array
      */
     public function packedUnpackedDataProvider(): array
@@ -357,6 +367,44 @@ class ProjectConfigHelperTest extends Unit
                         'dateModified' => 4
                     ]
                 ],
+            ],
+        ];
+    }
+
+    public function encodeTestDataProvider()
+    {
+        return [
+            [
+                'foo',
+                '"foo"'
+            ],
+            [
+                true,
+                'true'
+            ],
+            [
+                null,
+                'null'
+            ],
+            [
+                false,
+                'false'
+            ],
+            [
+                2.5,
+                '2.5'
+            ],
+            [
+                0,
+                '0'
+            ],
+            [
+                2,
+                '2'
+            ],
+            [
+                2.0,
+                '2.0'
             ],
         ];
     }

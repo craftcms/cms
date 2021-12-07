@@ -34,6 +34,7 @@ use craft\web\twig\nodevisitors\GetAttrAdjuster;
 use craft\web\twig\nodevisitors\Profiler;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\DdTokenParser;
+use craft\web\twig\tokenparsers\DeprecatedTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
@@ -123,6 +124,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new CacheTokenParser(),
+            new DeprecatedTokenParser(),
             new DdTokenParser(),
             new ExitTokenParser(),
             new HeaderTokenParser(),
@@ -252,7 +254,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigTest('callable', function($obj): bool {
                 return is_callable($obj);
             }),
-            new TwigTest('countable', function ($obj): bool {
+            new TwigTest('countable', function($obj): bool {
                 if (!function_exists('is_countable')) {
                     return is_array($obj) || $obj instanceof \Countable;
                 }
@@ -273,7 +275,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigTest('numeric', function($obj): bool {
                 return is_numeric($obj);
             }),
-            new TwigTest('object', function ($obj): bool {
+            new TwigTest('object', function($obj): bool {
                 return is_object($obj);
             }),
             new TwigTest('resource', function($obj): bool {
@@ -1172,6 +1174,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('getenv', [App::class, 'env']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
+            new TwigFunction('parseBooleanEnv', [Craft::class, 'parseBooleanEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),

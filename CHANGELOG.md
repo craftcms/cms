@@ -100,6 +100,11 @@
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
+- Added `craft\fields\Assets::$allowSubfolders`.
+- Added `craft\fields\Assets::$restrictedDefaulUploadSubpath`.
+- Added `craft\fields\Assets::$restrictedLocationSource`, which replaces `$singleUploadLocationSource`.
+- Added `craft\fields\Assets::$restrictedLocationSubpath`, which replaces `$singleUploadLocationSubpath`.
+- Added `craft\fields\Assets::$restrictLocation`, which replaces `$useSingleFolder`.
 - Added `craft\gql\base\SingularTypeInterface`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
@@ -122,10 +127,14 @@
 - Added `craft\helpers\Html::hiddenLabel()`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
+- Added `craft\helpers\ProjectConfig::encodeValueAsString()`.
+- Added `craft\helpers\ProjectConfig::ensureAllSectionsProcessed()`.
 - Added `craft\i18n\Translation`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS`, which replaces `EVENT_DEFINE_STANDARD_FIELDS`.
 - Added `craft\models\FieldLayout::getAvailableNativeFields()`.
+- Added `craft\models\ProjectConfigData`.
+- Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
@@ -145,7 +154,10 @@
 - Added `craft\services\Config::CATEGORY_CUSTOM`.
 - Added `craft\services\Config::getCustom()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
+- Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
+- Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
+- Added `craft\services\ProjectConfig::getIsApplyingExternalChanges()`.
 - Added `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_DATE_MODIFIED`.
 - Added `craft\services\ProjectConfig::PATH_ELEMENT_SOURCES`.
@@ -171,6 +183,8 @@
 - Added `craft\services\ProjectConfig::PATH_USER_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_USERS`.
 - Added `craft\services\ProjectConfig::PATH_VOLUMES`.
+- Added `craft\services\ProjectConfig::regenerateExternalConfig()`.
+- Added `craft\services\ProjectConfig::rememberAppliedChanges()`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
@@ -188,6 +202,7 @@
 - Users are no longer required to have a username or email.
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
+- Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
 - When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
@@ -199,6 +214,7 @@
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - GraphQL field types that can’t be null now specify so in their type declaration.
+- Editable tables now support `allowAdd`, `allowDelete`, and `allowReorder` settings, replacing `staticRows`. ([#10163](https://github.com/craftcms/cms/pull/10163))
 - Elements’ `searchScore` GraphQL fields are now returned as integers.
 - Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
 - Plugins’ `$description` properties must now have a `?string` type declaration.
@@ -332,6 +348,10 @@
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
 - Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
+- Deprecated `craft\services\ProjectConfig::applyYamlChanges()`. `applyExternalChanges()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChanges()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::regenerateYamlFromConfig()`. `regenerateExternalConfig()` should be used instead.
 
 ### Removed
 - Removed the `--type` option from `migrate/*` commands. `--track` or `--plugin` can be used instead.
@@ -386,6 +406,7 @@
 - Removed Matrix block queries’ `ownerLocale` param. The `site` or `siteId` param can be used instead.
 - Removed Matrix block queries’ `ownerSite` param. The `site` param can be used instead.
 - Removed Matrix block queries’ `ownerSiteId` param. The `siteId` param can be used instead.
+- Removed support for the `staticRows` editable table setting. `allowAdd`, `allowDelete`, and `allowReorder` can be used instead.
 - Removed support for the `CRAFT_LOCALE` PHP constant. `CRAFT_SITE` can be used instead.
 - Removed `Craft::Client`. `Pro` can be used instead.
 - Removed `Craft::Personal`. `Solo` can be used instead.
@@ -444,6 +465,9 @@
 - Removed `craft\events\SearchEvent::setElementIds()`.
 - Removed `craft\feeds\Feeds`.
 - Removed `craft\feeds\GuzzleClient`.
+- Removed `craft\fields\Assets::$singleUploadLocationSource`. `$restrictedLocationSource` can be used instead.
+- Removed `craft\fields\Assets::$singleUploadLocationSubpath`. `$restrictedLocationSubpath` can be used instead.
+- Removed `craft\fields\Assets::$useSingleFolder`. `$restrictLocation` can be used instead.
 - Removed `craft\fields\BaseOptionsField::optionLabel()`.
 - Removed `craft\fields\BaseRelationField::inputSiteId()`. `targetSiteId()` can be used instead.
 - Removed `craft\fields\Matrix::$localizeBlocks`. `$propagationMethod` can be used instead.

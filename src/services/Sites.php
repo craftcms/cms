@@ -778,7 +778,7 @@ class Sites extends Component
             $oldPrimarySiteUid = Db::uidById(Table::SITES, $oldPrimarySiteId);
             $existingCategorySettings = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
-            if (!$projectConfig->getIsApplyingYamlChanges() && is_array($existingCategorySettings)) {
+            if (!$projectConfig->getIsApplyingExternalChanges() && is_array($existingCategorySettings)) {
                 foreach ($existingCategorySettings as $categoryUid => $settings) {
                     $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
                     $projectConfig->set(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings, 'Copy site settings for category groups');

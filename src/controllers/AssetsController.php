@@ -326,7 +326,7 @@ class AssetsController extends Controller
                 } else {
                     $element = null;
                 }
-                $folderId = $field->resolveDynamicPathToFolderId($element, true);
+                $folderId = $field->resolveDynamicPathToFolderId($element);
             }
 
             if (empty($folderId)) {
@@ -1308,6 +1308,7 @@ class AssetsController extends Controller
 
         return $this->asJson(['success' => true]);
     }
+
     /**
      * Sends a broken image response based on a given exception.
      *

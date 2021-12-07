@@ -746,7 +746,7 @@ class Sections extends Component
         if (
             !$isNewSection &&
             $section->type === Section::TYPE_SINGLE &&
-            !Craft::$app->getProjectConfig()->getIsApplyingYamlChanges()
+            !Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()
         ) {
             $this->_ensureSingleEntry($section, $siteSettingData);
         }
@@ -1104,6 +1104,7 @@ class Sections extends Component
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
+        ProjectConfigHelper::ensureAllSectionsProcessed();
 
         $section = $this->getSectionByUid($data['section']);
         $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);

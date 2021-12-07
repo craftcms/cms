@@ -1060,7 +1060,7 @@ class Install extends Migration
 
         $applyExistingProjectConfig = false;
 
-        if ($this->applyProjectConfigYaml && $projectConfig->getDoesYamlExist()) {
+        if ($this->applyProjectConfigYaml && $projectConfig->getDoesExternalConfigExist()) {
             try {
                 $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
                 $craftSchemaVersion = Craft::$app->schemaVersion;
@@ -1094,7 +1094,7 @@ class Install extends Migration
         if ($applyExistingProjectConfig) {
             // Save the existing system settings
             echo '    > applying existing project config ... ';
-            $projectConfig->applyYamlChanges();
+            $projectConfig->applyExternalChanges();
             echo "done\n";
         } else {
             // Save the default system settings

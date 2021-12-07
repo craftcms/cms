@@ -23,6 +23,18 @@ use yii\caching\ExpressionDependency;
 class ProjectConfig
 {
     /**
+     * Returns a project config compatible value encoded for storage.
+     *
+     * @param $value
+     * @return string
+     * @since 4.0.0
+     */
+    public static function encodeValueAsString($value): string
+    {
+        return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+    }
+
+    /**
      * @var bool Whether we've already processed all field configs.
      * @see ensureAllFieldsProcessed()
      */
@@ -41,6 +53,12 @@ class ProjectConfig
     private static bool $_processedUserGroups = false;
 
     /**
+     * @var bool Whether we've already processed all section configs.
+     * @see ensureAllSectionsProcessed()
+     */
+    private static bool $_processedSections = false;
+
+    /**
      * @var bool Whether we've already processed all GraphQL schemas.
      * @see ensureAllGqlSchemasProcessed()
      */
@@ -53,7 +71,7 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedFields || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
@@ -82,7 +100,7 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingYamlChanges())) {
+        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
             return;
         }
 
@@ -93,12 +111,12 @@ class ProjectConfig
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITE_GROUPS . '.' . $groupUid, false, null, $force);
+            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITE_GROUPS . '.' . $groupUid, $force);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITES . '.' . $siteUid, false, null, $force);
+            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITES . '.' . $siteUid, $force);
         }
     }
 
@@ -109,7 +127,7 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
@@ -127,13 +145,39 @@ class ProjectConfig
     }
 
     /**
+     * Ensure all section config changes are processed immediately in a safe manner.
+     *
+     * @since 4.0.0
+     */
+    public static function ensureAllSectionsProcessed(): void
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
+            return;
+        }
+
+        static::$_processedSections = true;
+
+        $allSections = $projectConfig->get(ProjectConfigService::PATH_SECTIONS, true);
+
+        if (is_array($allSections)) {
+            foreach ($allSections as $sectionUid => $sectionData) {
+                $path = ProjectConfigService::PATH_SECTIONS . '.';
+                // Ensure section is processed
+                $projectConfig->processConfigChanges($path . $sectionUid);
+            }
+        }
+    }
+
+    /**
      * Ensure all GraphQL schema config changes are processed immediately in a safe manner.
      */
     public static function ensureAllGqlSchemasProcessed(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 

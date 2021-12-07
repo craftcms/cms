@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use craft\conditions\QueryConditionRuleInterface;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldGroup;

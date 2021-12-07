@@ -21,7 +21,7 @@
         {%- endif %}
         <div>
             {% include "_includes/forms/checkbox" with {
-                instructionsId: instructionsId ?? false,
+                describedBy: describedBy ?? false,
                 name: optionName,
                 checked: (option.value is defined and option.value in values),
                 autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true)

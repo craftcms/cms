@@ -7,7 +7,6 @@
 
 namespace craft\gql\types\generators;
 
-use Craft;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
@@ -20,7 +19,6 @@ use craft\gql\types\elements\Entry;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType as EntryTypeModel;
-use craft\models\GqlSchema;
 
 /**
  * Class EntryType
