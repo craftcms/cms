@@ -27,28 +27,28 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../packages/craftcms-sass/mixins";
+    @import "@craftcms/sass/mixins";
 
     .edition-badge {
-        @apply .inline-block;
+        @apply tw-inline-block;
 
         &.is-block {
-            @apply .block;
+            @apply tw-block;
         }
 
         &:not(.is-block) {
-            @apply .relative;
+            @apply tw-relative;
             top: -1px;
         }
 
         &.is-big {
             .edition-badge-name {
-                @apply .text-base .px-3 py-1;
+                @apply tw-text-base tw-px-3 tw-py-1;
             }
         }
 
         .edition-badge-name {
-            @apply .inline-block .uppercase .border .border-solid .border-grey .px-2 py-0 .text-grey-darker .rounded .text-xs;
+            @apply tw-inline-block tw-uppercase tw-border tw-border-solid tw-border-gray-500 tw-px-2 tw-py-0 tw-text-gray-800 tw-rounded tw-text-xs;
             letter-spacing: 1.5px;
         }
     }

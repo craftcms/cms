@@ -1,6 +1,6 @@
 <template>
-    <div class="flex self-end">
-        <spinner v-if="loading" class="mt-2 mr-4"></spinner>
+    <div class="tw-flex tw-self-end">
+        <spinner v-if="loading" class="tw-mt-2 tw-mr-4"></spinner>
 
         <sort-menu-btn :attributes="sortMenuBtnAttributes" :value.sync="options"></sort-menu-btn>
     </div>

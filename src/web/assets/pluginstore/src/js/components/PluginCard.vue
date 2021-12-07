@@ -1,9 +1,15 @@
 <template>
     <router-link v-if="plugin" :to="'/' + plugin.handle" :title="plugin.name"
-                 class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid no-underline hover:no-underline text-grey-darkest">
-        <div class="plugin-icon mr-4">
-            <img v-if="plugin.iconUrl" :src="plugin.iconUrl"/>
-            <img v-else :src="defaultPluginSvg"/>
+                 class="plugin-card tw-relative tw-flex tw-flex-no-wrap tw-items-start tw-py-6 tw-border-b tw-border-gray-200 tw-border-solid tw-no-underline hover:tw-no-underline tw-text-gray-800">
+        <div class="plugin-icon tw-mr-4">
+            <template v-if="plugin.iconUrl">
+                <img :src="plugin.iconUrl" class="tw-w-16 tw-h-16" />
+            </template>
+            <template v-else>
+                <div class="tw-bg-gray-100 tw-w-16 tw-h-16 tw-flex tw-items-center tw-justify-center tw-rounded-full">
+                    <icon icon="plug" class="tw-w-7 tw-h-7 tw-text-gray-400"></icon>
+                </div>
+            </template>
         </div>
 
         <div>
@@ -18,12 +24,12 @@
             </div>
 
             <template v-if="plugin.abandoned">
-                <p class="error">{{ "Abandoned"|t('app') }}</p>
+                <div class="error">{{ "Abandoned"|t('app') }}</div>
             </template>
             <template v-else>
-                <p class="light">
+                <div class="light">
                   {{ fullPriceLabel }}
-                </p>
+                </div>
             </template>
 
             <div v-if="isPluginInstalled(plugin.handle)" class="installed"
@@ -35,7 +41,7 @@
 <script>
 /* global Craft */
 
-import {mapState, mapGetters} from 'vuex'
+import {mapGetters} from 'vuex'
 import EditionBadge from './EditionBadge'
 
 export default {
@@ -46,10 +52,6 @@ export default {
     },
 
     computed: {
-        ...mapState({
-            defaultPluginSvg: state => state.craft.defaultPluginSvg,
-        }),
-
         ...mapGetters({
             isPluginInstalled: 'craft/isPluginInstalled',
             getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
@@ -117,17 +119,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 .plugin-details-header {
-    @apply .leading-normal .overflow-hidden .mb-1;
+    @apply tw-leading-normal tw-overflow-hidden tw-mb-1;
     max-height: 4.75em;
 
     .plugin-name {
-        @apply .flex .mb-1;
+        @apply tw-flex tw-mb-1;
 
         .edition-badge {
-            @apply .ml-2;
+            @apply tw-ml-2;
         }
     }
 }
@@ -141,15 +143,8 @@ export default {
         }
     }
 
-    .plugin-icon {
-        img {
-            width: 60px;
-            height: 60px;
-        }
-    }
-
     .installed {
-        @apply .absolute;
+        @apply tw-absolute;
         top: 14px;
         @include right(18px);
         color: #ccc;
@@ -158,7 +153,7 @@ export default {
 
 .ps-grid-plugins {
     .plugin-card {
-        @apply .h-full;
+        @apply tw-h-full;
     }
 }
 </style>

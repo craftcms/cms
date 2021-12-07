@@ -4,23 +4,6 @@ import axios from 'axios'
 
 export default {
     /**
-     * Checkout.
-     */
-    checkout(data) {
-        return new Promise((resolve, reject) => {
-            Craft.sendApiRequest('POST', 'payments', {
-                    data,
-                })
-                .then((responseData) => {
-                    resolve(responseData)
-                })
-                .catch((error) => {
-                    reject(error)
-                })
-        })
-    },
-
-    /**
      * Create cart.
      */
     createCart(data) {

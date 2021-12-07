@@ -1,6 +1,6 @@
 <template>
-    <div v-if="pendingActiveTrials && pendingActiveTrials.length > 0" class="border-t border-solid border-grey-lighter mt-6 pt-6">
-        <div v-if="pendingActiveTrials.length > 1" class="right">
+    <div v-if="pendingActiveTrials && pendingActiveTrials.length > 0" class="tw-border-t tw-border-solid tw-border-gray-300 tw-mt-6 tw-pt-6">
+        <div v-if="pendingActiveTrials.length > 1" class="tw-right">
             <a @click="addAllTrialsToCart()">{{ "Add all to cart"|t('app') }}</a>
         </div>
 

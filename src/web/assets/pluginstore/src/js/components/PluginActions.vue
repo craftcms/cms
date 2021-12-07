@@ -8,7 +8,7 @@
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion || !plugin.phpVersionCompatible || licenseMismatched || plugin.abandoned" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion || licenseMismatched || plugin.abandoned" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
                 <btn v-else-if="licensedEdition === edition.handle" kind="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
@@ -37,18 +37,18 @@
 
                 <!-- Install (Free) -->
                 <template v-if="isPluginEditionFree">
-                    <btn kind="primary" type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion || !plugin.phpVersionCompatible" block large>{{ "Install"|t('app') }}</btn>
+                    <btn kind="primary" type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion" block large>{{ "Install"|t('app') }}</btn>
                 </template>
 
                 <template v-else>
                     <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
                         <!-- Install (Commercial) -->
-                        <btn type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion || !plugin.phpVersionCompatible" block large>{{ "Install"|t('app') }}</btn>
+                        <btn type="submit" :loading="loading" :disabled="!plugin.latestCompatibleVersion" block large>{{ "Install"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
                         <!-- Try -->
-                        <btn type="submit" :disabled="(!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)) || !plugin.latestCompatibleVersion || !plugin.phpVersionCompatible" :loading="loading" block large>{{ "Try"|t('app') }}</btn>
+                        <btn type="submit" :disabled="(!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)) || !plugin.latestCompatibleVersion" :loading="loading" block large>{{ "Try"|t('app') }}</btn>
                     </template>
 
                     <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
@@ -72,29 +72,17 @@
         </template>
 
         <template v-if="plugin.latestCompatibleVersion && plugin.latestCompatibleVersion != plugin.version">
-            <div class="text-grey mt-4 px-8">
+            <div class="tw-text-gray-500 tw-mt-4 tw-px-8">
                 <p>{{ "Only up to {version} is compatible with your version of Craft."|t('app', {version: plugin.latestCompatibleVersion}) }}</p>
             </div>
         </template>
         <template v-else-if="!plugin.latestCompatibleVersion">
-            <div class="text-grey mt-4 px-8">
+            <div class="tw-text-gray-500 tw-mt-4 tw-px-8">
                 <p>{{ "This plugin isn’t compatible with your version of Craft."|t('app') }}</p>
             </div>
         </template>
-        <template v-else-if="!plugin.phpVersionCompatible">
-            <div class="text-grey mt-4 px-8">
-                <p v-if="plugin.incompatiblePhpVersion === 'php'">{{ "This plugin requires PHP {v1}, but your environment is currently running {v2}."|t('app', {
-                    v1: plugin.phpConstraint,
-                    v2: phpVersion(),
-                }) }}</p>
-                <p v-else>{{ "This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}."|t('app', {
-                    v1: plugin.phpConstraint,
-                    v2: composerPhpVersion(),
-                }) }}</p>
-            </div>
-        </template>
         <template v-else-if="!isPluginEditionFree && plugin.abandoned">
-            <div class="text-grey mt-4 px-8">
+            <div class="tw-text-gray-500 tw-mt-4 tw-px-8">
                 <p>{{ "This plugin is no longer maintained."|t('app') }}</p>
             </div>
         </template>
@@ -226,14 +214,6 @@
 
                 // Install (don’t prevent form submit)
             },
-
-            phpVersion() {
-                return window.phpVersion;
-            },
-
-            composerPhpVersion() {
-                return window.composerPhpVersion;
-            }
         }
     }
 </script>
@@ -248,7 +228,7 @@
         }
 
         .c-btn {
-            @apply .mt-3;
+            @apply tw-mt-3;
         }
     }
 </style>

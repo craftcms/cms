@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="border-b border-solid border-grey-light py-2 flex justify-between">
+        <div class="tw-border-b tw-border-solid tw-border-gray-200 tw-pb-4 tw-flex tw-justify-between tw-items-center">
             <slot name="header"></slot>
 
             <template v-if="!disableSorting">
@@ -10,13 +10,13 @@
 
         <plugin-grid :plugins="plugins"></plugin-grid>
 
-        <div v-if="plugins.length === 0 && !loadingBottom && !loading" class="mt-4">
+        <div v-if="plugins.length === 0 && !loadingBottom && !loading" class="tw-mt-4">
             <p>{{"No results."|t('app')}}</p>
         </div>
 
-        <div v-if="error" class="my-4 text-red">{{error}}</div>
+        <div v-if="error" class="tw-my-4 tw-text-red-500">{{error}}</div>
 
-        <spinner v-if="loadingBottom || (disableSorting && loading)" class="my-4"></spinner>
+        <spinner v-if="loadingBottom || (disableSorting && loading)" class="tw-my-4"></spinner>
     </div>
 </template>
 
