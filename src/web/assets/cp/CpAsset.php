@@ -33,6 +33,7 @@ use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
+use craft\web\assets\tailwindcss\TailwindCssAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
@@ -52,6 +53,7 @@ class CpAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
+        TailwindCssAsset::class,
         AxiosAsset::class,
         D3Asset::class,
         ElementResizeDetectorAsset::class,
