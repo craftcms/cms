@@ -79,7 +79,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
             if (this.settings.previewTargets.length === 1) {
                 const [target] = this.settings.previewTargets;
-                this.createPreviewLink(target).addClass('btn').appendTo($previewBtnContainer);
+                this.createPreviewLink(target).attr('id', 'share-btn').addClass('btn').appendTo($previewBtnContainer);
             } else {
                 this.createShareMenu($previewBtnContainer);
             }
@@ -549,6 +549,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     createShareMenu: function($container) {
         $('<button/>', {
+            id: 'share-btn',
             type: 'button',
             class: 'btn menubtn',
             text: Craft.t('app', 'View'),
