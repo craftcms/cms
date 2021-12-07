@@ -1,3 +1,5 @@
+const {colord} = require('colord')
+
 module.exports = function(semanticColors) {
     let semanticTailwindColors = {};
 
@@ -11,7 +13,29 @@ module.exports = function(semanticColors) {
         semanticTailwindColors[colorSetKey] = {}
 
         for (let colorKey in colorSet) {
-            semanticTailwindColors[colorSetKey][colorKey] = 'var(--craftui-' + (colorSetKey + '-' + colorKey).toLowerCase() + ')'
+            let replaceValue = true
+
+            if (semanticColors[colorSetKey][colorKey].light) {
+                if (colord(semanticColors[colorSetKey][colorKey].light).alpha() !== 1) {
+                    replaceValue = false
+                }
+            }
+
+            if (semanticColors[colorSetKey][colorKey].dark) {
+                if (colord(semanticColors[colorSetKey][colorKey].dark).alpha() !== 1) {
+                    replaceValue = false
+                }
+            }
+
+            if (!replaceValue) {
+                semanticTailwindColors[colorSetKey][colorKey] = 'var(--craftui-' + (colorSetKey + '-' + colorKey).toLowerCase() + ')'
+            } else {
+                if (colorSetKey === 'textColor') {
+                    semanticTailwindColors[colorSetKey][colorKey] = 'rgba(var(--craftui-' + (colorSetKey + '-' + colorKey).toLowerCase() + '))'
+                } else {
+                    semanticTailwindColors[colorSetKey][colorKey] = 'rgba(var(--craftui-' + (colorSetKey + '-' + colorKey).toLowerCase() + '), var(--tw-bg-opacity))'
+                }
+            }
         }
     }
 

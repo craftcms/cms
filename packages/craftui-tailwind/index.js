@@ -2,6 +2,7 @@ const _ = require('lodash')
 const index = require('tailwindcss/plugin')
 const colors = require('./colors/colors')
 const createSemanticTailwindColors = require('./utils/createSemanticTailwindColors')
+const {colord} = require('colord')
 
 module.exports = index.withOptions(
     // Plugin function
@@ -28,6 +29,20 @@ module.exports = index.withOptions(
                 darkHighContrast: {},
             }
 
+            const colorToRgbColorString = function(colorSetKey, color) {
+                const parsedColor = colord(color)
+
+                if (colorSetKey === 'shadowColor' || colorSetKey === 'textColor') {
+                    return parsedColor.rgba.r + ', ' + parsedColor.rgba.g + ', ' + parsedColor.rgba.b + ', ' + parsedColor.rgba.a
+                }
+
+                if (parsedColor.alpha() !== 1 && colorSetKey !== 'ringColor') {
+                    return parsedColor.toRgbString()
+                }
+
+                return parsedColor.rgba.r + ', ' + parsedColor.rgba.g + ', ' + parsedColor.rgba.b
+            }
+
             for (let colorSetKey in semanticColors) {
                 if (!semanticColors.hasOwnProperty(colorSetKey)) {
                     continue;
@@ -38,32 +53,37 @@ module.exports = index.withOptions(
                 for (let colorKey in colorSet) {
                     const semanticColor = semanticColors[colorSetKey][colorKey]
 
-
                     if (semanticColor.light) {
-                        baseStyleColors.light['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = semanticColor.light
+                        baseStyleColors.light['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = colorToRgbColorString(colorSetKey, semanticColor.light)
                     }
 
                     if (semanticColor.highContrast) {
-                        baseStyleColors.highContrast['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = semanticColor.highContrast
+                        baseStyleColors.highContrast['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = colorToRgbColorString(colorSetKey, semanticColor.highContrast)
                     }
 
                     if (semanticColor.dark) {
-                        baseStyleColors.dark['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = semanticColor.dark
+                        baseStyleColors.dark['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = colorToRgbColorString(colorSetKey, semanticColor.dark)
                     }
 
                     if (semanticColor.darkHighContrast) {
-                        baseStyleColors.darkHighContrast['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = semanticColor.darkHighContrast
+                        baseStyleColors.darkHighContrast['--craftui-'+ (colorSetKey + '-' + colorKey).toLowerCase()] = colorToRgbColorString(colorSetKey, semanticColor.darkHighContrast)
                     }
                 }
             }
 
 
             // Set colors for each context (light, dark, high contrast)
-
+//             console.log('baseStyleColors.light', baseStyleColors.light)
             addBase({
                 // `light` color scheme
-                'body': baseStyleColors.light,
+                'body': {
+                    ...baseStyleColors.light,
+                    ...{
+                        '--tw-bg-opacity': '1',
+                    }
+                },
             })
+
 
             if (pluginOptions && pluginOptions.darkModeSupport && pluginOptions.darkModeSupport === true) {
                 addBase({
@@ -127,11 +147,12 @@ module.exports = index.withOptions(
 
         const configTheme = {}
 
+
         // Add semantic colors to the Tailwind color palette
         if (semanticTailwindColors.colors) {
             configTheme.colors = {
                 ...configTheme.colors,
-                ...semanticTailwindColors.colors
+                ...semanticTailwindColors.colors,
             }
         }
 
