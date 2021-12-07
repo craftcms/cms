@@ -5,6 +5,14 @@ const {getConfig} = require('@craftcms/webpack');
 module.exports = getConfig({
     context: __dirname,
     config: {
-        entry: {'login': './login.js'},
+        entry: {
+            'Login': './index.js',
+        },
+        output: {
+            library: {
+                name: 'Craft',
+                type: 'assign-properties',
+            },
+        }
     }
 });

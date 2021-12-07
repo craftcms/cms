@@ -20,6 +20,10 @@
     {% set logo = craft.rebrand.logo %}
 {% endif %}
 
+{% js %}
+    new Craft.LoginForm();
+{% endjs %}
+
 {% set formHtml %}
     <main>
         <div id="login">

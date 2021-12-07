@@ -1,7 +1,5 @@
 {% import "_includes/forms" as forms %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\authentication\\email\\EmailStepAsset") %}
-
 {{ forms.textField({
     id: 'email',
     name: 'email',
@@ -14,3 +12,7 @@
         },
     },
 }) }}
+
+{% js %}
+    new Craft.EmailStep();
+{% endjs %}

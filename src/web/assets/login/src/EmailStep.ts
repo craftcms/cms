@@ -1,4 +1,6 @@
-class EmailStep extends AuthenticationStep
+import {AuthenticationStep} from "./AuthenticationStep";
+
+export class EmailStep extends AuthenticationStep
 {
     constructor()
     {
@@ -35,5 +37,3 @@ class EmailStep extends AuthenticationStep
         };
     }
 }
-
-new EmailStep();

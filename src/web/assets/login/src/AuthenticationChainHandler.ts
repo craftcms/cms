@@ -1,8 +1,11 @@
+import {addContainedJsFilesToPage, LoginForm} from "./LoginForm";
+
 import ClickEvent = JQuery.ClickEvent;
+import {AuthenticationStep} from "./AuthenticationStep";
 
 type AuthenticationStepHandler = () => AuthenticationRequest;
 
-type AuthenticationRequest = {
+export type AuthenticationRequest = {
     [key: string]: any
 }
 
@@ -24,7 +27,7 @@ type AuthenticationResponse = {
     passwordReset?: boolean
 }
 
-class AuthenticationChainHandler
+export class AuthenticationChainHandler
 {
     readonly performAuthenticationEndpoint = 'authentication/perform-authentication';
     readonly startAuthenticationEndpoint = 'authentication/start-authentication';
@@ -38,9 +41,21 @@ class AuthenticationChainHandler
         [key: string]: AuthenticationStep
     } = {};
 
-    public constructor(loginForm: LoginForm)
+    public constructor(loginForm: LoginForm, additionalData?: () => { [key: string]: any })
     {
         this.loginForm = loginForm;
+        this.loginForm.$loginForm.on('submit', (event) => {
+            let additionalSubmittedData = additionalData ? additionalData() : {};
+
+            if (!this.isExistingChain()) {
+                additionalSubmittedData.loginName = loginForm.$username.val();
+            }
+
+            this.handleFormSubmit(event, additionalSubmittedData);
+
+            event.preventDefault();
+        });
+
         this.prepareForm();
     }
 
@@ -141,7 +156,8 @@ class AuthenticationChainHandler
         }
 
         // Determine if we have an auth step type
-        let stepType = null;
+        let stepType;
+
         if (this.$authenticationStep.attr('rel')!.length > 0) {
             stepType = this.authenticationSteps[this.$authenticationStep.attr('rel')!];
         }
@@ -234,24 +250,7 @@ class AuthenticationChainHandler
 
                 // Load any JS files if needed
                 if (response.footHtml) {
-                    const jsFiles = response.footHtml.match(/([^"']+\.js)/gm);
-
-                    const existingSources = Array.from(document.scripts).map(node => node.getAttribute('src')).filter(val => val && val.length > 0);
-
-                    // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
-                    // So roll our own JS file append-thing.
-                    if (jsFiles) {
-                        for (const jsFile of jsFiles) {
-                            if (!existingSources.includes(jsFile)) {
-                                let node = document.createElement('script');
-                                node.setAttribute('src', jsFile)
-                                document.body.appendChild(node);
-                            }
-                        }
-                        // If that fails, use Craft's thing.
-                    } else {
-                        Craft.appendFootHtml(response.footHtml);
-                    }
+                    addContainedJsFilesToPage(response.footHtml);
                 }
 
                 const initStepType = (stepType: string) => {
@@ -344,7 +343,7 @@ class AuthenticationChainHandler
             this.loginForm.disableForm();
             const endpoint = this.recoverAccount ? this.recoverAccountEndpoint : (this.isExistingChain() ? this.performAuthenticationEndpoint : this.startAuthenticationEndpoint);
             this.performStep(endpoint, requestData);
-        } catch (error) {
+        } catch (error: any) {
             this.loginForm.showError(error)
             this.loginForm.enableForm();
         }

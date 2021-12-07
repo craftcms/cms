@@ -1,4 +1,6 @@
-class PasswordStep extends AuthenticationStep
+import {AuthenticationStep} from "./AuthenticationStep";
+
+export class PasswordStep extends AuthenticationStep
 {
     private passwordSelector = '#password';
     private passwordInput?: any;
@@ -62,5 +64,3 @@ class PasswordStep extends AuthenticationStep
         };
     }
 }
-
-new PasswordStep();

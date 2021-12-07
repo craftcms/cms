@@ -1,60 +1,83 @@
-"use strict";
-class WebAuthnStep extends AuthenticationStep {
-    constructor() {
+import {AuthenticationStep} from "./AuthenticationStep";
+
+export class WebAuthnStep extends AuthenticationStep
+{
+    constructor()
+    {
         super('craft\\authentication\\type\\mfa\\WebAuthn');
     }
-    get $button() { return $('#verify-webauthn'); }
-    ;
-    validate() {
+
+    get $button() { return $('#verify-webauthn');};
+
+    public validate(): true
+    {
         this.$button.addClass('hidden');
         return true;
     }
-    init() {
+
+    public init()
+    {
         this.$loginForm.trigger('submit');
         this.$button.on('click', this.onButtonClick.bind(this));
         this.$submit.addClass('hidden');
     }
-    cleanup() {
+
+
+    public cleanup()
+    {
         this.$button.off('click', this.onButtonClick.bind(this));
         this.$submit.removeClass('hidden');
     }
+
     /**
      * Submit the form again, when the authentication button is clicked.
      */
-    onButtonClick() {
+    public onButtonClick (){
         this.$loginForm.trigger('submit');
-    }
-    ;
-    async returnFormData() {
+    };
+
+
+    protected async returnFormData()
+    {
         const optionData = this.$button.data('request-options');
+
         // Sort-of deep copy
-        const requestOptions = Object.assign({}, optionData);
+        const requestOptions = {...optionData};
+
         if (optionData.allowCredentials) {
             requestOptions.allowCredentials = [...optionData.allowCredentials];
         }
+
         // proprietary base 64 decode, for some reason
         requestOptions.challenge = atob(requestOptions.challenge.replace(/-/g, '+').replace(/_/g, '/'));
+
         // Unpack to binary data
-        requestOptions.challenge = Uint8Array.from(requestOptions.challenge, c => c.charCodeAt(0));
+        requestOptions.challenge = Uint8Array.from(requestOptions.challenge as string, c => c.charCodeAt(0));
+
         for (const idx in requestOptions.allowCredentials) {
             let allowed = requestOptions.allowCredentials[idx];
+
             requestOptions.allowCredentials[idx] = {
-                id: Uint8Array.from(atob(allowed.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)),
+                id: Uint8Array.from(atob(allowed.id.replace(/-/g, '+').replace(/_/g, '/')) as string, c => c.charCodeAt(0)),
                 type: allowed.type
             };
         }
-        let credential;
+
+        let credential: PublicKeyCredential | null;
+
         // Finally, try to get the credentials based on the provided data.
         try {
             credential = await navigator.credentials.get({
                 publicKey: requestOptions
-            });
-        }
-        catch (error) {
+            }) as PublicKeyCredential;
+        } catch (error) {
+
             this.$button.removeClass('hidden');
             throw Craft.t('app', 'Failed to authenticate');
         }
-        const response = credential.response;
+
+        const response = credential.response as AuthenticatorAssertionResponse;
+
         // Prep and return the data for the request
         return {
             credentialResponse: {
@@ -71,4 +94,3 @@ class WebAuthnStep extends AuthenticationStep {
         };
     }
 }
-new WebAuthnStep();

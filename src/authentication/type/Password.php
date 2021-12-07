@@ -54,11 +54,11 @@ class Password extends Type
 
         // If we don't have a password hash, try fetching the identity.
         if (empty($user->password)) {
-            $user = User::findIdentity($user->id);
+            $user = User::findIdentity($user->id) ?? $user;
         }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
-        if (!$user->authenticate($credentials['password'])) {
+        if (!$user->id || !$user->authenticate($credentials['password'])) {
             return $this->failToAuthenticate($user);
         }
 
@@ -71,7 +71,7 @@ class Password extends Type
      * @param User $user The User model
      * @return State
      */
-    protected function failToAuthenticate(User $user): State
+    protected function failToAuthenticate(?User $user): State
     {
         Craft::$app->getSession()->setError(UserHelper::getLoginFailureMessage(User::AUTH_INVALID_CREDENTIALS, $user));
         return $this->state;

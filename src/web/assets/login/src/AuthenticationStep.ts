@@ -1,6 +1,7 @@
 import SubmitEvent = JQuery.SubmitEvent;
+import {AuthenticationRequest} from "./AuthenticationChainHandler";
 
-abstract class AuthenticationStep
+export abstract class AuthenticationStep
 {
     protected validateOnInput = false;
 

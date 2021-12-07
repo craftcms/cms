@@ -1,7 +1,5 @@
 {% import "_includes/forms" as forms %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\authentication\\emailCode\\EmailCodeStepAsset") %}
-
 {% set label = 'Enter the code sent to you'|t('app') %}
 
 {{ forms.textField({
@@ -15,3 +13,8 @@
         },
     },
 }) }}
+
+{% js %}
+    new Craft.EmailCodeStep();
+{% endjs %}
+

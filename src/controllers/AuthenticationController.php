@@ -57,7 +57,11 @@ class AuthenticationController extends Controller
         $username = $request->getBodyParam('loginName');
 
         if (empty($username)) {
-            return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/login_form')]);
+            return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/authentication_chain', [
+                'user' => null,
+                'username' => '',
+                'authenticationChain' => null,
+            ])]);
         }
 
         $user = $this->_getUser($username);

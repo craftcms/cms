@@ -1,28 +1,16 @@
-class LoginForm
+import {AuthenticationChainHandler} from "./AuthenticationChainHandler";
+
+export class LoginForm
 {
     private disabled = false;
 
     constructor()
     {
-        // todo allow constructor to pass in other login handlers
-        Craft.AuthenticationChainHandler = new AuthenticationChainHandler(this);
-
-        this.$loginForm.on('submit', (event) => {
-            this.clearErrors();
-            this.clearMessages();
-
-            let additionalData: AuthenticationRequest = {
+        Craft.AuthenticationChainHandler = new AuthenticationChainHandler(this, () =>
+            ({
                 rememberMe: this.$rememberMe.find('input').prop('checked'),
-            };
-
-            if (!Craft.AuthenticationChainHandler.isExistingChain()) {
-                additionalData.loginName = this.$username.val();
-            }
-
-            Craft.AuthenticationChainHandler.handleFormSubmit(event, additionalData);
-
-            event.preventDefault();
-        });
+            })
+        );
 
         if (this.$pendingSpinner.length) {
            this.$loginForm.trigger('submit');
@@ -135,4 +123,21 @@ class LoginForm
     }
 }
 
-new LoginForm();
+export function addContainedJsFilesToPage(htmlContent: string) {
+    const jsFiles = htmlContent.match(/([^"']+\.js)/gm);
+    const existingSources = Array.from(document.scripts).map(node => node.getAttribute('src')).filter(val => val && val.length > 0);
+    // For some reason, Chrome will fail to load sourcemap properly when jQuery append is used
+    // So roll our own JS file append-thing.
+    if (jsFiles) {
+        for (const jsFile of jsFiles) {
+            if (!existingSources.includes(jsFile)) {
+                let node = document.createElement('script');
+                node.setAttribute('src', jsFile)
+                document.body.appendChild(node);
+            }
+        }
+        // If that fails, use Craft's thing.
+    } else {
+        Craft.appendFootHtml(htmlContent);
+    }
+}

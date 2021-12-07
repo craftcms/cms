@@ -1,4 +1,6 @@
-abstract class VerificationCode extends AuthenticationStep
+import {AuthenticationStep} from "./AuthenticationStep";
+
+export abstract class VerificationCode extends AuthenticationStep
 {
     protected constructor(stepType: string)
     {

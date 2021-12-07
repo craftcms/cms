@@ -7,11 +7,8 @@
 
 namespace craft\web\assets\login;
 
-use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
-use craft\web\assets\authentication\chain\ChainAsset;
 use craft\web\assets\cp\CpAsset;
-use craft\web\View;
 
 /**
  * Asset bundle for the Login page
@@ -28,7 +25,6 @@ class LoginAsset extends AssetBundle
      */
     public $depends = [
         CpAsset::class,
-        ChainAsset::class
     ];
 
     /**
@@ -42,6 +38,6 @@ class LoginAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'LoginForm.js',
+        'Login.js',
     ];
 }

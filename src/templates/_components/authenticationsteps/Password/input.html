@@ -1,7 +1,5 @@
 {% import "_includes/forms" as forms %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\authentication\\password\\PasswordStepAsset") %}
-
 {{ forms.passwordField({
     id: 'password',
     name: 'password',
@@ -14,3 +12,8 @@
         },
     },
 }) }}
+
+{% js %}
+    new Craft.PasswordStep();
+{% endjs %}
+
