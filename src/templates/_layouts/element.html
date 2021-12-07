@@ -262,11 +262,10 @@
 
 {% block actionButton %}
     {% if previewTargets %}
-        <div class="btngroup">
+        <div id="preview-btn-container" class="btngroup">
             {% if enablePreview %}
                 <button type="button" id="preview-btn" class="btn">{{ "Preview"|t('app') }}</button>
             {% endif %}
-            <button type="button" id="share-btn" class="btn">{{ 'View'|t('app') }}</button>
         </div>
     {% endif %}
 
@@ -563,6 +562,7 @@
     hashedAddAnotherRedirectUrl: addAnotherRedirectUrl ? addAnotherRedirectUrl|hash : null,
     enablePreview: enablePreview,
     previewTargets: previewTargets,
+    previewToken: previewTargets ? craft.app.security.generateRandomString() : null,
     siteToken: not element.getSite().enabled ? element.siteId|hash,
 } %}
 {% js %}
