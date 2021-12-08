@@ -267,6 +267,7 @@ JS;
             'Upload a file',
             'Upload failed for {filename}',
             'Upload files',
+            'View',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your changes could not be stored.',
