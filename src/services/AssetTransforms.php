@@ -1556,6 +1556,10 @@ class AssetTransforms extends Component
             throw new AssetTransformException("The `webp` format is not supported on this server!");
         }
 
+        if ($index->format === 'avif' && !$images->getSupportsAvif()) {
+            throw new AssetTransformException("The `avif` format is not supported on this server!");
+        }
+
         $volume = $asset->getVolume();
         $transformPath = $asset->folderPath . $this->getTransformSubpath($asset, $index);
 

@@ -526,6 +526,19 @@ class ElementHelper
     }
 
     /**
+     * Returns the root level source key for a given source key/path
+     *
+     * @param string $sourceKey
+     * @return string
+     * @since 3.7.25.1
+     */
+    public static function rootSourceKey(string $sourceKey): string
+    {
+        $pos = strpos($sourceKey, '/');
+        return $pos !== false ? substr($sourceKey, 0, $pos) : $sourceKey;
+    }
+
+    /**
      * Returns an element type's source definition based on a given source key/path and context.
      *
      * @param string $elementType The element type class

@@ -568,12 +568,38 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     },
 
     storeSortAttributeAndDirection: function() {
-        var attr = this.getSelectedSortAttribute();
+        const attr = this.getSelectedSortAttribute();
 
         if (attr !== 'score') {
+            const history = [];
+
+            if (attr) {
+                // Remember the previous choices
+                const attributes = [attr];
+
+                // Only include the most last attribute if it changed
+                const lastAttr = this.getSelectedSourceState('order');
+                if (lastAttr && lastAttr !== attr) {
+                    history.push([lastAttr, this.getSelectedSourceState('sort')]);
+                    attributes.push(lastAttr);
+                }
+
+                const oldHistory = this.getSelectedSourceState('orderHistory', []);
+                for (let i = 0; i < oldHistory.length; i++) {
+                    const [a] = oldHistory[i];
+                    if (a && !attributes.includes(a)) {
+                        history.push(oldHistory[i]);
+                        attributes.push(a);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
             this.setSelecetedSourceState({
                 order: attr,
-                sort: this.getSelectedSortDirection()
+                sort: this.getSelectedSortDirection(),
+                orderHistory: history,
             });
         }
     },

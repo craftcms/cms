@@ -153,6 +153,7 @@ class GeneralConfig extends BaseObject
         'asc',
         'asf',
         'avi',
+        'avif',
         'bmp',
         'cap',
         'cin',
