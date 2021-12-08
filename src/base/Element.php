@@ -835,7 +835,7 @@ abstract class Element extends Component implements ElementInterface
 
                 if (!empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
-                        if ($orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
+                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
                             $elementQuery->addOrderBy($orderBy);
                         } else {
                             break;
