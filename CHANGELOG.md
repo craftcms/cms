@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.25.1 - 2021-12-07
 
 ### Added
 - Added `craft\helpers\ElementHelper::rootSource()`.
