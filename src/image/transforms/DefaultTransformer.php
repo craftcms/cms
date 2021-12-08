@@ -44,7 +44,6 @@ use yii\base\InvalidConfigException;
 class DefaultTransformer implements TransformerInterface, DeferredTransformerInterface, EagerLoadTransformerInterface
 {
     /**
-     * @param \craft\base\VolumeInterface $volume
      * @param Asset $asset
      * @param ImageTransformIndex $transformIndex
      * @throws InvalidConfigException
