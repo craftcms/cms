@@ -10,6 +10,7 @@
 - Added `craft/base/VolumeInterface::getFilesystem()`.
 - Added `craft/db/Table::FILESYSTEMS`.
 - Added `craft/elements/Asset::getFilesystem()`.
+- Added `craft/events/FsEvent`.
 - Added `craft/fs/Local`.
 - Added `craft/helpers/FileHelper::deleteFileAfterRequest()`.
 - Added `craft/helpers/FileHelper::deleteQueuedFiles()`.

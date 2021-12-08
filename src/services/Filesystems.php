@@ -10,6 +10,9 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
+use craft\events\FsEvent;
+use craft\events\RegisterComponentTypesEvent;
+use craft\fs\Local;
 use craft\fs\MissingFs;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
@@ -35,7 +38,31 @@ use yii\base\InvalidConfigException;
  */
 class Filesystems extends Component
 {
-    // TODO events
+    /**
+     * @event FsEvent The event that is triggered before a filesystem is saved.
+     */
+    public const EVENT_BEFORE_SAVE_FILESYSTEM = 'beforeSaveFilesystem';
+
+    /**
+     * @event FsEvent The event that is triggered after a filesystem is saved.
+     */
+    public const EVENT_AFTER_SAVE_FILESYSTEM = 'afterSaveFilesystem';
+
+    /**
+     * @event FsEvent The event that is triggered before a filesystem is deleted.
+     */
+    public const EVENT_BEFORE_DELETE_FILESYSTEM = 'beforeDeleteFilesystem';
+
+    /**
+     * @event FsEvent The event that is triggered after a filesystem is deleted.
+     */
+    public const EVENT_AFTER_DELETE_FILESYSTEM = 'afterDeleteFilesystem';
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering filesystem types.
+     */
+    public const EVENT_REGISTER_FILESYSTEM_TYPES = 'registerFilesystemTypes';
+
     /**
      * @var MemoizableArray<FsInterface>|null
      * @see _filesystems()
@@ -73,6 +100,26 @@ class Filesystems extends Component
         ];
 
         return $config;
+    }
+
+    /**
+     * Returns all registered filesystem types.
+     *
+     * @return string[]
+     */
+    public function getAllFilesystemTypes(): array
+    {
+        $fsTypes = [
+            Local::class,
+        ];
+
+        $event = new RegisterComponentTypesEvent([
+            'types' => $fsTypes,
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $event);
+
+        return $event->types;
     }
 
     /**
@@ -131,11 +178,19 @@ class Filesystems extends Component
      * @param FsInterface $fs the filesystem to be saved.
      * @param bool $runValidation Whether the volume should be validated
      * @return bool Whether the filesystem was saved successfully
-     * @throws Throwable
+     * @throws \Throwable
      */
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
     {
         $isNewFs = $fs->getIsNew();
+
+        // Fire a 'beforeSaveFilesystem' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FILESYSTEM)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_FILESYSTEM, new FsEvent([
+                'filesystem' => $fs,
+                'isNew' => $isNewFs,
+            ]));
+        }
 
         if (!$fs->beforeSave($isNewFs)) {
             return false;
@@ -158,6 +213,14 @@ class Filesystems extends Component
 
         if ($isNewFs) {
             $fs->id = Db::idByUid(Table::FILESYSTEMS, $fs->uid);
+        }
+
+        // Fire a 'afterSaveFilesystem' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FILESYSTEM)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FILESYSTEM, new FsEvent([
+                'filesystem' => $fs,
+                'isNew' => $isNewFs,
+            ]));
         }
 
         return true;
@@ -245,7 +308,15 @@ class Filesystems extends Component
             return false;
         }
 
+        // Fire a 'beforeDeleteFilesystem' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FILESYSTEM)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FILESYSTEM, new FsEvent([
+                'filesystem' => $fs,
+            ]));
+        }
+
         Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_FILESYSTEMS . '.' . $fs->uid, "Delete the “{$fs->handle}” filesystem");
+
         return true;
     }
 
@@ -284,6 +355,13 @@ class Filesystems extends Component
 
         // Clear caches
         $this->_filesystems = null;
+
+        // Fire a 'afterDeleteFilesystem' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FILESYSTEM)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FILESYSTEM, new FsEvent([
+                'filesystem' => $fs,
+            ]));
+        }
 
         // Invalidate asset caches
         Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
