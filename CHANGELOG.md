@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur on element indexes.
+
 ## 3.7.25 - 2021-12-07
 
 ### Changed

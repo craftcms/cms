@@ -566,7 +566,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
                 // Only include the most last attribute if it changed
                 const lastAttr = this.getSelectedSourceState('order');
-                if (lastAttr !== attr) {
+                if (lastAttr && lastAttr !== attr) {
                     history.push([lastAttr, this.getSelectedSourceState('sort')]);
                     attributes.push(lastAttr);
                 }
@@ -574,7 +574,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 const oldHistory = this.getSelectedSourceState('orderHistory', []);
                 for (let i = 0; i < oldHistory.length; i++) {
                     const [a] = oldHistory[i];
-                    if (!attributes.includes(a)) {
+                    if (a && !attributes.includes(a)) {
                         history.push(oldHistory[i]);
                         attributes.push(a);
                     } else {
