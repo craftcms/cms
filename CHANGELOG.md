@@ -7,6 +7,9 @@
 - Added `avif` to the allowed asset file extensions.
 - Added `craft\services\Images::getSupportsAvif()`.
 
+### Fixed
+- Fixed a bug where Neo blocks could lose their content if Preparse resaved a provisional draft as it was being created.
+
 ## 3.7.25.1 - 2021-12-07
 
 ### Added
