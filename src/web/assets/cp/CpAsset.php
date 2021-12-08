@@ -279,6 +279,7 @@ JS;
             'Upload failed for {filename}',
             'Upload files',
             'User Groups',
+            'View',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your changes could not be stored.',

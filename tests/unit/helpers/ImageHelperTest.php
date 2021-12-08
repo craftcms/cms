@@ -71,7 +71,7 @@ class ImageHelperTest extends Unit
      */
     public function testWebSafeFormats()
     {
-        self::assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'], Image::webSafeFormats());
+        self::assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp', 'avif'], Image::webSafeFormats());
     }
 
     /**

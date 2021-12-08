@@ -189,6 +189,14 @@ class ElementHelperTest extends Unit
     }
 
     /**
+     * @dataProvider rootSourceDataProvider
+     */
+    public function testRootSource(string $expected, string $sourceKey)
+    {
+        $this->assertEquals($expected, ElementHelper::rootSourceKey($sourceKey));
+    }
+
+    /**
      * @return array
      */
     public function generateSlugDataProvider(): array
@@ -268,6 +276,18 @@ class ElementHelperTest extends Unit
             [['uri' => 'some-uri/With--URL--2--2'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--2']],
             [['uri' => 'some-uri/With--URL--1--2'], ['uriFormat' => 'some-uri/{slug}', 'slug' => 'With--URL--1']],
             [['uri' => 'different-uri/With--URL--1'], ['uriFormat' => 'different-uri/{slug}', 'slug' => 'With--URL--1']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function rootSourceDataProvider(): array
+    {
+        return [
+            ['foo', 'foo'],
+            ['foo', 'foo/bar'],
+            ['foo', 'foo/bar/baz'],
         ];
     }
 }
