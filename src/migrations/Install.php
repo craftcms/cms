@@ -736,6 +736,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'type' => $this->string()->notNull(),
+            'filesystem' => $this->string()->notNull(),
             'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'url' => $this->string(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
