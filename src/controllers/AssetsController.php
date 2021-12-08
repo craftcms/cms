@@ -1048,7 +1048,6 @@ class AssetsController extends Controller
                 if ($focalChanged) {
                     $transforms = Craft::$app->getImageTransforms();
                     $transforms->deleteCreatedTransformsForAsset($asset);
-                    $transforms->deleteTransformIndexDataByAssetId($assetId);
                 }
 
                 // Only replace file if it changed, otherwise just save changed focal points
