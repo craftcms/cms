@@ -141,6 +141,10 @@
         {% if (transform is defined and transform.format == 'webp') or craft.app.images.supportsWebP %}
             {% set formatOptions = formatOptions|merge([{label: 'webp', value: 'webp'}]) %}
         {% endif %}
+        
+        {% if (transform is defined and transform.format == 'avif') or craft.app.images.supportsAvif %}
+            {% set formatOptions = formatOptions|merge([{label: 'avif', value: 'avif'}]) %}
+        {% endif %}
 
         {{ forms.selectField({
             label: "Image Format"|t('app'),
