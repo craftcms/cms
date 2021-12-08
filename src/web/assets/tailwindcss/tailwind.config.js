@@ -6,7 +6,7 @@ module.exports = {
     prefix: 'tw-',
     purge: [
         path.resolve(__dirname, '../../../templates/**/*.{html,twig}'),
-        path.resolve(__dirname, '../pluginstore/src/**/*.{vue,js}'),
+        path.resolve(__dirname, '../**/src/**/*.{vue,js,ts}'),
     ],
     plugins: [
         require('@craftcms/tailwind')({
