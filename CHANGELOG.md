@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\ElementHelper::rootSource()`.
+
 ### Fixed
 - Fixed an error that could occur on element indexes.
+- Fixed a bug where it wasn’t possible to sort nested element sources by custom fields. ([#10226](https://github.com/craftcms/cms/issues/10226))
 
 ## 3.7.25 - 2021-12-07
 

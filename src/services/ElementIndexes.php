@@ -17,6 +17,7 @@ use craft\db\Table;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
 use yii\base\Component;
@@ -317,6 +318,8 @@ class ElementIndexes extends Component
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
+        $sourceKey = ElementHelper::rootSourceKey($sourceKey);
+
         $event = new DefineSourceSortOptionsEvent([
             'elementType' => $elementType,
             'source' => $sourceKey,
