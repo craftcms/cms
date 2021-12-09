@@ -12,10 +12,10 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\conditions\elements\ElementQueryCondition;
-use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Expanded;
@@ -650,9 +650,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function createCondition(): QueryConditionInterface
+    public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(ElementQueryCondition::class, [static::class]);
+        return Craft::createObject(ElementCondition::class, [static::class]);
     }
 
     /**

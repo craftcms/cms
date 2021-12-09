@@ -12,10 +12,10 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\conditions\QueryConditionInterface;
-use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
@@ -392,11 +392,11 @@ class ElementIndexesController extends BaseElementsController
         if ($source['type'] === ElementSources::TYPE_NATIVE) {
             $queryParams = array_keys($source['criteria'] ?? []);
         } else {
-            /** @var QueryConditionInterface $sourceCondition */
+            /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
             $queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
-                /** @var QueryConditionRuleInterface $rule */
+                /** @var ElementConditionRuleInterface $rule */
                 foreach ($rule->getExclusiveQueryParams() as $param) {
                     $queryParams[] = $param;
                 }
@@ -484,7 +484,7 @@ class ElementIndexesController extends BaseElementsController
                 }
                 break;
             case ElementSources::TYPE_CUSTOM:
-                /** @var QueryConditionInterface $condition */
+                /** @var ElementConditionInterface $condition */
                 $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
                 $condition->modifyQuery($query);
         }
@@ -511,7 +511,7 @@ class ElementIndexesController extends BaseElementsController
         $conditionStr = $this->request->getBodyParam('condition');
         if ($conditionStr) {
             parse_str($conditionStr, $conditionConfig);
-            /** @var QueryConditionInterface $condition */
+            /** @var ElementConditionInterface $condition */
             $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
             $condition->modifyQuery($query);
         }

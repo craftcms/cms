@@ -8,8 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\conditions\ConditionInterface;
-use craft\conditions\ConditionRuleInterface;
+use craft\base\conditions\ConditionInterface;
+use craft\base\conditions\ConditionRuleInterface;
 use craft\helpers\Json;
 use craft\web\Controller;
 

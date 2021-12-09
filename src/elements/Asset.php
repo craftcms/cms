@@ -13,8 +13,6 @@ use craft\base\Field;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
-use craft\conditions\elements\assets\AssetQueryCondition;
-use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
@@ -26,6 +24,8 @@ use craft\elements\actions\EditImage;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
+use craft\elements\conditions\assets\AssetCondition;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
@@ -214,11 +214,11 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @return AssetQueryCondition
+     * @return AssetCondition
      */
-    public static function createCondition(): QueryConditionInterface
+    public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AssetQueryCondition::class, [static::class]);
+        return Craft::createObject(AssetCondition::class, [static::class]);
     }
 
     /**

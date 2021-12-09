@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\conditions\elements\fields\NumberFieldConditionRule;
+use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -303,7 +303,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getQueryConditionRuleType()
+    public function getElementConditionRuleType()
     {
         return NumberFieldConditionRule::class;
     }
