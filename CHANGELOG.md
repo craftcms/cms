@@ -9,6 +9,7 @@
 
 ### Changed
 - Reverted a 3.7.24 change where URL fields started encoding query string params. ([#10193](https://github.com/craftcms/cms/discussions/10193))
+- User verification and password-reset URLs for users with control panel access are no longer based on the front-end URL, when generated within the control panel. ([#10224](https://github.com/craftcms/cms/issues/10224))
 
 ### Fixed
 - Fixed a bug where Neo blocks could lose their content if Preparse resaved a provisional draft as it was being created.
