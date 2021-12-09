@@ -164,6 +164,26 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
     },
 
+    focusCorrectElement: function() {
+        if (this.canAddMoreElements()) {
+            let $btn = this.$addElementBtn;
+
+            if ($btn) {
+                $btn.get(0).focus();
+            }
+        } else {
+            this.focusLastRemoveBtn();
+        }
+    },
+
+    focusLastRemoveBtn: function() {
+        const $removeBtns = this.$container.find('.delete');
+
+        if (!$removeBtns.length) return;
+
+        $removeBtns.last()[0].focus();
+    },
+
     resetElements: function() {
         if (this.$elements !== null) {
             this.removeElements(this.$elements);
@@ -309,6 +329,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
             showSiteMenu: this.settings.showSiteMenu,
             disabledElementIds: this.getDisabledElementIds(),
             onSelect: this.onModalSelect.bind(this),
+            onHide: this.onModalHide.bind(this),
             triggerElement: this.$addElementBtn,
         }, this.settings.modalSettings);
     },
@@ -349,6 +370,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
         this.selectElements(elements);
         this.updateDisabledElementsInModal();
+    },
+
+    onModalHide: function() {
+        // If can add more elements, do default behavior of focus on "Add" button
+        if (this.canAddMoreElements()) return;
+
+        setTimeout(() => {
+            this.focusLastRemoveBtn();
+        }, 200);
     },
 
     selectElements: function(elements) {
@@ -436,6 +466,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     onRemoveElements: function() {
         this.trigger('removeElements');
         this.settings.onRemoveElements();
+        this.focusCorrectElement();
     }
 }, {
     ADD_FX_DURATION: 200,
