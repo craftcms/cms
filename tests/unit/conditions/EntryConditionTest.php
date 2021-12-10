@@ -10,25 +10,25 @@ namespace crafttests\unit\conditions;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\conditions\elements\entries\AuthorGroupConditionRule;
-use craft\conditions\elements\entries\EntryQueryCondition;
-use craft\conditions\elements\SlugConditionRule;
+use craft\elements\conditions\entries\AuthorGroupConditionRule;
+use craft\elements\conditions\entries\EntryCondition;
+use craft\elements\conditions\SlugConditionRule;
 
 
 /**
- * Unit tests for entry query condition.
+ * Unit tests for entry conditions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class EntryQueryConditionTest extends Unit
+class EntryConditionTest extends Unit
 {
     public function testCanAddRules()
     {
         $config = [
-            'class' => EntryQueryCondition::class,
+            'class' => EntryCondition::class,
         ];
-        /** @var EntryQueryCondition $condition */
+        /** @var EntryCondition $condition */
         $condition = Craft::$app->getConditions()->createCondition($config);
 
         $ruleConfig = [
