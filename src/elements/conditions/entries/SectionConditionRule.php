@@ -4,9 +4,11 @@ namespace craft\elements\conditions\entries;
 
 use Craft;
 use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 
 /**
@@ -53,5 +55,14 @@ class SectionConditionRule extends BaseSelectConditionRule implements ElementCon
             /** @var EntryQuery $query */
             $query->section($section);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Entry $element */
+        return $this->matchValue($element->getSection()->uid);
     }
 }

@@ -4,6 +4,7 @@ namespace craft\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseTextConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -36,5 +37,13 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $query->slug($this->paramValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->slug);
     }
 }

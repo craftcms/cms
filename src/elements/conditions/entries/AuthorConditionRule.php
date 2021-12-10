@@ -4,9 +4,11 @@ namespace craft\elements\conditions\entries;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 use craft\elements\User;
 
 /**
@@ -58,5 +60,14 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     {
         /** @var EntryQuery $query */
         $query->authorId($this->getElementId());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Entry $element */
+        return $this->matchValue($element->authorId);
     }
 }

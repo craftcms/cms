@@ -75,4 +75,15 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
         }
         return $options;
     }
+
+    /**
+     * Returns whether the condition rule matches the given value.
+     *
+     * @param string $value
+     * @return bool
+     */
+    protected function matchValue(string $value): bool
+    {
+        return $value === $this->value;
+    }
 }

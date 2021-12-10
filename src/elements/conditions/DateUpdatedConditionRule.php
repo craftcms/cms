@@ -4,6 +4,7 @@ namespace craft\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -36,5 +37,13 @@ class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements Ele
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $query->dateUpdated($this->queryParamValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->dateUpdated);
     }
 }

@@ -4,6 +4,7 @@ namespace craft\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseTextConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -36,5 +37,13 @@ class UriConditionRule extends BaseTextConditionRule implements ElementCondition
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $query->uri($this->paramValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->uri);
     }
 }

@@ -4,6 +4,9 @@ namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\fields\BaseOptionsField;
+use craft\fields\data\MultiOptionsFieldData;
+use craft\fields\data\OptionData;
+use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\Db;
 
 /**
@@ -37,5 +40,19 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
         return collect($this->getValues())
             ->map(fn(string $value) => Db::escapeParam($value))
             ->all();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function matchFieldValue($value): bool
+    {
+        if ($value instanceof MultiOptionsFieldData) {
+            $value = array_map(fn(OptionData $option) => $option->value, (array)$value);
+        } else if ($value instanceof SingleOptionFieldData) {
+            $value = $value->value;
+        }
+
+        return $this->matchValue($value);
     }
 }

@@ -102,4 +102,27 @@ JS;
             [['values'], 'safe'],
         ]);
     }
+
+    /**
+     * Returns whether the condition rule matches the given value.
+     *
+     * @param string|string[]|null $value
+     * @return bool
+     */
+    protected function matchValue($value): bool
+    {
+        if (!$this->_values) {
+            return true;
+        }
+
+        if (!$value) {
+            return false;
+        }
+
+        if (is_array($value)) {
+            return !empty(array_intersect($value, $this->_values));
+        }
+
+        return in_array($value, $this->_values);
+    }
 }

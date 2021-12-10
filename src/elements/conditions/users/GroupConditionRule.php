@@ -4,10 +4,13 @@ namespace craft\elements\conditions\users;
 
 use Craft;
 use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\elements\User;
 use craft\helpers\ArrayHelper;
+use craft\models\UserGroup;
 
 /**
  * User group condition rule.
@@ -53,5 +56,15 @@ class GroupConditionRule extends BaseSelectConditionRule implements ElementCondi
             /** @var UserQuery $query */
             $query->group($group);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var User $element */
+        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $element->getGroups());
+        return $this->matchValue($groupUids);
     }
 }

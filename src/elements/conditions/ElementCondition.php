@@ -152,8 +152,24 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        foreach ($this->getConditionRules() as $conditionRule) {
-            $conditionRule->modifyQuery($query);
+        foreach ($this->getConditionRules() as $rule) {
+            /** @var ElementConditionRuleInterface $rule */
+            $rule->modifyQuery($query);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        foreach ($this->getConditionRules() as $rule) {
+            /** @var ElementConditionRuleInterface $rule */
+            if (!$rule->matchElement($element)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

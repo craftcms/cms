@@ -4,9 +4,11 @@ namespace craft\elements\conditions\users;
 
 use Craft;
 use craft\base\conditions\BaseTextConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\elements\User;
 
 /**
  * First name condition rule.
@@ -39,5 +41,14 @@ class FirstNameConditionRule extends BaseTextConditionRule implements ElementCon
     {
         /** @var UserQuery $query */
         $query->firstName($this->paramValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var User $element */
+        return $this->matchValue($element->firstName);
     }
 }

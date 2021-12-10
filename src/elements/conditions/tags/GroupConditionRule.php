@@ -4,9 +4,11 @@ namespace craft\elements\conditions\tags;
 
 use Craft;
 use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
+use craft\elements\Tag;
 use craft\helpers\ArrayHelper;
 
 /**
@@ -53,5 +55,14 @@ class GroupConditionRule extends BaseSelectConditionRule implements ElementCondi
             /** @var TagQuery $query */
             $query->group($group);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Tag $element */
+        return $this->matchValue($element->getGroup()->uid);
     }
 }

@@ -3,7 +3,9 @@
 namespace craft\base\conditions;
 
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use DateTime;
 
 /**
  * BaseLightswitchConditionRule provides a base implementation for condition rules that are composed of a lightswitch input.
@@ -64,5 +66,16 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
         return array_merge(parent::defineRules(), [
             [['value'], 'safe'],
         ]);
+    }
+
+    /**
+     * Returns whether the condition rule matches the given value.
+     *
+     * @param bool $value
+     * @return bool
+     */
+    protected function matchValue(bool $value): bool
+    {
+        return $this->value === $value;
     }
 }

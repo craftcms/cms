@@ -3,6 +3,7 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseDateRangeConditionRule;
+use DateTime;
 
 /**
  * Date field condition rule.
@@ -20,5 +21,14 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
     protected function elementQueryParam(): ?array
     {
         return $this->queryParamValue();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function matchFieldValue($value): bool
+    {
+        /** @var DateTime|null */
+        return $this->matchValue($value);
     }
 }

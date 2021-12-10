@@ -4,6 +4,8 @@ namespace craft\elements\conditions\assets;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
+use craft\base\ElementInterface;
+use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -58,5 +60,14 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
     {
         /** @var AssetQuery $query */
         $query->uploader($this->getElementId());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Asset $element */
+        return $this->matchValue($element->uploaderId);
     }
 }

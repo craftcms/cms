@@ -4,6 +4,8 @@ namespace craft\elements\conditions\categories;
 
 use Craft;
 use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\ElementInterface;
+use craft\elements\Category;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -53,5 +55,14 @@ class GroupConditionRule extends BaseSelectConditionRule implements ElementCondi
             /** @var CategoryQuery $query */
             $query->group($group);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Category $element */
+        return $this->matchValue($element->getGroup()->uid);
     }
 }

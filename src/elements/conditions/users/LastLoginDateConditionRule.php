@@ -4,9 +4,11 @@ namespace craft\elements\conditions\users;
 
 use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\elements\User;
 
 /**
  * Last login date condition rule.
@@ -39,5 +41,14 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
     {
         /** @var UserQuery $query */
         $query->lastLoginDate($this->queryParamValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var User $element */
+        return $this->matchValue($element->lastLoginDate);
     }
 }

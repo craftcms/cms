@@ -8,6 +8,7 @@
 namespace craft\fields\conditions;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\elements\db\ElementQueryInterface;
 use yii\db\QueryInterface;
@@ -80,9 +81,22 @@ trait FieldConditionRuleTrait
     }
 
     /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchFieldValue($element->getFieldValue($this->_field->handle));
+    }
+
+    /**
      * @return mixed
      */
     abstract protected function elementQueryParam();
+
+    /**
+     * @return mixed
+     */
+    abstract protected function matchFieldValue($value): bool;
 
     /**
      * @inheritdoc

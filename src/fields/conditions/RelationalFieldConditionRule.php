@@ -3,6 +3,9 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseElementSelectConditionRule;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
+use Illuminate\Support\Collection;
 
 /**
  * Relational field condition rule.
@@ -65,6 +68,16 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     protected function elementQueryParam(): ?int
     {
         return $this->getElementId();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function matchFieldValue($value): bool
+    {
+        /** @var ElementQueryInterface|Collection $value */
+        $elementIds = $value->collect()->map(fn(ElementInterface $element) => $element->id);
+        return $this->matchValue($elementIds);
     }
 
     /**

@@ -4,10 +4,12 @@ namespace craft\elements\conditions\entries;
 
 use Craft;
 use craft\base\conditions\BaseConditionRule;
+use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -160,5 +162,14 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
         return array_merge(parent::defineRules(), [
             [['sectionUid', 'entryTypeUid'], 'safe'],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Entry $element */
+        return $this->matchValue($element->getType()->uid);
     }
 }

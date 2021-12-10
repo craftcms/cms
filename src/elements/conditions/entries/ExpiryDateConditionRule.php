@@ -4,9 +4,11 @@ namespace craft\elements\conditions\entries;
 
 use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 
 /**
  * Element expiry date condition rule.
@@ -39,5 +41,14 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Elem
     {
         /** @var EntryQuery $query */
         $query->expiryDate($this->queryParamValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Entry $element */
+        return $this->matchValue($element->expiryDate);
     }
 }

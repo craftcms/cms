@@ -6,6 +6,8 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
+use yii\base\InvalidConfigException;
 
 /**
  * BaseTextConditionRule provides a base implementation for condition rules that are composed of an operator menu and text input.
@@ -169,6 +171,42 @@ abstract class BaseTextConditionRule extends BaseConditionRule
                 return "*$value*";
             default:
                 return "$this->operator $value";
+        }
+    }
+
+    /**
+     * Returns whether the condition rule matches the given value.
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    protected function matchValue($value): bool
+    {
+        if ($this->value === '') {
+            return true;
+        }
+
+        switch ($this->operator) {
+            case self::OPERATOR_EQ:
+                return $value == $this->value;
+            case self::OPERATOR_NE:
+                return $value != $this->value;
+            case self::OPERATOR_LT:
+                return $value < $this->value;
+            case self::OPERATOR_LTE:
+                return $value <= $this->value;
+            case self::OPERATOR_GT:
+                return $value > $this->value;
+            case self::OPERATOR_GTE:
+                return $value >= $this->value;
+            case self::OPERATOR_BW:
+                return StringHelper::startsWith($value, $this->value);
+            case self::OPERATOR_EW:
+                return StringHelper::endsWith($value, $this->value);
+            case self::OPERATOR_CONTAINS:
+                return StringHelper::contains($value, $this->value);
+            default:
+                throw new InvalidConfigException("Invalid operator: $this->operator");
         }
     }
 }

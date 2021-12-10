@@ -121,4 +121,24 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
             'elementType' => $this->elementType,
         ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        $elementId = $this->getElementId();
+        if (!$elementId) {
+            return true;
+        }
+
+        return $element::find()
+            ->id($element->id ?: false)
+            ->drafts($element->getIsDraft())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->revisions($element->getIsRevision())
+            ->status(null)
+            ->relatedTo($elementId)
+            ->exists();
+    }
 }

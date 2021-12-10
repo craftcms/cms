@@ -21,4 +21,13 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
     {
         return $this->value;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function matchFieldValue($value): bool
+    {
+        /** @var bool $value */
+        return $this->matchValue($value);
+    }
 }

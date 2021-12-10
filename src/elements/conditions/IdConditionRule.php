@@ -4,6 +4,7 @@ namespace craft\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -36,5 +37,13 @@ class IdConditionRule extends BaseNumberConditionRule implements ElementConditio
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $query->id($this->paramValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->id);
     }
 }

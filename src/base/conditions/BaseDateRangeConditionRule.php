@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use DateTime;
 
 /**
  * BaseDateRangeConditionRule provides a base implementation for condition rules that are composed of date range inputs.
@@ -132,5 +133,19 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             $this->_startDate ? ">= $this->_startDate" : null,
             $this->_endDate ? "< $this->_endDate" : null,
         ]);
+    }
+
+    /**
+     * Returns whether the condition rule matches the given value.
+     *
+     * @param DateTime|null $value
+     * @return bool
+     */
+    protected function matchValue(?DateTime $value): bool
+    {
+        return (
+            (!$this->_startDate || ($value && $value >= DateTimeHelper::toDateTime($this->_startDate))) &&
+            (!$this->_endDate || ($value && $value < DateTimeHelper::toDateTime($this->_endDate)))
+        );
     }
 }

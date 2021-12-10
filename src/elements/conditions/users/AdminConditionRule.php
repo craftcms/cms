@@ -4,9 +4,11 @@ namespace craft\elements\conditions\users;
 
 use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\elements\User;
 
 /**
  * Admin condition rule.
@@ -39,5 +41,14 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
     {
         /** @var UserQuery $query */
         $query->admin($this->value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var User $element */
+        return $this->matchValue($element->admin);
     }
 }

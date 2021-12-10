@@ -4,6 +4,8 @@ namespace craft\elements\conditions\assets;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
+use craft\base\ElementInterface;
+use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -52,5 +54,14 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
     {
         /** @var AssetQuery $query */
         $query->kind($this->values);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Asset $element */
+        return $this->matchValue($element->kind);
     }
 }

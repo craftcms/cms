@@ -21,4 +21,13 @@ class TextFieldConditionRule extends BaseTextConditionRule implements FieldCondi
     {
         return $this->paramValue();
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function matchFieldValue($value): bool
+    {
+        /** @var string|null $value */
+        return $this->matchValue($value);
+    }
 }

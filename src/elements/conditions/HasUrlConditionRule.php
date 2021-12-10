@@ -4,6 +4,7 @@ namespace craft\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -40,5 +41,13 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements Elemen
         } else {
             $query->uri(':empty:');
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->getUrl() !== null);
     }
 }

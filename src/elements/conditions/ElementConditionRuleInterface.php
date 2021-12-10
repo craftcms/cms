@@ -8,6 +8,7 @@
 namespace craft\elements\conditions;
 
 use craft\base\conditions\ConditionRuleInterface;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -32,4 +33,12 @@ interface ElementConditionRuleInterface extends ConditionRuleInterface
      * @param ElementQueryInterface $query
      */
     public function modifyQuery(ElementQueryInterface $query): void;
+
+    /**
+     * Returns whether the given element matches the condition rule.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public function matchElement(ElementInterface $element): bool;
 }

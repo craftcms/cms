@@ -128,4 +128,44 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         $rules[] = [['elementId'], 'number'];
         return $rules;
     }
+
+    /**
+     * Returns whether the condition rule matches the given value.
+     *
+     * @param ElementInterface|ElementInterface[]|int|int[]|null $value
+     * @return bool
+     */
+    protected function matchValue($value): bool
+    {
+        $elementId = $this->getElementId();
+
+        if (!$elementId) {
+            return true;
+        }
+
+        if (!$value) {
+            return false;
+        }
+
+        if ($value instanceof ElementInterface) {
+            return $value->id === $elementId;
+        }
+
+        if (is_numeric($value)) {
+            return (int)$value === $elementId;
+        }
+
+        if (is_array($value)) {
+            foreach ($value as $val) {
+                if (
+                    $val instanceof ElementInterface && $val->id === $elementId ||
+                    is_numeric($val) && (int)$val === $elementId
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

@@ -4,9 +4,11 @@ namespace craft\elements\conditions\users;
 
 use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\elements\User;
 
 /**
  * Credentialed condition rule.
@@ -43,5 +45,14 @@ class CredentialedConditionRule extends BaseLightswitchConditionRule implements 
         } else {
             $query->status('inactive');
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var User $element */
+        return $this->matchValue($element->getIsCredentialed());
     }
 }

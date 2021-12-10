@@ -4,6 +4,8 @@ namespace craft\elements\conditions\assets;
 
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
+use craft\base\ElementInterface;
+use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -83,26 +85,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
             return;
         }
 
-        $multiplier = 1;
-
-        switch ($this->unit) {
-            case self::UNIT_GB:
-                $multiplier *= 1000;
-            // no break
-            case self::UNIT_MB:
-                $multiplier *= 1000;
-            // no break
-            case self::UNIT_KB:
-                $multiplier *= 1000;
-                break;
-            default:
-                throw new InvalidValueException("Invalid file size unit: $this->unit");
-        }
-
-        // 1 KB == 500 - 1,499 B
-        $maxDiff = $multiplier / 2;
-        $minBytes = $this->value * $multiplier - $maxDiff;
-        $maxBytes = $this->value * $multiplier + $maxDiff - 1;
+        [$minBytes, $maxBytes] = $this->_byteRange();
 
         switch ($this->operator) {
             case self::OPERATOR_EQ:
@@ -131,6 +114,44 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     /**
      * @inheritdoc
      */
+    public function matchElement(ElementInterface $element): bool
+    {
+        if (!$this->value) {
+            return true;
+        }
+
+        /** @var Asset $element */
+        if (!$element->size) {
+            return false;
+        }
+
+        if ($this->unit === self::UNIT_B) {
+            return $this->matchValue($this->value);
+        }
+
+        [$minBytes, $maxBytes] = $this->_byteRange();
+
+        switch ($this->operator) {
+            case self::OPERATOR_EQ:
+                return $element->size >= $minBytes && $element->size <= $maxBytes;
+            case self::OPERATOR_NE:
+                return $element->size < $minBytes || $element->size > $maxBytes;
+            case self::OPERATOR_LT:
+                return $element->size < $minBytes;
+            case self::OPERATOR_LTE:
+                return $element->size <= $minBytes;
+            case self::OPERATOR_GT:
+                return $element->size > $maxBytes;
+            case self::OPERATOR_GTE:
+                return $element->size >= $maxBytes;
+            default:
+                throw new InvalidValueException("Invalid file size operator: $this->operator");
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -143,6 +164,41 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
             ]
         ];
         return $rules;
+    }
+
+    /**
+     * Returns the min and max bytes that [[value]] should actually represent, when the actual value is rounded to [[unit]].
+     *
+     * @return array<int, int>
+     */
+    private function _byteRange(): array
+    {
+        if ($this->unit === self::UNIT_B) {
+            return [$this->value, $this->value];
+        }
+
+        $multiplier = 1;
+
+        switch ($this->unit) {
+            case self::UNIT_GB:
+                $multiplier *= 1000;
+            // no break
+            case self::UNIT_MB:
+                $multiplier *= 1000;
+            // no break
+            case self::UNIT_KB:
+                $multiplier *= 1000;
+                break;
+            default:
+                throw new InvalidValueException("Invalid file size unit: $this->unit");
+        }
+
+        // 1 KB == 500 - 1,499 B
+        $maxDiff = $multiplier / 2;
+        $minBytes = $this->value * $multiplier - $maxDiff;
+        $maxBytes = $this->value * $multiplier + $maxDiff - 1;
+
+        return [$minBytes, $maxBytes];
     }
 
     /**

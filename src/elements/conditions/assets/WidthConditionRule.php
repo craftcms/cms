@@ -4,6 +4,8 @@ namespace craft\elements\conditions\assets;
 
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
+use craft\base\ElementInterface;
+use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -39,5 +41,14 @@ class WidthConditionRule extends BaseNumberConditionRule implements ElementCondi
     {
         /** @var AssetQuery $query */
         $query->width($this->paramValue());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        /** @var Asset $element */
+        return $this->matchValue($element->getWidth());
     }
 }

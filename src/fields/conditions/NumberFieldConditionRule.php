@@ -21,4 +21,13 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldC
     {
         return $this->paramValue();
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function matchFieldValue($value): bool
+    {
+        /** @var int|float|null $value */
+        return $this->matchValue($value);
+    }
 }
