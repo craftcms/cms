@@ -1215,7 +1215,7 @@ class Fields extends Component
      *
      * @param array $config
      * @return FieldLayoutElement
-     * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElementInterface]]
+     * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
      */
     public function createLayoutElement(array $config): FieldLayoutElement
@@ -1290,7 +1290,7 @@ class Fields extends Component
             $tab = $tabs[] = new FieldLayoutTab();
             $tab->name = urldecode($tabName);
             $tab->sortOrder = ++$tabSortOrder;
-            $tab->elements = [];
+            $layoutElements = [];
 
             foreach ($elementKeys as $i => $elementKey) {
                 $elementConfig = Json::decode($elementConfigs[$elementKey]);
@@ -1301,7 +1301,7 @@ class Fields extends Component
                     throw new BadRequestHttpException($e->getMessage(), 0, $e);
                 }
 
-                $tab->elements[] = $layoutElement;
+                $layoutElements[] = $layoutElement;
 
                 if ($layoutElement instanceof CustomField) {
                     $fieldUid = $layoutElement->getFieldUid();
@@ -1314,6 +1314,8 @@ class Fields extends Component
                     $fields[] = $field;
                 }
             }
+
+            $tab->setElements($layoutElements);
         }
 
         $layout->setTabs($tabs);
@@ -1495,7 +1497,7 @@ class Fields extends Component
             $tab->id = $tabRecord->id;
             $tab->uid = $tabRecord->uid;
 
-            foreach ($tab->elements as $i => $layoutElement) {
+            foreach ($tab->getElements() as $i => $layoutElement) {
                 if ($layoutElement instanceof CustomField) {
                     $fieldUid = $layoutElement->getFieldUid();
                     $field = $this->getFieldByUid($fieldUid);

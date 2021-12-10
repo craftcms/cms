@@ -1949,11 +1949,9 @@ abstract class Element extends Component implements ElementInterface
 
             if ($layout !== null) {
                 foreach ($layout->getTabs() as $tab) {
-                    if ($tab->elements) {
-                        foreach ($tab->elements as $layoutElement) {
-                            if ($layoutElement instanceof BaseField && ($label = $layoutElement->label()) !== null) {
-                                $labels[$layoutElement->attribute()] = $label;
-                            }
+                    foreach ($tab->getElements() as $layoutElement) {
+                        if ($layoutElement instanceof BaseField && ($label = $layoutElement->label()) !== null) {
+                            $labels[$layoutElement->attribute()] = $label;
                         }
                     }
                 }

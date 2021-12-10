@@ -149,7 +149,7 @@ class FieldLayout extends Model
                 $tab = FieldLayoutTab::createFromConfig($tabConfig);
 
                 // Ignore empty tabs
-                if (!empty($tab->elements)) {
+                if (!empty($tab->getElements())) {
                     $tabs[] = $tab;
                 }
             }
@@ -235,7 +235,7 @@ class FieldLayout extends Model
 
         // Make sure no fields are using one of our reserved attribute names
         foreach ($this->getTabs() as $tab) {
-            foreach ($tab->elements as $layoutElement) {
+            foreach ($tab->getElements() as $layoutElement) {
                 if (
                     $layoutElement instanceof CustomField &&
                     in_array($layoutElement->attribute(), $this->reservedFieldHandles, true)
@@ -266,7 +266,7 @@ class FieldLayout extends Model
 
             // Take stock of all the selected layout elements
             foreach ($this->_tabs as $tab) {
-                foreach ($tab->elements as $layoutElement) {
+                foreach ($tab->getElements() as $layoutElement) {
                     if ($layoutElement instanceof BaseField) {
                         $this->_fields[$layoutElement->attribute()] = $layoutElement;
                     }
@@ -297,7 +297,10 @@ class FieldLayout extends Model
                     'elements' => [],
                 ]);
             }
-            array_unshift($tab->elements, ...array_values($missingFields));
+
+            $layoutElements = $tab->getElements();
+            array_unshift($layoutElements, ...array_values($missingFields));
+            $tab->setElements($layoutElements);
         }
 
         return $this->_tabs;
@@ -559,7 +562,7 @@ class FieldLayout extends Model
         foreach ($tabs as $tab) {
             $tabHtml = [];
 
-            foreach ($tab->elements as $layoutElement) {
+            foreach ($tab->getElements() as $layoutElement) {
                 $elementHtml = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
                     return (string)$layoutElement->formHtml($element, $static);
                 }, $namespace);
