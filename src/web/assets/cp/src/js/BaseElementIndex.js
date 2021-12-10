@@ -691,7 +691,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
         if (this.filterHuds[this.sourceKey] && this.filterHuds[this.sourceKey].serialized) {
-            params.condition = this.filterHuds[this.sourceKey].serialized;
+            params.filters = this.filterHuds[this.sourceKey].serialized;
         }
 
         // Give plugins a chance to hook in here
@@ -2216,8 +2216,7 @@ const FilterHud = Garnish.HUD.extend({
             data: {
                 elementType: this.elementIndex.elementType,
                 source: this.sourceKey,
-                baseInputName: `${this.id}-condition`,
-                id: `${this.id}-condition`,
+                id: `${this.id}-filters`,
             },
         }).then(response => {
             this.loading = false;

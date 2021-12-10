@@ -509,11 +509,11 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Override with the custom filters
-        $conditionStr = $this->request->getBodyParam('condition');
+        $conditionStr = $this->request->getBodyParam('filters');
         if ($conditionStr) {
             parse_str($conditionStr, $conditionConfig);
             /** @var ElementConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+            $condition = Craft::$app->getConditions()->createCondition($conditionConfig['condition']);
             $condition->modifyQuery($query);
         }
 

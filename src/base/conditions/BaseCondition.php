@@ -206,203 +206,200 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getBuilderInnerHtml(array $options = [], bool $autofocusAddButton = false): string
     {
-        $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(ConditionBuilderAsset::class);
-
         $options += $this->defaultBuilderOptions() + [
+                'name' => 'condition',
                 'sortable' => true,
                 'projectConfigTypes' => false,
                 'addRuleLabel' => Craft::t('app', 'Add a rule'),
             ];
 
-        // Get all the selectable condition rules as type/rule pairs
-        $selectableRules = $this->getSelectableConditionRules($options);
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(ConditionBuilderAsset::class);
+        $namespacedId = $view->namespaceInputId($options['id']);
 
-        $namespace = $view->getNamespace();
-        $namespacedId = Html::namespaceId($options['id'], $namespace);
+        return $view->namespaceInputs(function() use ($view, $options, $namespacedId, $autofocusAddButton) {
+            $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
+            $selectableRules = $this->getSelectableConditionRules($options);
+            $allRulesHtml = '';
+            $ruleCount = 0;
 
-        $html = Html::beginTag('div', [
-            'class' => ['condition-main'],
-            'hx' => [
-                'target' => "#$namespacedId", // replace self
-                'include' => "#$namespacedId", // In case we are in a non form container
-                'vals' => array_filter([
-                    'namespace' => $namespace,
-                    'options' => Json::encode($options),
-                ]),
-            ],
-        ]);
+            // Start rule js buffer
+            $view->startJsBuffer();
 
-        $html .= Html::hiddenInput('class', get_class($this));
-        $html .= Html::hiddenInput('config', Json::encode($this->config()));
+            $html = Html::beginTag('div', [
+                'class' => ['condition-main'],
+                'hx' => [
+                    'target' => "#$namespacedId", // replace self
+                    'include' => "#$namespacedId", // In case we are in a non form container
+                    'vals' => array_filter([
+                        'namespace' => $view->getNamespace(),
+                        'options' => Json::encode($options),
+                    ]),
+                ],
+            ]);
 
-        // Start rule js buffer
-        $view->startJsBuffer();
+            $html .= Html::hiddenInput('class', get_class($this));
+            $html .= Html::hiddenInput('config', Json::encode($this->config()));
 
-        $allRulesHtml = '';
-        $ruleCount = 0;
+            foreach ($this->getConditionRules() as $rule) {
+                $ruleCount++;
 
-        foreach ($this->getConditionRules() as $rule) {
-            $ruleCount++;
+                $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleCount, $options, $selectableRules) {
+                    $ruleHtml =
+                        Html::tag('legend', Craft::t('app', 'Condition {num, number}', [
+                            'num' => $ruleCount,
+                        ]), [
+                            'class' => 'visually-hidden',
+                        ]) .
+                        Html::hiddenInput('uid', $rule->uid) .
+                        Html::hiddenInput('class', get_class($rule));
 
-            $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleCount, $options, $selectableRules) {
-                $ruleHtml =
-                    Html::tag('legend', Craft::t('app', 'Condition {num, number}', [
-                        'num' => $ruleCount,
-                    ]), [
-                        'class' => 'visually-hidden',
-                    ]) .
-                    Html::hiddenInput('uid', $rule->uid) .
-                    Html::hiddenInput('class', get_class($rule));
-
-                if ($options['sortable']) {
-                    $ruleHtml .= Html::tag('div',
-                        Html::tag('a', '', [
-                            'class' => ['move', 'icon', 'draggable-handle'],
-                        ]),
-                        [
-                            'class' => ['rule-move'],
-                        ]
-                    );
-                }
-
-                $ruleTypeOptions = [];
-                $ruleValue = Json::encode($rule->getConfig());
-                $ruleLabel = $rule->getLabel();
-                foreach ($selectableRules as $value => $selectableRule) {
-                    /** @var ConditionRuleInterface $selectableRule */
-                    $label = $selectableRule->getLabel();
-                    if ($label !== $ruleLabel) {
-                        $ruleTypeOptions[] = compact('value', 'label');
+                    if ($options['sortable']) {
+                        $ruleHtml .= Html::tag('div',
+                            Html::tag('a', '', [
+                                'class' => ['move', 'icon', 'draggable-handle'],
+                            ]),
+                            [
+                                'class' => ['rule-move'],
+                            ]
+                        );
                     }
-                }
-                $ruleTypeOptions[] = ['value' => $ruleValue, 'label' => $ruleLabel];
 
-                ArrayHelper::multisort($ruleTypeOptions, 'label');
+                    $ruleTypeOptions = [];
+                    $ruleValue = Json::encode($rule->getConfig());
+                    $ruleLabel = $rule->getLabel();
+                    foreach ($selectableRules as $value => $selectableRule) {
+                        /** @var ConditionRuleInterface $selectableRule */
+                        $label = $selectableRule->getLabel();
+                        if ($label !== $ruleLabel) {
+                            $ruleTypeOptions[] = compact('value', 'label');
+                        }
+                    }
+                    $ruleTypeOptions[] = ['value' => $ruleValue, 'label' => $ruleLabel];
 
-                $ruleHtml .=
-                    // Rule type selector
-                    Html::beginTag('div', ['class' => 'rule-switcher']) .
-                    Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type') .
-                    Cp::selectHtml([
-                        'id' => 'type',
-                        'name' => 'type',
-                        'options' => $ruleTypeOptions,
-                        'value' => $ruleValue,
-                        'autofocus' => $rule->getAutofocus(),
-                        'inputAttributes' => [
-                            'hx' => [
-                                'post' => UrlHelper::actionUrl('conditions/render'),
+                    ArrayHelper::multisort($ruleTypeOptions, 'label');
+
+                    $ruleHtml .=
+                        // Rule type selector
+                        Html::beginTag('div', ['class' => 'rule-switcher']) .
+                        Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type') .
+                        Cp::selectHtml([
+                            'id' => 'type',
+                            'name' => 'type',
+                            'options' => $ruleTypeOptions,
+                            'value' => $ruleValue,
+                            'autofocus' => $rule->getAutofocus(),
+                            'inputAttributes' => [
+                                'hx' => [
+                                    'post' => UrlHelper::actionUrl('conditions/render'),
+                                ],
                             ],
-                        ],
-                    ]) .
-                    Html::endTag('div') .
-                    // Rule HTML
-                    Html::tag('div', $rule->getHtml($options), [
-                        'id' => 'rule-body',
-                        'class' => ['rule-body', 'flex-grow'],
-                    ]) .
-                    // Remove button
-                    Html::beginTag('div', [
-                        'id' => 'rule-actions',
-                        'class' => ['rule-actions'],
-                    ]) .
-                    Html::button('', [
-                        'type' => 'button',
-                        'class' => ['delete', 'icon'],
-                        'title' => Craft::t('app', 'Remove'),
-                        'hx' => [
-                            'vals' => ['uid' => $rule->uid],
-                            'post' => UrlHelper::actionUrl('conditions/remove-rule'),
-                        ],
-                    ]) .
-                    Html::endTag('div');
+                        ]) .
+                        Html::endTag('div') .
+                        // Rule HTML
+                        Html::tag('div', $rule->getHtml($options), [
+                            'id' => 'rule-body',
+                            'class' => ['rule-body', 'flex-grow'],
+                        ]) .
+                        // Remove button
+                        Html::beginTag('div', [
+                            'id' => 'rule-actions',
+                            'class' => ['rule-actions'],
+                        ]) .
+                        Html::button('', [
+                            'type' => 'button',
+                            'class' => ['delete', 'icon'],
+                            'title' => Craft::t('app', 'Remove'),
+                            'hx' => [
+                                'vals' => ['uid' => $rule->uid],
+                                'post' => UrlHelper::actionUrl('conditions/remove-rule'),
+                            ],
+                        ]) .
+                        Html::endTag('div');
 
-                return Html::tag('fieldset', $ruleHtml, [
-                    'id' => 'condition-rule',
-                    'class' => ['condition-rule', 'flex', 'draggable'],
-                ]);
-            }, 'conditionRules[' . $ruleCount . ']');
-        }
-
-        $rulesJs = $view->clearJsBuffer(false);
-
-        // Sortable rules div
-        $html .= Html::tag('div', $allRulesHtml, [
-                'id' => 'condition-rules',
-                'class' => array_filter([
-                    'condition',
-                    $options['sortable'] ? 'sortable' : null,
-                ]),
-                'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
-                    'trigger' => 'end', // sortable library triggers this event
-                ],
-            ]
-        );
-
-        $html .=
-            Html::beginTag('div', [
-                'class' => ['condition-footer', 'flex', 'flex-nowrap'],
-            ]) .
-            Html::beginTag('button', [
-                'type' => 'button',
-                'class' => array_filter([
-                    'btn',
-                    'add',
-                    'icon',
-                    'fullwidth',
-                    'dashed',
-                    empty($selectableRules) ? 'disabled' : null,
-                ]),
-                'autofocus' => $autofocusAddButton,
-                'aria' => [
-                    'label' => $options['addRuleLabel'],
-                ],
-                'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/add-rule'),
-                ],
-            ]) .
-            $options['addRuleLabel'] .
-            Html::tag('div', '', [
-                'class' => ['spinner', 'htmx-indicator'],
-            ]) .
-            Html::endTag('button') .
-            Html::endTag('div');
-
-        // Add inline script tag
-        if ($isHtmxRequest && $rulesJs) {
-            $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
-        } elseif ($rulesJs) {
-            $view->registerJs($rulesJs);
-        }
-
-        if (!$isHtmxRequest) {
-            $view->registerJs("htmx.process(htmx.find('#$namespacedId'));");
-            $view->registerJs("htmx.trigger(htmx.find('#$namespacedId'), 'htmx:load');");
-        }
-
-        // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
-        // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
-        if ($isHtmxRequest) {
-            if ($bodyHtml = $view->getBodyHtml()) {
-                $html .= html::tag('template', $bodyHtml, [
-                    'id' => 'body-html',
-                    'class' => ['hx-body-html'],
-                ]);
+                    return Html::tag('fieldset', $ruleHtml, [
+                        'id' => 'condition-rule',
+                        'class' => ['condition-rule', 'flex', 'draggable'],
+                    ]);
+                }, 'conditionRules[' . $ruleCount . ']');
             }
-            if ($headHtml = $view->getHeadHtml()) {
-                $html .= html::tag('template', $headHtml, [
-                    'id' => 'head-html',
-                    'class' => ['hx-head-html'],
-                ]);
+
+            $rulesJs = $view->clearJsBuffer(false);
+
+            // Sortable rules div
+            $html .= Html::tag('div', $allRulesHtml, [
+                    'id' => 'condition-rules',
+                    'class' => array_filter([
+                        'condition',
+                        $options['sortable'] ? 'sortable' : null,
+                    ]),
+                    'hx' => [
+                        'post' => UrlHelper::actionUrl('conditions/render'),
+                        'trigger' => 'end', // sortable library triggers this event
+                    ],
+                ]
+            );
+
+            $html .=
+                Html::beginTag('div', [
+                    'class' => ['condition-footer', 'flex', 'flex-nowrap'],
+                ]) .
+                Html::beginTag('button', [
+                    'type' => 'button',
+                    'class' => array_filter([
+                        'btn',
+                        'add',
+                        'icon',
+                        'fullwidth',
+                        'dashed',
+                        empty($selectableRules) ? 'disabled' : null,
+                    ]),
+                    'autofocus' => $autofocusAddButton,
+                    'aria' => [
+                        'label' => $options['addRuleLabel'],
+                    ],
+                    'hx' => [
+                        'post' => UrlHelper::actionUrl('conditions/add-rule'),
+                    ],
+                ]) .
+                $options['addRuleLabel'] .
+                Html::tag('div', '', [
+                    'class' => ['spinner', 'htmx-indicator'],
+                ]) .
+                Html::endTag('button') .
+                Html::endTag('div');
+
+            if ($rulesJs) {
+                if ($isHtmxRequest) {
+                    $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
+                } else {
+                    $view->registerJs($rulesJs);
+                }
             }
-        }
 
-        $html .= Html::endTag('div'); //condition-main
+            // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
+            // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
+            if ($isHtmxRequest) {
+                if ($bodyHtml = $view->getBodyHtml()) {
+                    $html .= html::tag('template', $bodyHtml, [
+                        'id' => 'body-html',
+                        'class' => ['hx-body-html'],
+                    ]);
+                }
+                if ($headHtml = $view->getHeadHtml()) {
+                    $html .= html::tag('template', $headHtml, [
+                        'id' => 'head-html',
+                        'class' => ['hx-head-html'],
+                    ]);
+                }
+            } else {
+                $view->registerJs("htmx.process(htmx.find('#$namespacedId'));");
+                $view->registerJs("htmx.trigger(htmx.find('#$namespacedId'), 'htmx:load');");
+            }
 
-        return $html;
+            $html .= Html::endTag('div'); //condition-main
+            return $html;
+        }, $options['name']);
     }
 
     /**

@@ -42,18 +42,10 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
-        $this->_namespace = $this->request->getBodyParam('namespace');
+        $this->_namespace = $this->request->getRequiredBodyParam('namespace');
         $this->_options = Json::decodeIfJson($this->request->getBodyParam('options')) ?? [];
-
-        if ($this->_namespace) {
-            $config = $this->request->getBodyParam($this->_namespace);
-        } else {
-            $config = $this->request->getBodyParams();
-            unset($config['namespace'], $config['options'], $config['uid']);
-        }
-
+        $config = $this->request->getBodyParam($this->_namespace);
         $this->_condition = Craft::$app->getConditions()->createCondition($config);
-
         return parent::beforeAction($action);
     }
 
@@ -102,8 +94,6 @@ class ConditionsController extends Controller
      */
     protected function renderBuilderHtml(bool $setFocus = false): string
     {
-        return Craft::$app->getView()->namespaceInputs(function() use ($setFocus) {
-            return $this->_condition->getBuilderInnerHtml($this->_options, $setFocus);
-        }, $this->_namespace);
+        return $this->_condition->getBuilderInnerHtml($this->_options, $setFocus);
     }
 }
