@@ -19,6 +19,6 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
      */
     protected function elementQueryParam(): ?array
     {
-        return $this->paramValue();
+        return $this->queryParamValue();
     }
 }

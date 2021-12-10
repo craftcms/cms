@@ -38,6 +38,6 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->lastLoginDate($this->paramValue());
+        $query->lastLoginDate($this->queryParamValue());
     }
 }

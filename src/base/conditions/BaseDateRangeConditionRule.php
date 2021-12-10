@@ -121,7 +121,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      *
      * @return array|null
      */
-    protected function paramValue(): ?array
+    protected function queryParamValue(): ?array
     {
         if (!$this->_startDate && !$this->_endDate) {
             return null;

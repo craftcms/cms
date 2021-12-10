@@ -38,6 +38,6 @@ class DateModifiedConditionRule extends BaseDateRangeConditionRule implements El
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->dateModified($this->paramValue());
+        $query->dateModified($this->queryParamValue());
     }
 }

@@ -35,6 +35,6 @@ class DateCreatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $query->dateCreated($this->paramValue());
+        $query->dateCreated($this->queryParamValue());
     }
 }
