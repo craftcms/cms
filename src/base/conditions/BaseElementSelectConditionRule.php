@@ -91,9 +91,10 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     public function getHtml(array $options = []): string
     {
+        $element = $this->_element();
         return Cp::elementSelectHtml([
             'name' => 'elementId',
-            'elements' => $this->_element(),
+            'elements' => $element ? [$element] : [],
             'elementType' => $this->elementType(),
             'sources' => $this->sources(),
             'criteria' => $this->criteria(),
