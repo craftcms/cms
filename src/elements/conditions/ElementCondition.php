@@ -85,14 +85,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * @inheritdoc
      */
-    protected function addRuleLabel(): string
-    {
-        return Craft::t('app', 'Add a filter');
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function conditionRuleTypes(): array
     {
         $types = [

@@ -60,16 +60,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
     }
 
     /**
-     * Returns the label for the “Add a rule” button.
-     *
-     * @return string
-     */
-    protected function addRuleLabel(): string
-    {
-        return Craft::t('app', 'Add a rule');
-    }
-
-    /**
      * @inheritdoc
      */
     public function getConditionRuleTypes(): array
@@ -223,6 +213,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $options += $this->defaultBuilderOptions() + [
                 'sortable' => true,
                 'projectConfigTypes' => false,
+                'addRuleLabel' => Craft::t('app', 'Add a rule'),
             ];
 
         // Get all the selectable condition rules as type/rule pairs
@@ -367,13 +358,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 ]),
                 'autofocus' => $autofocusAddButton,
                 'aria' => [
-                    'label' => $this->addRuleLabel(),
+                    'label' => $options['addRuleLabel'],
                 ],
                 'hx' => [
                     'post' => UrlHelper::actionUrl('conditions/add-rule'),
                 ],
             ]) .
-            $this->addRuleLabel() .
+            $options['addRuleLabel'] .
             Html::tag('div', '', [
                 'class' => ['spinner', 'htmx-indicator'],
             ]) .

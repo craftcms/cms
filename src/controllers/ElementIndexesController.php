@@ -407,6 +407,7 @@ class ElementIndexesController extends BaseElementsController
             'mainTag' => 'div',
             'id' => $id,
             'queryParams' => $queryParams,
+            'addRuleLabel' => Craft::t('app', 'Add a filter'),
         ]);
 
         $view = Craft::$app->getView();
