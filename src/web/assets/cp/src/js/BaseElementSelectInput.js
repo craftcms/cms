@@ -43,8 +43,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
         this.setSettings(settings, Craft.BaseElementSelectInput.defaults);
 
-        console.log(this.settings);
-
         // Apply the storage key prefix
         if (this.settings.modalStorageKey) {
             this.modalStorageKey = 'BaseElementSelectInput.' + this.settings.modalStorageKey;
@@ -98,7 +96,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         if (!this.$container) return;
 
         const $fieldset = this.$container.closest('fieldset');
-        return $fieldset.find('legend').first().text();
+        return $fieldset.find('legend').first().data('label');
     },
 
     getElementsContainer: function() {
@@ -345,7 +343,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
             onSelect: this.onModalSelect.bind(this),
             onHide: this.onModalHide.bind(this),
             triggerElement: this.$addElementBtn,
-            modalTitle: this.fieldLabel,
+            modalTitle: Craft.t('app', 'Select {element}', {
+                'element': this.fieldLabel,
+            }),
         }, this.settings.modalSettings);
     },
 

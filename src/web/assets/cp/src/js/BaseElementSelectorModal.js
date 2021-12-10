@@ -227,7 +227,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         disabledElementIds: [],
         disableElementsOnSelect: false,
         hideOnSelect: true,
-        modalTitle: Craft.t('app', 'Element select'),
+        modalTitle: Craft.t('app', 'Select element'),
         onCancel: $.noop,
         onSelect: $.noop,
         hideSidebar: false,
