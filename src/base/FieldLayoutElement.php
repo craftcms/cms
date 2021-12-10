@@ -7,12 +7,14 @@
 
 namespace craft\base;
 
+use craft\models\FieldLayout;
 use yii\base\ArrayableTrait;
 use yii\base\BaseObject;
 
 /**
  * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
  *
+ * @property FieldLayout $layout The layout this element belongs to
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
@@ -26,6 +28,35 @@ abstract class FieldLayoutElement extends BaseObject
      * @var int The width (%) of the field
      */
     public int $width = 100;
+
+    /**
+     * @var FieldLayout The field layout tab this element belongs to
+     * @see getLayout()
+     * @see setLayout()
+     */
+    private FieldLayout $_layout;
+
+    /**
+     * Returns the layout this element belongs to.
+     *
+     * @return FieldLayout
+     * @since 4.0.0
+     */
+    public function getLayout(): FieldLayout
+    {
+        return $this->_layout;
+    }
+
+    /**
+     * Sets the layout this element belongs to.
+     *
+     * @param FieldLayout $layout
+     * @since 4.0.0
+     */
+    public function setLayout(FieldLayout $layout): void
+    {
+        $this->_layout = $layout;
+    }
 
     /**
      * @inheritdoc

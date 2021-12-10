@@ -146,7 +146,7 @@ class FieldLayout extends Model
 
         if (!empty($config['tabs']) && is_array($config['tabs'])) {
             foreach ($config['tabs'] as $tabConfig) {
-                $tab = FieldLayoutTab::createFromConfig($tabConfig);
+                $tab = FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig);
 
                 // Ignore empty tabs
                 if (!empty($tab->getElements())) {
@@ -338,7 +338,10 @@ class FieldLayout extends Model
             foreach (Craft::$app->getFields()->getAllGroups() as $group) {
                 $groupName = Craft::t('site', $group->name);
                 foreach ($group->getFields() as $field) {
-                    $this->_availableCustomFields[$groupName][] = Craft::createObject(CustomField::class, [$field]);
+                    $this->_availableCustomFields[$groupName][] = Craft::createObject([
+                        'class' => CustomField::class,
+                        'layout' => $this,
+                    ], [$field]);
                 }
             }
         }
@@ -367,6 +370,7 @@ class FieldLayout extends Model
                 if (!$field instanceof BaseField) {
                     throw new InvalidConfigException('Invalid standard field config');
                 }
+                $field->setLayout($this);
             }
         }
         return $this->_availableStandardFields;

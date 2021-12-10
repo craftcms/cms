@@ -1287,9 +1287,6 @@ class Fields extends Component
         $tabSortOrder = 0;
 
         foreach ($elementPlacements as $tabName => $elementKeys) {
-            $tab = $tabs[] = new FieldLayoutTab();
-            $tab->name = urldecode($tabName);
-            $tab->sortOrder = ++$tabSortOrder;
             $layoutElements = [];
 
             foreach ($elementKeys as $i => $elementKey) {
@@ -1315,7 +1312,12 @@ class Fields extends Component
                 }
             }
 
-            $tab->setElements($layoutElements);
+            $tabs[] = new FieldLayoutTab([
+                'layout' => $layout,
+                'name' => urldecode($tabName),
+                'sortOrder' => ++$tabSortOrder,
+                'elements' => $layoutElements,
+            ]);
         }
 
         $layout->setTabs($tabs);

@@ -95,11 +95,11 @@ class FieldLayoutTab extends Model
     public ?string $uid = null;
 
     /**
-     * @var FieldLayout|null
+     * @var FieldLayout
      * @see getLayout()
      * @see setLayout()
      */
-    private ?FieldLayout $_layout = null;
+    private FieldLayout $_layout;
 
     /**
      * @var FieldLayoutElement[] The tab’s layout elements
@@ -194,17 +194,17 @@ class FieldLayoutTab extends Model
     /**
      * Returns the tab’s layout.
      *
-     * @return FieldLayout|null The tab’s layout.
+     * @return FieldLayout The tab’s layout.
      * @throws InvalidConfigException if [[layoutId]] is set but invalid
      */
-    public function getLayout(): ?FieldLayout
+    public function getLayout(): FieldLayout
     {
         if (isset($this->_layout)) {
             return $this->_layout;
         }
 
         if (!$this->layoutId) {
-            return null;
+            throw new InvalidConfigException('Field layout tab is missing its field layout.');
         }
 
         if (($this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId)) === null) {
@@ -257,6 +257,7 @@ class FieldLayoutTab extends Model
                 }
             }
 
+            $layoutElement->setLayout($this->getLayout());
             $this->_elements[] = $layoutElement;
         }
     }
@@ -274,11 +275,9 @@ class FieldLayoutTab extends Model
 
         $this->_fields = [];
 
-        if ($layout = $this->getLayout()) {
-            foreach ($layout->getFields() as $field) {
-                if ($field->tabId == $this->id) {
-                    $this->_fields[] = $field;
-                }
+        foreach ($this->getLayout()->getFields() as $field) {
+            if ($field->tabId == $this->id) {
+                $this->_fields[] = $field;
             }
         }
 
