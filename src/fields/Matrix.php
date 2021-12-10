@@ -343,9 +343,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                             'class' => CustomField::class,
                             'required' => (bool)$fieldConfig['required'],
                             'width' => (int)($fieldConfig['width'] ?? 0) ?: 100,
-                        ], [
-                            $field,
-                        ]);
+                        ], [$field]);
                     }
                 }
 
@@ -438,9 +436,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
             $tab = $fieldLayout->getTabs()[0];
 
-            foreach ($tab->elements as $element) {
-                if ($element instanceof CustomField) {
-                    $field = $element->getField();
+            foreach ($tab->elements as $layoutElement) {
+                if ($layoutElement instanceof CustomField) {
+                    $field = $layoutElement->getField();
 
                     // If it's a missing field, swap it with a Text field
                     if ($field instanceof MissingField) {
@@ -450,12 +448,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                             'type' => $field->expectedType,
                         ]));
                         $field = $fallback;
-                        $element->setField($field);
+                        $layoutElement->setField($field);
                         $blockType->hasFieldErrors = true;
                     }
 
                     $fieldId = (string)($field->id ?? 'new' . ++$totalNewFields);
-                    $blockTypeFields[$blockTypeId][$fieldId] = $element;
+                    $blockTypeFields[$blockTypeId][$fieldId] = $layoutElement;
 
                     if (!$field->getIsNew()) {
                         $fieldTypeOptions[$field->id] = [];

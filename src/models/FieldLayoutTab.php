@@ -23,6 +23,7 @@ use yii\base\InvalidConfigException;
 /**
  * FieldLayoutTab model class.
  *
+ * @property FieldLayout|null $layout The tab’s layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -67,7 +68,6 @@ class FieldLayoutTab extends Model
         unset($config['fields']);
     }
 
-
     /**
      * @var int|null ID
      */
@@ -101,11 +101,15 @@ class FieldLayoutTab extends Model
 
     /**
      * @var FieldLayout|null
+     * @see getLayout()
+     * @see setLayout()
      */
     private ?FieldLayout $_layout = null;
 
     /**
      * @var FieldInterface[]|null
+     * @see getFields()
+     * @see setFields()
      */
     private ?array $_fields = null;
 
@@ -141,10 +145,10 @@ class FieldLayoutTab extends Model
             }
         } else {
             $fieldsService = Craft::$app->getFields();
-            foreach ($this->elements as $i => $element) {
-                if (is_array($element)) {
+            foreach ($this->elements as $i => $layoutElement) {
+                if (is_array($layoutElement)) {
                     try {
-                        $this->elements[$i] = $fieldsService->createLayoutElement($element);
+                        $this->elements[$i] = $fieldsService->createLayoutElement($layoutElement);
                     } catch (InvalidArgumentException $e) {
                         Craft::warning('Invalid field layout element config: ' . $e->getMessage(), __METHOD__);
                         Craft::$app->getErrorHandler()->logException($e);
@@ -195,8 +199,8 @@ class FieldLayoutTab extends Model
     public function getElementConfigs(): array
     {
         $elementConfigs = [];
-        foreach ($this->elements as $element) {
-            $elementConfigs[] = ['type' => get_class($element)] + $element->toArray();
+        foreach ($this->elements as $layoutElement) {
+            $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
         }
         return $elementConfigs;
     }
@@ -273,9 +277,7 @@ class FieldLayoutTab extends Model
             $this->elements[] = Craft::createObject([
                 'class' => CustomField::class,
                 'required' => $field->required,
-            ], [
-                $field,
-            ]);
+            ], [$field]);
         }
 
         // Clear the field layout's field cache

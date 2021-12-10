@@ -1296,15 +1296,15 @@ class Fields extends Component
                 $elementConfig = Json::decode($elementConfigs[$elementKey]);
 
                 try {
-                    $element = $this->createLayoutElement($elementConfig);
+                    $layoutElement = $this->createLayoutElement($elementConfig);
                 } catch (InvalidArgumentException $e) {
                     throw new BadRequestHttpException($e->getMessage(), 0, $e);
                 }
 
-                $tab->elements[] = $element;
+                $tab->elements[] = $layoutElement;
 
-                if ($element instanceof CustomField) {
-                    $fieldUid = $element->getFieldUid();
+                if ($layoutElement instanceof CustomField) {
+                    $fieldUid = $layoutElement->getFieldUid();
                     $field = $this->getFieldByUid($fieldUid);
                     if (!$field) {
                         throw new BadRequestHttpException("Invalid field UUID: $fieldUid");
@@ -1495,9 +1495,9 @@ class Fields extends Component
             $tab->id = $tabRecord->id;
             $tab->uid = $tabRecord->uid;
 
-            foreach ($tab->elements as $i => $element) {
-                if ($element instanceof CustomField) {
-                    $fieldUid = $element->getFieldUid();
+            foreach ($tab->elements as $i => $layoutElement) {
+                if ($layoutElement instanceof CustomField) {
+                    $fieldUid = $layoutElement->getFieldUid();
                     $field = $this->getFieldByUid($fieldUid);
 
                     if (!$field) {
@@ -1509,7 +1509,7 @@ class Fields extends Component
                     $fieldRecord->layoutId = $layout->id;
                     $fieldRecord->tabId = $tab->id;
                     $fieldRecord->fieldId = $field->id;
-                    $fieldRecord->required = (bool)$element->required;
+                    $fieldRecord->required = (bool)$layoutElement->required;
                     $fieldRecord->sortOrder = $i;
                     $fieldRecord->save(false);
                 }
