@@ -199,7 +199,7 @@ class FieldLayoutTab extends Model
      * Returns the tab’s layout.
      *
      * @return FieldLayout|null The tab’s layout.
-     * @throws InvalidConfigException if [[groupId]] is set but invalid
+     * @throws InvalidConfigException if [[layoutId]] is set but invalid
      */
     public function getLayout()
     {
