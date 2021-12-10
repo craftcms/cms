@@ -109,7 +109,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
                 $query->size(['and', ">= $minBytes", "<= $maxBytes"]);
                 return;
             case self::OPERATOR_NE:
-                $query->size(['and', "< $minBytes", "> $maxBytes"]);
+                $query->size(['or', "< $minBytes", "> $maxBytes"]);
                 return;
             case self::OPERATOR_LT:
                 $query->size("< $minBytes");
