@@ -145,10 +145,8 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $sectionService = Craft::$app->getSections();
-        $section = $sectionService->getSectionByUid($this->sectionUid);
         $typeId = Db::idByUid(Table::ENTRYTYPES, $this->entryTypeUid);
-        $type = $sectionService->getEntryTypeById($typeId);
+        $type = Craft::$app->getSections()->getEntryTypeById($typeId);
 
         /** @var EntryQuery $query */
         $query->type($type);
