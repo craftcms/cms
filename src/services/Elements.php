@@ -2542,6 +2542,9 @@ class Elements extends Component
         $oldUpdateSearchIndex = $this->_updateSearchIndex;
         $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
 
+        $newSiteIds = $element->newSiteIds;
+        $element->newSiteIds = [];
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -2695,8 +2698,6 @@ class Elements extends Component
 
             // Update the element across the other sites?
             if ($propagate) {
-                $element->newSiteIds = [];
-
                 foreach ($supportedSites as $siteInfo) {
                     // Skip the initial site
                     if ($siteInfo['siteId'] != $element->siteId) {
@@ -2722,6 +2723,7 @@ class Elements extends Component
             throw $e;
         } finally {
             $this->_updateSearchIndex = $oldUpdateSearchIndex;
+            $element->newSiteIds = $newSiteIds;
         }
 
         if (!$element->propagating) {

@@ -971,6 +971,7 @@ JS;
             'id' => Html::id($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'elements' => $value,
             'sources' => $this->inputSources($element),

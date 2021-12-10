@@ -1,38 +1,46 @@
 {% import "_includes/forms" as forms %}
 
-{% set locale = craft.app.formattingLocale.id %}
-{{ hiddenInput('defaultValue[locale]', locale) }}
-{{ hiddenInput('min[locale]', locale) }}
-{{ hiddenInput('max[locale]', locale) }}
-
 {% set decimals = not field.getErrors('decimals') ? field.decimals : null %}
 
-{{ forms.textField({
+{% macro numberField(config, decimals) %}
+    {% from '_includes/forms' import textField %}
+    {# Only format the value if it isn’t going to be misrepresented #}
+    {% if not craft.app.formatter.willBeMisrepresented(config.value) %}
+        {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+        {% set config = config|merge({
+            name: "#{config.name}[value]",
+            value: config.value|number(decimals),
+        }) %}
+    {% endif %}
+    {{ textField(config) }}
+{% endmacro %}
+
+{{ _self.numberField({
     label: "Default Value"|t('app'),
     id: 'defaultValue',
-    name: 'defaultValue[value]',
-    value: field.defaultValue|number(decimals),
+    name: 'defaultValue',
+    value: field.defaultValue,
     size: 5,
     errors: field.getErrors('defaultValue')
-}) }}
+}, decimals) }}
 
-{{ forms.textField({
+{{ _self.numberField({
     label: "Min Value"|t('app'),
     id: 'min',
-    name: 'min[value]',
-    value: field.min|number(decimals),
+    name: 'min',
+    value: field.min,
     size: 5,
     errors: field.getErrors('min')
-}) }}
+}, decimals) }}
 
-{{ forms.textField({
+{{ _self.numberField({
     label: "Max Value"|t('app'),
     id: 'max',
-    name: 'max[value]',
-    value: field.max|number(decimals),
+    name: 'max',
+    value: field.max,
     size: 5,
     errors: field.getErrors('max')
-}) }}
+}, decimals) }}
 
 {{ forms.textField({
     label: "Decimal Points"|t('app'),

@@ -583,6 +583,7 @@ return [
     'Environment Variables' => 'Ortam Değişkenleri',
     'Error' => 'Hata',
     'Error:' => 'Hata:',
+    'Errors:' => 'Errors:',
     'Excel' => 'Excel',
     'Expand' => 'Genişlet',
     'Expanded' => 'Genişletildi',

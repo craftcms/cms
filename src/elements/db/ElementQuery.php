@@ -1740,7 +1740,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Clears the cached result.
+     * Clears the [cached result](https://craftcms.com/docs/3.x/element-queries.html#cache).
      *
      * @see getCachedResult()
      * @see setCachedResult()
@@ -2772,7 +2772,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         /** @var string|ElementInterface $class */
         if ($element instanceof ElementInterface && !$element->lft) {
-            $element = $element->id;
+            $element = $element->getCanonicalId();
+
+            if ($element === null) {
+                throw new QueryAbortedException();
+            }
         }
 
         if (!$element instanceof ElementInterface) {

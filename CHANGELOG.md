@@ -3,20 +3,85 @@
 ## Unreleased
 
 ### Added
+- Added `avif` as a web-safe image format. ([#10222](https://github.com/craftcms/cms/pull/10222))
+- Added `avif` to the allowed asset file extensions.
+- Added `craft\services\Images::getSupportsAvif()`.
+
+### Changed
+- Reverted a 3.7.24 change where URL fields started encoding query string params. ([#10193](https://github.com/craftcms/cms/discussions/10193))
+- User verification and password-reset URLs for users with control panel access are no longer based on the front-end URL, when generated within the control panel. ([#10224](https://github.com/craftcms/cms/issues/10224))
+
+### Fixed
+- Fixed a bug where Neo blocks could lose their content if Preparse resaved a provisional draft as it was being created.
+
+## 3.7.25.1 - 2021-12-07
+
+### Added
+- Added `craft\helpers\ElementHelper::rootSource()`.
+
+### Fixed
+- Fixed an error that could occur on element indexes.
+- Fixed a bug where it wasn’t possible to sort nested element sources by custom fields. ([#10226](https://github.com/craftcms/cms/issues/10226))
+
+## 3.7.25 - 2021-12-07
+
+### Changed
+- Improved the accessibility of the “Default Asset Location” and “Asset Location” Assets field settings.
+- Element indexes now keep track of recent sort selections and factor them into the new element order. ([#10203](https://github.com/craftcms/cms/issues/10203))
+- The “View” button and “View” menu options on Edit Entry pages now use `<a>` tags. ([#10220](https://github.com/craftcms/cms/discussions/10220))
+- A `describedBy` variable is now available for `input` blocks rendered when embedding the `_includes/forms/field` control panel template.
+- `craft\services\Tokens::createToken()` and `createPreviewToken()` now have `$token` arguments, which accept pre-generated tokens.
+
+### Fixed
+- Fixed an error that could occur if the `field()` macro in the `_includes/forms` control panel template was called withoun an `input` argument. ([#10208](https://github.com/craftcms/cms/issues/10208))
+- Fixed a bug where the `migrate/fresh` command was erasing all migration history and attempting to reapply migrations. ([#10209](https://github.com/craftcms/cms/issues/10209))
+- Fixed a JavaScript error that occurred when pressing <kbd>Return</kbd> on an autosuggest input when no option was selected.
+- Fixed a bug where Edit Category pages could have two sets of “Preview” and “View” buttons. ([#10215](https://github.com/craftcms/cms/issues/10215))
+- Fixed a bug where boolean menus weren’t showing the “No” option as selected when the value was `false`.
+
+## 3.7.24 - 2021-12-02
+
+### Added
+- Added the `parseBooleanEnv()` Twig function.
+- Added `craft\base\FieldTrait::$describedBy`, which custom fields should reference when setting their input’s `aria-describedby` attribute. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- Added `craft\behaviors\EnvAttributeParserBehavior::getUnparsedAttribute()`.
+- Added `craft\fieldlayoutelements\BaseField::errorsId()`.
+- Added `craft\fieldlayoutelements\BaseField::instructions()`.
+- Added `craft\fieldlayoutelements\BaseField::instructionsId()`.
+- Added `craft\fieldlayoutelements\BaseField::tipId()`.
+- Added `craft\fieldlayoutelements\BaseField::warningId()`.
+- Added `craft\helpers\UrlHelper::encodeParams()`.
+- Added `craft\i18n\Formatter::willBeMisrepresented()`.
 - Added `craft\services\Config::setBooleanDotEnvVar()`.
+- Added `craft\services\Security::isSensitive()`.
+- Added `craft\web\twig\variables\Cp::field()`.
 
 ### Changed
 - Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
 - Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
-- The `on` and `off` commands now support an `--env` option. When passed, the commands will update the environment variable(s) referenced by `system.live` (and `system.retryDuration` for the `off` command when `--retry` is passed), rather than the project config values directly. ([#9855](https://github.com/craftcms/cms/issues/9855))
+- Improved built-in input descriptions for screen readers. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- URL fields now allow query strings to be appended to email addresses (e.g. `hello@example.com?subject=Check+this+out…`). ([#10193](https://github.com/craftcms/cms/discussions/10193))
+- `{% deprecated %}` tags now log proper Craft deprecation warnings rather than triggering an `E_USER_DEPRECATED` error. ([#10181](https://github.com/craftcms/cms/discussions/10181))
 - Editable tables’ `template` columns now support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - Editable tables now support an `autosuggest` column type, which support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - The `cp.assets.edit.meta`, `cp.categories.edit.meta`, and `cp.entries.edit.meta` template hooks are now located after the native meta fields, rather than before. ([#10172](https://github.com/craftcms/cms/issues/10172))
+- `craft\helpers\Cp::fieldHtml()` now supports `headingPrefix` and `headingSuffix` config keys.
 
 ### Fixed
 - Fixed an error that could occur when PHP’s `set_time_limit()` function was disabled. ([#10152](https://github.com/craftcms/cms/issues/10152))
 - Fixed a bug where the `_includes/forms/autosuggest` template wasn’t respecting `suggestEnvVars` if `suggestions` was already defined.
-- Fixed a bug where Table fields would sometimes have an incorrect GraphQL Input Type definition. ([#10173](https://github.com/craftcms/cms/issues/10173))
+- Fixed a bug where Table fields could have an incorrect GraphQL input type definition. ([#10173](https://github.com/craftcms/cms/issues/10173))
+- Fixed a bug where structure element query params weren’t working if the passed-in element was missing its structure data. ([#10122](https://github.com/craftcms/cms/issues/10122))
+- Fixed a bug where `craft\base\Element::getChildren()` and `getDescendants()` could return results for elements without an ID.
+- Fixed an error that occurred when opening the Timeline view in the Debug Toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
+- Fixed a bug where Number fields’ Default Value, Min Value, and Max Value settings could show values formatted in the wrong locale, leading to an error on save. ([#10184](https://github.com/craftcms/cms/issues/10184))
+- Fixed an error that could occur when creating a Table field. ([#10186](https://github.com/craftcms/cms/issues/10186))
+- Fixed a bug where Matrix blocks within drafts could lose track of their canonical blocks when they were updated upstream, resulting in duplicated blocks. ([#10130](https://github.com/craftcms/cms/issues/10130))
+- Fixed a bug where disabled site handles referenced in `config/routes.php` were being treated as URL patterns. ([#10197](https://github.com/craftcms/cms/issues/10197))
+
+### Security
+- Fixed a bug where sensitive-sounding environment variables’ values could be included in validation errors.
+- The “Sendmail Command” email setting no longer allows arbitrary values. Now it can only be set to a known `sendmail` command, an environment variable, or its current value.
 
 ## 3.7.23 - 2021-11-26
 

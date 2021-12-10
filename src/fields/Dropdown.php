@@ -63,10 +63,9 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             }
         }
 
-        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
-            'id' => $id,
-            'instructionsId' => "$id-instructions",
+            'id' => Html::id($this->handle),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
             'options' => $options,

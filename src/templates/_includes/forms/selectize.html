@@ -10,14 +10,16 @@
 }) %}
 
 {% if includeEnvVars ?? false %}
-    {% set allowedValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
+    {% if allowedEnvValues is not defined %}
+        {% set allowedEnvValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
+    {% endif %}
     {% set options = options|map(o => o.data.data.hint is defined ? o : o|merge({
         data: {
             data: {
                 hint: o.value,
             }
         },
-    }, recursive=true))|merge(craft.cp.getEnvOptions(allowedValues)) %}
+    }, recursive=true))|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
 {% endif %}
 
 {% include '_includes/forms/select' with {
@@ -40,7 +42,7 @@
         if (status) {
             label = `<span class="status ${status}"></span>${label}`;
         }
-        if (showHint && typeof data.hint !== 'undefined') {
+        if (showHint && typeof data.hint === 'string' && data.hint !== '') {
             label += ` <span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
         }
         return label;
