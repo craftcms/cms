@@ -1255,14 +1255,7 @@ class Users extends Component
      */
     public function handleChangedUserFieldLayout(ConfigEvent $event): void
     {
-        // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
-        static $parsed = false;
-        if ($parsed) {
-            return;
-        }
-
-        $parsed = true;
-        $data = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USER_FIELD_LAYOUTS, true);
+        $data = $event->newValue;
 
         $fieldsService = Craft::$app->getFields();
 
