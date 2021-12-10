@@ -232,8 +232,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
                     'vals' => array_filter([
-                        'namespace' => $view->getNamespace(),
-                        'options' => Json::encode($options),
+                        'options' => Json::encode(array_merge($options, [
+                            'id' => $namespacedId,
+                            'name' => $view->getNamespace(),
+                        ])),
                     ]),
                 ],
             ]);

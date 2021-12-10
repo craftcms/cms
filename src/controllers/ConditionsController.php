@@ -23,11 +23,6 @@ use craft\web\Controller;
 class ConditionsController extends Controller
 {
     /**
-     * @var string|null
-     */
-    private ?string $_namespace;
-
-    /**
      * @var array
      */
     private array $_options = [];
@@ -42,9 +37,8 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
-        $this->_namespace = $this->request->getRequiredBodyParam('namespace');
         $this->_options = Json::decodeIfJson($this->request->getBodyParam('options')) ?? [];
-        $config = $this->request->getBodyParam($this->_namespace);
+        $config = $this->request->getBodyParam($this->_options['name']);
         $this->_condition = Craft::$app->getConditions()->createCondition($config);
         return parent::beforeAction($action);
     }
