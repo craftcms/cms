@@ -103,6 +103,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
                 $types[] = HasUrlConditionRule::class;
                 $types[] = UriConditionRule::class;
             }
+
+            if ($elementType::hasStatuses()) {
+                $types[] = StatusConditionRule::class;
+            }
         }
 
         foreach (Craft::$app->getFields()->getAllFields($this->fieldContext) as $field) {

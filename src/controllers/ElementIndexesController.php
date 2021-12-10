@@ -403,6 +403,8 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
+        $queryParams[] = 'status';
+
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',
             'id' => $id,

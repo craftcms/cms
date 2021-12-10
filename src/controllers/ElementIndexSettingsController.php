@@ -80,6 +80,7 @@ class ElementIndexSettingsController extends BaseElementsController
                         'mainTag' => 'div',
                         'name' => "sources[{$source['key']}][condition]",
                         'projectConfigTypes' => true,
+                        'queryParams' => ['status'],
                         'addRuleLabel' => Craft::t('app', 'Add a filter'),
                     ]);
                     $conditionBuilderJs = $view->clearJsBuffer();
@@ -106,6 +107,7 @@ class ElementIndexSettingsController extends BaseElementsController
             'name' => 'sources[__SOURCE_KEY__][condition]',
             'mainTag' => 'div',
             'projectConfigTypes' => true,
+            'queryParams' => ['status'],
             'addRuleLabel' => Craft::t('app', 'Add a filter'),
         ]);
         $conditionBuilderJs = $view->clearJsBuffer();
