@@ -28,7 +28,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
         // Build the modal
         var $container = $('<div class="modal elementselectormodal" aria-labelledby="' + $headingId + '"></div>').appendTo(Garnish.$bod),
-            $heading = $('<h2 id="' + $headingId + '" class="visually-hidden">' + this.settings.name + '</h2>').appendTo($container),
+            $heading = $('<h2 id="' + $headingId + '" class="visually-hidden">' + this.settings.modalTitle + '</h2>').appendTo($container),
             $body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
             $footer = $('<div class="footer"/>').appendTo($container);
 
@@ -227,7 +227,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         disabledElementIds: [],
         disableElementsOnSelect: false,
         hideOnSelect: true,
-        name: Craft.t('app', 'Element select'),
+        modalTitle: Craft.t('app', 'Element select'),
         onCancel: $.noop,
         onSelect: $.noop,
         hideSidebar: false,
