@@ -164,14 +164,16 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
     },
 
-    focusCorrectElement: function() {
+    focusNextLogicalElement: function() {
         if (this.canAddMoreElements()) {
+            // If can add more elements, focus ADD button
             let $btn = this.$addElementBtn;
 
             if ($btn) {
                 $btn.get(0).focus();
             }
         } else {
+            // If can't add more elements, focus on the final remove
             this.focusLastRemoveBtn();
         }
     },
@@ -377,7 +379,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         if (this.canAddMoreElements()) return;
 
         setTimeout(() => {
-            this.focusLastRemoveBtn();
+            this.focusNextLogicalElement();
         }, 200);
     },
 
@@ -466,7 +468,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     onRemoveElements: function() {
         this.trigger('removeElements');
         this.settings.onRemoveElements();
-        this.focusCorrectElement();
+        this.focusNextLogicalElement();
     }
 }, {
     ADD_FX_DURATION: 200,
