@@ -64,7 +64,11 @@ class GroupConditionRule extends BaseSelectConditionRule implements ElementCondi
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $element->getGroups());
-        return $this->matchValue($groupUids);
+        foreach ($element->getGroups() as $group) {
+            if ($this->matchValue($group->uid)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
