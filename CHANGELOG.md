@@ -15,8 +15,8 @@
 
 ### Fixed
 - Fixed a bug where Neo blocks could lose their content if Preparse resaved a provisional draft as it was being created.
-- Fixed a bug where changes to a field layout sometimes would not be available until the next request. ([#10237]( https://github.com/craftcms/cms/issues/10237))
-- Fixed a bug that could sometimes occur when querying for users using the GraphQL API.
+- Fixed a bug where `craft\services\Fields::getLayoutByType()` could return an outdated field layout, if it had been updated in the same request. ([#10237](https://github.com/craftcms/cms/issues/10237))
+- Fixed a SQL error that could occur when querying for users via GraphQL.
 
 ## 3.7.25.1 - 2021-12-07
 
