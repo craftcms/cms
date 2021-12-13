@@ -223,11 +223,6 @@ class PrepareQueryTest extends Unit
                 }
             ],
             [
-                UserResolver::class, [null, ['group' => $this->_userGroupHandle, 'email' => 'foo@bar.org']], function($result) {
-                    return $result->groupId == $this->_userGroup->id && $result->email == 'foo@bar.org';
-                }
-            ],
-            [
                 UserResolver::class, [null, []], function($result) {
                     return !empty($result->groupId);
                 }
