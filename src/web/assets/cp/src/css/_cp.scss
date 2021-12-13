@@ -665,6 +665,8 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: center;
   @include padding-right(25px);
+  padding-top: 5px;
+  padding-bottom: 5px;
   height: 100%;
   background-color: transparent;
   border-radius: 0;
