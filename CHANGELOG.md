@@ -10,6 +10,7 @@
 ### Changed
 - Reverted a 3.7.24 change where URL fields started encoding query string params. ([#10193](https://github.com/craftcms/cms/discussions/10193))
 - User verification and password-reset URLs for users with control panel access are no longer based on the front-end URL, when generated within the control panel. ([#10224](https://github.com/craftcms/cms/issues/10224))
+- Element queries’ `status` arguments can now begin with `not` to return all elements except those with a given status or statuses. ([#9541](https://github.com/craftcms/cms/discussions/9541))
 - The `previewTokenDuration` config setting now defaults to the same value as `defaultTokenDuration`. ([#2394](https://github.com/craftcms/cms/issues/2394))
 
 ### Fixed

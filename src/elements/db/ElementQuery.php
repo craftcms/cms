@@ -2376,7 +2376,22 @@ class ElementQuery extends Query implements ElementQueryInterface
             $statuses = is_string($statuses) ? StringHelper::split($statuses) : [$statuses];
         }
 
-        $condition = ['or'];
+        $firstVal = strtolower(reset($statuses));
+        if (in_array($firstVal, ['not', 'or'])) {
+            $glue = $firstVal;
+            array_shift($statuses);
+            if (!$statuses) {
+                return;
+            }
+        } else {
+            $glue = 'or';
+        }
+
+        if ($negate = ($glue === 'not')) {
+            $glue = 'and';
+        }
+
+        $condition = [$glue];
 
         foreach ($statuses as $status) {
             $status = strtolower($status);
@@ -2387,7 +2402,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($statusCondition !== null) {
-                $condition[] = $statusCondition;
+                if ($negate) {
+                    $condition[] = ['not', $statusCondition];
+                } else {
+                    $condition[] = $statusCondition;
+                }
             }
         }
 
