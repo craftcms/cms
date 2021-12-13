@@ -488,13 +488,16 @@ $radioSize: 16px;
 
 @mixin token-styles {
   display: inline-block;
-  border-radius: 10px;
-  padding: 2px 7px;
+  border-radius: $smallBorderRadius;
+  padding: 3px 7px;
   font-size: 12px;
   line-height: 14px;
   color: $textColor;
-  background-color: transparentize($white, 0.5);
-  box-shadow: 0 0 0 1px $darkHairlineColor;
+  background-color: $grey100;
+}
+
+@mixin active-token-styles {
+  background-color: $grey200;
 }
 
 @mixin menu-styles {
