@@ -7,7 +7,6 @@ use craft\fields\BaseOptionsField;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
-use craft\helpers\Db;
 
 /**
  * Options field condition rule.
@@ -37,9 +36,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
      */
     protected function elementQueryParam(): array
     {
-        return collect($this->getValues())
-            ->map(fn(string $value) => Db::escapeParam($value))
-            ->all();
+        return $this->paramValue();
     }
 
     /**

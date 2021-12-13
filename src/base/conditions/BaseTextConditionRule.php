@@ -2,7 +2,6 @@
 
 namespace craft\base\conditions;
 
-use Craft;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -15,18 +14,8 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class BaseTextConditionRule extends BaseConditionRule
+abstract class BaseTextConditionRule extends BaseOperatorConditionRule
 {
-    public const OPERATOR_EQ = '=';
-    public const OPERATOR_NE = '!=';
-    public const OPERATOR_LT = '<';
-    public const OPERATOR_LTE = '<=';
-    public const OPERATOR_GT = '>';
-    public const OPERATOR_GTE = '>=';
-    public const OPERATOR_BW = 'bw';
-    public const OPERATOR_EW = 'ew';
-    public const OPERATOR_CONTAINS = '**';
-
     /**
      * @var string The selected operator.
      */
@@ -43,7 +32,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'operator' => $this->operator,
             'value' => $this->value,
         ]);
     }
@@ -57,8 +45,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     {
         return [
             self::OPERATOR_EQ,
-            self::OPERATOR_BW,
-            self::OPERATOR_EW,
+            self::OPERATOR_BEGINS_WITH,
+            self::OPERATOR_ENDS_WITH,
             self::OPERATOR_CONTAINS,
         ];
     }
@@ -74,68 +62,20 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     }
 
     /**
-     * Returns the option label for a given operator.
-     *
-     * @param string $operator
-     * @return string
-     */
-    protected function operatorLabel(string $operator): string
-    {
-        switch ($operator) {
-            case self::OPERATOR_EQ:
-                return Craft::t('app', 'equals');
-            case self::OPERATOR_NE:
-                return Craft::t('app', 'does not equal');
-            case self::OPERATOR_LT:
-                return Craft::t('app', 'is less than');
-            case self::OPERATOR_LTE:
-                return Craft::t('app', 'is less than or equals');
-            case self::OPERATOR_GT:
-                return Craft::t('app', 'is greater than');
-            case self::OPERATOR_GTE:
-                return Craft::t('app', 'is greater than or equals');
-            case self::OPERATOR_BW:
-                return Craft::t('app', 'begins with');
-            case self::OPERATOR_EW:
-                return Craft::t('app', 'ends with');
-            case self::OPERATOR_CONTAINS:
-                return Craft::t('app', 'contains');
-            default:
-                return $operator;
-        }
-    }
-
-    /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    protected function inputHtml(): string
     {
-        $operatorId = 'operator';
-        $valueId = 'value';
-
         return
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap'],
-            ]) .
-            Html::hiddenLabel(Craft::t('app', 'Operator'), $operatorId) .
-            Cp::selectHtml([
-                'id' => $operatorId,
-                'name' => 'operator',
-                'value' => $this->operator,
-                'options' => array_map(function($operator) {
-                    return ['value' => $operator, 'label' => $this->operatorLabel($operator)];
-                }, $this->operators()),
-            ]) .
-            Html::hiddenLabel($this->getLabel(), $valueId) .
+            Html::hiddenLabel($this->getLabel(), 'value') .
             Cp::textHtml([
                 'type' => $this->inputType(),
-                'id' => $valueId,
+                'id' => 'value',
                 'name' => 'value',
                 'value' => $this->value,
                 'autocomplete' => false,
                 'class' => 'fullwidth',
-            ]) .
-            Html::endTag('div');
+            ]);
     }
 
     /**
@@ -144,7 +84,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['operator'], 'in', 'range' => $this->operators()],
             [['value'], 'safe'],
         ]);
     }
@@ -163,9 +102,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         $value = Db::escapeParam($this->value);
 
         switch ($this->operator) {
-            case self::OPERATOR_BW:
+            case self::OPERATOR_BEGINS_WITH:
                 return "$value*";
-            case self::OPERATOR_EW:
+            case self::OPERATOR_ENDS_WITH:
                 return "*$value";
             case self::OPERATOR_CONTAINS:
                 return "*$value*";
@@ -199,9 +138,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
                 return $value > $this->value;
             case self::OPERATOR_GTE:
                 return $value >= $this->value;
-            case self::OPERATOR_BW:
+            case self::OPERATOR_BEGINS_WITH:
                 return StringHelper::startsWith($value, $this->value);
-            case self::OPERATOR_EW:
+            case self::OPERATOR_ENDS_WITH:
                 return StringHelper::endsWith($value, $this->value);
             case self::OPERATOR_CONTAINS:
                 return StringHelper::contains($value, $this->value);

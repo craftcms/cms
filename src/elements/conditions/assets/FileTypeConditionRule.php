@@ -38,11 +38,21 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
     /**
      * @inheritdoc
      */
+    protected function operators(): array
+    {
+        return [
+            self::OPERATOR_IN,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function options(): array
     {
         $options = [];
         foreach (AssetsHelper::getAllowedFileKinds() as $value => $kind) {
-            $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
+            $options[] = ['value' => $value, 'label' => $kind['label']];
         }
         return $options;
     }
@@ -53,7 +63,7 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->kind($this->values);
+        $query->kind($this->paramValue());
     }
 
     /**

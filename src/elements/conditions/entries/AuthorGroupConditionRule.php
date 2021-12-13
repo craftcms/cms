@@ -51,12 +51,8 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $userGroupsService = Craft::$app->getUserGroups();
-        $userGroups = array_filter(array_map(static function(string $uid) use ($userGroupsService) {
-            return $userGroupsService->getGroupByUid($uid);
-        }, $this->getValues()));
-
-        $query->authorGroup($userGroups);
+        $userGroups = Craft::$app->getUserGroups();
+        $query->authorGroupId($this->paramValue(fn($uid) => $userGroups->getGroupByUid($uid)->id ?? null));
     }
 
     /**
