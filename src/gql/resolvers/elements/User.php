@@ -54,7 +54,7 @@ class User extends ElementResolver
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
             $allowedGroupIds = array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']));
 
-            $query->groupId = $query->groupId ? array_intersect($allowedGroupIds, $query->groupId) : $allowedGroupIds;
+            $query->groupId = $query->groupId ? array_intersect($allowedGroupIds, (array)$query->groupId) : $allowedGroupIds;
         }
 
         foreach ($arguments as $key => $value) {
