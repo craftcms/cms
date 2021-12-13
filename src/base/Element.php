@@ -1676,6 +1676,19 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function __construct($config = [])
+    {
+        // Make sure the field layout ID is set before any custom fields
+        if (isset($config['fieldLayoutId'])) {
+            $config = ['fieldLayoutId' => $config['fieldLayoutId']] + $config;
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function __clone()
     {
         // Mark all fields as dirty
