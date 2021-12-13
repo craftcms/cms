@@ -3,7 +3,7 @@
 namespace craft\elements\conditions\entries;
 
 use Craft;
-use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -17,7 +17,7 @@ use craft\helpers\ArrayHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class SectionConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
+class SectionConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -49,12 +49,9 @@ class SectionConditionRule extends BaseSelectConditionRule implements ElementCon
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $section = Craft::$app->getSections()->getSectionByUid($this->value);
-
-        if ($section) {
-            /** @var EntryQuery $query */
-            $query->section($section);
-        }
+        /** @var EntryQuery $query */
+        $sections = Craft::$app->getSections();
+        $query->sectionId($this->paramValue(fn($uid) => $sections->getSectionByUid($uid)->id ?? null));
     }
 
     /**

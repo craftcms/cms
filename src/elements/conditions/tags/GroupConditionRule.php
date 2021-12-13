@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\tags;
 
 use Craft;
+use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\conditions\BaseSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -17,7 +18,7 @@ use craft\helpers\ArrayHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class GroupConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
+class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -49,12 +50,9 @@ class GroupConditionRule extends BaseSelectConditionRule implements ElementCondi
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $group = Craft::$app->getTags()->getTagGroupByUid($this->value);
-
-        if ($group) {
-            /** @var TagQuery $query */
-            $query->group($group);
-        }
+        /** @var TagQuery $query */
+        $tags = Craft::$app->getTags();
+        $query->groupId($this->paramValue(fn($uid) => $tags->getTagGroupByUid($uid)->id ?? null));
     }
 
     /**

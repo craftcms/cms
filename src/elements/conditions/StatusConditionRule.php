@@ -3,10 +3,9 @@
 namespace craft\elements\conditions;
 
 use Craft;
-use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\Entry;
 use yii\db\QueryInterface;
 
 /**
@@ -15,7 +14,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class StatusConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
+class StatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -51,7 +50,7 @@ class StatusConditionRule extends BaseSelectConditionRule implements ElementCond
     public function modifyQuery(QueryInterface $query): void
     {
         /** @var ElementQueryInterface $query */
-        $query->status($this->value);
+        $query->status($this->paramValue());
     }
 
     /**

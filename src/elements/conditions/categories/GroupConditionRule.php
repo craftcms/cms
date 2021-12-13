@@ -3,7 +3,7 @@
 namespace craft\elements\conditions\categories;
 
 use Craft;
-use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -17,7 +17,7 @@ use craft\helpers\ArrayHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class GroupConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
+class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -49,12 +49,9 @@ class GroupConditionRule extends BaseSelectConditionRule implements ElementCondi
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $group = Craft::$app->getCategories()->getGroupByUid($this->value);
-
-        if ($group) {
-            /** @var CategoryQuery $query */
-            $query->group($group);
-        }
+        /** @var CategoryQuery $query */
+        $categories = Craft::$app->getCategories();
+        $query->groupId($this->paramValue(fn(string $uid) => $categories->getGroupByUid($uid)->id ?? null));
     }
 
     /**

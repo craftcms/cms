@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\assets;
 
 use Craft;
+use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\conditions\BaseSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
@@ -17,7 +18,7 @@ use craft\helpers\ArrayHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class VolumeConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
+class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -49,12 +50,9 @@ class VolumeConditionRule extends BaseSelectConditionRule implements ElementCond
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($this->value);
-
-        if ($volume) {
-            /** @var AssetQuery $query */
-            $query->volume($volume);
-        }
+        /** @var AssetQuery $query */
+        $volumes = Craft::$app->getVolumes();
+        $query->volumeId($this->paramValue(fn($uid) => $volumes->getVolumeByUid($uid)->id ?? null));
     }
 
     /**

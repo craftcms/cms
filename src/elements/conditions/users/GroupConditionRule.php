@@ -3,14 +3,13 @@
 namespace craft\elements\conditions\users;
 
 use Craft;
-use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
-use craft\models\UserGroup;
 
 /**
  * User group condition rule.
@@ -18,7 +17,7 @@ use craft\models\UserGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class GroupConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
+class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
@@ -50,12 +49,9 @@ class GroupConditionRule extends BaseSelectConditionRule implements ElementCondi
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $group = Craft::$app->getUserGroups()->getGroupByUid($this->value);
-
-        if ($group) {
-            /** @var UserQuery $query */
-            $query->group($group);
-        }
+        /** @var UserQuery $query */
+        $userGroups = Craft::$app->getUserGroups();
+        $query->groupId($this->paramValue(fn($uid) => $userGroups->getGroupByUid($uid)->id ?? null));
     }
 
     /**
