@@ -622,6 +622,9 @@
 - Removed the Flysystem package. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
 - Removed the laminas-feed package.
 
+### Fixed
+- Fixed a bug where pending project config changes in the YAML would get applied when other project config changes were made. ([#9660](https://github.com/craftcms/cms/issues/9660))
+
 ### Security
 
 - Generated control panel URLs now begin with the `@web` alias value if the `baseCpUrl` config setting isn’t defined.
