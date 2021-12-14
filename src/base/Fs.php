@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace craft\base;
 
+use Craft;
 use craft\validators\HandleValidator;
 
 /**
@@ -31,6 +32,18 @@ abstract class Fs extends SavableComponent implements FsInterface
     public const VISIBILITY_HIDDEN = 'hidden';
     /* @since 4.0.0 */
     public const VISIBILITY_PUBLIC = 'public';
+
+    /**
+     * @inheritdoc
+     */
+    public function getRootUrl(): ?string
+    {
+        if (!$this->hasUrls) {
+            return null;
+        }
+
+        return rtrim(Craft::parseEnv($this->url), '/') . '/';
+    }
 
     /**
      * @inheritdoc

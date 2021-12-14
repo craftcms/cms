@@ -88,7 +88,7 @@ class Assets
      */
     public static function generateUrl(Volume $volume, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $baseUrl = $volume->getRootUrl();
+        $baseUrl = $volume->getFilesystem()->getRootUrl();
         $folderPath = $asset->folderPath;
         $appendix = static::urlAppendix($volume, $asset, $dateUpdated);
 
@@ -686,7 +686,7 @@ class Assets
         // No existing resources we could use.
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = Craft::$app->getImageTransforms()->getCachedCloudImageSize();
+        $maxCachedSize = Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
 
         if (!$volume->getFilesystem() instanceof LocalFsInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.

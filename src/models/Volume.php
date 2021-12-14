@@ -24,6 +24,8 @@ use yii\base\InvalidConfigException;
  * Volume represents a volume created in a Craft installation.
  *
  * @mixin FieldLayoutBehavior
+ *
+ * @property-read null|\craft\models\FieldLayout $fieldLayout
  */
 class Volume extends Model
 {
@@ -152,18 +154,6 @@ class Volume extends Model
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
         return $behavior->getFieldLayout();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootUrl(): ?string
-    {
-        if (!$this->hasUrls) {
-            return null;
-        }
-
-        return rtrim(Craft::parseEnv($this->url), '/') . '/';
     }
 
     /**

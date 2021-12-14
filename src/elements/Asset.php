@@ -82,6 +82,26 @@ use yii\base\UnknownPropertyException;
  * @property-read bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property-read string $extension the file extension
  * @property-read string $path the asset's path in the volume
+ * @property-write string $transformSource
+ * @property-read null|string $dimensions
+ * @property-read string $copyOfFile
+ * @property-read string[] $cacheTags
+ * @property-read string $contents
+ * @property-read bool $hasCheckeredThumb
+ * @property-read bool $supportsImageEditor
+ * @property-read array $previewTargets
+ * @property-read \craft\base\FsInterface $filesystem
+ * @property-read string $titleTranslationKey
+ * @property-read null|string $titleTranslationDescription
+ * @property-read string $dataUrl
+ * @property-read bool $isTitleTranslatable
+ * @property-read string $sidebarHtml
+ * @property-read string $previewHtml
+ * @property-read string $imageTransformSourcePath
+ * @property \craft\elements\User|null $uploader
+ * @property-read resource $stream
+ * @property-write null|string|array|\craft\models\ImageTransform $transform
+ * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -379,7 +399,7 @@ class Asset extends Element
             }
 
             // Copy URL
-            if ($volume->hasUrls) {
+            if ($volume->getFilesystem()->hasUrls) {
                 $actions[] = CopyUrl::class;
             }
 
@@ -962,7 +982,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if (!$volume->hasUrls) {
+        if (!$volume->getFilesystem()->hasUrls) {
             return null;
         }
 

@@ -27,7 +27,7 @@ class Image extends AssetPreviewHandler
     {
         $volume = $this->asset->getVolume();
 
-        if ($volume->hasUrls) {
+        if ($volume->getFilesystem()->hasUrls) {
             $url = $this->asset->getUrl();
         } else {
             $url = UrlHelper::actionUrl('assets/thumb', [
