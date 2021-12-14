@@ -27,6 +27,16 @@ trait FsTrait
     public ?string $handle = null;
 
     /**
+     * @var bool Whether the volume has a public URL
+     */
+    public bool $hasUrls = false;
+
+    /**
+     * @var string|null The volume’s URL
+     */
+    public ?string $url = null;
+
+    /**
     /**
      * @var string|null UID
      */

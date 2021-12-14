@@ -14,7 +14,6 @@ use craft\assets\previews\Pdf;
 use craft\assets\previews\Text;
 use craft\assets\previews\Video;
 use craft\base\AssetPreviewHandlerInterface;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -45,6 +44,7 @@ use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\fs\Temp;
@@ -866,12 +866,12 @@ class Assets extends Component
      * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return VolumeFolder
      * @throws VolumeException if something went catastrophically wrong creating the folder.
      */
-    public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): VolumeFolder
+    public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): VolumeFolder
     {
         $parentFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderModel = $parentFolder;

@@ -14,9 +14,6 @@ use craft\base\Field;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
-use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
-use craft\base\VolumeInterface;
 use craft\conditions\elements\assets\AssetQueryCondition;
 use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
@@ -37,6 +34,7 @@ use craft\errors\FileException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
@@ -53,12 +51,12 @@ use craft\helpers\UrlHelper;
 use craft\image\transforms\DeferredTransformerInterface;
 use craft\models\FieldLayout;
 use craft\models\ImageTransform;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
-use craft\fs\Temp;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -80,7 +78,7 @@ use yii\base\UnknownPropertyException;
  * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
  * @property-read Markup|null $img an `<img>` tag based on this asset
  * @property-read VolumeFolder $folder the asset’s volume folder
- * @property-read VolumeInterface $volume the asset’s volume
+ * @property-read Volume $volume the asset’s volume
  * @property-read bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property-read string $extension the file extension
  * @property-read string $path the asset's path in the volume
@@ -290,7 +288,7 @@ class Asset extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var VolumeInterface $context */
+        /** @var Volume $context */
         return 'save_' . $context->handle . '_Asset';
     }
 
@@ -700,9 +698,9 @@ class Asset extends Element
     private string $_transformSource = '';
 
     /**
-     * @var VolumeInterface|null
+     * @var Volume|null
      */
-    private ?VolumeInterface $_volume = null;
+    private ?Volume $_volume = null;
 
     /**
      * @var User|null
@@ -1177,20 +1175,22 @@ class Asset extends Element
     /**
      * Returns the asset’s volume.
      *
-     * @return VolumeInterface
+     * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      */
-    public function getVolume(): VolumeInterface
+    public function getVolume(): Volume
     {
         if (isset($this->_volume)) {
             return $this->_volume;
         }
 
+        $volumesService = Craft::$app->getVolumes();
+
         if (!isset($this->_volumeId)) {
-            return new Temp();
+            return $volumesService->getTemporaryVolume();
         }
 
-        if (($volume = Craft::$app->getVolumes()->getVolumeById($this->_volumeId)) === null) {
+        if (($volume = $volumesService->getVolumeById($this->_volumeId)) === null) {
             throw new InvalidConfigException('Invalid volume ID: ' . $this->_volumeId);
         }
 
@@ -1259,7 +1259,7 @@ class Asset extends Element
     {
         $volume = $this->getVolume();
 
-        if (!$volume->hasUrls || !$this->folderId) {
+        if (!$volume->getFilesystem()->hasUrls || !$this->folderId) {
             return null;
         }
 
@@ -1334,11 +1334,11 @@ class Asset extends Element
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @since 3.4.0
      */
-    public function getPreviewThumbImg(int $width, int $height): string
+    public function getPreviewThumbImg(int $desiredWidth, int $desiredHeight): string
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
-        [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $width, $height);
+        [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
@@ -1411,7 +1411,7 @@ class Asset extends Element
      */
     public function getMimeType(): ?string
     {
-        // todo: maybe we should be passing this off to volume types
+        // todo: maybe we should be passing this off to volume fs
         // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
         return FileHelper::getMimeTypeByExtension($this->_filename);
     }
@@ -2229,7 +2229,7 @@ class Asset extends Element
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
+                Assets::downloadFile($oldVolume->getFilesystem(), $oldPath, $tempPath);
             }
 
             // Try to open a file stream

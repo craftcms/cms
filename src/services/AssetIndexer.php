@@ -5,8 +5,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\LocalFsInterface;
-use craft\base\LocalVolumeInterface;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -26,6 +24,7 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\models\FsListing;
 use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
@@ -53,12 +52,12 @@ class AssetIndexer extends Component
     /**
      * Returns a sorted list of files on a volume.
      *
-     * @param VolumeInterface $volume The Volume to perform indexing on.
+     * @param Volume $volume The Volume to perform indexing on.
      * @param string $directory Optional path to get index list on a subfolder.
      * @return Generator|FsListing[]
      * @throws FsException
      */
-    public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): Generator
+    public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
             $fileList = $volume->getFilesystem()->getFileList($directory);
@@ -163,7 +162,7 @@ class AssetIndexer extends Component
         $session = $this->createIndexingSession($volumeList, $cacheRemoteImages);
         $total = 0;
 
-        /** @var VolumeInterface $volume */
+        /** @var Volume $volume */
         foreach ($volumeList as $volume) {
             try {
                 $fileList = $volume->getFilesystem()->getFileList();
@@ -200,7 +199,7 @@ class AssetIndexer extends Component
     /**
      * Create a new indexing session.
      *
-     * @param VolumeInterface[] $volumeList
+     * @param Volume[] $volumeList
      * @param bool $cacheRemoteImages Whether remote images should be cached.
      * @param bool $isCli Whether indexing is run via CLI
      * @return AssetIndexingSession
@@ -482,7 +481,7 @@ class AssetIndexer extends Component
     /**
      * Index a single file by Volume and path.
      *
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @param string $path
      * @param int $sessionId optional indexing session id.
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
@@ -493,7 +492,7 @@ class AssetIndexer extends Component
      * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
      * @throws VolumeException if unable to read metadata.
      */
-    public function indexFile(VolumeInterface $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
+    public function indexFile(Volume $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
         $fs = $volume->getFilesystem();
         $listing = new FsListing([
@@ -621,7 +620,7 @@ class AssetIndexer extends Component
         ]);
 
         if (!$folder) {
-            /** @var VolumeInterface $volume */
+            /** @var Volume $volume */
             $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
             $folder = $assets->ensureFolderByFullPathAndVolume($path, $volume);
         } else {
@@ -738,7 +737,7 @@ class AssetIndexer extends Component
 
         $folder = Craft::$app->getAssets()->findFolder(['path' => $indexEntry->uri . '/', 'volumeId' => $indexEntry->volumeId]);
 
-        /** @var VolumeInterface $volume */
+        /** @var Volume $volume */
         $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
 
         if (!$folder && !$createIfMissing) {

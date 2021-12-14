@@ -9,9 +9,8 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\base\Volume;
-use craft\base\VolumeInterface;
 use craft\fs\Temp;
+use craft\services\Volumes;
 use yii\base\InvalidConfigException;
 
 /**
@@ -19,6 +18,10 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ *
+ * @property-read Volume $volume
+ * @property-read VolumeFolder|null $parent
+ * @property VolumeFolder[] $children
  */
 class VolumeFolder extends Model
 {
@@ -78,16 +81,13 @@ class VolumeFolder extends Model
     }
 
     /**
-     * @return VolumeInterface
+     * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is invalid
      */
-    public function getVolume(): VolumeInterface
+    public function getVolume(): Volume
     {
         if (!isset($this->volumeId)) {
-            return Craft::createObject(Volume::class, [
-                'name' => Craft::t('app', 'Temporary volume'),
-                'filesystem' => Craft::createObject(Temp::class)
-            ]);
+            return Craft::$app->getVolumes()->getTemporaryVolume();
         }
 
         if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {

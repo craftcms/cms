@@ -8,7 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
@@ -20,6 +19,7 @@ use craft\gql\TypeManager;
 use craft\gql\types\elements\Asset;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
+use craft\models\Volume;
 
 /**
  * Class AssetType

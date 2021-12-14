@@ -9,7 +9,7 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Volume;
+use craft\models\Volume;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
 use craft\gql\base\ElementMutationResolver;

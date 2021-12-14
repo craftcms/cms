@@ -5,30 +5,27 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\MemoizableArray;
-use craft\base\Volume;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
-use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
+use craft\fs\Local;
+use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\fs\Local;
-use craft\fs\MissingFs;
 use Throwable;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AssetVolumesService
@@ -44,36 +41,14 @@ use yii\base\Component;
  * @property-read string[] $allVolumeTypes
  * @property-read int $totalVolumes
  * @property-read array $viewableVolumeIds
- * @property-read VolumeInterface[] $allVolumes
+ * @property-read Volume[] $allVolumes
  * @property-read int[] $publicVolumeIds
  * @property-read int $totalViewableVolumes
- * @property-read VolumeInterface[] $publicVolumes
- * @property-read VolumeInterface[] $viewableVolumes
+ * @property-read Volume[] $publicVolumes
+ * @property-read Volume[] $viewableVolumes
  */
 class Volumes extends Component
 {
-    /**
-     * @event RegisterComponentTypesEvent The event that is triggered when registering volume types.
-     *
-     * Volume types must implement [[VolumeInterface]]. [[Volume]] provides a base implementation.
-     *
-     * See [Volume Types](https://craftcms.com/docs/3.x/extend/volume-types.html) for documentation on creating volume types.
-     * ---
-     * ```php
-     * use craft\events\RegisterComponentTypesEvent;
-     * use craft\services\Volumes;
-     * use yii\base\Event;
-     *
-     * Event::on(Volumes::class,
-     *     Volumes::EVENT_REGISTER_VOLUME_TYPES,
-     *     function(RegisterComponentTypesEvent $event) {
-     *         $event->types[] = MyVolumeType::class;
-     *     }
-     * );
-     * ```
-     */
-    public const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
-
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is saved.
      */
@@ -101,7 +76,7 @@ class Volumes extends Component
     public const EVENT_AFTER_DELETE_VOLUME = 'afterDeleteVolume';
 
     /**
-     * @var MemoizableArray<VolumeInterface>|null
+     * @var MemoizableArray<Volume>|null
      * @see _volumes()
      */
     private ?MemoizableArray $_volumes = null;
@@ -127,26 +102,6 @@ class Volumes extends Component
     // -------------------------------------------------------------------------
 
     /**
-     * Returns all registered volume types.
-     *
-     * @return string[]
-     */
-    public function getAllVolumeTypes(): array
-    {
-        $volumeTypes = [
-            Local::class,
-        ];
-
-        $event = new RegisterComponentTypesEvent([
-            'types' => $volumeTypes,
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
-
-        return $event->types;
-    }
-
-    /**
      * Returns all of the volume IDs.
      *
      * @return int[]
@@ -169,7 +124,7 @@ class Volumes extends Component
     /**
      * Returns all volumes that are viewable by the current user.
      *
-     * @return VolumeInterface[]
+     * @return Volume[]
      */
     public function getViewableVolumes(): array
     {
@@ -178,7 +133,7 @@ class Volumes extends Component
         }
 
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
+        return ArrayHelper::where($this->getAllVolumes(), function(Volume $volume) use ($userSession) {
             return $userSession->checkPermission('viewVolume:' . $volume->uid);
         }, true, true, false);
     }
@@ -196,7 +151,7 @@ class Volumes extends Component
     /**
      * Returns all volumes that have public URLs.
      *
-     * @return VolumeInterface[]
+     * @return Volume[]
      */
     public function getPublicVolumes(): array
     {
@@ -226,7 +181,7 @@ class Volumes extends Component
     /**
      * Returns a memoizable array of all volumes.
      *
-     * @return MemoizableArray<VolumeInterface>
+     * @return MemoizableArray<Volume>
      */
     private function _volumes(): MemoizableArray
     {
@@ -244,7 +199,7 @@ class Volumes extends Component
     /**
      * Returns all volumes.
      *
-     * @return VolumeInterface[]
+     * @return Volume[]
      */
     public function getAllVolumes(): array
     {
@@ -255,20 +210,35 @@ class Volumes extends Component
      * Returns a volume by its ID.
      *
      * @param int $volumeId
-     * @return VolumeInterface|null
+     * @return Volume|null
      */
-    public function getVolumeById(int $volumeId): ?VolumeInterface
+    public function getVolumeById(int $volumeId): ?Volume
     {
         return $this->_volumes()->firstWhere('id', $volumeId);
+    }
+
+    /**
+     * @return Volume
+     * @throws InvalidConfigException
+     */
+    public function getTemporaryVolume(): Volume
+    {
+        $volume = new Volume([
+            'name' => Craft::t('app', 'Temporary volume')
+        ]);
+
+        $volume->setFilesystem(Craft::createObject(Temp::class));
+
+        return $volume;
     }
 
     /**
      * Returns a volume by its UID.
      *
      * @param string $volumeUid
-     * @return VolumeInterface|null
+     * @return Volume|null
      */
-    public function getVolumeByUid(string $volumeUid): ?VolumeInterface
+    public function getVolumeByUid(string $volumeUid): ?Volume
     {
         return $this->_volumes()->firstWhere('uid', $volumeUid, true);
     }
@@ -277,9 +247,9 @@ class Volumes extends Component
      * Returns a volume by its handle.
      *
      * @param string $handle
-     * @return VolumeInterface|null
+     * @return Volume|null
      */
-    public function getVolumeByHandle(string $handle): ?VolumeInterface
+    public function getVolumeByHandle(string $handle): ?Volume
     {
         return $this->_volumes()->firstWhere('handle', $handle, true);
     }
@@ -287,18 +257,16 @@ class Volumes extends Component
     /**
      * Returns the field layout config for the given volume.
      *
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @return array
      * @since 3.5.0
      */
-    public function createVolumeConfig(VolumeInterface $volume): array
+    public function createVolumeConfig(Volume $volume): array
     {
         $config = [
             'name' => $volume->name,
             'handle' => $volume->handle,
             'filesystem' => $volume->filesystem,
-            'hasUrls' => $volume->hasUrls,
-            'url' => $volume->url,
             'titleTranslationMethod' => $volume->titleTranslationMethod,
             'titleTranslationKeyFormat' => $volume->titleTranslationKeyFormat ?: null,
             'sortOrder' => (int)$volume->sortOrder,
@@ -330,9 +298,7 @@ class Volumes extends Component
      * $volume = new Local([
      *     'name' => 'Content Images',
      *     'handle' => 'contentImages',
-     *     'hasUrls' => true,
-     *     'url' => '$CONTENT_IMAGES_URL',
-     *     'path' => '$CONTENT_IMAGES_PATH',
+     *     'filesystem' => 'localFs',
      * ]);
      *
      * if (!Craft::$app->volumes->saveVolume(($volume))) {
@@ -340,14 +306,14 @@ class Volumes extends Component
      * }
      * ```
      *
-     * @param VolumeInterface $volume the volume to be saved.
+     * @param Volume $volume the volume to be saved.
      * @param bool $runValidation Whether the volume should be validated
      * @return bool Whether the volume was saved successfully
      * @throws Throwable
      */
-    public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
+    public function saveVolume(Volume $volume, bool $runValidation = true): bool
     {
-        $isNewVolume = $volume->getIsNew();
+        $isNewVolume = !$volume->id;
 
         // Fire a 'beforeSaveVolume' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_VOLUME)) {
@@ -355,10 +321,6 @@ class Volumes extends Component
                 'volume' => $volume,
                 'isNew' => $isNewVolume,
             ]));
-        }
-
-        if (!$volume->beforeSave($isNewVolume)) {
-            return false;
         }
 
         if ($runValidation && !$volume->validate()) {
@@ -407,9 +369,7 @@ class Volumes extends Component
             $volumeRecord->name = $data['name'];
             $volumeRecord->handle = $data['handle'];
             $volumeRecord->filesystem = $data['filesystem'];
-            $volumeRecord->hasUrls = $data['hasUrls'];
             $volumeRecord->sortOrder = $data['sortOrder'];
-            $volumeRecord->url = !empty($data['url']) ? $data['url'] : null;
             $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeRecord->uid = $volumeUid;
@@ -465,7 +425,6 @@ class Volumes extends Component
         $this->_volumes = null;
 
         $volume = $this->getVolumeById($volumeRecord->id);
-        $volume->afterSave($isNewVolume);
 
         if ($wasTrashed) {
             // Restore the assets that were deleted with the volume
@@ -515,10 +474,10 @@ class Volumes extends Component
     /**
      * Ensures a top level folder exists that matches the model.
      *
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @return VolumeFolder
      */
-    public function ensureTopFolder(VolumeInterface $volume): VolumeFolder
+    public function ensureTopFolder(Volume $volume): VolumeFolder
     {
         $assetsService = Craft::$app->getAssets();
         $folder = $assetsService->findFolder([
@@ -559,11 +518,11 @@ class Volumes extends Component
     /**
      * Deletes an asset volume.
      *
-     * @param VolumeInterface $volume The volume to delete
+     * @param Volume $volume The volume to delete
      * @return bool
      * @throws Throwable
      */
-    public function deleteVolume(VolumeInterface $volume): bool
+    public function deleteVolume(Volume $volume): bool
     {
         // Fire a 'beforeDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_VOLUME)) {
@@ -704,12 +663,8 @@ class Volumes extends Component
         return (new Query())
             ->select([
                 'id',
-                'dateCreated',
-                'dateUpdated',
                 'name',
                 'handle',
-                'hasUrls',
-                'url',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',

@@ -5,10 +5,7 @@ namespace craft\fs;
 
 use Craft;
 use craft\base\Fs;
-use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
-use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
 use craft\helpers\FileHelper;

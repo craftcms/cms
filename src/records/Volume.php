@@ -20,8 +20,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Name
  * @property string $handle Handle
  * @property string $filesystem Filesystem handle
- * @property bool $hasUrls Whether Volume has URLs
- * @property string $url URL
  * @property string $titleTranslationMethod
  * @property string|null $titleTranslationKeyFormat
  * @property int $sortOrder Sort order

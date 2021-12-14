@@ -26,6 +26,8 @@ class m211201_131000_asset_volumes_to_fs extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'type' => $this->string()->notNull(),
+            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
+            'url' => $this->string(),
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -49,6 +51,8 @@ class m211201_131000_asset_volumes_to_fs extends Migration
                     'name' => $volumeData['name'] . ' Filesystem',
                     'handle' => $fsHandle,
                     'type' => StringHelper::replace($volumeData['type'], 'craft\\volumes', 'craft\\fs'),
+                    'hasUrls' => $volumeData['hasUrls'],
+                    'url' => $volumeData['url'],
                     'settings' => $volumeData['settings']
                 ];
 
@@ -69,6 +73,8 @@ class m211201_131000_asset_volumes_to_fs extends Migration
 
         $this->dropColumn(Table::VOLUMES, 'settings');
         $this->dropColumn(Table::VOLUMES, 'type');
+        $this->dropColumn(Table::VOLUMES, 'hasUrls');
+        $this->dropColumn(Table::VOLUMES, 'url');
 
         return true;
     }

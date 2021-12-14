@@ -7,14 +7,14 @@ declare(strict_types=1);
  * @since 3.0.0
  */
 
-namespace craft\base;
+namespace craft\models;
 
 use Craft;
+use craft\base\Field;
+use craft\base\FsInterface;
+use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
-use craft\fs\Local;
-use craft\helpers\Assets;
-use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -25,9 +25,54 @@ use yii\base\InvalidConfigException;
  *
  * @mixin FieldLayoutBehavior
  */
-class Volume extends SavableComponent implements VolumeInterface
+class Volume extends Model
 {
-    use VolumeTrait;
+    /**
+     * @var int|null ID
+     */
+    public ?int $id = null;
+
+    /**
+     * @var string|null Name
+     */
+    public ?string $name = null;
+
+    /**
+     * @var string|null Handle
+     */
+    public ?string $handle = null;
+
+    /**
+     * @var string|null Filesystem handle
+     */
+    public ?string $filesystem = null;
+
+    /**
+     * @var string Title translation method
+     * @since 3.6.0
+     */
+    public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+
+    /**
+     * @var string|null Title translation key format
+     * @since 3.6.0
+     */
+    public ?string $titleTranslationKeyFormat = null;
+
+    /**
+     * @var int|null Sort order
+     */
+    public ?int $sortOrder = null;
+
+    /**
+     * @var int|null Field layout ID
+     */
+    public ?int $fieldLayoutId = null;
+
+    /**
+     * @var string|null UID
+     */
+    public ?string $uid = null;
 
     private ?FsInterface $_fs = null;
 
@@ -62,8 +107,6 @@ class Volume extends SavableComponent implements VolumeInterface
         $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
-        $rules[] = [['hasUrls'], 'boolean'];
-        $rules[] = [['name', 'handle', 'url'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [
             ['handle'],
@@ -78,11 +121,6 @@ class Volume extends SavableComponent implements VolumeInterface
             ],
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
-
-        // Require URLs for public Volumes.
-        if ($this->hasUrls) {
-            $rules[] = [['url'], 'required'];
-        }
 
         return $rules;
     }

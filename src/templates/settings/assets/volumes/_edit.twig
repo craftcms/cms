@@ -34,56 +34,24 @@
         required: true,
     }) }}
 
-    {{ forms.lightswitchField({
-        label: "Assets in this volume have public URLs"|t('app'),
-        name: 'hasUrls',
-        on:   volume.hasUrls,
-        toggle: "url-field"
-    }) }}
-
-    <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
-        {{ forms.autosuggestField({
-            label: "Base URL"|t('app'),
-            instructions: "The base URL to the assets in this volume."|t('app'),
-            id: 'url',
-            class: ['ltr', 'volume-url'],
-            name: 'url',
-            suggestEnvVars: true,
-            suggestAliases: true,
-            value: (volume is defined ? volume.url : null),
-            errors: (volume is defined ? volume.getErrors('url') : null),
-            required: true,
-            placeholder: "//example.com/path/to/folder"
-        }) }}
-    </div>
-
     <hr>
 
-    {{ forms.selectField({
-        label: "Volume Type"|t('app'),
-        instructions: "What type of volume is this?"|t('app'),
-        id: 'type',
-        name: 'type',
-        options: volumeTypeOptions,
-        value: className(volume),
-        toggle: true
-    }) }}
-
-    {{ missingVolumePlaceholder|raw }}
-
-    {% for volumeType in volumeTypes %}
-        {% set isCurrent = (volumeType == className(volume)) %}
-
-        <div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-            {% namespace 'types['~volumeType~']' %}
-                {% if isCurrent %}
-                    {{ volume.getSettingsHtml()|raw }}
-                {% else %}
-                    {{ volumeInstances[volumeType].getSettingsHtml()|raw }}
-                {% endif %}
-            {% endnamespace %}
-        </div>
-    {% endfor %}
+    {% if fsOptions|length %}
+        {{ forms.selectField({
+            label: "Filesytem"|t('app'),
+            instructions: "What filesystem is this volume using?"|t('app'),
+            id: 'filesystem',
+            name: 'filesystem',
+            options: fsOptions,
+            value: className(volume),
+            toggle: true
+        }) }}
+    {% else %}
+        {{ forms.field({
+            first: true,
+            label: "Filesytem"|t('app')
+        }, '<p class="error">' ~ "No filesystems exist"|t('app') ~ '</p>') }}
+    {% endif %}
 
     {% if craft.app.getIsMultiSite() %}
         <hr>

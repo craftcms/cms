@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\VolumeInterface;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\errors\AssetDisallowedExtensionException;
@@ -18,6 +17,7 @@ use craft\errors\MissingFsFolderException;
 use craft\errors\FsObjectNotFoundException;
 use craft\helpers\Db;
 use craft\models\FsListing;
+use craft\models\Volume;
 use Throwable;
 use yii\console\ExitCode;
 use yii\db\Exception;
@@ -127,7 +127,7 @@ class IndexAssetsController extends Controller
     /**
      * Indexes the assets in the given volumes.
      *
-     * @param VolumeInterface[] $volumes
+     * @param Volume[] $volumes
      * @param string $path the subfolder path
      * @param int $startAt
      * @return int
@@ -138,7 +138,6 @@ class IndexAssetsController extends Controller
     private function _indexAssets(array $volumes, string $path = '', int $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
-        $assetService = Craft::$app->getAssets();
 
         $this->stdout(PHP_EOL);
 

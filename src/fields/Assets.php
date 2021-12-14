@@ -9,7 +9,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\VolumeInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -31,6 +30,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\models\Volume;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
@@ -1032,9 +1032,9 @@ class Assets extends BaseRelationField
     /**
      * Returns the target upload volume for the field.
      *
-     * @return VolumeInterface|null
+     * @return Volume|null
      */
-    private function _uploadVolume(): ?VolumeInterface
+    private function _uploadVolume(): ?Volume
     {
         if ($this->restrictLocation) {
             $sourceKey = $this->restrictedLocationSource;

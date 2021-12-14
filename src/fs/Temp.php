@@ -41,7 +41,7 @@ class Temp extends Local
             $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
         }
         if (!isset($config['name'])) {
-            $config['name'] = Craft::t('app', 'Temporary volume');
+            $config['name'] = Craft::t('app', 'Temporary filesystem');
         }
 
         parent::__construct($config);

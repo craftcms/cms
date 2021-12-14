@@ -96,6 +96,8 @@ class Filesystems extends Component
             'name' => $fs->name,
             'handle' => $fs->handle,
             'type' => get_class($fs),
+            'hasUrls' => $fs->hasUrls,
+            'url' => $fs->url,
             'settings' => ProjectConfigHelper::packAssociativeArrays($fs->getSettings()),
         ];
 
@@ -244,6 +246,8 @@ class Filesystems extends Component
             $fsRecord->name = $data['name'];
             $fsRecord->handle = $data['handle'];
             $fsRecord->type = $data['type'];
+            $fsRecord->hasUrls = $data['hasUrls'];
+            $fsRecord->url = $data['url'];
             $fsRecord->settings = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
             $fsRecord->uid = $fsUid;
             $fsRecord->save(false);
@@ -382,6 +386,8 @@ class Filesystems extends Component
                 'name',
                 'handle',
                 'type',
+                'hasUrls',
+                'url',
                 'settings',
                 'uid',
             ])

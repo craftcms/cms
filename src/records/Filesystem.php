@@ -17,6 +17,8 @@ use craft\db\Table;
  * @property string $name Name
  * @property string $handle Handle
  * @property string $type Type
+ * @property bool $hasUrls Whether Volume has URLs
+ * @property string $url URL
  * @property array $settings Settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
