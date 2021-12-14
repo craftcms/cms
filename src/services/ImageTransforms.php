@@ -551,9 +551,10 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
+
         // TODO
         // Fetch all driver instances
-        // tell every drier instance that this asset is being deleted
+        // tell every driver instance that this asset is being deleted
         // PROFIT
         (new DefaultTransformer())->invalidateAssetTransforms($asset);
 
