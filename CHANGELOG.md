@@ -5,6 +5,7 @@
 ### Added
 - Added `avif` as a web-safe image format. ([#10222](https://github.com/craftcms/cms/pull/10222))
 - Added `avif` to the allowed asset file extensions.
+- Added `craft\fields\data\ColorData::getHsl()`, `getH()`, `getHue()`, `getL()`, `getLightness()`, `getS()`, and `getSaturation()`. ([#10235](https://github.com/craftcms/cms/discussions/10235))
 - Added `craft\services\Images::getSupportsAvif()`.
 
 ### Changed
