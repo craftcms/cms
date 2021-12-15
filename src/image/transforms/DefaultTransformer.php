@@ -126,7 +126,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
     {
         // Index the assets by ID
         $assetsById = ArrayHelper::index($assets, 'id');
-        $indexCondition = [];
+        $indexCondition = ['or'];
         $transformsByFingerprint = [];
 
         foreach ($transforms as $transform) {
