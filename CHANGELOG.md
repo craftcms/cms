@@ -13,6 +13,7 @@
 - User verification and password-reset URLs for users with control panel access are no longer based on the front-end URL, when generated within the control panel. ([#10224](https://github.com/craftcms/cms/issues/10224))
 - Element queries’ `status` arguments can now begin with `not` to return all elements except those with a given status or statuses. ([#9541](https://github.com/craftcms/cms/discussions/9541))
 - The `previewTokenDuration` config setting now defaults to the same value as `defaultTokenDuration`. ([#2394](https://github.com/craftcms/cms/issues/2394))
+- Craft no longer requires the Portable UTF-8 library directly. ([#10252](https://github.com/craftcms/cms/issues/10252))
 
 ### Fixed
 - Fixed a bug where Neo blocks could lose their content if Preparse resaved a provisional draft as it was being created.
