@@ -1,5 +1,30 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.26 - 2021-12-15
+
+### Added
+- Added `avif` as a web-safe image format. ([#10222](https://github.com/craftcms/cms/pull/10222))
+- Added `avif` to the allowed asset file extensions.
+- Added `craft\fields\data\ColorData::getHsl()`, `getH()`, `getHue()`, `getL()`, `getLightness()`, `getS()`, and `getSaturation()`. ([#10235](https://github.com/craftcms/cms/discussions/10235))
+- Added `craft\services\Images::getSupportsAvif()`.
+
+### Changed
+- Reverted a 3.7.24 change where URL fields started encoding query string params. ([#10193](https://github.com/craftcms/cms/discussions/10193))
+- User verification and password-reset URLs for users with control panel access are no longer based on the front-end URL, when generated within the control panel. ([#10224](https://github.com/craftcms/cms/issues/10224))
+- Element queries’ `status` arguments can now begin with `not` to return all elements except those with a given status or statuses. ([#9541](https://github.com/craftcms/cms/discussions/9541))
+- The `previewTokenDuration` config setting now defaults to the same value as `defaultTokenDuration`. ([#2394](https://github.com/craftcms/cms/issues/2394))
+- Craft no longer requires the Portable UTF-8 library directly. ([#10252](https://github.com/craftcms/cms/issues/10252))
+
+### Fixed
+- Fixed a bug where Neo blocks could lose their content if Preparse resaved a provisional draft as it was being created.
+- Fixed a bug where `craft\services\Fields::getLayoutByType()` could return an outdated field layout, if it had been updated in the same request. ([#10237](https://github.com/craftcms/cms/issues/10237))
+- Fixed a SQL error that could occur when querying for users via GraphQL.
+- Fixed an error that could occur when loading elements, if any custom fields were selected in the query before the element’s field layout ID. ([#10205](https://github.com/craftcms/cms/issues/10205))
+- Fixed an error that could occur when searching for elements in the control panel. ([#10238](https://github.com/craftcms/cms/issues/10238))
+- Fixed a bug where `craft\db\ActiveRecord` was JSON-encoding database expression objects. ([#10239](https://github.com/craftcms/cms/issues/10239))
+- Fixed a bug where entry editor slideouts weren’t warning of losing unsaved changes after the entry type was changed. ([#10243](https://github.com/craftcms/cms/issues/10243))
+- Fixed a bug where Matrix fields weren’t getting reverted properly when reverting an entry’s content to a prior revision, if they were nested within a Neo or Super Table field. ([#10253](https://github.com/craftcms/cms/issues/10253))
+
 ## 3.7.25.1 - 2021-12-07
 
 ### Added

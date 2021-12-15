@@ -34,6 +34,12 @@ class ColorData extends BaseObject implements Serializable
     private $_hex;
 
     /**
+     * @var array<int, int, int>
+     * @see _hsl()
+     */
+    private $_hsl;
+
+    /**
      * Constructor.
      *
      * @param string $hex hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
@@ -81,6 +87,17 @@ class ColorData extends BaseObject implements Serializable
         return "rgb({$this->getRed()},{$this->getGreen()},{$this->getBlue()})";
     }
 
+    /**
+     * Returns the color in `hsl()` syntax.
+     *
+     * @return string
+     * @since 3.7.26
+     */
+    public function getHsl(): string
+    {
+        [$h, $s, $l] = $this->_hsl();
+        return "hsl($h,$s%,$l%)";
+    }
 
     /**
      * @return int
@@ -128,6 +145,99 @@ class ColorData extends BaseObject implements Serializable
     public function getB(): int
     {
         return $this->getBlue();
+    }
+
+    /**
+     * @return int
+     * @since 3.7.26
+     */
+    public function getHue(): int
+    {
+        return $this->_hsl()[0];
+    }
+
+    /**
+     * @return int
+     * @since 3.7.26
+     */
+    public function getH(): int
+    {
+        return $this->getHue();
+    }
+
+    /**
+     * @return int
+     * @since 3.7.26
+     */
+    public function getSaturation(): int
+    {
+        return $this->_hsl()[1];
+    }
+
+    /**
+     * @return int
+     * @since 3.7.26
+     */
+    public function getS(): int
+    {
+        return $this->getSaturation();
+    }
+
+    /**
+     * @return int
+     * @since 3.7.26
+     */
+    public function getLightness(): int
+    {
+        return $this->_hsl()[2];
+    }
+
+    /**
+     * @return int
+     * @since 3.7.26
+     */
+    public function getL(): int
+    {
+        return $this->getLightness();
+    }
+
+    /**
+     * @return array<int, int, int>
+     */
+    private function _hsl(): array
+    {
+        if (!isset($this->_hsl)) {
+            // h/t https://stackoverflow.com/a/13887939/1688568
+            $rPct = $this->getRed() / 255;
+            $gPct = $this->getGreen() / 255;
+            $bPct = $this->getBlue() / 255;
+
+            $maxRgb = max($rPct, $gPct, $bPct);
+            $minRgb = min($rPct, $gPct, $bPct);
+            $chroma = $maxRgb - $minRgb;
+
+            if ($chroma !== 0) {
+                if ($rPct === $minRgb) {
+                    $h = 3 - (($gPct - $bPct) / $chroma);
+                } else if ($bPct === $minRgb) {
+                    $h = 1 - (($rPct - $gPct) / $chroma);
+                } else {
+                    $h = 5 - (($bPct - $rPct) / $chroma);
+                }
+                $h = round($h * 60);
+                if ($h === 360) {
+                    $h = 0;
+                }
+
+                $s = round(100 * ($chroma / $maxRgb));
+            } else {
+                $h = $s = 0;
+            }
+
+            $this->_hsl = [$h, $s, round(100 * $maxRgb)];
+        }
+
+        return $this->_hsl;
     }
 
     /**
