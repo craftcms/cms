@@ -1203,13 +1203,13 @@ class AssetsController extends Controller
             throw new ServerErrorHttpException('Image transform cannot be created.');
         }
 
-            $asset = Asset::findOne(['id' => $assetId]);
+        $asset = Asset::findOne(['id' => $assetId]);
 
-            if (!$asset) {
-                throw new NotFoundHttpException();
-            }
+        if (!$asset) {
+            throw new NotFoundHttpException();
+        }
 
-            $url = $transformer->getTransformUrl($asset, $transform);
+        $url = $transformer->getTransformUrl($asset, $transform);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);
