@@ -226,10 +226,6 @@ class GlobalSet extends Element
      */
     protected function cpEditUrl(): ?string
     {
-        if (Craft::$app->getIsMultiSite()) {
-            return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);
-        }
-
         return UrlHelper::cpUrl('globals/' . $this->handle);
     }
 

@@ -2601,6 +2601,10 @@ abstract class Element extends Component implements ElementInterface
 
         $params = [];
 
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
         if ($this->getIsDraft() && !$this->isProvisionalDraft) {
             $params['draftId'] = $this->draftId;
         } else if ($this->getIsRevision()) {

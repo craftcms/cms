@@ -13,11 +13,14 @@ use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
+use craft\models\Site;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 
 /**
  * Class Cp
@@ -40,6 +43,12 @@ class Cp
      * @since 3.5.8
      */
     public const ELEMENT_SIZE_LARGE = 'large';
+
+    /**
+     * @var Site|false
+     * @see requestedSite()
+     */
+    private static $_requestedSite;
 
     /**
      * Renders a control panel template.
@@ -1070,5 +1079,40 @@ class Cp
         }
 
         return [$docTitle, $title];
+    }
+
+    /**
+     * Returns the site the control panel is currently working with, via a `site` query string param if sent.
+     *
+     * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
+     * @since 4.0.0
+     */
+    public static function requestedSite(): ?Site
+    {
+        if (!isset(self::$_requestedSite)) {
+            $sitesService = Craft::$app->getSites();
+            $editableSiteIds = $sitesService->getEditableSiteIds();
+
+            if (!empty($editableSiteIds)) {
+                if (
+                    ($handle = Craft::$app->getRequest()->getQueryParam('site')) !== null &&
+                    ($site = $sitesService->getSiteByHandle($handle, true)) !== null &&
+                    in_array($site->id, $editableSiteIds, false)
+                ) {
+                    self::$_requestedSite = $site;
+                } else {
+                    self::$_requestedSite = $sitesService->getCurrentSite();
+
+                    if (!in_array(self::$_requestedSite->id, $editableSiteIds, false)) {
+                        // Just go with the first editable site
+                        self::$_requestedSite = $sitesService->getSiteById($editableSiteIds[0]);
+                    }
+                }
+            } else {
+                self::$_requestedSite = false;
+            }
+        }
+
+        return self::$_requestedSite ?: null;
     }
 }

@@ -484,12 +484,7 @@ class Category extends Element
             $path .= '/new';
         }
 
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::cpUrl($path, $params);
+        return UrlHelper::cpUrl($path);
     }
 
     /**

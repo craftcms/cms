@@ -17,7 +17,6 @@ return [
     'entries/<section:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>' => 'entries/edit-entry',
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
-    'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'myaccount' => [
         'route' => 'users/edit-user',
         'defaults' => ['userId' => 'current'],

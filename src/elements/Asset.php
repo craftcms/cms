@@ -933,12 +933,7 @@ class Asset extends Element
         $filename = $this->getFilename(false);
         $path = "assets/edit/$this->id-$filename";
 
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::cpUrl($path, $params);
+        return UrlHelper::cpUrl($path);
     }
 
     /**

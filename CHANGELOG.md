@@ -113,6 +113,7 @@
 - Added `craft\helpers\Cp::lightswitchHtml()`.
 - Added `craft\helpers\Cp::multiSelectFieldHtml()`.
 - Added `craft\helpers\Cp::multiSelectHtml()`.
+- Added `craft\helpers\Cp::requestedSite()`.
 - Added `craft\helpers\Cp::textHtml()`.
 - Added `craft\helpers\Cp::timeFieldHtml()`.
 - Added `craft\helpers\Cp::timeHtml()`.
@@ -195,11 +196,13 @@
 - Added `craft\web\assets\htmx\HtmxAsset`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the `assets/update-focal-point` action.
+- Added the `Craft.getPageUrl()` JavaScript function.
 - Added the `htmx.org` JavaScript library.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
+- The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
 - Users are no longer required to have a username or email.
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
@@ -256,6 +259,7 @@
 - Element types’ `afterRestore()` methods must now have a `void` return type declaration.
 - Element types’ `afterSave()` methods must now have a `void` return type declaration.
 - Element types’ `attributeLabels()` methods must now have an `array` return type declaration.
+- Element types’ `cpEditUrl()` methods no longer need to add a `site` param; one will be added automatically by `craft\base\Element::getCpEditUrl()`.
 - Element types’ `defineActions()` methods’ `$source` arguments should no longer accept `null`.
 - Element types’ `defineSources()` methods’ `$context` arguments should no longer accept `null`.
 - Element types’ `getCpEditUrl()` methods must now have a `?string` return type declaration.
@@ -336,6 +340,7 @@
 - `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
 - `craft\test\fixtures\elements\BaseElementFixture` now validates elements with the `live` scenario if they are enabled, canonical, and not a provisional draft.
 - `craft\web\Request::getBodyParam()` now accepts nested param names in the `foo[bar][baz]` format.
+- The `Craft.getUrl()` function now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - Local volumes no longer use Flysystem.
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.

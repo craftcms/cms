@@ -615,19 +615,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         page = Math.max(page, 1);
         this.page = page;
 
-        // Update the URL
-        var url = document.location.href
-            .replace(/\?.*$/, '')
-            .replace(new RegExp('/' + Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\d+$'), '')
-            .replace(/\/+$/, '');
-
-        if (this.page !== 1) {
-            if (Craft.pageTrigger[0] !== '?') {
-                url += '/';
-            }
-            url += Craft.pageTrigger + this.page;
-        }
-
+        const url = Craft.getPageUrl(this.page);
         history.replaceState({}, '', url);
     },
 

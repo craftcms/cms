@@ -424,7 +424,7 @@ trait ApplicationTrait
         if (!$refresh && isset($this->_isMultiSite)) {
             return $this->_isMultiSite;
         }
-        return $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
+        return $this->_isMultiSite = count($this->getSites()->getAllSites(true)) > 1;
     }
 
     /**
