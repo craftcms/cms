@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace craft\services;
 
 use Craft;
+use craft\events\AssetEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterImageTransformDriversEvent;
 use craft\image\transforms\DefaultTransformer;
@@ -77,20 +78,9 @@ class ImageTransforms extends Component
     public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     /**
-     * @event AssetTransformImageEvent The event that is triggered before deleting generated transforms.
+     * @event AssetEvent The event that is triggered when a transform is being generated for an Asset.
      */
-    public const EVENT_BEFORE_DELETE_TRANSFORMS = 'beforeDeleteTransforms';
-
-    /**
-     * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
-     * @since 3.1.0
-     */
-    public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
-
-    /**
-     * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
-     */
-    public const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
+    public const EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS = 'beforeInvalidateAssetTransforms';
 
     /**
      * @event RegisterImageTransformDriversEvent The event that is triggered when registering image transform drivers.
@@ -557,6 +547,13 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
+        // Fire a 'beforeInvalidateAssetTransforms' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS)) {
+            $this->trigger(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS, new AssetEvent([
+                'asset' => $asset
+            ]));
+        }
+        
         $drivers = $this->getAllImageTransformerDrivers();
 
         foreach ($drivers as $driver) {
