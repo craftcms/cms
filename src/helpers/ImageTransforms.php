@@ -233,8 +233,6 @@ class ImageTransforms
             return '_' . $transform->handle;
         }
 
-        $driver = $transform->getDriver();
-
         return '_' . ($transform->width ?: 'AUTO') . 'x' . ($transform->height ?: 'AUTO') .
             '_' . $transform->mode .
             '_' . $transform->position .
