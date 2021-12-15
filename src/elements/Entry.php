@@ -1456,7 +1456,7 @@ class Entry extends Element
         \$typeInput.on('change', function(ev) {
             editor.setElementAttribute('typeId', \$typeInput.val());
             editor.setElementAttribute('fieldLayoutId', fieldLayoutIds[`type-\${\$typeInput.val()}`]);
-            editor.load();
+            editor.load({}, false);
         });
     }
 })();
