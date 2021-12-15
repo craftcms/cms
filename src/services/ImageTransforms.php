@@ -563,7 +563,8 @@ class ImageTransforms extends Component
         $drivers = $this->getAllImageTransformerDrivers();
 
         foreach ($drivers as $driver) {
-            call_user_func([$driver, 'invalidateAssetTransforms'], $asset);
+            $transformer = $this->getImageTransformer($driver);
+            $transformer->invalidateAssetTransforms($asset);
         }
     }
 
