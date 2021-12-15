@@ -100,6 +100,10 @@ class UrlHelper
      */
     public static function urlWithParams(string $url, $params): string
     {
+        if (empty($params)) {
+            return $url;
+        }
+
         // Extract any params/fragment from the base URL
         [$url, $baseParams, $baseFragment] = self::_extractParams($url);
 

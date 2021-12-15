@@ -2595,15 +2595,19 @@ abstract class Element extends Component implements ElementInterface
     {
         $cpEditUrl = $this->cpEditUrl();
 
-        if ($cpEditUrl !== null) {
-            if ($this->getIsDraft() && !$this->isProvisionalDraft) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $this->draftId]);
-            } else if ($this->getIsRevision()) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $this->revisionId]);
-            }
+        if (!$cpEditUrl) {
+            return null;
         }
 
-        return $cpEditUrl;
+        $params = [];
+
+        if ($this->getIsDraft() && !$this->isProvisionalDraft) {
+            $params['draftId'] = $this->draftId;
+        } else if ($this->getIsRevision()) {
+            $params['revisionId'] = $this->revisionId;
+        }
+
+        return UrlHelper::urlWithParams($cpEditUrl, $params);
     }
 
     /**
