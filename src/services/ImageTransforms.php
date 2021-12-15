@@ -106,14 +106,9 @@ class ImageTransforms extends Component
     private ?MemoizableArray $_transforms = null;
 
     /**
-     * @var array|null
+     * @var TransformerInterface[]
      */
-    private ?array $_eagerLoadedTransformIndexes = null;
-
-    /**
-     * @var ImageTransformIndex|null
-     */
-    private ?ImageTransformIndex $_activeTransformIndex = null;
+    private $_imageTransformers = [];
 
     /**
      * Serializer
@@ -492,11 +487,15 @@ class ImageTransforms extends Component
      */
     public function getImageTransformer(string $driver, array $config = []): TransformerInterface
     {
-        if (!is_subclass_of($driver, TransformerInterface::class)) {
-            throw new ImageTransformException($driver . ' is not a valid image transform driver');
+        if (!array_key_exists($driver, $this->_imageTransformers)) {
+            if (!is_subclass_of($driver, TransformerInterface::class)) {
+                throw new ImageTransformException($driver . ' is not a valid image transform driver');
+            }
+
+            $this->_imageTransformers[$driver] = Craft::createObject(array_merge(['class' => $driver], $config));
         }
 
-        return Craft::createObject(array_merge(['class' => $driver], $config));
+        return $this->_imageTransformers[$driver];
     }
 
     /**
