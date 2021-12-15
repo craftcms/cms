@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.26 - 2021-12-15
 
 ### Added
 - Added `avif` as a web-safe image format. ([#10222](https://github.com/craftcms/cms/pull/10222))
