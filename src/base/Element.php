@@ -833,7 +833,7 @@ abstract class Element extends Component implements ElementInterface
             } else if ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
                 $elementQuery->orderBy($orderBy);
 
-                if (!empty($viewState['orderHistory'])) {
+                if (!isset($orderBy['score']) && !empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
                         if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
                             $elementQuery->addOrderBy($orderBy);

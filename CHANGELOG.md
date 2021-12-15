@@ -19,6 +19,7 @@
 - Fixed a bug where `craft\services\Fields::getLayoutByType()` could return an outdated field layout, if it had been updated in the same request. ([#10237](https://github.com/craftcms/cms/issues/10237))
 - Fixed a SQL error that could occur when querying for users via GraphQL.
 - Fixed an error that could occur when loading elements, if any custom fields were selected in the query before the element’s field layout ID. ([#10205](https://github.com/craftcms/cms/issues/10205))
+- Fixed an error that could occur when searching for elements in the control panel. ([#10238](https://github.com/craftcms/cms/issues/10238))
 
 ## 3.7.25.1 - 2021-12-07
 
