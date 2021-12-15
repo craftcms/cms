@@ -23,6 +23,7 @@
 - Fixed an error that could occur when searching for elements in the control panel. ([#10238](https://github.com/craftcms/cms/issues/10238))
 - Fixed a bug where `craft\db\ActiveRecord` was JSON-encoding database expression objects. ([#10239](https://github.com/craftcms/cms/issues/10239))
 - Fixed a bug where entry editor slideouts weren’t warning of losing unsaved changes after the entry type was changed. ([#10243](https://github.com/craftcms/cms/issues/10243))
+- Fixed a bug where Matrix fields weren’t getting reverted properly when reverting an entry’s content to a prior revision, if they were nested within a Neo or Super Table field. ([#10253](https://github.com/craftcms/cms/issues/10253))
 
 ## 3.7.25.1 - 2021-12-07
 
