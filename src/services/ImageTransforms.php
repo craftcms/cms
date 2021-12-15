@@ -9,6 +9,8 @@ declare(strict_types=1);
 namespace craft\services;
 
 use Craft;
+use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterImageTransformDriversEvent;
 use craft\image\transforms\DefaultTransformer;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
@@ -89,6 +91,11 @@ class ImageTransforms extends Component
      * @event AssetTransformImageEvent The event that is triggered after deleting generated transforms.
      */
     public const EVENT_AFTER_DELETE_TRANSFORMS = 'afterDeleteTransforms';
+
+    /**
+     * @event RegisterImageTransformDriversEvent The event that is triggered when registering image transform drivers.
+     */
+    public const EVENT_REGISTER_IMAGE_TRANSFORM_DRIVERS = 'registerImageTransformDrivers';
 
     /**
      * @var Connection|array|string The database connection to use
@@ -489,7 +496,6 @@ class ImageTransforms extends Component
      */
     public function getImageTransformer(string $driver, array $config = []): TransformerInterface
     {
-        // TODO events!
         if (!is_subclass_of($driver, TransformerInterface::class)) {
             throw new ImageTransformException($driver . ' is not a valid image transform driver');
         }
@@ -551,20 +557,31 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
+        $drivers = $this->getAllImageTransformerDrivers();
 
-        // TODO
-        // Fetch all driver instances
-        // tell every driver instance that this asset is being deleted
-        // PROFIT
-        (new DefaultTransformer())->invalidateAssetTransforms($asset);
+        foreach ($drivers as $driver) {
+            call_user_func([$driver, 'invalidateAssetTransforms'], $asset);
+        }
+    }
 
-        // fire event
-//        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TRANSFORMS)) {
-//            $this->trigger(self::EVENT_BEFORE_DELETE_TRANSFORMS, new TransformImageEvent([
-//                'asset' => $asset,
-//                'transformIndex' => $transformIndex,
-//            ]));
-//        }
+    /**
+     * Return a list of all image transform drivers.
+     *
+     * @return array
+     */
+    public function getAllImageTransformerDrivers(): array
+    {
+        $drivers = [
+            DefaultTransformer::class
+        ];
+
+        $event = new RegisterImageTransformDriversEvent([
+            'drivers' => $drivers,
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORM_DRIVERS, $event);
+
+        return $event->drivers;
     }
 
     /**

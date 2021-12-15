@@ -36,5 +36,5 @@ interface TransformerInterface
      *
      * @param Asset $asset
      */
-    public function invalidateAssetTransforms(Asset $asset): void;
+    public static function invalidateAssetTransforms(Asset $asset): void;
 }

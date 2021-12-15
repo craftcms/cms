@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
-use craft\errors\VolumeException;
 use craft\events\GenerateTransformEvent;
 use craft\gql\types\DateTime;
 use craft\helpers\App;
@@ -44,16 +43,6 @@ use yii\base\InvalidConfigException;
 class DefaultTransformer implements TransformerInterface, DeferredTransformerInterface, EagerLoadTransformerInterface
 {
     /**
-     * @param Asset $asset
-     * @param ImageTransformIndex $transformIndex
-     * @throws InvalidConfigException
-     */
-    protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
-    {
-        $asset->getVolume()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
-    }
-
-    /**
      * @var ImageTransformIndex[]
      */
     protected array $eagerLoadedTransformIndexes = [];
@@ -72,7 +61,6 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             $uri = $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
-            // TODO CHECK IT
             if ($fs instanceof LocalFsInterface && !$fs->fileExists($asset->folderPath . $uri)) {
                 $imageTransformIndex->fileExists = false;
                 $this->storeTransformIndexData($imageTransformIndex);
@@ -87,15 +75,25 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
     /**
      * @inheritdoc
      */
-    public function invalidateAssetTransforms(Asset $asset): void
+    public static function invalidateAssetTransforms(Asset $asset): void
     {
-        $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
+        $transformIndexes = self::getAllCreatedTransformsForAsset($asset);
 
         foreach ($transformIndexes as $transformIndex) {
-            $this->deleteImageTransform($asset, $transformIndex);
+            self::deleteImageTransform($asset, $transformIndex);
         }
 
-        $this->deleteTransformIndexDataByAssetId($asset->id);
+        self::deleteTransformIndexDataByAssetId($asset->id);
+    }
+
+    /**
+     * @param Asset $asset
+     * @param ImageTransformIndex $transformIndex
+     * @throws InvalidConfigException
+     */
+    protected static function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
+    {
+        $asset->getVolume()->getFilesystem()->deleteFile($asset->folderPath . self::getTransformSubpath($asset, $transformIndex));
     }
 
     /**
@@ -129,6 +127,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         // Index the assets by ID
         $assetsById = ArrayHelper::index($assets, 'id');
         $indexCondition = [];
+        $transformsByFingerprint = [];
 
         foreach ($transforms as $transform) {
             $transformString = $fingerprint = TransformHelper::getTransformString($transform);
@@ -152,7 +151,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         }
 
         // Query for the indexes
-        $results = $this->_createTransformIndexQuery()
+        $results = self::_createTransformIndexQuery()
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],
@@ -202,7 +201,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      * @return string
      * @throws InvalidConfigException
      */
-    protected function getTransformSubfolder(Asset $asset, ImageTransformIndex $transformIndex): string
+    protected static function getTransformSubfolder(Asset $asset, ImageTransformIndex $transformIndex): string
     {
         $path = $transformIndex->transformString;
 
@@ -221,7 +220,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      * @return string
      * @throws InvalidConfigException
      */
-    protected function getTransformFilename(Asset $asset, ImageTransformIndex $transformIndex): string
+    protected static function getTransformFilename(Asset $asset, ImageTransformIndex $transformIndex): string
     {
         return $transformIndex->filename ?: $asset->getFilename();
     }
@@ -234,9 +233,9 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      * @return string
      * @throws InvalidConfigException
      */
-    protected function getTransformSubpath(Asset $asset, ImageTransformIndex $transformIndex): string
+    protected static function getTransformSubpath(Asset $asset, ImageTransformIndex $transformIndex): string
     {
-        return $this->getTransformSubfolder($asset, $transformIndex) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $transformIndex);
+        return self::getTransformSubfolder($asset, $transformIndex) . DIRECTORY_SEPARATOR . self::getTransformFilename($asset, $transformIndex);
     }
 
     /**
@@ -248,7 +247,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     protected function getTransformUri(Asset $asset, ImageTransformIndex $index): string
     {
-        $uri = $this->getTransformSubpath($asset, $index);
+        $uri = self::getTransformSubpath($asset, $index);
 
         if (DIRECTORY_SEPARATOR !== '/') {
             $uri = str_replace(DIRECTORY_SEPARATOR, '/', $uri);
@@ -278,11 +277,11 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         }
 
         $volume = $asset->getVolume();
-        $transformPath = $asset->folderPath . $this->getTransformSubpath($asset, $index);
+        $transformPath = $asset->folderPath . self::getTransformSubpath($asset, $index);
 
         // Already created. Relax, grasshopper!
-        if ($volume->fileExists($transformPath)) {
-            $dateModified = $volume->getDateModified($transformPath);
+        if ($volume->getFilesystem()->fileExists($transformPath)) {
+            $dateModified = $volume->getFilesystem()->getDateModified($transformPath);
             $parameterChangeTime = $index->getTransform()->parameterChangeTime;
 
             if (!$parameterChangeTime || $parameterChangeTime->getTimestamp() <= $dateModified) {
@@ -291,7 +290,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
 
             // Let's cook up a new one.
             try {
-                $volume->deleteFile($transformPath);
+                $volume->getFilesystem()->deleteFile($transformPath);
             } catch (\Throwable $exception) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
@@ -311,7 +310,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         }
 
         // In case this takes a while, update the timestamp so we know it's all working
-        $image->setHeartbeatCallback(fn () => Craft::$app->getImageTransforms()->storeTransformIndexData($index));
+        $image->setHeartbeatCallback(fn () => $this->storeTransformIndexData($index));
 
         switch ($transform->mode) {
             case 'fit':
@@ -374,6 +373,11 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
     protected function procureTransformedImage(ImageTransformIndex $index): bool
     {
         $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
+
+        if (!$asset) {
+            throw new ImageTransformException('Asset not found - ' . $index->assetId);
+        }
+
         $volume = $asset->getVolume();
 
         $index->detectedFormat = $index->format ?: TransformHelper::detectTransformFormat($asset);
@@ -381,15 +385,15 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
+        $fs = $volume->getFilesystem();
 
         // If we have a match, copy the file.
         if ($matchFound) {
-            $from = $asset->folderPath . $this->getTransformSubpath($asset, $matchFound);
-            $to = $asset->folderPath . $this->getTransformSubpath($asset, $index);
+            $from = $asset->folderPath . self::getTransformSubpath($asset, $matchFound);
+            $to = $asset->folderPath . self::getTransformSubpath($asset, $index);
 
             // Sanity check
             try {
-                $fs = $volume->getFilesystem();
                 if ($fs->fileExists($to)) {
                     return true;
                 }
@@ -402,7 +406,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             $this->generateTransformedImage($asset, $index);
         }
 
-        return $volume->fileExists($asset->folderPath . $this->getTransformSubpath($asset, $index));
+        return $fs->fileExists($asset->folderPath . self::getTransformSubpath($asset, $index));
     }
 
     /**
@@ -512,7 +516,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         }
 
         // Check if an entry exists already
-        $query = $this->_createTransformIndexQuery()
+        $query = self::_createTransformIndexQuery()
             ->where([
                 'assetId' => $asset->id,
                 'transformString' => $transformString,
@@ -540,7 +544,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             ], [], Craft::$app->getImageTransforms()->db);
 
             // And the generated transform itself, too
-            $this->deleteImageTransform($asset, $existingIndex);
+            self::deleteImageTransform($asset, $existingIndex);
         }
 
         // Create a new record
@@ -640,7 +644,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     public function getPendingTransformIndexIds(): array
     {
-        return $this->_createTransformIndexQuery()
+        return self::_createTransformIndexQuery()
             ->select(['id'])
             ->where(['fileExists' => false, 'inProgress' => false])
             ->column();
@@ -654,7 +658,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
     {
-        $result = $this->_createTransformIndexQuery()
+        $result = self::_createTransformIndexQuery()
             ->where(['id' => $transformId])
             ->one();
 
@@ -666,7 +670,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      *
      * @param int $assetId
      */
-    protected function deleteTransformIndexDataByAssetId(int $assetId): void
+    protected static function deleteTransformIndexDataByAssetId(int $assetId): void
     {
         Db::delete(Table::IMAGETRANSFORMINDEX, [
             'assetId' => $assetId,
@@ -679,9 +683,9 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      * @param Asset $asset
      * @return ImageTransformIndex[]
      */
-    protected function getAllCreatedTransformsForAsset(Asset $asset): array
+    protected static function getAllCreatedTransformsForAsset(Asset $asset): array
     {
-        $results = $this->_createTransformIndexQuery()
+        $results = self::_createTransformIndexQuery()
             ->where(['assetId' => $asset->id])
             ->all();
 
@@ -715,7 +719,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
 
             // We're looking for transforms that fit the bill and are not the one we are trying to find/create
             // the image for.
-            $result = $this->_createTransformIndexQuery()
+            $result = self::_createTransformIndexQuery()
                 ->where([
                     'and',
                     [
@@ -737,7 +741,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      *
      * @return Query
      */
-    private function _createTransformIndexQuery(): Query
+    private static function _createTransformIndexQuery(): Query
     {
         return (new Query())
             ->select([
