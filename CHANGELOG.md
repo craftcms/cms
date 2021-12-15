@@ -20,6 +20,7 @@
 - Fixed a SQL error that could occur when querying for users via GraphQL.
 - Fixed an error that could occur when loading elements, if any custom fields were selected in the query before the element’s field layout ID. ([#10205](https://github.com/craftcms/cms/issues/10205))
 - Fixed an error that could occur when searching for elements in the control panel. ([#10238](https://github.com/craftcms/cms/issues/10238))
+- Fixed a bug where `craft\db\ActiveRecord` was JSON-encoding database expression objects. ([#10239](https://github.com/craftcms/cms/issues/10239))
 
 ## 3.7.25.1 - 2021-12-07
 
