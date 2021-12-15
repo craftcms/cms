@@ -68,6 +68,12 @@ class ImageTransforms extends Component
     public const EVENT_BEFORE_DELETE_IMAGE_TRANSFORM = 'beforeDeleteImageTransform';
 
     /**
+     * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
+     * @since 3.1.0
+     */
+    public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
+    
+    /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
      */
     public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
@@ -553,7 +559,7 @@ class ImageTransforms extends Component
                 'asset' => $asset
             ]));
         }
-        
+
         $drivers = $this->getAllImageTransformerDrivers();
 
         foreach ($drivers as $driver) {
