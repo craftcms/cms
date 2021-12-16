@@ -34,7 +34,7 @@ class ColorData extends BaseObject implements Serializable
     private $_hex;
 
     /**
-     * @var array<int, int, int>
+     * @var array
      * @see _hsl()
      */
     private $_hsl;
@@ -202,7 +202,7 @@ class ColorData extends BaseObject implements Serializable
     }
 
     /**
-     * @return array<int, int, int>
+     * @return array
      */
     private function _hsl(): array
     {
