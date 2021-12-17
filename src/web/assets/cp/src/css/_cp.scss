@@ -1215,6 +1215,10 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
+  #content-container {
+    min-height: 0 !important;
+  }
+
   #sidebar-container,
   #details-container {
     width: auto !important;

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
+
 ## 3.7.26 - 2021-12-15
 
 ### Added
