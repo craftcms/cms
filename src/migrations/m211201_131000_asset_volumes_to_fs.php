@@ -47,10 +47,17 @@ class m211201_131000_asset_volumes_to_fs extends Migration
             $filesystems = [];
             foreach ($volumes as &$volumeData) {
                 $fsHandle = $volumeData['handle'] . 'Filesystem';
+
+                // Convert built-in volume types to FS types
+                $type = StringHelper::replace($volumeData['type'], 'craft\\volumes', 'craft\\fs');
+
+                // Do the same for the 3rd party volumes, that followed the same pattern
+                $type = StringHelper::replace($type, '\\Volume', '\\Fs');
+
                 $filesystems[StringHelper::UUID()] = [
                     'name' => $volumeData['name'] . ' Filesystem',
                     'handle' => $fsHandle,
-                    'type' => StringHelper::replace($volumeData['type'], 'craft\\volumes', 'craft\\fs'),
+                    'type' => $type,
                     'hasUrls' => $volumeData['hasUrls'],
                     'url' => $volumeData['url'],
                     'settings' => $volumeData['settings']
