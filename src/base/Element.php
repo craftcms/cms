@@ -833,7 +833,7 @@ abstract class Element extends Component implements ElementInterface
             } else if ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
                 $elementQuery->orderBy($orderBy);
 
-                if (!empty($viewState['orderHistory'])) {
+                if ((!is_array($orderBy) || !isset($orderBy['score'])) && !empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
                         if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
                             $elementQuery->addOrderBy($orderBy);
@@ -1470,7 +1470,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $sourceKey
      * @param string $attribute
      * @param int $dir
-     * @return bool|string|array
+     * @return bool|string|array|ExpressionInterface
      */
     private static function _indexOrderByColumns(string $sourceKey, string $attribute, int $dir)
     {
@@ -1672,6 +1672,19 @@ abstract class Element extends Component implements ElementInterface
      * @see setIsFresh()
      */
     private $_isFresh;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Make sure the field layout ID is set before any custom fields
+        if (isset($config['fieldLayoutId'])) {
+            $config = ['fieldLayoutId' => $config['fieldLayoutId']] + $config;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -1932,9 +1945,9 @@ abstract class Element extends Component implements ElementInterface
             if ($layout !== null) {
                 foreach ($layout->getTabs() as $tab) {
                     if ($tab->elements) {
-                        foreach ($tab->elements as $element) {
-                            if ($element instanceof BaseField && ($label = $element->label()) !== null) {
-                                $labels[$element->attribute()] = $label;
+                        foreach ($tab->elements as $layoutElement) {
+                            if ($layoutElement instanceof BaseField && ($label = $layoutElement->label()) !== null) {
+                                $labels[$layoutElement->attribute()] = $label;
                             }
                         }
                     }

@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.7.25.1",
+  "version": "3.7.26",
   "keywords": [
     "cms",
     "craftcms",
@@ -50,7 +50,6 @@
     "symfony/yaml": "^5.2.1",
     "true/punycode": "^2.1.1",
     "twig/twig": "~2.14.3",
-    "voku/portable-utf8": "^5.4.51",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "~14.4.1",
     "yii2tech/ar-softdelete": "^1.0.4",
