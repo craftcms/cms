@@ -32,6 +32,8 @@
                 .data('slideout', this)
                 .appendTo(this.$outerContainer);
 
+            Garnish.addModalAttributes(this.$outerContainer);
+
             if (Garnish.isMobileBrowser()) {
                 this.$container.addClass('so-mobile');
             }
@@ -47,6 +49,8 @@
             if (this.isOpen) {
                 return;
             }
+
+            this.setTriggerElement(document.activeElement);
 
             this._cancelTransitionListeners();
 
@@ -81,6 +85,7 @@
 
             this.enable();
             Garnish.shortcutManager.addLayer();
+            Garnish.hideModalBackgroundContent(this.$outerContainer);
 
             if (this.settings.closeOnEsc) {
                 Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
@@ -90,6 +95,10 @@
 
             this.isOpen = true;
             this.trigger('open');
+        },
+
+        setTriggerElement: function(trigger) {
+          this.settings.triggerElement = trigger;
         },
 
         close: function() {
@@ -114,10 +123,15 @@
 
             Craft.Slideout.removePanel(this);
             Garnish.shortcutManager.removeLayer();
+            Garnish.resetBackgroundContentVisibility(this.$outerContainer);
             this.$container.one('transitionend.slideout', () => {
                 this.$outerContainer.addClass('hidden');
                 this.trigger('close');
             });
+
+            if (this.settings.triggerElement) {
+                this.settings.triggerElement.focus();
+            }
         },
 
         _cancelTransitionListeners: function() {
@@ -150,6 +164,7 @@
             autoOpen: true,
             closeOnEsc: true,
             closeOnShadeClick: true,
+            triggerElement: null,
         },
         openPanels: [],
         addPanel: function(panel) {
