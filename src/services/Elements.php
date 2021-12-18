@@ -878,6 +878,7 @@ class Elements extends Component
             'rgt' => $canonical->rgt,
             'level' => $canonical->level,
             'dateCreated' => $canonical->dateCreated,
+            'dateDeleted' => null,
             'draftId' => null,
             'revisionId' => null,
             'isProvisionalDraft' => false,
@@ -2572,6 +2573,7 @@ class Elements extends Component
                 $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
+                $elementRecord->dateDeleted = $element->dateDeleted;
 
                 // todo: remove this check after the next breakpoint
                 $schemaVersion = Craft::$app->getInstalledSchemaVersion();

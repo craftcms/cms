@@ -855,10 +855,7 @@ class Matrix extends Component
                     'propagating' => false,
                 ];
 
-                if (
-                    $target->updatingFromDerivative &&
-                    $block->getCanonical() !== $block // in case the canonical block is soft-deleted
-                ) {
+                if ($target->updatingFromDerivative && $block->getIsDerivative()) {
                     if (
                         ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
