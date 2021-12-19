@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
 - Fixed a bug where soft-deleted Matrix blocks nested within Neo blocks could become duplicated when restored from a prior revision. ([#10256](https://github.com/craftcms/cms/issues/10256))
+- Fixed a bug where Color fields’ HSL values could be incorrect. ([#10261](https://github.com/craftcms/cms/issues/10261))
 
 ## 3.7.26 - 2021-12-15
 
