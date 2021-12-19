@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
+
 ### Fixed
 - Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
 - Fixed a bug where soft-deleted Matrix blocks nested within Neo blocks could become duplicated when restored from a prior revision. ([#10256](https://github.com/craftcms/cms/issues/10256))
