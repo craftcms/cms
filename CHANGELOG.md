@@ -5,11 +5,15 @@
 ### Added
 - Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
 
+### Changed
+- `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
+
 ### Fixed
 - Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
 - Fixed a bug where soft-deleted Matrix blocks nested within Neo blocks could become duplicated when restored from a prior revision. ([#10256](https://github.com/craftcms/cms/issues/10256))
 - Fixed a bug where Color fields’ HSL values could be incorrect. ([#10261](https://github.com/craftcms/cms/issues/10261))
 - Fixed a bug where `<video>`, `<embed>`, and `<iframe>` tags within field instructions could be wider than the field’s container. ([#10264](https://github.com/craftcms/cms/issues/10264))
+- Fixed an error that occurred if a control panel-defined route had a numeric URI pattern. ([#10251](https://github.com/craftcms/cms/issues/10251))
 
 ## 3.7.26 - 2021-12-15
 
