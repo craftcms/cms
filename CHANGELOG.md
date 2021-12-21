@@ -15,6 +15,7 @@
 - Fixed a bug where Color fields’ HSL values could be incorrect. ([#10261](https://github.com/craftcms/cms/issues/10261))
 - Fixed a bug where `<video>`, `<embed>`, and `<iframe>` tags within field instructions could be wider than the field’s container. ([#10264](https://github.com/craftcms/cms/issues/10264))
 - Fixed an error that occurred if the first control panel-defined route had a numeric URI pattern. ([#10251](https://github.com/craftcms/cms/issues/10251))
+- Fixed an error that could occur if a section didn’t have any entry types. ([#10272](https://github.com/craftcms/cms/issues/10272))
 
 ### Security
 - Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
