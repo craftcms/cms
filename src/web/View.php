@@ -335,7 +335,7 @@ class View extends \yii\web\View
         /** @var CoreExtension $core */
         $core = $twig->getExtension(CoreExtension::class);
         $core->setTimezone(Craft::$app->getTimeZone());
-        
+
         return $twig;
     }
 
