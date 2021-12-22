@@ -40,7 +40,6 @@ class FieldTest extends Unit
 {% embed '_includes/forms/field' with {
   id: 'foo',
   labelId: 'label',
-  instructionsId: 'instructions',
 } %}
   {% block attr %}data-foo="test"{% endblock %}
   {% block heading %}TEST HEADING{{ parent() }}{% endblock %}
@@ -56,9 +55,9 @@ TWIG;
         $this->assertStringContainsString('<div id="foo-field" class="field" data-foo="test">', $html);
         $this->assertStringContainsString('TEST HEADING', $html);
         $this->assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
-        $this->assertStringContainsString('<div id="instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
-        $this->assertStringContainsString('<p class="notice with-icon">TEST TIP</p>', $html);
-        $this->assertStringContainsString('<p class="warning with-icon">TEST WARNING</p>', $html);
+        $this->assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
+        $this->assertStringContainsString('<p id="foo-tip" class="notice"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span>TEST TIP</p>', $html);
+        $this->assertStringContainsString('<p id="foo-warning" class="warning"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span>TEST WARNING</p>', $html);
         $this->assertStringContainsString('<input name="foo">', $html);
     }
 

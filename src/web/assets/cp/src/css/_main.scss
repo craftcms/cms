@@ -778,21 +778,27 @@ td.right {
   color: $warningColor !important;
 }
 
-.with-icon {
-  &.notice,
-  &.warning {
-    &:before {
-      @include margin(-2px, 2px, 0, 0);
-      @include icon;
-      width: 1em;
-    }
+.notice .icon,
+.warning .icon,
+.with-icon.notice,
+.with-icon.warning {
+  &:before {
+    @include margin(-2px, 2px, 0, 0);
+    @include icon;
+    width: 1em;
   }
+}
 
-  &.notice:before {
+.notice .icon,
+.with-icon.notice {
+  &:before {
     content: "lightbulb";
   }
+}
 
-  &.warning:before {
+.warning .icon,
+.with-icon.warning {
+  &:before {
     content: "alert";
   }
 }
@@ -3632,7 +3638,8 @@ ul.tree,
         }
       }
 
-      & > ul.errors {
+      & > ul.errors,
+      & > .error-container > ul.errors {
         margin: 0;
         padding: 0 0 6px;
         width: 100%;
@@ -4910,8 +4917,11 @@ fieldset {
 .checkboxfield .instructions {
   color: $mediumTextColor;
 
-  img {
-    max-width: 100%;
+  img,
+  video,
+  embed,
+  iframe {
+    max-width: 100% !important;
   }
 
   ul,

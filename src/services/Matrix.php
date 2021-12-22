@@ -855,12 +855,9 @@ class Matrix extends Component
                     'propagating' => false,
                 ];
 
-                if (
-                    $target->updatingFromDerivative &&
-                    $block->getCanonical() !== $block // in case the canonical block is soft-deleted
-                ) {
+                if ($target->updatingFromDerivative && $block->getIsDerivative()) {
                     if (
-                        $source->getIsRevision() ||
+                        ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
                         $source->isFieldModified($field->handle, true)
                     ) {
@@ -929,6 +926,7 @@ class Matrix extends Component
                         continue;
                     }
 
+                    $otherTargets[$otherSource->siteId]->updatingFromDerivative = $target->updatingFromDerivative;
                     $this->duplicateBlocks($field, $otherSource, $otherTargets[$otherSource->siteId]);
 
                     // Make sure we don't duplicate blocks for any of the sites that were just propagated to
