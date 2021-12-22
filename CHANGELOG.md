@@ -17,6 +17,7 @@
 - Fixed an error that occurred if the first control panel-defined route had a numeric URI pattern. ([#10251](https://github.com/craftcms/cms/issues/10251))
 - Fixed an error that could occur if a section didn’t have any entry types. ([#10272](https://github.com/craftcms/cms/issues/10272))
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t escaping backslashes when modifying the value of an existing environment variable. ([#10274](https://github.com/craftcms/cms/issues/10274))
+- Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
 
 ### Security
 - Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
