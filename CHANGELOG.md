@@ -3,12 +3,98 @@
 ## Unreleased
 
 ### Added
+- Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
+
+### Changed
+- A warning is now logged when a password-reset email could not be sent, if `preventUserEnumeration` is enabled.
+- `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
+
+### Fixed
+- Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
+- Fixed a bug where soft-deleted Matrix blocks nested within Neo blocks could become duplicated when restored from a prior revision. ([#10256](https://github.com/craftcms/cms/issues/10256))
+- Fixed a bug where Color fields’ HSL values could be incorrect. ([#10261](https://github.com/craftcms/cms/issues/10261))
+- Fixed a bug where `<video>`, `<embed>`, and `<iframe>` tags within field instructions could be wider than the field’s container. ([#10264](https://github.com/craftcms/cms/issues/10264))
+- Fixed an error that occurred if the first control panel-defined route had a numeric URI pattern. ([#10251](https://github.com/craftcms/cms/issues/10251))
+- Fixed an error that could occur if a section didn’t have any entry types. ([#10272](https://github.com/craftcms/cms/issues/10272))
+- Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t escaping backslashes when modifying the value of an existing environment variable. ([#10274](https://github.com/craftcms/cms/issues/10274))
+- Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
+
+### Security
+- Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
+
+## 3.7.26 - 2021-12-15
+
+### Added
+- Added `avif` as a web-safe image format. ([#10222](https://github.com/craftcms/cms/pull/10222))
+- Added `avif` to the allowed asset file extensions.
+- Added `craft\fields\data\ColorData::getHsl()`, `getH()`, `getHue()`, `getL()`, `getLightness()`, `getS()`, and `getSaturation()`. ([#10235](https://github.com/craftcms/cms/discussions/10235))
+- Added `craft\services\Images::getSupportsAvif()`.
+
+### Changed
+- Reverted a 3.7.24 change where URL fields started encoding query string params. ([#10193](https://github.com/craftcms/cms/discussions/10193))
+- User verification and password-reset URLs for users with control panel access are no longer based on the front-end URL, when generated within the control panel. ([#10224](https://github.com/craftcms/cms/issues/10224))
+- Element queries’ `status` arguments can now begin with `not` to return all elements except those with a given status or statuses. ([#9541](https://github.com/craftcms/cms/discussions/9541))
+- The `previewTokenDuration` config setting now defaults to the same value as `defaultTokenDuration`. ([#2394](https://github.com/craftcms/cms/issues/2394))
+- Craft no longer requires the Portable UTF-8 library directly. ([#10252](https://github.com/craftcms/cms/issues/10252))
+
+### Fixed
+- Fixed a bug where Neo blocks could lose their content if Preparse resaved a provisional draft as it was being created.
+- Fixed a bug where `craft\services\Fields::getLayoutByType()` could return an outdated field layout, if it had been updated in the same request. ([#10237](https://github.com/craftcms/cms/issues/10237))
+- Fixed a SQL error that could occur when querying for users via GraphQL.
+- Fixed an error that could occur when loading elements, if any custom fields were selected in the query before the element’s field layout ID. ([#10205](https://github.com/craftcms/cms/issues/10205))
+- Fixed an error that could occur when searching for elements in the control panel. ([#10238](https://github.com/craftcms/cms/issues/10238))
+- Fixed a bug where `craft\db\ActiveRecord` was JSON-encoding database expression objects. ([#10239](https://github.com/craftcms/cms/issues/10239))
+- Fixed a bug where entry editor slideouts weren’t warning of losing unsaved changes after the entry type was changed. ([#10243](https://github.com/craftcms/cms/issues/10243))
+- Fixed a bug where Matrix fields weren’t getting reverted properly when reverting an entry’s content to a prior revision, if they were nested within a Neo or Super Table field. ([#10253](https://github.com/craftcms/cms/issues/10253))
+
+## 3.7.25.1 - 2021-12-07
+
+### Added
+- Added `craft\helpers\ElementHelper::rootSource()`.
+
+### Fixed
+- Fixed an error that could occur on element indexes.
+- Fixed a bug where it wasn’t possible to sort nested element sources by custom fields. ([#10226](https://github.com/craftcms/cms/issues/10226))
+
+## 3.7.25 - 2021-12-07
+
+### Changed
+- Improved the accessibility of the “Default Asset Location” and “Asset Location” Assets field settings.
+- Element indexes now keep track of recent sort selections and factor them into the new element order. ([#10203](https://github.com/craftcms/cms/issues/10203))
+- The “View” button and “View” menu options on Edit Entry pages now use `<a>` tags. ([#10220](https://github.com/craftcms/cms/discussions/10220))
+- A `describedBy` variable is now available for `input` blocks rendered when embedding the `_includes/forms/field` control panel template.
+- `craft\services\Tokens::createToken()` and `createPreviewToken()` now have `$token` arguments, which accept pre-generated tokens.
+
+### Fixed
+- Fixed an error that could occur if the `field()` macro in the `_includes/forms` control panel template was called withoun an `input` argument. ([#10208](https://github.com/craftcms/cms/issues/10208))
+- Fixed a bug where the `migrate/fresh` command was erasing all migration history and attempting to reapply migrations. ([#10209](https://github.com/craftcms/cms/issues/10209))
+- Fixed a JavaScript error that occurred when pressing <kbd>Return</kbd> on an autosuggest input when no option was selected.
+- Fixed a bug where Edit Category pages could have two sets of “Preview” and “View” buttons. ([#10215](https://github.com/craftcms/cms/issues/10215))
+- Fixed a bug where boolean menus weren’t showing the “No” option as selected when the value was `false`.
+
+## 3.7.24 - 2021-12-02
+
+### Added
+- Added the `parseBooleanEnv()` Twig function.
+- Added `craft\base\FieldTrait::$describedBy`, which custom fields should reference when setting their input’s `aria-describedby` attribute. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- Added `craft\behaviors\EnvAttributeParserBehavior::getUnparsedAttribute()`.
+- Added `craft\fieldlayoutelements\BaseField::errorsId()`.
+- Added `craft\fieldlayoutelements\BaseField::instructions()`.
+- Added `craft\fieldlayoutelements\BaseField::instructionsId()`.
+- Added `craft\fieldlayoutelements\BaseField::tipId()`.
+- Added `craft\fieldlayoutelements\BaseField::warningId()`.
+- Added `craft\helpers\UrlHelper::encodeParams()`.
+- Added `craft\i18n\Formatter::willBeMisrepresented()`.
 - Added `craft\services\Config::setBooleanDotEnvVar()`.
+- Added `craft\services\Security::isSensitive()`.
 - Added `craft\web\twig\variables\Cp::field()`.
 
 ### Changed
 - Improved the color contrast of UI controls throughout the control panel. ([#10169](https://github.com/craftcms/cms/pull/10169))
 - Improved the accessibility of element select fields for screen readers. ([#10169](https://github.com/craftcms/cms/pull/10169))
+- Improved built-in input descriptions for screen readers. ([#10183](https://github.com/craftcms/cms/pull/10183))
+- URL fields now allow query strings to be appended to email addresses (e.g. `hello@example.com?subject=Check+this+out…`). ([#10193](https://github.com/craftcms/cms/discussions/10193))
+- `{% deprecated %}` tags now log proper Craft deprecation warnings rather than triggering an `E_USER_DEPRECATED` error. ([#10181](https://github.com/craftcms/cms/discussions/10181))
 - Editable tables’ `template` columns now support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - Editable tables now support an `autosuggest` column type, which support `suggestEnvVars` and `suggestAliases` settings on the column definition. ([#10143](https://github.com/craftcms/cms/discussions/10143))
 - The `cp.assets.edit.meta`, `cp.categories.edit.meta`, and `cp.entries.edit.meta` template hooks are now located after the native meta fields, rather than before. ([#10172](https://github.com/craftcms/cms/issues/10172))
@@ -21,6 +107,14 @@
 - Fixed a bug where structure element query params weren’t working if the passed-in element was missing its structure data. ([#10122](https://github.com/craftcms/cms/issues/10122))
 - Fixed a bug where `craft\base\Element::getChildren()` and `getDescendants()` could return results for elements without an ID.
 - Fixed an error that occurred when opening the Timeline view in the Debug Toolbar. ([#10176](https://github.com/craftcms/cms/issues/10176))
+- Fixed a bug where Number fields’ Default Value, Min Value, and Max Value settings could show values formatted in the wrong locale, leading to an error on save. ([#10184](https://github.com/craftcms/cms/issues/10184))
+- Fixed an error that could occur when creating a Table field. ([#10186](https://github.com/craftcms/cms/issues/10186))
+- Fixed a bug where Matrix blocks within drafts could lose track of their canonical blocks when they were updated upstream, resulting in duplicated blocks. ([#10130](https://github.com/craftcms/cms/issues/10130))
+- Fixed a bug where disabled site handles referenced in `config/routes.php` were being treated as URL patterns. ([#10197](https://github.com/craftcms/cms/issues/10197))
+
+### Security
+- Fixed a bug where sensitive-sounding environment variables’ values could be included in validation errors.
+- The “Sendmail Command” email setting no longer allows arbitrary values. Now it can only be set to a known `sendmail` command, an environment variable, or its current value.
 
 ## 3.7.23 - 2021-11-26
 

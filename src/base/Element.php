@@ -811,28 +811,37 @@ abstract class Element extends Component implements ElementInterface
             'showCheckboxes' => $showCheckboxes,
         ];
 
-        // Special case for sorting by structure
-        if (isset($viewState['order']) && $viewState['order'] === 'structure') {
-            $source = ElementHelper::findSource(static::class, $sourceKey, $context);
+        if (!empty($viewState['order'])) {
+            // Special case for sorting by structure
+            if (isset($viewState['order']) && $viewState['order'] === 'structure') {
+                $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
-            if (isset($source['structureId'])) {
-                $elementQuery->orderBy(['lft' => SORT_ASC]);
-                $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
+                if (isset($source['structureId'])) {
+                    $elementQuery->orderBy(['lft' => SORT_ASC]);
+                    $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
-                // Are they allowed to make changes to this structure?
-                if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
-                    $variables['structureEditable'] = true;
+                    // Are they allowed to make changes to this structure?
+                    if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
+                        $variables['structureEditable'] = true;
 
-                    // Let StructuresController know that this user can make changes to the structure
-                    Craft::$app->getSession()->authorize('editStructure:' . $variables['structure']->id);
+                        // Let StructuresController know that this user can make changes to the structure
+                        Craft::$app->getSession()->authorize('editStructure:' . $variables['structure']->id);
+                    }
+                } else {
+                    unset($viewState['order']);
                 }
-            } else {
-                unset($viewState['order']);
-            }
-        } else {
-            $orderBy = self::_indexOrderBy($sourceKey, $viewState);
-            if ($orderBy !== false) {
+            } else if ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
                 $elementQuery->orderBy($orderBy);
+
+                if ((!is_array($orderBy) || !isset($orderBy['score'])) && !empty($viewState['orderHistory'])) {
+                    foreach ($viewState['orderHistory'] as $order) {
+                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
+                            $elementQuery->addOrderBy($orderBy);
+                        } else {
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -1423,13 +1432,14 @@ abstract class Element extends Component implements ElementInterface
      * Returns the orderBy value for element indexes
      *
      * @param string $sourceKey
-     * @param array $viewState
+     * @param string $attribute
+     * @param string $dir `asc` or `desc`
      * @return array|ExpressionInterface|false
      */
-    private static function _indexOrderBy(string $sourceKey, array $viewState)
+    private static function _indexOrderBy(string $sourceKey, string $attribute, string $dir)
     {
-        $dir = empty($viewState['sort']) || strcasecmp($viewState['sort'], 'desc') ? SORT_ASC : SORT_DESC;
-        $columns = self::_indexOrderByColumns($sourceKey, $viewState, $dir);
+        $dir = strcasecmp($dir, 'desc') === 0 ? SORT_DESC : SORT_ASC;
+        $columns = self::_indexOrderByColumns($sourceKey, $attribute, $dir);
 
         if ($columns === false || $columns instanceof ExpressionInterface) {
             return $columns;
@@ -1458,37 +1468,37 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @param string $sourceKey
-     * @param array $viewState
+     * @param string $attribute
      * @param int $dir
-     * @return bool|string|array
+     * @return bool|string|array|ExpressionInterface
      */
-    private static function _indexOrderByColumns(string $sourceKey, array $viewState, int $dir)
+    private static function _indexOrderByColumns(string $sourceKey, string $attribute, int $dir)
     {
-        if (empty($viewState['order'])) {
+        if (!$attribute) {
             return false;
         }
 
-        if ($viewState['order'] === 'score') {
+        if ($attribute === 'score') {
             return 'score';
         }
 
         foreach (static::sortOptions() as $key => $sortOption) {
             if (is_array($sortOption)) {
-                $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
-                if ($attribute === $viewState['order']) {
+                $a = $sortOption['attribute'] ?? $sortOption['orderBy'];
+                if ($a === $attribute) {
                     if (is_callable($sortOption['orderBy'])) {
                         return $sortOption['orderBy']($dir);
                     }
                     return $sortOption['orderBy'];
                 }
-            } else if ($key === $viewState['order']) {
+            } else if ($key === $attribute) {
                 return $key;
             }
         }
 
         // See if it's a source-specific sort option
         foreach (Craft::$app->getElementIndexes()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
-            if ($sortOption['attribute'] === $viewState['order']) {
+            if ($sortOption['attribute'] === $attribute) {
                 return $sortOption['orderBy'];
             }
         }
@@ -1662,6 +1672,19 @@ abstract class Element extends Component implements ElementInterface
      * @see setIsFresh()
      */
     private $_isFresh;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Make sure the field layout ID is set before any custom fields
+        if (isset($config['fieldLayoutId'])) {
+            $config = ['fieldLayoutId' => $config['fieldLayoutId']] + $config;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -1922,9 +1945,9 @@ abstract class Element extends Component implements ElementInterface
             if ($layout !== null) {
                 foreach ($layout->getTabs() as $tab) {
                     if ($tab->elements) {
-                        foreach ($tab->elements as $element) {
-                            if ($element instanceof BaseField && ($label = $element->label()) !== null) {
-                                $labels[$element->attribute()] = $label;
+                        foreach ($tab->elements as $layoutElement) {
+                            if ($layoutElement instanceof BaseField && ($label = $layoutElement->label()) !== null) {
+                                $labels[$layoutElement->attribute()] = $label;
                             }
                         }
                     }
@@ -2241,6 +2264,7 @@ abstract class Element extends Component implements ElementInterface
                     ->structureId($this->structureId)
                     ->unique()
                     ->anyStatus()
+                    ->trashed(null)
                     ->ignorePlaceholders()
                     ->one() ?? false;
         }

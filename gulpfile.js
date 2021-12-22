@@ -2,7 +2,6 @@
 // - datepicker-i18n
 // - fabricjs
 // - prismjs (custom css added)
-// - qunit
 
 const autoprefixer = require('gulp-autoprefixer');
 const babel = require('gulp-babel');

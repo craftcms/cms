@@ -19,6 +19,7 @@ use craft\helpers\FileHelper;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
@@ -571,11 +572,20 @@ class MigrateController extends BaseMigrateController
     }
 
     /**
+     * Not supported.
+     */
+    public function actionFresh()
+    {
+        $this->stderr('This command is not supported.' . PHP_EOL, Console::FG_RED);
+        return ExitCode::OK;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function truncateDatabase()
     {
-        $this->getMigrator()->truncateHistory();
+        throw new NotSupportedException('This command is not implemented in ' . get_class($this));
     }
 
     /**
