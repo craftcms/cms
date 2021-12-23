@@ -1180,7 +1180,6 @@ return [
     'Saving' => 'Ukládání',
     'Scale and crop' => 'Zmenšit a oříznout',
     'Scale to fit' => 'Přizpůsobit obsah',
-    'Schema Name' => 'Název schématu',
     'Schema saved.' => 'Schéma bylo uloženo.',
     'Schemas' => 'Schémata',
     'Score' => 'Skóre',
