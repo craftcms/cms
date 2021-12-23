@@ -1178,7 +1178,6 @@ return [
     'Saving' => 'Sparar',
     'Scale and crop' => 'Skala och beskär',
     'Scale to fit' => 'Anpassa storleken',
-    'Schema Name' => 'Namn på schema',
     'Schema saved.' => 'Schema sparat.',
     'Schemas' => 'Scheman',
     'Score' => 'Poäng',
