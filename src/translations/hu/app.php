@@ -1180,7 +1180,6 @@ return [
     'Saving' => 'Mentés',
     'Scale and crop' => 'Mér és szab',
     'Scale to fit' => 'Arányosan méretez',
-    'Schema Name' => 'Séma neve',
     'Schema saved.' => 'A séma elmentve.',
     'Schemas' => 'Sémák',
     'Score' => 'Pontszám',
