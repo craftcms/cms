@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Az oszlopkezelő formátuma nem lehet „{format}”.',
     'Community Support (Slack, Stack Exchange)' => 'Közösségi támogatás (Slack, Stack Exchange)',
     'Compatibility' => 'Kompatibilitás',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Szerkesztett sablonok',
     'Complete the Update' => 'A frissítés befejezése',
     'Completed job' => 'Befejezett feladat',
