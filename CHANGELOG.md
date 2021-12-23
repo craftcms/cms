@@ -11,6 +11,7 @@
 - The `setup/db-creds` command now uses existing environment variable values for its default prompt values, if available.
 - The `setup/db-creds` command no longer prompts for the database schema on Postgres. Instead it will determine the appropriate schema to use based on `SHOW search_path`. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - The web-based installation wizard no longer shows a field for the database schema on Postgres. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- Dashboard widgets’ `data-colspan` attributes are now updated when their colspan changes. ([#10286](https://github.com/craftcms/cms/discussions/10286))
 - `craft\base\ApplicationTrait::getIsInstalled()` will now explicitly check if Craft is installed in the default schema on Postgres, when `true` is passed.
 - `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
 
