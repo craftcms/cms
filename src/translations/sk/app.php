@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Popisovače stĺpcov nemôžu byť vo formáte „{format}“.',
     'Community Support (Slack, Stack Exchange)' => 'Podpora pre komunity (Slack, Stack Exchange)',
     'Compatibility' => 'Kompatibilita',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Kompilované šablóny',
     'Complete the Update' => 'Dokončiť aktualizáciu',
     'Completed job' => 'Dokončená úloha',
