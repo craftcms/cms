@@ -298,17 +298,15 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is installed.
      *
-     * @param bool $refresh
+     * @param bool $strict Whether to ignore the cached value and explicitly check from the default schema.
      * @return bool
      */
-    public function getIsInstalled(bool $refresh = false): bool
+    public function getIsInstalled(bool $strict = false): bool
     {
-        if ($refresh) {
+        if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
-        }
-
-        if ($this->_isInstalled !== null) {
+        } else if ($this->_isInstalled !== null) {
             return $this->_isInstalled;
         }
 
@@ -317,7 +315,19 @@ trait ApplicationTrait
         }
 
         try {
+            if ($strict) {
+                $db = Craft::$app->getDb();
+                if ($db->getIsPgsql()) {
+                    // Look for the `info` row, explicitly in the default schema.
+                    return $this->_isInstalled = (new Query())
+                        ->from([sprintf('%s.%s', $db->getSchema()->defaultSchema, Table::INFO)])
+                        ->where(['id' => 1])
+                        ->exists();
+                }
+            }
+
             $info = $this->getInfo(true);
+            return $this->_isInstalled = !empty($info->id);
         } catch (DbException | ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
             if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
@@ -330,8 +340,6 @@ trait ApplicationTrait
             $errorHandler->logException($e);
             return $this->_isInstalled = false;
         }
-
-        return $this->_isInstalled = !empty($info->id);
     }
 
     /**
