@@ -1178,7 +1178,6 @@ return [
     'Saving' => 'Kaydediliyor',
     'Scale and crop' => 'Ölçeklendir ve kırp',
     'Scale to fit' => 'Oturmak için ölçeklendir',
-    'Schema Name' => 'Şema Adı',
     'Schema saved.' => 'Şema kaydedildi.',
     'Schemas' => 'Şemalar',
     'Score' => 'Puan',
