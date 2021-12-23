@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Kolumn-handles får inte vara i formatet “{format}”.',
     'Community Support (Slack, Stack Exchange)' => 'Communitysupport (Slack, Stack Exchange)',
     'Compatibility' => 'Kompatibilitet',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Sammanställda mallar',
     'Complete the Update' => 'Slutför uppdateringen',
     'Completed job' => 'Slutfört jobb',
