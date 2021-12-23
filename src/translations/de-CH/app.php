@@ -1178,7 +1178,6 @@ return [
     'Saving' => 'Speichern',
     'Scale and crop' => 'Skalieren und zuschneiden',
     'Scale to fit' => 'An die Grösse des Behälters anpassen',
-    'Schema Name' => 'Schemaname',
     'Schema saved.' => 'Das Schema wurde gespeichert.',
     'Schemas' => 'Schemas',
     'Score' => 'Ergebnis',
