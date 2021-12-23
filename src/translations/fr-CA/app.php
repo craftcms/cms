@@ -1180,7 +1180,6 @@ return [
     'Saving' => 'En cours d\'enregistrement',
     'Scale and crop' => 'Réduire et rogner',
     'Scale to fit' => 'Réduire pour faire correspondre',
-    'Schema Name' => 'Nom du schéma',
     'Schema saved.' => 'Schéma enregistré.',
     'Schemas' => 'Schémas',
     'Score' => 'Score',

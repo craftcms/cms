@@ -1181,7 +1181,6 @@ return [
     'Saving' => 'Gemmer',
     'Scale and crop' => 'Skaler og beskær',
     'Scale to fit' => 'Skaler til at passe',
-    'Schema Name' => 'Skemanavn',
     'Schema saved.' => 'Skema gemt.',
     'Schemas' => 'Skemaer',
     'Score' => 'Karakter',
