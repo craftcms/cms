@@ -1180,7 +1180,6 @@ return [
     'Saving' => 'Salvataggio',
     'Scale and crop' => 'Ridimensiona e ritaglia',
     'Scale to fit' => 'Ridimensiona e adatta',
-    'Schema Name' => 'Nome schema',
     'Schema saved.' => 'Schema salvato.',
     'Schemas' => 'Schemi',
     'Score' => 'Rilevanza',
