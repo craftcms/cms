@@ -1180,7 +1180,6 @@ return [
     'Saving' => '保存中',
     'Scale and crop' => 'スケールとトリミング',
     'Scale to fit' => 'フィットまでのスケール',
-    'Schema Name' => 'スキーマ名',
     'Schema saved.' => 'スキーマを保存しました。',
     'Schemas' => 'スキーマ',
     'Score' => 'スコア',
