@@ -1178,7 +1178,6 @@ return [
     'Saving' => 'A guardar',
     'Scale and crop' => 'Redimensionar e cortar',
     'Scale to fit' => 'Redimensionar para ajustar',
-    'Schema Name' => 'Nome do esquema',
     'Schema saved.' => 'Esquema guardado.',
     'Schemas' => 'Esquemas',
     'Score' => 'Ponto',
