@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Html;
 
 /**
  * Checkboxes represents a Checkboxes field.

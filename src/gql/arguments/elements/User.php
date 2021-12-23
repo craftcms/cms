@@ -10,7 +10,6 @@ namespace craft\gql\arguments\elements;
 use Craft;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\User as UserElement;
-use craft\fields\Matrix;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;

@@ -130,7 +130,7 @@
 
 
 {% macro field(config, input) %}
-    {{ craft.cp.field(input, config)|raw }}
+    {{ craft.cp.field(input ?? '', config)|raw }}
 {% endmacro %}
 
 

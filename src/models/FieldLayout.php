@@ -227,13 +227,13 @@ class FieldLayout extends Model
 
         // Make sure no fields are using one of our reserved attribute names
         foreach ($this->getTabs() as $tab) {
-            foreach ($tab->elements as $element) {
+            foreach ($tab->elements as $layoutElement) {
                 if (
-                    $element instanceof CustomField &&
-                    in_array($element->attribute(), $this->reservedFieldHandles, true)
+                    $layoutElement instanceof CustomField &&
+                    in_array($layoutElement->attribute(), $this->reservedFieldHandles, true)
                 ) {
                     $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
-                        'handle' => $element->attribute(),
+                        'handle' => $layoutElement->attribute(),
                     ]));
                 }
             }
@@ -258,9 +258,9 @@ class FieldLayout extends Model
 
             // Take stock of all the selected layout elements
             foreach ($this->_tabs as $tab) {
-                foreach ($tab->elements as $element) {
-                    if ($element instanceof BaseField) {
-                        $this->_fields[$element->attribute()] = $element;
+                foreach ($tab->elements as $layoutElement) {
+                    if ($layoutElement instanceof BaseField) {
+                        $this->_fields[$layoutElement->attribute()] = $layoutElement;
                     }
                 }
             }
@@ -568,9 +568,9 @@ class FieldLayout extends Model
         foreach ($tabs as $tab) {
             $tabHtml = [];
 
-            foreach ($tab->elements as $formElement) {
-                $elementHtml = $view->namespaceInputs(function() use ($formElement, $element, $static) {
-                    return (string)$formElement->formHtml($element, $static);
+            foreach ($tab->elements as $layoutElement) {
+                $elementHtml = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
+                    return (string)$layoutElement->formHtml($element, $static);
                 }, $namespace);
                 if ($elementHtml !== '') {
                     $tabHtml[] = $elementHtml;

@@ -172,7 +172,7 @@ class Url extends Field implements PreviewableFieldInterface
             return null;
         }
 
-        return UrlHelper::encodeParams($value);
+        return str_replace(' ', '+', $value);
     }
 
     /**

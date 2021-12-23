@@ -102,6 +102,12 @@ class DbConfig extends BaseObject
 
     /**
      * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
+     *
+     * ::: warning
+     * The schema will **not** be injected into SQL queries; it will only instruct Yii as to when it is safe to *remove* a schema from a query.
+     * See [yiisoft/yii2#12763](https://github.com/yiisoft/yii2/issues/12763) for more details.
+     * :::
+     *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';

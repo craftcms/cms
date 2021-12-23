@@ -41,7 +41,10 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     openingPreview: false,
     preview: null,
-    previewToken: null,
+    activatingPreviewToken: false,
+    activatedPreviewToken: false,
+    previewTokenQueue: null,
+    previewLinks: null,
     scrollY: null,
     createdProvisionalDraft: false,
 
@@ -51,8 +54,10 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.setSettings(settings, Craft.DraftEditor.defaults);
 
         this.queue = [];
+        this.previewTokenQueue = [];
         this.duplicatedElements = {};
         this.enableAutosave = Craft.autosaveDrafts;
+        this.previewLinks = [];
 
         this.siteIds = Object.keys(this.settings.siteStatuses).map(siteId => {
             return parseInt(siteId)
@@ -73,14 +78,13 @@ Craft.DraftEditor = Garnish.Base.extend({
                 this.addListener($('#preview-btn'), 'click', 'openPreview');
             }
 
-            const $shareBtn = $('#share-btn');
+            const $previewBtnContainer = $('#preview-btn-container');
 
             if (this.settings.previewTargets.length === 1) {
-                this.addListener($shareBtn, 'click', function() {
-                    this.openShareLink(this.settings.previewTargets[0].url);
-                });
+                const [target] = this.settings.previewTargets;
+                this.createPreviewLink(target).attr('id', 'share-btn').addClass('btn').appendTo($previewBtnContainer);
             } else {
-                this.createShareMenu($shareBtn);
+                this.createShareMenu($previewBtnContainer);
             }
         }
 
@@ -507,76 +511,166 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.addListener(this.$editMetaBtn, 'click', 'showMetaHud');
     },
 
-    createShareMenu: function($shareBtn) {
-        $shareBtn.addClass('menubtn');
+    createPreviewLink: function(target, label) {
+        const $a = $('<a/>', {
+            href: this.getTokenizedPreviewUrl(target.url, null, false),
+            text: label || Craft.t('app', 'View'),
+            target: '_blank',
+            data: {
+                targetUrl: target.url,
+            },
+        });
 
-        const $menu = $('<div/>', {'class': 'menu'}).insertAfter($shareBtn);
+        this.addListener($a, 'click', () => {
+            setTimeout(() => {
+                this.activatePreviewToken();
+            }, 1);
+        });
+
+        this.previewLinks.push($a);
+        return $a;
+    },
+
+    updatePreviewLinks: function() {
+        this.previewLinks.forEach($a => {
+            $a.attr('href', this.getTokenizedPreviewUrl($a.data('targetUrl'), null, false));
+            if (this.activatedPreviewToken) {
+                this.removeListener($a, 'click');
+            }
+        });
+    },
+
+    activatePreviewToken: function() {
+        if (this.settings.isLive) {
+            // don't do anything yet, but leave the event in case we need it later
+            return;
+        }
+
+        this.activatedPreviewToken = true;
+        this.updatePreviewLinks();
+    },
+
+    createShareMenu: function($container) {
+        $('<button/>', {
+            id: 'share-btn',
+            type: 'button',
+            class: 'btn menubtn',
+            text: Craft.t('app', 'View'),
+        }).appendTo($container);
+
+        const $menu = $('<div/>', {'class': 'menu'}).appendTo($container);
         const $ul = $('<ul/>').appendTo($menu);
 
         this.settings.previewTargets.forEach(target => {
-            const $li = $('<li/>').appendTo($ul);
-            const $a = $('<a/>', {
-                text: target.label,
-            }).appendTo($li);
-            this.addListener($a, 'click', () => {
-                this.openShareLink(target.url);
-            });
+            $('<li/>')
+                .append(this.createPreviewLink(target, target.label))
+                .appendTo($ul);
         });
+    },
+
+    getPreviewTokenParams: function() {
+        return {
+            elementType: this.settings.elementType,
+            sourceId: this.settings.sourceId,
+            siteId: this.settings.siteId,
+            draftId: this.settings.draftId,
+            revisionId: this.settings.revisionId,
+            provisional: this.settings.isProvisionalDraft ? 1 : null,
+            previewToken: this.settings.previewToken,
+        };
     },
 
     getPreviewToken: function() {
         return new Promise((resolve, reject) => {
-            if (this.previewToken) {
-                resolve(this.previewToken);
+            if (this.activatedPreviewToken) {
+                resolve(this.settings.previewToken);
                 return;
             }
+
+            if (this.activatingPreviewToken) {
+                this.previewTokenQueue.push(resolve);
+                return;
+            }
+
+            this.activatingPreviewToken = true;
 
             Craft.sendActionRequest('POST', 'preview/create-token', {
-                data: {
-                    elementType: this.settings.elementType,
-                    sourceId: this.settings.sourceId,
-                    siteId: this.settings.siteId,
-                    draftId: this.settings.draftId,
-                    revisionId: this.settings.revisionId,
-                    provisional: this.settings.isProvisionalDraft,
-                },
-            }).then(response => {
-                this.previewToken = response.data.token;
-                resolve(this.previewToken);
+                data: this.getPreviewTokenParams(),
+            }).then(() => {
+                this.activatingPreviewToken = false;
+                this.activatePreviewToken();
+                resolve(this.settings.previewToken);
+
+                while (this.previewTokenQueue.length) {
+                    this.previewTokenQueue.shift()(this.settings.previewToken);
+                }
             }).catch(reject);
         });
     },
 
-    getTokenizedPreviewUrl: function(url, randoParam) {
-        return new Promise((resolve, reject) => {
-            const params = {};
+    /**
+     * @param {string} url
+     * @param {string|null} [randoParam]
+     * @param {boolean} [asPromise=false]
+     * @return Promise|string
+     */
+    getTokenizedPreviewUrl: function(url, randoParam, asPromise) {
+        if (typeof asPromise === 'undefined') {
+            asPromise = true;
+        }
 
-            if (randoParam || !this.settings.isLive) {
-                // Randomize the URL so CDNs don't return cached pages
-                params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
+        const params = {};
+
+        if (randoParam || !this.settings.isLive) {
+            // Randomize the URL so CDNs don't return cached pages
+            params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
+        }
+
+        if (this.settings.siteToken) {
+            params[Craft.siteToken] = this.settings.siteToken;
+        }
+
+        // No need for a token if we're looking at a live element
+        if (this.settings.isLive) {
+            const previewUrl = Craft.getUrl(url, params);
+
+            if (asPromise) {
+                return new Promise(resolve => {
+                    resolve(previewUrl);
+                });
             }
 
-            if (this.settings.siteToken) {
-                params[Craft.siteToken] = this.settings.siteToken;
+            return previewUrl;
+        }
+
+        if (!this.settings.previewToken) {
+            throw 'Missing preview token';
+        }
+
+        params[Craft.tokenParam] = this.settings.previewToken;
+        const previewUrl = Craft.getUrl(url, params);
+
+        if (this.activatedPreviewToken) {
+            if (asPromise) {
+                return new Promise(resolve => {
+                    resolve(previewUrl);
+                });
             }
 
-            // No need for a token if we're looking at a live element
-            if (this.settings.isLive) {
-                resolve(Craft.getUrl(url, params));
-                return;
-            }
+            return previewUrl;
+        }
 
-            this.getPreviewToken().then(function(token) {
-                params[Craft.tokenParam] = token;
-                resolve(Craft.getUrl(url, params));
-            }).catch(reject);
-        });
-    },
+        if (asPromise) {
+            return new Promise((resolve, reject) => {
+                this.getPreviewToken().then(() => {
+                    resolve(previewUrl);
+                }).catch(reject);
+            });
+        }
 
-    openShareLink: function(url) {
-        this.getTokenizedPreviewUrl(url).then(function(url) {
-            window.open(url);
-        });
+        const createTokenParams = this.getPreviewTokenParams();
+        createTokenParams.redirect = encodeURIComponent(previewUrl);
+        return Craft.getActionUrl('preview/create-token', createTokenParams);
     },
 
     getPreview: function() {
@@ -858,6 +952,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                 }
 
                 if (createdProvisionalDraft) {
+                    this.updatePreviewLinks();
                     this.trigger('createProvisionalDraft');
                 }
 
@@ -1190,6 +1285,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         hashedAddAnotherRedirectUrl: null,
         enablePreview: false,
         previewTargets: [],
+        previewToken: null,
         siteToken: null,
     }
 });

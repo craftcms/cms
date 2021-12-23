@@ -5,30 +5,32 @@
 {% set fileKindOptions = field.getFileKindOptions() %}
 {% set isMatrix = 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
 
-{% macro uploadLocationInput(name, field, inputSourceOptions) %}
-    {% from "_includes/forms" import select, text %}
-    <div class="flex">
-        <div>
-            {{ select({
-                id: name~'Source',
-                name: name~'Source',
-                options: inputSourceOptions,
-                value: field[name~'Source'],
-            }) }}
-        </div>
-        <div class="flex-grow">
-            {{ text({
-                id: name~'Subpath',
-                class: 'ltr',
-                name: name~'Subpath',
-                value: field[name~'Subpath'],
-                placeholder: "path/to/subfolder"|t('app')
-            }) }}
-        </div>
-    </div>
+{% macro uploadLocationField(config) %}
+    {% embed '_includes/forms/field' with config %}
+        {% block input %}
+            {% import '_includes/forms' as forms %}
+            <div class="flex">
+                <div>
+                    {{ forms.select({
+                        name: "#{config.name}Source",
+                        options: config.sourceOptions,
+                        value: config.sourceValue,
+                        describedBy: describedBy,
+                    }) }}
+                </div>
+                <div class="flex-grow">
+                    {{ forms.text({
+                        class: 'ltr',
+                        name: "#{config.name}Subpath",
+                        value: config.subpathValue,
+                        placeholder: "path/to/subfolder"|t('app'),
+                        describedBy: describedBy,
+                    }) }}
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
 {% endmacro %}
-
-{% from _self import uploadLocationInput %}
 
 
 {% block fieldSettings %}
@@ -54,19 +56,27 @@
     <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
         {{ block('sourcesField') }}
 
-        {{ forms.field({
+        {{ _self.uploadLocationField({
             label: 'Default Asset Location'|t('app'),
             instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.'|t('app') ~' '~ uploadLocationNote,
-            errors: field.getErrors('defaultUploadLocationSubpath')
-        }, uploadLocationInput('defaultUploadLocation', field, sourceOptions)) }}
+            name: 'defaultUploadLocation',
+            sourceOptions: sourceOptions,
+            sourceValue: field.defaultUploadLocationSource,
+            subpathValue: field.defaultUploadLocationSubpath,
+            errors: field.getErrors('defaultUploadLocationSubpath'),
+        }) }}
     </div>
 
     <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
-        {{ forms.field({
+        {{ _self.uploadLocationField({
             label: 'Asset Location'|t('app'),
             instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
-            errors: field.getErrors('singleUploadLocationSubpath')
-        }, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
+            name: 'singleUploadLocation',
+            sourceOptions: sourceOptions,
+            sourceValue: field.singleUploadLocationSource,
+            subpathValue: field.singleUploadLocationSubpath,
+            errors: field.getErrors('singleUploadLocationSubpath'),
+        }) }}
     </div>
 
     {{ forms.checkboxField({
