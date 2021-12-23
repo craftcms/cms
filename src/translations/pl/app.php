@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Uchwyty kolumn nie mogą mieć formatu „{format}”.',
     'Community Support (Slack, Stack Exchange)' => 'Wsparcie społeczności (Slack, Stack Exchange)',
     'Compatibility' => 'Zgodność',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Szablony skompilowane',
     'Complete the Update' => 'Zakończ aktualizację',
     'Completed job' => 'Zadanie ukończone',
