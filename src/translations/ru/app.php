@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Описатели столбцов не могут быть в формате “{format}”.',
     'Community Support (Slack, Stack Exchange)' => 'Поддержка сообщества (Slack, Stack Exchange)',
     'Compatibility' => 'Совместимость',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Скомпилированные шаблоны',
     'Complete the Update' => 'Выполнить обновление',
     'Completed job' => 'Завершенное задание',
