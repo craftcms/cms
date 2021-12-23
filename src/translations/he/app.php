@@ -1180,7 +1180,6 @@ return [
     'Saving' => 'שומר',
     'Scale and crop' => 'קנה מידה וחיתוך',
     'Scale to fit' => 'התאם לקנה מידה',
-    'Schema Name' => 'שם התרשים',
     'Schema saved.' => 'הסכימה נשמרה.',
     'Schemas' => 'סכימות',
     'Score' => 'תוצאה',
