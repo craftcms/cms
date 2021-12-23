@@ -411,6 +411,7 @@ EOD;
                 foreach ($defaultSchemas as $schema) {
                     if ($schema !== '"$user"') {
                         $this->schema = $schema;
+                        break;
                     }
                 }
             }
