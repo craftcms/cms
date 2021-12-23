@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Column handles can’t be in the format “{format}”.',
     'Community Support (Slack, Stack Exchange)' => 'Community Support (Slack, Stack Exchange)',
     'Compatibility' => 'Compatibility',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Compiled templates',
     'Complete the Update' => 'Complete the Update',
     'Completed job' => 'Completed job',
