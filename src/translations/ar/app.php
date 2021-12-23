@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'لا يمكن أن تكون مقابض الأعمدة بتنسيق "{format}".',
     'Community Support (Slack, Stack Exchange)' => 'دعم من المجتمع (Slack, Stack Exchange)',
     'Compatibility' => 'التوافق',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'القوالب المترجمة برمجياً',
     'Complete the Update' => 'إتمام التحديث',
     'Completed job' => 'إنهاء مهمة',
