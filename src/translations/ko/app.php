@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => '열 핸들은 “{format}” 형식이 될 수 없습니다.',
     'Community Support (Slack, Stack Exchange)' => '커뮤니티 지원(Slack, Stack Exchange)',
     'Compatibility' => '호환성',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => '컴파일된 템플릿',
     'Complete the Update' => '업데이트 완료',
     'Completed job' => '완료된 작업',
