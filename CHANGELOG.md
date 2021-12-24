@@ -3,13 +3,14 @@
 ## Unreleased
 
 ### Added
+- Added the `setSchemaOnConnect` database connection setting. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
 
 ### Changed
 - A warning is now logged when a password-reset email could not be sent, if `preventUserEnumeration` is enabled.
-- The `install/check` and `install/craft` commands now explicitly check if Craft is installed in the default schema on Postgres.
+- The `install/check`, `install/craft`, and `setup/db-creds` commands now explicitly check if Craft is installed in the default schema on Postgres.
 - The `setup/db-creds` command now uses existing environment variable values for its default prompt values, if available.
-- The `setup/db-creds` command no longer prompts for the database schema on Postgres. Instead it will determine the appropriate schema to use based on `SHOW search_path`. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- The `setup/db-creds` command no longer prompts for the database schema on Postgres, unless `setSchemaOnConnect` is enabled. Instead it will determine the appropriate schema to use based on `SHOW search_path`. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - The web-based installation wizard no longer shows a field for the database schema on Postgres. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - Dashboard widgets’ `data-colspan` attributes are now updated when their colspan changes. ([#10286](https://github.com/craftcms/cms/discussions/10286))
 - `craft\base\ApplicationTrait::getIsInstalled()` will now explicitly check if Craft is installed in the default schema on Postgres, when `true` is passed.

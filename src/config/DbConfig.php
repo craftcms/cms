@@ -103,14 +103,26 @@ class DbConfig extends BaseObject
     /**
      * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
      *
-     * ::: warning
-     * The schema will **not** be injected into SQL queries; it will only instruct Yii as to when it is safe to *remove* a schema from a query.
-     * See [yiisoft/yii2#12763](https://github.com/yiisoft/yii2/issues/12763) for more details.
+     * ::: tip
+     * To force Craft to use the specified schema regardless of PostgreSQL’s `search_path` setting, you must enable
+     * the [[setSchemaOnConnect]] setting.
      * :::
      *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';
+
+    /**
+     * @var bool Whether the [[schema]] should be explicitly used for database queries (PostgreSQL only).
+     *
+     * ::: warning
+     * This will cause an extra `SET search_path` SQL query to be executed per database connection. Ideally,
+     * PostgreSQL’s `search_path` setting should be configured to prioritize the desired schema.
+     * :::
+     *
+     * @since 3.7.27
+     */
+    public $setSchemaOnConnect = false;
 
     /**
      * @var string If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),

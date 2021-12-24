@@ -378,51 +378,59 @@ EOD;
         $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
 
         // Determine the default schema if Postgres
-        if ($this->driver === Connection::DRIVER_PGSQL && $this->schema === null) {
-            // Make sure that the DB is actually configured to use the provided schema by default
-            $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
-            $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
+        if ($this->driver === Connection::DRIVER_PGSQL) {
+            if ($dbConfig->setSchemaOnConnect) {
+                $this->schema = $this->prompt('Database schema:', [
+                    'required' => true,
+                    'default' => $this->schema ?? App::env('DB_SCHEMA') ?: 'public',
+                ]);
+                $db->createCommand("SET search_path TO $this->schema;")->execute();
+            } else if ($this->schema === null) {
+                // Make sure that the DB is actually configured to use the provided schema by default
+                $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
+                $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
 
-            // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
-            try {
-                $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
-            } catch (DbException $e) {
+                // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {
-                    $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
+                    $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
                 } catch (DbException $e) {
-                    $allSchemas = null;
-                }
-            }
-
-            if ($allSchemas !== null) {
-                // Use the first default schema that actually exists
-                foreach ($defaultSchemas as $schema) {
-                    // "$user" => username
-                    if ($schema === '"$user"') {
-                        $schema = $this->user;
-                    }
-
-                    if (in_array($schema, $allSchemas)) {
-                        $this->schema = $schema;
-                        break;
+                    try {
+                        $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
+                    } catch (DbException $e) {
+                        $allSchemas = null;
                     }
                 }
-            } else {
-                // Use the first non-user schema
-                foreach ($defaultSchemas as $schema) {
-                    if ($schema !== '"$user"') {
-                        $this->schema = $schema;
-                        break;
+
+                if ($allSchemas !== null) {
+                    // Use the first default schema that actually exists
+                    foreach ($defaultSchemas as $schema) {
+                        // "$user" => username
+                        if ($schema === '"$user"') {
+                            $schema = $this->user;
+                        }
+
+                        if (in_array($schema, $allSchemas)) {
+                            $this->schema = $schema;
+                            break;
+                        }
+                    }
+                } else {
+                    // Use the first non-user schema
+                    foreach ($defaultSchemas as $schema) {
+                        if ($schema !== '"$user"') {
+                            $this->schema = $schema;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if ($this->schema === null) {
-                // Assume 'public'
-                $this->schema = 'public';
-            }
+                if ($this->schema === null) {
+                    // Assume 'public'
+                    $this->schema = 'public';
+                }
 
-            $this->stdout('Using default schema "' . $this->schema . '".' . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout('Using default schema "' . $this->schema . '".' . PHP_EOL, Console::FG_YELLOW);
+            }
         }
 
         $db->getSchema()->defaultSchema = $this->schema;
