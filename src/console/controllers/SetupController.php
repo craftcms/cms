@@ -226,6 +226,7 @@ EOD;
         // driver
         $envDriver = App::env('DB_DRIVER');
         $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
+            'required' => true,
             'default' => $this->driver ?? $envDriver ?: 'mysql',
             'validator' => function (string $input) {
                 return in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]);
