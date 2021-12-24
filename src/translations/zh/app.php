@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => '列标签的格式不能为“{format}”。',
     'Community Support (Slack, Stack Exchange)' => '社区支持 (Slack、Stack Exchange)',
     'Compatibility' => '兼容性',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => '已编译的模板',
     'Complete the Update' => '完成更新',
     'Completed job' => '已完成的作业',

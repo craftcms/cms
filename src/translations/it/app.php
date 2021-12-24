@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Gli handle colonna non possono essere nel formato “{format}”.',
     'Community Support (Slack, Stack Exchange)' => 'Assistenza community (Slack, Stack Exchange)',
     'Compatibility' => 'Compatibilità',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Template compilati',
     'Complete the Update' => 'Completa aggiornamento',
     'Completed job' => 'Attività completata',

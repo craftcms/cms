@@ -268,6 +268,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Popisovače sloupců nemohou být ve formátu "{format}“.',
     'Community Support (Slack, Stack Exchange)' => 'Komunitní podpora (Slack, Stack Exchange)',
     'Compatibility' => 'Kompatibilita',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Kompilované šablony',
     'Complete the Update' => 'Dokončit aktualizaci',
     'Completed job' => 'Dokončená úloha',
