@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => 'تغییر اندازه و برش',
     'Scale to fit' => 'تغییر اندازه برای جا شدن',
-    'Schema Name' => 'نام طرح',
     'Schema saved.' => 'طرح ذخیره گردید.',
     'Schemas' => 'طرح ها',
     'Score' => 'امتیاز',
