@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => '缩放和剪裁',
     'Scale to fit' => '缩放来适应',
-    'Schema Name' => '架构名称',
     'Schema saved.' => '架构已保存。',
     'Schemas' => '架构',
     'Score' => '分数',
