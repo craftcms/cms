@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => 'Scale and crop',
     'Scale to fit' => 'Scale to fit',
-    'Schema Name' => 'Schema name',
     'Schema saved.' => 'Schema saved.',
     'Schemas' => 'Schemas',
     'Score' => 'Score',

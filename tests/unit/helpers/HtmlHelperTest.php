@@ -219,6 +219,17 @@ class HtmlHelperTest extends Unit
     }
 
     /**
+     * @dataProvider encodeInvalidTagsDataProvider
+     *
+     * @param string $expected
+     * @param string $html
+     */
+    public function testEncodeInvalidTags(string $expected, string $html): void
+    {
+        self::assertSame($expected, Html::encodeInvalidTags($html));
+    }
+
+    /**
      * @return array
      */
     public function encodeParamsDataProvider(): array
@@ -476,6 +487,20 @@ class HtmlHelperTest extends Unit
             ['foo', 'foo'],
             ['foo&nbsp;bar', 'foo bar'],
             ['foo bar&nbsp;baz', 'foo bar baz'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function encodeInvalidTagsDataProvider(): array
+    {
+        return [
+            ['foo<br>bar', 'foo<br>bar'],
+            ['foo<br/>bar', 'foo<br/>bar'],
+            ['foo<br>bar&lt;p&gt;baz', 'foo<br>bar<p>baz'],
+            ['foo&lt;p&gt;bar<br>baz', 'foo<p>bar<br>baz'],
+            ['This text goes within the &lt;title&gt; tag in the &lt;head&gt; of the HTML file.', 'This text goes within the <title> tag in the <head> of the HTML file.'],
         ];
     }
 }

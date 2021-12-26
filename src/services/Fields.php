@@ -1529,6 +1529,8 @@ class Fields extends Component
             ]));
         }
 
+        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
+
         return true;
     }
 

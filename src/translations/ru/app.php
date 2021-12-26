@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => 'Масштабировать и обрезать',
     'Scale to fit' => 'Масштабировать по размеру',
-    'Schema Name' => 'Имя схемы',
     'Schema saved.' => 'Схема сохранена.',
     'Schemas' => 'Схемы',
     'Score' => 'Результат',

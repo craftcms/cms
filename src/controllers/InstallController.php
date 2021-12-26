@@ -405,7 +405,6 @@ class InstallController extends Controller
         $dbConfig->dsn = "$driver:host=$server;port=$port;dbname=$database";
         $dbConfig->user = $this->request->getBodyParam("{$prefix}user") ?: 'root';
         $dbConfig->password = $this->request->getBodyParam("{$prefix}password");
-        $dbConfig->schema = $this->request->getBodyParam("{$prefix}schema") ?: 'public';
         $dbConfig->tablePrefix = $this->request->getBodyParam("{$prefix}tablePrefix");
     }
 }

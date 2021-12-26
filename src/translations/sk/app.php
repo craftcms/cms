@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => 'Zmeniť veľkosť a orezať',
     'Scale to fit' => 'Prispôsobiť veľkosťou',
-    'Schema Name' => 'Názov schémy',
     'Schema saved.' => 'Schéma uložená.',
     'Schemas' => 'Schémy',
     'Score' => 'Skóre',

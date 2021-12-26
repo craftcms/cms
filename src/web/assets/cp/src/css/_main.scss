@@ -5001,8 +5001,11 @@ fieldset {
 .checkboxfield .instructions {
   color: $mediumTextColor;
 
-  img {
-    max-width: 100%;
+  img,
+  video,
+  embed,
+  iframe {
+    max-width: 100% !important;
   }
 
   ul,

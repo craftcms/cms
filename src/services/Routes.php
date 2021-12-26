@@ -112,15 +112,19 @@ class Routes extends Component
         $this->_projectConfigRoutes = [];
 
         foreach ($routes as $route) {
+            $key = sprintf('pattern:%s', $route['uriPattern']);
             if (
-                !isset($this->_projectConfigRoutes[$route['uriPattern']]) &&
+                !isset($this->_projectConfigRoutes[$key]) &&
                 (empty($route['siteUid']) || $route['siteUid'] === $currentSiteUid)
             ) {
-                $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
+                $this->_projectConfigRoutes[$key] = [
+                    'pattern' => $route['uriPattern'],
+                    'template' => $route['template'],
+                ];
             }
         }
 
-        return $this->_projectConfigRoutes;
+        return array_values($this->_projectConfigRoutes);
     }
 
     /**

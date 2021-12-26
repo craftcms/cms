@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => 'Skalowanie i kadrowanie',
     'Scale to fit' => 'Skaluj, aby dopasować',
-    'Schema Name' => 'Nazwa schematu',
     'Schema saved.' => 'Schemat zapisano.',
     'Schemas' => 'Schematy',
     'Score' => 'Wynik',

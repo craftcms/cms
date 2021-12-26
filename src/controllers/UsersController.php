@@ -425,7 +425,6 @@ class UsersController extends Controller
     {
         $this->requirePostRequest();
         $errors = [];
-        $existingUser = false;
         $loginName = null;
 
         // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
@@ -438,8 +437,6 @@ class UsersController extends Controller
                 if (!$user) {
                     throw new NotFoundHttpException('User not found');
                 }
-
-                $existingUser = true;
             }
         }
 
@@ -461,13 +458,16 @@ class UsersController extends Controller
             }
         }
 
-        // If no one is logged in and preventUserEnumeration is enabled, clear out the login errors
-        if (!$existingUser && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $errors = [];
-        }
-
         if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
+        }
+
+        if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            $list = implode("\n", array_map(function(string $error) {
+                return sprintf('- %s', $error);
+            }, $errors));
+            Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
+            $errors = [];
         }
 
         if (empty($errors)) {

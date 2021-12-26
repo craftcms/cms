@@ -68,14 +68,6 @@
                     value: dbConfig.database
                 }) }}
             </div>
-            <div class="flex-grow db-pgsql{% if dbConfig.driver != 'pgsql' %} hidden{% endif %}">
-                {{ forms.textField({
-                    label: "Schema Name"|t('app'),
-                    id: 'db-schema',
-                    value: dbConfig.schema != 'public' ? dbConfig.schema,
-                    placeholder: 'public'
-                }) }}
-            </div>
             <div>
                 {{ forms.textField({
                     label: "#{'Prefix'|t('app')} <span class='info'>#{'The table name prefix'|t('app')}</span>",

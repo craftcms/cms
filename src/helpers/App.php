@@ -37,6 +37,7 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
@@ -480,7 +481,7 @@ class App
             ];
         }
 
-        return [
+        $config = [
             'class' => Connection::class,
             'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
@@ -497,6 +498,16 @@ class App
             'attributes' => $dbConfig->attributes,
             'enableSchemaCache' => !YII_DEBUG,
         ];
+
+        if ($driver === Connection::DRIVER_PGSQL && $dbConfig->setSchemaOnConnect && $dbConfig->schema) {
+            $config['on afterOpen'] = function(Event $event) use ($dbConfig) {
+                /** @var Connection $db */
+                $db = $event->sender;
+                $db->createCommand("SET search_path TO $dbConfig->schema;")->execute();
+            };
+        }
+
+        return $config;
     }
 
     /**

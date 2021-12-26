@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => '크기 변경 및 잘라내기',
     'Scale to fit' => '크기 변경으로 맞추기',
-    'Schema Name' => '스키마 이름',
     'Schema saved.' => '스키마 저장됨.',
     'Schemas' => '스키마',
     'Score' => '스코어',

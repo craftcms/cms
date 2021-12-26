@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => 'تغيير الحجم والاقتصاص',
     'Scale to fit' => 'تغيير الحجم للملاءمة',
-    'Schema Name' => 'اسم المخطط',
     'Schema saved.' => 'تم حفظ المخطط.',
     'Schemas' => 'مخططات',
     'Score' => 'الدرجة',

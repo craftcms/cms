@@ -23,6 +23,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
+use yii\db\ExpressionInterface;
 use yii\db\pgsql\Schema as YiiPgqslSchema;
 use yii\db\Query as YiiQuery;
 use yii\db\Schema;
@@ -116,6 +117,11 @@ class Db
      */
     public static function prepareValueForDb($value, ?string $columnType = null)
     {
+        // Leave expressions alone
+        if ($value instanceof ExpressionInterface) {
+            return $value;
+        }
+
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
             return $value->serialize();
