@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Saving…',
     'Scale and crop' => 'Skaler og beskjær',
     'Scale to fit' => 'Skaler til å passe',
-    'Schema Name' => 'Skjemanavn',
     'Schema saved.' => 'Skjema lagret.',
     'Schemas' => 'Skjemaer',
     'Score' => 'Resultat',
