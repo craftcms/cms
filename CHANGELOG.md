@@ -4,6 +4,8 @@
 
 ### Added
 - Added the `setSchemaOnConnect` database connection setting. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- Added `craft\errors\InvalidHtmlTagException`.
+- Added `craft\helpers\Html::encodeInvalidTags()`.
 - Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
 
 ### Changed
@@ -14,6 +16,7 @@
 - The web-based installation wizard no longer shows a field for the database schema on Postgres. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - Dashboard widgets’ `data-colspan` attributes are now updated when their colspan changes. ([#10286](https://github.com/craftcms/cms/discussions/10286))
 - `craft\base\ApplicationTrait::getIsInstalled()` will now explicitly check if Craft is installed in the default schema on Postgres, when `true` is passed.
+- `craft\helpers\Html::parseTag()` now throws an `InvalidHtmlTagException` exception when an invalid tag is encountered. (Catching `InvalidArgumentException`s will still work.)
 - `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
 
 ### Fixed
@@ -25,6 +28,7 @@
 - Fixed an error that could occur if a section didn’t have any entry types. ([#10272](https://github.com/craftcms/cms/issues/10272))
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t escaping backslashes when modifying the value of an existing environment variable. ([#10274](https://github.com/craftcms/cms/issues/10274))
 - Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
+- Fixed a bug where the control panel layout could break if any field instructions/tips/warnings included an HTML tag that wasn’t closed properly. Such tags are now encoded so they appear as plain text. ([#10290](https://github.com/craftcms/cms/issues/10290))
 
 ### Security
 - Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
