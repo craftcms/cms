@@ -1204,7 +1204,6 @@ return [
     'Saving…' => 'Opslaan…',
     'Scale and crop' => 'Schalen en bijsnijden',
     'Scale to fit' => 'Passend maken',
-    'Schema Name' => 'Schema Naam',
     'Schema saved.' => 'Schema opgeslagen.',
     'Schemas' => 'Schema\'s',
     'Score' => 'Score',
