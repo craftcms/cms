@@ -29,6 +29,7 @@
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t escaping backslashes when modifying the value of an existing environment variable. ([#10274](https://github.com/craftcms/cms/issues/10274))
 - Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
 - Fixed a bug where the control panel layout could break if any field instructions/tips/warnings included an HTML tag that wasn’t closed properly. Such tags are now encoded so they appear as plain text. ([#10290](https://github.com/craftcms/cms/issues/10290))
+- Fixed a bug where disabled plugins could cause duplicate database queries.
 
 ### Security
 - Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
