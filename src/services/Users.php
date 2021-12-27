@@ -147,6 +147,12 @@ class Users extends Component
     const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
 
     /**
+     * @var array Cached user preferences.
+     * @see getUserPreferences()
+     */
+    private $_userPreferences = [];
+
+    /**
      * Returns a user by their ID.
      *
      * ```php
@@ -278,23 +284,27 @@ class Users extends Component
     /**
      * Returns a user’s preferences.
      *
-     * @param int|null $userId The user’s ID
+     * @param int $userId The user’s ID
      * @return array The user’s preferences
      */
-    public function getUserPreferences(int $userId = null): array
+    public function getUserPreferences(int $userId): array
     {
-        // TODO: Remove try/catch after next breakpoint
-        try {
-            $preferences = (new Query())
-                ->select(['preferences'])
-                ->from([Table::USERPREFERENCES])
-                ->where(['userId' => $userId])
-                ->scalar();
+        if (!isset($this->_userPreferences[$userId])) {
+            // TODO: Remove try/catch after next breakpoint
+            try {
+                $preferences = (new Query())
+                    ->select(['preferences'])
+                    ->from([Table::USERPREFERENCES])
+                    ->where(['userId' => $userId])
+                    ->scalar();
 
-            return $preferences ? Json::decode($preferences) : [];
-        } catch (DbException $e) {
-            return [];
+                $this->_userPreferences[$userId] = $preferences ? Json::decode($preferences) : [];
+            } catch (DbException $e) {
+                $this->_userPreferences[$userId] = [];
+            }
         }
+
+        return $this->_userPreferences[$userId];
     }
 
     /**
@@ -305,24 +315,27 @@ class Users extends Component
      */
     public function saveUserPreferences(User $user, array $preferences)
     {
-        $preferences = $user->mergePreferences($preferences);
+        // Merge in any other saved preferences
+        $preferences += $this->getUserPreferences($user->id);
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
         ], [
             'preferences' => Json::encode($preferences),
         ], [], false);
+
+        $this->_userPreferences[$user->id] = $preferences;
     }
 
     /**
      * Returns one of a user’s preferences by its key.
      *
-     * @param int|null $userId The user’s ID
+     * @param int $userId The user’s ID
      * @param string $key The preference’s key
      * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
-    public function getUserPreference(int $userId = null, string $key, $default = null)
+    public function getUserPreference(int $userId, string $key, $default = null)
     {
         $preferences = $this->getUserPreferences($userId);
         return $preferences[$key] ?? $default;

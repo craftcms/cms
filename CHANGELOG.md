@@ -18,6 +18,10 @@
 - `craft\base\ApplicationTrait::getIsInstalled()` will now explicitly check if Craft is installed in the default schema on Postgres, when `true` is passed.
 - `craft\helpers\Html::parseTag()` now throws an `InvalidHtmlTagException` exception when an invalid tag is encountered. (Catching `InvalidArgumentException`s will still work.)
 - `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
+- `craft\services\Users::getUserPreferences()` and `getUserPreference()` no longer accept `null` passed to the first argument.
+
+### Deprecated
+- Deprecated `craft\elements\User::mergePreferences()`.
 
 ### Fixed
 - Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
@@ -30,6 +34,7 @@
 - Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
 - Fixed a bug where the control panel layout could break if any field instructions/tips/warnings included an HTML tag that wasn’t closed properly. Such tags are now encoded so they appear as plain text. ([#10290](https://github.com/craftcms/cms/issues/10290))
 - Fixed a bug where disabled plugins could cause duplicate database queries.
+- Fixed a bug where multiple calls to `craft\services\Users::getUserPreferences()` could cause duplicate database queries.
 
 ### Security
 - Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
