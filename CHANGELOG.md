@@ -3,17 +3,25 @@
 ## Unreleased
 
 ### Added
+- Added the `setSchemaOnConnect` database connection setting. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- Added `craft\errors\InvalidHtmlTagException`.
+- Added `craft\helpers\Html::encodeInvalidTags()`.
 - Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
 
 ### Changed
 - A warning is now logged when a password-reset email could not be sent, if `preventUserEnumeration` is enabled.
-- The `install/check` and `install/craft` commands now explicitly check if Craft is installed in the default schema on Postgres.
+- The `install/check`, `install/craft`, and `setup/db-creds` commands now explicitly check if Craft is installed in the default schema on Postgres.
 - The `setup/db-creds` command now uses existing environment variable values for its default prompt values, if available.
-- The `setup/db-creds` command no longer prompts for the database schema on Postgres. Instead it will determine the appropriate schema to use based on `SHOW search_path`. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- The `setup/db-creds` command no longer prompts for the database schema on Postgres, unless `setSchemaOnConnect` is enabled. Instead it will determine the appropriate schema to use based on `SHOW search_path`. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - The web-based installation wizard no longer shows a field for the database schema on Postgres. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - Dashboard widgets’ `data-colspan` attributes are now updated when their colspan changes. ([#10286](https://github.com/craftcms/cms/discussions/10286))
 - `craft\base\ApplicationTrait::getIsInstalled()` will now explicitly check if Craft is installed in the default schema on Postgres, when `true` is passed.
+- `craft\helpers\Html::parseTag()` now throws an `InvalidHtmlTagException` exception when an invalid tag is encountered. (Catching `InvalidArgumentException`s will still work.)
 - `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
+- `craft\services\Users::getUserPreferences()` and `getUserPreference()` no longer accept `null` passed to the first argument.
+
+### Deprecated
+- Deprecated `craft\elements\User::mergePreferences()`.
 
 ### Fixed
 - Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
@@ -24,6 +32,9 @@
 - Fixed an error that could occur if a section didn’t have any entry types. ([#10272](https://github.com/craftcms/cms/issues/10272))
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t escaping backslashes when modifying the value of an existing environment variable. ([#10274](https://github.com/craftcms/cms/issues/10274))
 - Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
+- Fixed a bug where the control panel layout could break if any field instructions/tips/warnings included an HTML tag that wasn’t closed properly. Such tags are now encoded so they appear as plain text. ([#10290](https://github.com/craftcms/cms/issues/10290))
+- Fixed a bug where disabled plugins could cause duplicate database queries.
+- Fixed a bug where multiple calls to `craft\services\Users::getUserPreferences()` could cause duplicate database queries.
 
 ### Security
 - Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))

@@ -532,7 +532,7 @@ class Cp
         }
 
         $instructionsHtml = $instructions
-            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
+            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
                 'id' => $instructionsId,
                 'class' => ['instructions'],
             ])
@@ -675,7 +675,7 @@ class Cp
             Html::tag('span', "$label ", [
                 'class' => 'visually-hidden',
             ]) .
-            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($message)) .
+            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message))) .
             Html::endTag('p');
     }
 
