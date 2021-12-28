@@ -23,6 +23,11 @@ class IdConditionRule extends BaseNumberConditionRule implements ElementConditio
         return Craft::t('app', 'ID');
     }
 
+    public static function supportsProjectConfig(): bool
+    {
+        return false;
+    }
+
     /**
      * @inheritdoc
      */
