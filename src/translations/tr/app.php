@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Sütun tutamaçları “{format}” biçiminde olamaz.',
     'Community Support (Slack, Stack Exchange)' => 'Topluluk Desteği (Slack, Stack Exchange)',
     'Compatibility' => 'Uyumluluk',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Derlenmiş şablonlar',
     'Complete the Update' => 'Güncellemeyi Tamamla',
     'Completed job' => 'Tamamlanan iş',

@@ -685,11 +685,6 @@ class User extends Element implements IdentityInterface
     private ?array $_groups = null;
 
     /**
-     * @var array|null The user’s preferences
-     */
-    private ?array $_preferences = null;
-
-    /**
      * @inheritdoc
      */
     public function init(): void
@@ -1372,11 +1367,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferences(): array
     {
-        if (!isset($this->_preferences)) {
-            $this->_preferences = Craft::$app->getUsers()->getUserPreferences($this->id);
-        }
-
-        return $this->_preferences;
+        return Craft::$app->getUsers()->getUserPreferences($this->id);
     }
 
     /**
@@ -1436,12 +1427,11 @@ class User extends Element implements IdentityInterface
      *
      * @param array $preferences The new preferences
      * @return array The user’s new preferences.
+     * @deprecated in 3.7.27.
      */
     public function mergePreferences(array $preferences): array
     {
-        $this->_preferences = array_merge($this->getPreferences(), $preferences);
-
-        return $this->_preferences;
+        return $preferences + $this->getPreferences();
     }
 
     /**

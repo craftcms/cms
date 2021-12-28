@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'شناسه ستون نمی تواند در فرمت "{format}" باشد.',
     'Community Support (Slack, Stack Exchange)' => 'پشتیبانی توسط انجمن (Slack, Stack Exchange)',
     'Compatibility' => 'سازگاری',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'قالب های کامپایل شده',
     'Complete the Update' => 'به اتمام رساندن بروزرسانی ها',
     'Completed job' => 'کار کامل شد',

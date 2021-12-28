@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Les identifiants de colonnes ne peuvent être au format «{format}».',
     'Community Support (Slack, Stack Exchange)' => 'Aide de la communauté (Slack, Stack Exchange)',
     'Compatibility' => 'Compatibilité',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Modèles compilés',
     'Complete the Update' => 'Effectuer la mise à jour',
     'Completed job' => 'Tâche terminée',

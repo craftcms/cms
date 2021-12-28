@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Zeilenbeschriftung können nicht das Format “{format}” haben.',
     'Community Support (Slack, Stack Exchange)' => 'Community-Unterstützung (Slack, Stack Exchange)',
     'Compatibility' => 'Kompatibilität',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Kompilierte Templates',
     'Complete the Update' => 'Update fertigstellen',
     'Completed job' => 'Abgeschlossene Aufgabe',

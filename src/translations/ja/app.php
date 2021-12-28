@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => '列ハンドルは「{format}」の形式にはできません。',
     'Community Support (Slack, Stack Exchange)' => 'コミュニティサポート (Slack、Stack Exchange)',
     'Compatibility' => '互換性',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'コンパイル済のテンプレート',
     'Complete the Update' => 'アップデートを完了',
     'Completed job' => '完了したジョブ',
