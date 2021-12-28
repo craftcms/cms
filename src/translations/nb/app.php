@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Kolonneetiketter kan ikke være i format «{format}».',
     'Community Support (Slack, Stack Exchange)' => 'Fellesskapsstøtte (Slack, Stack Exchange)',
     'Compatibility' => 'Kompatibilitet',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Kompilerte maler',
     'Complete the Update' => 'Fullfør oppdateringen',
     'Completed job' => 'Jobb fullført',
