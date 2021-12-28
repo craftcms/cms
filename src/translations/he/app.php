@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'סימניות העמודות לא יכולות להיות בפורמט "{format}".',
     'Community Support (Slack, Stack Exchange)' => 'תמיכה קהילתית (Slack, Stack Exchange)',
     'Compatibility' => 'תאימות',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'תבניות מקומפלות',
     'Complete the Update' => 'השלם את העדכון',
     'Completed job' => 'עבודה שבוצעה',
