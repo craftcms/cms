@@ -1423,18 +1423,6 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Merges new user preferences with the existing ones, and returns the result.
-     *
-     * @param array $preferences The new preferences
-     * @return array The user’s new preferences.
-     * @deprecated in 3.7.27.
-     */
-    public function mergePreferences(array $preferences): array
-    {
-        return $preferences + $this->getPreferences();
-    }
-
-    /**
      * @inheritdoc
      */
     public function setEagerLoadedElements(string $handle, array $elements): void

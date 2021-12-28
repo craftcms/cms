@@ -465,6 +465,7 @@
 - Removed `craft\elements\Asset::getUri()`. `getPath()` can be used instead.
 - Removed `craft\elements\MatrixBlock::$ownerSiteId`. `$siteId` can be used instead.
 - Removed `craft\elements\User::getPhotoUrl()`. `getPhoto()->getUrl()` can be used instead.
+- Removed `craft\elements\User::mergePreferences()`.
 - Removed `craft\errors\FieldNotFoundException`.
 - Removed `craft\events\DefineComponentsEvent`.
 - Removed `craft\events\ExecuteGqlQueryEvent::$accessToken`. `$schemaId` can be used instead.
