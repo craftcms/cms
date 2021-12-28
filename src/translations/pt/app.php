@@ -277,6 +277,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'As pegas da coluna não podem estar no formato "{format}".',
     'Community Support (Slack, Stack Exchange)' => 'Apoio da Comunidade (Slack, Stack Exchange)',
     'Compatibility' => 'Compatibilidade',
+    'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Templates compilados',
     'Complete the Update' => 'Concluir a atualização',
     'Completed job' => 'Trabalhos concluídos',
