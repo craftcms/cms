@@ -10,7 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
@@ -372,7 +372,7 @@ class FieldLayout extends Model
     /**
      * Returns the layout elements that are available to the field layout, grouped by the type name and (optionally) group name.
      *
-     * @return FieldLayoutElementInterface[]
+     * @return FieldLayoutElement[]
      * @since 3.5.0
      */
     public function getAvailableUiElements(): array
@@ -400,7 +400,7 @@ class FieldLayout extends Model
             if (is_string($element) || is_array($element)) {
                 $element = Craft::createObject($element);
             }
-            if (!$element instanceof FieldLayoutElementInterface) {
+            if (!$element instanceof FieldLayoutElement) {
                 throw new InvalidConfigException('Invalid UI element config');
             }
         }

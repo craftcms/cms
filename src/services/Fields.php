@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\Connection;
@@ -1214,15 +1214,15 @@ class Fields extends Component
      * Creates a field layout element instance from its config.
      *
      * @param array $config
-     * @return FieldLayoutElementInterface
+     * @return FieldLayoutElement
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElementInterface]]
      * @since 3.5.0
      */
-    public function createLayoutElement(array $config): FieldLayoutElementInterface
+    public function createLayoutElement(array $config): FieldLayoutElement
     {
         $type = ArrayHelper::remove($config, 'type');
 
-        if (!$type || !is_subclass_of($type, FieldLayoutElementInterface::class)) {
+        if (!$type || !is_subclass_of($type, FieldLayoutElement::class)) {
             throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 

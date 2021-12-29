@@ -16,7 +16,7 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-abstract class FieldLayoutElement extends BaseObject implements FieldLayoutElementInterface
+abstract class FieldLayoutElement extends BaseObject
 {
     use ArrayableTrait {
         fields as baseFields;
@@ -40,7 +40,9 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the element can have a custom width.
+     *
+     * @return bool
      */
     public function hasCustomWidth(): bool
     {
@@ -48,12 +50,32 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     }
 
     /**
-     * @inheritdoc
+     * Returns the selector HTML that should be displayed within field layout designers.
+     *
+     * @return string
+     */
+    abstract public function selectorHtml(): string;
+
+    /**
+     * Returns the settings HTML for the layout element.
+     *
+     * @return string|null
      */
     public function settingsHtml(): ?string
     {
         return null;
     }
+
+    /**
+     * Returns the element’s form HTMl.
+     *
+     * Return `null` if the element should not be present within the form.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     */
+    abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
 
     /**
      * Returns the element container HTML attributes.

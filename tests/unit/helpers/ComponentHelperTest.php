@@ -11,7 +11,7 @@ use Closure;
 use Codeception\Test\Unit;
 use craft\base\ComponentInterface;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\errors\MissingComponentException;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fields\PlainText;
@@ -128,9 +128,9 @@ class ComponentHelperTest extends Unit
             [false, 'foo\\bar\\Baz', MissingComponentException::class],
             // fails because it's not a ComponentInterface
             [false, HorizontalRule::class, null, InvalidConfigException::class],
-            [false, HorizontalRule::class, FieldLayoutElementInterface::class, InvalidConfigException::class],
+            [false, HorizontalRule::class, FieldLayoutElement::class, InvalidConfigException::class],
             // fails because it's the wrong interface
-            [false, PlainText::class, FieldLayoutElementInterface::class, InvalidConfigException::class],
+            [false, PlainText::class, FieldLayoutElement::class, InvalidConfigException::class],
         ];
     }
 

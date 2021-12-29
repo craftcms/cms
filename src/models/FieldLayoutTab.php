@@ -10,7 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\base\Model;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
@@ -84,7 +84,7 @@ class FieldLayoutTab extends Model
     public ?string $name = null;
 
     /**
-     * @var FieldLayoutElementInterface[]|null The tab’s layout elements
+     * @var FieldLayoutElement[]|null The tab’s layout elements
      * @since 3.5.0
      */
     public ?array $elements = null;
