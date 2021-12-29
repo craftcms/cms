@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use yii\base\ArrayableTrait;
 use yii\base\BaseObject;
@@ -30,11 +31,29 @@ abstract class FieldLayoutElement extends BaseObject
     public int $width = 100;
 
     /**
+     * @var string The UUID of the layout element.
+     * @since 4.0.0
+     */
+    public string $uid;
+
+    /**
      * @var FieldLayout The field layout tab this element belongs to
      * @see getLayout()
      * @see setLayout()
      */
     private FieldLayout $_layout;
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+    }
 
     /**
      * Returns the layout this element belongs to.

@@ -1256,9 +1256,9 @@ class Fields extends Component
                     foreach ($fieldIds as $fieldId) {
                         $field = $this->getFieldById($fieldId);
                         if ($field !== null) {
-                            $key = StringHelper::randomString(10);
-                            $elementPlacements[$tabName][] = $key;
-                            $elementConfigs[$key] = Json::encode([
+                            $uid = StringHelper::UUID();
+                            $elementPlacements[$tabName][] = $uid;
+                            $elementConfigs[$uid] = Json::encode([
                                 'type' => CustomField::class,
                                 'fieldUid' => $field->uid,
                                 'required' => isset($legacyRequiredFields[$fieldId]),
@@ -1286,11 +1286,11 @@ class Fields extends Component
         $fields = [];
         $tabSortOrder = 0;
 
-        foreach ($elementPlacements as $tabName => $elementKeys) {
+        foreach ($elementPlacements as $tabName => $uids) {
             $layoutElements = [];
 
-            foreach ($elementKeys as $i => $elementKey) {
-                $elementConfig = Json::decode($elementConfigs[$elementKey]);
+            foreach ($uids as $i => $uid) {
+                $elementConfig = Json::decode($elementConfigs[$uid]);
 
                 try {
                     $layoutElement = $this->createLayoutElement($elementConfig);

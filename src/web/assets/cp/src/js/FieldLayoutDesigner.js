@@ -297,7 +297,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         customizableTabs: true,
         customizableUi: true,
         elementPlacementInputName: 'elementPlacements[__TAB_NAME__][]',
-        elementConfigInputName: 'elementConfigs[__ELEMENT_KEY__]',
+        elementConfigInputName: 'elementConfigs[__ELEMENT_UID__]',
     }
 });
 
@@ -309,20 +309,22 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     $settingsContainer: null,
     $editBtn: null,
 
+    uid: null,
     config: null,
     isField: false,
     attribute: null,
     requirable: false,
-    key: null,
     hasCustomWidth: false,
     hasSettings: false,
-    hud: null,
+    settingsNamespace: null,
+    slideout: null,
 
     init: function(designer, $container) {
         this.designer = designer;
         this.$container = $container;
         this.$container.data('fld-element', this);
 
+        this.uid = this.$container.data('uid');
         this.config = this.$container.data('config');
         if (!$.isPlainObject(this.config)) {
             this.config = {};
@@ -331,21 +333,18 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 
         this.isField = this.$container.hasClass('fld-field');
         this.requirable = this.isField && Garnish.hasAttr(this.$container, 'data-requirable');
-        this.key = Craft.randomString(10);
 
         if (this.isField) {
             this.attribute = this.$container.data('attribute');
         }
 
+        this.settingsNamespace = this.$container.data('settings-namespace');
         let settingsHtml = this.$container.data('settings-html');
         let isRequired = this.requirable && this.$container.hasClass('fld-required');
         this.hasCustomWidth = this.designer.settings.customizableUi && Garnish.hasAttr(this.$container, 'data-has-custom-width');
         this.hasSettings = settingsHtml || this.requirable;
 
         if (this.hasSettings) {
-            // swap the __ELEMENT_KEY__ placeholder for the actual element key
-            settingsHtml = settingsHtml ? settingsHtml.replace(/\b__ELEMENT_KEY__\b/g, this.key) : '';
-
             // create the setting container
             this.$settingsContainer = $('<div/>', {
                 class: 'hidden',
@@ -360,11 +359,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             });
 
             this.$editBtn.on('click', () => {
-                if (!this.hud) {
-                    this.createSettingsHud(settingsHtml, isRequired);
+                if (!this.slideout) {
+                    this.createSettings(settingsHtml, isRequired);
                 } else {
-                    this.hud.show();
-                    this.hud.updateSizeAndPosition(true);
+                    this.slideout.open();
                 }
             });
         }
@@ -382,13 +380,13 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             class: 'placement-input',
             type: 'hidden',
             name: '',
-            value: this.key,
+            value: this.uid,
         }).appendTo(this.$container);
         this.updatePlacementInput();
 
         this.$configInput = $('<input/>', {
             type: 'hidden',
-            name: this.designer.settings.elementConfigInputName.replace(/\b__ELEMENT_KEY__\b/g, this.key),
+            name: this.designer.settings.elementConfigInputName.replace(/\b__ELEMENT_UID__\b/g, this.uid),
         }).appendTo(this.$container);
         this.updateConfigInput();
 
@@ -413,71 +411,84 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         }
     },
 
-    createSettingsHud: function(settingsHtml, isRequired) {
-        let bodyHtml = `
-<div class="fld-element-settings">
-  ${settingsHtml}
-  <div class="hud-footer">
-    <div class="buttons right">
-      <button class="btn submit" type="submit">${Craft.t('app', 'Apply')}</button>
-      <div class="spinner hidden"></div>
-    </div>
-  </div>
-</div>
-`;
-        this.hud = new Garnish.HUD(this.$container, bodyHtml, {
-            onShow: (e) => {
-                // Hold off a sec until it's positioned...
-                Garnish.requestAnimationFrame(() => {
-                    // Focus on the first text input
-                    this.hud.$main.find('.text:first').trigger('focus');
-                });
+    createSettings: function(settingsHtml, isRequired) {
+        const $body = $('<div/>', {class: 'fld-element-settings-body'});
+        const $fieldsContainer = $('<div/>', {class: 'fields', html: settingsHtml}).appendTo($body);
+        const $footer = $('<div/>', {class: 'fld-element-settings-footer'});
+        $('<div/>', {class: 'flex-grow'}).appendTo($footer);
+        $('<button/>', {
+            type: 'submit',
+            class: 'btn submit secondary',
+            text: Craft.t('app', 'Apply'),
+        }).appendTo($footer);
+        $('<div/>', {class: 'spinner hidden'}).appendTo($footer);
+        const $contents = $body.add($footer);
+
+        this.slideout = new Craft.Slideout($contents, {
+            containerElement: 'form',
+            containerAttributes: {
+                action: '',
+                method: 'post',
+                novalidate: '',
+                class: 'fld-element-settings',
             },
-            onSubmit: () => {
-                this.applyHudSettings();
-            }
+        });
+        this.slideout.on('open', () => {
+            // Hold off a sec until it's positioned...
+            Garnish.requestAnimationFrame(() => {
+                // Focus on the first text input
+                this.slideout.$container.find('.text:first').trigger('focus');
+            });
+        });
+        this.slideout.$container.on('submit', ev => {
+            ev.preventDefault();
+            this.applySettings();
         });
 
-        Craft.initUiElements(this.hud.$main);
-
-        if (this.requirable) {
-            let $lightswitchField = Craft.ui.createLightswitchField({
-                label: Craft.t('app', 'Required'),
-                id: `${this.key}-required`,
-                name: 'required',
-                on: isRequired,
-            }).prependTo(this.hud.$main);
+        let settingsJs = this.$container.data('settings-js');
+        if (settingsJs) {
+            console.log(settingsJs);
+            eval(settingsJs);
         }
 
-        this.trigger('createSettingsHud');
+        Craft.initUiElements(this.slideout.$container);
+
+        if (this.requirable) {
+            Craft.ui.createLightswitchField({
+                label: Craft.t('app', 'Required'),
+                name: `${this.settingsNamespace}[required]`,
+                on: isRequired,
+            }).prependTo($fieldsContainer);
+        }
+
+        this.trigger('createSettings');
     },
 
-    applyHudSettings: function() {
-        this.hud.$body.serializeArray().forEach(({name, value}) => {
-            this.config[name] = value;
-        });
-        this.updateConfigInput();
-
+    applySettings: function() {
         // update the UI
-        let $spinner = this.hud.$body.find('.spinner').removeClass('hidden');
+        let $spinner = this.slideout.$container.find('.spinner').removeClass('hidden');
 
-        Craft.sendActionRequest('POST', 'fields/render-layout-element-selector', {
+        Craft.sendActionRequest('POST', 'fields/apply-layout-element-settings', {
             data: {
                 config: this.config,
-            }
+                settingsNamespace: this.settingsNamespace,
+                settings: this.slideout.$container.serialize(),
+            },
         }).then(response => {
             $spinner.addClass('hidden');
+            this.config = response.data.config;
+            this.updateConfigInput();
             this.$editBtn.detach();
-            this.$container.html($(response.data.html).html());
+            this.$container.html($(response.data.selectorHtml).html());
             this.initUi();
             this.updateRequiredClass();
-            this.hud.hide();
+            this.slideout.close();
         }).catch(e => {
             // oh well, not worth fussing over
             console.error(e);
             $spinner.addClass('hidden');
             this.updateRequiredClass();
-            this.hud.hide();
+            this.slideout.close();
         });
     },
 

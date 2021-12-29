@@ -379,19 +379,24 @@ JS;
     // -------------------------------------------------------------------------
 
     /**
-     * Renders a field layout element’s selector HTML.
+     * Applies a field layout element’s settings.
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @since 3.5.0
+     * @since 4.0.0
      */
-    public function actionRenderLayoutElementSelector(): Response
+    public function actionApplyLayoutElementSettings(): Response
     {
         $config = $this->request->getRequiredBodyParam('config');
+        $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
+        $settingsStr = $this->request->getRequiredBodyParam('settings');
+        parse_str($settingsStr, $settings);
+        $config = array_merge($config, $settings[$settingsNamespace]);
         $element = Craft::$app->getFields()->createLayoutElement($config);
 
         return $this->asJson([
-            'html' => $element->selectorHtml(),
+            'config' => ['type' => get_class($element)] + $element->toArray(),
+            'selectorHtml' => $element->selectorHtml(),
         ]);
     }
 }

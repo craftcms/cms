@@ -48,7 +48,14 @@
             },
         }|merge(attr ?? {}, recursive=true) %}
     {% endif %}
-    {% set settingsHtml = element.settingsHtml() %}
+    {% do view.startJsBuffer() %}
+    {% set settingsNamespace = "element-#{element.uid}" %}
+    {% set settingsHtml %}
+        {%- namespace settingsNamespace -%}
+            {{- element.settingsHtml()|raw -}}
+        {%- endnamespace -%}
+    {% endset %}
+    {% set settingsJs = view.clearJsBuffer(false) %}
     {{ element.selectorHtml()|attr({
         class: [
             'fld-element',
@@ -56,9 +63,12 @@
         ]|filter,
         data: {
             type: className(element),
+            uid: element.uid,
             config: element.toArray(),
             'has-custom-width': element.hasCustomWidth(),
-            'settings-html': (settingsHtml ? settingsHtml|namespaceAttributes("element#{random()}") : null) ?: false,
+            'settings-namespace': settingsNamespace,
+            'settings-html': settingsHtml ?: false,
+            'settings-js': settingsJs ?: false,
         },
     }|merge(attr ?? {}, recursive=true)) }}
 {% endmacro %}
@@ -143,7 +153,7 @@
     customizableTabs: customizableTabs,
     customizableUi: customizableUi,
     elementPlacementInputName: 'elementPlacements[__TAB_NAME__][]'|namespaceInputName,
-    elementConfigInputName: 'elementConfigs[__ELEMENT_KEY__]'|namespaceInputName,
+    elementConfigInputName: 'elementConfigs[__ELEMENT_UID__]'|namespaceInputName,
 } %}
 
 {% js %}
