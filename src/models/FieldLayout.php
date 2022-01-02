@@ -22,6 +22,7 @@ use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
+use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -170,9 +171,9 @@ class FieldLayout extends Model
     public ?string $type = null;
 
     /**
-     * @var string|null UID
+     * @var string UID
      */
-    public ?string $uid = null;
+    public string $uid;
 
     /**
      * @var string[]|null Reserved custom field handles
@@ -210,6 +211,18 @@ class FieldLayout extends Model
      * @see setFields()
      */
     private ?array $_customFields = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+    }
 
     /**
      * @inheritdoc

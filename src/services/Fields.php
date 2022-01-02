@@ -1403,7 +1403,7 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        if (!$layout->id && $layout->uid) {
+        if (!$layout->id) {
             // Maybe the ID just wasn't known
             $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $layout->uid);
         }
@@ -1454,17 +1454,10 @@ class Fields extends Component
 
         // Save the layout
         $layoutRecord->type = $layout->type;
-
-        // Use a pre-determined UID if available.
-        if ($layout->uid) {
-            $layoutRecord->uid = $layout->uid;
-        }
+        $layoutRecord->uid = $layout->uid;
 
         if (!$isNewLayout) {
             $layoutRecord->id = $layout->id;
-            if (!$layout->uid) {
-                $layoutRecord->uid = Db::uidById(Table::FIELDLAYOUTS, $layout->id);
-            }
         }
 
         if ($layoutRecord->dateDeleted) {
@@ -1486,6 +1479,7 @@ class Fields extends Component
             } else {
                 $tabRecord = new FieldLayoutTabRecord();
                 $tabRecord->layoutId = $layout->id;
+                $tabRecord->uid = $tab->uid;
             }
 
             $tabRecord->sortOrder = $tab->sortOrder;
@@ -1497,7 +1491,6 @@ class Fields extends Component
             $tabRecord->elements = $tab->getElementConfigs();
             $tabRecord->save(false);
             $tab->id = $tabRecord->id;
-            $tab->uid = $tabRecord->uid;
 
             foreach ($tab->getElements() as $i => $layoutElement) {
                 if ($layoutElement instanceof CustomField) {

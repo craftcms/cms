@@ -10,11 +10,8 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
-use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
@@ -290,9 +287,6 @@ class GlobalSet extends Element
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
-            }
             $config['fieldLayouts'] = [
                 $fieldLayout->uid => $fieldLayoutConfig,
             ];
