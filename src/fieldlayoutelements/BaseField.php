@@ -424,7 +424,7 @@ abstract class BaseField extends FieldLayoutElement
      * @return string|null
      * @since 3.7.24
      */
-    protected function instructions(ElementInterface $element = null, bool $static = false): ?string
+    public function instructions(ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static);
     }
