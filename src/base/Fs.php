@@ -16,6 +16,8 @@ use craft\validators\HandleValidator;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ *
+ * @property-read null|string $rootUrl
  */
 abstract class Fs extends SavableComponent implements FsInterface
 {
@@ -34,7 +36,9 @@ abstract class Fs extends SavableComponent implements FsInterface
     public const VISIBILITY_PUBLIC = 'public';
 
     /**
-     * @inheritdoc
+     * Return the root URL for a filesystem or `null` if the filesystem does not have any.
+     *
+     * @return string|null
      */
     public function getRootUrl(): ?string
     {
