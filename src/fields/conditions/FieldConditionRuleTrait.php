@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\InvalidFieldException;
 use yii\db\QueryInterface;
 
 /**
@@ -85,7 +86,13 @@ trait FieldConditionRuleTrait
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchFieldValue($element->getFieldValue($this->_field->handle));
+        try {
+            $value = $element->getFieldValue($this->_field->handle);
+        } catch (InvalidFieldException $e) {
+            return false;
+        }
+
+        return $this->matchFieldValue($value);
     }
 
     /**
