@@ -1993,7 +1993,7 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasContent() && Craft::$app->getIsInstalled() && $fieldLayout = $this->getFieldLayout()) {
             $fieldsWithColumns = [];
 
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getVisibleFields($this) as $field) {
                 $attribute = 'field:' . $field->handle;
                 $isEmpty = [$this, 'isFieldEmpty:' . $field->handle];
 
@@ -3497,7 +3497,7 @@ abstract class Element extends Component implements ElementInterface
         $this->setFieldParamNamespace($paramNamespace);
         $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
 
-        foreach ($this->fieldLayoutFields() as $field) {
+        foreach ($this->fieldLayoutFields(true) as $field) {
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
@@ -4297,14 +4297,15 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns each of this element’s fields.
      *
+     * @param bool $visibleOnly Whether to only return fields that are visible for this element
      * @return FieldInterface[] This element’s fields
      */
-    protected function fieldLayoutFields(): array
+    protected function fieldLayoutFields(bool $visibleOnly = false): array
     {
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayout) {
-            return $fieldLayout->getFields();
+            return $visibleOnly ? $fieldLayout->getVisibleFields($this) : $fieldLayout->getFields();
         }
 
         return [];

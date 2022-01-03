@@ -1048,8 +1048,6 @@ class Cp
         $jsSettings = Json::encode([
             'customizableTabs' => $config['customizableTabs'],
             'customizableUi' => $config['customizableUi'],
-            'elementPlacementInputName' => $view->namespaceInputName('elementPlacements[__TAB_NAME__][]'),
-            'elementConfigInputName' => $view->namespaceInputName('elementConfigs[__ELEMENT_UID__]'),
         ]);
         $namespacedId = $view->namespaceInputId($config['id']);
 
@@ -1059,14 +1057,40 @@ JS;
         $view->registerJs($js);
 
         $availableCustomFields = $fieldLayout->getAvailableCustomFields();
+        $availableNativeFields = $fieldLayout->getAvailableNativeFields();
+        $availableUiElements = $fieldLayout->getAvailableUiElements();
+
+        // Make sure everything has the field layout set properly
+        foreach ($availableCustomFields as $groupFields) {
+            self::_setLayoutOnElements($groupFields, $fieldLayout);
+        }
+        self::_setLayoutOnElements($availableNativeFields, $fieldLayout);
+        self::_setLayoutOnElements($availableUiElements, $fieldLayout);
+
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+        $fieldLayoutConfig['uid'] = $fieldLayout->uid;
+        if ($fieldLayout->id) {
+            $fieldLayoutConfig['id'] = $fieldLayout->id;
+        }
+
+        $newTabSettingsData = self::_fldTabSettingsData(new FieldLayoutTab([
+            'uid' => 'TAB_UID',
+            'name' => 'TAB_NAME',
+            'layout' => $fieldLayout,
+        ]));
 
         return
-            ($fieldLayout->id
-                ? Html::hiddenInput('fieldLayoutId', $fieldLayout->id)
-                : '') .
             Html::beginTag('div', [
                 'id' => $config['id'],
                 'class' => 'layoutdesigner',
+                'data' => [
+                    'new-tab-settings-namespace' => $newTabSettingsData['settings-namespace'],
+                    'new-tab-settings-html' => $newTabSettingsData['settings-html'],
+                    'new-tab-settings-js' => $newTabSettingsData['settings-js'],
+                ],
+            ]) .
+            Html::hiddenInput('fieldLayout', Json::encode($fieldLayoutConfig), [
+                'data' => ['config-input' => true],
             ]) .
             Html::beginTag('div', ['class' => 'fld-workspace']) .
             Html::beginTag('div', ['class' => 'fld-tabs']) .
@@ -1118,16 +1142,27 @@ JS;
                 'aria' => ['label' => Craft::t('app', 'Clear')],
             ]) .
             Html::endTag('div') . // .texticon
-            self::_fldFieldSelectorsHtml(Craft::t('app', 'Native Fields'), $fieldLayout->getAvailableNativeFields(), $fieldLayout) .
+            self::_fldFieldSelectorsHtml(Craft::t('app', 'Native Fields'), $availableNativeFields, $fieldLayout) .
             implode('', array_map(fn(string $groupName) => self::_fldFieldSelectorsHtml($groupName, $availableCustomFields[$groupName], $fieldLayout), array_keys($availableCustomFields))) .
             Html::endTag('div') . // .fld-field-library
             ($config['customizableUi']
                 ? Html::beginTag('div', ['class' => ['fld-ui-library', 'hidden']]) .
-                implode('', array_map(fn(FieldLayoutElement $element) => self::_fldElementSelectorHtml($element, true), $fieldLayout->getAvailableUiElements())) .
+                implode('', array_map(fn(FieldLayoutElement $element) => self::_fldElementSelectorHtml($element, true), $availableUiElements)) .
                 Html::endTag('div') // .fld-ui-library
                 : '') .
             Html::endTag('div') . // .fld-sidebar
             Html::endTag('div'); // .layoutdesigner
+    }
+
+    /**
+     * @param FieldLayoutElement[] $elements
+     * @param FieldLayout $fieldLayout
+     */
+    private static function _setLayoutOnElements(array $elements, FieldLayout $fieldLayout): void
+    {
+        foreach ($elements as $element) {
+            $element->setLayout($fieldLayout);
+        }
     }
 
     /**
@@ -1138,7 +1173,12 @@ JS;
     private static function _fldTabHtml(FieldLayoutTab $tab, bool $customizable): string
     {
         return
-            Html::beginTag('div', ['class' => 'fld-tab']) .
+            Html::beginTag('div', [
+                'class' => 'fld-tab',
+                'data' => array_merge([
+                    'uid' => $tab->uid,
+                ], self::_fldTabSettingsData($tab)),
+            ]) .
             Html::beginTag('div', ['class' => 'tabs']) .
             Html::beginTag('div', [
                 'class' => array_filter([
@@ -1165,6 +1205,25 @@ JS;
     }
 
     /**
+     * @param FieldLayoutTab $tab
+     * @return array
+     */
+    private static function _fldTabSettingsData(FieldLayoutTab $tab): array
+    {
+        $namespace = "tab-$tab->uid";
+        $view = Craft::$app->getView();
+        $view->startJsBuffer();
+        $settingsHtml = $view->namespaceInputs(fn() => $tab->getSettingsHtml(), $namespace);
+        $settingsJs = $view->clearJsBuffer(false);
+
+        return [
+            'settings-namespace' => $namespace,
+            'settings-html' => $settingsHtml,
+            'settings-js' => $settingsJs,
+        ];
+    }
+
+    /**
      * @param FieldLayoutElement $element
      * @param bool $forLibrary
      * @param array $attr
@@ -1181,10 +1240,10 @@ JS;
             ]);
         }
 
-        $settingsNamespace = "element-$element->uid";
+        $settingsNamespace = 'element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid);
         $view = Craft::$app->getView();
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs(fn() => (string)$element->settingsHtml(), $settingsNamespace);
+        $settingsHtml = $view->namespaceInputs(fn() => $element->getSettingsHtml(), $settingsNamespace);
         $settingsJs = $view->clearJsBuffer(false);
 
         $attr = ArrayHelper::merge($attr, [
@@ -1193,9 +1252,8 @@ JS;
                 $forLibrary ? 'unused' : null,
             ]),
             'data' => [
-                'type' => get_class($element),
-                'uid' => $element->uid,
-                'config' => $element->toArray(),
+                'uid' => !$forLibrary ? $element->uid : false,
+                'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
                 'has-custom-width' => $element->hasCustomWidth(),
                 'settings-namespace' => $settingsNamespace,
                 'settings-html' => $settingsHtml ?: false,

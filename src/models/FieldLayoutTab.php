@@ -10,11 +10,12 @@ namespace craft\models;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
-use craft\base\Model;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
@@ -28,7 +29,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class FieldLayoutTab extends Model
+class FieldLayoutTab extends FieldLayoutComponent
 {
     /**
      * Creates a new field layout tab from the given config.
@@ -90,11 +91,6 @@ class FieldLayoutTab extends Model
     public ?int $sortOrder = null;
 
     /**
-     * @var string|null UID
-     */
-    public ?string $uid = null;
-
-    /**
      * @var FieldLayout
      * @see getLayout()
      * @see setLayout()
@@ -135,7 +131,7 @@ class FieldLayoutTab extends Model
     {
         parent::init();
 
-        if (!isset($this->_elements)) {
+        if (!isset($this->_elements) && isset($this->_layout)) {
             $this->setElements(array_map(function(FieldInterface $field) {
                 return Craft::createObject([
                     'class' => CustomField::class,
@@ -143,6 +139,20 @@ class FieldLayoutTab extends Model
                 ], [$field]);
             }, $this->getFields()));
         }
+
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['sortOrder']);
+        return $fields;
     }
 
     /**
@@ -158,6 +168,19 @@ class FieldLayoutTab extends Model
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): ?string
+    {
+        return Cp::textFieldHtml([
+            'label' => Craft::t('app', 'Name'),
+            'name' => 'name',
+            'value' => $this->name,
+            'required' => true,
+        ]);
+    }
+
+    /**
      * Returns the field layout config for this field layout tab.
      *
      * @return array|null
@@ -169,11 +192,9 @@ class FieldLayoutTab extends Model
             return null;
         }
 
-        return [
-            'name' => $this->name,
-            'sortOrder' => (int)$this->sortOrder,
-            'elements' => $this->getElementConfigs(),
-        ];
+        $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
+        $config['elements'] = $this->getElementConfigs();
+        return $config;
     }
 
     /**

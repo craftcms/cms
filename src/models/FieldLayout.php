@@ -22,6 +22,7 @@ use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -328,11 +329,17 @@ class FieldLayout extends Model
     public function setTabs(array $tabs): void
     {
         $this->_tabs = [];
+        $index = 0;
+
         foreach ($tabs as $tab) {
             if (is_array($tab)) {
+                // Set the layout before anything else
+                $tab = ['layout' => $this] + $tab;
                 $tab = new FieldLayoutTab($tab);
+            } else {
+                $tab->setLayout($this);
             }
-            $tab->setLayout($this);
+            $tab->sortOrder = ++$index;
             $this->_tabs[] = $tab;
         }
     }
@@ -503,6 +510,32 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns the custom fields included in the layout, which are configured to be shown for the given element
+     *
+     * @param ElementInterface $element
+     * @return FieldInterface[]
+     * @since 4.0.0
+     */
+    public function getVisibleFields(ElementInterface $element): array
+    {
+        $fields = [];
+
+        foreach ($this->getTabs() as $tab) {
+            if ($tab->showInForm($element)) {
+                foreach ($tab->getElements() as $layoutElement) {
+                    if ($layoutElement instanceof CustomField && $layoutElement->showInForm($element)) {
+                        $field = $layoutElement->getField();
+                        $field->required = $layoutElement->required;
+                        $fields[] = $field;
+                    }
+                }
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
      * Returns a custom field by its handle.
      *
      * @param string $handle The field handle.
@@ -537,6 +570,7 @@ class FieldLayout extends Model
      * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
      * - `namespace` – Namespace that should be applied to the tab contents
      * - `registerDeltas` – Whether delta name registration should be enabled/disabled for the form (by default its state will be left alone)
+     * - `visibleElements` – Lists of already-visible layout elements from [[FieldLayoutForm::getVisibleElements()]]
      *
      * @param ElementInterface|null $element The element the form is being rendered for
      * @param bool $static Whether the form should be static (non-interactive)
@@ -561,6 +595,9 @@ class FieldLayout extends Model
             $view->setIsDeltaRegistrationActive($registerDeltas);
         }
 
+        // Any already-included layout elements?
+        $visibleElements = ArrayHelper::remove($config, 'visibleElements') ?? [];
+
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
 
@@ -577,25 +614,43 @@ class FieldLayout extends Model
         }
 
         foreach ($tabs as $tab) {
-            $tabHtml = [];
+            $elementHtml = [];
+            $tabHtmlId = $tab->getHtmlId();
+            $showTab = $tab->showInForm($element);
+            $hasVisibleFields = false;
 
             foreach ($tab->getElements() as $layoutElement) {
-                $elementHtml = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
-                    return (string)$layoutElement->formHtml($element, $static);
-                }, $namespace);
-                if ($elementHtml !== '') {
-                    $tabHtml[] = $elementHtml;
+                if ($showTab && $layoutElement->showInForm($element)) {
+                    // If it was already included and we just need the missing elements, only keep track that it’s still included
+                    if (isset($visibleElements[$tabHtmlId]) && in_array($layoutElement->uid, $visibleElements[$tabHtmlId])) {
+                        $elementHtml[$layoutElement->uid] = true;
+                        $hasVisibleFields = true;
+                    } else {
+                        $html = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
+                            return $layoutElement->formHtml($element, $static);
+                        }, $namespace);
+                        if ($html) {
+                            $elementHtml[$layoutElement->uid] = Html::modifyTagAttributes($html, [
+                                'data' => [
+                                    'layout-element' => $layoutElement->uid,
+                                ],
+                            ]);
+                            $hasVisibleFields = true;
+                        } else {
+                            $elementHtml[$layoutElement->uid] = false;
+                        }
+                    }
+                } else {
+                    $elementHtml[$layoutElement->uid] = false;
                 }
             }
 
-            if (!empty($tabHtml)) {
-                $form->tabs[] = new FieldLayoutFormTab([
-                    'name' => Craft::t('site', $tab->name),
-                    'id' => $tab->getHtmlId(),
-                    'hasErrors' => $element && $tab->elementHasErrors($element),
-                    'content' => implode("\n", $tabHtml),
-                ]);
-            }
+            $form->tabs[] = new FieldLayoutFormTab([
+                'layoutTab' => $tab,
+                'hasErrors' => $element && $tab->elementHasErrors($element),
+                'elementHtml' => $elementHtml,
+                'visible' => $hasVisibleFields,
+            ]);
         }
 
         if ($changeDeltaRegistration) {
@@ -604,5 +659,34 @@ class FieldLayout extends Model
         }
 
         return $form;
+    }
+
+    /**
+     * Returns the form HTML for any layout elements that aren’t currently shown in a form but should be,
+     * as well as an indication of whether already-visible layout elements should or shouldn’t continue to
+     * be shown.
+     *
+     * The `$config` array can contain the following keys:
+     *
+     * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
+     * - `visibleElements` – Lists of already-visible layout elements from [[FieldLayoutForm::getVisibleElements()]]
+     * - `namespace` – Namespace that should be applied to the tab contents
+     *
+     * @param ElementInterface $element The element the form is being rendered for
+     * @param array $config The [[FieldLayoutForm]] config
+     * @return array
+     * @since 4.0.0
+     */
+    public function renderMissingElements(ElementInterface $element, array $visibleElements, array $config = []): array
+    {
+        $config['registerDeltas'] = false;
+        $config['visibleElements'] = $visibleElements;
+        $form = $this->createForm($element, false, $config);
+        $tabHtmlIds = array_map(fn(FieldLayoutFormTab $tab) => $tab->getId(), $form->tabs);
+        $tabInfo = array_map(fn(FieldLayoutFormTab $tab) => [
+            'visible' => $tab->visible,
+            'elementHtml' => $tab->elementHtml,
+        ], $form->tabs);
+        return array_combine($tabHtmlIds, $tabInfo);
     }
 }

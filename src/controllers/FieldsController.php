@@ -15,6 +15,7 @@ use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
+use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -379,6 +380,22 @@ JS;
     // -------------------------------------------------------------------------
 
     /**
+     * Applies a field layout tab’s settings.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 4.0.0
+     */
+    public function actionApplyLayoutTabSettings(): Response
+    {
+        $tab = new FieldLayoutTab($this->_fldComponentConfig());
+
+        return $this->asJson([
+            'config' => $tab->toArray(),
+        ]);
+    }
+
+    /**
      * Applies a field layout element’s settings.
      *
      * @return Response
@@ -387,16 +404,25 @@ JS;
      */
     public function actionApplyLayoutElementSettings(): Response
     {
-        $config = $this->request->getRequiredBodyParam('config');
-        $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
-        $settingsStr = $this->request->getRequiredBodyParam('settings');
-        parse_str($settingsStr, $settings);
-        $config = array_merge($config, $settings[$settingsNamespace]);
-        $element = Craft::$app->getFields()->createLayoutElement($config);
+        $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
 
         return $this->asJson([
             'config' => ['type' => get_class($element)] + $element->toArray(),
             'selectorHtml' => $element->selectorHtml(),
         ]);
+    }
+
+    /**
+     * Returns the posted settings.
+     *
+     * @return array
+     */
+    private function _fldComponentConfig(): array
+    {
+        $config = $this->request->getRequiredBodyParam('config');
+        $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
+        $settingsStr = $this->request->getRequiredBodyParam('settings');
+        parse_str($settingsStr, $settings);
+        return array_merge($config, $settings[$settingsNamespace]);
     }
 }
