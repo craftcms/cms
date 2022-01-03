@@ -200,6 +200,8 @@ JS;
             'More',
             'More…',
             'Move down',
+            'Move to the left',
+            'Move to the right',
             'Move up',
             'Move',
             'Name',
