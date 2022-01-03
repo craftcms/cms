@@ -23,6 +23,14 @@ class HorizontalRule extends FieldLayoutElement
     /**
      * @inheritdoc
      */
+    protected function conditional(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function selectorHtml(): string
     {
         $label = Craft::t('app', 'Horizontal Rule');

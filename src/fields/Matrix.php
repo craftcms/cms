@@ -314,8 +314,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                     $fieldLayoutTab->sortOrder = 1;
                     $fieldLayout->setTabs([$fieldLayoutTab]);
                 }
-                $fieldLayoutTab->elements = [];
+
                 $fields = [];
+                $layoutElements = [];
 
                 if (!empty($config['fields'])) {
                     foreach ($config['fields'] as $fieldId => $fieldConfig) {
@@ -339,7 +340,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                             'settings' => $fieldConfig['typesettings'],
                         ]);
 
-                        $fieldLayoutTab->elements[] = Craft::createObject([
+                        $layoutElements[] = Craft::createObject([
                             'class' => CustomField::class,
                             'required' => (bool)$fieldConfig['required'],
                             'width' => (int)($fieldConfig['width'] ?? 0) ?: 100,
@@ -348,6 +349,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 }
 
                 $blockType->setFields($fields);
+                $fieldLayoutTab->setElements($layoutElements);
                 $this->_blockTypes[] = $blockType;
             }
         }
@@ -436,7 +438,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
             $tab = $fieldLayout->getTabs()[0];
 
-            foreach ($tab->elements as $layoutElement) {
+            foreach ($tab->getElements() as $layoutElement) {
                 if ($layoutElement instanceof CustomField) {
                     $field = $layoutElement->getField();
 
@@ -1145,7 +1147,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $fieldLayout = $blockType->getFieldLayout();
             $fieldLayoutTab = $fieldLayout->getTabs()[0] ?? new FieldLayoutTab();
 
-            foreach ($fieldLayoutTab->elements as $layoutElement) {
+            foreach ($fieldLayoutTab->getElements() as $layoutElement) {
                 if ($layoutElement instanceof CustomField) {
                     $layoutElement->getField()->setIsFresh(true);
                 }
@@ -1156,7 +1158,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $footHtml = $view->clearJsBuffer();
 
             // Reset $_isFresh's
-            foreach ($fieldLayoutTab->elements as $layoutElement) {
+            foreach ($fieldLayoutTab->getElements() as $layoutElement) {
                 if ($layoutElement instanceof CustomField) {
                     $layoutElement->getField()->setIsFresh(null);
                 }

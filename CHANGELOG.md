@@ -5,6 +5,7 @@
 ### Added
 - Element indexes can now be filtered by element attributes and custom field values. ([#8154](https://github.com/craftcms/cms/discussions/9192), [#9450](https://github.com/craftcms/cms/discussions/9450))
 - Admins can now create custom element sources from the Customize Sources modal. ([#8423](https://github.com/craftcms/cms/discussions/8423))
+- Field layout tabs, fields, and UI elements can now be conditionally shown based on properties of the current user and/or element being edited. ([#8099](https://github.com/craftcms/cms/discussions/8099), [#8154](https://github.com/craftcms/cms/discussions/8154))
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
@@ -31,6 +32,7 @@
 - Added `craft\base\conditions\ConditionRuleInterface`.
 - Added `craft\base\ElementInterface::createCondition()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
+- Added `craft\base\FieldLayoutComponent`.
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
 - Added `craft\base\Volume::CONFIG_VISIBILITY`.
 - Added `craft\base\Volume::VISIBILITY_DEFAULT`.
@@ -112,6 +114,7 @@
 - Added `craft\helpers\Cp::dateFieldHtml()`.
 - Added `craft\helpers\Cp::dateHtml()`.
 - Added `craft\helpers\Cp::elementSelectHtml()`.
+- Added `craft\helpers\Cp::fieldLayoutDesignerHtml()`.
 - Added `craft\helpers\Cp::lightswitchHtml()`.
 - Added `craft\helpers\Cp::multiSelectFieldHtml()`.
 - Added `craft\helpers\Cp::multiSelectHtml()`.
@@ -136,6 +139,12 @@
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS`, which replaces `EVENT_DEFINE_STANDARD_FIELDS`.
 - Added `craft\models\FieldLayout::getAvailableNativeFields()`.
+- Added `craft\models\FieldLayout::getVisibleFields()`.
+- Added `craft\models\FieldLayout::renderMissingElements()`.
+- Added `craft\models\FieldLayoutElement::$uid`.
+- Added `craft\models\FieldLayoutElement::getLayout()` and `setLayout()`.
+- Added `craft\models\FieldLayoutForm::getVisibleElements()`.
+- Added `craft\models\FieldLayoutTab::getElements()` and `setElements()`.
 - Added `craft\models\ProjectConfigData`.
 - Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\VolumeListing`.
@@ -157,6 +166,7 @@
 - Added `craft\services\Config::CATEGORY_CUSTOM`.
 - Added `craft\services\Config::getCustom()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
+- Added `craft\services\Fields::createLayout()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
@@ -196,6 +206,7 @@
 - Added `craft\services\Users::removeCredentials()`.
 - Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
 - Added `craft\web\assets\htmx\HtmxAsset`.
+- Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the `assets/update-focal-point` action.
 - Added the `Craft.getPageUrl()` JavaScript function.
@@ -309,6 +320,7 @@
 - `craft\base\AssetPreviewHandlerInterface::getPreviewHtml()` now accepts an optional array of variable to pass on to the template.
 - `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
+- `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
 - `craft\base\Element::getFieldValue()` now returns eager-loaded element values for the field, when they exist. ([#10047](https://github.com/craftcms/cms/issues/10047))
 - `craft\base\MemoizableArray` no longer extends `ArrayObject`, and now implements `IteratorAggregate` and `Countable` directly.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
@@ -432,6 +444,7 @@
 - Removed `craft\base\Element::getIsProvisionalDraft()`. `$isProvisionalDraft` can be used instead.
 - Removed `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` can be used instead.
 - Removed `craft\base\Field::isEmpty()`. `isValueEmpty()` can be used instead.
+- Removed `craft\base\FieldLayoutElementInterface`.
 - Removed `craft\base\FlysystemVolume`.
 - Removed `craft\base\Model::getError()`. `getFirstError()` can be used instead.
 - Removed `craft\base\VolumeInterface::createDir()`. `createDirectory()` can be used instead.

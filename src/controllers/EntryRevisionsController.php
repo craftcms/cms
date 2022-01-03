@@ -333,6 +333,10 @@ class EntryRevisionsController extends BaseEntriesController
         if ($this->request->getAcceptsJson()) {
             $creator = $draft->getCreator();
             [$docTitle, $title] = Cp::editElementTitles($draft);
+            $visibleElements = $this->request->getBodyParam('visibleLayoutElements');
+            $missingElements = $draft->getFieldLayout()->renderMissingElements($draft, $visibleElements);
+            $view = Craft::$app->getView();
+
             return $this->asJson([
                 'sourceId' => $draft->getCanonicalId(),
                 'draftId' => $draft->draftId,
@@ -345,6 +349,9 @@ class EntryRevisionsController extends BaseEntriesController
                 'duplicatedElements' => Elements::$duplicatedElementIds,
                 'previewTargets' => $draft->getPreviewTargets(),
                 'modifiedAttributes' => $draft->getModifiedAttributes(),
+                'missingElements' => $missingElements,
+                'headHtml' => $view->getHeadHtml(),
+                'bodyHtml' => $view->getBodyHtml(),
             ]);
         }
 

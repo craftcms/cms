@@ -835,6 +835,8 @@ Craft.DraftEditor = Garnish.Base.extend({
                 preparedData += '&provisional=1';
             }
 
+            preparedData += '&' + $.param({visibleLayoutElements: this.settings.visibleLayoutElements});
+
             Craft.sendActionRequest('POST', this.settings.saveDraftAction, {
                 cancelToken: this.cancelToken.token,
                 headers: {
@@ -848,6 +850,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                     this.errors = response.data.errors;
                     this._showFailStatus();
                     reject(response.data.errors);
+                    return;
                 }
 
                 const createdProvisionalDraft = !this.settings.draftId;
@@ -983,6 +986,50 @@ Craft.DraftEditor = Garnish.Base.extend({
                         }),
                     );
                 }
+
+                // Update the visible tabs and fields
+                if (response.data.missingElements) {
+                    const visibleLayoutElements = {};
+
+                    Object.keys(response.data.missingElements).forEach(tabId => {
+                        const tabInfo = response.data.missingElements[tabId];
+                        const $tab = $(`#tabs [data-id="${tabId}"]`);
+                        const $tabContent = $(`#${tabId}`);
+
+                        if (tabInfo.visible) {
+                            $tab.removeClass('hidden');
+                        } else {
+                            $tab.addClass('hidden');
+                        }
+
+                        Object.keys(tabInfo.elementHtml).forEach(elementUid => {
+                            const elementHtml = tabInfo.elementHtml[elementUid];
+
+                            if (elementHtml !== false) {
+                                if (!visibleLayoutElements[tabId]) {
+                                    visibleLayoutElements[tabId] = [];
+                                }
+                                visibleLayoutElements[tabId].push(elementUid);
+
+                                if (typeof elementHtml === 'string') {
+                                    $tabContent.children(`[data-layout-element="${elementUid}"]`).replaceWith(elementHtml);
+                                }
+                            } else if (this.settings.visibleLayoutElements[tabId] && this.settings.visibleLayoutElements[tabId].includes(elementUid)) {
+                                $tabContent.children(`[data-layout-element="${elementUid}"]`).replaceWith(
+                                    $('<div/>', {
+                                        class: 'hidden',
+                                        'data-layout-element': elementUid,
+                                    })
+                                );
+                            }
+                        });
+                    });
+
+                    this.settings.visibleLayoutElements = visibleLayoutElements;
+                }
+
+                Craft.appendHeadHtml(response.data.headHtml);
+                Craft.appendFootHtml(response.data.bodyHtml);
 
                 this.afterUpdate(data);
 
@@ -1287,5 +1334,6 @@ Craft.DraftEditor = Garnish.Base.extend({
         previewTargets: [],
         previewToken: null,
         siteToken: null,
+        visibleLayoutElements: {},
     }
 });

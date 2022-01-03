@@ -382,6 +382,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'layoutId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
+            'settings' => $this->text(),
             'elements' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),

@@ -283,6 +283,7 @@ JS;
             'View',
             'What do you want to do with their content?',
             'What do you want to do?',
+            'You must specify a tab name.',
             'Your changes could not be stored.',
             'Your changes have been stored.',
             'Your session has ended.',
