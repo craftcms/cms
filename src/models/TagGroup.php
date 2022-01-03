@@ -10,10 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\db\Table;
 use craft\elements\Tag;
-use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -134,9 +131,6 @@ class TagGroup extends Model
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
-            }
             $config['fieldLayouts'] = [
                 $fieldLayout->uid => $fieldLayoutConfig,
             ];

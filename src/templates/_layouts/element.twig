@@ -564,6 +564,7 @@
     previewTargets: previewTargets,
     previewToken: previewTargets ? craft.app.security.generateRandomString() : null,
     siteToken: not element.getSite().enabled ? element.siteId|hash,
+    visibleLayoutElements: form.getVisibleElements(),
 } %}
 {% js %}
     window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});

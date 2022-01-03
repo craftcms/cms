@@ -308,9 +308,6 @@ class Volumes extends Component
             ($fieldLayout = $volume->getFieldLayout()) &&
             ($fieldLayoutConfig = $fieldLayout->getConfig())
         ) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
-            }
             $config['fieldLayouts'] = [
                 $fieldLayout->uid => $fieldLayoutConfig,
             ];
