@@ -308,36 +308,6 @@ class Gql extends Component
     public const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
 
     /**
-     * Save a GQL Token record based on the model.
-     *
-     * @param GqlToken $token
-     */
-    private function _saveTokenInternal(GqlToken $token): void
-    {
-        $isNewToken = !$token->id;
-
-        if ($isNewToken) {
-            $tokenRecord = new GqlTokenRecord();
-        } else {
-            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
-        }
-
-        $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = $token->enabled;
-        $tokenRecord->expiryDate = $token->expiryDate;
-        $tokenRecord->lastUsed = $token->lastUsed;
-        $tokenRecord->schemaId = $token->schemaId;
-
-        if ($token->accessToken) {
-            $tokenRecord->accessToken = $token->accessToken;
-        }
-
-        $tokenRecord->save();
-        $token->id = $tokenRecord->id;
-        $token->uid = $tokenRecord->uid;
-    }
-
-    /**
      * @var Schema|null Currently loaded schema definition
      */
     private ?Schema $_schemaDef = null;
@@ -352,6 +322,16 @@ class Gql extends Component
      * @var array Cache of content fields by element class
      */
     private array $_contentFieldCache = [];
+
+    /**
+     * @var TypeManager|null GQL type manager
+     */
+    private ?TypeManager $_typeManager = null;
+
+    /**
+     * @var array
+     */
+    private array $_typeDefinitions = [];
 
     /**
      * Returns the GraphQL schema.
@@ -727,9 +707,9 @@ class Gql extends Component
         $this->_schema = null;
         $this->_schemaDef = null;
         $this->_contentFieldCache = [];
+        $this->_typeDefinitions = [];
         TypeLoader::flush();
         GqlEntityRegistry::flush();
-        TypeManager::flush();
         $this->invalidateCaches();
     }
 
@@ -1214,6 +1194,26 @@ class Gql extends Component
     }
 
     /**
+     * Prepare field definitions for a given GraphQL type by giving plugins a chance to modify them.
+     *
+     * @param array $fields
+     * @param string $typeName
+     * @return array
+     */
+    public function prepareFieldDefinitions(array $fields, string $typeName): array
+    {
+        if (!array_key_exists($typeName, $this->_typeDefinitions)) {
+            if ($this->_typeManager === null) {
+                $this->_typeManager = Craft::createObject(TypeManager::class);
+            }
+
+            $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
+        }
+
+        return $this->_typeDefinitions[$typeName];
+    }
+
+    /**
      * Generate a cache key for the GraphQL operation. Returns null if caching is disabled or unable to generate one.
      *
      * @param GqlSchema $schema
@@ -1688,5 +1688,36 @@ class Gql extends Component
     private function _getSchemaRecord(string $uid): GqlSchemaRecord
     {
         return GqlSchemaRecord::findOne(['uid' => $uid]) ?? new GqlSchemaRecord();
+    }
+
+
+    /**
+     * Save a GQL Token record based on the model.
+     *
+     * @param GqlToken $token
+     */
+    private function _saveTokenInternal(GqlToken $token): void
+    {
+        $isNewToken = !$token->id;
+
+        if ($isNewToken) {
+            $tokenRecord = new GqlTokenRecord();
+        } else {
+            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
+        }
+
+        $tokenRecord->name = $token->name;
+        $tokenRecord->enabled = $token->enabled;
+        $tokenRecord->expiryDate = $token->expiryDate;
+        $tokenRecord->lastUsed = $token->lastUsed;
+        $tokenRecord->schemaId = $token->schemaId;
+
+        if ($token->accessToken) {
+            $tokenRecord->accessToken = $token->accessToken;
+        }
+
+        $tokenRecord->save();
+        $token->id = $tokenRecord->id;
+        $token->uid = $tokenRecord->uid;
     }
 }
