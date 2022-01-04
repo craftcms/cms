@@ -16,6 +16,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
@@ -328,7 +329,8 @@ class ElementIndexes extends Component
         $processedFieldIds = [];
 
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
                 if (
                     $field instanceof SortableFieldInterface &&
                     !isset($processedFieldIds[$field->id])

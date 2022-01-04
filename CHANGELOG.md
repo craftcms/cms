@@ -1,14 +1,17 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.27 - 2022-01-04
 
 ### Added
 - Added the `setSchemaOnConnect` database connection setting. ([#10273](https://github.com/craftcms/cms/issues/10273))
 - Added `craft\errors\InvalidHtmlTagException`.
 - Added `craft\helpers\Html::encodeInvalidTags()`.
+- Added `craft\models\FieldLayout::getCustomFieldElements()`.
+- Added `craft\services\Fields::getLayoutsByIds()`.
 - Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
 
 ### Changed
+- Improved the performance of the control panel, for installs with a large number of entry types.
 - A warning is now logged when a password-reset email could not be sent, if `preventUserEnumeration` is enabled.
 - The `install/check`, `install/craft`, and `setup/db-creds` commands now explicitly check if Craft is installed in the default schema on Postgres.
 - The `setup/db-creds` command now uses existing environment variable values for its default prompt values, if available.

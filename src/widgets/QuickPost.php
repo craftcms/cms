@@ -110,9 +110,17 @@ class QuickPost extends Widget
             }
         }
 
+        $fieldsByEntryTypeId = [];
+        foreach ($sections as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $fieldsByEntryTypeId[$entryType->id] = $entryType->getFieldLayout()->getCustomFieldElements();
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings',
             [
                 'sections' => $sections,
+                'fieldsByEntryTypeId' => $fieldsByEntryTypeId,
                 'widget' => $this,
             ]);
     }
