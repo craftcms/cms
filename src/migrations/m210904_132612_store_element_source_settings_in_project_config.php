@@ -32,7 +32,7 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
 
             foreach ($dbSettings as $elementType => $settings) {
                 /** @var string|ElementInterface $elementType */
-                $nativeSources = $elementType::sources();
+                $nativeSources = $elementType::sources('index');
                 $settings = Json::decode($settings);
                 $sourceConfigs = [];
                 $indexedSourceConfigs = [];

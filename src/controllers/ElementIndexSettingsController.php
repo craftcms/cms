@@ -76,12 +76,13 @@ class ElementIndexSettingsController extends BaseElementsController
                 if (isset($source['condition'])) {
                     $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
                     $view->startJsBuffer();
-                    $conditionBuilderHtml = $view->namespaceInputs(function() use ($condition) {
-                        return $condition->getBuilderHtml([
-                            'mainTag' => 'div',
-                            'projectConfigTypes' => true,
-                        ]);
-                    }, "sources[{$source['key']}][condition]");
+                    $conditionBuilderHtml = $condition->getBuilderHtml([
+                        'mainTag' => 'div',
+                        'name' => "sources[{$source['key']}][condition]",
+                        'projectConfigTypes' => true,
+                        'queryParams' => ['status'],
+                        'addRuleLabel' => Craft::t('app', 'Add a filter'),
+                    ]);
                     $conditionBuilderJs = $view->clearJsBuffer();
                     $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
                 }
@@ -101,13 +102,14 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $view->startJsBuffer();
-        $conditionBuilderHtml = $view->namespaceInputs(function() use ($elementType) {
-            return $elementType::createCondition()->getBuilderHtml([
-                'id' => '__ID__',
-                'mainTag' => 'div',
-                'projectConfigTypes' => true,
-            ]);
-        }, 'sources[__SOURCE_KEY__][condition]');
+        $conditionBuilderHtml = $elementType::createCondition()->getBuilderHtml([
+            'id' => '__ID__',
+            'name' => 'sources[__SOURCE_KEY__][condition]',
+            'mainTag' => 'div',
+            'projectConfigTypes' => true,
+            'queryParams' => ['status'],
+            'addRuleLabel' => Craft::t('app', 'Add a filter'),
+        ]);
         $conditionBuilderJs = $view->clearJsBuffer();
 
         $userGroups = collect(Craft::$app->getUserGroups()->getAllGroups())

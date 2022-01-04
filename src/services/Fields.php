@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\Connection;
@@ -1136,6 +1136,10 @@ class Fields extends Component
             if ($isMysql) {
                 $value['name'] = html_entity_decode($value['name'], ENT_QUOTES | ENT_HTML5);
             }
+            $settings = ArrayHelper::remove($value, 'settings');
+            if ($settings) {
+                $value = array_merge($value, Json::decode($settings));
+            }
             $tabs[$key] = new FieldLayoutTab($value);
         }
 
@@ -1211,18 +1215,45 @@ class Fields extends Component
     }
 
     /**
+     * Creates a field layout from the given config.
+     *
+     * @param array $config
+     * @return FieldLayout
+     * @since 4.0.0
+     */
+    public function createLayout(array $config): FieldLayout
+    {
+        $config['class'] = FieldLayout::class;
+        /** @var FieldLayout $fieldLayout */
+        $fieldLayout = Craft::createObject($config);
+
+        // Prep getFields()
+        $fields = [];
+        foreach ($fieldLayout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $element) {
+                if ($element instanceof CustomField) {
+                    $fields[] = $element->getField();
+                }
+            }
+        }
+        $fieldLayout->setFields($fields);
+
+        return $fieldLayout;
+    }
+
+    /**
      * Creates a field layout element instance from its config.
      *
      * @param array $config
-     * @return FieldLayoutElementInterface
-     * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElementInterface]]
+     * @return FieldLayoutElement
+     * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
      */
-    public function createLayoutElement(array $config): FieldLayoutElementInterface
+    public function createLayoutElement(array $config): FieldLayoutElement
     {
         $type = ArrayHelper::remove($config, 'type');
 
-        if (!$type || !is_subclass_of($type, FieldLayoutElementInterface::class)) {
+        if (!$type || !is_subclass_of($type, FieldLayoutElement::class)) {
             throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 
@@ -1240,86 +1271,9 @@ class Fields extends Component
      */
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
-        $paramPrefix = ($namespace ? rtrim($namespace, '.') . '.' : '');
-        $request = Craft::$app->getRequest();
-        $layoutId = $request->getBodyParam("{$paramPrefix}fieldLayoutId");
-        $elementPlacements = $request->getBodyParam("{$paramPrefix}elementPlacements");
-        $elementConfigs = $request->getBodyParam("{$paramPrefix}elementConfigs", []);
-
-        if ($elementPlacements === null) {
-            // See if the layout was submitted in the old format
-            if (($legacyLayout = $request->getBodyParam("{$paramPrefix}fieldLayout")) !== null) {
-                Craft::$app->getDeprecator()->log('legacy-field-layout', 'Field layouts should be posted as `elementPlacements` and `elementConfigs` arrays, not `fieldLayout` and `requiredFields`.');
-                $legacyRequiredFields = array_flip($request->getBodyParam("{$paramPrefix}requiredFields", []));
-                $elementPlacements = [];
-                foreach ($legacyLayout as $tabName => $fieldIds) {
-                    foreach ($fieldIds as $fieldId) {
-                        $field = $this->getFieldById($fieldId);
-                        if ($field !== null) {
-                            $key = StringHelper::randomString(10);
-                            $elementPlacements[$tabName][] = $key;
-                            $elementConfigs[$key] = Json::encode([
-                                'type' => CustomField::class,
-                                'fieldUid' => $field->uid,
-                                'required' => isset($legacyRequiredFields[$fieldId]),
-                            ]);
-                        }
-                    }
-                }
-            } else {
-                // the JS probably didn't get fully initialized, so just go with the existing field layout if there is one
-                if ($layoutId) {
-                    return $this->getLayoutById($layoutId);
-                }
-                return new FieldLayout();
-            }
-        }
-
-        if ($elementPlacements === '') {
-            $elementPlacements = [];
-        }
-
-
-        $layout = new FieldLayout();
-        $layout->id = $layoutId;
-        $tabs = [];
-        $fields = [];
-        $tabSortOrder = 0;
-
-        foreach ($elementPlacements as $tabName => $elementKeys) {
-            $tab = $tabs[] = new FieldLayoutTab();
-            $tab->name = urldecode($tabName);
-            $tab->sortOrder = ++$tabSortOrder;
-            $tab->elements = [];
-
-            foreach ($elementKeys as $i => $elementKey) {
-                $elementConfig = Json::decode($elementConfigs[$elementKey]);
-
-                try {
-                    $element = $this->createLayoutElement($elementConfig);
-                } catch (InvalidArgumentException $e) {
-                    throw new BadRequestHttpException($e->getMessage(), 0, $e);
-                }
-
-                $tab->elements[] = $element;
-
-                if ($element instanceof CustomField) {
-                    $fieldUid = $element->getFieldUid();
-                    $field = $this->getFieldByUid($fieldUid);
-                    if (!$field) {
-                        throw new BadRequestHttpException("Invalid field UUID: $fieldUid");
-                    }
-                    $field->required = (bool)($elementConfig['required'] ?? false);
-                    $field->sortOrder = ($i + 1);
-                    $fields[] = $field;
-                }
-            }
-        }
-
-        $layout->setTabs($tabs);
-        $layout->setFields($fields);
-
-        return $layout;
+        $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
+        $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
+        return $this->createLayout($config);
     }
 
     /**
@@ -1376,7 +1330,6 @@ class Fields extends Component
 
             $tab = new FieldLayoutTab();
             $tab->name = urldecode($tabName);
-            $tab->sortOrder = ++$tabSortOrder;
             $tab->setFields($tabFields);
 
             $tabs[] = $tab;
@@ -1399,7 +1352,7 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        if (!$layout->id && $layout->uid) {
+        if (!$layout->id) {
             // Maybe the ID just wasn't known
             $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $layout->uid);
         }
@@ -1450,17 +1403,10 @@ class Fields extends Component
 
         // Save the layout
         $layoutRecord->type = $layout->type;
-
-        // Use a pre-determined UID if available.
-        if ($layout->uid) {
-            $layoutRecord->uid = $layout->uid;
-        }
+        $layoutRecord->uid = $layout->uid;
 
         if (!$isNewLayout) {
             $layoutRecord->id = $layout->id;
-            if (!$layout->uid) {
-                $layoutRecord->uid = Db::uidById(Table::FIELDLAYOUTS, $layout->id);
-            }
         }
 
         if ($layoutRecord->dateDeleted) {
@@ -1482,6 +1428,7 @@ class Fields extends Component
             } else {
                 $tabRecord = new FieldLayoutTabRecord();
                 $tabRecord->layoutId = $layout->id;
+                $tabRecord->uid = $tab->uid;
             }
 
             $tabRecord->sortOrder = $tab->sortOrder;
@@ -1490,14 +1437,14 @@ class Fields extends Component
             } else {
                 $tabRecord->name = $tab->name;
             }
+            $tabRecord->settings = $tab->toArray(['userCondition', 'elementCondition']);
             $tabRecord->elements = $tab->getElementConfigs();
             $tabRecord->save(false);
             $tab->id = $tabRecord->id;
-            $tab->uid = $tabRecord->uid;
 
-            foreach ($tab->elements as $i => $element) {
-                if ($element instanceof CustomField) {
-                    $fieldUid = $element->getFieldUid();
+            foreach ($tab->getElements() as $i => $layoutElement) {
+                if ($layoutElement instanceof CustomField) {
+                    $fieldUid = $layoutElement->getFieldUid();
                     $field = $this->getFieldByUid($fieldUid);
 
                     if (!$field) {
@@ -1509,7 +1456,7 @@ class Fields extends Component
                     $fieldRecord->layoutId = $layout->id;
                     $fieldRecord->tabId = $tab->id;
                     $fieldRecord->fieldId = $field->id;
-                    $fieldRecord->required = (bool)$element->required;
+                    $fieldRecord->required = (bool)$layoutElement->required;
                     $fieldRecord->sortOrder = $i;
                     $fieldRecord->save(false);
                 }
@@ -1528,6 +1475,8 @@ class Fields extends Component
                 'isNew' => $isNewLayout,
             ]));
         }
+
+        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
 
         return true;
     }
@@ -1935,6 +1884,7 @@ class Fields extends Component
                 'id',
                 'layoutId',
                 'name',
+                'settings',
                 'elements',
                 'sortOrder',
                 'uid',

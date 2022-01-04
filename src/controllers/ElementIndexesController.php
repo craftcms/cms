@@ -12,10 +12,10 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\conditions\QueryConditionInterface;
-use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
@@ -392,21 +392,24 @@ class ElementIndexesController extends BaseElementsController
         if ($source['type'] === ElementSources::TYPE_NATIVE) {
             $queryParams = array_keys($source['criteria'] ?? []);
         } else {
-            /** @var QueryConditionInterface $sourceCondition */
+            /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
             $queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
-                /** @var QueryConditionRuleInterface $rule */
+                /** @var ElementConditionRuleInterface $rule */
                 foreach ($rule->getExclusiveQueryParams() as $param) {
                     $queryParams[] = $param;
                 }
             }
         }
 
+        $queryParams[] = 'status';
+
         $html = $condition->getBuilderHtml([
             'mainTag' => 'div',
             'id' => $id,
             'queryParams' => $queryParams,
+            'addRuleLabel' => Craft::t('app', 'Add a filter'),
         ]);
 
         $view = Craft::$app->getView();
@@ -484,7 +487,7 @@ class ElementIndexesController extends BaseElementsController
                 }
                 break;
             case ElementSources::TYPE_CUSTOM:
-                /** @var QueryConditionInterface $condition */
+                /** @var ElementConditionInterface $condition */
                 $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
                 $condition->modifyQuery($query);
         }
@@ -508,11 +511,11 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Override with the custom filters
-        $conditionStr = $this->request->getBodyParam('condition');
+        $conditionStr = $this->request->getBodyParam('filters');
         if ($conditionStr) {
             parse_str($conditionStr, $conditionConfig);
-            /** @var QueryConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+            /** @var ElementConditionInterface $condition */
+            $condition = Craft::$app->getConditions()->createCondition($conditionConfig['condition']);
             $condition->modifyQuery($query);
         }
 

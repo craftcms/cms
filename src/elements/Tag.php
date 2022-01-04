@@ -9,9 +9,9 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\conditions\elements\tags\TagQueryCondition;
-use craft\conditions\QueryConditionInterface;
 use craft\db\Table;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\helpers\Db;
@@ -114,11 +114,11 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     * @return TagQueryCondition
+     * @return TagCondition
      */
-    public static function createCondition(): QueryConditionInterface
+    public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(TagQueryCondition::class, [static::class]);
+        return Craft::createObject(TagCondition::class, [static::class]);
     }
 
     /**

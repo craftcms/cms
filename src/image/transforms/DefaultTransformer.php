@@ -276,6 +276,10 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             throw new ImageTransformException("The `webp` format is not supported on this server!");
         }
 
+        if ($index->format === 'avif' && !$images->getSupportsAvif()) {
+            throw new ImageTransformException("The `avif` format is not supported on this server!");
+        }
+
         $volume = $asset->getVolume();
         $transformPath = $asset->folderPath . $this->getTransformSubpath($asset, $index);
 

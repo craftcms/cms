@@ -9,8 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\conditions\elements\users\UserQueryCondition;
-use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -18,6 +16,8 @@ use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
@@ -228,11 +228,11 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
-     * @return UserQueryCondition
+     * @return UserCondition
      */
-    public static function createCondition(): QueryConditionInterface
+    public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(UserQueryCondition::class, [static::class]);
+        return Craft::createObject(UserCondition::class, [static::class]);
     }
 
     /**
@@ -683,11 +683,6 @@ class User extends Element implements IdentityInterface
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private ?array $_groups = null;
-
-    /**
-     * @var array|null The user’s preferences
-     */
-    private ?array $_preferences = null;
 
     /**
      * @inheritdoc
@@ -1372,11 +1367,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferences(): array
     {
-        if (!isset($this->_preferences)) {
-            $this->_preferences = Craft::$app->getUsers()->getUserPreferences($this->id);
-        }
-
-        return $this->_preferences;
+        return Craft::$app->getUsers()->getUserPreferences($this->id);
     }
 
     /**
@@ -1429,19 +1420,6 @@ class User extends Element implements IdentityInterface
         }
 
         return null;
-    }
-
-    /**
-     * Merges new user preferences with the existing ones, and returns the result.
-     *
-     * @param array $preferences The new preferences
-     * @return array The user’s new preferences.
-     */
-    public function mergePreferences(array $preferences): array
-    {
-        $this->_preferences = array_merge($this->getPreferences(), $preferences);
-
-        return $this->_preferences;
     }
 
     /**

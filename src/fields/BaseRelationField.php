@@ -14,7 +14,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
-use craft\conditions\elements\fields\RelationalFieldConditionRule;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
@@ -24,6 +23,7 @@ use craft\elements\db\ElementRelationParamParser;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
+use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -461,7 +461,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getQueryConditionRuleType()
+    public function getElementConditionRuleType()
     {
         return [
             'class' => RelationalFieldConditionRule::class,

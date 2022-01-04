@@ -156,7 +156,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 uri += '/' + handle;
             }
 
-            history.replaceState({}, '', Craft.getUrl(uri));
+            const url = Craft.getUrl(uri, document.location.search + document.location.hash);
+            history.replaceState({}, '', url);
         }
     },
 

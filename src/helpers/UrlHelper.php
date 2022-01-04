@@ -100,6 +100,10 @@ class UrlHelper
      */
     public static function urlWithParams(string $url, $params): string
     {
+        if (empty($params)) {
+            return $url;
+        }
+
         // Extract any params/fragment from the base URL
         [$url, $baseParams, $baseFragment] = self::_extractParams($url);
 
@@ -590,8 +594,16 @@ class UrlHelper
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $request = Craft::$app->getRequest();
 
-        // If this is a site URL and there was a (site) token on the request, pass it along
-        if (!$cpUrl && $addToken !== false) {
+        if ($cpUrl) {
+            // site param
+            if (!isset($params['site']) && Craft::$app->getIsMultiSite() && ($site = Cp::requestedSite()) !== null) {
+                if ($params === null) {
+                    $params = [];
+                }
+                $params['site'] = Cp::requestedSite()->handle;
+            }
+        } else if ($addToken !== false) {
+            // token/siteToken params
             if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
             }

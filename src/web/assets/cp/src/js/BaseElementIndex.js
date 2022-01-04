@@ -568,12 +568,38 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     },
 
     storeSortAttributeAndDirection: function() {
-        var attr = this.getSelectedSortAttribute();
+        const attr = this.getSelectedSortAttribute();
 
         if (attr !== 'score') {
+            const history = [];
+
+            if (attr) {
+                // Remember the previous choices
+                const attributes = [attr];
+
+                // Only include the most last attribute if it changed
+                const lastAttr = this.getSelectedSourceState('order');
+                if (lastAttr && lastAttr !== attr) {
+                    history.push([lastAttr, this.getSelectedSourceState('sort')]);
+                    attributes.push(lastAttr);
+                }
+
+                const oldHistory = this.getSelectedSourceState('orderHistory', []);
+                for (let i = 0; i < oldHistory.length; i++) {
+                    const [a] = oldHistory[i];
+                    if (a && !attributes.includes(a)) {
+                        history.push(oldHistory[i]);
+                        attributes.push(a);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
             this.setSelecetedSourceState({
                 order: attr,
-                sort: this.getSelectedSortDirection()
+                sort: this.getSelectedSortDirection(),
+                orderHistory: history,
             });
         }
     },
@@ -589,19 +615,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         page = Math.max(page, 1);
         this.page = page;
 
-        // Update the URL
-        var url = document.location.href
-            .replace(/\?.*$/, '')
-            .replace(new RegExp('/' + Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\d+$'), '')
-            .replace(/\/+$/, '');
-
-        if (this.page !== 1) {
-            if (Craft.pageTrigger[0] !== '?') {
-                url += '/';
-            }
-            url += Craft.pageTrigger + this.page;
-        }
-
+        const url = Craft.getPageUrl(this.page);
         history.replaceState({}, '', url);
     },
 
@@ -665,7 +679,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
         if (this.filterHuds[this.sourceKey] && this.filterHuds[this.sourceKey].serialized) {
-            params.condition = this.filterHuds[this.sourceKey].serialized;
+            params.filters = this.filterHuds[this.sourceKey].serialized;
         }
 
         // Give plugins a chance to hook in here
@@ -2190,8 +2204,7 @@ const FilterHud = Garnish.HUD.extend({
             data: {
                 elementType: this.elementIndex.elementType,
                 source: this.sourceKey,
-                baseInputName: `${this.id}-condition`,
-                id: `${this.id}-condition`,
+                id: `${this.id}-filters`,
             },
         }).then(response => {
             this.loading = false;

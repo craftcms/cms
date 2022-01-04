@@ -11,7 +11,7 @@ module.exports = getConfig({
       new MergeIntoSingleFilePlugin({
         files: {
           'htmx.min.js': [
-            require.resolve('htmx.org'),
+            require.resolve('htmx.org/dist/htmx.js'),
             require.resolve('./src/htmx.js'),
           ],
         },

@@ -57,7 +57,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml(): ?string
+    protected function settingsHtml(): ?string
     {
         return Cp::textareaFieldHtml([
             'label' => $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'),

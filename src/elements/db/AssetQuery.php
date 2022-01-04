@@ -126,6 +126,13 @@ class AssetQuery extends ElementQuery
     public $kind;
 
     /**
+     * @var bool|null Whether the query should filter assets depending on whether they have alternative text.
+     * @used-by hasAlt()
+     * @since 4.0.0
+     */
+    public ?bool $hasAlt = null;
+
+    /**
      * @var mixed The width (in pixels) that the resulting assets must have.
      * ---
      * ```php{4}
@@ -496,6 +503,19 @@ class AssetQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on whether the assets have alternative text.
+     *
+     * @param bool|null $value The property value
+     * @return self self reference
+     * @uses $hasAlt
+     */
+    public function hasAlt(?bool $value = true): self
+    {
+        $this->hasAlt = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the assets’ image widths.
      *
      * Possible values include:
@@ -783,6 +803,7 @@ class AssetQuery extends ElementQuery
             'assets.uploaderId',
             'assets.filename',
             'assets.kind',
+            'assets.alt',
             'assets.width',
             'assets.height',
             'assets.size',
@@ -829,6 +850,10 @@ class AssetQuery extends ElementQuery
                 }
             }
             $this->subQuery->andWhere($kindCondition);
+        }
+
+        if ($this->hasAlt !== null) {
+            $this->subQuery->andWhere($this->hasAlt ? ['not', ['assets.alt' => null]] : ['assets.alt' => null]);
         }
 
         if ($this->width) {

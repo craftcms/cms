@@ -22,6 +22,7 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
@@ -73,7 +74,6 @@ class AssetsController extends Controller
      *
      * @param int $assetId The asset ID
      * @param Asset|null $asset The asset being edited, if there were any validation errors.
-     * @param string|null $site The site handle, if specified.
      * @return Response
      * @throws BadRequestHttpException if `$assetId` is invalid
      * @throws ForbiddenHttpException if the user isn't permitted to edit the asset
@@ -81,24 +81,11 @@ class AssetsController extends Controller
      * @throws SiteNotFoundException
      * @since 3.4.0
      */
-    public function actionEditAsset(int $assetId, ?Asset $asset = null, ?string $site = null): Response
+    public function actionEditAsset(int $assetId, ?Asset $asset = null): Response
     {
-        $sitesService = Craft::$app->getSites();
-        $editableSiteIds = $sitesService->getEditableSiteIds();
-        if ($site !== null) {
-            $siteHandle = $site;
-            $site = $sitesService->getSiteByHandle($siteHandle);
-            if (!$site) {
-                throw new BadRequestHttpException("Invalid site handle: $siteHandle");
-            }
-            if (!in_array($site->id, $editableSiteIds, false)) {
-                throw new ForbiddenHttpException('User not permitted to edit content in this site');
-            }
-        } else {
-            $site = $sitesService->getCurrentSite();
-            if (!in_array($site->id, $editableSiteIds, false)) {
-                $site = $sitesService->getSiteById($editableSiteIds[0]);
-            }
+        $site = Cp::requestedSite();
+        if (!$site) {
+            throw new ForbiddenHttpException('User not permitted to edit content in any sites');
         }
 
         if ($asset === null) {

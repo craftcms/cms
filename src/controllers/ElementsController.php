@@ -443,7 +443,7 @@ class ElementsController extends BaseElementsController
                         $fields = [];
 
                         foreach ($fieldLayout->getTabs() as $tab) {
-                            foreach ($tab->elements as $layoutElement) {
+                            foreach ($tab->getElements() as $layoutElement) {
                                 if ($layoutElement instanceof BaseField) {
                                     $fields[] = $layoutElement->formHtml($element);
                                 }

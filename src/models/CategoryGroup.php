@@ -217,9 +217,6 @@ class CategoryGroup extends Model
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
-            }
             $config['fieldLayouts'] = [
                 $fieldLayout->uid => $fieldLayoutConfig,
             ];

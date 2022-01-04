@@ -63,9 +63,9 @@ abstract class FieldLayoutFixture extends DbFixture
             foreach ($tabConfigs as $tabIndex => $tabConfig) {
                 $fieldConfigs = ArrayHelper::remove($tabConfig, 'fields') ?? [];
 
-                $tab = $tabs[] = new FieldLayoutTab($tabConfig);
+                $tab = $tabs[] = new FieldLayoutTab(['layout' => $layout] + $tabConfig);
                 $tab->sortOrder = $tabIndex + 1;
-                $tab->elements = [];
+                $layoutElements = [];
 
                 foreach ($fieldConfigs as $fieldConfig) {
                     // config[field] + config[layout-link] -> config
@@ -86,10 +86,12 @@ abstract class FieldLayoutFixture extends DbFixture
                         $this->throwModelError($field);
                     }
 
-                    $tab->elements[] = new CustomField($field, [
+                    $layoutElements[] = new CustomField($field, [
                         'required' => $required,
                     ]);
                 }
+
+                $tab->setElements($layoutElements);
             }
 
             $layout->setTabs($tabs);

@@ -1114,7 +1114,7 @@ Craft.CP = Garnish.Base.extend({
             this.setSiteId(siteId);
             return siteId;
         }
-        return Craft.getCookie('siteId');
+        return Craft.siteId;
     },
 
     /**
@@ -1122,10 +1122,20 @@ Craft.CP = Garnish.Base.extend({
      * @param {number} siteId
      */
     setSiteId: function(siteId) {
-        Craft.setCookie('siteId', siteId, {
-            maxAge: 31536000 // 1 year
-        });
-    }
+        const site = Craft.sites.find(s => s.id === siteId);
+        if (site) {
+            // update the current URL
+            const url = Craft.getUrl(document.location.href, {site: site.handle});
+            history.replaceState({}, '', url);
+
+            // update other URLs on the page
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname === location.hostname && this.href.indexOf(Craft.cpTrigger) !== -1) {
+                    this.href = Craft.getUrl(this.href, {site: site.handle});
+                }
+            })
+        }
+    },
 }, {
     //maxWidth: 1051, //1024,
     notificationDuration: 2000,

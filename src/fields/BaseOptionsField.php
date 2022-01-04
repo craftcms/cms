@@ -11,8 +11,8 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
-use craft\conditions\elements\fields\OptionsFieldConditionRule;
 use craft\elements\db\ElementQueryInterface;
+use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
@@ -341,7 +341,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getQueryConditionRuleType()
+    public function getElementConditionRuleType()
     {
         return OptionsFieldConditionRule::class;
     }

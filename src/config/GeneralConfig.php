@@ -153,6 +153,7 @@ class GeneralConfig extends BaseObject
         'asc',
         'asf',
         'avi',
+        'avif',
         'bmp',
         'cap',
         'cin',
@@ -1166,7 +1167,7 @@ class GeneralConfig extends BaseObject
      * @defaultAlt 1 day
      * @since 3.7.0
      */
-    public $previewTokenDuration = 86400;
+    public $previewTokenDuration;
 
     /**
      * @var string The template path segment prefix that should be used to identify “private” templates, which are templates that are not
@@ -1736,7 +1737,7 @@ class GeneralConfig extends BaseObject
         $this->defaultTokenDuration = ConfigHelper::durationInSeconds($this->defaultTokenDuration);
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
-        $this->previewTokenDuration = ConfigHelper::durationInSeconds($this->previewTokenDuration);
+        $this->previewTokenDuration = ConfigHelper::durationInSeconds($this->previewTokenDuration ?? $this->defaultTokenDuration);
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
         $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);

@@ -71,8 +71,18 @@
     {% set isNewlySupportedSite = false %}
 {% endif %}
 
-{% set previewTargets = element.getPreviewTargets() %}
+{% set previewTargets = saveDraftAction ? element.getPreviewTargets() : [] %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
+
+{% if previewTargets %}
+    {% if isDraft %}
+        {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
+    {% elseif isRevision %}
+        {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
+    {% else %}
+        {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
+    {% endif %}
+{% endif %}
 
 {% set canDeleteDraft = (
     isDraft and
@@ -95,14 +105,6 @@
 
 {% if not isRevision %}
     {% set fullPageForm = true %}
-{% endif %}
-
-{% if isDraft %}
-    {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
-{% elseif isRevision %}
-    {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
-{% else %}
-    {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
 {% endif %}
 
 {# If this is an unpublished draft, then we should only show status toggles if the
@@ -260,11 +262,10 @@
 
 {% block actionButton %}
     {% if previewTargets %}
-        <div class="btngroup">
+        <div id="preview-btn-container" class="btngroup">
             {% if enablePreview %}
                 <button type="button" id="preview-btn" class="btn">{{ "Preview"|t('app') }}</button>
             {% endif %}
-            <button type="button" id="share-btn" class="btn">{{ 'View'|t('app') }}</button>
         </div>
     {% endif %}
 
@@ -561,7 +562,9 @@
     hashedAddAnotherRedirectUrl: addAnotherRedirectUrl ? addAnotherRedirectUrl|hash : null,
     enablePreview: enablePreview,
     previewTargets: previewTargets,
+    previewToken: previewTargets ? craft.app.security.generateRandomString() : null,
     siteToken: not element.getSite().enabled ? element.siteId|hash,
+    visibleLayoutElements: form.getVisibleElements(),
 } %}
 {% js %}
     window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});

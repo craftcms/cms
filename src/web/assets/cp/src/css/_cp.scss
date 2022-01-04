@@ -449,6 +449,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #alerts {
+  position: relative; // to keep it above #global-header's shadow
   background-color: $red050;
   border-left: 5px solid $errorColor;
   padding: 11px 0;
@@ -665,6 +666,8 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: center;
   @include padding-right(25px);
+  padding-top: 5px;
+  padding-bottom: 5px;
   height: 100%;
   background-color: transparent;
   border-radius: 0;
@@ -1223,6 +1226,10 @@ li.breadcrumb-toggle-wrapper {
         top: 1px;
       }
     }
+  }
+
+  #content-container {
+    min-height: 0 !important;
   }
 
   #sidebar-container,

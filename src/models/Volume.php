@@ -136,6 +136,7 @@ class Volume extends Model
     {
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->reservedFieldHandles = [
+            'alt',
             'folder',
             'volume',
         ];

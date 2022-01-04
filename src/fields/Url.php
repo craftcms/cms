@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
-use craft\conditions\elements\fields\TextFieldConditionRule;
+use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -179,7 +179,7 @@ class Url extends Field implements PreviewableFieldInterface
             return null;
         }
 
-        return UrlHelper::encodeParams($value);
+        return str_replace(' ', '+', $value);
     }
 
     /**
@@ -322,7 +322,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getQueryConditionRuleType()
+    public function getElementConditionRuleType()
     {
         return TextFieldConditionRule::class;
     }

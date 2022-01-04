@@ -54,12 +54,14 @@ class PreviewController extends Controller
      */
     public function actionCreateToken(): Response
     {
-        $elementType = $this->request->getRequiredBodyParam('elementType');
-        $sourceId = $this->request->getRequiredBodyParam('sourceId');
-        $siteId = $this->request->getRequiredBodyParam('siteId');
-        $draftId = $this->request->getBodyParam('draftId');
-        $revisionId = $this->request->getBodyParam('revisionId');
-        $provisional = (bool)($this->request->getBodyParam('provisional') ?? false);
+        $elementType = $this->request->getRequiredParam('elementType');
+        $sourceId = $this->request->getRequiredParam('sourceId');
+        $siteId = $this->request->getRequiredParam('siteId');
+        $draftId = $this->request->getParam('draftId');
+        $revisionId = $this->request->getParam('revisionId');
+        $provisional = (bool)($this->request->getParam('provisional') ?? false);
+        $token = $this->request->getParam('previewToken');
+        $redirect = $this->request->getParam('redirect');
 
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
@@ -79,10 +81,14 @@ class PreviewController extends Controller
                 'revisionId' => (int)$revisionId ?: null,
                 'provisional' => $provisional,
             ],
-        ]);
+        ], null, $token);
 
         if (!$token) {
             throw new ServerErrorHttpException(Craft::t('app', 'Could not create a preview token.'));
+        }
+
+        if ($redirect) {
+            return $this->redirect($redirect);
         }
 
         return $this->asJson(compact('token'));

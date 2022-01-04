@@ -11,6 +11,7 @@ use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\elements\User as UserElement;
 use craft\gql\base\ElementResolver;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 
@@ -40,27 +41,29 @@ class User extends ElementResolver
             return $query;
         }
 
+        if (!GqlHelper::canSchema('usergroups.everyone')) {
+            $groups = ArrayHelper::remove($arguments, 'group');
+            if ($groups) {
+                $query->group($groups);
+            }
+
+            $groupIds = ArrayHelper::remove($arguments, 'groupId');
+            if ($groupIds) {
+                $query->groupId($groupIds);
+            }
+
+            $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
+            $allowedGroupIds = array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']));
+
+            $query->groupId = $query->groupId ? array_intersect($allowedGroupIds, (array)$query->groupId) : $allowedGroupIds;
+        }
+
         foreach ($arguments as $key => $value) {
             $query->$key($value);
         }
 
-        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
-
         if (!GqlHelper::canQueryUsers()) {
             return [];
-        }
-
-        if (!GqlHelper::canSchema('usergroups.everyone')) {
-            $query->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS],
-                [
-                    'and',
-                    '[[users.id]] = [[usergroups_users.userId]]',
-                    ['in', '[[usergroups_users.groupId]]', array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']))],
-                ]
-            );
-
-            // todo might be a better way to do this.
-            $query->groupBy = ['users.id'];
         }
 
         return $query;

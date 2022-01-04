@@ -784,7 +784,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             });
         }
 
-        history.replaceState({}, '', Craft.getUrl(uri));
+        const url = Craft.getUrl(uri, document.location.search + document.location.hash);
+        history.replaceState({}, '', url);
     },
 
     _getFolderUidFromSourceKey: function(sourceKey) {

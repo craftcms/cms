@@ -9,7 +9,7 @@
     {% if craft.app.getIsMultiSite() %}
         {% include "_elements/sitemenu" with {
             selectedSiteId: globalSet.siteId,
-            urlFormat: "globals/{handle}/#{globalSet.handle}"
+            urlFormat: cpUrl("globals/#{globalSet.handle}", {site: '{handle}'}),
         } %}
     {% endif %}
 {% endblock %}
