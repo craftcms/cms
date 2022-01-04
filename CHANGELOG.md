@@ -9,6 +9,8 @@
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
+- Craft now provides a native “Alternative Text” (`alt`) field for assets. ([#10302](https://github.com/craftcms/cms/discussions/10302))
+- Asset thumbnails in the control panel now have `alt` attributes, for assets with a filled-in Alternative Text value.
 - Added the `index-assets/cleanup` command.
 - Added the “Deactivate users by default” user registration setting, which replaces “Suspend users by default”. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
@@ -16,6 +18,7 @@
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
 - Added the `assetUploaders` user query param.
 - Added the `authors` user query param.
+- Added the `hasAlt` asset query param.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
@@ -31,6 +34,7 @@
 - Added `craft\base\conditions\ConditionInterface`.
 - Added `craft\base\conditions\ConditionRuleInterface`.
 - Added `craft\base\ElementInterface::createCondition()`.
+- Added `craft\base\ElementInterface::getThumbAlt()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
 - Added `craft\base\FieldLayoutComponent`.
 - Added `craft\base\Volume::CONFIG_MIMETYPE`.
@@ -48,12 +52,14 @@
 - Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
+- Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\conditions\assets\AssetCondition`.
 - Added `craft\elements\conditions\assets\DateModifiedConditionRule`.
 - Added `craft\elements\conditions\assets\FilenameConditionRule`.
 - Added `craft\elements\conditions\assets\FileSizeConditionRule`.
 - Added `craft\elements\conditions\assets\FileTypeConditionRule`.
+- Added `craft\elements\conditions\assets\HasAltConditionRule`.
 - Added `craft\elements\conditions\assets\HeightConditionRule`.
 - Added `craft\elements\conditions\assets\UploaderConditionRule`.
 - Added `craft\elements\conditions\assets\VolumeConditionRule`.
@@ -93,7 +99,9 @@
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
+- Added `craft\fieldlayoutelements\AssetAltField`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
+- Added `craft\fieldlayoutelements\TextareaField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
 - Added `craft\fields\Assets::$allowSubfolders`.
 - Added `craft\fields\Assets::$restrictedDefaulUploadSubpath`.
@@ -221,6 +229,7 @@
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
 - When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
+- `alt` is now a reserved field handle for volume field layouts.
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
@@ -327,6 +336,7 @@
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\db\Command::upsert()` no longer merges the `$updateColumns` array into `$insertColumns`. The full array of `INSERT` column values should be passed to `$insertColumns` now.
 - `craft\db\Command` methods with `$includeAuditColumns` arguments now ensure the table actually has audit columns before modifying the query.
+- `craft\elements\Asset::getImg()` now sets the `alt` attribute to the native Alternative Text field value, if set.
 - `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.

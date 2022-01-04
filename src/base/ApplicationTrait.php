@@ -26,6 +26,7 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
+use craft\fieldlayoutelements\AssetAltField;
 use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
@@ -1508,6 +1509,7 @@ trait ApplicationTrait
                     break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
+                    $event->fields[] = AssetAltField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;

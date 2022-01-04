@@ -22,6 +22,7 @@ class AssetCondition extends ElementCondition
             FileSizeConditionRule::class,
             FileTypeConditionRule::class,
             FilenameConditionRule::class,
+            HasAltConditionRule::class,
             HeightConditionRule::class,
             UploaderConditionRule::class,
             VolumeConditionRule::class,

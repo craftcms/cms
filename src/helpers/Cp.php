@@ -292,6 +292,7 @@ class Cp
                 'data' => [
                     'sizes' => $sizesHtml,
                     'srcset' => $srcsetHtml,
+                    'alt' => $element->getThumbAlt(),
                 ],
             ]);
         } else {

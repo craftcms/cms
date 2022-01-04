@@ -791,6 +791,14 @@ interface ElementInterface extends ComponentInterface
     public function getThumbUrl(int $size): ?string;
 
     /**
+     * Returns alt text for the element’s thumbnail.
+     *
+     * @return string|null
+     * @since 4.0.0
+     */
+    public function getThumbAlt(): ?string;
+
+    /**
      * Returns whether the element’s thumbnail should have a checkered background.
      *
      * @return bool

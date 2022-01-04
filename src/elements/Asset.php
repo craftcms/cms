@@ -590,6 +590,12 @@ class Asset extends Element
     public ?string $kind = null;
 
     /**
+     * @var string|null Alternative text
+     * @since 4.0.0
+     */
+    public ?string $alt = null;
+
+    /**
      * @var int|null Size
      */
     public ?int $size = null;
@@ -780,6 +786,11 @@ class Asset extends Element
     public function init(): void
     {
         parent::init();
+
+        if ($this->alt === '') {
+            $this->alt = null;
+        }
+
         $this->_oldVolumeId = $this->_volumeId;
     }
 
@@ -967,7 +978,7 @@ class Asset extends Element
             'width' => $this->getWidth(),
             'height' => $this->getHeight(),
             'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-            'alt' => $this->title,
+            'alt' => $this->alt ?? $this->title,
         ]);
 
         if (isset($oldTransform)) {
@@ -1303,6 +1314,14 @@ class Asset extends Element
         }
 
         return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbAlt(): ?string
+    {
+        return $this->alt;
     }
 
     /**
@@ -1995,6 +2014,7 @@ class Asset extends Element
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
+            $record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
             $record->height = (int)$this->_height ?: null;
