@@ -208,7 +208,7 @@ class Sections extends Component
 
             $this->_sections = new MemoizableArray(array_values($sections));
 
-            if (!empty($sections)) {
+            if (!empty($sections) && Craft::$app->getRequest()->getIsCpRequest()) {
                 // Eager load the site settings
                 $allSiteSettings = $this->_createSectionSiteSettingsQuery()
                     ->where(['sections_sites.sectionId' => array_keys($sections)])
