@@ -16,6 +16,7 @@ use craft\enums\PeriodType;
 use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
+use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
@@ -690,7 +691,7 @@ class Assets
 
         if (!$volume->getFilesystem() instanceof LocalFsInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
-            $localSource = $asset->getTransformSource();
+            $localSource = TransformHelper::getLocalImageSource($asset);
             Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
         } else {
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
