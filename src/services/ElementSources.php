@@ -245,7 +245,8 @@ class ElementSources extends Component
         $processedFieldIds = [];
 
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
                 if (
                     $field instanceof SortableFieldInterface &&
                     !isset($processedFieldIds[$field->id])

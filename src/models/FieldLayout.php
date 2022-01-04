@@ -511,6 +511,28 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns the layout elements representing custom fields.
+     *
+     * @return CustomField[]
+     * @since 3.7.27
+     */
+    public function getCustomFieldElements(): array
+    {
+        $response = [];
+
+        foreach ($this->getTabs() as $tab) {
+            foreach ($tab->getElements() as $element) {
+                if ($element instanceof CustomField) {
+                    $response[] = $element;
+                }
+            }
+        }
+
+        return $response;
+    }
+
+
+    /**
      * Returns the custom fields included in the layout, which are configured to be shown for the given element
      *
      * @param ElementInterface $element
