@@ -318,15 +318,15 @@
 - Widgets’ `icon()` methods must now have a `?string` return type declaration.
 - Widgets’ `maxColspan()` methods must now have an `?int` return type declaration.
 - `craft\base\AssetPreviewHandlerInterface::getPreviewHtml()` now accepts an optional array of variable to pass on to the template.
-- `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
 - `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
 - `craft\base\Element::getFieldValue()` now returns eager-loaded element values for the field, when they exist. ([#10047](https://github.com/craftcms/cms/issues/10047))
+- `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\MemoizableArray` no longer extends `ArrayObject`, and now implements `IteratorAggregate` and `Countable` directly.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
-- `craft\db\Command` methods with `$includeAuditColumns` arguments now ensure the table actually has audit columns before modifying the query.
 - `craft\db\Command::upsert()` no longer merges the `$updateColumns` array into `$insertColumns`. The full array of `INSERT` column values should be passed to `$insertColumns` now.
+- `craft\db\Command` methods with `$includeAuditColumns` arguments now ensure the table actually has audit columns before modifying the query.
 - `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
@@ -344,10 +344,10 @@
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
+- `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
 - `craft\services\Assets::EVENT_GET_ASSET_URL` has been renamed to `EVENT_DEFINE_ASSET_URL`.
 - `craft\services\Assets::EVENT_GET_THUMB_PATH` has been renamed to `EVENT_DEFINE_THUMB_PATH`.
-- `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Plugins::doesPluginRequireDatabaseUpdate()` has been renamed to `isPluginUpdatePending()`.
 - `craft\services\Updates::getIsCraftDbMigrationNeeded()` has been renamed to `getIsCraftUpdatePending()`.
 - `craft\services\Updates::getIsPluginDbUpdateNeeded()` has been renamed to `getIsPluginUpdatePending()`.
