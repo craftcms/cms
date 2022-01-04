@@ -69,9 +69,9 @@ class ImageTransformsTest extends Unit
                 ['width' => 200, 'height' => 200, 'format' => 'jpg', 'handle' => null],
             ],
             [
-                new ImageTransform(['width' => 200, 'height' => 200, 'id' => 88, 'uid' => 100, 'handle' => 'square', 'dimensionChangeTime' => DateTimeHelper::currentUTCDateTime()]),
+                new ImageTransform(['width' => 200, 'height' => 200, 'id' => 88, 'uid' => 100, 'handle' => 'square', 'parameterChangeTime' => DateTimeHelper::currentUTCDateTime()]),
                 ['format' => 'jpg'],
-                ['width' => 200, 'height' => 200, 'format' => 'jpg', 'handle' => null, 'id' => null, 'uid' => null, 'dimensionChangeTime' => null],
+                ['width' => 200, 'height' => 200, 'format' => 'jpg', 'handle' => null, 'id' => null, 'uid' => null, 'parameterChangeTime' => null],
             ],
         ];
     }
