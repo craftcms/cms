@@ -230,7 +230,7 @@ EOD;
         $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
             'required' => true,
             'default' => $this->driver ?? $envDriver ?: 'mysql',
-            'validator' => function (string $input) {
+            'validator' => function(string $input) {
                 return in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]);
             },
         ]);
@@ -581,6 +581,7 @@ EOD;
 
     /**
      * Returns an environment variable value, if we are using them for defaults.
+     *
      * @param string $name
      * @return string|null
      */
