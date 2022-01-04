@@ -305,6 +305,7 @@ class FieldLayout extends Model
             $tab = reset($this->_tabs);
             if (!$tab) {
                 $this->_tabs[] = $tab = new FieldLayoutTab([
+                    'layout' => $this,
                     'layoutId' => $this->id,
                     'name' => Craft::t('app', 'Content'),
                     'sortOrder' => 1,

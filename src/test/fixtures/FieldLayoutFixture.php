@@ -63,7 +63,7 @@ abstract class FieldLayoutFixture extends DbFixture
             foreach ($tabConfigs as $tabIndex => $tabConfig) {
                 $fieldConfigs = ArrayHelper::remove($tabConfig, 'fields') ?? [];
 
-                $tab = $tabs[] = new FieldLayoutTab($tabConfig);
+                $tab = $tabs[] = new FieldLayoutTab(['layout' => $layout] + $tabConfig);
                 $tab->sortOrder = $tabIndex + 1;
                 $layoutElements = [];
 
