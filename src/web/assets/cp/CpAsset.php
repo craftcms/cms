@@ -192,6 +192,8 @@ JS;
             'Merge the folder (any conflicting files will be replaced)',
             'More',
             'Move down',
+            'Move to the left',
+            'Move to the right',
             'Move up',
             'Move',
             'Name',

@@ -1,5 +1,47 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.27 - 2022-01-04
+
+### Added
+- Added the `setSchemaOnConnect` database connection setting. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- Added `craft\errors\InvalidHtmlTagException`.
+- Added `craft\helpers\Html::encodeInvalidTags()`.
+- Added `craft\models\FieldLayout::getCustomFieldElements()`.
+- Added `craft\services\Fields::getLayoutsByIds()`.
+- Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
+
+### Changed
+- Improved the performance of the control panel, for installs with a large number of entry types.
+- A warning is now logged when a password-reset email could not be sent, if `preventUserEnumeration` is enabled.
+- The `install/check`, `install/craft`, and `setup/db-creds` commands now explicitly check if Craft is installed in the default schema on Postgres.
+- The `setup/db-creds` command now uses existing environment variable values for its default prompt values, if available.
+- The `setup/db-creds` command no longer prompts for the database schema on Postgres, unless `setSchemaOnConnect` is enabled. Instead it will determine the appropriate schema to use based on `SHOW search_path`. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- The web-based installation wizard no longer shows a field for the database schema on Postgres. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- Dashboard widgets’ `data-colspan` attributes are now updated when their colspan changes. ([#10286](https://github.com/craftcms/cms/discussions/10286))
+- `craft\base\ApplicationTrait::getIsInstalled()` will now explicitly check if Craft is installed in the default schema on Postgres, when `true` is passed.
+- `craft\helpers\Html::parseTag()` now throws an `InvalidHtmlTagException` exception when an invalid tag is encountered. (Catching `InvalidArgumentException`s will still work.)
+- `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
+- `craft\services\Users::getUserPreferences()` and `getUserPreference()` no longer accept `null` passed to the first argument.
+
+### Deprecated
+- Deprecated `craft\elements\User::mergePreferences()`.
+
+### Fixed
+- Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
+- Fixed a bug where soft-deleted Matrix blocks nested within Neo blocks could become duplicated when restored from a prior revision. ([#10256](https://github.com/craftcms/cms/issues/10256))
+- Fixed a bug where Color fields’ HSL values could be incorrect. ([#10261](https://github.com/craftcms/cms/issues/10261))
+- Fixed a bug where `<video>`, `<embed>`, and `<iframe>` tags within field instructions could be wider than the field’s container. ([#10264](https://github.com/craftcms/cms/issues/10264))
+- Fixed an error that occurred if the first control panel-defined route had a numeric URI pattern. ([#10251](https://github.com/craftcms/cms/issues/10251))
+- Fixed an error that could occur if a section didn’t have any entry types. ([#10272](https://github.com/craftcms/cms/issues/10272))
+- Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t escaping backslashes when modifying the value of an existing environment variable. ([#10274](https://github.com/craftcms/cms/issues/10274))
+- Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
+- Fixed a bug where the control panel layout could break if any field instructions/tips/warnings included an HTML tag that wasn’t closed properly. Such tags are now encoded so they appear as plain text. ([#10290](https://github.com/craftcms/cms/issues/10290))
+- Fixed a bug where disabled plugins could cause duplicate database queries.
+- Fixed a bug where multiple calls to `craft\services\Users::getUserPreferences()` could cause duplicate database queries.
+
+### Security
+- Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
+
 ## 3.7.26 - 2021-12-15
 
 ### Added

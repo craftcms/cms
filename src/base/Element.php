@@ -2264,6 +2264,7 @@ abstract class Element extends Component implements ElementInterface
                     ->structureId($this->structureId)
                     ->unique()
                     ->anyStatus()
+                    ->trashed(null)
                     ->ignorePlaceholders()
                     ->one() ?? false;
         }

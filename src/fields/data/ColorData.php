@@ -34,7 +34,7 @@ class ColorData extends BaseObject implements Serializable
     private $_hex;
 
     /**
-     * @var array<int, int, int>
+     * @var array
      * @see _hsl()
      */
     private $_hsl;
@@ -202,39 +202,46 @@ class ColorData extends BaseObject implements Serializable
     }
 
     /**
-     * @return array<int, int, int>
+     * @return array
      */
     private function _hsl(): array
     {
         if (!isset($this->_hsl)) {
-            // h/t https://stackoverflow.com/a/13887939/1688568
+            // h/t https://gist.github.com/brandonheyer/5254516
             $rPct = $this->getRed() / 255;
             $gPct = $this->getGreen() / 255;
             $bPct = $this->getBlue() / 255;
 
             $maxRgb = max($rPct, $gPct, $bPct);
             $minRgb = min($rPct, $gPct, $bPct);
-            $chroma = $maxRgb - $minRgb;
 
-            if ($chroma !== 0) {
-                if ($rPct === $minRgb) {
-                    $h = 3 - (($gPct - $bPct) / $chroma);
-                } else if ($bPct === $minRgb) {
-                    $h = 1 - (($rPct - $gPct) / $chroma);
-                } else {
-                    $h = 5 - (($bPct - $rPct) / $chroma);
-                }
-                $h = round($h * 60);
-                if ($h === 360) {
-                    $h = 0;
-                }
+            $l = ($maxRgb + $minRgb) / 2;
+            $d = $maxRgb - $minRgb;
 
-                $s = round(100 * ($chroma / $maxRgb));
+            if ($d == 0) {
+                $h = $s = 0; // achromatic
             } else {
-                $h = $s = 0;
+                $s = $d / (1 - abs(2 * $l - 1));
+
+                switch ($maxRgb) {
+                    case $rPct:
+                        $h = 60 * fmod((($gPct - $bPct) / $d), 6);
+                        if ($bPct > $gPct) {
+                            $h += 360;
+                        }
+                        break;
+
+                    case $gPct:
+                        $h = 60 * (($bPct - $rPct) / $d + 2);
+                        break;
+
+                    default:
+                        $h = 60 * (($rPct - $gPct) / $d + 4);
+                        break;
+                }
             }
 
-            $this->_hsl = [$h, $s, round(100 * $maxRgb)];
+            $this->_hsl = [round($h), round($s * 100), round($l * 100)];
         }
 
         return $this->_hsl;

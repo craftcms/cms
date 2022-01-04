@@ -41,7 +41,9 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     openingPreview: false,
     preview: null,
+    activatingPreviewToken: false,
     activatedPreviewToken: false,
+    previewTokenQueue: null,
     previewLinks: null,
     scrollY: null,
     createdProvisionalDraft: false,
@@ -52,6 +54,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.setSettings(settings, Craft.DraftEditor.defaults);
 
         this.queue = [];
+        this.previewTokenQueue = [];
         this.duplicatedElements = {};
         this.enableAutosave = Craft.autosaveDrafts;
         this.previewLinks = [];
@@ -584,11 +587,23 @@ Craft.DraftEditor = Garnish.Base.extend({
                 return;
             }
 
+            if (this.activatingPreviewToken) {
+                this.previewTokenQueue.push(resolve);
+                return;
+            }
+
+            this.activatingPreviewToken = true;
+
             Craft.sendActionRequest('POST', 'preview/create-token', {
                 data: this.getPreviewTokenParams(),
             }).then(() => {
+                this.activatingPreviewToken = false;
                 this.activatePreviewToken();
                 resolve(this.settings.previewToken);
+
+                while (this.previewTokenQueue.length) {
+                    this.previewTokenQueue.shift()(this.settings.previewToken);
+                }
             }).catch(reject);
         });
     },
