@@ -215,8 +215,6 @@ class ImageTransforms
             throw new FsObjectNotFoundException("The file \"{$asset->getFilename()}\" does not exist.");
         }
 
-        $asset->setTransformSource($imageSourcePath);
-
         return $imageSourcePath;
     }
 

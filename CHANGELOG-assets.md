@@ -69,6 +69,7 @@
 - Removed `craft/base/VolumeInterface`.
 - Removed `craft/base/VolumeTrait`.
 - Removed `craft/elements/Asset::getTransformSource()`.
+- Removed `craft/elements/Asset::setTransformSource()`.
 - Removed `craft/models/FsListing::getVolume()`.
 - Removed `craft/services/ImageTransforms::deleteQueuedSourceFiles()`.
 - Removed `craft/services/ImageTransforms::deleteTransformIndex()`.

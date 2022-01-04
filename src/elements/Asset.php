@@ -713,11 +713,6 @@ class Asset extends Element
     private ?ImageTransform $_transform = null;
 
     /**
-     * @var string
-     */
-    private string $_transformSource = '';
-
-    /**
      * @var Volume|null
      */
     private ?Volume $_volume = null;
@@ -1531,16 +1526,6 @@ class Asset extends Element
             return null;
         }
         return $width . '×' . $height;
-    }
-
-    /**
-     * Set a source to use for transforms for this Assets File.
-     *
-     * @param string $uri
-     */
-    public function setTransformSource(string $uri): void
-    {
-        $this->_transformSource = $uri;
     }
 
     /**
