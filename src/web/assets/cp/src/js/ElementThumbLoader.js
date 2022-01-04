@@ -114,7 +114,7 @@ Craft.ElementThumbLoader.Worker = Garnish.Base.extend({
         var $img = $('<img/>', {
             sizes: $container.attr('data-sizes'),
             srcset: $container.attr('data-srcset'),
-            alt: ''
+            alt: $container.attr('data-alt') || '',
         });
         this.addListener($img, 'load,error', 'loadNext');
         $img.appendTo($container);
