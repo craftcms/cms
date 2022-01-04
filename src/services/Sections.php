@@ -1019,6 +1019,18 @@ class Sections extends Component
                 $entryTypes[] = new EntryType($result);
             }
             $this->_entryTypes = new MemoizableArray($entryTypes);
+
+            if (!empty($entryTypes) && Craft::$app->getRequest()->getIsCpRequest()) {
+                // Eager load the field layouts
+                /** @var EntryType[] $entryTypesByLayoutId */
+                $entryTypesByLayoutId = ArrayHelper::index($entryTypes, 'fieldLayoutId');
+                $allLayouts = Craft::$app->getFields()->getLayoutsByIds(array_filter(array_keys($entryTypesByLayoutId)));
+
+                foreach ($allLayouts as $layout) {
+                    $entryTypesByLayoutId[$layout->id]->setFieldLayout($layout);
+                }
+            }
+
         }
 
         return $this->_entryTypes;
