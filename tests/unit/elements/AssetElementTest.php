@@ -9,7 +9,9 @@ namespace crafttests\unit\elements;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\base\Volume;
+use craft\base\Fs;
+use craft\image\transforms\DefaultTransformer;
+use craft\models\Volume;
 use craft\elements\Asset;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
@@ -36,80 +38,33 @@ class AssetElementTest extends TestCase
      */
     public function testTransformWithOverrideParameters()
     {
+
+        // Set up asset to have an URL and a mock transform
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
-               'hasUrls' => true
+                'getFilesystem' => $this->make(Fs::class, [
+                    'hasUrls' => true
+                ])
             ]),
             'folderId' => 2,
             'filename' => 'foo.jpg',
         ]);
-
-        $transform = new ImageTransform();
         $this->tester->mockCraftMethods('imageTransforms', [
-            'normalizeTransform' => $transform,
-            'extendTransform' => Expected::once($transform),
-            'storeTransformIndexData' => new ImageTransformIndex(),
+            'getTransformByHandle' => $this->make(ImageTransform::class, [
+                'width' => 400,
+                'height' => 200,
+                'getImageTransformer' => $this->make(DefaultTransformer::class, [
+                    'getTransformUrl' => fn (Asset $asset, ImageTransform $transform) => 'w='.$transform->width.'&h='.$transform->height
+                ])
+            ])
         ]);
 
-        $this->tester->mockCraftMethods('assets', [
-            'getAssetUrl' => Expected::once('/foo.jpg'),
-        ]);
+        $previousValue = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
+        $url = $asset->getUrl(['transform' => 'mockedTransform', 'width' => 200]);
 
-        $asset->getUrl([
-            'transform' => 'transformHandle',
-            'width' => 200,
-        ]);
-    }
+        $this->assertSame('w=200&h=200', $url);
 
-    /**
-     * @param $transformData
-     * @throws \yii\base\InvalidConfigException
-     * @dataProvider normalizingExtendsTransformProvider
-     */
-    public function testNormalizingExtendsTransform($methodName, $transformData, $expectExtension)
-    {
-        $asset = $this->make(Asset::class, [
-            'getVolume' => $this->make(Volume::class, [
-                'hasUrls' => true
-            ]),
-            'folderId' => 2,
-            'kind' => Asset::KIND_IMAGE,
-            'width' => 100,
-            'height' => 100,
-            'filename' => 'some.jpg'
-        ]);
-
-        $this->tester->mockCraftMethods('assets', [
-            'getAssetUrl' => 'http://url.com'
-        ]);
-
-        $extend = $expectExtension ? Expected::once(new ImageTransform()) : Expected::never(new ImageTransform());
-
-        $assetTransforms = $this->make(ImageTransforms::class, [
-            'getTransformByHandle' => new ImageTransform(),
-            'extendTransform' => $extend,
-            'storeTransformIndexData' => new ImageTransformIndex(),
-        ]);
-
-        Craft::$app->set('imageTransforms', $assetTransforms);
-
-        $result = $asset->{$methodName}($transformData);
-
-    }
-
-    public function normalizingExtendsTransformProvider()
-    {
-        return [
-            ['getUrl', ['width' => 200], false],
-            ['getUrl', ['width' => 200, 'transform' => 'someTransform'], true],
-            ['getHeight', ['width' => 200], false],
-            ['getHeight', ['width' => 200, 'transform' => 'someTransform'], true],
-            ['getWidth', ['width' => 200], false],
-            ['getWidth', ['width' => 200, 'transform' => 'someTransform'], true],
-            ['getImg', ['width' => 200], false],
-            ['getImg', ['width' => 200, 'transform' => 'someTransform'], true],
-            ['setTransform', ['width' => 200], false],
-            ['setTransform', ['width' => 200, 'transform' => 'someTransform'], true],
-        ];
+        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = $previousValue;
     }
 }

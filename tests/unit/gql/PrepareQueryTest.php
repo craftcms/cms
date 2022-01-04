@@ -254,8 +254,7 @@ class PrepareQueryTest extends Unit
             'uid' => self::VOLUME_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
-            'type' => StringHelper::randomString(),
-            'hasUrls' => false,
+            'filesystem' => 'fake'
         ]);
 
         $this->_volume->save();

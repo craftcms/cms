@@ -22,6 +22,7 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\ImageTransform;
+use craft\models\Volume;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
@@ -89,12 +90,14 @@ class DirectiveTest extends Unit
         $filename = StringHelper::randomString() . '.jpg';
         $asset = $this->make(Asset::class, [
             'filename' => $filename,
-            'getVolume' => $this->make(Local::class, [
-                'hasUrls' => true,
-                'url' => 'http://domain.local/'
+            'getVolume' => $this->make(Volume::class, [
+                'getFilesystem' => $this->make(Local::class, [
+                    'hasUrls' => true,
+                    'url' => 'http://domain.local/'
+                ]),
             ]),
             'folderId' => 7,
-            'getUrl' => function($parameters, $generateNow) use ($filename) {
+            'getUrl' => function($parameters) use ($filename) {
                 if (is_array($parameters)) {
                     $parameters = ImageTransforms::normalizeTransform($parameters);
                 }
@@ -104,7 +107,7 @@ class DirectiveTest extends Unit
                 }
 
                 $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
-                return $transformed . ($generateNow ? ($filename . '-generateNow') : ($filename . 'generateLater'));
+                return $transformed;
             }
         ]);
 
@@ -118,7 +121,6 @@ class DirectiveTest extends Unit
             'fieldNodes' => $fieldNodes
         ]);
 
-        $generateNow = $parameters['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
         unset($parameters['immediately']);
 
         // `handle` parameter overrides everything else.
@@ -127,9 +129,9 @@ class DirectiveTest extends Unit
         }
 
         if ($mustNotBeSame) {
-            self::assertNotEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+            self::assertNotEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
         } else {
-            self::assertEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+            self::assertEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
         }
     }
 
