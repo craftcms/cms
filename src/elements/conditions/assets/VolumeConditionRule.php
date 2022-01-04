@@ -4,7 +4,6 @@ namespace craft\elements\conditions\assets;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\conditions\BaseSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
