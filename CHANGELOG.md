@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.27 - 2022-01-04
 
 ### Added
 - Added the `setSchemaOnConnect` database connection setting. ([#10273](https://github.com/craftcms/cms/issues/10273))
