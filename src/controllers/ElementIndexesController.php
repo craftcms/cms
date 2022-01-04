@@ -583,7 +583,7 @@ class ElementIndexesController extends BaseElementsController
         if ($includeActions) {
             $responseData['actions'] = $this->actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
-            $responseData['actionsFootHtml'] = $view->getBodyHtml();
+            $responseData['actionsBodyHtml'] = $view->getBodyHtml();
             $responseData['exporters'] = $this->exporterData();
         }
 
@@ -602,7 +602,7 @@ class ElementIndexesController extends BaseElementsController
             );
 
             $responseData['headHtml'] = $view->getHeadHtml();
-            $responseData['footHtml'] = $view->getBodyHtml();
+            $responseData['bodyHtml'] = $view->getBodyHtml();
         } else {
             $responseData['html'] = '';
         }

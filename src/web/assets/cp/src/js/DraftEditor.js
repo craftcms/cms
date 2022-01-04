@@ -1029,7 +1029,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                 }
 
                 Craft.appendHeadHtml(response.data.headHtml);
-                Craft.appendFootHtml(response.data.bodyHtml);
+                Craft.appendBodyHtml(response.data.bodyHtml);
 
                 this.afterUpdate(data);
 

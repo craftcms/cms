@@ -484,7 +484,7 @@ class ElementsController extends BaseElementsController
             'fieldHtml' => implode("\n", $fieldHtml),
             'sidebarHtml' => $sidebarHtml,
             'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
             'initialDeltaValues' => $view->getInitialDeltaValues(),
             'editUrl' => $element->getCpEditUrl(),

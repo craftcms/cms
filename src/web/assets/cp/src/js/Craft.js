@@ -1525,6 +1525,11 @@ $.extend(Craft,
             return $ul;
         },
 
+        /**
+         * Appends HTML to the page `<head>`.
+         *
+         * @param {string} html
+         */
         appendHeadHtml: function(html) {
             if (!html) {
                 return;
@@ -1550,7 +1555,13 @@ $.extend(Craft,
             $('head').append(html);
         },
 
-        appendFootHtml: function(html) {
+
+        /**
+         * Appends HTML to the page `<body>`.
+         *
+         * @param {string} html
+         */
+        appendBodyHtml: function(html) {
             if (!html) {
                 return;
             }
@@ -1573,6 +1584,16 @@ $.extend(Craft,
             }
 
             Garnish.$bod.append(html);
+        },
+
+        /**
+         * Appends HTML to the page `<body>`.
+         *
+         * @deprecated in 4.0.0. `appendBodyHtml()` should be used instead
+         */
+        appendFootHtml: function(html) {
+            console.warn('Craft.appendFootHtml() is deprecated. Craft.appendBodyHtml() should be used instead.');
+            this.appendBodyHtml(html);
         },
 
         /**

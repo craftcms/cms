@@ -72,7 +72,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
     actions: null,
     actionsHeadHtml: null,
-    actionsFootHtml: null,
+    actionsBodyHtml: null,
     $selectAllContainer: null,
     $selectAllCheckbox: null,
     showingActionTriggers: false,
@@ -1671,7 +1671,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         // Get rid of the old action triggers regardless of whether the new batch has actions or not
         if (this.actions) {
             this.hideActionTriggers();
-            this.actions = this.actionsHeadHtml = this.actionsFootHtml = this._$triggers = null;
+            this.actions = this.actionsHeadHtml = this.actionsBodyHtml = this._$triggers = null;
         }
 
         // Update the count text
@@ -1752,7 +1752,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         this.$elements.html(response.html);
         Craft.appendHeadHtml(response.headHtml);
-        Craft.appendFootHtml(response.footHtml);
+        Craft.appendBodyHtml(response.bodyHtml);
 
         // Batch actions setup
         // -------------------------------------------------------------
@@ -1763,7 +1763,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             if (this.$selectAllContainer.length) {
                 this.actions = response.actions;
                 this.actionsHeadHtml = response.actionsHeadHtml;
-                this.actionsFootHtml = response.actionsFootHtml;
+                this.actionsBodyHtml = response.actionsBodyHtml;
 
                 // Create the select all checkbox
                 this.$selectAllCheckbox = $('<div class="checkbox"/>').prependTo(this.$selectAllContainer);
@@ -1960,7 +1960,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         this._$triggers.appendTo(this.$toolbar);
         Craft.appendHeadHtml(this.actionsHeadHtml);
-        Craft.appendFootHtml(this.actionsFootHtml);
+        Craft.appendBodyHtml(this.actionsBodyHtml);
 
         Craft.initUiElements(this._$triggers);
 
@@ -2213,7 +2213,7 @@ const FilterHud = Garnish.HUD.extend({
 
             this.$main.append(response.data.hudHtml);
             Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendFootHtml(response.data.bodyHtml);
+            Craft.appendBodyHtml(response.data.bodyHtml);
 
             const $btnContainer = $('<div/>', {
                 class: 'flex flex-nowrap',

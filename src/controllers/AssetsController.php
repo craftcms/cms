@@ -1257,7 +1257,7 @@ class AssetsController extends Controller
             'success' => true,
             'previewHtml' => $previewHtml,
             'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
             'requestId' => $requestId,
         ]);
     }

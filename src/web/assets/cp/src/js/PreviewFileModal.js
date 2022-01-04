@@ -146,7 +146,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend({
                     this.$container.removeClass('zilch');
                     this.$container.append(response.previewHtml);
                     Craft.appendHeadHtml(response.headHtml);
-                    Craft.appendFootHtml(response.footHtml);
+                    Craft.appendBodyHtml(response.bodyHtml);
                 } else {
                     alert(response.error);
 

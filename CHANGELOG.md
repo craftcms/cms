@@ -217,6 +217,7 @@
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the `assets/update-focal-point` action.
+- Added the `Craft.appendBodyHtml()` JavaScript function, which replaces the now-deprecated `appendFootHtml()` function.
 - Added the `Craft.getPageUrl()` JavaScript function.
 - Added the `htmx.org` JavaScript library.
 
@@ -386,6 +387,7 @@
 - Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::regenerateYamlFromConfig()`. `regenerateExternalConfig()` should be used instead.
+- Deprecated the `Craft.appendFootHtml()` JavaScript function. `appendBodyHtml()` should be used instead.
 
 ### Removed
 - Removed the `--type` option from `migrate/*` commands. `--track` or `--plugin` can be used instead.

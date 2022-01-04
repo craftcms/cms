@@ -22,7 +22,7 @@ htmx.on('htmx:load', function(evt) {
     for (let i = 0; i < bodyHtmls.length; i++) {
         const bodyHtml = bodyHtmls[i].innerHTML;
         if (bodyHtml) {
-            Craft.appendFootHtml(bodyHtml);
+            Craft.appendBodyHtml(bodyHtml);
         }
     }
 

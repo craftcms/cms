@@ -283,7 +283,7 @@ JS;
         return $this->asJson([
             'settingsHtml' => $html,
             'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 
