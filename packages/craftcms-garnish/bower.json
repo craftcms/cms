@@ -1,0 +1,28 @@
+{
+  "name": "garnishjs",
+  "description": "Garnish UI toolkit",
+  "main": "gulpfile.js",
+  "authors": [
+    "Brandon Kelly"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "garnish",
+    "garnishjs",
+    "ui",
+    "toolkit"
+  ],
+  "homepage": "https://github.com/pixelandtonic/garnishjs",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery-touch-events": "^1.0.5",
+    "velocity": "^1.2.3",
+    "element-resize-detector": "^1.1.7"
+  }
+}
