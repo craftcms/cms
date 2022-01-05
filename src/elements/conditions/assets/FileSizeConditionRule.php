@@ -42,7 +42,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     /**
      * @inheritdoc
      */
-    public function getHtml(): string
+    protected function inputHtml(): string
     {
         return Html::tag('div',
             parent::getHtml() .

@@ -2,7 +2,10 @@
 
 namespace craft\base\conditions;
 
+use Craft;
 use craft\base\Component;
+use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 
 /**
@@ -18,6 +21,18 @@ use craft\helpers\StringHelper;
  */
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {
+    protected const OPERATOR_EQ = '=';
+    protected const OPERATOR_NE = '!=';
+    protected const OPERATOR_LT = '<';
+    protected const OPERATOR_LTE = '<=';
+    protected const OPERATOR_GT = '>';
+    protected const OPERATOR_GTE = '>=';
+    protected const OPERATOR_BEGINS_WITH = 'bw';
+    protected const OPERATOR_ENDS_WITH = 'ew';
+    protected const OPERATOR_CONTAINS = '**';
+    protected const OPERATOR_IN = 'in';
+    protected const OPERATOR_NOT_IN = 'ni';
+
     /**
      * @inheritdoc
      */
@@ -30,6 +45,11 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      * @var string UUID
      */
     public string $uid;
+
+    /**
+     * @var string The selected operator.
+     */
+    public string $operator;
 
     /**
      * @var ConditionInterface
@@ -76,10 +96,98 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      */
     public function getConfig(): array
     {
-        return [
+        $config = [
             'class' => get_class($this),
             'uid' => $this->uid,
         ];
+
+        if (!empty($this->operators())) {
+            $config['operator'] = $this->operator;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Returns the operators that should be allowed for this rule.
+     *
+     * @return array
+     */
+    protected function operators(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the input HTML.
+     *
+     * @return string
+     */
+    abstract protected function inputHtml(): string;
+
+    /**
+     * Returns the option label for a given operator.
+     *
+     * @param string $operator
+     * @return string
+     */
+    protected function operatorLabel(string $operator): string
+    {
+        switch ($operator) {
+            case self::OPERATOR_EQ:
+                return Craft::t('app', 'equals');
+            case self::OPERATOR_NE:
+                return Craft::t('app', 'does not equal');
+            case self::OPERATOR_LT:
+                return Craft::t('app', 'is less than');
+            case self::OPERATOR_LTE:
+                return Craft::t('app', 'is less than or equals');
+            case self::OPERATOR_GT:
+                return Craft::t('app', 'is greater than');
+            case self::OPERATOR_GTE:
+                return Craft::t('app', 'is greater than or equals');
+            case self::OPERATOR_BEGINS_WITH:
+                return Craft::t('app', 'begins with');
+            case self::OPERATOR_ENDS_WITH:
+                return Craft::t('app', 'ends with');
+            case self::OPERATOR_CONTAINS:
+                return Craft::t('app', 'contains');
+            case self::OPERATOR_IN:
+                return Craft::t('app', 'is one of');
+            case self::OPERATOR_NOT_IN:
+                return Craft::t('app', 'is not one of');
+            default:
+                return $operator;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHtml(): string
+    {
+        $operators = $this->operators();
+
+        return
+            Html::beginTag('div', [
+                'class' => ['flex', 'flex-nowrap'],
+            ]) .
+            (count($operators) > 1
+                ? (
+                    Html::hiddenLabel(Craft::t('app', 'Operator'), 'operator') .
+                    Cp::selectHtml([
+                        'id' => 'operator',
+                        'name' => 'operator',
+                        'value' => $this->operator,
+                        'options' => array_map(function($operator) {
+                            return ['value' => $operator, 'label' => $this->operatorLabel($operator)];
+                        }, $operators),
+                    ])
+                )
+                : Html::hiddenInput('operator', reset($operators))
+            ) .
+            $this->inputHtml() .
+            Html::endTag('div');
     }
 
     /**
@@ -89,6 +197,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         return [
             [['uid'], 'safe'],
+            [['operator'], 'in', 'range' => $this->operators()],
         ];
     }
 

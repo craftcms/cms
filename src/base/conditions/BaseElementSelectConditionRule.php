@@ -87,9 +87,9 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdochandleException
+     * @inheritdoc
      */
-    public function getHtml(): string
+    protected function inputHtml(): string
     {
         $element = $this->_element();
         return Cp::elementSelectHtml([

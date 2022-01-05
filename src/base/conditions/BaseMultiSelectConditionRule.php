@@ -15,10 +15,10 @@ use yii\base\InvalidConfigException;
  * @property string[] $values
  * @since 4.0.0
  */
-abstract class BaseMultiSelectConditionRule extends BaseOperatorConditionRule
+abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
     /**
-     * @var string The selected operator.
+     * @inheritdoc
      */
     public string $operator = self::OPERATOR_IN;
 

@@ -62,9 +62,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     /**
-     * @inheritdochandleException
+     * @inheritdoc
      */
-    public function getHtml(): string
+    protected function inputHtml(): string
     {
         return Html::tag('div',
             Cp::selectHtml([
