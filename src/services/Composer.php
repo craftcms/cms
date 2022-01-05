@@ -364,8 +364,7 @@ class Composer extends Component
     }
 
     /**
-     * Returns the decoded Composer config, modified to use
-     * composer.craftcms.com instead of packagist.org.
+     * Returns the decoded Composer config, modified to use composer.craftcms.com.
      *
      * @param IOInterface $io
      * @param string $jsonPath
@@ -388,8 +387,16 @@ class Composer extends Component
 
         if ($prepForUpdate) {
             // Add composer.craftcms.com if it's not already in there
-            if (!$this->findCraftRepo($config)) {
-                $config['repositories'][] = ['type' => 'composer', 'url' => $this->composerRepoUrl];
+            $craftRepoKey = $this->_findCraftRepo($config);
+            if ($craftRepoKey === false) {
+                $config['repositories'][] = [
+                    'type' => 'composer',
+                    'url' => $this->composerRepoUrl,
+                    'canonical' => false,
+                ];
+            } else {
+                // Make sure it's not canonical
+                $config['repositories'][$craftRepoKey]['canonical'] = false;
             }
 
             // Are we relying on the bundled CA file?
@@ -413,30 +420,19 @@ class Composer extends Component
         return $config;
     }
 
-    protected function findCraftRepo(array $config): bool
+    /**
+     * @param array $config
+     * @return int|string|false The key in `$config['repositories']` referencing composer.craftcms.com
+     */
+    private function _findCraftRepo(array $config)
     {
         if (!isset($config['repositories'])) {
             return false;
         }
 
-        foreach ($config['repositories'] as $repository) {
+        foreach ($config['repositories'] as $key => $repository) {
             if (isset($repository['url']) && rtrim($repository['url'], '/') === $this->composerRepoUrl) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function findDisablePackagist(array $config): bool
-    {
-        if (!isset($config['repositories'])) {
-            return false;
-        }
-
-        foreach ($config['repositories'] as $repository) {
-            if ($repository === ['packagist.org' => false]) {
-                return true;
+                return $key;
             }
         }
 
