@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a Composer error that could occur if `composer.craftcms.com` was missing an expected package/version, but Packagist knew about it. ([#10311](https://github.com/craftcms/cms/issues/10311))
+- Fixed an error that could occur on the Dashboard if there were any Quick Post widgets that included a Title field. ([#10314](https://github.com/craftcms/cms/issues/10314))
 
 ## 3.7.27.1 - 2022-01-04
 
