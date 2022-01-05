@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a Composer error that could occur if `composer.craftcms.com` was missing an expected package/version, but Packagist knew about it. ([#10311](https://github.com/craftcms/cms/issues/10311))
+
 ## 3.7.27.1 - 2022-01-04
 
 ### Fixed
