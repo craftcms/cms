@@ -1578,8 +1578,10 @@ class Sections extends Component
             ->id(['not', $entry->id])
             ->anyStatus();
 
-        foreach (Db::each($otherEntriesQuery) as $entry) {
-            $elementsService->deleteElement($entry, true);
+        foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
+            if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
+                $elementsService->deleteElement($entryToDelete, true);
+            }
         }
 
         return $entry;
