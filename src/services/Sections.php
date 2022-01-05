@@ -1030,7 +1030,6 @@ class Sections extends Component
                     $entryTypesByLayoutId[$layout->id]->setFieldLayout($layout);
                 }
             }
-
         }
 
         return $this->_entryTypes;

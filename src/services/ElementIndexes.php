@@ -16,7 +16,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;

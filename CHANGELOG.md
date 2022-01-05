@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.27.1 - 2022-01-04
+
+### Fixed
+- Fixed a PHP error that would occur when creating a new user. ([#10308](https://github.com/craftcms/cms/issues/10308))
+
 ## 3.7.27 - 2022-01-04
 
 ### Added
