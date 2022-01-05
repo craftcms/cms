@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that would occur when querying for a Matrix block type by `int`. ([#10315](https://github.com/craftcms/cms/issues/10315))
+
 ## 3.7.27.1 - 2022-01-04
 
 ### Fixed
