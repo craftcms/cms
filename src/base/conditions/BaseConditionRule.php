@@ -7,6 +7,7 @@ use craft\base\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 
 /**
  * BaseConditionRule provides a base implementation for condition rules.
@@ -32,6 +33,8 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     protected const OPERATOR_CONTAINS = '**';
     protected const OPERATOR_IN = 'in';
     protected const OPERATOR_NOT_IN = 'ni';
+    protected const OPERATOR_EMPTY = 'empty';
+    protected const OPERATOR_NOT_EMPTY = 'notempty';
 
     /**
      * @inheritdoc
@@ -50,6 +53,11 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      * @var string The selected operator.
      */
     public string $operator;
+
+    /**
+     * @var bool Whether to reload the condition builder when the operator changes
+     */
+    protected bool $reloadOnOperatorChange = false;
 
     /**
      * @var ConditionInterface
@@ -156,6 +164,10 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
                 return Craft::t('app', 'is one of');
             case self::OPERATOR_NOT_IN:
                 return Craft::t('app', 'is not one of');
+            case self::OPERATOR_EMPTY:
+                return Craft::t('app', 'is empty');
+            case self::OPERATOR_NOT_EMPTY:
+                return Craft::t('app', 'has a value');
             default:
                 return $operator;
         }
@@ -182,6 +194,11 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
                         'options' => array_map(function($operator) {
                             return ['value' => $operator, 'label' => $this->operatorLabel($operator)];
                         }, $operators),
+                        'inputAttributes' => [
+                            'hx' => [
+                                'post' => $this->reloadOnOperatorChange ? UrlHelper::actionUrl('conditions/render') : false,
+                            ],
+                        ],
                     ])
                 )
                 : Html::hiddenInput('operator', reset($operators))
@@ -197,7 +214,9 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         return [
             [['uid'], 'safe'],
-            [['operator'], 'in', 'range' => $this->operators()],
+            [['operator'], function() {
+                return in_array($this->operator, $this->operators(), true);
+            }],
         ];
     }
 
