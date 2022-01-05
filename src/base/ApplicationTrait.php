@@ -358,7 +358,7 @@ trait ApplicationTrait
 
             $info = $this->getInfo(true);
             return $this->_isInstalled = !empty($info->id);
-        } catch (DbException | ServerErrorHttpException $e) {
+        } catch (DbException|ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
             if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
                 throw $e;
@@ -670,7 +670,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException | DbConnectException $e) {
+        } catch (DbException|DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -807,7 +807,7 @@ trait ApplicationTrait
     {
         try {
             $this->getDb()->open();
-        } catch (DbConnectException | InvalidConfigException $e) {
+        } catch (DbConnectException|InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
