@@ -105,7 +105,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
     /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    public function getHtml(): string
     {
         $html = Cp::selectHtml([
             'name' => 'sectionUid',

@@ -41,7 +41,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    public function getHtml(): string
     {
         $lightswitchId = 'lightswitch';
 

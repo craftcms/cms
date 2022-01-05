@@ -193,13 +193,12 @@ abstract class FieldLayoutComponent extends Model
             }
 
             $userCondition = $this->_userCondition ?? User::createCondition();
-            $userConditionHtml = $userCondition->getBuilderHtml([
-                'mainTag' => 'div',
-                'id' => 'user-condition',
-                'name' => 'userCondition',
-                'projectConfigTypes' => true,
-            ]);
-            $html .= Cp::fieldHtml($userConditionHtml, [
+            $userCondition->mainTag = 'div';
+            $userCondition->id = 'user-condition';
+            $userCondition->name = 'userCondition';
+            $userCondition->forProjectConfig = true;
+
+            $html .= Cp::fieldHtml($userCondition->getBuilderHtml(), [
                 'label' => Craft::t('app', 'Current User Condition'),
                 'instructions' => Craft::t('app', 'Only show for users who match the following rules:'),
             ]);
@@ -210,13 +209,12 @@ abstract class FieldLayoutComponent extends Model
 
             if ($elementType) {
                 $elementCondition = $this->_elementCondition ?? $elementType::createCondition();
-                $elementConditionHtml = $elementCondition->getBuilderHtml([
-                    'mainTag' => 'div',
-                    'id' => 'element-condition',
-                    'name' => 'elementCondition',
-                    'projectConfigTypes' => true,
-                ]);
-                $html .= Cp::fieldHtml($elementConditionHtml, [
+                $elementCondition->mainTag = 'div';
+                $elementCondition->id = 'element-condition';
+                $elementCondition->name = 'elementCondition';
+                $elementCondition->forProjectConfig = true;
+
+                $html .= Cp::fieldHtml($elementCondition->getBuilderHtml(), [
                     'label' => Craft::t('app', '{type} Condition', [
                         'type' => $elementType::displayName(),
                     ]),

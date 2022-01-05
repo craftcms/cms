@@ -42,10 +42,10 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    public function getHtml(): string
     {
         return Html::tag('div',
-            parent::getHtml($options) .
+            parent::getHtml() .
             Cp::selectHtml([
                 'name' => 'unit',
                 'options' => [

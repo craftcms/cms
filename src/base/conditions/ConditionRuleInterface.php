@@ -14,6 +14,7 @@ use craft\base\ComponentInterface;
  * @property-read string $label The rule’s option label
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @mixin BaseConditionRule
  */
 interface ConditionRuleInterface extends ComponentInterface
 {
@@ -41,10 +42,9 @@ interface ConditionRuleInterface extends ComponentInterface
     /**
      * Returns the rule’s HTML for a condition builder.
      *
-     * @param array $options The condition builder options
      * @return string
      */
-    public function getHtml(array $options = []): string;
+    public function getHtml(): string;
 
     /**
      * Sets the condition associated with this rule.

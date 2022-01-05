@@ -94,7 +94,7 @@ abstract class BaseOperatorConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    public function getHtml(): string
     {
         $operators = $this->operators();
 

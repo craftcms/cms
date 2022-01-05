@@ -11,25 +11,24 @@ use yii\base\InvalidArgumentException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @mixin BaseCondition
  */
 interface ConditionInterface
 {
     /**
      * Renders the HTML for the condition builder, including its outer container element.
      *
-     * @param array $options The builder options
      * @return string
      */
-    public function getBuilderHtml(array $options = []): string;
+    public function getBuilderHtml(): string;
 
     /**
      * Renders the inner HTML for the condition builder, excluding its outer container element.
      *
-     * @param array $options The builder options
      * @param bool $autofocusAddButton Whether the Add Rule button should be autofocused
      * @return string
      */
-    public function getBuilderInnerHtml(array $options = [], bool $autofocusAddButton = false): string;
+    public function getBuilderInnerHtml(bool $autofocusAddButton = false): string;
 
     /**
      * Returns the condition’s portable config.
@@ -50,10 +49,9 @@ interface ConditionInterface
     /**
      * Returns the selectable rules for the condition, indexed by type.
      *
-     * @param array The builder options
      * @return ConditionRuleInterface[]
      */
-    public function getSelectableConditionRules(array $options): array;
+    public function getSelectableConditionRules(): array;
 
     /**
      * Returns the rules this condition is configured with.

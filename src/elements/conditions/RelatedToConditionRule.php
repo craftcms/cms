@@ -64,7 +64,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     /**
      * @inheritdochandleException
      */
-    public function getHtml(array $options = []): string
+    public function getHtml(): string
     {
         return Html::tag('div',
             Cp::selectHtml([
@@ -77,7 +77,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
                     ],
                 ],
             ]) .
-            parent::getHtml($options),
+            parent::getHtml(),
             [
                 'class' => ['flex', 'flex-nowrap'],
             ]

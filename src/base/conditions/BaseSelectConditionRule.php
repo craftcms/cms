@@ -38,7 +38,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    public function getHtml(): string
     {
         $selectId = 'select';
 

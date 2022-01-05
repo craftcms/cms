@@ -84,7 +84,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    public function getHtml(): string
     {
         return
             Html::beginTag('div', ['class' => ['flex', 'flex-nowrap']]) .

@@ -14,6 +14,7 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQuery;
@@ -385,32 +386,31 @@ class ElementIndexesController extends BaseElementsController
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
         $id = $this->request->getRequiredBodyParam('id');
+        /** @var ElementCondition $condition */
         $condition = $elementType::createCondition();
+        $condition->mainTag = 'div';
+        $condition->id = $id;
+        $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
         // Filter out any condition rules that touch the same query params as the source criteria
         $source = $this->source();
         if ($source['type'] === ElementSources::TYPE_NATIVE) {
-            $queryParams = array_keys($source['criteria'] ?? []);
+            $condition->queryParams = array_keys($source['criteria'] ?? []);
         } else {
             /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
-            $queryParams = [];
+            $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
                 foreach ($rule->getExclusiveQueryParams() as $param) {
-                    $queryParams[] = $param;
+                    $condition->queryParams[] = $param;
                 }
             }
         }
 
-        $queryParams[] = 'status';
+        $condition->queryParams[] = 'status';
 
-        $html = $condition->getBuilderHtml([
-            'mainTag' => 'div',
-            'id' => $id,
-            'queryParams' => $queryParams,
-            'addRuleLabel' => Craft::t('app', 'Add a filter'),
-        ]);
+        $html = $condition->getBuilderHtml();
 
         $view = Craft::$app->getView();
         return $this->asJson([
