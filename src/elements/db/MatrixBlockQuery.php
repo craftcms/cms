@@ -545,8 +545,12 @@ class MatrixBlockQuery extends ElementQuery
         /** @var MatrixField $matrixField */
         $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
 
-        if (!empty($this->typeId) && ArrayHelper::isNumeric($this->typeId)) {
-            return $matrixField->getBlockTypeFields($this->typeId);
+        if (!empty($this->typeId)) {
+            $blockTypes = ArrayHelper::toArray($this->typeId);
+
+            if (ArrayHelper::isNumeric($blockTypes)) {
+                return $matrixField->getBlockTypeFields($blockTypes);
+            }
         }
 
         return $matrixField->getBlockTypeFields();

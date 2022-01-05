@@ -269,25 +269,49 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
-        if (isset($this->_tabs)) {
-            return $this->_tabs;
+        if (!isset($this->_tabs)) {
+            if ($this->id) {
+                $this->setTabs(Craft::$app->getFields()->getLayoutTabsById($this->id));
+            } else {
+                $this->setTabs([]);
+            }
         }
 
+        return $this->_tabs;
+    }
+
+    /**
+     * Sets the layout’s tabs.
+     *
+     * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
+     * objects or arrays defining the tab’s attributes.
+     */
+    public function setTabs(array $tabs): void
+    {
+        $this->_tabs = [];
         $this->_fields = [];
 
-        if ($this->id) {
-            $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
+        $index = 0;
 
-            // Take stock of all the selected layout elements
-            foreach ($this->_tabs as $tab) {
-                foreach ($tab->getElements() as $layoutElement) {
-                    if ($layoutElement instanceof BaseField) {
-                        $this->_fields[$layoutElement->attribute()] = $layoutElement;
-                    }
+        foreach ($tabs as $tab) {
+            if (is_array($tab)) {
+                // Set the layout before anything else
+                $tab = ['layout' => $this] + $tab;
+                $tab = new FieldLayoutTab($tab);
+            } else {
+                $tab->setLayout($this);
+            }
+            $tab->sortOrder = ++$index;
+            $this->_tabs[] = $tab;
+        }
+
+        // Take stock of all the selected layout elements
+        foreach ($this->_tabs as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                if ($layoutElement instanceof BaseField) {
+                    $this->_fields[$layoutElement->attribute()] = $layoutElement;
                 }
             }
-        } else {
-            $this->_tabs = [];
         }
 
         // Make sure that we aren't missing any mandatory fields
@@ -316,32 +340,6 @@ class FieldLayout extends Model
             $layoutElements = $tab->getElements();
             array_unshift($layoutElements, ...array_values($missingFields));
             $tab->setElements($layoutElements);
-        }
-
-        return $this->_tabs;
-    }
-
-    /**
-     * Sets the layout’s tabs.
-     *
-     * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
-     * objects or arrays defining the tab’s attributes.
-     */
-    public function setTabs(array $tabs): void
-    {
-        $this->_tabs = [];
-        $index = 0;
-
-        foreach ($tabs as $tab) {
-            if (is_array($tab)) {
-                // Set the layout before anything else
-                $tab = ['layout' => $this] + $tab;
-                $tab = new FieldLayoutTab($tab);
-            } else {
-                $tab->setLayout($this);
-            }
-            $tab->sortOrder = ++$index;
-            $this->_tabs[] = $tab;
         }
     }
 
