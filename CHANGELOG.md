@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.28 - 2022-01-05
 
 ### Changed
 - Updated Yii to 2.0.44.
