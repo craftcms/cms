@@ -58,12 +58,9 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     /**
      * @inheritdoc
      */
-    public function getConfig(): array
+    public function getCondition(): ConditionInterface
     {
-        return [
-            'class' => get_class($this),
-            'uid' => $this->uid,
-        ];
+        return $this->_condition;
     }
 
     /**
@@ -77,9 +74,12 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     /**
      * @inheritdoc
      */
-    public function getCondition(): ConditionInterface
+    public function getConfig(): array
     {
-        return $this->_condition;
+        return [
+            'class' => get_class($this),
+            'uid' => $this->uid,
+        ];
     }
 
     /**
