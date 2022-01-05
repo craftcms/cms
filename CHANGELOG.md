@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a Composer error that could occur if `composer.craftcms.com` was missing an expected package/version, but Packagist knew about it. ([#10311](https://github.com/craftcms/cms/issues/10311))
+- Fixed a PHP error that could occur when querying for Matrix blocks. ([#10315](https://github.com/craftcms/cms/issues/10315))
 
 ## 3.7.27.1 - 2022-01-04
 
