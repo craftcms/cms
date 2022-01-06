@@ -845,7 +845,7 @@ class Html extends \yii\helpers\Html
      *
      * @param string $html
      * @return string
-     * @since 2.7.27
+     * @since 3.7.27
      */
     public static function encodeInvalidTags(string $html): string
     {
