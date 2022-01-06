@@ -96,6 +96,16 @@ abstract class FieldLayoutComponent extends Model
     }
 
     /**
+     * Returns whether this element has any conditions.
+     *
+     * @return bool
+     */
+    public function hasConditions(): bool
+    {
+        return isset($this->_userCondition) || isset($this->_elementCondition);
+    }
+
+    /**
      * Returns the user condition for this layout element.
      *
      * @return UserCondition|null
