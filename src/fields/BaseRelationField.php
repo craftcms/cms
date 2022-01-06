@@ -40,7 +40,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -79,12 +78,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns the element class associated with this field type.
      *
      * @return string The Element class name
-     * @throws NotSupportedException if the method hasn't been implemented by the subclass
      */
-    protected static function elementType(): string
-    {
-        throw new NotSupportedException('"elementType()" is not implemented.');
-    }
+    abstract protected static function elementType(): string;
 
     /**
      * Returns the default [[selectionLabel]] value.
