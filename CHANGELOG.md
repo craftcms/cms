@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- The content in the `resourcepaths` table is now excluded from database backups by default.
+
 ## 3.7.28 - 2022-01-05
 
 ### Changed
