@@ -466,11 +466,20 @@ class Users extends Component
     public function removeCredentials(User $user): bool
     {
         $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->active = $user->active = false;
-        $userRecord->pending = $user->pending = false;
-        $userRecord->password = $user->password = null;
-        $userRecord->verificationCode = $user->verificationCode = null;
-        return $userRecord->save();
+        $userRecord->active = false;
+        $userRecord->pending = false;
+        $userRecord->password = null;
+        $userRecord->verificationCode = null;
+        
+        if (!$userRecord->save()) {
+            return false;
+        }
+
+        $user->active = false;
+        $user->pending = false;
+        $user->password = null;
+        $user->verificationCode = null;
+        return true;
     }
 
     /**
