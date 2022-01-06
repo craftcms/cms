@@ -162,6 +162,13 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 24px;
 }
 
+.fld-required-indicator {
+  display: inline-flex;
+  font-size: 9px;
+  color: $linkColor;
+  @include margin-left(4px);
+}
+
 .fld-element {
   position: relative;
   display: flex;
@@ -240,6 +247,7 @@ $gridColor: hsl(212, 50%, 95%);
     .fld-attribute {
       flex: 1;
       display: flex;
+      align-items: center;
     }
 
     .fld-element-label h4,
@@ -253,26 +261,6 @@ $gridColor: hsl(212, 50%, 95%);
       font-weight: normal;
       color: $textColor;
       margin: 0;
-
-      & + .fld-required-indicator {
-        color: var(--ui-control-color);
-      }
-    }
-
-    .fld-attribute .fld-required-indicator {
-      margin-top: -1px;
-    }
-  }
-
-  &.fld-required .fld-required-indicator {
-    @include margin-left(2px);
-    line-height: 1;
-
-    &:after {
-      @include icon;
-      content: 'asterisk';
-      font-size: 8px;
-      line-height: 1;
     }
   }
 }
