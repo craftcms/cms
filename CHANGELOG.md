@@ -4,6 +4,7 @@
 
 ### Changed
 - The content in the `resourcepaths` table is now excluded from database backups by default.
+- Allow unlocking users no matter their status
 
 ## 3.7.28 - 2022-01-05
 

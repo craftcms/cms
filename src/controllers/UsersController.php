@@ -783,25 +783,7 @@ class UsersController extends Controller
                     }
                     break;
                 case User::STATUS_ACTIVE:
-                    if ($user->locked) {
-                        $statusLabel = Craft::t('app', 'Locked');
-                        if (
-                            !$isCurrentUser &&
-                            ($currentUser->admin || !$user->admin) &&
-                            $userSession->checkPermission('moderateUsers') &&
-                            (
-                                ($previousUserId = Session::get(User::IMPERSONATE_KEY)) === null ||
-                                $user->id != $previousUserId
-                            )
-                        ) {
-                            $statusActions[] = [
-                                'action' => 'users/unlock-user',
-                                'label' => Craft::t('app', 'Unlock'),
-                            ];
-                        }
-                    } else {
-                        $statusLabel = Craft::t('app', 'Active');
-                    }
+                    $statusLabel = Craft::t('app', 'Active');
 
                     if (!$isCurrentUser) {
                         $statusActions[] = [
@@ -816,6 +798,24 @@ class UsersController extends Controller
                         }
                     }
                     break;
+            }
+
+            if ($user->locked) {
+                $statusLabel = Craft::t('app', 'Locked');
+                if (
+                    !$isCurrentUser &&
+                    ($currentUser->admin || !$user->admin) &&
+                    $userSession->checkPermission('moderateUsers') &&
+                    (
+                        ($previousUserId = Session::get(User::IMPERSONATE_KEY)) === null ||
+                        $user->id != $previousUserId
+                    )
+                ) {
+                    $statusActions[] = [
+                        'action' => 'users/unlock-user',
+                        'label' => Craft::t('app', 'Unlock'),
+                    ];
+                }
             }
 
             if (!$isCurrentUser) {
