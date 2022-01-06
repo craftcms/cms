@@ -1273,7 +1273,7 @@ JS;
      */
     private static function _fldFieldSelectorsHtml(string $groupName, array $groupFields, FieldLayout $fieldLayout): string
     {
-        $showGroup = ArrayHelper::contains($groupFields, fn(BaseField $field) => $fieldLayout->isFieldIncluded($field->attribute()));
+        $showGroup = ArrayHelper::contains($groupFields, fn(BaseField $field) => !$fieldLayout->isFieldIncluded($field->attribute()));
 
         return
             Html::beginTag('div', [
