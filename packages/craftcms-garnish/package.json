@@ -1,55 +1,48 @@
 {
-  "name": "garnishjs",
+  "name": "@craftcms/garnish",
+  "version": "0.2.0",
   "description": "Garnish UI toolkit",
-  "main": "gulpfile.js",
+  "main": "webpack.config.js",
   "scripts": {
-    "test": "gulp test",
-    "build": "gulp build",
-    "watch": "gulp watch"
+    "build": "webpack --node-env=production --progress",
+    "serve": "webpack-dev-server --node-env=development",
+    "test": "karma start"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Brandon Kelly <brandon@pixelandtonic.com>",
+  "homepage": "https://craftcms.com",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pixelandtonic/Garnish.git"
+    "url": "git+https://github.com/craftcms/cms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/craftcms/cms/issues"
   },
   "keywords": [
     "garnish",
     "ui",
     "toolkit"
   ],
-  "author": "Brandon Kelly",
-  "bugs": {
-    "url": "https://github.com/pixelandtonic/Garnish/issues"
-  },
-  "homepage": "https://github.com/pixelandtonic/Garnish",
   "devDependencies": {
-    "bower": "^1.7.9",
-    "browserify": "^13.1.0",
-    "browserify-istanbul": "^0.2.1",
-    "coveralls": "^2.11.12",
-    "gulp": "^3.9.1",
-    "gulp-bower": "0.0.13",
-    "gulp-concat": "^2.6.0",
-    "gulp-insert": "^0.5.0",
-    "gulp-jsdoc3": "^0.3.0",
-    "gulp-notify": "^2.2.0",
-    "gulp-plumber": "^1.1.0",
-    "gulp-sourcemaps": "^1.9.1",
-    "gulp-uglify": "^1.5.3",
-    "gulp-util": "^3.0.7",
-    "gulp-watch": "^4.3.6",
-    "jasmine-core": "^2.4.1",
-    "karma": "^1.2.0",
-    "karma-browserify": "^5.1.0",
-    "karma-chrome-launcher": "^2.0.0",
-    "karma-coverage": "^1.1.1",
-    "karma-firefox-launcher": "^1.0.0",
-    "karma-jasmine": "^1.0.2",
-    "karma-jasmine-html-reporter": "^0.2.2",
+    "@craftcms/webpack": "^0.3.1",
+    "browserify": "^17.0.0",
+    "browserify-istanbul": "^3.0.1",
+    "copy-webpack-plugin": "^10.2.0",
+    "coveralls": "^3.1.1",
+    "jasmine-core": "^4.0.0",
+    "karma": "^6.3.9",
+    "karma-browserify": "^8.1.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-coverage": "^2.1.0",
+    "karma-firefox-launcher": "^2.1.2",
+    "karma-jasmine": "^4.0.1",
+    "karma-jasmine-html-reporter": "^1.7.0",
     "karma-requirejs": "^1.0.0",
+    "karma-webpack": "^5.0.0",
     "requirejs": "^2.2.0",
-    "watchify": "^3.7.0",
-    "yargs": "^4.2.0"
-  },
-  "dependencies": {},
-  "version": "0.1.48"
+    "watchify": "^4.0.0"
+  }
 }
