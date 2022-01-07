@@ -84,7 +84,7 @@ const getConfig = ({
     );
   }
 
-  const configName = path.basename(context);
+  const configName = config.name || path.basename(context);
 
   if (!watchPaths) {
     watchPaths = [
@@ -343,7 +343,7 @@ const getConfig = ({
       config.plugins.push(new Dotenv({ path: dotenvResult }));
     }
 
-    if (!isDevServerRunning) {
+    if (!process.env.NODE_ENV === "production") {
       config.plugins.push(new CleanWebpackPlugin());
       config.optimization.minimize = true;
       config.optimization.minimizer =  [
