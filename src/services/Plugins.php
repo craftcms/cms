@@ -16,6 +16,7 @@ use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -1148,7 +1149,7 @@ class Plugins extends Component
      */
     public function getPluginLicenseKey(string $handle)
     {
-        return $this->normalizePluginLicenseKey(Craft::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null));
+        return $this->normalizePluginLicenseKey(App::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null));
     }
 
     /**

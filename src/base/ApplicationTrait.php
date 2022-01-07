@@ -595,7 +595,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
+        return App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -808,7 +808,7 @@ trait ApplicationTrait
     public function getSystemName(): string
     {
         if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
-            return Craft::parseEnv($name);
+            return App::parseEnv($name);
         }
 
         try {
@@ -1508,7 +1508,7 @@ trait ApplicationTrait
         $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
-            $this->setTimeZone(Craft::parseEnv($timeZone));
+            $this->setTimeZone(App::parseEnv($timeZone));
         }
     }
 
