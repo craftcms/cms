@@ -12,6 +12,9 @@
 - Deprecated `Craft::parseEnv()`. `craft\helpers\App::parseEnv()` should be used instead.
 - Deprecated `Craft::parseBooleanEnv()`. `craft\helpers\App::parseBooleanEnv()` should be used instead.
 
+### Fixed
+- Fixed a bug where admin tables were displaying titles incorrectly.
+
 ## 3.7.28 - 2022-01-05
 
 ### Changed
