@@ -1,5 +1,44 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
+
+### Deprecated
+- Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
+
+### Changed
+- The content in the `resourcepaths` table is now excluded from database backups by default.
+
+### Deprecated
+- Deprecated `Craft::parseEnv()`. `craft\helpers\App::parseEnv()` should be used instead.
+- Deprecated `Craft::parseBooleanEnv()`. `craft\helpers\App::parseBooleanEnv()` should be used instead.
+
+### Fixed
+- Fixed a bug where admin tables were displaying titles incorrectly.
+
+## 3.7.28 - 2022-01-05
+
+### Changed
+- Updated Yii to 2.0.44.
+
+### Fixed
+- Fixed a Composer error that could occur if `composer.craftcms.com` was missing an expected package/version, but Packagist knew about it. ([#10311](https://github.com/craftcms/cms/issues/10311))
+- Fixed a PHP error that could occur when querying for Matrix blocks. ([#10315](https://github.com/craftcms/cms/issues/10315))
+- Fixed a bug where Single sections’ drafts would get deleted when their section settings were updated. ([#10307](https://github.com/craftcms/cms/issues/10307))
+- Fixed an error that could occur on the Dashboard if there were any Quick Post widgets that included a Title field. ([#10314](https://github.com/craftcms/cms/issues/10314))
+
+## 3.7.27.2 - 2022-01-06
+
+### Fixed
+- Fixed an error that could occur when updating to Craft 3.7.28/Yii 2.0.44 from the control panel.
+
+## 3.7.27.1 - 2022-01-04
+
+### Fixed
+- Fixed a PHP error that would occur when creating a new user. ([#10308](https://github.com/craftcms/cms/issues/10308))
+
 ## 3.7.27 - 2022-01-04
 
 ### Added

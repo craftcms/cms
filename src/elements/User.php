@@ -1309,7 +1309,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferences(): array
     {
-        return Craft::$app->getUsers()->getUserPreferences($this->id);
+        return $this->id ? Craft::$app->getUsers()->getUserPreferences($this->id) : [];
     }
 
     /**

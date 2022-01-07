@@ -8,6 +8,7 @@ use craft\base\LocalVolumeInterface;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
@@ -115,7 +116,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(Craft::parseEnv($this->path));
+        return FileHelper::normalizePath(App::parseEnv($this->path));
     }
 
     /**
