@@ -11,6 +11,11 @@
 - Fixed a bug where Single sections’ drafts would get deleted when their section settings were updated. ([#10307](https://github.com/craftcms/cms/issues/10307))
 - Fixed an error that could occur on the Dashboard if there were any Quick Post widgets that included a Title field. ([#10314](https://github.com/craftcms/cms/issues/10314))
 
+## 3.7.27.2 - 2022-01-06
+
+### Fixed
+- Fixed an error that could occur when updating to Craft 3.7.28/Yii 2.0.44 from the control panel.
+
 ## 3.7.27.1 - 2022-01-04
 
 ### Fixed
