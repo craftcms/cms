@@ -1,7 +1,0 @@
-.DS_Store
-Source/.idea/
-/.idea
-node_modules/*
-/coverage
-bower_components/*
-docs/*

@@ -23,7 +23,7 @@ class GarnishAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@vendor/craftcms/cms/packages/craftcms-garnish/dist';
+        $this->sourcePath = __DIR__ . '/dist';
         $this->depends = [
             ElementResizeDetectorAsset::class,
             JqueryAsset::class,

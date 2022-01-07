@@ -13,7 +13,6 @@
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
     "@craftcms/sass": "./packages/craftcms-sass",
-    "@craftcms/garnish": "./packages/craftcms-garnish",
     "@pixelandtonic/craftui": "~0.3.8",
     "accounting": "^0.4.1",
     "axios": "^0.21.4",

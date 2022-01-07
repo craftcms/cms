@@ -83,7 +83,6 @@ const getConfig = ({
       `Running the dev server is only permitted in individual bundles.`
     );
   }
-
   const configName = path.basename(context);
 
   if (!watchPaths) {
@@ -238,6 +237,9 @@ const getConfig = ({
       devtool: "source-map",
       resolve: {
         extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
+      },
+      externals: {
+        jquery: 'jQuery',
       },
       module: {
         rules: [
