@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
+
 ### Deprecated
 - Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
 

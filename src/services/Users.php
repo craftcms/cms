@@ -578,6 +578,9 @@ class Users extends Component
         // Update the User model too
         $user->lastLoginDate = $now;
         $user->invalidLoginCount = null;
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
     }
 
     /**
@@ -635,6 +638,9 @@ class Users extends Component
                 'user' => $user,
             ]));
         }
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
     }
 
     /**
