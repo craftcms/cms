@@ -106,8 +106,8 @@ export default Base.extend(
 
             this.showing = true;
             this.trigger('show');
-            Garnish.shortcutManager.addLayer();
-            Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, this.hideMenu.bind(this));
+            Garnish.uiLayerManager.addLayer(this.$menu);
+            Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, this.hideMenu.bind(this));
 
             setTimeout(function() {
                 this.addListener(Garnish.$doc, 'mousedown', 'hideMenu');
@@ -122,7 +122,7 @@ export default Base.extend(
             this.$menu.hide();
             this.showing = false;
             this.trigger('hide');
-            Garnish.shortcutManager.removeLayer();
+            Garnish.uiLayerManager.removeLayer();
         },
 
         /**

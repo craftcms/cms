@@ -3,24 +3,42 @@ import Base from './Base.js';
 import $ from 'jquery';
 
 /**
- * Keyboard shortcut manager class
+ * UI Layer Manager class
  *
- * This can be used to map keyboard events to the current UI "layer" (whether that's the base document,
- * a modal, an HUD, or a menu).
+ * This is used to manage the visible UI “layers”, including the base document, and any open modals, HUDs, slideouts, or menus.
  */
 export default Base.extend(
     {
-        shortcuts: null,
-        layer: 0,
+        layers: null,
 
         init: function() {
-            this.shortcuts = [[]];
+            this.layers = [
+                {
+                    $container: Garnish.$bod,
+                    shortcuts: [],
+                },
+            ];
             this.addListener(Garnish.$bod, 'keydown', 'triggerShortcut');
         },
 
-        addLayer: function() {
-            this.layer++;
-            this.shortcuts.push([]);
+        get layer() {
+            return this.layers.length - 1;
+        },
+
+        get currentLayer() {
+            return this.layers[this.layer];
+        },
+
+        /**
+         * Registers a new UI layer.
+         *
+         * @param {jQuery|HTMLElement} [container]
+         */
+        addLayer: function(container) {
+            this.layers.push({
+                $container: container ? $(container) : null,
+                shortcuts: [],
+            });
             return this;
         },
 
@@ -28,8 +46,7 @@ export default Base.extend(
             if (this.layer === 0) {
                 throw 'Can’t remove the base layer.';
             }
-            this.layer--;
-            this.shortcuts.pop();
+            this.layers.pop();
             return this;
         },
 
@@ -38,7 +55,7 @@ export default Base.extend(
             if (typeof layer === 'undefined') {
                 layer = this.layer;
             }
-            this.shortcuts[layer].push({
+            this.layers[layer].shortcuts.push({
                 key: JSON.stringify(shortcut),
                 shortcut: shortcut,
                 callback: callback,
@@ -48,15 +65,13 @@ export default Base.extend(
 
         unregisterShortcut: function(shortcut, layer) {
             shortcut = this._normalizeShortcut(shortcut);
-            var key = JSON.stringify(shortcut);
+            const key = JSON.stringify(shortcut);
             if (typeof layer === 'undefined') {
                 layer = this.layer;
             }
-            for (var i = 0; i < this.shortcuts[layer].length; i++) {
-                if (this.shortcuts[layer][i].key === key) {
-                    this.shortcuts[layer].splice(i, 1);
-                    break;
-                }
+            const index = this.layers[layer].shortcuts.findIndex(s => s.key === key);
+            if (index !== -1) {
+                this.layers[layer].shortcuts.splice(index, 1);
             }
             return this;
         },
@@ -79,19 +94,16 @@ export default Base.extend(
         },
 
         triggerShortcut: function(ev) {
-            var shortcut;
-            for (var i = 0; i < this.shortcuts[this.layer].length; i++) {
-                shortcut = this.shortcuts[this.layer][i].shortcut;
-                if (
-                    shortcut.keyCode === ev.keyCode &&
-                    shortcut.ctrl === Garnish.isCtrlKeyPressed(ev) &&
-                    shortcut.shift === ev.shiftKey &&
-                    shortcut.alt === ev.altKey
-                ) {
-                    ev.preventDefault();
-                    this.shortcuts[this.layer][i].callback(ev);
-                    break;
-                }
+            const shortcut = this.layers[this.layer].shortcuts.find(s => (
+                s.keyCode === ev.keyCode &&
+                s.ctrl === Garnish.isCtrlKeyPressed(ev) &&
+                s.shift === ev.shiftKey &&
+                s.alt === ev.altKey
+            ));
+
+            if (shortcut) {
+                ev.preventDefault();
+                shortcut.callback(ev);
             }
         },
     }

@@ -80,10 +80,10 @@
             Craft.Slideout.addPanel(this);
 
             this.enable();
-            Garnish.shortcutManager.addLayer();
+            Garnish.uiLayerManager.addLayer(this.$container);
 
             if (this.settings.closeOnEsc) {
-                Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+                Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
                     this.close();
                 });
             }
@@ -113,7 +113,7 @@
             }
 
             Craft.Slideout.removePanel(this);
-            Garnish.shortcutManager.removeLayer();
+            Garnish.uiLayerManager.removeLayer();
             this.$container.one('transitionend.slideout', () => {
                 this.$outerContainer.addClass('hidden');
                 this.trigger('close');

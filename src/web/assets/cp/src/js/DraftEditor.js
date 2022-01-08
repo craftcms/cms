@@ -214,7 +214,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.createEditMetaBtn();
 
         if (this.settings.canUpdateSource) {
-            Garnish.shortcutManager.registerShortcut({
+            Garnish.uiLayerManager.registerShortcut({
                 keyCode: Garnish.S_KEY,
                 ctrl: true,
                 alt: true

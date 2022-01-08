@@ -17,7 +17,7 @@ import Modal from './Modal.js';
 import NiceText from './NiceText.js';
 import Select from './Select.js';
 import SelectMenu from './SelectMenu.js';
-import ShortcutManager from './ShortcutManager.js';
+import UiLayerManager from './UiLayerManager.js';
 
 /**
  * @namespace Garnish
@@ -625,7 +625,11 @@ Object.assign(Garnish, {
     NiceText,
     Select,
     SelectMenu,
-    ShortcutManager,
+    UiLayerManager,
+    /**
+     * @deprecated Use UiLayerManager instead.
+     */
+    ShortcutManager: UiLayerManager,
 });
 
 // Custom events

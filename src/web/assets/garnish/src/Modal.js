@@ -127,10 +127,10 @@ export default Base.extend(
                 this.visible = true;
                 Garnish.Modal.visibleModal = this;
 
-                Garnish.shortcutManager.addLayer();
+                Garnish.uiLayerManager.addLayer(this.$container);
 
                 if (this.settings.hideOnEsc) {
-                    Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
+                    Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
                 }
 
                 this.trigger('show');
@@ -177,7 +177,7 @@ export default Base.extend(
 
             this.visible = false;
             Garnish.Modal.visibleModal = null;
-            Garnish.shortcutManager.removeLayer();
+            Garnish.uiLayerManager.removeLayer();
             this.trigger('hide');
             this.settings.onHide();
         },
