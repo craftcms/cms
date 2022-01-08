@@ -15,6 +15,7 @@
 
 ### Fixed
 - Fixed a bug where admin tables were displaying titles incorrectly.
+- Fixed a bug where `aria-describedby` attributes were getting namespaced incorrectly when they referenced multiple IDs.
 
 ## 3.7.28 - 2022-01-05
 
