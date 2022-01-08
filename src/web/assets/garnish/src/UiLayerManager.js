@@ -39,6 +39,10 @@ export default Base.extend(
                 $container: container ? $(container) : null,
                 shortcuts: [],
             });
+            this.trigger('addLayer', {
+                layer: this.layer,
+                $container: this.currentLayer.$container,
+            });
             return this;
         },
 
@@ -47,6 +51,7 @@ export default Base.extend(
                 throw 'Can’t remove the base layer.';
             }
             this.layers.pop();
+            this.trigger('removeLayer');
             return this;
         },
 
