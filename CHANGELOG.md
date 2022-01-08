@@ -2,14 +2,12 @@
 
 ## Unreleased
 
-### Changed
-- User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
-
-### Deprecated
+### Added
 - Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
 
 ### Changed
 - The content in the `resourcepaths` table is now excluded from database backups by default.
+- User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
 
 ### Deprecated
 - Deprecated `Craft::parseEnv()`. `craft\helpers\App::parseEnv()` should be used instead.
