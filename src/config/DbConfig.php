@@ -36,7 +36,7 @@ class DbConfig extends BaseObject
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
-     * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'` can connect via SSL,
+     * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/mysql-secure-deployment-guide/5.7/en/secure-deployment-secure-connections.html) and `'user'` can connect via SSL,
      * you’d set these:
      *
      * ```php

@@ -8,6 +8,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
@@ -146,7 +147,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(Craft::parseEnv($this->path));
+        return FileHelper::normalizePath(App::parseEnv($this->path));
     }
 
     /**

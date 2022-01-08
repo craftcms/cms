@@ -76,27 +76,11 @@ class Craft extends Yii
      * @return string|null|false The parsed value, or the original value if it didn’t
      * reference an environment variable or alias.
      * @since 3.1.0
+     * @deprecated in 3.7.29. [[App::parseEnv()]] should be used instead.
      */
     public static function parseEnv(?string $str = null)
     {
-        if ($str === null) {
-            return null;
-        }
-
-        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $value = App::env($matches[1]);
-            if ($value !== false) {
-                switch (strtolower($value)) {
-                    case 'true':
-                        return true;
-                    case 'false':
-                        return false;
-                }
-                $str = $value;
-            }
-        }
-
-        return static::getAlias($str, false) ?: $str;
+        return App::parseEnv($str);
     }
 
     /**
@@ -112,18 +96,11 @@ class Craft extends Yii
      * @param mixed $value
      * @return bool|null
      * @since 3.7.22
+     * @deprecated in 3.7.29. [[App::parseBooleanEnv()]] should be used instead.
      */
     public static function parseBooleanEnv($value): ?bool
     {
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if (!is_string($value)) {
-            return null;
-        }
-
-        return filter_var(Craft::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return App::parseBooleanEnv($value);
     }
 
     /**

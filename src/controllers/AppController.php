@@ -12,6 +12,7 @@ use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Api;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -561,7 +562,7 @@ class AppController extends Controller
                     if (
                         !isset($allPluginInfo[$handle]) ||
                         !$allPluginInfo[$handle]['licenseKey'] ||
-                        $pluginsService->normalizePluginLicenseKey(Craft::parseEnv($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
+                        $pluginsService->normalizePluginLicenseKey(App::parseEnv($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
                     ) {
                         $result[$handle] = [
                             'edition' => null,
@@ -600,7 +601,7 @@ class AppController extends Controller
                 'version' => $pluginInfo['version'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
                 'edition' => $pluginInfo['edition'],
-                'licenseKey' => $pluginsService->normalizePluginLicenseKey(Craft::parseEnv($pluginInfo['licenseKey'])),
+                'licenseKey' => $pluginsService->normalizePluginLicenseKey(App::parseEnv($pluginInfo['licenseKey'])),
                 'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
                 'licenseIssues' => $pluginInfo['licenseIssues'],

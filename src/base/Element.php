@@ -44,6 +44,7 @@ use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -2671,7 +2672,7 @@ abstract class Element extends Component implements ElementInterface
 
         foreach ($previewTargets as $previewTarget) {
             if (isset($previewTarget['urlFormat'])) {
-                $url = trim($view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this));
+                $url = trim($view->renderObjectTemplate(App::parseEnv($previewTarget['urlFormat']), $this));
                 if ($url !== '') {
                     $previewTarget['url'] = $url;
                     unset($previewTarget['urlFormat']);
