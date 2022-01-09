@@ -6,6 +6,7 @@ use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\fields\BaseRelationField;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
@@ -17,10 +18,7 @@ use yii\base\InvalidConfigException;
  */
 class RelationalFieldConditionRule extends BaseElementSelectConditionRule implements FieldConditionRuleInterface
 {
-    use FieldConditionRuleTrait {
-        defineRules as private defineFieldRules;
-        getConfig as private fieldConfig;
-    }
+    use FieldConditionRuleTrait;
 
     const OPERATOR_RELATED_TO = 'relatedTo';
 
@@ -28,24 +26,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      * @inheritdoc
      */
     public string $operator = self::OPERATOR_NOT_EMPTY;
-
-    /**
-     * @var string
-     * @see elementType()
-     */
-    public string $elementType;
-
-    /**
-     * @var string[]|null
-     * @see sources()
-     */
-    public ?array $sources = null;
-
-    /**
-     * @var array|null
-     * @see criteria()
-     */
-    public ?array $criteria = null;
 
     /**
      * @inheritdoc
@@ -65,7 +45,9 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function elementType(): string
     {
-        return $this->elementType;
+        /** @var BaseRelationField $field */
+        $field = $this->field();
+        return $field::elementType();
     }
 
     /**
@@ -73,7 +55,9 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function sources(): ?array
     {
-        return $this->sources;
+        /** @var BaseRelationField $field */
+        $field = $this->field();
+        return (array)$field->getInputSources();
     }
 
     /**
@@ -81,7 +65,9 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function criteria(): ?array
     {
-        return $this->criteria;
+        /** @var BaseRelationField $field */
+        $field = $this->field();
+        return $field->getInputSelectionCriteria();
     }
 
     /**
@@ -161,27 +147,5 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         }
 
         return !$isEmpty;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
-    {
-        $rules = $this->defineFieldRules();
-        $rules[] = [['elementType', 'sources', 'criteria'], 'safe'];
-        return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getConfig(): array
-    {
-        return array_merge($this->fieldConfig(), [
-            'elementType' => $this->elementType,
-            'sources' => $this->sources,
-            'criteria' => $this->criteria,
-        ]);
     }
 }

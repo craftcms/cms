@@ -67,7 +67,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Asset::class;
     }
@@ -658,7 +658,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputSources(?ElementInterface $element = null)
+    public function getInputSources(?ElementInterface $element = null)
     {
         $folderId = $this->_determineUploadFolderId($element, false, false);
         Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
@@ -751,9 +751,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputSelectionCriteria(): array
+    public function getInputSelectionCriteria(): array
     {
-        $criteria = parent::inputSelectionCriteria();
+        $criteria = parent::getInputSelectionCriteria();
         $criteria['kind'] = ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [];
 
         if ($this->showUnpermittedFiles) {

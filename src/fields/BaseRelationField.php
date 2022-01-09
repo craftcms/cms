@@ -79,7 +79,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string The Element class name
      */
-    abstract protected static function elementType(): string;
+    abstract public static function elementType(): string;
 
     /**
      * Returns the default [[selectionLabel]] value.
@@ -458,12 +458,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getElementConditionRuleType()
     {
-        return [
-            'class' => RelationalFieldConditionRule::class,
-            'elementType' => static::elementType(),
-            'sources' => (array)$this->inputSources(),
-            'criteria' => $this->inputSelectionCriteria(),
-        ];
+        return RelationalFieldConditionRule::class;
     }
 
     /**
@@ -943,7 +938,7 @@ JS;
             }
         }
 
-        $selectionCriteria = $this->inputSelectionCriteria();
+        $selectionCriteria = $this->getInputSelectionCriteria();
         $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
         $disabledElementIds = [];
@@ -974,7 +969,7 @@ JS;
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'elements' => $value,
-            'sources' => $this->inputSources($element),
+            'sources' => $this->getInputSources($element),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => $this->allowSelfRelations,
@@ -997,7 +992,7 @@ JS;
      * @param ElementInterface|null $element
      * @return array|string
      */
-    protected function inputSources(?ElementInterface $element = null)
+    public function getInputSources(?ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -1013,7 +1008,7 @@ JS;
      *
      * @return array
      */
-    protected function inputSelectionCriteria(): array
+    public function getInputSelectionCriteria(): array
     {
         // Fire a defineSelectionCriteria event
         $event = new ElementCriteriaEvent();
