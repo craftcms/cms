@@ -69,6 +69,7 @@ return [
     'settings/tags/new' => 'tags/edit-tag-group',
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
     'settings/users' => ['template' => 'settings/users/fields'],
+    'users/<defaultSource:{handle}(\/.*)?>' => ['template' => 'users'],
     'utilities' => 'utilities',
     'utilities/<id:[\w\-]+><extra:(\/.*)?>' => 'utilities/show-utility',
     'plugin-store' => 'plugin-store',
