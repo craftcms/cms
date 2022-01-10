@@ -504,7 +504,9 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     statusMessage: function() {
-        return this.$statusMessage;
+        return this.preview
+            ? this.$statusMessage.add(this.preview.$statusMessage)
+            : this.$statusMessage;
     },
 
     createEditMetaBtn: function() {
