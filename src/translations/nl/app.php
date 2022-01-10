@@ -1345,7 +1345,7 @@ return [
     'Temp Uploads Location' => 'Locatie tijdelijke uploads',
     'Temp files' => 'Tijdelijke bestanden',
     'Template caches' => 'Sjablooncaches',
-    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Een sjabloon die de opmaak van de aangepaste "vertaalsleutel" van het titelveld definieert. {type} titels worden gekopieerd naar alle sites die dezelfde sleutel produceren. Bijvoorbeeld om titels vertaalbaar te maken op basis van de twee eerste tekens van de site-ingang, kunt u "{site.handle[:2]}" invoeren.',
+    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Een sjabloon die de opmaak van de aangepaste "vertaalsleutel" van het titelveld definieert. {type} titels worden gekopieerd naar alle sites die dezelfde sleutel produceren. Bijvoorbeeld om titels vertaalbaar te maken op basis van de twee eerste tekens van de site-ingang, kunt u `{site.handle[:2]}` invoeren.',
     'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.' => 'Sjabloon dat het aangepaste "propagatie sleutel" formaat definieert. Blokken zullen opgeslagen worden op alle sites die dezelfde sleutel produceren.',
     'Template' => 'Sjabloon',
     'Templates' => 'Sjablonen',
