@@ -68,6 +68,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.$spinner = $('#revision-spinner');
         this.$expandSiteStatusesBtn = $('#expand-status-btn');
         this.$statusIcon = $('#revision-status');
+        this.$statusMessage = $('#revision-status-message');
 
         if (this.settings.canEditMultipleSites) {
             this.addListener(this.$expandSiteStatusesBtn, 'click', 'expandSiteStatuses');
@@ -502,6 +503,10 @@ Craft.DraftEditor = Garnish.Base.extend({
             : this.$statusIcon;
     },
 
+    statusMessage: function() {
+        return this.$statusMessage;
+    },
+
     createEditMetaBtn: function() {
         this.$editMetaBtn = $('<button/>', {
             type: 'button',
@@ -818,6 +823,9 @@ Craft.DraftEditor = Garnish.Base.extend({
                 .removeClass('invisible checkmark-icon alert-icon fade-out')
                 .addClass('hidden');
 
+            // Clear previous status message
+            this.statusMessage().empty();
+
             if (this.$saveMetaBtn) {
                 this.$saveMetaBtn.addClass('active');
             }
@@ -1023,12 +1031,16 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     _showFailStatus: function() {
+        const srText = this.createScreenReaderText(this._saveFailMessage());
+
         this.statusIcons()
             .velocity('stop')
             .css('opacity', '')
             .removeClass('hidden checkmark-icon')
             .addClass('alert-icon')
             .attr('title', this._saveFailMessage());
+
+        this.statusMessage().append(srText);
     },
 
     /**
@@ -1102,9 +1114,22 @@ Craft.DraftEditor = Garnish.Base.extend({
         });
     },
 
+    /**
+     * @param {string} message
+     * @returns {jQuery} A visually-hidden span containing the provided status message
+     */
+    createScreenReaderText: function(message) {
+        return $('<span/>', {
+            class: 'visually-hidden',
+            html: message,
+        });
+    },
+
     afterUpdate: function(data) {
         Craft.cp.$primaryForm.data('initialSerializedValue', data);
         Craft.initialDeltaValues = {};
+
+        const srText = this.createScreenReaderText(this._saveSuccessMessage());
 
         const $statusIcons = this.statusIcons()
             .velocity('stop')
@@ -1112,6 +1137,8 @@ Craft.DraftEditor = Garnish.Base.extend({
             .removeClass('hidden')
             .addClass('checkmark-icon')
             .attr('title', this._saveSuccessMessage());
+
+        this.statusMessage().append(srText);
 
         if (!Craft.autosaveDrafts) {
             // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
