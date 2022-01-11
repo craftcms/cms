@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `resave/*` commands now support bulk-setting an attribute/custom field value via new `--set`, `--to`, and `--if-empty` options.
 - Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
 
 ### Changed
