@@ -1334,7 +1334,7 @@ return [
     'The URI can’t begin with the {setting} config setting.' => 'Die URI kann nicht mit der {setting} Konfigurationseinstellung anfangen.',
     'The URL/URI to use for this target.' => 'Die URL/URI, die für dieses Ziel verwendet werden soll.',
     'The `@web` alias is not recommended if it is determined automatically.' => 'Der `@web`-Alias sollte nicht verwendet werden, wenn er automatisch ermittelt wird.',
-    'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Der Autorisierungsheader, welcher mit der GraphQL API versendet werden sollte, fordert die Benutzung dieses Tokens an.',
+    'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Der `Authorization` header, welcher mit der GraphQL API versendet werden sollte, fordert die Benutzung dieses Tokens an.',
     'The allowed values are [{values}]' => 'Zulässige Werte: {values}',
     'The asset you’re trying to download does not exist.' => 'Das Asset, das Sie versuchen herunterzuladen, ist nicht vorhanden.',
     'The asset you’re trying to edit does not exist.' => 'Die Datei, die Sie bearbeiten möchten, ist nicht vorhanden.',
