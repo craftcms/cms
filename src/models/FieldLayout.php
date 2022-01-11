@@ -77,7 +77,7 @@ class FieldLayout extends Model
      * );
      * ```
      *
-     * @see getAvailableStandardFields()
+     * @see getAvailableUiElements()
      * @since 3.5.0
      */
     const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
