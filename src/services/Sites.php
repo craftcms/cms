@@ -529,7 +529,7 @@ class Sites extends Component
     public function getEditableSiteIds(): array
     {
         if (!Craft::$app->getIsMultiSite()) {
-            return $this->getAllSiteIds();
+            return $this->getAllSiteIds(true);
         }
 
         if ($this->_editableSiteIds !== null) {
@@ -539,7 +539,7 @@ class Sites extends Component
         $this->_editableSiteIds = [];
         $userSession = Craft::$app->getUser();
 
-        foreach ($this->getAllSites() as $site) {
+        foreach ($this->getAllSites(true) as $site) {
             if ($userSession->checkPermission("editSite:$site->uid")) {
                 $this->_editableSiteIds[] = $site->id;
             }

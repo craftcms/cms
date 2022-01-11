@@ -20,6 +20,9 @@
 - Fixed a bug where admin tables were displaying titles incorrectly.
 - Fixed a bug where `aria-describedby` attributes were getting namespaced incorrectly when they referenced multiple IDs.
 - Fixed a bug where “View” links on Edit Entry pages weren’t getting updated when the entry’s preview target URLs changed. ([#10343](https://github.com/craftcms/cms/issues/10343))
+- Fixed a bug where `craft\base\ApplicationTrait::getIsMultiSite()` would return `false` on the front end, if there was only one enabled site, but additional disabled sites.
+- Fixed a bug where `craft\base\Element::getSite()` would throw an exception on the front end, if the element belonged to a disabled site.
+- Fixed a bug where `craft\services\Sites::getEditableSiteIds()` would exclude disabled sites on the front end.
 
 ## 3.7.28 - 2022-01-05
 
