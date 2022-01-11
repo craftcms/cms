@@ -1038,16 +1038,13 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     _showFailStatus: function() {
-        const srText = this.createScreenReaderText(this._saveFailMessage());
-
         this.statusIcons()
             .velocity('stop')
             .css('opacity', '')
             .removeClass('hidden checkmark-icon')
-            .addClass('alert-icon')
-            .attr('title', this._saveFailMessage());
+            .addClass('alert-icon');
 
-        this.statusMessage().append(srText);
+        this.setStatusMessage(this._saveFailMessage());
     },
 
     /**
@@ -1127,31 +1124,17 @@ Craft.DraftEditor = Garnish.Base.extend({
         });
     },
 
-    /**
-     * @param {string} message
-     * @returns {jQuery} A visually-hidden span containing the provided status message
-     */
-    createScreenReaderText: function(message) {
-        return $('<span/>', {
-            class: 'visually-hidden',
-            html: message,
-        });
-    },
-
     afterUpdate: function(data) {
         Craft.cp.$primaryForm.data('initialSerializedValue', data);
         Craft.initialDeltaValues = {};
-
-        const srText = this.createScreenReaderText(this._saveSuccessMessage());
 
         const $statusIcons = this.statusIcons()
             .velocity('stop')
             .css('opacity', '')
             .removeClass('hidden')
-            .addClass('checkmark-icon')
-            .attr('title', this._saveSuccessMessage());
+            .addClass('checkmark-icon');
 
-        this.statusMessage().append(srText);
+        this.setStatusMessage(this._saveSuccessMessage());
 
         if (!Craft.autosaveDrafts) {
             // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
@@ -1170,6 +1153,16 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.trigger('update');
 
         this.nextInQueue();
+    },
+
+    setStatusMessage: function(message) {
+        this.statusIcons().attr('title', message);
+        this.statusMessage().empty().append(
+            $('<span/>', {
+                class: 'visually-hidden',
+                text: message,
+            })
+        );
     },
 
     nextInQueue: function() {
