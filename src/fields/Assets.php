@@ -999,24 +999,23 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * Generate the full path for a folder in a volume in the form of folder:UID/folder:UID... based on a folder id.
+     * Returns the full source key for a folder, in the form of `volume:UID/folder:UID/...`.
      *
-     * @param int $folderId
+     * @param int $folderId The folder ID
      * @return string
      */
     private function _getSourcePathByFolderId(int $folderId): string
     {
+        $segments = [];
         $folder = Craft::$app->getAssets()->getFolderById($folderId);
-        $folderPath = 'folder:' . $folder->uid;
-
-        // Construct the path
-        while ($folder->parentId && $folder->volumeId !== null) {
-            $parent = $folder->getParent();
-            $segment = $parent->parentId ? 'folder:' . $parent->uid : 'volume:' . $parent->getVolume()->uid;
-            $folderPath = $segment . '/' . $folderPath;
-            $folder = $parent;
+        while (true) {
+            $segment = $folder->parentId ? "folder:$folder->uid" : sprintf('volume:%s', $folder->getVolume()->uid);
+            array_unshift($segments, $segment);
+            if (!$folder->parentId) {
+                break;
+            }
+            $folder = $folder->getParent();
         }
-
-        return $folderPath;
+        return implode('/', $segments);
     }
 }
