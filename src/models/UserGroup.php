@@ -71,9 +71,12 @@ class UserGroup extends Model
             ['handle'],
             HandleValidator::class,
             'reservedWords' => [
+                'admins',
+                'all',
                 'dateCreated',
                 'dateUpdated',
                 'id',
+                'new',
                 'title',
                 'uid',
             ],

@@ -6,6 +6,8 @@
 - Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
 
 ### Changed
+- The Users index page now updates the URL based on the selected source. ([#10336](https://github.com/craftcms/cms/issues/10336))
+- `admins`, `all`, and `new` are now reserved user group handles.
 - The content in the `resourcepaths` table is now excluded from database backups by default.
 - User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
 - Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
