@@ -1012,7 +1012,8 @@ class Assets extends BaseRelationField
         // Construct the path
         while ($folder->parentId && $folder->volumeId !== null) {
             $parent = $folder->getParent();
-            $folderPath = 'folder:' . $parent->uid . '/' . $folderPath;
+            $segment = $parent->parentId ? 'folder:' . $parent->uid : 'volume:' . $parent->getVolume()->uid;
+            $folderPath = $segment . '/' . $folderPath;
             $folder = $parent;
         }
 
