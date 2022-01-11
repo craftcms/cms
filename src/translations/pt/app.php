@@ -1317,7 +1317,7 @@ return [
     'Temp Uploads Location' => 'Locais de uploads temporários',
     'Temp files' => 'Arquivos temporários',
     'Template caches' => 'Caches de template',
-    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Modelo que define o formato personalizado da "chave de tradução" do campo Título. Os títulos {type} serão copiados para todos os sites que produzirem a mesma chave. Por exemplo, para tornar os títulos traduzíveis com base nos dois primeiros caracteres do identificador do site, pode inserir `{site.handle [:2]}`.',
+    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Modelo que define o formato personalizado da "chave de tradução" do campo Título. Os títulos {type} serão copiados para todos os sites que produzirem a mesma chave. Por exemplo, para tornar os títulos traduzíveis com base nos dois primeiros caracteres do identificador do site, pode inserir `{site.handle[:2]}`.',
     'Template that defines the field’s custom “propagation key” format. Blocks will be saved to all sites that produce the same key.' => 'Modelo que define o formato personalizado de "chave de propagação" do campo. Os blocos serão guardados em todos os sites que produzam a mesma chave.',
     'Template' => 'Modelo',
     'Templates' => 'Modelos',
