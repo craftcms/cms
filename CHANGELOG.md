@@ -19,6 +19,7 @@
 ### Fixed
 - Fixed a bug where admin tables were displaying titles incorrectly.
 - Fixed a bug where `aria-describedby` attributes were getting namespaced incorrectly when they referenced multiple IDs.
+- Fixed a bug where “View” links on Edit Entry pages weren’t getting updated when the entry’s preview target URLs changed. ([#10343](https://github.com/craftcms/cms/issues/10343))
 
 ## 3.7.28 - 2022-01-05
 

@@ -518,6 +518,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             target: '_blank',
             data: {
                 targetUrl: target.url,
+                targetLabel: target.label,
             },
         });
 
@@ -533,11 +534,15 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     updatePreviewLinks: function() {
         this.previewLinks.forEach($a => {
-            $a.attr('href', this.getTokenizedPreviewUrl($a.data('targetUrl'), null, false));
+            this.updatePreviewLinkHref($a);
             if (this.activatedPreviewToken) {
                 this.removeListener($a, 'click');
             }
         });
+    },
+
+    updatePreviewLinkHref: function($a) {
+        $a.attr('href', this.getTokenizedPreviewUrl($a.data('targetUrl'), null, false));
     },
 
     activatePreviewToken: function() {
@@ -1098,6 +1103,12 @@ Craft.DraftEditor = Garnish.Base.extend({
             const currentTarget = this.settings.previewTargets.find(t => t.label === newTarget.label);
             if (currentTarget) {
                 currentTarget.url = newTarget.url;
+            }
+
+            const $previewLink = this.previewLinks.find($a => $a.data('targetLabel') === newTarget.label);
+            if ($previewLink) {
+                $previewLink.data('targetUrl', newTarget.url);
+                this.updatePreviewLinkHref($previewLink);
             }
         });
     },
