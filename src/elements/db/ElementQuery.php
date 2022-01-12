@@ -1439,6 +1439,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // ---------------------------------------------------------------------
 
         $this->query = new Query();
+        $this->query->withQueries = $this->withQueries;
         $this->subQuery = new Query();
 
         // Give other classes a chance to make changes up front
