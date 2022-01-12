@@ -567,13 +567,14 @@ class Cp
                 ])
                 : '') .
             ($status
-                ? Html::tag('div', '', [
+                ? Html::beginTag('div', [
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
                 ]) .
                 Html::tag('span', $status[1], [
                     'class' => 'visually-hidden',
-                ])
+                ]) .
+                Html::endTag('div')
                 : '') .
             (($label || $showAttribute)
                 ? (
