@@ -632,8 +632,7 @@ class Cp
             self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip'), $tip) .
             self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning'), $warning) .
             ($errors
-                ?
-                static::renderTemplate('_includes/forms/errorList', [
+                ? static::renderTemplate('_includes/forms/errorList', [
                     'id' => $errorsId,
                     'errors' => $errors,
                 ])
