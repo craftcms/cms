@@ -73,9 +73,11 @@ class UserGroup extends Model
             'reservedWords' => [
                 'admins',
                 'all',
+                'credentialed',
                 'dateCreated',
                 'dateUpdated',
                 'id',
+                'inactive',
                 'new',
                 'title',
                 'uid',
