@@ -13,6 +13,7 @@
 - The content in the `resourcepaths` table is now excluded from database backups by default.
 - User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
 - Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
+- Color fields’ hexn inputs now have `aria-label` attributes.
 - Field status messages are now included in their `aria-describedby` attributes.
 
 ### Deprecated
