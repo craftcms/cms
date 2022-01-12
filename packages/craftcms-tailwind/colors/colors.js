@@ -1,5 +1,6 @@
 module.exports = {
     transparent: 'transparent',
+    current: 'currentColor',
     black: '#000',
     white: '#fff',
     rose: {
