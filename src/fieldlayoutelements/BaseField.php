@@ -215,6 +215,7 @@ abstract class BaseField extends FieldLayoutElement
             'tipId' => $this->tipId(),
             'warningId' => $this->warningId(),
             'errorsId' => $this->errorsId(),
+            'statusId' => $this->statusId(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
@@ -275,7 +276,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function instructionsId(): string
     {
-        return $this->id() . '-instructions';
+        return sprintf('%s-instructions', $this->id());
     }
 
     /**
@@ -286,7 +287,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tipId(): string
     {
-        return $this->id() . '-tip';
+        return sprintf('%s-tip', $this->id());
     }
 
     /**
@@ -297,7 +298,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warningId(): string
     {
-        return $this->id() . '-warning';
+        return sprintf('%s-warning', $this->id());
     }
 
     /**
@@ -308,7 +309,18 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function errorsId(): string
     {
-        return $this->id() . '-errors';
+        return sprintf('%s-errors', $this->id());
+    }
+
+    /**
+     * Returns the `id` if the field status message.
+     *
+     * @return string
+     * @since 3.7.29
+     */
+    protected function statusId(): string
+    {
+        return sprintf('%s-status', $this->id());
     }
 
     /**
@@ -324,6 +336,7 @@ abstract class BaseField extends FieldLayoutElement
     {
         $ids = array_filter([
             (!$static && $this->errors($element)) ? $this->errorsId() : null,
+            $this->statusClass($element, $static) ? $this->statusId() : null,
             $this->instructions($element, $static) ? $this->instructionsId() : null,
             $this->tip($element, $static) ? $this->tipId() : null,
             $this->warning($element, $static) ? $this->warningId() : null,

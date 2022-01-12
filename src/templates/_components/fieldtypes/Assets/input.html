@@ -53,7 +53,7 @@
         hideSidebar: hideSidebar,
         defaultSource: defaultUploadLocation
     },
-    describedBy: describedBy ?? null,
+    describedBy: (describedBy ?? false) ? describedBy|namespaceInputId : null,
 } %}
 
 {% js %}

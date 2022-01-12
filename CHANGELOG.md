@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- `resave/*` commands now support bulk-setting an attribute/custom field value via new `--set`, `--to`, and `--if-empty` options. ([#10356](https://github.com/craftcms/cms/pull/10356))
+- Added `craft\fieldlayoutelements\BaseField::statusId()`.
 - Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
 
 ### Changed
@@ -11,6 +13,8 @@
 - The content in the `resourcepaths` table is now excluded from database backups by default.
 - User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
 - Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
+- Color fields’ hexn inputs now have `aria-label` attributes.
+- Field status messages are now included in their `aria-describedby` attributes.
 
 ### Deprecated
 - Deprecated `Craft::parseEnv()`. `craft\helpers\App::parseEnv()` should be used instead.
