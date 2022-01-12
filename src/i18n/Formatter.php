@@ -209,6 +209,20 @@ class Formatter extends \yii\i18n\Formatter
     }
 
     /**
+     * @inheritdoc
+     */
+    public function asPercent($value, $decimals = null, $options = [], $textOptions = [])
+    {
+        if (empty($value)) {
+            $value = 0;
+        } else if ($decimals === null) {
+            $decimals = strpos(strrev($value * 100), '.') ?: 0;
+        }
+
+        return parent::asPercent($value, $decimals, $options, $textOptions);
+    }
+
+    /**
      * Formats the value as a currency number.
      *
      * This function does not requires the [PHP intl extension](https://php.net/manual/en/book.intl.php) to be installed
