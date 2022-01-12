@@ -632,19 +632,10 @@ class Cp
             self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip'), $tip) .
             self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning'), $warning) .
             ($errors
-                ? (
-                    Html::beginTag('div', [
-                        'id' => $errorsId,
-                        'class' => 'error-container',
-                    ]) .
-                    Html::tag('p', Craft::t('app', 'Errors:'), [
-                        'class' => 'visually-hidden',
-                    ]) .
-                    static::renderTemplate('_includes/forms/errorList', [
-                        'errors' => $errors,
-                    ]) .
-                    Html::endTag('div')
-                )
+                ? static::renderTemplate('_includes/forms/errorList', [
+                    'id' => $errorsId,
+                    'errors' => $errors,
+                ])
                 : '') .
             Html::endTag($containerTag);
     }
