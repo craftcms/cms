@@ -4327,7 +4327,7 @@ abstract class Element extends Component implements ElementInterface
     public function getSite(): Site
     {
         if (isset($this->siteId)) {
-            $site = Craft::$app->getSites()->getSiteById($this->siteId);
+            $site = Craft::$app->getSites()->getSiteById($this->siteId, true);
         }
 
         if (empty($site)) {

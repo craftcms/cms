@@ -165,7 +165,7 @@ class UserPermissions extends Component
         if (Craft::$app->getIsMultiSite()) {
             $sitePermissions = [];
 
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            foreach (Craft::$app->getSites()->getAllSites(true) as $site) {
                 $sitePermissions["editSite:$site->uid"] = [
                     'label' => Craft::t('app', 'Edit “{title}”', [
                         'title' => Craft::t('site', $site->getName()),

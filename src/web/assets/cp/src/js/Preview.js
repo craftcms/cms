@@ -130,6 +130,7 @@ Craft.Preview = Garnish.Base.extend({
             $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
             this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
             this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
+            this.$statusMessage = $('<span/>', {'class': 'visually-hidden', 'aria-live': 'polite'}).appendTo($editorHeader);
 
             if (Craft.Pro) {
                 this.$previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);

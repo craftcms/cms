@@ -245,12 +245,18 @@ class User extends Element implements IdentityInterface
                 'key' => '*',
                 'label' => Craft::t('app', 'All users'),
                 'hasThumbs' => true,
+                'data' => [
+                    'slug' => 'all',
+                ],
             ],
             [
                 'key' => 'admins',
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
                 'hasThumbs' => true,
+                'data' => [
+                    'slug' => 'admins',
+                ],
             ],
             [
                 'heading' => Craft::t('app', 'Account Type'),
@@ -260,12 +266,18 @@ class User extends Element implements IdentityInterface
                 'label' => Craft::t('app', 'Credentialed'),
                 'criteria' => ['status' => ['active', 'pending']],
                 'hasThumbs' => true,
+                'data' => [
+                    'slug' => 'credentialed',
+                ],
             ],
             [
                 'key' => 'inactive',
                 'label' => Craft::t('app', 'Inactive'),
                 'criteria' => ['status' => 'inactive'],
                 'hasThumbs' => true,
+                'data' => [
+                    'slug' => 'inactive',
+                ],
             ],
         ];
 
@@ -280,6 +292,9 @@ class User extends Element implements IdentityInterface
                     'label' => Craft::t('site', $group->name),
                     'criteria' => ['groupId' => $group->id],
                     'hasThumbs' => true,
+                    'data' => [
+                        'slug' => $group->handle,
+                    ],
                 ];
             }
         }
