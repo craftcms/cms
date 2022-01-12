@@ -275,7 +275,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function instructionsId(): string
     {
-        return $this->id() . '-instructions';
+        return sprintf('%s-instructions', $this->id());
     }
 
     /**
@@ -286,7 +286,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tipId(): string
     {
-        return $this->id() . '-tip';
+        return sprintf('%s-tip', $this->id());
     }
 
     /**
@@ -297,7 +297,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warningId(): string
     {
-        return $this->id() . '-warning';
+        return sprintf('%s-warning', $this->id());
     }
 
     /**
@@ -308,7 +308,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function errorsId(): string
     {
-        return $this->id() . '-errors';
+        return sprintf('%s-errors', $this->id());
     }
 
     /**
