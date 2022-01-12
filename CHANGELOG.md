@@ -27,6 +27,7 @@
 - Fixed a bug where `craft\base\ApplicationTrait::getIsMultiSite()` would return `false` on the front end, if there was only one enabled site, but additional disabled sites.
 - Fixed a bug where `craft\base\Element::getSite()` would throw an exception on the front end, if the element belonged to a disabled site.
 - Fixed a bug where `craft\services\Sites::getEditableSiteIds()` would exclude disabled sites on the front end.
+- Fixed a bug where validation errors referenced by `aria-describedby` attributes weren’t getting read out by VoiceOver. ([#10355](https://github.com/craftcms/cms/pull/10355))
 
 ## 3.7.28 - 2022-01-05
 
