@@ -28,6 +28,7 @@
 - Fixed a bug where `craft\base\Element::getSite()` would throw an exception on the front end, if the element belonged to a disabled site.
 - Fixed a bug where `craft\services\Sites::getEditableSiteIds()` would exclude disabled sites on the front end.
 - Fixed a bug where validation errors referenced by `aria-describedby` attributes weren’t getting read out by VoiceOver. ([#10355](https://github.com/craftcms/cms/pull/10355))
+- Fixed a bug where element queries’ `withQueries` properties were ignored. ([#10359](https://github.com/craftcms/cms/pull/10359))
 
 ## 3.7.28 - 2022-01-05
 
