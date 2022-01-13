@@ -15,6 +15,7 @@
 - Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
 - Color fields’ hexn inputs now have `aria-label` attributes.
 - Field status messages are now included in their `aria-describedby` attributes.
+- User queries will no longer exclude suspended users when `status('pending')` is passed. ([#10361](https://github.com/craftcms/cms/issues/10361))
 
 ### Deprecated
 - Deprecated `Craft::parseEnv()`. `craft\helpers\App::parseEnv()` should be used instead.
