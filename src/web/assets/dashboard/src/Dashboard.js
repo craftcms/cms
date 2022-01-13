@@ -476,7 +476,7 @@ import './dashboard.scss';
 
             Craft.initUiElements(this.$bodyContainer);
             Craft.appendHeadHtml(response.headHtml);
-            Craft.appendFootHtml(response.footHtml);
+            Craft.appendBodyHtml(response.bodyHtml);
 
             this.setSettingsHtml(response.info.settingsHtml, function() {
                 eval(response.info.settingsJs);

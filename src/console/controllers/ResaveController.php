@@ -19,7 +19,9 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\BatchElementActionEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Queue;
+use craft\helpers\StringHelper;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use yii\console\ExitCode;
@@ -118,6 +120,32 @@ class ResaveController extends Controller
     public ?string $field = null;
 
     /**
+     * @var string|null An attribute name that should be set for each of the elements. The value will be determined by --to.
+     * @since 3.7.29
+     */
+    public ?string $set = null;
+
+    /**
+     * @var string|null The value that should be set on the --set attribute.
+     *
+     * The following value types are supported:
+     * - An attribute name: --to myCustomField
+     * - An object template: --to "={myCustomField|lower}"
+     * - A raw value: --to "=foo bar"
+     * - A PHP arrow function: --to "fn(\$element) => \$element->callSomething()"
+     * - An empty value: --to :empty:
+     *
+     * @since 3.7.29
+     */
+    public ?string $to = null;
+
+    /**
+     * @var bool Whether the --set attribute should only be set if it doesn’t have a value.
+     * @since 3.7.29
+     */
+    public bool $ifEmpty = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -154,7 +182,28 @@ class ResaveController extends Controller
                 break;
         }
 
+        $options[] = 'set';
+        $options[] = 'to';
+        $options[] = 'ifEmpty';
+
         return $options;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        if (isset($this->set) && !isset($this->to)) {
+            $this->stderr('--to is required when using --set.' . PHP_EOL, Console::FG_RED);
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -357,16 +406,22 @@ class ResaveController extends Controller
             $count = min($count, (int)$query->limit);
         }
 
+        $to = isset($this->set) ? $this->_normalizeTo() : null;
+
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
         $this->stdout("Resaving $count $elementsText ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count) {
+        $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count, $to) {
             if ($e->query === $query) {
                 $element = $e->element;
                 $this->stdout("    - [$e->position/$count] Resaving $element ($element->id) ... ");
+
+                if ($this->set && (!$this->ifEmpty || $this->_isSetAttributeEmpty($element))) {
+                    $element->{$this->set} = $to($element);
+                }
             }
         };
 
@@ -395,5 +450,66 @@ class ResaveController extends Controller
 
         $this->stdout("Done resaving $elementsText." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
+    }
+
+    /**
+     * Returns [[to]] normalized to a callable.
+     *
+     * @return callable
+     */
+    private function _normalizeTo(): callable
+    {
+        // empty
+        if ($this->to === ':empty:') {
+            return function() {
+                return null;
+            };
+        }
+
+        // object template
+        if (StringHelper::startsWith($this->to, '=')) {
+            $template = substr($this->to, 1);
+            $view = Craft::$app->getView();
+            return function(ElementInterface $element) use ($template, $view) {
+                return $view->renderObjectTemplate($template, $element);
+            };
+        }
+
+        // PHP arrow function
+        if (preg_match('/^fn\s*\(\s*\$(\w+)\s*\)\s*=>\s*(.+)/', $this->to, $match)) {
+            $var = $match[1];
+            $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
+            return function(ElementInterface $element) use ($var, $php) {
+                $$var = $element;
+                return eval($php);
+            };
+        }
+
+        // attribute name
+        return function(ElementInterface $element) {
+            return $element->{$this->to};
+        };
+    }
+
+    /**
+     * Returns whether the [[set]] attribute on the given element is empty.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    private function _isSetAttributeEmpty(ElementInterface $element): bool
+    {
+        // See if we're setting a custom field
+        if ($fieldLayout = $element->getFieldLayout()) {
+            foreach ($fieldLayout->getTabs() as $tab) {
+                foreach ($tab->elements as $layoutElement) {
+                    if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $this->set) {
+                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($this->set), $element);
+                    }
+                }
+            }
+        }
+
+        return empty($element->{$this->set});
     }
 }

@@ -205,7 +205,7 @@ class Sections extends Component
 
             $this->_sections = new MemoizableArray(array_values($sections));
 
-            if (!empty($sections)) {
+            if (!empty($sections) && Craft::$app->getRequest()->getIsCpRequest()) {
                 // Eager load the site settings
                 $allSiteSettings = $this->_createSectionSiteSettingsQuery()
                     ->where(['sections_sites.sectionId' => array_keys($sections)])
@@ -991,6 +991,17 @@ class Sections extends Component
                 $entryTypes[] = new EntryType($result);
             }
             $this->_entryTypes = new MemoizableArray($entryTypes);
+
+            if (!empty($entryTypes) && Craft::$app->getRequest()->getIsCpRequest()) {
+                // Eager load the field layouts
+                /** @var EntryType[] $entryTypesByLayoutId */
+                $entryTypesByLayoutId = ArrayHelper::index($entryTypes, 'fieldLayoutId');
+                $allLayouts = Craft::$app->getFields()->getLayoutsByIds(array_filter(array_keys($entryTypesByLayoutId)));
+
+                foreach ($allLayouts as $layout) {
+                    $entryTypesByLayoutId[$layout->id]->setFieldLayout($layout);
+                }
+            }
         }
 
         return $this->_entryTypes;
@@ -1521,8 +1532,10 @@ class Sections extends Component
             ->id(['not', $entry->id])
             ->status(null);
 
-        foreach (Db::each($otherEntriesQuery) as $entry) {
-            $elementsService->deleteElement($entry, true);
+        foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
+            if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
+                $elementsService->deleteElement($entryToDelete, true);
+            }
         }
 
         return $entry;

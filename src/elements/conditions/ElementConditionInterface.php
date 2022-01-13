@@ -18,6 +18,7 @@ use craft\elements\db\ElementQueryInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @mixin ElementCondition
  */
 interface ElementConditionInterface extends ConditionInterface
 {

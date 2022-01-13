@@ -470,7 +470,16 @@ class Users extends Component
         $userRecord->pending = false;
         $userRecord->password = null;
         $userRecord->verificationCode = null;
-        return $userRecord->save();
+        
+        if (!$userRecord->save()) {
+            return false;
+        }
+
+        $user->active = false;
+        $user->pending = false;
+        $user->password = null;
+        $user->verificationCode = null;
+        return true;
     }
 
     /**
@@ -627,6 +636,9 @@ class Users extends Component
         // Update the User model too
         $user->lastLoginDate = $now;
         $user->invalidLoginCount = null;
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
     }
 
     /**
@@ -684,6 +696,9 @@ class Users extends Component
                 'user' => $user,
             ]));
         }
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
     }
 
     /**

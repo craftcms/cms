@@ -359,7 +359,7 @@ trait ApplicationTrait
 
             $info = $this->getInfo(true);
             return $this->_isInstalled = !empty($info->id);
-        } catch (DbException | ServerErrorHttpException $e) {
+        } catch (DbException|ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
             if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
                 throw $e;
@@ -613,7 +613,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
+        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
     }
 
     /**
@@ -671,7 +671,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException | DbConnectException $e) {
+        } catch (DbException|DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -776,7 +776,7 @@ trait ApplicationTrait
     public function getSystemName(): string
     {
         if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
-            return Craft::parseEnv($name);
+            return App::parseEnv($name);
         }
 
         try {
@@ -808,7 +808,7 @@ trait ApplicationTrait
     {
         try {
             $this->getDb()->open();
-        } catch (DbConnectException | InvalidConfigException $e) {
+        } catch (DbConnectException|InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -1466,7 +1466,7 @@ trait ApplicationTrait
         $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
-            $this->setTimeZone(Craft::parseEnv($timeZone));
+            $this->setTimeZone(App::parseEnv($timeZone));
         }
     }
 

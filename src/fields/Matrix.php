@@ -1155,7 +1155,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
             $view->startJsBuffer();
             $bodyHtml = $view->namespaceInputs($fieldLayout->createForm($block)->render());
-            $footHtml = $view->clearJsBuffer();
+            $js = $view->clearJsBuffer();
 
             // Reset $_isFresh's
             foreach ($fieldLayoutTab->getElements() as $layoutElement) {
@@ -1168,7 +1168,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'handle' => $blockType->handle,
                 'name' => Craft::t('site', $blockType->name),
                 'bodyHtml' => $bodyHtml,
-                'footHtml' => $footHtml,
+                'js' => $js,
             ];
         }
 

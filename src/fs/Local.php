@@ -8,6 +8,7 @@ use craft\base\Fs;
 use craft\base\LocalFsInterface;
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
@@ -145,7 +146,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(Craft::parseEnv($this->path));
+        return FileHelper::normalizePath(App::parseEnv($this->path));
     }
 
     /**

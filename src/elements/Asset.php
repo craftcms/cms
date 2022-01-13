@@ -320,14 +320,14 @@ class Asset extends Element
         $volumes = Craft::$app->getVolumes();
 
         if ($context === 'index') {
-            $sourceIds = $volumes->getViewableVolumeIds();
+            $volumeIds = $volumes->getViewableVolumeIds();
         } else {
-            $sourceIds = $volumes->getAllVolumeIds();
+            $volumeIds = $volumes->getAllVolumeIds();
         }
 
         $additionalCriteria = $context === 'settings' ? ['parentId' => ':empty:'] : [];
 
-        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
+        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($volumeIds, $additionalCriteria);
 
         $sourceList = self::_assembleSourceList($tree, $context !== 'settings', Craft::$app->getUser()->getIdentity());
 
@@ -566,7 +566,7 @@ class Asset extends Element
         );
 
         $source = [
-            'key' => 'folder:' . $folder->uid,
+            'key' => $folder->parentId ? "folder:$folder->uid" : "volume:$volume->uid",
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],

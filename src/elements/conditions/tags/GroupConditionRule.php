@@ -4,7 +4,6 @@ namespace craft\elements\conditions\tags;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\conditions\BaseSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;

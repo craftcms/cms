@@ -263,7 +263,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                     }
 
                     Craft.appendHeadHtml(response.data.headHtml);
-                    Craft.appendFootHtml(response.data.footHtml);
+                    Craft.appendBodyHtml(response.data.bodyHtml);
                     Craft.cp.updateResponsiveTables();
 
                     this.setTotalVisible(totalVisible);

@@ -19,6 +19,11 @@ use craft\fields\conditions\FieldConditionRuleInterface;
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
     /**
+     * @inerhitdoc
+     */
+    public bool $sortable = false;
+
+    /**
      * @var string|null The element type being queried.
      */
     public ?string $elementType;
@@ -28,6 +33,11 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      * @see conditionRuleTypes()
      */
     public string $fieldContext = 'global';
+
+    /**
+     * @var string[] The element query params that available rules shouldn’t compete with.
+     */
+    public array $queryParams = [];
 
     /**
      * Constructor.
@@ -44,18 +54,18 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * @inheritdoc
      */
-    protected function isConditionRuleSelectable(ConditionRuleInterface $rule, array $options): bool
+    protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
         if (!$rule instanceof ElementConditionRuleInterface) {
             return false;
         }
 
-        if (!parent::isConditionRuleSelectable($rule, $options)) {
+        if (!parent::isConditionRuleSelectable($rule)) {
             return false;
         }
 
         // Make sure the rule doesn't conflict with the existing params
-        $queryParams = $options['queryParams'] ?? [];
+        $queryParams = array_merge($this->queryParams);
         foreach ($this->getConditionRules() as $existingRule) {
             /** @var ElementConditionRuleInterface $existingRule */
             array_push($queryParams, ...$existingRule->getExclusiveQueryParams());
@@ -70,16 +80,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         }
 
         return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defaultBuilderOptions(): array
-    {
-        return [
-            'sortable' => false,
-        ];
     }
 
     /**

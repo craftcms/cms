@@ -35,6 +35,36 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public const EVENT_REGISTER_CONDITION_RULE_TYPES = 'registerConditionRuleTypes';
 
     /**
+     * @var string The condition builder container tag name
+     */
+    public string $mainTag = 'form';
+
+    /**
+     * @var string The ID of the condition builder
+     */
+    public string $id;
+
+    /**
+     * @var string The root input name of the condition builder
+     */
+    public string $name = 'condition';
+
+    /**
+     * @var bool Whether the condition rules should be sortable
+     */
+    public bool $sortable = true;
+
+    /**
+     * @var bool Whether the condition will be stored in the project config
+     */
+    public bool $forProjectConfig = false;
+
+    /**
+     * @var string The “Add a rule” button label.
+     */
+    public string $addRuleLabel;
+
+    /**
      * @var Collection
      * @see getConditionRules()
      * @see setConditionRules()
@@ -53,6 +83,14 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function init(): void
     {
         parent::init();
+
+        if (!isset($this->id)) {
+            $this->id = 'condition' . mt_rand();
+        }
+
+        if (!isset($this->addRuleLabel)) {
+            $this->addRuleLabel = Craft::t('app', 'Add a rule');
+        }
 
         if (!isset($this->_conditionRules)) {
             $this->setConditionRules([]);
@@ -94,13 +132,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getSelectableConditionRules(array $options): array
+    public function getSelectableConditionRules(): array
     {
         $conditionsService = Craft::$app->getConditions();
         return collect($this->getConditionRuleTypes())
             ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
             ->map(fn($type) => $conditionsService->createConditionRule($type))
-            ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule, $options))
+            ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
             ->all();
     }
 
@@ -108,13 +146,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * Returns whether the given rule should be selectable by the condition builder.
      *
      * @param ConditionRuleInterface $rule The rule in question
-     * @param array $options The builder options
      */
-    protected function isConditionRuleSelectable(ConditionRuleInterface $rule, array $options): bool
+    protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
         return (
             $rule->isSelectable() &&
-            !$options['projectConfigTypes'] || $rule::supportsProjectConfig()
+            !$this->forProjectConfig || $rule::supportsProjectConfig()
         );
     }
 
@@ -188,15 +225,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getBuilderHtml(array $options = []): string
+    public function getBuilderHtml(): string
     {
-        $tagName = ArrayHelper::remove($options, 'mainTag', 'form');
-        $options += [
-            'id' => 'condition' . mt_rand(),
-        ];
-
-        return Html::tag($tagName, $this->getBuilderInnerHtml($options), [
-            'id' => $options['id'],
+        return Html::tag($this->mainTag, $this->getBuilderInnerHtml(), [
+            'id' => $this->id,
             'class' => 'condition-container',
         ]);
     }
@@ -204,22 +236,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @inheritdoc
      */
-    public function getBuilderInnerHtml(array $options = [], bool $autofocusAddButton = false): string
+    public function getBuilderInnerHtml(bool $autofocusAddButton = false): string
     {
-        $options += $this->defaultBuilderOptions() + [
-                'name' => 'condition',
-                'sortable' => true,
-                'projectConfigTypes' => false,
-                'addRuleLabel' => Craft::t('app', 'Add a rule'),
-            ];
-
         $view = Craft::$app->getView();
         $view->registerAssetBundle(ConditionBuilderAsset::class);
-        $namespacedId = $view->namespaceInputId($options['id']);
+        $namespacedId = $view->namespaceInputId($this->id);
 
-        return $view->namespaceInputs(function() use ($view, $options, $namespacedId, $autofocusAddButton) {
+        return $view->namespaceInputs(function() use ($view, $namespacedId, $autofocusAddButton) {
             $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
-            $selectableRules = $this->getSelectableConditionRules($options);
+            $selectableRules = $this->getSelectableConditionRules();
             $allRulesHtml = '';
             $ruleCount = 0;
 
@@ -231,12 +256,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 'hx' => [
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
-                    'vals' => array_filter([
-                        'options' => Json::encode(array_merge($options, [
+                    'vals' => [
+                        'config' => Json::encode(array_merge($this->toArray(), [
                             'id' => $namespacedId,
                             'name' => $view->getNamespace(),
                         ])),
-                    ]),
+                    ],
                 ],
             ]);
 
@@ -246,7 +271,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             foreach ($this->getConditionRules() as $rule) {
                 $ruleCount++;
 
-                $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleCount, $options, $selectableRules) {
+                $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleCount, $selectableRules) {
                     $ruleHtml =
                         Html::tag('legend', Craft::t('app', 'Condition {num, number}', [
                             'num' => $ruleCount,
@@ -256,7 +281,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         Html::hiddenInput('uid', $rule->uid) .
                         Html::hiddenInput('class', get_class($rule));
 
-                    if ($options['sortable']) {
+                    if ($this->sortable) {
                         $ruleHtml .= Html::tag('div',
                             Html::tag('a', '', [
                                 'class' => ['move', 'icon', 'draggable-handle'],
@@ -299,7 +324,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         ]) .
                         Html::endTag('div') .
                         // Rule HTML
-                        Html::tag('div', $rule->getHtml($options), [
+                        Html::tag('div', $rule->getHtml(), [
                             'id' => 'rule-body',
                             'class' => ['rule-body', 'flex-grow'],
                         ]) .
@@ -333,7 +358,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'id' => 'condition-rules',
                     'class' => array_filter([
                         'condition',
-                        $options['sortable'] ? 'sortable' : null,
+                        $this->sortable ? 'sortable' : null,
                     ]),
                     'hx' => [
                         'post' => UrlHelper::actionUrl('conditions/render'),
@@ -358,13 +383,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     ]),
                     'autofocus' => $autofocusAddButton,
                     'aria' => [
-                        'label' => $options['addRuleLabel'],
+                        'label' => $this->addRuleLabel,
                     ],
                     'hx' => [
                         'post' => UrlHelper::actionUrl('conditions/add-rule'),
                     ],
                 ]) .
-                $options['addRuleLabel'] .
+                $this->addRuleLabel .
                 Html::tag('div', '', [
                     'class' => ['spinner', 'htmx-indicator'],
                 ]) .
@@ -401,17 +426,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
             $html .= Html::endTag('div'); //condition-main
             return $html;
-        }, $options['name']);
-    }
-
-    /**
-     * Returns the default builder options.
-     *
-     * @return array
-     */
-    protected function defaultBuilderOptions(): array
-    {
-        return [];
+        }, $this->name);
     }
 
     /**

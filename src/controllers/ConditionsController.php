@@ -23,11 +23,6 @@ use craft\web\Controller;
 class ConditionsController extends Controller
 {
     /**
-     * @var array
-     */
-    private array $_options = [];
-
-    /**
      * @var ConditionInterface
      */
     private ConditionInterface $_condition;
@@ -37,9 +32,10 @@ class ConditionsController extends Controller
      */
     public function beforeAction($action): bool
     {
-        $this->_options = Json::decodeIfJson($this->request->getBodyParam('options')) ?? [];
-        $config = $this->request->getBodyParam($this->_options['name']);
+        $baseConfig = Json::decodeIfJson($this->request->getBodyParam('config'));
+        $config = $this->request->getBodyParam($baseConfig['name']);
         $this->_condition = Craft::$app->getConditions()->createCondition($config);
+        Craft::configure($this->_condition, $baseConfig);
         return parent::beforeAction($action);
     }
 
@@ -48,7 +44,7 @@ class ConditionsController extends Controller
      */
     public function actionRender(): string
     {
-        return $this->renderBuilderHtml();
+        return $this->_condition->getBuilderInnerHtml();
     }
 
     /**
@@ -57,7 +53,7 @@ class ConditionsController extends Controller
     public function actionAddRule(): string
     {
         /** @var ConditionRuleInterface|null $rule */
-        $rule = collect($this->_condition->getSelectableConditionRules($this->_options))
+        $rule = collect($this->_condition->getSelectableConditionRules())
             ->sortBy(fn(ConditionRuleInterface $rule) => $rule->getLabel())
             ->first();
 
@@ -66,7 +62,7 @@ class ConditionsController extends Controller
             $this->_condition->addConditionRule($rule);
         }
 
-        return $this->renderBuilderHtml();
+        return $this->_condition->getBuilderInnerHtml();
     }
 
     /**
@@ -79,15 +75,6 @@ class ConditionsController extends Controller
             ->filter(fn(ConditionRuleInterface $rule) => $rule->uid !== $ruleUid)
             ->all();
         $this->_condition->setConditionRules($conditionRules);
-        return $this->renderBuilderHtml(true);
-    }
-
-    /**
-     * @param bool $setFocus Whether to set focus on the Add button
-     * @return string
-     */
-    protected function renderBuilderHtml(bool $setFocus = false): string
-    {
-        return $this->_condition->getBuilderInnerHtml($this->_options, $setFocus);
+        return $this->_condition->getBuilderInnerHtml(true);
     }
 }

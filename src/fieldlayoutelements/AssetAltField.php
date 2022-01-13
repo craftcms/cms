@@ -10,9 +10,6 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\elements\Asset;
-use craft\helpers\ElementHelper;
-use yii\base\InvalidArgumentException;
 
 /**
  * AssetAltField represents an Alternative Text field that can be included within a volume’s field layout designer.

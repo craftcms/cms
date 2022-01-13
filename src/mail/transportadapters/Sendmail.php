@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\App;
 use craft\helpers\StringHelper;
 use Swift_SendmailTransport;
 
@@ -132,7 +133,7 @@ class Sendmail extends BaseTransportAdapter
     {
         return [
             'class' => Swift_SendmailTransport::class,
-            'command' => $this->command ? Craft::parseEnv($this->command) : self::DEFAULT_COMMAND,
+            'command' => $this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND,
         ];
     }
 

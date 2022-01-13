@@ -3,9 +3,7 @@
 namespace craft\base\conditions;
 
 use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
-use DateTime;
 
 /**
  * BaseLightswitchConditionRule provides a base implementation for condition rules that are composed of a lightswitch input.
@@ -43,7 +41,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     /**
      * @inheritdoc
      */
-    public function getHtml(array $options = []): string
+    protected function inputHtml(): string
     {
         $lightswitchId = 'lightswitch';
 

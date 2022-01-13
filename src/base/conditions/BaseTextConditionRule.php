@@ -14,10 +14,10 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class BaseTextConditionRule extends BaseOperatorConditionRule
+abstract class BaseTextConditionRule extends BaseConditionRule
 {
     /**
-     * @var string The selected operator.
+     * @inheritdoc
      */
     public string $operator = self::OPERATOR_EQ;
 

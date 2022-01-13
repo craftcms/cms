@@ -12,18 +12,25 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidFieldException;
+use yii\base\InvalidConfigException;
 use yii\db\QueryInterface;
 
 /**
  * FieldConditionRuleTrait implements the common methods and properties for custom fields’ query condition rule classes.
  *
+ * @property-write string $fieldUid The UUID of the custom field associated with this rule
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
 trait FieldConditionRuleTrait
 {
     /**
-     * @var FieldInterface The custom field this rule is associated with.
+     * @var string The UUID of the custom field associated with this rule
+     */
+    private string $_fieldUid;
+
+    /**
+     * @var FieldInterface The custom field associated with this rule
      */
     private FieldInterface $_field;
 
@@ -32,15 +39,31 @@ trait FieldConditionRuleTrait
      */
     public function setFieldUid(string $uid): void
     {
-        $this->_field = Craft::$app->getFields()->getFieldByUid($uid);
+        $this->_fieldUid = $uid;
+        if (isset($this->_field) && $this->_field->uid !== $uid) {
+            unset($this->_field);
+        }
     }
 
     /**
-     * @inheritdoc
+     * Returns the custom field associated with this rule.
+     *
+     * @return FieldInterface
+     * @throws InvalidConfigException if [[fieldUid]] is invalid
      */
-    public function getFieldUid(): string
+    protected function field(): FieldInterface
     {
-        return $this->_field->uid;
+        if (!isset($this->_field)) {
+            if (!isset($this->_fieldUid)) {
+                throw new InvalidConfigException('No field UUID set on the field condition rule yet.');
+            }
+            $field = Craft::$app->getFields()->getFieldByUid($this->_fieldUid);
+            if (!$field) {
+                throw new InvalidConfigException("Invalid field UUID: $this->_fieldUid");
+            }
+            $this->_field = $field;
+        }
+        return $this->_field;
     }
 
     /**
@@ -49,7 +72,7 @@ trait FieldConditionRuleTrait
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'fieldUid' => $this->_field->uid,
+            'fieldUid' => $this->field()->uid,
         ]);
     }
 
@@ -58,7 +81,7 @@ trait FieldConditionRuleTrait
      */
     public function getLabel(): string
     {
-        return $this->_field->name;
+        return $this->field()->name;
     }
 
     /**
@@ -66,7 +89,7 @@ trait FieldConditionRuleTrait
      */
     public function getExclusiveQueryParams(): array
     {
-        return [$this->_field->handle];
+        return [$this->field()->handle];
     }
 
     /**
@@ -77,7 +100,7 @@ trait FieldConditionRuleTrait
         $param = $this->elementQueryParam();
         if ($param !== null) {
             /** @var ElementQueryInterface $query */
-            $query->{$this->_field->handle}($param);
+            $query->{$this->field()->handle}($param);
         }
     }
 
@@ -87,7 +110,7 @@ trait FieldConditionRuleTrait
     public function matchElement(ElementInterface $element): bool
     {
         try {
-            $value = $element->getFieldValue($this->_field->handle);
+            $value = $element->getFieldValue($this->field()->handle);
         } catch (InvalidFieldException $e) {
             return false;
         }

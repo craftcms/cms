@@ -397,7 +397,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         Garnish.requestAnimationFrame(() => {
             Craft.appendHeadHtml(data.headHtml);
-            Craft.appendFootHtml(data.footHtml);
+            Craft.appendBodyHtml(data.bodyHtml);
             Craft.initUiElements(this.$fieldsContainer);
 
             if (refreshInitialData) {
