@@ -214,9 +214,12 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     {
         return [
             [['uid'], 'safe'],
-            [['operator'], function() {
-                return in_array($this->operator, $this->operators(), true);
-            }],
+            [
+                ['operator'],
+                function() {
+                    return in_array($this->operator, $this->operators(), true);
+                },
+            ],
         ];
     }
 
