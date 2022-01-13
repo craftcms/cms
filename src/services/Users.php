@@ -470,7 +470,7 @@ class Users extends Component
         $userRecord->pending = false;
         $userRecord->password = null;
         $userRecord->verificationCode = null;
-        
+
         if (!$userRecord->save()) {
             return false;
         }
