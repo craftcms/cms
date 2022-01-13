@@ -43,6 +43,7 @@ export default Base.extend(
 
             if (container) {
                 this.setContainer(container);
+                Garnish.addModalAttributes(container);
 
                 if (this.settings.autoShow) {
                     this.show();

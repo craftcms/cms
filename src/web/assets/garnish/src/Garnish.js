@@ -238,6 +238,20 @@ Garnish = $.extend(Garnish, {
     },
 
     /**
+     * Adds modal ARIA and role attributes to a container
+     *
+     * @param {object} container The container element. Can be either an actual element or a jQuery collection.
+     */
+    addModalAttributes: function(container) {
+        var $container = $(container);
+
+        $(container).attr({
+            'aria-modal': 'true',
+            'role': 'dialog',
+        });
+    },
+
+    /**
      * Returns the body's real scrollTop, discarding any window banding in Safari.
      *
      * @return {number}
