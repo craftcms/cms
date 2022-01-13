@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -9,8 +9,8 @@ declare(strict_types=1);
 namespace craft\models;
 
 use Craft;
-use craft\image\transforms\DefaultTransformer;
 use craft\base\Model;
+use craft\image\transforms\DefaultTransformer;
 use craft\image\transforms\TransformerInterface;
 use craft\records\ImageTransform as AssetTransformRecord;
 use craft\validators\DateTimeValidator;
@@ -30,7 +30,7 @@ class ImageTransform extends Model
     /**
      * @var string The default image transform driver.
      */
-     public const DEFAULT_DRIVER = DefaultTransformer::class;
+    public const DEFAULT_DRIVER = DefaultTransformer::class;
 
     /**
      * @var int|null ID

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * The base class for all asset Volumes. All Volume types must extend this class.
  *
@@ -162,16 +162,19 @@ class Volume extends Model
      *
      * @param FsInterface $fs
      */
-    public function setFilesystem(FsInterface $fs): void {
+    public function setFilesystem(FsInterface $fs): void
+    {
         $this->_fs = $fs;
     }
 
     /**
      * Get the local file system.
+     *
      * @return FsInterface
      * @since 4.0.0
      */
-    public function getFilesystem(): FsInterface {
+    public function getFilesystem(): FsInterface
+    {
         if ($this->_fs) {
             return $this->_fs;
         }

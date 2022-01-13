@@ -2,11 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
-use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
 
 /**
  * m211115_135500_asset_transform_drivers migration.
@@ -29,7 +26,7 @@ class m211115_135500_asset_transform_drivers extends Migration
 
         // Add the driver info.
         $this->addColumn(Table::IMAGETRANSFORMINDEX, 'driver', $this->string()->null()->after('assetId'));
-        $this->addColumn(Table::IMAGETRANSFORMS, 'driver',  $this->string()->null()->after('mode'));
+        $this->addColumn(Table::IMAGETRANSFORMS, 'driver', $this->string()->null()->after('mode'));
 
         // Rename the location to `transformString`
         $this->renameColumn(Table::IMAGETRANSFORMINDEX, 'location', 'transformString');

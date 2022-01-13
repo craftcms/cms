@@ -8,9 +8,9 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\image\transforms\DefaultTransformer;
 use craft\elements\Asset;
 use craft\i18n\Translation;
+use craft\image\transforms\DefaultTransformer;
 use craft\queue\BaseJob;
 use Throwable;
 

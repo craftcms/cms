@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -145,6 +145,7 @@ abstract class Image extends BaseObject
 
     /**
      * Let everyone back home know we're ok.
+     *
      * @since 4.0.0
      */
     public function heartbeat(): void

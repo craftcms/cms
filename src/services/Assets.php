@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -22,16 +22,17 @@ use craft\elements\User;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
 use craft\errors\FsException;
+use craft\errors\FsObjectExistsException;
+use craft\errors\FsObjectNotFoundException;
 use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
-use craft\errors\FsObjectExistsException;
-use craft\errors\FsObjectNotFoundException;
 use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
+use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -47,7 +48,6 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\fs\Temp;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;

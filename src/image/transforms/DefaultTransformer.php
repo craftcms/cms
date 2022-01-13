@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -314,7 +314,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         }
 
         // In case this takes a while, update the timestamp so we know it's all working
-        $image->setHeartbeatCallback(fn () => $this->storeTransformIndexData($index));
+        $image->setHeartbeatCallback(fn() => $this->storeTransformIndexData($index));
 
         switch ($transform->mode) {
             case 'fit':

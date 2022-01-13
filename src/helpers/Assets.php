@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -104,7 +104,7 @@ class Assets
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      */
-    public static function urlAppendix(Volume $volume, Asset $asset,  ?DateTime $dateUpdated = null): string
+    public static function urlAppendix(Volume $volume, Asset $asset, ?DateTime $dateUpdated = null): string
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return '';

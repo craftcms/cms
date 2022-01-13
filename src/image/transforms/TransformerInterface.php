@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 /**
  * @link https://craftcms.com/
@@ -9,10 +9,8 @@ declare(strict_types=1);
 
 namespace craft\image\transforms;
 
-use craft\db\Query;
 use craft\elements\Asset;
 use craft\models\ImageTransform;
-use craft\models\ImageTransformIndex;
 
 /**
  * TransformerInterface defines the common interface to be implemented by all image drivers.

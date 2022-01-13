@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace craft\services;
 
@@ -24,9 +24,9 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
+use craft\models\FsListing;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\models\FsListing;
 use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
 use DateTime;
 use Generator;

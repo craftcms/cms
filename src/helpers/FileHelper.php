@@ -41,6 +41,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * A list of files to be deleted once the request ends.
+     *
      * @var array
      */
     private static array $_filesToBeDeleted = [];
@@ -750,6 +751,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * Delete all image sources queued up for deletion.
+     *
      * @since 4.0.0
      */
     public static function deleteQueuedFiles(): void

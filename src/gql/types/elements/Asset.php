@@ -7,7 +7,6 @@
 
 namespace craft\gql\types\elements;
 
-use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql;

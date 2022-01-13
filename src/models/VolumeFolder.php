@@ -9,8 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\fs\Temp;
-use craft\services\Volumes;
 use yii\base\InvalidConfigException;
 
 /**

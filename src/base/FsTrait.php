@@ -37,7 +37,6 @@ trait FsTrait
     public ?string $url = null;
 
     /**
-    /**
      * @var string|null UID
      */
     public ?string $uid = null;

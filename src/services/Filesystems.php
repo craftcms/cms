@@ -287,7 +287,7 @@ class Filesystems extends Component
 
         try {
             $fs = ComponentHelper::createComponent($config, FsInterface::class);
-        } catch (MissingComponentException|InvalidConfigException $e) {
+        } catch (MissingComponentException | InvalidConfigException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);

@@ -13,14 +13,11 @@ use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
 use craft\errors\FsException;
+use craft\errors\FsObjectNotFoundException;
 use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
-use craft\errors\VolumeException;
-use craft\errors\FsObjectNotFoundException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
-use craft\queue\jobs\GeneratePendingTransforms;
-use yii\base\InvalidConfigException;
 
 /**
  * Class AssetImageTransforms
@@ -68,7 +65,6 @@ class ImageTransforms
             'interlace' => $matches['interlace'],
             'driver' => ImageTransform::DEFAULT_DRIVER,
         ]);
-
     }
 
     /**

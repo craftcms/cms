@@ -7,7 +7,6 @@
 
 namespace craft\gql\directives;
 
-use Craft;
 use craft\elements\Asset;
 use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -9,29 +9,25 @@ declare(strict_types=1);
 namespace craft\services;
 
 use Craft;
-use craft\events\AssetEvent;
-use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterImageTransformDriversEvent;
-use craft\image\transforms\DefaultTransformer;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\ImageTransformException;
-use craft\events\ImageTransformEvent;
-use craft\events\TransformImageEvent;
+use craft\events\AssetEvent;
 use craft\events\ConfigEvent;
-use craft\helpers\ArrayHelper;
-use craft\helpers\ImageTransforms as TransformHelper;
+use craft\events\ImageTransformEvent;
+use craft\events\RegisterImageTransformDriversEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\StringHelper;
+use craft\image\transforms\DefaultTransformer;
 use craft\image\transforms\EagerLoadTransformerInterface;
 use craft\image\transforms\TransformerInterface;
 use craft\models\ImageTransform;
-use craft\models\ImageTransformIndex;
 use craft\records\ImageTransform as ImageTransformRecord;
 use DateTime;
 use Throwable;
@@ -72,7 +68,7 @@ class ImageTransforms extends Component
      * @since 3.1.0
      */
     public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
-    
+
     /**
      * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
      */
