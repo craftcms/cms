@@ -158,16 +158,6 @@ class Volume extends Model
     }
 
     /**
-     * Set the filesystem.
-     *
-     * @param FsInterface $fs
-     */
-    public function setFilesystem(FsInterface $fs): void
-    {
-        $this->_fs = $fs;
-    }
-
-    /**
      * Get the local file system.
      *
      * @return FsInterface
@@ -186,5 +176,15 @@ class Volume extends Model
         }
 
         return $this->_fs = $fs;
+    }
+
+    /**
+     * Set the filesystem.
+     *
+     * @param FsInterface $fs
+     */
+    public function setFilesystem(FsInterface $fs): void
+    {
+        $this->_fs = $fs;
     }
 }

@@ -236,6 +236,17 @@ class ImageTransform extends Model
     }
 
     /**
+     * Get the transform driver.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    public function getDriver(): string
+    {
+        return $this->driver;
+    }
+
+    /**
      * Set the transform driver.
      *
      * @param string $imageTransformDriver
@@ -249,16 +260,5 @@ class ImageTransform extends Model
         }
 
         $this->driver = $imageTransformDriver;
-    }
-
-    /**
-     * Get the transform driver.
-     *
-     * @return string
-     * @since 4.0.0
-     */
-    public function getDriver(): string
-    {
-        return $this->driver;
     }
 }
