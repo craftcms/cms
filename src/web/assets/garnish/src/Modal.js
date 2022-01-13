@@ -109,6 +109,7 @@ export default Base.extend(
                         this.$container.velocity('fadeIn', {
                             complete: function() {
                                 this.updateSizeAndPosition();
+                                Garnish.setFocusWithin(this.$container);
                                 this.onFadeIn();
                             }.bind(this)
                         });
@@ -118,6 +119,9 @@ export default Base.extend(
                 if (this.settings.hideOnShadeClick) {
                     this.addListener(this.$shade, 'click', 'hide');
                 }
+
+                // Add focus trap
+                Garnish.trapFocusWithin(this.$container);
 
                 this.addListener(Garnish.$win, 'resize', '_handleWindowResize');
             }

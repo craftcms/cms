@@ -46,6 +46,7 @@ Garnish = $.extend(Garnish, {
     // Key code constants
     DELETE_KEY: 8,
     SHIFT_KEY: 16,
+    TAB_KEY: 9,
     CTRL_KEY: 17,
     ALT_KEY: 18,
     RETURN_KEY: 13,
@@ -249,6 +250,41 @@ Garnish = $.extend(Garnish, {
             'aria-modal': 'true',
             'role': 'dialog',
         });
+    },
+
+    /**
+     * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
+     * @param {Object} container
+     */
+    trapFocusWithin: function(container) {
+        const $container = $(container);
+        $container.on('keydown.focus-trap', function (ev) {
+            if (ev.keyCode === Garnish.TAB_KEY) {
+                const $focusableElements = $container.find(':focusable');
+                const index = $focusableElements.index(ev.target);
+
+                if (index === 0 && ev.shiftKey) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    $focusableElements.last().focus();
+                } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    $focusableElements.first().focus();
+                }
+            }
+        });
+    },
+
+    /**
+     * Sets focus to the first focusable element within a container.
+     * @param {Object} container The container element. Can be either an actual element or a jQuery collection.
+     */
+    setFocusWithin: function(container) {
+        console.log('hi');
+        var focusable =  $(container).find(':focusable:first');
+        console.log(focusable);
+        focusable.focus();
     },
 
     /**

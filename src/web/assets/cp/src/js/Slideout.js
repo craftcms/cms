@@ -36,7 +36,7 @@
                 this.$container.addClass('so-mobile');
             }
 
-            Craft.trapFocusWithin(this.$container);
+            Garnish.trapFocusWithin(this.$container);
 
             if (this.settings.autoOpen) {
                 this.open();
