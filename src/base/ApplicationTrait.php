@@ -56,7 +56,7 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\services\Entries;
 use craft\services\Fields;
-use craft\services\Filesystems;
+use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
@@ -129,6 +129,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Entries $entries The entries service
  * @property-read Fields $fields The fields service
  * @property-read Formatter $formatter The formatter component
+ * @property-read Fs $fs The filesystems service
  * @property-read Gc $gc The garbage collection service
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
@@ -1037,12 +1038,12 @@ trait ApplicationTrait
     /**
      * Returns the filesystems service.
      *
-     * @return Filesystems The filesystems service
+     * @return Fs The filesystems service
      */
-    public function getFilesystems(): Filesystems
+    public function getFs(): Fs
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('filesystems');
+        return $this->get('fs');
     }
 
     /**
@@ -1548,10 +1549,6 @@ trait ApplicationTrait
             ->onAdd(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
             ->onUpdate(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleChangedBlockType'))
             ->onRemove(ProjectConfig::PATH_MATRIX_BLOCK_TYPES . '.{uid}', $this->_proxy('matrix', 'handleDeletedBlockType'))
-            // Filesystems
-            ->onAdd(ProjectConfig::PATH_FILESYSTEMS . '.{uid}', $this->_proxy('filesystems', 'handleChangeFilesystem'))
-            ->onUpdate(ProjectConfig::PATH_FILESYSTEMS . '.{uid}', $this->_proxy('filesystems', 'handleChangeFilesystem'))
-            ->onRemove(ProjectConfig::PATH_FILESYSTEMS . '.{uid}', $this->_proxy('filesystems', 'handleDeletedFilesystem'))
             // Volumes
             ->onAdd(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
             ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))

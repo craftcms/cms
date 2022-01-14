@@ -6,9 +6,9 @@
 
 
 {% block content %}
-    {{ actionInput('filesystems/save-filesystem') }}
-    {{ redirectInput('settings/assets/filesystems') }}
-    {% if not isNewFilesystem %}{{ hiddenInput('filesystemId', filesystem.id) }}{% endif %}
+    {{ actionInput('fs/save') }}
+    {{ redirectInput('settings/assets/fs') }}
+    {% if oldHandle %}{{ hiddenInput('oldHandle', oldHandle) }}{% endif %}
 
     {{ forms.textField({
         first: true,

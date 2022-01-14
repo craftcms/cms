@@ -56,8 +56,8 @@ return [
         'fields' => [
             'class' => craft\services\Fields::class,
         ],
-        'filesystems' => [
-            'class' => craft\services\Filesystems::class,
+        'fs' => [
+            'class' => craft\services\Fs::class,
         ],
         'gc' => [
             'class' => craft\services\Gc::class,

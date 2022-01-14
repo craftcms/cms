@@ -90,7 +90,7 @@ use yii\base\UnknownPropertyException;
  * @property-read bool $hasCheckeredThumb
  * @property-read bool $supportsImageEditor
  * @property-read array $previewTargets
- * @property-read \craft\base\FsInterface $filesystem
+ * @property-read \craft\base\FsInterface $fs
  * @property-read string $titleTranslationKey
  * @property-read null|string $titleTranslationDescription
  * @property-read string $dataUrl
@@ -399,7 +399,7 @@ class Asset extends Element
             }
 
             // Copy URL
-            if ($volume->getFilesystem()->hasUrls) {
+            if ($volume->getFs()->hasUrls) {
                 $actions[] = CopyUrl::class;
             }
 
@@ -983,7 +983,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if (!$volume->getFilesystem()->hasUrls) {
+        if (!$volume->getFs()->hasUrls) {
             return null;
         }
 
@@ -1280,7 +1280,7 @@ class Asset extends Element
     {
         $volume = $this->getVolume();
 
-        if (!$volume->getFilesystem()->hasUrls || !$this->folderId) {
+        if (!$volume->getFs()->hasUrls || !$this->folderId) {
             return null;
         }
 
@@ -1560,7 +1560,7 @@ class Asset extends Element
      */
     public function getImageTransformSourcePath(): string
     {
-        $fs = $this->getFilesystem();
+        $fs = $this->getFs();
 
         if ($fs instanceof LocalFsInterface) {
             return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
@@ -1580,7 +1580,7 @@ class Asset extends Element
     {
         $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        Assets::downloadFile($this->getFilesystem(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getFs(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -1594,7 +1594,7 @@ class Asset extends Element
      */
     public function getStream()
     {
-        return $this->getFilesystem()->getFileStream($this->getPath());
+        return $this->getFs()->getFileStream($this->getPath());
     }
 
     /**
@@ -2059,7 +2059,7 @@ class Asset extends Element
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getFilesystem()->deleteFile($this->getPath());
+            $this->getFs()->deleteFile($this->getPath());
         }
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
@@ -2128,9 +2128,9 @@ class Asset extends Element
      * @return FsInterface
      * @throws InvalidConfigException
      */
-    public function getFilesystem(): FsInterface
+    public function getFs(): FsInterface
     {
-        return $this->getVolume()->getFilesystem();
+        return $this->getVolume()->getFs();
     }
 
     /**
@@ -2236,7 +2236,7 @@ class Asset extends Element
 
         // Is this just a simple move/rename within the same volume?
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-            $oldVolume->getFilesystem()->renameFile($oldPath, $newPath);
+            $oldVolume->getFs()->renameFile($oldPath, $newPath);
         } else {
             if (!$this->_validateTempFilePath()) {
                 Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
@@ -2249,7 +2249,7 @@ class Asset extends Element
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                Assets::downloadFile($oldVolume->getFilesystem(), $oldPath, $tempPath);
+                Assets::downloadFile($oldVolume->getFs(), $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -2262,14 +2262,14 @@ class Asset extends Element
 
             if ($this->folderId) {
                 // Delete the old file
-                $oldVolume->getFilesystem()->deleteFile($oldPath);
+                $oldVolume->getFs()->deleteFile($oldPath);
             }
 
             $exception = null;
 
             // Upload the file to the new location
             try {
-                $newVolume->getFilesystem()->writeFileFromStream($newPath, $stream, [
+                $newVolume->getFs()->writeFileFromStream($newPath, $stream, [
                     Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ]);
             } catch (VolumeException $exception) {

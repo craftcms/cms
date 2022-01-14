@@ -390,19 +390,6 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable(Table::FILESYSTEMS, [
-            'id' => $this->primaryKey(),
-            'name' => $this->string()->notNull(),
-            'handle' => $this->string()->notNull(),
-            'type' => $this->string()->notNull(),
-            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
-            'url' => $this->string(),
-            'settings' => $this->text(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'dateDeleted' => $this->dateTime()->null(),
-            'uid' => $this->uid(),
-        ]);
         $this->createTable(Table::FIELDS, [
             'id' => $this->primaryKey(),
             'groupId' => $this->integer(),
@@ -837,7 +824,6 @@ class Install extends Migration
         $this->createIndex(null, Table::FIELDS, ['handle', 'context']);
         $this->createIndex(null, Table::FIELDS, ['groupId'], false);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
-        $this->createIndex(null, Table::FILESYSTEMS, ['handle']);
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['handle'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['fieldLayoutId'], false);

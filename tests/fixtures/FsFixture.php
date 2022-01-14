@@ -10,49 +10,41 @@ namespace crafttests\fixtures;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\records\Filesystem;
-use craft\services\Filesystems;
-use craft\test\ActiveFixture;
+use craft\services\Fs;
+use craft\services\ProjectConfig;
 use yii\base\ErrorException;
-use yii\base\Exception;
+use yii\test\ArrayFixture;
 
 /**
- * Class FilesystemsFixture.
- *
+ * Class FsFixture.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 4.0.0
  */
-class FilesystemsFixture extends ActiveFixture
+class FsFixture extends ArrayFixture
 {
     const BASE_URL = 'https://cdn.test.craftcms.test/';
 
     /**
      * @inheritdoc
      */
-    public $modelClass = Filesystem::class;
+    public $dataFile = __DIR__ . '/data/fs.php';
+
+    private ?array $_originalConfig;
+    private Fs $_originalService;
 
     /**
      * @inheritdoc
-     */
-    public $dataFile = __DIR__ . '/data/filesystems.php';
-
-    /**
-     * @inheritdoc
-     * @throws Exception
      */
     public function load(): void
     {
-        parent::load();
+        $projectConfig = Craft::$app->getProjectConfig();
+        $this->_originalConfig = $projectConfig->get(ProjectConfig::PATH_FS);
+        $this->_originalService = Craft::$app->getFs();
 
-        // Create the dirs
-        foreach ($this->getData() as $data) {
-            $settings = Json::decodeIfJson($data['settings']);
-            FileHelper::createDirectory($settings['path']);
-        }
-
-        Craft::$app->set('filesystems', new Filesystems());
+        $projectConfig->set(ProjectConfig::PATH_FS, $this->getData());
+        Craft::$app->set('fs', new Fs());
     }
 
     /**
@@ -66,6 +58,9 @@ class FilesystemsFixture extends ActiveFixture
             $settings = Json::decodeIfJson($data['settings']);
             FileHelper::removeDirectory($settings['path']);
         }
+
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_FS, $this->_originalConfig);
+        Craft::$app->set('fs', $this->_originalService);
 
         parent::unload();
     }

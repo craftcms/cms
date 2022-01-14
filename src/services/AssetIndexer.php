@@ -60,7 +60,7 @@ class AssetIndexer extends Component
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
-            $fileList = $volume->getFilesystem()->getFileList($directory);
+            $fileList = $volume->getFs()->getFileList($directory);
         } catch (VolumeException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return;
@@ -165,7 +165,7 @@ class AssetIndexer extends Component
         /** @var Volume $volume */
         foreach ($volumeList as $volume) {
             try {
-                $fileList = $volume->getFilesystem()->getFileList();
+                $fileList = $volume->getFs()->getFileList();
             } catch (FsException $e) {
                 Craft::warning('Unable to list files in ' . $volume->handle . '.');
                 continue;
@@ -494,7 +494,7 @@ class AssetIndexer extends Component
      */
     public function indexFile(Volume $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
-        $fs = $volume->getFilesystem();
+        $fs = $volume->getFs();
         $listing = new FsListing([
             'dirname' => $path,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
@@ -661,7 +661,7 @@ class AssetIndexer extends Component
                 $tempPath = null;
 
                 // For local images it's easy - the image is right there, nothing to cache and the Asset id means nothing.
-                if ($volume->getFilesystem() instanceof LocalFsInterface) {
+                if ($volume->getFs() instanceof LocalFsInterface) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
                     $dimensions = Image::imageSize($transformSourcePath);
                 } else {
@@ -684,7 +684,7 @@ class AssetIndexer extends Component
                     // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
                     if (!is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
-                        AssetsHelper::downloadFile($volume->getFilesystem(), $indexEntry->uri, $tempPath);
+                        AssetsHelper::downloadFile($volume->getFs(), $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
                     }
                 }
@@ -697,7 +697,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an Asset id, so let's cover one last base.
-                $shouldCache = !$volume->getFilesystem() instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
+                $shouldCache = !$volume->getFs() instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();

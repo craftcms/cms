@@ -33,5 +33,5 @@ class VolumesFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public $depends = [FieldLayoutFixture::class, FilesystemsFixture::class];
+    public $depends = [FieldLayoutFixture::class, FsFixture::class];
 }

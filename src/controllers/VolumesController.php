@@ -83,7 +83,7 @@ class VolumesController extends Controller
         }
 
         /** @var FsInterface[] $allFs */
-        $allFs = Craft::$app->getFilesystems()->getAllFilesystems();
+        $allFs = Craft::$app->getFs()->getAllFilesystems();
 
         $fsOptions = [];
 

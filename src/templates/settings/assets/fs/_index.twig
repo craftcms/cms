@@ -11,10 +11,10 @@
 ]) %}
 
 {% block content %}
-    <div id="filesystems-vue-admin-table"></div>
+    <div id="fs-vue-admin-table"></div>
 
     <div class="buttons">
-        <a class="btn submit add icon" href="{{ url('settings/assets/filesystems/new') }}">{{ "New filesystem"|t('app') }}</a>
+        <a class="btn submit add icon" href="{{ url('settings/assets/fs/new') }}">{{ "New filesystem"|t('app') }}</a>
     </div>
 {% endblock %}
 
@@ -27,9 +27,9 @@
     {% endif %}
 
     {% set tableData = tableData|merge([{
-        id: filesystem.id,
+        id: filesystem.handle,
         title: filesystem.name|t('site'),
-        url: url('settings/assets/filesystems/' ~ filesystem.id),
+        url: url('settings/assets/fs/' ~ filesystem.handle),
         name: filesystem.name|t('site')|e,
         handle: filesystem.handle,
         type: {
@@ -55,8 +55,8 @@ var columns = [
 
 new Craft.VueAdminTable({
     columns: columns,
-    container: '#filesystems-vue-admin-table',
-    deleteAction: 'filesystems/delete-filesystem',
+    container: '#fs-vue-admin-table',
+    deleteAction: 'fs/remove',
     emptyMessage: Craft.t('app', 'No filesystems exist yet.'),
     tableData: {{ tableData|json_encode|raw }}
 });

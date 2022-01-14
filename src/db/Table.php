@@ -51,8 +51,6 @@ abstract class Table
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
     public const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     public const FIELDS = '{{%fields}}';
-    /** @since 4.0.0 */
-    public const FILESYSTEMS = '{{%filesystems}}';
     public const GLOBALSETS = '{{%globalsets}}';
     /** @since 3.3.0 */
     public const GQLSCHEMAS = '{{%gqlschemas}}';

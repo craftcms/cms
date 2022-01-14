@@ -57,7 +57,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         $imageTransformIndex = $this->getTransformIndex($asset, $imageTransform);
 
         if ($imageTransformIndex->fileExists) {
-            $fs = $asset->getVolume()->getFilesystem();
+            $fs = $asset->getVolume()->getFs();
             $uri = $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
@@ -93,7 +93,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $asset->getVolume()->getFilesystem()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
+        $asset->getVolume()->getFs()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
     }
 
     /**
@@ -284,8 +284,8 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         $transformPath = $asset->folderPath . $this->getTransformSubpath($asset, $index);
 
         // Already created. Relax, grasshopper!
-        if ($volume->getFilesystem()->fileExists($transformPath)) {
-            $dateModified = $volume->getFilesystem()->getDateModified($transformPath);
+        if ($volume->getFs()->fileExists($transformPath)) {
+            $dateModified = $volume->getFs()->getDateModified($transformPath);
             $parameterChangeTime = $index->getTransform()->parameterChangeTime;
 
             if (!$parameterChangeTime || $parameterChangeTime->getTimestamp() <= $dateModified) {
@@ -294,7 +294,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
 
             // Let's cook up a new one.
             try {
-                $volume->getFilesystem()->deleteFile($transformPath);
+                $volume->getFs()->deleteFile($transformPath);
             } catch (\Throwable $exception) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
@@ -359,7 +359,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $volume->getFilesystem()->writeFileFromStream($transformPath, $stream, []);
+            $volume->getFs()->writeFileFromStream($transformPath, $stream, []);
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
@@ -389,7 +389,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $fs = $volume->getFilesystem();
+        $fs = $volume->getFs();
 
         // If we have a match, copy the file.
         if ($matchFound) {

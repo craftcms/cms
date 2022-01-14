@@ -99,7 +99,7 @@ class ProjectConfig extends Component
     public const PATH_FIELDS = 'fields';
     public const PATH_FIELD_GROUPS = 'fieldGroups';
     public const PATH_GLOBAL_SETS = 'globalSets';
-    public const PATH_FILESYSTEMS = 'filesystems';
+    public const PATH_FS = 'fs';
     public const PATH_GRAPHQL = 'graphql';
     public const PATH_GRAPHQL_PUBLIC_TOKEN = self::PATH_GRAPHQL . '.' . 'publicToken';
     public const PATH_GRAPHQL_SCHEMAS = self::PATH_GRAPHQL . '.' . 'schemas';
@@ -1943,7 +1943,7 @@ class ProjectConfig extends Component
         $data = [];
         $volumesService = Craft::$app->getVolumes();
         foreach ($volumesService->getAllVolumes() as $volume) {
-            $data[$volume->uid] = $volumesService->createVolumeConfig($volume);
+            $data[$volume->uid] = $volume->getConfig();
         }
         return $data;
     }

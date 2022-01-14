@@ -6,21 +6,18 @@
  */
 
 use craft\fs\Local;
-use crafttests\fixtures\FilesystemsFixture;
-use crafttests\fixtures\VolumesFixture;
+use crafttests\fixtures\FsFixture;
 
 return [
     'localFs' => [
         'id' => '1000',
         'name' => 'Local FS',
-        'handle' => 'localFs',
         'type' => Local::class,
         'url' => null,
         'hasUrls' => true,
         'settings' => [
             'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => FilesystemsFixture::BASE_URL
+            'url' => FsFixture::BASE_URL
         ],
-        'uid' => 'fs-1000--------------------------uid',
     ],
 ];

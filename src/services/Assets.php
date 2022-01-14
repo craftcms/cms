@@ -241,7 +241,7 @@ class Assets extends Component
         $volume = $parent->getVolume();
         $path = rtrim($folder->path, '/');
 
-        $volume->getFilesystem()->createDirectory($path);
+        $volume->getFs()->createDirectory($path);
 
         $this->storeFolderRecord($folder);
     }
@@ -287,7 +287,7 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->getFilesystem()->renameDirectory(rtrim($folder->path, '/'), $newName);
+        $volume->getFs()->renameDirectory(rtrim($folder->path, '/'), $newName);
         $descendantFolders = $this->getAllDescendantFolders($folder);
 
         foreach ($descendantFolders as $descendantFolder) {
@@ -321,7 +321,7 @@ class Assets extends Component
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
-                    $volume->getFilesystem()->deleteDirectory($folder->path);
+                    $volume->getFs()->deleteDirectory($folder->path);
                 } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
                     // Carry on.
@@ -821,7 +821,7 @@ class Assets extends Component
 
         // Check whether a filename we'd want to use does not exist
         $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->getFilesystem()->fileExists($folder->path . $filenameToTest);
+            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->getFs()->fileExists($folder->path . $filenameToTest);
         };
 
         if ($canUse($originalFilename)) {

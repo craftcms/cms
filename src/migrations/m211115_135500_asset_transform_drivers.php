@@ -15,6 +15,9 @@ class m211115_135500_asset_transform_drivers extends Migration
      */
     public function safeUp(): bool
     {
+        $this->dropTableIfExists(Table::IMAGETRANSFORMINDEX);
+        $this->dropTableIfExists(Table::IMAGETRANSFORMS);
+
         // Rename tables
         $this->renameTable('{{%assettransforms}}', Table::IMAGETRANSFORMS);
         $this->renameTable('{{%assettransformindex}}', Table::IMAGETRANSFORMINDEX);

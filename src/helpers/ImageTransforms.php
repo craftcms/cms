@@ -145,7 +145,7 @@ class ImageTransforms
     public static function getLocalImageSource(Asset $asset): string
     {
         $volume = $asset->getVolume();
-        $fs = $volume->getFilesystem();
+        $fs = $volume->getFs();
 
         $imageSourcePath = $asset->getImageTransformSourcePath();
 

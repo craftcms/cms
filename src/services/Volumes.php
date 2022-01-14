@@ -225,7 +225,7 @@ class Volumes extends Component
             'name' => Craft::t('app', 'Temporary volume')
         ]);
 
-        $volume->setFilesystem(Craft::createObject(Temp::class));
+        $volume->setFs(Craft::createObject(Temp::class));
 
         return $volume;
     }
@@ -258,28 +258,11 @@ class Volumes extends Component
      * @param Volume $volume
      * @return array
      * @since 3.5.0
+     * @deprecated in 4.0.0. Use [[Volume::getConfig()]] instead.
      */
     public function createVolumeConfig(Volume $volume): array
     {
-        $config = [
-            'name' => $volume->name,
-            'handle' => $volume->handle,
-            'filesystem' => $volume->filesystem,
-            'titleTranslationMethod' => $volume->titleTranslationMethod,
-            'titleTranslationKeyFormat' => $volume->titleTranslationKeyFormat ?: null,
-            'sortOrder' => (int)$volume->sortOrder,
-        ];
-
-        if (
-            ($fieldLayout = $volume->getFieldLayout()) &&
-            ($fieldLayoutConfig = $fieldLayout->getConfig())
-        ) {
-            $config['fieldLayouts'] = [
-                $fieldLayout->uid => $fieldLayoutConfig,
-            ];
-        }
-
-        return $config;
+        return $volume->getConfig();
     }
 
     /**
@@ -293,7 +276,7 @@ class Volumes extends Component
      * $volume = new Local([
      *     'name' => 'Content Images',
      *     'handle' => 'contentImages',
-     *     'filesystem' => 'localFs',
+     *     'fs' => 'localFs',
      * ]);
      *
      * if (!Craft::$app->volumes->saveVolume(($volume))) {
@@ -333,8 +316,7 @@ class Volumes extends Component
         }
 
         $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
-        $configData = $this->createVolumeConfig($volume);
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$volume->handle}” volume");
+        Craft::$app->getProjectConfig()->set($configPath, $volume->getConfig(), "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
             $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
@@ -363,7 +345,7 @@ class Volumes extends Component
 
             $volumeRecord->name = $data['name'];
             $volumeRecord->handle = $data['handle'];
-            $volumeRecord->filesystem = $data['filesystem'];
+            $volumeRecord->fs = $data['fs'];
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -660,11 +642,11 @@ class Volumes extends Component
                 'id',
                 'name',
                 'handle',
+                'fs',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
                 'fieldLayoutId',
-                'filesystem',
                 'uid',
             ])
             ->from([Table::VOLUMES])

@@ -45,9 +45,9 @@ class Volume extends Model
     public ?string $handle = null;
 
     /**
-     * @var string|null Filesystem handle
+     * @var string The filesystem handle, or an environment variable that references it
      */
-    public ?string $filesystem = null;
+    public string $fs;
 
     /**
      * @var string Title translation method
@@ -163,16 +163,16 @@ class Volume extends Model
      * @return FsInterface
      * @since 4.0.0
      */
-    public function getFilesystem(): FsInterface
+    public function getFs(): FsInterface
     {
         if ($this->_fs) {
             return $this->_fs;
         }
 
-        $fs = Craft::$app->getFilesystems()->getFilesystemByHandle($this->filesystem);
+        $fs = Craft::$app->getFs()->getFilesystemByHandle($this->fs);
 
         if (!$fs) {
-            throw new InvalidConfigException('No filesystem found by the handle ' . $this->filesystem);
+            throw new InvalidConfigException('No filesystem found by the handle ' . $this->fs);
         }
 
         return $this->_fs = $fs;
@@ -183,8 +183,37 @@ class Volume extends Model
      *
      * @param FsInterface $fs
      */
-    public function setFilesystem(FsInterface $fs): void
+    public function setFs(FsInterface $fs): void
     {
         $this->_fs = $fs;
+    }
+
+    /**
+     * Returns the volume’s config.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'fs' => $this->fs,
+            'titleTranslationMethod' => $this->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
+            'sortOrder' => $this->sortOrder,
+        ];
+
+        if (
+            ($fieldLayout = $this->getFieldLayout()) &&
+            ($fieldLayoutConfig = $fieldLayout->getConfig())
+        ) {
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        return $config;
     }
 }

@@ -19,7 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
- * @property string $filesystem Filesystem handle
+ * @property string $fs The filesystem handle, or an environment variable that references it
  * @property string $titleTranslationMethod
  * @property string|null $titleTranslationKeyFormat
  * @property int $sortOrder Sort order
