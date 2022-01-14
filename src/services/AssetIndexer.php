@@ -1,5 +1,10 @@
 <?php
 declare(strict_types = 1);
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\services;
 
@@ -39,10 +44,6 @@ use yii\base\InvalidConfigException;
  * Class AssetIndexer
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license http://craftcms.com/license Craft License Agreement
- * @see http://craftcms.com
- * @package craft.app.services
  * @since 3.0.0
  *
  * @property-read array $existingIndexingSessions

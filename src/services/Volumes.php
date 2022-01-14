@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\services;
 
@@ -29,10 +34,6 @@ use yii\base\InvalidConfigException;
  * Class AssetVolumesService
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license http://craftcms.com/license Craft License Agreement
- * @see http://craftcms.com
- * @package craft.app.services
  * @since 3.0.0
  *
  * @property-read int[] $allVolumeIds
@@ -253,7 +254,7 @@ class Volumes extends Component
     }
 
     /**
-     * Returns the field layout config for the given volume.
+     * Returns the config for the given volume.
      *
      * @param Volume $volume
      * @return array
