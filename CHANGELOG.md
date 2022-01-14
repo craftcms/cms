@@ -9,6 +9,7 @@
 
 ### Changed
 - The Users index page now updates the URL based on the selected source. ([#10336](https://github.com/craftcms/cms/issues/10336))
+- Live Preview no longer reloads the iframe when the device type is changed. ([#10353](https://github.com/craftcms/cms/discussions/10353))
 - `admins`, `all`, and `new` are now reserved user group handles.
 - The content in the `resourcepaths` table is now excluded from database backups by default.
 - User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
