@@ -25,24 +25,20 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
- * The local filesystem class. Handles the implementation of a local filesystem in Craft.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * Local represents a local filesystem.
  *
  * @property-read mixed $settingsHtml
  * @property-read string $rootPath
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class Local extends Fs implements LocalFsInterface
 {
-    /* @since 4.0.0 */
     public const VISIBILITY_FILE = 'file';
-    /* @since 4.0.0 */
     public const VISIBILITY_DIR = 'dir';
 
     /**
      * @var int[][] Visibility map
-     * @since 4.0.0
      */
     protected array $visibilityMap = [
         self::VISIBILITY_FILE => [
@@ -127,7 +123,6 @@ class Local extends Fs implements LocalFsInterface
 
     /**
      * @inheritdoc
-     * @since 3.4.0
      */
     public function afterSave(bool $isNew): void
     {

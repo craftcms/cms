@@ -1,10 +1,9 @@
 <?php
 declare(strict_types = 1);
 /**
- * The base class for all asset Volumes. All Volume types must extend this class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\models;
@@ -21,11 +20,12 @@ use craft\validators\UniqueValidator;
 use yii\base\InvalidConfigException;
 
 /**
- * Volume represents a volume created in a Craft installation.
+ * Volume model class.
  *
  * @mixin FieldLayoutBehavior
- *
  * @property-read null|\craft\models\FieldLayout $fieldLayout
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class Volume extends Model
 {
@@ -51,13 +51,11 @@ class Volume extends Model
 
     /**
      * @var string Title translation method
-     * @since 3.6.0
      */
     public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 
     /**
      * @var string|null Title translation key format
-     * @since 3.6.0
      */
     public ?string $titleTranslationKeyFormat = null;
 
@@ -129,8 +127,6 @@ class Volume extends Model
 
     /**
      * Validates the field layout.
-     *
-     * @since 3.7.0
      */
     public function validateFieldLayout(): void
     {
@@ -148,7 +144,6 @@ class Volume extends Model
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
     public function getFieldLayout(): ?FieldLayout
     {
@@ -158,10 +153,9 @@ class Volume extends Model
     }
 
     /**
-     * Get the local file system.
+     * Returns the volume’s filesystem.
      *
      * @return FsInterface
-     * @since 4.0.0
      */
     public function getFs(): FsInterface
     {
@@ -192,7 +186,6 @@ class Volume extends Model
      * Returns the volume’s config.
      *
      * @return array
-     * @since 4.0.0
      */
     public function getConfig(): array
     {

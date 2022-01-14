@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\assets\previews\Image as ImagePreview;
+use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
@@ -30,7 +30,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\image\Raster;
-use craft\image\transforms\DefaultTransformer;
+use craft\imagetransforms\ImageTransformer;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -1175,7 +1175,7 @@ class AssetsController extends Controller
             $transformIndexModel = null;
 
             if ($transformId) {
-                $transformer = Craft::createObject(DefaultTransformer::class);
+                $transformer = Craft::createObject(ImageTransformer::class);
                 $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
                 $assetId = $transformIndexModel->assetId;
                 $transform = $transformIndexModel->getTransform();
@@ -1196,7 +1196,7 @@ class AssetsController extends Controller
             throw new NotFoundHttpException();
         }
 
-        $url = $transformer->getTransformUrl($asset, $transform);
+        $url = $transformer->getTransformUrl($asset, $transform, true);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);

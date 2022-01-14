@@ -13,15 +13,15 @@ use yii\base\Exception;
  * Class FsException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class FsException extends Exception
 {
     /**
-     * @return string the user-friendly name of this exception
+     * @inheritdoc
      */
     public function getName(): string
     {
-        return 'Filesystem Exception';
+        return 'Filesystem Error';
     }
 }

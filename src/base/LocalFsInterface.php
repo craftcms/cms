@@ -9,7 +9,7 @@ declare(strict_types = 1);
 namespace craft\base;
 
 /**
- * LocalFsInterface is the interface that must be implemented by all Filesystems that operate locally.
+ * LocalFsInterface is the interface that must be implemented by all filesystems that operate locally.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

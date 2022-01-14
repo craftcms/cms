@@ -11,15 +11,15 @@ namespace craft\errors;
  * Class FsObjectExistsException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class FsObjectExistsException extends FsException
 {
     /**
-     * @return string the user-friendly name of this exception
+     * @inheritdoc
      */
     public function getName(): string
     {
-        return 'File system object exists';
+        return 'Filesystem object exists';
     }
 }

@@ -10,14 +10,15 @@ namespace craft\errors;
 use craft\models\AssetIndexData;
 use craft\models\Volume;
 use Throwable;
+use yii\base\Exception;
 
 /**
- * MissingVolumeFolderException represents an exception caused by a volume folder record that doesn't exist.
+ * MissingFolderException represents an exception caused by a volume folder record that doesn't exist.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MissingFsFolderException extends FsException
+class MissingFolderException extends Exception
 {
     /**
      * @var AssetIndexData
@@ -53,10 +54,10 @@ class MissingFsFolderException extends FsException
     }
 
     /**
-     * @return string the user-friendly name of this exception
+     * @inheritdoc
      */
     public function getName(): string
     {
-        return 'Missing volume folder';
+        return 'Missing folder';
     }
 }

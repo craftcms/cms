@@ -9,10 +9,10 @@ declare(strict_types = 1);
 namespace craft\models;
 
 use Craft;
+use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\Model;
-use craft\image\transforms\DefaultTransformer;
-use craft\image\transforms\TransformerInterface;
-use craft\records\ImageTransform as AssetTransformRecord;
+use craft\imagetransforms\ImageTransformer;
+use craft\records\ImageTransform as ImageTransformRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -23,14 +23,14 @@ use DateTime;
  *
  * @property bool $isNamedTransform Whether this is a named transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class ImageTransform extends Model
 {
     /**
      * @var string The default image transform driver.
      */
-    public const DEFAULT_DRIVER = DefaultTransformer::class;
+    public const DEFAULT_DRIVER = ImageTransformer::class;
 
     /**
      * @var int|null ID
@@ -175,7 +175,7 @@ class ImageTransform extends Model
         $rules[] = [
             ['name', 'handle'],
             UniqueValidator::class,
-            'targetClass' => AssetTransformRecord::class,
+            'targetClass' => ImageTransformRecord::class,
         ];
         return $rules;
     }
@@ -227,10 +227,9 @@ class ImageTransform extends Model
     /**
      * Return the image transformer for this transform.
      *
-     * @return TransformerInterface
-     * @since 4.0.0
+     * @return ImageTransformerInterface
      */
-    public function getImageTransformer(): TransformerInterface
+    public function getImageTransformer(): ImageTransformerInterface
     {
         return Craft::$app->getImageTransforms()->getImageTransformer($this->driver);
     }
@@ -239,7 +238,6 @@ class ImageTransform extends Model
      * Get the transform driver.
      *
      * @return string
-     * @since 4.0.0
      */
     public function getDriver(): string
     {
@@ -250,11 +248,10 @@ class ImageTransform extends Model
      * Set the transform driver.
      *
      * @param string $imageTransformDriver
-     * @since 4.0.0
      */
     public function setDriver(string $imageTransformDriver): void
     {
-        if (!is_subclass_of($imageTransformDriver, TransformerInterface::class)) {
+        if (!is_subclass_of($imageTransformDriver, ImageTransformerInterface::class)) {
             Craft::warning($imageTransformDriver . ' is not a valid image transform driver.');
             $imageTransformDriver = self::DEFAULT_DRIVER;
         }

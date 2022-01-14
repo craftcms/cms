@@ -9,10 +9,10 @@ declare(strict_types = 1);
 namespace craft\services;
 
 use Craft;
-use craft\assets\previews\Image as ImagePreview;
-use craft\assets\previews\Pdf;
-use craft\assets\previews\Text;
-use craft\assets\previews\Video;
+use craft\assetpreviews\Image as ImagePreview;
+use craft\assetpreviews\Pdf;
+use craft\assetpreviews\Text;
+use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -58,10 +58,9 @@ use yii\base\NotSupportedException;
  * Assets service.
  * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
  *
+ * @property-read VolumeFolder $currentUserTemporaryUploadFolder
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- *
- * @property-read VolumeFolder $currentUserTemporaryUploadFolder
  */
 class Assets extends Component
 {

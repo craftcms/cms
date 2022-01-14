@@ -14,7 +14,8 @@ use craft\models\FsListing;
 use Generator;
 
 /**
- * FsInterface is the interface that must be implemented by all Filesystems.
+ * FieldInterface defines the common interface to be implemented by filesystem classes.
+ * A class implementing this interface should also use [[SavableComponentTrait]] and [[FsTrait]].
  *
  * @mixin FsTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -38,7 +39,6 @@ interface FsInterface extends SavableComponentInterface
      * @param string $uri
      * @return int
      * @throws FsException
-     * @since 3.6.0
      */
     public function getFileSize(string $uri): int;
 
@@ -48,7 +48,6 @@ interface FsInterface extends SavableComponentInterface
      * @param string $uri
      * @return int
      * @throws FsException
-     * @since 3.6.0
      */
     public function getDateModified(string $uri): int;
 

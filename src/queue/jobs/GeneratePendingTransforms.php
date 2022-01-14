@@ -10,7 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\elements\Asset;
 use craft\i18n\Translation;
-use craft\image\transforms\DefaultTransformer;
+use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
 use Throwable;
 
@@ -27,7 +27,7 @@ class GeneratePendingTransforms extends BaseJob
      */
     public function execute($queue): void
     {
-        $transformer = Craft::createObject(DefaultTransformer::class);
+        $transformer = Craft::createObject(ImageTransformer::class);
 
         // Get all the pending transform index IDs
         $indexIds = $transformer->getPendingTransformIndexIds();
@@ -44,7 +44,7 @@ class GeneratePendingTransforms extends BaseJob
                 try {
                     $asset = Asset::findOne(['id' => $index->assetId]);
                     if ($asset) {
-                        $transformer->getTransformUrl($asset, $index->getTransform());
+                        $transformer->getTransformUrl($asset, $index->getTransform(), true);
                     }
                 } catch (Throwable $e) {
                 }

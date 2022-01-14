@@ -8,7 +8,6 @@ declare(strict_types = 1);
 
 namespace craft\models;
 
-use craft\base\DriverInterface;
 use craft\base\Model;
 use craft\helpers\ImageTransforms;
 use craft\validators\DateTimeValidator;
@@ -16,12 +15,11 @@ use DateTime;
 use yii\base\InvalidConfigException;
 
 /**
- * Class ImageTransformIndexs model.
+ * Class ImageTransformIndex model.
  *
- * @property-read null|DriverInterface $imageTransformer
  * @property ImageTransform $transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class ImageTransformIndex extends Model
 {
@@ -31,7 +29,7 @@ class ImageTransformIndex extends Model
     public ?int $id = null;
 
     /**
-     * @var int|null File ID
+     * @var int|null Asset ID
      */
     public ?int $assetId = null;
 

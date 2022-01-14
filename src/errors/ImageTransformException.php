@@ -8,18 +8,18 @@
 namespace craft\errors;
 
 /**
- * Class AssetTransformException
+ * Class ImageTransformException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class ImageTransformException extends AssetException
 {
     /**
-     * @return string the user-friendly name of this exception
+     * @inheritdoc
      */
     public function getName(): string
     {
-        return 'Asset Transform Error';
+        return 'Image Transform Error';
     }
 }

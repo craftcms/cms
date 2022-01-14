@@ -21,7 +21,9 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 
 /**
- * Class Filesystems
+ * Filesystems service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getfs()|`Craft::$app->fs`]].
  *
  * @property-read FsInterface[] $allFilesystems All filesystems
  * @property-read string[] $allFilesystemTypes All registered filesystem types

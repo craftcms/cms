@@ -18,10 +18,12 @@ abstract class Table
     /** @since 3.7.0 */
     public const ANNOUNCEMENTS = '{{%announcements}}';
     public const ASSETINDEXDATA = '{{%assetindexdata}}';
-    /* @since 4.0.0 */
+    /** @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
+    /** @since 4.0.0 */
     public const IMAGETRANSFORMINDEX = '{{%imagetransformindex}}';
+    /** @since 4.0.0 */
     public const IMAGETRANSFORMS = '{{%imagetransforms}}';
     /** @since 3.4.14 */
     public const CACHE = '{{%cache}}';

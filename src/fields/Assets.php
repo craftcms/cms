@@ -31,6 +31,7 @@ use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\models\Volume;
+use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;

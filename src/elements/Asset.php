@@ -48,7 +48,6 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\image\transforms\DeferredTransformerInterface;
 use craft\models\FieldLayout;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -1314,14 +1313,10 @@ class Asset extends Element
             $transform = $this->_transform;
         }
 
-        $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+        $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         $imageTransformer = $transform->getImageTransformer();
 
-        if ($generateNow || !$imageTransformer instanceof DeferredTransformerInterface) {
-            return $imageTransformer->getTransformUrl($this, $transform);
-        }
-
-        return $imageTransformer->getDeferredTransformUrl($this, $transform);
+        return $imageTransformer->getTransformUrl($this, $transform, $immediately);
     }
 
     /**
@@ -2123,33 +2118,15 @@ class Asset extends Element
     }
 
     /**
-     * Get the filesystem.
+     * Returns the filesystem the asset is stored in.
      *
      * @return FsInterface
      * @throws InvalidConfigException
+     * @since 4.0.0
      */
     public function getFs(): FsInterface
     {
         return $this->getVolume()->getFs();
-    }
-
-    /**
-     * Returns whether the current user can move/rename the asset.
-     *
-     * @return bool
-     */
-    private function _isMovable(): bool
-    {
-        $userSession = Craft::$app->getUser();
-        if ($userSession->getId() == $this->uploaderId) {
-            return true;
-        }
-
-        $volume = $this->getVolume();
-        return (
-            $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
-            $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
-        );
     }
 
     /**

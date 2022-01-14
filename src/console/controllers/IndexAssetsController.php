@@ -14,7 +14,7 @@ use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\MissingAssetException;
-use craft\errors\MissingFsFolderException;
+use craft\errors\MissingFolderException;
 use craft\helpers\Db;
 use craft\models\FsListing;
 use craft\models\Volume;
@@ -178,7 +178,7 @@ class IndexAssetsController extends Controller
                     $missingRecords[] = $e;
                     $missingRecordsByFilename[$e->filename][] = $e;
                     continue;
-                } catch (MissingFsFolderException $e) {
+                } catch (MissingFolderException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     continue;
@@ -202,7 +202,7 @@ class IndexAssetsController extends Controller
                 $totalMissing = count($missingRecords);
                 $this->stdout(($totalMissing === 1 ? 'One record is missing:' : "$totalMissing records are missing:") . PHP_EOL, Console::FG_YELLOW);
                 foreach ($missingRecords as $e) {
-                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . ($e instanceof MissingFsFolderException ? '/' : '') . PHP_EOL);
+                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . ($e instanceof MissingFolderException ? '/' : '') . PHP_EOL);
                 }
                 $this->stdout(PHP_EOL);
             }

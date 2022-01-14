@@ -735,7 +735,7 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Delete a file after the request ends.
+     * Deletes a file after the request ends.
      *
      * @param string $filename
      * @since 4.0.0
@@ -750,7 +750,7 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Delete all image sources queued up for deletion.
+     * Delete all files queued up for deletion.
      *
      * @since 4.0.0
      */

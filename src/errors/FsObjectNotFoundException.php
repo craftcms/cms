@@ -11,15 +11,15 @@ namespace craft\errors;
  * Class FsObjectNotFoundException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class FsObjectNotFoundException extends FsException
 {
     /**
-     * @return string the user-friendly name of this exception
+     * @inheritdoc
      */
     public function getName(): string
     {
-        return 'File system object not found!';
+        return 'Filesystem object not found';
     }
 }

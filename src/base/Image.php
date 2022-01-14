@@ -134,13 +134,14 @@ abstract class Image extends BaseObject
     }
 
     /**
-     * Set up a heartbeat callback.
+     * Sets the heartbeat callback.
      *
-     * @param ?callable $cb
+     * @param callable|null $method
+     * @since 4.0.0
      */
-    public function setHeartbeatCallback(?callable $cb = null): void
+    public function setHeartbeatCallback(?callable $method = null): void
     {
-        $this->_heartBeatCallback = $cb;
+        $this->_heartBeatCallback = $method;
     }
 
     /**

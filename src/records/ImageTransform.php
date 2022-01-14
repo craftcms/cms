@@ -12,7 +12,7 @@ use craft\db\Table;
 use DateTime;
 
 /**
- * Class AssetTransform record.
+ * Class ImageTransform record.
  *
  * @property int $id ID
  * @property string $name Name
@@ -26,13 +26,12 @@ use DateTime;
  * @property int $quality Quality
  * @property DateTime $parameterChangeTime Critical parameter change time
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class ImageTransform extends ActiveRecord
 {
     /**
      * @inheritdoc
-     * @return string
      */
     public static function tableName(): string
     {

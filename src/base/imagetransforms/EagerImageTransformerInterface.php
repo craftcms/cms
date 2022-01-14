@@ -1,13 +1,12 @@
 <?php
 declare(strict_types = 1);
-
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\image\transforms;
+namespace craft\base\imagetransforms;
 
 use craft\elements\Asset;
 use craft\models\ImageTransform;
@@ -18,13 +17,13 @@ use craft\models\ImageTransform;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-interface EagerLoadTransformerInterface
+interface EagerImageTransformerInterface
 {
     /**
-     * Returns the URL for an image asset transform.
+     * Eager-loads the given transforms for the given assets.
      *
-     * @param Asset[] $assets
      * @param ImageTransform[] $transforms
+     * @param Asset[] $assets
      */
-    public function eagerLoadTransforms(array $assets, array $transforms): void;
+    public function eagerLoadTransforms(array $transforms, array $assets): void;
 }

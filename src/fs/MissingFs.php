@@ -15,12 +15,11 @@ use Generator;
 use yii\base\NotSupportedException;
 
 /**
- * MissingFs represents a volume with an invalid class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * MissingFs represents a filesystem with an invalid class.
  *
  * @property-read false $rootUrl
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class MissingFs extends Fs implements MissingComponentInterface
 {

@@ -19,7 +19,6 @@ use craft\base\Model;
  * @property-read null|int $fileSize
  * @property-read bool $isDir
  * @property-read int $dateModified
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */

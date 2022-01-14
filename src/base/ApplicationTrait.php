@@ -869,7 +869,7 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the asset transforms service.
+     * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
      */
@@ -1039,6 +1039,7 @@ trait ApplicationTrait
      * Returns the filesystems service.
      *
      * @return Fs The filesystems service
+     * @since 4.0.0
      */
     public function getFs(): Fs
     {

@@ -13,7 +13,7 @@ use craft\models\ImageTransformIndex;
  * Transform image event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class TransformImageEvent extends AssetEvent
 {

@@ -20,7 +20,7 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 
 /**
- * Class AssetImageTransforms
+ * Image Transforms helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

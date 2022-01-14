@@ -11,11 +11,10 @@ namespace craft\fs;
 use Craft;
 
 /**
- * The temporary volume class. Handles the implementation of a temporary volume
- * Craft.
+ * Temp represents a temporary filesystem.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class Temp extends Local
 {

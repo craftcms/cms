@@ -7,15 +7,12 @@
 
 namespace crafttests\unit\elements;
 
-use Codeception\Stub\Expected;
 use Craft;
 use craft\base\Fs;
-use craft\image\transforms\DefaultTransformer;
-use craft\models\Volume;
 use craft\elements\Asset;
+use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
-use craft\models\ImageTransformIndex;
-use craft\services\ImageTransforms;
+use craft\models\Volume;
 use craft\test\TestCase;
 use UnitTester;
 
@@ -53,7 +50,7 @@ class AssetElementTest extends TestCase
             'getTransformByHandle' => $this->make(ImageTransform::class, [
                 'width' => 400,
                 'height' => 200,
-                'getImageTransformer' => $this->make(DefaultTransformer::class, [
+                'getImageTransformer' => $this->make(ImageTransformer::class, [
                     'getTransformUrl' => fn (Asset $asset, ImageTransform $transform) => 'w='.$transform->width.'&h='.$transform->height
                 ])
             ])

@@ -9,6 +9,8 @@ declare(strict_types = 1);
 namespace craft\services;
 
 use Craft;
+use craft\base\imagetransforms\EagerImageTransformerInterface;
+use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
 use craft\db\Query;
@@ -24,9 +26,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\StringHelper;
-use craft\image\transforms\DefaultTransformer;
-use craft\image\transforms\EagerLoadTransformerInterface;
-use craft\image\transforms\TransformerInterface;
+use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\records\ImageTransform as ImageTransformRecord;
 use DateTime;
@@ -38,13 +38,13 @@ use yii\di\Instance;
 
 /**
  * Image Transforms service.
- * An instance of the Image Transforms service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->imageTransforms`]].
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->imageTransforms`]].
  *
  * @property-read ImageTransform[] $allTransforms
  * @property-read array $pendingTransformIndexIds
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class ImageTransforms extends Component
 {
@@ -65,7 +65,6 @@ class ImageTransforms extends Component
 
     /**
      * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
-     * @since 3.1.0
      */
     public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
 
@@ -91,7 +90,6 @@ class ImageTransforms extends Component
 
     /**
      * @var Connection|array|string The database connection to use
-     * @since 3.5.4
      */
     public $db = 'db';
 
@@ -102,14 +100,12 @@ class ImageTransforms extends Component
     private ?MemoizableArray $_transforms = null;
 
     /**
-     * @var TransformerInterface[]
+     * @var ImageTransformerInterface[]
      */
     private $_imageTransformers = [];
 
     /**
      * Serializer
-     *
-     * @since 3.5.14
      */
     public function __serialize()
     {
@@ -182,7 +178,6 @@ class ImageTransforms extends Component
      *
      * @param string $uid
      * @return ImageTransform|null
-     * @since 3.1.0
      */
     public function getTransformByUid(string $uid): ?ImageTransform
     {
@@ -468,8 +463,8 @@ class ImageTransforms extends Component
 
         foreach ($transformsByDriver as $driver => $driverTransforms) {
             $driver = $this->getImageTransformer($driver);
-            if ($driver instanceof EagerLoadTransformerInterface) {
-                $driver->eagerLoadTransforms($assets, $driverTransforms);
+            if ($driver instanceof EagerImageTransformerInterface) {
+                $driver->eagerLoadTransforms($driverTransforms, $assets);
             }
         }
     }
@@ -477,14 +472,13 @@ class ImageTransforms extends Component
     /**
      * @param string $driver
      * @param array $config
-     * @return TransformerInterface
+     * @return ImageTransformerInterface
      * @throws InvalidConfigException
-     * @since 4.0.0
      */
-    public function getImageTransformer(string $driver, array $config = []): TransformerInterface
+    public function getImageTransformer(string $driver, array $config = []): ImageTransformerInterface
     {
         if (!array_key_exists($driver, $this->_imageTransformers)) {
-            if (!is_subclass_of($driver, TransformerInterface::class)) {
+            if (!is_subclass_of($driver, ImageTransformerInterface::class)) {
                 throw new ImageTransformException($driver . ' is not a valid image transform driver');
             }
 
@@ -571,7 +565,7 @@ class ImageTransforms extends Component
     public function getAllImageTransformerDrivers(): array
     {
         $drivers = [
-            DefaultTransformer::class
+            ImageTransformer::class
         ];
 
         $event = new RegisterImageTransformDriversEvent([

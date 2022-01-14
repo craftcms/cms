@@ -18,7 +18,7 @@ use craft\errors\AssetException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\FsException;
 use craft\errors\MissingAssetException;
-use craft\errors\MissingFsFolderException;
+use craft\errors\MissingFolderException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -43,10 +43,9 @@ use yii\base\InvalidConfigException;
 /**
  * Class AssetIndexer
  *
+ * @property-read array $existingIndexingSessions
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- *
- * @property-read array $existingIndexingSessions
  */
 class AssetIndexer extends Component
 {
@@ -742,7 +741,7 @@ class AssetIndexer extends Component
         $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
 
         if (!$folder && !$createIfMissing) {
-            throw new MissingFsFolderException($indexEntry, $volume, $indexEntry->uri);
+            throw new MissingFolderException($indexEntry, $volume, $indexEntry->uri);
         }
 
         return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);

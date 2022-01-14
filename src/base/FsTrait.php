@@ -9,7 +9,7 @@ declare(strict_types = 1);
 namespace craft\base;
 
 /**
- * FsTrait
+ * FsTrait implements the common methods and properties for filesystem classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

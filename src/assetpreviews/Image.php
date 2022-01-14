@@ -3,10 +3,9 @@
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
- * @since 3.4.0
  */
 
-namespace craft\assets\previews;
+namespace craft\assetpreviews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;

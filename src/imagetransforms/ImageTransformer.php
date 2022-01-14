@@ -6,9 +6,11 @@ declare(strict_types = 1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\image\transforms;
+namespace craft\imagetransforms;
 
 use Craft;
+use craft\base\imagetransforms\EagerImageTransformerInterface;
+use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\LocalFsInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -23,7 +25,6 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\ImageTransforms as ImageTransformsHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
@@ -35,12 +36,12 @@ use craft\services\ImageTransforms;
 use yii\base\InvalidConfigException;
 
 /**
- * DefaultDriver transforms the images using the Imagine library.
+ * ImageTransformer transforms image assets using GD or ImageMagick.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class DefaultTransformer implements TransformerInterface, DeferredTransformerInterface, EagerLoadTransformerInterface
+class ImageTransformer implements ImageTransformerInterface, EagerImageTransformerInterface
 {
     /**
      * @var ImageTransformIndex[]
@@ -52,12 +53,16 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      *
      * @return string The URL for the transform
      */
-    public function getTransformUrl(Asset $asset, ImageTransform $imageTransform): string
+    public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
+        if (!$immediately) {
+            return $this->_deferredTransformUrl($asset, $imageTransform);
+        }
+
         $imageTransformIndex = $this->getTransformIndex($asset, $imageTransform);
 
         if ($imageTransformIndex->fileExists) {
-            $fs = $asset->getVolume()->getFs();
+            $fs = $asset->getFs();
             $uri = $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
@@ -93,19 +98,19 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $asset->getVolume()->getFs()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
+        $asset->getFs()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
     }
 
     /**
      * @inheritdoc
      */
-    public function getDeferredTransformUrl(Asset $asset, ImageTransform $imageTransform): string
+    private function _deferredTransformUrl(Asset $asset, ImageTransform $imageTransform): string
     {
         $index = $this->getTransformIndex($asset, $imageTransform);
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return $this->getTransformUrl($asset, $imageTransform);
+            return $this->getTransformUrl($asset, $imageTransform, true);
         }
 
         static $queued = null;
@@ -122,7 +127,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
     /**
      * @inheritdoc
      */
-    public function eagerLoadTransforms(array $assets, array $transforms): void
+    public function eagerLoadTransforms(array $transforms, array $assets): void
     {
         // Index the assets by ID
         $assetsById = ArrayHelper::index($assets, 'id');
@@ -490,7 +495,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
             }
         }
 
-        return $this->getTransformUrl($asset, $index->getTransform());
+        return $this->getTransformUrl($asset, $index->getTransform(), true);
     }
 
     /**
@@ -503,7 +508,7 @@ class DefaultTransformer implements TransformerInterface, DeferredTransformerInt
      */
     protected function getTransformIndex(Asset $asset, $transform): ImageTransformIndex
     {
-        $transform = ImageTransformsHelper::normalizeTransform($transform);
+        $transform = TransformHelper::normalizeTransform($transform);
 
         if ($transform === null) {
             throw new ImageTransformException('There was a problem finding the transform.');

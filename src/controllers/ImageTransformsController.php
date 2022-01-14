@@ -16,32 +16,32 @@ use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
- * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
+ * The ImageTransformsController class is a controller that handles various actions related to image transforms,
  * such as creating, editing and deleting transforms.
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
-class AssetTransformsController extends Controller
+class ImageTransformsController extends Controller
 {
     /**
      * @inheritdoc
      */
     public function beforeAction($action): bool
     {
-        // All asset transform actions require an admin
+        // All image transform actions require an admin
         $this->requireAdmin();
 
         return parent::beforeAction($action);
     }
 
     /**
-     * Shows the asset transform list.
+     * Shows the image transform index.
      *
      * @return Response
      */
-    public function actionTransformIndex(): Response
+    public function actionIndex(): Response
     {
         $variables = [];
 
@@ -52,14 +52,14 @@ class AssetTransformsController extends Controller
     }
 
     /**
-     * Edit an asset transform.
+     * Edit an image transform.
      *
      * @param string|null $transformHandle The transform’s handle, if any.
      * @param ImageTransform|null $transform The transform being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform(?string $transformHandle = null, ?ImageTransform $transform = null): Response
+    public function actionEdit(?string $transformHandle = null, ?ImageTransform $transform = null): Response
     {
         if ($transform === null) {
             if ($transformHandle !== null) {
@@ -89,11 +89,11 @@ class AssetTransformsController extends Controller
     }
 
     /**
-     * Saves an asset transform.
+     * Saves an image transform.
      *
      * @return Response|null
      */
-    public function actionSaveTransform(): ?Response
+    public function actionSave(): ?Response
     {
         $this->requirePostRequest();
 
@@ -155,11 +155,11 @@ class AssetTransformsController extends Controller
     }
 
     /**
-     * Deletes an asset transform.
+     * Deletes an image transform.
      *
      * @return Response
      */
-    public function actionDeleteTransform(): Response
+    public function actionDelete(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

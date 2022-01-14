@@ -14,7 +14,7 @@ use yii\base\Event;
  * Image transform event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.0.0
  */
 class ImageTransformEvent extends Event
 {

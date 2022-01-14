@@ -14,12 +14,11 @@ use yii\base\InvalidConfigException;
 /**
  * The VolumeFolder model class.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- *
  * @property-read Volume $volume
  * @property-read VolumeFolder|null $parent
  * @property VolumeFolder[] $children
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
  */
 class VolumeFolder extends Model
 {

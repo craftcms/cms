@@ -33,9 +33,6 @@ use yii\base\InvalidConfigException;
 /**
  * Class AssetVolumesService
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- *
  * @property-read int[] $allVolumeIds
  * @property-read string[] $allVolumeTypes
  * @property-read int $totalVolumes
@@ -45,6 +42,8 @@ use yii\base\InvalidConfigException;
  * @property-read int $totalViewableVolumes
  * @property-read Volume[] $publicVolumes
  * @property-read Volume[] $viewableVolumes
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
  */
 class Volumes extends Component
 {

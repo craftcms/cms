@@ -12,27 +12,21 @@ use Craft;
 use craft\validators\HandleValidator;
 
 /**
- * Fs is the base filesystem class
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * Field is the base class for classes representing filesystems in terms of objects.
  *
  * @property-read null|string $rootUrl
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 abstract class Fs extends SavableComponent implements FsInterface
 {
     use FsTrait;
 
-    /* @since 4.0.0 */
     public const CONFIG_MIMETYPE = 'mimetype';
-    /* @since 4.0.0 */
     public const CONFIG_VISIBILITY = 'visibility';
 
-    /* @since 4.0.0 */
     public const VISIBILITY_DEFAULT = 'default';
-    /* @since 4.0.0 */
     public const VISIBILITY_HIDDEN = 'hidden';
-    /* @since 4.0.0 */
     public const VISIBILITY_PUBLIC = 'public';
 
     /**
