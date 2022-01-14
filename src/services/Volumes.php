@@ -276,7 +276,7 @@ class Volumes extends Component
     }
 
     /**
-     * Returns the field layout config for the given volume.
+     * Returns the config for the given volume.
      *
      * @param VolumeInterface $volume
      * @return array
