@@ -113,7 +113,7 @@ class UserGroup extends Model
     }
 
     /**
-     * Returns the field layout config for this user group.
+     * Returns the user group’s config.
      *
      * @param bool $withPermissions Whether permissions should be included
      * @return array

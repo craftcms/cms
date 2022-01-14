@@ -116,7 +116,7 @@ class TagGroup extends Model
     }
 
     /**
-     * Returns the field layout config for this tag group.
+     * Returns the tag group’s config.
      *
      * @return array
      * @since 3.5.0

@@ -271,7 +271,7 @@ class GlobalSet extends Element
     }
 
     /**
-     * Returns the field layout config for this global set.
+     * Returns the global set’s config.
      *
      * @return array
      * @since 3.5.0
