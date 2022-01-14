@@ -80,7 +80,7 @@ class FieldGroup extends Model
     }
 
     /**
-     * Returns the field layout config for this field group.
+     * Returns the field group’s config.
      *
      * @return array
      * @since 3.5.0
