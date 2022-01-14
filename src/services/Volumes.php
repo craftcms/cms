@@ -34,7 +34,9 @@ use yii\base\Component;
 use yii\base\UnknownPropertyException;
 
 /**
- * Class AssetVolumesService
+ * Volumes service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getVolumes()|`Craft::$app->volumes()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

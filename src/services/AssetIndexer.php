@@ -30,7 +30,9 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class AssetIndexer
+ * Asset Indexer service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->assetIndexer`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
