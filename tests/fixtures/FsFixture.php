@@ -31,7 +31,7 @@ class FsFixture extends ArrayFixture
      */
     public $dataFile = __DIR__ . '/data/fs.php';
 
-    private ?array $_originalConfig;
+    private ?array $_originalConfig = null;
     private Fs $_originalService;
 
     /**
@@ -60,7 +60,9 @@ class FsFixture extends ArrayFixture
         }
 
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_FS, $this->_originalConfig);
-        Craft::$app->set('fs', $this->_originalService);
+        if (isset($this->_originalService)) {
+            Craft::$app->set('fs', $this->_originalService);
+        }
 
         parent::unload();
     }
