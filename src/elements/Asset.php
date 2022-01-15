@@ -1436,7 +1436,7 @@ class Asset extends Element
     public function getMimeType(): ?string
     {
         // todo: maybe we should be passing this off to volume fs
-        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
+        // so Local filesystems can call FileHelper::getMimeType() (uses magic file instead of ext)
         return FileHelper::getMimeTypeByExtension($this->_filename);
     }
 

@@ -37,11 +37,6 @@
 - Added `craft\base\ElementInterface::getThumbAlt()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
 - Added `craft\base\FieldLayoutComponent`.
-- Added `craft\base\Volume::CONFIG_MIMETYPE`.
-- Added `craft\base\Volume::CONFIG_VISIBILITY`.
-- Added `craft\base\Volume::VISIBILITY_DEFAULT`.
-- Added `craft\base\Volume::VISIBILITY_HIDDEN`.
-- Added `craft\base\Volume::VISIBILITY_PUBLIC`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
 - Added `craft\controllers\AssetIndexesController`.
@@ -97,7 +92,6 @@
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
-- Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\fieldlayoutelements\AssetAltField`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
@@ -155,7 +149,6 @@
 - Added `craft\models\FieldLayoutTab::getElements()` and `setElements()`.
 - Added `craft\models\ProjectConfigData`.
 - Added `craft\models\ReadOnlyProjectConfigData`.
-- Added `craft\models\VolumeListing`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
 - Added `craft\services\AssetIndexer::getExistingIndexingSessions()`.
@@ -322,7 +315,6 @@
 - Plugins’ `settingsHtml()` methods must now have a `?string` return type declaration.
 - Queue jobs’ `defaultDescription()` methods must now have a `?string` return type declaration.
 - Utilities’ `iconPath()` methods must now have a `?string` return type declaration.
-- Volumes’ `getRootUrl()` methods must now have a `?string` return type declaration, and `null` should be returned rather than `false` if the volume doesn’t have a root URL.
 - Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
 - Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.
 - Widgets’ `getTitle()` methods can now have a `?string` return type declaration.
@@ -359,7 +351,7 @@
 - `craft\helpers\i18n\Formatter::asPercent()` now chooses a default `$decimals` value based on the value given, if `null`.
 - `craft\helpers\i18n\Formatter::asPercent()` now treats all empty values as `0`.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
-- `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
+- `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
@@ -403,7 +395,7 @@
 - Removed the `suppressTemplateErrors` config setting.
 - Removed the `useCompressedJs` config setting.
 - Removed the `useProjectConfigFile` config setting. Override `craft\services\ProjectConfig::$writeYamlAutomatically` to opt into [manual YAML file generation](https://craftcms.com/docs/4.x/project-config.html#manual-yaml-file-generation).
-- Removed support for `config/volumes.php`. Environment-specific volume settings can be defined via environment variables or dependency injection.
+- Removed support for `config/volumes.php`. Volumes can now specify per-environment filesystems.
 - Removed support for the `CRAFT_SITE_URL` PHP constant. Environment-specific site URLs can be defined via environment variables.
 - Removed the `enabledForSite` GraphQL argument. `status` should be used instead.
 - Removed the `{% includeCss %}` Twig tag. The `{% css %}` tag can be used instead.
@@ -463,10 +455,6 @@
 - Removed `craft\base\FieldLayoutElementInterface`.
 - Removed `craft\base\FlysystemVolume`.
 - Removed `craft\base\Model::getError()`. `getFirstError()` can be used instead.
-- Removed `craft\base\VolumeInterface::createDir()`. `createDirectory()` can be used instead.
-- Removed `craft\base\VolumeInterface::deleteDir()`. `deleteDirectory()` can be used instead.
-- Removed `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` can be used instead.
-- Removed `craft\base\VolumeInterface::renameDir()`. `renameDirectory()` can be used instead.
 - Removed `craft\base\Widget::iconPath()`. `icon()` can be used instead.
 - Removed `craft\behaviors\DraftBehavior::getDateLastMerged()`. Elements’ `$dateLastMerged` properties can be used instead.
 - Removed `craft\behaviors\DraftBehavior::getMergingChanges()`. Elements’ `$mergingCanonicalChanges` properties can be used instead.
@@ -491,7 +479,7 @@
 - Removed `craft\elements\actions\SetStatus::$allowDisabledForSite`.
 - Removed `craft\elements\actions\SetStatus::DISABLED_FOR_SITE`.
 - Removed `craft\elements\actions\SetStatus::DISABLED_GLOBALLY`.
-- Removed `craft\elements\Asset::getHasUrls()`. Volumes’ `$hasUrls` properties can be used instead.
+- Removed `craft\elements\Asset::getHasUrls()`. Filesystems’ `$hasUrls` properties can be used instead.
 - Removed `craft\elements\Asset::getSupportsPreview()`.
 - Removed `craft\elements\Asset::getUri()`. `getPath()` can be used instead.
 - Removed `craft\elements\MatrixBlock::$ownerSiteId`. `$siteId` can be used instead.
