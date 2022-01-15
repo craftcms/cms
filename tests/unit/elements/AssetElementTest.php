@@ -39,7 +39,7 @@ class AssetElementTest extends TestCase
         // Set up asset to have an URL and a mock transform
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
-                'getFilesystem' => $this->make(Fs::class, [
+                'getFs' => $this->make(Fs::class, [
                     'hasUrls' => true
                 ])
             ]),
