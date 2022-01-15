@@ -77,7 +77,7 @@ class FieldLayout extends Model
      * );
      * ```
      *
-     * @see getAvailableStandardFields()
+     * @see getAvailableUiElements()
      * @since 3.5.0
      */
     const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
@@ -430,7 +430,7 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the field layout config for this field layout.
+     * Returns the field layout’s config.
      *
      * @return array|null
      * @since 3.1.0

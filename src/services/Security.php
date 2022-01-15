@@ -14,8 +14,9 @@ use yii\base\InvalidConfigException;
 use yii\helpers\Inflector;
 
 /**
- * Security component.
- * An instance of the Security component is globally accessible in Craft via [[\yii\base\Application::getSecurity()|`Craft::$app->security`]].
+ * Security service.
+ *
+ * An instance of the service is available via [[\yii\base\Application::getSecurity()|`Craft::$app->security`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

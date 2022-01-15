@@ -149,7 +149,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     }
 
     /**
-     * Returns the field layout config for this block type.
+     * Returns the block type’s config.
      *
      * @return array
      * @since 3.5.0
