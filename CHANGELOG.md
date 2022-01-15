@@ -16,6 +16,7 @@
 ### Fixed
 - Fixed a bug where admin tables were displaying titles incorrectly.
 - Fixed a bug where `aria-describedby` attributes were getting namespaced incorrectly when they referenced multiple IDs.
+- Fixed a bug where fatal PHP errors were not logged to `stderr` when the `CRAFT_STREAM_LOG` PHP constant was set to `true`. ([#10366](https://github.com/craftcms/cms/pull/10366))
 
 ## 3.7.28 - 2022-01-05
 
