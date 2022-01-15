@@ -60,6 +60,11 @@ Garnish = $.extend(Garnish, {
     S_KEY: 83,
     CMD_KEY: 91,
 
+    // ARIA hidden classes
+    JS_ARIA_CLASS: 'garnish-js-aria',
+    JS_ARIA_TRUE_CLASS: 'garnish-js-aria-true',
+    JS_ARIA_FALSE_CLASS: 'garnish-js-aria-false',
+
     // Mouse button constants
     PRIMARY_CLICK: 1,
     SECONDARY_CLICK: 3,
@@ -244,12 +249,101 @@ Garnish = $.extend(Garnish, {
      * @param {object} container The container element. Can be either an actual element or a jQuery collection.
      */
     addModalAttributes: function(container) {
-        var $container = $(container);
+        const $container = $(container);
 
         $(container).attr({
             'aria-modal': 'true',
             'role': 'dialog',
         });
+    },
+
+    /**
+     * Hide immediate descendants of the body element from screen readers
+     *
+     */
+    hideModalBackgroundLayers: function() {
+        const topmostLayer = Garnish.uiLayerManager.currentLayer.$container.get(0);
+
+        Garnish.$bod.children().each(function() {
+            // If element is modal or already has jsAria class, do nothing
+            if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
+
+            if (Garnish.isScriptOrStyleElement(this)) {
+                Garnish.ariaHide(this);
+            }
+        });
+    },
+
+    /**
+     * Un-hide elements based on currently active layers
+     *
+     */
+    resetModalBackgroundLayerVisibility: function() {
+        console.log('unhide things');
+        // const topmostLayer = Garnish.uiLayerManager.currentLayer.$container.get(0);
+        //
+        // // If there is another modal, make it accessible to AT
+        // if (nextVisibleModal) {
+        //     $(nextVisibleModal).removeClass([Garnish.JS_ARIA_CLASS, Garnish.JS_ARIA_TRUE_CLASS, Garnish.JS_ARIA_FALSE_CLASS]);
+        //     $(nextVisibleModal).removeAttr('aria-hidden');
+        //     return;
+        // };
+        //
+        // // If no more modals in DOM, loop through hidden elements and un-hide them
+        // var ariaSelector = '.' + Garnish.JS_ARIA_CLASS + ', .' + Garnish.JS_ARIA_FALSE_CLASS + ', .' + Garnish.JS_ARIA_TRUE_CLASS;
+        // var ariaHiddenElements = $(ariaSelector);
+        //
+        // $(ariaHiddenElements).each(function() {
+        //     if ($(this).hasClass(Garnish.JS_ARIA_CLASS)) {
+        //         $(this).removeClass(Garnish.JS_ARIA_CLASS);
+        //         $(this).removeAttr('aria-hidden');
+        //     } else if ($(this).hasClass(Garnish.JS_ARIA_FALSE_CLASS)) {
+        //         $(this).removeClass(Garnish.JS_ARIA_FALSE_CLASS);
+        //         $(this).attr('aria-hidden', false);
+        //     } else if ($(this).hasClass(Garnish.JS_ARIA_TRUE_CLASS)) {
+        //         $(this).removeClass(Garnish.JS_ARIA_TRUE_CLASS);
+        //         $(this).attr('aria-hidden', true);
+        //     }
+        // });
+    },
+
+    /**
+     * Apply aria-hidden="true" to element and store previous value as class
+     *
+     * @param {object} element The element. Can be either an actual element or a jQuery collection.
+     */
+    ariaHide: function(element) {
+        const ariaHiddenAttribute = $(element).attr('aria-hidden');
+
+        // Capture initial aria-hidden values in an applied class
+        if (!ariaHiddenAttribute) {
+            $(element).addClass(Garnish.JS_ARIA_CLASS);
+        } else if (ariaHiddenAttribute === 'false') {
+            $(element).addClass(Garnish.JS_ARIA_FALSE_CLASS);
+        } else if (ariaHiddenAttribute === 'true') {
+            $(element.addClass(Garnish.JS_ARIA_TRUE_CLASS));
+        }
+
+        $(element).attr('aria-hidden', 'true');
+    },
+
+    /**
+     * Checks to see if element is <script> or <style>
+     *
+     * @param {object} element The element. Can be either an actual element or a jQuery collection.
+     * @return {boolean}
+     */
+    isScriptOrStyleElement: function(element) {
+        return $(element).prop('tagName') === 'SCRIPT' || $(element).prop('tagName') === 'STYLE';
+    },
+
+    /**
+     * Has been hidden from screen reader users as a result of modal open
+     *
+     * @param {object} element The element. Can be either an actual element or a jQuery collection.
+     */
+    hasJsAriaClass: function(element) {
+        return $(element).hasClass(Garnish.JS_ARIA_CLASS) || $(element).hasClass(Garnish.JS_ARIA_FALSE_CLASS) || $(element).hasClass(Garnish.JS_ARIA_TRUE_CLASS);
     },
 
     /**

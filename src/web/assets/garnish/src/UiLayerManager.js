@@ -43,6 +43,7 @@ export default Base.extend(
                 layer: this.layer,
                 $container: this.currentLayer.$container,
             });
+            console.log('layer added');
             return this;
         },
 

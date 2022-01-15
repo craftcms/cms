@@ -133,6 +133,7 @@ export default Base.extend(
                 Garnish.Modal.visibleModal = this;
 
                 Garnish.uiLayerManager.addLayer(this.$container);
+                Garnish.hideModalBackgroundLayers();
 
                 if (this.settings.hideOnEsc) {
                     Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
@@ -184,6 +185,7 @@ export default Base.extend(
             Garnish.Modal.visibleModal = null;
             Garnish.uiLayerManager.removeLayer();
             this.trigger('hide');
+            Garnish.resetModalBackgroundLayerVisibility();
             this.settings.onHide();
         },
 
