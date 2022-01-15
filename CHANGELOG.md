@@ -31,6 +31,7 @@
 - Fixed a bug where `craft\services\Sites::getEditableSiteIds()` would exclude disabled sites on the front end.
 - Fixed a bug where validation errors referenced by `aria-describedby` attributes weren’t getting read out by VoiceOver. ([#10355](https://github.com/craftcms/cms/pull/10355))
 - Fixed a bug where element queries’ `withQueries` properties were ignored. ([#10359](https://github.com/craftcms/cms/pull/10359))
+- Fixed a bug where fatal PHP errors were not logged to `stderr` when the `CRAFT_STREAM_LOG` PHP constant was set to `true`. ([#10366](https://github.com/craftcms/cms/pull/10366))
 
 ### Security
 - Fixed an XSS vulnerability.
