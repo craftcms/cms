@@ -59,7 +59,6 @@
                 _this.$emit('loading');
 
                 _this.before(_this.id).then(continueDelete => {
-                    console.log('continue delete', continueDelete);
                     if (continueDelete && _this.confirmDelete()) {
                         axios.post(Craft.getActionUrl(_this.actionUrl), {id: _this.id}, {
                             headers: {

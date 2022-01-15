@@ -43,7 +43,8 @@ use yii\base\InvalidArgumentException;
 
 /**
  * The Users service provides APIs for managing users.
- * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

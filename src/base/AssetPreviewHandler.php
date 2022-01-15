@@ -10,7 +10,7 @@ namespace craft\base;
 use craft\elements\Asset;
 
 /**
- * An AssetPreview provides functionality to preview an arbitrary Asset element
+ * AssetPreviewer is the base class for classes that provide asset previewing functionality.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0

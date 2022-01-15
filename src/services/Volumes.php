@@ -31,7 +31,9 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 
 /**
- * Class AssetVolumesService
+ * Volumes service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getVolumes()|`Craft::$app->volumes()`]].
  *
  * @property-read int[] $allVolumeIds
  * @property-read string[] $allVolumeTypes

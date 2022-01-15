@@ -41,7 +41,9 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
- * Class AssetIndexer
+ * Asset Indexer service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->assetIndexer`]].
  *
  * @property-read array $existingIndexingSessions
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

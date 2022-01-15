@@ -15,7 +15,9 @@ use GuzzleHttp\Exception\GuzzleException;
 use yii\base\Component;
 
 /**
- * Webpack service
+ * Webpack service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getWebpack()|`Craft::$app->webpack()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.22

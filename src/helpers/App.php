@@ -710,7 +710,7 @@ class App
 
             $targets[Dispatcher::TARGET_FILE] = Craft::createObject($fileTargetConfig);
 
-            if (!Craft::$app->getRequest()->isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+            if (!$isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
                 $targets[Dispatcher::TARGET_STDERR] = Craft::createObject([
                     'class' => StreamLogTarget::class,
                     'url' => 'php://stderr',
