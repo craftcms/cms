@@ -86,7 +86,9 @@ use yii\base\InvalidArgumentException;
 use yii\caching\TagDependency;
 
 /**
- * The Gql service provides GraphQL functionality.
+ * GraphQL service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->gql`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
