@@ -91,7 +91,7 @@ class DirectiveTest extends Unit
         $asset = $this->make(Asset::class, [
             'filename' => $filename,
             'getVolume' => $this->make(Volume::class, [
-                'getFilesystem' => $this->make(Local::class, [
+                'getFs' => $this->make(Local::class, [
                     'hasUrls' => true,
                     'url' => 'http://domain.local/'
                 ]),
