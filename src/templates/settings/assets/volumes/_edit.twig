@@ -15,8 +15,8 @@
         label: "Name"|t('app'),
         id: 'name',
         name: 'name',
-        value: (volume is defined ? volume.name : null),
-        errors: (volume is defined ? volume.getErrors('name') : null),
+        value: volume.name,
+        errors: volume.getErrors('name'),
         autofocus: true,
         required: true,
     }) }}
@@ -29,22 +29,22 @@
         class: 'code',
         autocorrect: false,
         autocapitalize: false,
-        value: (volume is defined ? volume.handle : null),
-        errors: (volume is defined ? volume.getErrors('handle') : null),
+        value: volume.handle,
+        errors: volume.getErrors('handle'),
         required: true,
     }) }}
 
     <hr>
 
-    {% if fsOptions|length %}
-        {{ forms.selectField({
+    {% if fsHandleOptions|length %}
+        {{ forms.selectizeField({
             label: "Filesytem"|t('app'),
-            instructions: "What filesystem is this volume using?"|t('app'),
-            id: 'filesystem',
-            name: 'filesystem',
-            options: fsOptions,
-            value: className(volume),
-            toggle: true
+            instructions: 'Choose which filesystem the volume should connect to.'|t('app'),
+            id: 'fs-handle',
+            name: 'fsHandle',
+            options: fsHandleOptions,
+            includeEnvVars: true,
+            value: volume.getFsHandle(false),
         }) }}
     {% else %}
         {{ forms.field({

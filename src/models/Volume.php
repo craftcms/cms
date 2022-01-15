@@ -14,6 +14,8 @@ use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -23,7 +25,8 @@ use yii\base\InvalidConfigException;
  * Volume model class.
  *
  * @mixin FieldLayoutBehavior
- * @property-read null|\craft\models\FieldLayout $fieldLayout
+ * @property FsInterface $fs
+ * @property string $fsHandle
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -43,11 +46,6 @@ class Volume extends Model
      * @var string|null Handle
      */
     public ?string $handle = null;
-
-    /**
-     * @var string The filesystem handle, or an environment variable that references it
-     */
-    public string $fs;
 
     /**
      * @var string Title translation method
@@ -74,7 +72,33 @@ class Volume extends Model
      */
     public ?string $uid = null;
 
-    private ?FsInterface $_fs = null;
+    /**
+     * @var FsInterface
+     * @see getFs()
+     * @see setFs()
+     */
+    private FsInterface $_fs;
+
+    /**
+     * @var string|null
+     * @see getFsHandle()
+     * @see setFsHandle()
+     */
+    private ?string $_fsHandle = null;
+
+    /**
+     * Constructor
+     *
+     * @param array $config
+     */
+    public function __construct($config = [])
+    {
+        if (isset($config['fs']) && is_string($config['fs'])) {
+            $config['fsHandle'] = ArrayHelper::remove($config, 'fs');
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -156,20 +180,23 @@ class Volume extends Model
      * Returns the volume’s filesystem.
      *
      * @return FsInterface
+     * @throws InvalidConfigException if [[fsHandle]] is missing or invalid
      */
     public function getFs(): FsInterface
     {
-        if ($this->_fs) {
-            return $this->_fs;
+        if (!isset($this->_fs)) {
+            $handle = $this->getFsHandle();
+            if (!$handle) {
+                throw new InvalidConfigException('Volume is missing its filesystem handle.');
+            }
+            $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+            if (!$fs) {
+                throw new InvalidConfigException("Invalid filesystem handle: $this->_fsHandle");
+            }
+            $this->_fs = $fs;
         }
 
-        $fs = Craft::$app->getFs()->getFilesystemByHandle($this->fs);
-
-        if (!$fs) {
-            throw new InvalidConfigException('No filesystem found by the handle ' . $this->fs);
-        }
-
-        return $this->_fs = $fs;
+        return $this->_fs;
     }
 
     /**
@@ -180,6 +207,31 @@ class Volume extends Model
     public function setFs(FsInterface $fs): void
     {
         $this->_fs = $fs;
+        $this->_fsHandle = $fs->handle;
+    }
+
+    /**
+     * Returns the filesystem handle.
+     *
+     * @param bool $parse Whether to parse the name for an alias or environment variable
+     * @return string|null
+     */
+    public function getFsHandle(bool $parse = true): ?string
+    {
+        if ($this->_fsHandle) {
+            return $parse ? App::parseEnv($this->_fsHandle) : $this->_fsHandle;
+        }
+        return null;
+    }
+
+    /**
+     * Sets the filesystem handle.
+     *
+     * @param string $handle
+     */
+    public function setFsHandle(string $handle): void
+    {
+        $this->_fsHandle = $handle;
     }
 
     /**
@@ -192,7 +244,7 @@ class Volume extends Model
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
-            'fs' => $this->fs,
+            'fs' => $this->_fsHandle,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,

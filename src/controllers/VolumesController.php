@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Field;
-use craft\base\FsInterface;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -82,20 +81,18 @@ class VolumesController extends Controller
             }
         }
 
-        /** @var FsInterface[] $allFs */
         $allFs = Craft::$app->getFs()->getAllFilesystems();
-
-        $fsOptions = [];
+        $fsHandleOptions = [];
 
         foreach ($allFs as $fs) {
-            $fsOptions[] = [
+            $fsHandleOptions[] = [
                 'value' => $fs->handle,
                 'label' => $fs->name,
             ];
         }
 
         // Sort them by name
-        ArrayHelper::multisort($fsOptions, 'label');
+        ArrayHelper::multisort($fsHandleOptions, 'label');
 
         $isNewVolume = !$volume->id;
 
@@ -124,7 +121,7 @@ class VolumesController extends Controller
             'volumeId' => $volumeId,
             'volume' => $volume,
             'isNewVolume' => $isNewVolume,
-            'fsOptions' => $fsOptions,
+            'fsHandleOptions' => $fsHandleOptions,
             'title' => $title,
             'crumbs' => $crumbs,
             'typeName' => Asset::displayName(),
@@ -158,7 +155,7 @@ class VolumesController extends Controller
             'sortOrder' => $oldVolume->sortOrder ?? null,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
-            'filesystem' => $this->request->getBodyParam('filesystem'),
+            'fsHandle' => $this->request->getBodyParam('fsHandle'),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
         ]);
