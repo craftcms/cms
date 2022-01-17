@@ -46,13 +46,13 @@ export default Base.extend(
             this.layers.push({
                 $container: container ? $(container) : null,
                 shortcuts: [],
-                isModal: container ? $(container).attr('aria-modal') : false,
+                isModal: container ? $(container).attr('aria-modal') === 'true' : false,
             });
             this.trigger('addLayer', {
                 layer: this.layer,
                 $container: this.currentLayer.$container,
             });
-            console.log(this.modalLayers);
+            console.log(this.layers);
             return this;
         },
 
@@ -62,6 +62,7 @@ export default Base.extend(
             }
             this.layers.pop();
             this.trigger('removeLayer');
+            console.log(this.modalLayers);
             return this;
         },
 
