@@ -279,32 +279,32 @@ Garnish = $.extend(Garnish, {
      *
      */
     resetModalBackgroundLayerVisibility: function() {
-        console.log('unhide things');
-        // const topmostLayer = Garnish.uiLayerManager.currentLayer.$container.get(0);
-        //
-        // // If there is another modal, make it accessible to AT
-        // if (nextVisibleModal) {
-        //     $(nextVisibleModal).removeClass([Garnish.JS_ARIA_CLASS, Garnish.JS_ARIA_TRUE_CLASS, Garnish.JS_ARIA_FALSE_CLASS]);
-        //     $(nextVisibleModal).removeAttr('aria-hidden');
-        //     return;
-        // };
-        //
-        // // If no more modals in DOM, loop through hidden elements and un-hide them
-        // var ariaSelector = '.' + Garnish.JS_ARIA_CLASS + ', .' + Garnish.JS_ARIA_FALSE_CLASS + ', .' + Garnish.JS_ARIA_TRUE_CLASS;
-        // var ariaHiddenElements = $(ariaSelector);
-        //
-        // $(ariaHiddenElements).each(function() {
-        //     if ($(this).hasClass(Garnish.JS_ARIA_CLASS)) {
-        //         $(this).removeClass(Garnish.JS_ARIA_CLASS);
-        //         $(this).removeAttr('aria-hidden');
-        //     } else if ($(this).hasClass(Garnish.JS_ARIA_FALSE_CLASS)) {
-        //         $(this).removeClass(Garnish.JS_ARIA_FALSE_CLASS);
-        //         $(this).attr('aria-hidden', false);
-        //     } else if ($(this).hasClass(Garnish.JS_ARIA_TRUE_CLASS)) {
-        //         $(this).removeClass(Garnish.JS_ARIA_TRUE_CLASS);
-        //         $(this).attr('aria-hidden', true);
-        //     }
-        // });
+        const highestModalLayer = Garnish.uiLayerManager.highestModalLayer;
+        console.log(highestModalLayer);
+
+        // If there is another modal, make it accessible to AT
+        if (highestModalLayer) {
+            highestModalLayer.$container.removeClass([Garnish.JS_ARIA_CLASS, Garnish.JS_ARIA_TRUE_CLASS, Garnish.JS_ARIA_FALSE_CLASS]);
+            highestModalLayer.$container.removeAttr('aria-hidden');
+            return;
+        };
+
+        // If no more modals in DOM, loop through hidden elements and un-hide them
+        const ariaSelector = '.' + Garnish.JS_ARIA_CLASS + ', .' + Garnish.JS_ARIA_FALSE_CLASS + ', .' + Garnish.JS_ARIA_TRUE_CLASS;
+        const ariaHiddenElements = $(ariaSelector);
+
+        $(ariaHiddenElements).each(function() {
+            if ($(this).hasClass(Garnish.JS_ARIA_CLASS)) {
+                $(this).removeClass(Garnish.JS_ARIA_CLASS);
+                $(this).removeAttr('aria-hidden');
+            } else if ($(this).hasClass(Garnish.JS_ARIA_FALSE_CLASS)) {
+                $(this).removeClass(Garnish.JS_ARIA_FALSE_CLASS);
+                $(this).attr('aria-hidden', false);
+            } else if ($(this).hasClass(Garnish.JS_ARIA_TRUE_CLASS)) {
+                $(this).removeClass(Garnish.JS_ARIA_TRUE_CLASS);
+                $(this).attr('aria-hidden', true);
+            }
+        });
     },
 
     /**

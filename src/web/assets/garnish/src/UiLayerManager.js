@@ -29,6 +29,14 @@ export default Base.extend(
             return this.layers[this.layer];
         },
 
+        get modalLayers() {
+            return this.layers.filter((layer) => layer.isModal === true);
+        },
+
+        get highestModalLayer() {
+            return this.modalLayers.pop();
+        },
+
         /**
          * Registers a new UI layer.
          *
@@ -38,12 +46,13 @@ export default Base.extend(
             this.layers.push({
                 $container: container ? $(container) : null,
                 shortcuts: [],
+                isModal: container ? $(container).attr('aria-modal') : false,
             });
             this.trigger('addLayer', {
                 layer: this.layer,
                 $container: this.currentLayer.$container,
             });
-            console.log('layer added');
+            console.log(this.modalLayers);
             return this;
         },
 
