@@ -61,8 +61,8 @@
 
     {% if fsOptions|length %}
         {{ forms.selectField({
-            label: "Filesytem"|t('app'),
-            instructions: "What filesystem type is this?"|t('app'),
+            label: 'Filesytem Type'|t('app'),
+            instructions: "What type of filesystem is this?"|t('app'),
             id: 'type',
             name: 'type',
             options: fsOptions,
