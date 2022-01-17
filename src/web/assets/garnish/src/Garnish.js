@@ -268,7 +268,7 @@ Garnish = $.extend(Garnish, {
             // If element is modal or already has jsAria class, do nothing
             if (Garnish.hasJsAriaClass(this) || this === topmostLayer) return;
 
-            if (Garnish.isScriptOrStyleElement(this)) {
+            if (!Garnish.isScriptOrStyleElement(this)) {
                 Garnish.ariaHide(this);
             }
         });
