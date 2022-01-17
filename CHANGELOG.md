@@ -32,6 +32,7 @@
 - Fixed a bug where validation errors referenced by `aria-describedby` attributes weren’t getting read out by VoiceOver. ([#10355](https://github.com/craftcms/cms/pull/10355))
 - Fixed a bug where element queries’ `withQueries` properties were ignored. ([#10359](https://github.com/craftcms/cms/pull/10359))
 - Fixed a bug where fatal PHP errors were not logged to `stderr` when the `CRAFT_STREAM_LOG` PHP constant was set to `true`. ([#10366](https://github.com/craftcms/cms/pull/10366))
+- Fixed a bug where Dropdown fields with invalid data would not always display a blank option. ([#10365](https://github.com/craftcms/cms/issues/10365))
 
 ### Security
 - Fixed an XSS vulnerability.
