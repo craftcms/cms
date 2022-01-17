@@ -14,7 +14,7 @@
 - The content in the `resourcepaths` table is now excluded from database backups by default.
 - User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
 - Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
-- Color fields’ hexn inputs now have `aria-label` attributes.
+- Color fields’ hex inputs now have `aria-label` attributes.
 - Field status messages are now included in their `aria-describedby` attributes.
 - User queries will no longer exclude suspended users when `status('pending')` is passed. ([#10361](https://github.com/craftcms/cms/issues/10361))
 
