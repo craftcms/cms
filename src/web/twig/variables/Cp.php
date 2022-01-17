@@ -221,7 +221,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'fontIcon' => 'categories',
+                'fontIcon' => 'tree',
             ];
         }
 
@@ -415,21 +415,29 @@ class Cp extends Component
             'iconMask' => '@appicons/newspaper.svg',
             'label' => Craft::t('app', 'Sections'),
         ];
-        $settings[$label]['assets'] = [
-            'iconMask' => '@appicons/photo.svg',
-            'label' => Craft::t('app', 'Assets'),
-        ];
         $settings[$label]['globals'] = [
             'iconMask' => '@appicons/globe.svg',
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@appicons/folder-open.svg',
+            'iconMask' => '@appicons/tree.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
             'iconMask' => '@appicons/tags.svg',
             'label' => Craft::t('app', 'Tags'),
+        ];
+
+        $label = Craft::t('app', 'Media');
+
+        $settings[$label]['filesystems'] = [
+            'iconMask' => '@appicons/folder-open.svg',
+            'label' => Craft::t('app', 'Filesystems'),
+        ];
+
+        $settings[$label]['assets'] = [
+            'iconMask' => '@appicons/photo.svg',
+            'label' => Craft::t('app', 'Assets'),
         ];
 
         $label = Craft::t('app', 'Plugins');

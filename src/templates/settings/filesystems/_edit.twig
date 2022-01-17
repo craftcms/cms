@@ -7,7 +7,7 @@
 
 {% block content %}
     {{ actionInput('fs/save') }}
-    {{ redirectInput('settings/assets/fs') }}
+    {{ redirectInput('settings/filesystems') }}
     {% if oldHandle %}{{ hiddenInput('oldHandle', oldHandle) }}{% endif %}
 
     {{ forms.textField({

@@ -49,7 +49,7 @@ class FsController extends Controller
         $variables = [];
         $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
 
-        return $this->renderTemplate('settings/assets/fs/_index', $variables);
+        return $this->renderTemplate('settings/filesystems/_index', $variables);
     }
 
     /**
@@ -113,16 +113,12 @@ class FsController extends Controller
                 'url' => UrlHelper::url('settings'),
             ],
             [
-                'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('settings/assets'),
-            ],
-            [
                 'label' => Craft::t('app', 'Filesystems'),
-                'url' => UrlHelper::url('settings/assets/fs'),
+                'url' => UrlHelper::url('settings/filesystems'),
             ],
         ];
 
-        return $this->renderTemplate('settings/assets/fs/_edit', [
+        return $this->renderTemplate('settings/filesystems/_edit', [
             'oldHandle' => $handle,
             'filesystem' => $filesystem,
             'fsOptions' => $fsOptions,
