@@ -19,6 +19,10 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -698,78 +702,81 @@ class Cp extends Component
     public function getTemplateSuggestions(): array
     {
         // Get all the template files sorted by path length
-        $root = Craft::$app->getPath()->getSiteTemplatesPath();
+        $roots = ArrayHelper::merge([
+            '' => [Craft::$app->getPath()->getSiteTemplatesPath()],
+        ], Craft::$app->getView()->getSiteTemplateRoots());
 
-        if (!is_dir($root)) {
-            return [];
-        }
-
-        $directory = new \RecursiveDirectoryIterator($root);
-
-        $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
-            // Skip hidden files and directories, as well as node_modules/ folders
-            if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
-                return false;
-            }
-            return true;
-        });
-
-        $iterator = new \RecursiveIteratorIterator($filter);
-        /** @var \SplFileInfo[] $files */
-        $files = [];
-        $pathLengths = [];
-
-        foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
-            if (!$file->isDir() && $file->getFilename()[0] !== '.') {
-                $files[] = $file;
-                $pathLengths[] = strlen($file->getRealPath());
-            }
-        }
-
-        array_multisort($pathLengths, SORT_NUMERIC, $files);
-
-        // Now build the suggestions array
         $suggestions = [];
         $templates = [];
         $sites = [];
-        $config = Craft::$app->getConfig()->getGeneral();
-        $rootLength = strlen($root);
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
             $sites[$site->handle] = Craft::t('site', $site->getName());
         }
 
-        foreach ($files as $file) {
-            $template = substr($file->getRealPath(), $rootLength + 1);
+        foreach ($roots as $root => $basePaths) {
+            foreach ($basePaths as $basePath) {
+                if (!is_dir($basePath)) {
+                    continue;
+                }
 
-            // Can we chop off the extension?
-            $extension = $file->getExtension();
-            if (in_array($extension, $config->defaultTemplateExtensions, true)) {
-                $template = substr($template, 0, strlen($template) - (strlen($extension) + 1));
-            }
+                $directory = new RecursiveDirectoryIterator($basePath);
 
-            $hint = null;
+                $filter = new RecursiveCallbackFilterIterator($directory, function($current) {
+                    // Skip hidden files and directories, as well as node_modules/ folders
+                    if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
+                        return false;
+                    }
+                    return true;
+                });
 
-            // Is it in a site template directory?
-            foreach ($sites as $handle => $name) {
-                if (strpos($template, $handle . DIRECTORY_SEPARATOR) === 0) {
-                    $hint = $name;
-                    $template = substr($template, strlen($handle) + 1);
-                    break;
+                $iterator = new RecursiveIteratorIterator($filter);
+                /** @var SplFileInfo[] $files */
+                $files = [];
+                $pathLengths = [];
+
+                foreach ($iterator as $file) {
+                    /** @var SplFileInfo $file */
+                    if (!$file->isDir() && $file->getFilename()[0] !== '.') {
+                        $files[] = $file;
+                        $pathLengths[] = strlen($file->getRealPath());
+                    }
+                }
+
+                array_multisort($pathLengths, SORT_NUMERIC, $files);
+
+                $basePathLength = strlen($basePath);
+
+                foreach ($files as $file) {
+                    $template = substr($file->getRealPath(), $basePathLength + 1);
+                    $hint = null;
+
+                    // Is it in a site template directory?
+                    foreach ($sites as $handle => $name) {
+                        if (strpos($template, $handle . DIRECTORY_SEPARATOR) === 0) {
+                            $hint = $name;
+                            $template = substr($template, strlen($handle) + 1);
+                            break;
+                        }
+                    }
+
+                    // Prepend the template root path
+                    if ($root !== '') {
+                        $template = sprintf('%s/%s', $root, $template);
+                    }
+
+                    // Avoid listing the same template path twice (considering localized templates)
+                    if (isset($templates[$template])) {
+                        continue;
+                    }
+
+                    $templates[$template] = true;
+                    $suggestions[] = [
+                        'name' => $template,
+                        'hint' => $hint,
+                    ];
                 }
             }
-
-            // Avoid listing the same template path twice (considering localized templates)
-            if (isset($templates[$template])) {
-                continue;
-            }
-
-            $templates[$template] = true;
-            $suggestions[] = [
-                'name' => $template,
-                'hint' => $hint,
-            ];
         }
 
         ArrayHelper::multisort($suggestions, 'name');
