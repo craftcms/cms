@@ -10,7 +10,7 @@ namespace craft\errors;
 use yii\base\Exception;
 
 /**
- * Class FsException
+ * Class VolumeException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
