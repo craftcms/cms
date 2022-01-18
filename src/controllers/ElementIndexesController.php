@@ -408,6 +408,7 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
+        $condition->queryParams[] = 'site';
         $condition->queryParams[] = 'status';
 
         $html = $condition->getBuilderHtml();
