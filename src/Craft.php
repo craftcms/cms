@@ -41,11 +41,6 @@ class Craft extends Yii
     private static array $_baseCookieConfig;
 
     /**
-     * @var array Field info for autoload()
-     */
-    private static array $_fields;
-
-    /**
      * @inheritdoc
      *
      * @template T
@@ -191,6 +186,12 @@ class Craft extends Yii
      */
     private static function _autoloadCustomFieldBehavior(): void
     {
+        if (!static::$app->getIsInstalled()) {
+            // Just load an empty CustomFieldBehavior into memory
+            self::_generateCustomFieldBehavior([], null, false, true);
+            return;
+        }
+
         $fieldsService = Craft::$app->getFields();
         $storedFieldVersion = $fieldsService->getFieldVersion();
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
@@ -255,12 +256,12 @@ class Craft extends Yii
 
     /**
      * @param array $fieldHandles
-     * @param string $filePath
+     * @param string|null $filePath
      * @param bool $write
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateCustomFieldBehavior(array $fieldHandles, string $filePath, bool $write, bool $load): void
+    private static function _generateCustomFieldBehavior(array $fieldHandles, ?string $filePath, bool $write, bool $load): void
     {
         $methods = [];
         $handles = [];
@@ -336,14 +337,6 @@ EOD;
      */
     private static function _fields(): array
     {
-        if (isset(self::$_fields)) {
-            return self::$_fields;
-        }
-
-        if (!static::$app->getIsInstalled()) {
-            return [];
-        }
-
         // Properties are case-sensitive, so get all the binary-unique field handles
         if (static::$app->getDb()->getIsMysql()) {
             $handleColumn = new Expression('binary [[handle]] as [[handle]]');
@@ -352,7 +345,7 @@ EOD;
         }
 
         // Create an array of field handles and their types
-        return self::$_fields = (new Query())
+        return (new Query())
             ->from([Table::FIELDS])
             ->select([$handleColumn, 'type'])
             ->all();
