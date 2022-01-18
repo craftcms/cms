@@ -184,7 +184,7 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
-    private bool $_encodedBodyParams = false;
+    private bool $_setBodyParams = false;
 
     /**
      * @var bool|null Whether the request initially had a token
@@ -818,9 +818,17 @@ class Request extends \yii\web\Request
      */
     public function getBodyParams(): array
     {
-        if ($this->_encodedBodyParams === false) {
-            $this->setBodyParams($this->_utf8AllTheThings(parent::getBodyParams()));
-            $this->_encodedBodyParams = true;
+        if ($this->_setBodyParams === false) {
+            $params = parent::getBodyParams();
+
+            // Was a namespace passed?
+            $namespace = $this->getHeaders()->get('X-Craft-Namespace');
+            if ($namespace) {
+                $params = $params[$namespace] ?? null;
+            }
+
+            $this->setBodyParams($this->_utf8AllTheThings($params));
+            $this->_setBodyParams = true;
         }
 
         return parent::getBodyParams();

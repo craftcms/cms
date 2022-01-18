@@ -239,7 +239,7 @@
                                     {% endblock %}
 
                                     {% block content %}
-                                        {{ content is defined ? content }}
+                                        {{ content is defined ? content|raw }}
                                     {% endblock %}
 
                                     {# footer #}

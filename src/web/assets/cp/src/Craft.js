@@ -56,6 +56,7 @@ import './js/PreviewFileModal.js';
 import './js/ProgressBar.js';
 import './js/PromptHandler.js';
 import './js/Slideout.js';
+import './js/CpScreenSlideout.js';
 import './js/SlidePicker.js';
 import './js/SlideRuleInput.js';
 import './js/SlugGenerator.js';

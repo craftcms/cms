@@ -34,6 +34,14 @@
 - Added `craft\services\Fs`.
 - Added `craft\services\ImageTransforms`.
 - Added `craft\services\ProjectConfig::PATH_FS`.
+- Added `craft\web\Controller::CpScreenResponseBehavior()`.
+- Added `craft\web\Controller::CpScreenResponseFormatter()`.
+- Added `craft\web\Controller::TemplateResponseBehavior()`.
+- Added `craft\web\Controller::TemplateResponseFormatter()`.
+- Added `craft\web\Controller::asCpScreen()`.
+- Added `craft\web\Controller::asFailure()`.
+- Added `craft\web\Controller::asSuccess()`.
+- Added the `Craft.CpScreenSlideout` JavaScript class, which can be used to create slideouts from controller actions that return `$this->asCpScreen()`.
 
 ### Changed
 - Filesystem operations have been decoupled from volumes.
@@ -41,6 +49,7 @@
 - `craft\elements\Asset::getVolume()` now returns an instance of `craft\models\Volume`.
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
+- `craft\web\Request::getBodyParams()` and `getBodyParam()` now check for an `X-Craft-Namespace` header. If present, only params that begin with its value will be returned, excluding the namespace. 
 
 ### Removed
 - Removed `craft\base\LocalVolumeInterface`.

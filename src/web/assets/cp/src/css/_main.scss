@@ -3832,14 +3832,12 @@ ul.tree,
       will-change: right;
     }
   }
-}
 
-/* Element editor slideouts */
-.element-editor {
+
   & > .pane-header {
     z-index: 2;
 
-    & > .ee-toolbar {
+    & > .so-toolbar {
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -3858,14 +3856,14 @@ ul.tree,
     padding-right: 10px;
   }
 
-  & > .ee-body {
+  & > .so-body {
     flex: 1;
     margin: -24px var(--neg-padding) 0;
     padding: 24px var(--padding);
     overflow: hidden auto;
     position: relative;
 
-    & > .ee-sidebar {
+    & > .so-sidebar {
       position: absolute;
       top: 0;
       @include pane();
@@ -3911,7 +3909,7 @@ ul.tree,
     }
   }
 
-  & > .ee-footer {
+  & > .so-footer {
     position: relative;
     display: flex;
     flex-direction: row;
@@ -3920,10 +3918,6 @@ ul.tree,
     @include pane;
     background-color: $grey050;
     z-index: 3;
-
-    & > .ee-site-select {
-      flex: 1;
-    }
 
     & > .btn {
       @include margin-left(5px);
@@ -3935,19 +3929,28 @@ ul.tree,
   }
 }
 
+/* Element editor slideouts */
+.element-editor {
+  & > .so-footer {
+    & > .ee-site-select {
+      flex: 1;
+    }
+  }
+}
+
 @media (min-width: 1536px) {
-  .element-editor {
+  .slideout {
     .sidebar-btn {
       display: none;
     }
 
-    .ee-body {
+    .so-body {
       display: flex;
       flex-direction: row;
       padding: 0;
       overflow: hidden;
 
-      & > .fields {
+      & > .so-content {
         position: relative;
         z-index: 2;
         padding: 24px;
@@ -3958,7 +3961,7 @@ ul.tree,
         overflow: hidden auto;
       }
 
-      & > .ee-sidebar {
+      & > .so-sidebar {
         position: relative;
         display: block !important;
         top: auto;
@@ -5704,6 +5707,10 @@ body .selectize-dropdown {
 
 body .selectize-dropdown-content {
   @include menu-styles;
+
+  .option {
+    min-height: 18px;
+  }
 }
 
 body .selectize-dropdown-content > div[data-value="new"]:before {
