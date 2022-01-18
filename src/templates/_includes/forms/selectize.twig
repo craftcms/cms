@@ -91,6 +91,7 @@
             $select.removeData('boolean');
         }
 
+        {% if addOptionFn is defined and addOptionLabel is defined %}
         if ($item.data('add-option')) {
             selectize.setValue('', true);
             ({{ addOptionFn|raw }})(item => {
@@ -109,6 +110,7 @@
                 selectize.setValue(item.value);
             }, selectize);
         }
+        {% endif %}
     };
 
     $select.selectize($.extend({
