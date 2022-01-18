@@ -1140,7 +1140,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @param string $placeholderKey
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes, string $placeholderKey): array
+    private function _getBlockTypeInfoForInput(?ElementInterface $element, array $blockTypes, string $placeholderKey): array
     {
         $blockTypeInfo = [];
 

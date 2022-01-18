@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\volumes;
 
@@ -8,6 +13,7 @@ use craft\base\LocalVolumeInterface;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
@@ -19,10 +25,6 @@ use yii\validators\InlineValidator;
  * Craft.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license http://craftcms.com/license Craft License Agreement
- * @see http://craftcms.com
- * @package craft.app.volumes
  * @since 3.0.0
  */
 class Local extends FlysystemVolume implements LocalVolumeInterface
@@ -115,7 +117,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(Craft::parseEnv($this->path));
+        return FileHelper::normalizePath(App::parseEnv($this->path));
     }
 
     /**

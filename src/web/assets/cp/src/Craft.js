@@ -68,3 +68,4 @@ import './js/ThumbsElementIndexView.js';
 import './js/UI.js';
 import './js/Uploader.js';
 import './js/UriFormatGenerator.js';
+import './js/UserIndex.js';

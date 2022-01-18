@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\services;
 
@@ -25,13 +30,11 @@ use yii\base\Component;
 use yii\base\Exception;
 
 /**
- * Class AssetIndexer
+ * Asset Indexer service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->assetIndexer`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license http://craftcms.com/license Craft License Agreement
- * @see http://craftcms.com
- * @package craft.app.services
  * @since 3.0.0
  */
 class AssetIndexer extends Component
@@ -468,7 +471,7 @@ class AssetIndexer extends Component
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
      * @throws AssetLogicException if trying to index a file in a folder that does not exist.
      */
-    private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages)
+    private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing, bool $cacheImages)
     {
         // Determine the parent folder
         $uriPath = $indexEntry->uri;

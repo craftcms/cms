@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\App;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -110,7 +111,7 @@ class Smtp extends BaseTransportAdapter
             'required',
             'when' => function($model) {
                 /** @var self $model */
-                return Craft::parseBooleanEnv($model->useAuthentication) ?? false;
+                return App::parseBooleanEnv($model->useAuthentication) ?? false;
             },
         ];
         $rules[] = [['encryptionMethod'], 'in', 'range' => ['none', 'tls', 'ssl']];
@@ -135,18 +136,18 @@ class Smtp extends BaseTransportAdapter
     {
         $config = [
             'class' => \Swift_SmtpTransport::class,
-            'host' => Craft::parseEnv($this->host),
-            'port' => Craft::parseEnv($this->port),
+            'host' => App::parseEnv($this->host),
+            'port' => App::parseEnv($this->port),
             'timeout' => $this->timeout,
         ];
 
-        if (Craft::parseBooleanEnv($this->useAuthentication) ?? false) {
-            $config['username'] = Craft::parseEnv($this->username);
-            $config['password'] = Craft::parseEnv($this->password);
+        if (App::parseBooleanEnv($this->useAuthentication) ?? false) {
+            $config['username'] = App::parseEnv($this->username);
+            $config['password'] = App::parseEnv($this->password);
         }
 
         if ($this->encryptionMethod) {
-            $encryptionMethod = Craft::parseEnv($this->encryptionMethod);
+            $encryptionMethod = App::parseEnv($this->encryptionMethod);
             if ($encryptionMethod && $encryptionMethod !== 'none') {
                 $config['encryption'] = $encryptionMethod;
             }

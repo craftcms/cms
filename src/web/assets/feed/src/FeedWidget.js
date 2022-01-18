@@ -16,15 +16,13 @@
             }).then(response => {
                 this.$widget.removeClass('loading');
                 this.$widget.find('table')
-                    .attr('dir', response.data.direction);
+                  .attr('dir', response.data.direction);
                 let $tds = this.$widget.find('td');
-                let items = response.data.items || [];
-
-                for (let i = 0; i < items.length; i++) {
-                    let item = items[i];
-                    let $td = $($tds[i]);
-
-                    var widgetHtml = $('<a/>', {
+                // Filter out any invalid links
+                response.data.items = (response.data.items || []).filter(item => item.permalink.match(/^https?:\/\//));
+                response.data.items.forEach((item, i) => {
+                    const $td = $($tds[i]);
+                    let widgetHtml = $('<a/>', {
                         href: item.permalink,
                         target: '_blank',
                         text: item.title
@@ -35,7 +33,7 @@
                     }
 
                     $td.html(widgetHtml);
-                }
+                });
 
                 // Now cache the data
                 Craft.sendActionRequest('POST', 'dashboard/cache-feed-data', {

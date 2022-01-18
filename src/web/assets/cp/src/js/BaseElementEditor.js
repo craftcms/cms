@@ -557,7 +557,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             return;
         }
 
-        if (!this.isDirty() || confirm('Are you sure you want to close the editor? Any changes will be lost.')) {
+        if (!this.isDirty() || confirm(Craft.t('app', 'Are you sure you want to close the editor? Any changes will be lost.'))) {
             this.closeSlideout();
         }
     },
