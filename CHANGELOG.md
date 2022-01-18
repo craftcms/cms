@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
+
 ## 3.7.29 - 2022-01-18
 
 ### Added
