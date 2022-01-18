@@ -14,7 +14,7 @@
 - The content in the `resourcepaths` table is now excluded from database backups by default.
 - User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
 - Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
-- Color fields’ hexn inputs now have `aria-label` attributes.
+- Color fields’ hex inputs now have `aria-label` attributes.
 - Field status messages are now included in their `aria-describedby` attributes.
 - User queries will no longer exclude suspended users when `status('pending')` is passed. ([#10361](https://github.com/craftcms/cms/issues/10361))
 - Template autosuggest fields now include suggestions for templates in custom site template roots. ([#10372](https://github.com/craftcms/cms/discussions/10372))
@@ -33,6 +33,7 @@
 - Fixed a bug where validation errors referenced by `aria-describedby` attributes weren’t getting read out by VoiceOver. ([#10355](https://github.com/craftcms/cms/pull/10355))
 - Fixed a bug where element queries’ `withQueries` properties were ignored. ([#10359](https://github.com/craftcms/cms/pull/10359))
 - Fixed a bug where fatal PHP errors were not logged to `stderr` when the `CRAFT_STREAM_LOG` PHP constant was set to `true`. ([#10366](https://github.com/craftcms/cms/pull/10366))
+- Fixed a bug where Dropdown fields with invalid data would not always display a blank option. ([#10365](https://github.com/craftcms/cms/issues/10365))
 
 ### Security
 - Fixed an XSS vulnerability.
