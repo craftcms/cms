@@ -551,6 +551,10 @@ class Cp extends Component
     public function getEnvOptions(?array $allowedValues = null): array
     {
         if ($allowedValues !== null) {
+            if (empty($allowedValues)) {
+                return [];
+            }
+
             $allowedValues = array_flip($allowedValues);
         }
 
