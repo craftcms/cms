@@ -1,5 +1,4 @@
 ### Added
-- Added a new `Filesystems` section under asset settings for configuring filesystems.
 - Added the `fs` and `fsField` macros to the `_includes/forms` control panel template.
 - Added `craft\base\FsInterface`.
 - Added `craft\base\FsTrait`.
