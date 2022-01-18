@@ -471,7 +471,7 @@ class AssetIndexer extends Component
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
      * @throws AssetLogicException if trying to index a file in a folder that does not exist.
      */
-    private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages)
+    private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing, bool $cacheImages)
     {
         // Determine the parent folder
         $uriPath = $indexEntry->uri;
