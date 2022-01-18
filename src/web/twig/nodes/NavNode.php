@@ -39,7 +39,7 @@ class NavNode extends ForNode
      * @param $lineno
      * @param $tag
      */
-    public function __construct(AssignNameExpression $keyTarget, AssignNameExpression $valueTarget, AbstractExpression $seq, Node $upperBody, Node $lowerBody = null, Node $indent = null, Node $outdent = null, $lineno, $tag = null)
+    public function __construct(AssignNameExpression $keyTarget, AssignNameExpression $valueTarget, AbstractExpression $seq, Node $upperBody, ?Node $lowerBody, ?Node $indent, ?Node $outdent, $lineno, $tag = null)
     {
         $this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno, $tag);
         $body = new Node([$this->navItemNode, $upperBody]);

@@ -2971,7 +2971,7 @@ SQL;
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, string $attribute = null, string $fallback, string $fullMatch): string
+    private function _getRefTokenReplacement(?ElementInterface $element, ?string $attribute, string $fallback, string $fullMatch): string
     {
         if ($element === null) {
             // Put the ref tag back

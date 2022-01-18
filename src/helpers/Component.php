@@ -141,7 +141,7 @@ class Component
      * @return string
      * @since 3.5.0
      */
-    public static function iconSvg(?string $icon = null, string $label): string
+    public static function iconSvg(?string $icon, string $label): string
     {
         if ($icon === null) {
             return self::_defaultIconSvg($label);
