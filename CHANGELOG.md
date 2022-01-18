@@ -92,6 +92,7 @@
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
+- Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\fieldlayoutelements\AssetAltField`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.

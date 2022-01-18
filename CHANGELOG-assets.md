@@ -17,7 +17,6 @@
 - Added `craft\errors\FsObjectNotFoundException`.
 - Added `craft\errors\ImageTransformException`.
 - Added `craft\errors\InvalidFsException`.
-- Added `craft\errors\MissingFolderException`.
 - Added `craft\events\ImageTransformEvent`.
 - Added `craft\events\TransformImageEvent`.
 - Added `craft\fs\Local`.

@@ -13,12 +13,12 @@ use Throwable;
 use yii\base\Exception;
 
 /**
- * MissingFolderException represents an exception caused by a volume folder record that doesn't exist.
+ * MissingVolumeFolderException represents an exception caused by a volume folder record that doesn't exist.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MissingFolderException extends Exception
+class MissingVolumeFolderException extends Exception
 {
     /**
      * @var AssetIndexData

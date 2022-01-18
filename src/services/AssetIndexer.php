@@ -18,7 +18,7 @@ use craft\errors\AssetException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\FsException;
 use craft\errors\MissingAssetException;
-use craft\errors\MissingFolderException;
+use craft\errors\MissingVolumeFolderException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -743,7 +743,7 @@ class AssetIndexer extends Component
         $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
 
         if (!$folder && !$createIfMissing) {
-            throw new MissingFolderException($indexEntry, $volume, $indexEntry->uri);
+            throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
         }
 
         return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
