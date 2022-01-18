@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.29 - 2022-01-18
 
 ### Added
 - `resave/*` commands now support bulk-setting an attribute/custom field value via new `--set`, `--to`, and `--if-empty` options. ([#10356](https://github.com/craftcms/cms/pull/10356))
