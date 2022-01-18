@@ -1,5 +1,7 @@
 ### Added
 - Added the `fs` and `fsField` macros to the `_includes/forms` control panel template.
+- Added `craft\base\ApplicationTrait::getFs()`.
+- Added `craft\base\ApplicationTrait::getImageTransforms()`.
 - Added `craft\base\FsInterface`.
 - Added `craft\base\FsTrait`.
 - Added `craft\base\Fs`.
@@ -9,6 +11,7 @@
 - Added `craft\base\imagetransforms\EagerImageTransformerInterface`.
 - Added `craft\base\imagetransforms\ImageTransformerInterface`.
 - Added `craft\controllers\FsController`.
+- Added `craft\controllers\ImageTransformsController`.
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
 - Added `craft\elements\Asset::getFs()`.
@@ -18,6 +21,7 @@
 - Added `craft\errors\ImageTransformException`.
 - Added `craft\errors\InvalidFsException`.
 - Added `craft\events\ImageTransformEvent`.
+- Added `craft\events\RegisterImageTransformDriversEvent`.
 - Added `craft\events\TransformImageEvent`.
 - Added `craft\fs\Local`.
 - Added `craft\fs\MissingFs`.
@@ -27,12 +31,14 @@
 - Added `craft\helpers\ImageTransforms`.
 - Added `craft\imagetransforms\ImageTransformer`.
 - Added `craft\models\FsListing`.
+- Added `craft\models\ImageTransformIndex`.
 - Added `craft\models\ImageTransform`.
 - Added `craft\models\Volume`.
 - Added `craft\records\ImageTransform`.
 - Added `craft\services\Fs`.
 - Added `craft\services\ImageTransforms`.
 - Added `craft\services\ProjectConfig::PATH_FS`.
+- Added `craft\services\Volumes::getTemporaryVolume()`.
 - Added `craft\web\Controller::CpScreenResponseBehavior()`.
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
@@ -46,16 +52,19 @@
 ### Changed
 - Filesystem operations have been decoupled from volumes.
 - Images that are not web-safe now are always converted to JPEGs when transforming, if no format was specified.
+- The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
 - `craft\elements\Asset::getVolume()` now returns an instance of `craft\models\Volume`.
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\web\Request::getBodyParams()` and `getBodyParam()` now check for an `X-Craft-Namespace` header. If present, only params that begin with its value will be returned, excluding the namespace. 
 
 ### Removed
+- Removed `craft\base\ApplicationTrait::getAssetTransforms()`.
 - Removed `craft\base\LocalVolumeInterface`.
 - Removed `craft\base\VolumeInterface`.
 - Removed `craft\base\VolumeTrait`.
 - Removed `craft\base\Volume`.
+- Removed `craft\controllers\AssetTransformsController`.
 - Removed `craft\db\Table::ASSETTRANSFORMINDEX`.
 - Removed `craft\db\Table::ASSETTRANSFORMS`.
 - Removed `craft\elements\Asset::getTransformSource()`.
@@ -73,27 +82,9 @@
 - Removed `craft\models\VolumeListing`.
 - Removed `craft\records\AssetTransform`.
 - Removed `craft\services\AssetTransforms`.
-- Removed `craft\services\ImageTransforms::deleteQueuedSourceFiles()`.
-- Removed `craft\services\ImageTransforms::deleteTransformIndex()`.
-- Removed `craft\services\ImageTransforms::deleteTransformIndexDataByAssetId()`.
-- Removed `craft\services\ImageTransforms::detectAutoTransformFormat()`.
-- Removed `craft\services\ImageTransforms::extendTransform()`.
-- Removed `craft\services\ImageTransforms::getActiveTransformIndex()`.
-- Removed `craft\services\ImageTransforms::getCachedCloudImageSize()`.
-- Removed `craft\services\ImageTransforms::getLocalImageSource()`.
-- Removed `craft\services\ImageTransforms::getPendingTransformIndexIds()`.
-- Removed `craft\services\ImageTransforms::getTransformIndex()`.
-- Removed `craft\services\ImageTransforms::getTransformIndexModelByAssetIdAndHandle()`.
-- Removed `craft\services\ImageTransforms::getTransformIndexModelById()`.
-- Removed `craft\services\ImageTransforms::getUrlForTransformByAssetAndTransformIndex()`.
-- Removed `craft\services\ImageTransforms::getUrlForTransformByIndexId()`.
-- Removed `craft\services\ImageTransforms::normalizeTransform()`.
-- Removed `craft\services\ImageTransforms::queueSourceForDeletingIfNecessary()`.
-- Removed `craft\services\ImageTransforms::setActiveTransformIndex()`.
-- Removed `craft\services\ImageTransforms::storeLocalSource()`.
-- Removed `craft\services\ImageTransforms::storeTransformIndexData()`.
-- Removed `craft\services\ImageTransforms::validateTransformIndexResult()`.
+- Removed `craft\services\Volumes::EVENT_REGISTER_VOLUME_TYPES`.
 - Removed `craft\services\Volumes::createVolume()`.
+- Removed `craft\services\Volumes::getAllVolumeTypes()`.
 - Removed `craft\volumes\Local`.
 - Removed `craft\volumes\MissingVolume`.
 - Removed `craft\volumes\Temp`.

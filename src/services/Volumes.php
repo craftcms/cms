@@ -220,6 +220,7 @@ class Volumes extends Component
     /**
      * @return Volume
      * @throws InvalidConfigException
+     * @since 4.0.0
      */
     public function getTemporaryVolume(): Volume
     {
