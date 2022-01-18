@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication\type\mfa;
+namespace craft\authentication\type;
 
 use Craft;
-use craft\authentication\base\MfaType;
+use craft\authentication\base\MfaTypeInterface;
+use craft\authentication\base\Type;
 use craft\authentication\base\PreparableTypeInterface;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\Message;
-use craft\models\authentication\State;
 
 /**
  * This step type sends a single-use-password to the user's email and requires the password to be entered for the step to be completed.
@@ -20,7 +20,7 @@ use craft\models\authentication\State;
  *
  * @property-read string $inputFieldHtml
  */
-class EmailCode extends MfaType implements PreparableTypeInterface
+class EmailCode extends Type implements PreparableTypeInterface, MfaTypeInterface
 {
     protected const CODE_KEY = 'craft.authentication.data.emailCode';
 
@@ -65,9 +65,9 @@ class EmailCode extends MfaType implements PreparableTypeInterface
         $this->emailSent = true;
 
         $session = Craft::$app->getSession();
-        $user = $this->state->getResolvedUser();
+        $user = $this->state->getUser();
 
-        // Pretend to send an email for fake users
+        // Pretend to send an email for faked users
         if (empty($user->id)) {
             sleep(2);
             $session->setNotice(Craft::t('app', 'Verification email sent!'));
@@ -94,10 +94,10 @@ class EmailCode extends MfaType implements PreparableTypeInterface
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): State
+    public function authenticate(array $credentials, User $user = null): bool
     {
         if (is_null($user) || empty($credentials['verification-code'])) {
-            return $this->state;
+            return false;
         }
 
         $code = $credentials['verification-code'];
@@ -105,12 +105,11 @@ class EmailCode extends MfaType implements PreparableTypeInterface
 
         if (empty($code) || $code !== $session->get(static::CODE_KEY)) {
             $session->setError(Craft::t('app', 'The verification code is incorrect.'));
-            return $this->state;
+            return false;
         }
 
         $session->remove(static::CODE_KEY);
-
-        return $this->completeStep($user);
+        return true;
     }
 
     /**
@@ -120,5 +119,13 @@ class EmailCode extends MfaType implements PreparableTypeInterface
     {
         $this->prepareForAuthentication();
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/EmailCode/input');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isAvailableForUser(User $user): bool
+    {
+        return !empty($user->email);
     }
 }

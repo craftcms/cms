@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace craft\authentication\type;
 
 use Craft;
+use craft\authentication\base\ElevatedSessionTypeInterface;
 use craft\authentication\base\Type;
 use craft\elements\User;
 use craft\helpers\User as UserHelper;
-use craft\models\authentication\State;
 
 /**
  * This step type authenticates a known user by password.
@@ -17,7 +17,7 @@ use craft\models\authentication\State;
  *
  * @property-read string $inputFieldHtml
  */
-class Password extends Type
+class Password extends Type implements ElevatedSessionTypeInterface
 {
     /**
      * @inheritdoc
@@ -46,10 +46,10 @@ class Password extends Type
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): State
+    public function authenticate(array $credentials, User $user = null): bool
     {
         if (!$user) {
-            return $this->state;
+            return false;
         }
 
         // If we don't have a password hash, try fetching the identity.
@@ -62,19 +62,20 @@ class Password extends Type
             return $this->failToAuthenticate($user);
         }
 
-        return $this->completeStep($user);
+        return true;
     }
 
     /**
      * Set authentication failure message on the state and return it.
      *
      * @param User $user The User model
-     * @return State
+     * @return bool
      */
-    protected function failToAuthenticate(?User $user): State
+    protected function failToAuthenticate(User $user): bool
     {
+        // Todo maybe not on the session, though?
         Craft::$app->getSession()->setError(UserHelper::getLoginFailureMessage(User::AUTH_INVALID_CREDENTIALS, $user));
-        return $this->state;
+        return false;
     }
 
     /**

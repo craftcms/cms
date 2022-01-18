@@ -1,15 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication\type\mfa;
+namespace craft\authentication\type;
 
 use Craft;
-use craft\authentication\base\MfaType;
+use craft\authentication\base\ElevatedSessionTypeInterface;
+use craft\authentication\base\Type;
+use craft\authentication\base\UserConfigurableTypeInterface;
 use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\models\authentication\State;
 use craft\records\AuthWebAuthn;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
@@ -17,6 +18,7 @@ use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialSource as CredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\Server;
+use yii\base\InvalidConfigException;
 
 /**
  * This step type requires an authentication type that supports Web Authentication API.
@@ -27,7 +29,7 @@ use Webauthn\Server;
  *
  * @property-read string $inputFieldHtml
  */
-class WebAuthn extends MfaType
+class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSessionTypeInterface
 {
     /**
      * The key for session to use for storing the WebAuthn credential options.
@@ -62,10 +64,10 @@ class WebAuthn extends MfaType
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): State
+    public function authenticate(array $credentials, User $user = null): bool
     {
         if (empty($credentials['credentialResponse']) || !$user) {
-            return $this->state;
+            return false;
         }
 
         $credentialResponse = Json::encode($credentials['credentialResponse']);
@@ -79,10 +81,10 @@ class WebAuthn extends MfaType
             );
         } catch (\Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
-            return $this->state;
+            return false;
         }
 
-        return $this->completeStep($user);
+        return true;
     }
 
     /**
@@ -91,7 +93,7 @@ class WebAuthn extends MfaType
     public function getInputFieldHtml(): string
     {
         $server = self::getWebauthnServer();
-        $userEntity = self::getUserEntity($this->state->getResolvedUser());
+        $userEntity = self::getUserEntity($this->state->getUser());
         $allowedCredentials = array_map(
             static fn(CredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
             Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
@@ -112,7 +114,7 @@ class WebAuthn extends MfaType
     /**
      * @inheritdoc
      */
-    public static function hasUserSetup(): bool
+    public static function getHasUserSetup(): bool
     {
         return true;
     }
@@ -191,6 +193,18 @@ class WebAuthn extends MfaType
         }
 
         return PublicKeyCredentialCreationOptions::createFromArray(Json::decodeIfJson($credentialOptions));
+    }
+
+    /**
+     * Returns true if a given user has configured WebAuthn credentials.
+     *
+     * @param User $user
+     * @return bool
+     * @throws InvalidConfigException
+     */
+    public static function userHasCredentialsConfigured(User $user): bool {
+        $userEntity = self::getUserEntity($user);
+        return !empty(Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
     }
 
     /**

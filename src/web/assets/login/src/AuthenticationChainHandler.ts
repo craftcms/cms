@@ -51,8 +51,8 @@ export class AuthenticationChainHandler
                 additionalSubmittedData.loginName = loginForm.$username.val();
             }
 
+            this.clearErrors();
             this.handleFormSubmit(event, additionalSubmittedData);
-
             event.preventDefault();
         });
 
@@ -66,8 +66,6 @@ export class AuthenticationChainHandler
     get $recoveryButtons() { return $('#recover-account, #cancel-recover');}
     get $authenticationGreeting() { return $('#authentication-greeting');}
     get $recoveryMessage() { return $('#recovery-message');}
-
-
 
     /**
      * Prepare form by cleaning up visibility of some items and attaching relevant event listeners.
@@ -131,6 +129,8 @@ export class AuthenticationChainHandler
     public restartAuthentication(event?: ClickEvent) {
         this.resetAuthenticationControls();
 
+        // Let the backend know to let it goooooo.
+        Craft.postActionRequest(this.startAuthenticationEndpoint, {});
         if (event) {
             event.preventDefault();
         }
@@ -199,9 +199,9 @@ export class AuthenticationChainHandler
         }
         this.loginForm.disableForm();
 
+        this.clearErrors();
         Craft.postActionRequest(this.performAuthenticationEndpoint, {
-            stepType: stepType,
-            switch: true
+            alternateStep: stepType,
         }, this.processResponse.bind(this));
     }
 
@@ -344,6 +344,7 @@ export class AuthenticationChainHandler
             const endpoint = this.recoverAccount ? this.recoverAccountEndpoint : (this.isExistingChain() ? this.performAuthenticationEndpoint : this.startAuthenticationEndpoint);
             this.performStep(endpoint, requestData);
         } catch (error: any) {
+            console.log(error);
             this.loginForm.showError(error)
             this.loginForm.enableForm();
         }

@@ -11,7 +11,7 @@ namespace craft\helpers;
 use Craft;
 use craft\authentication\base\TypeInterface;
 use craft\elements\User;
-use craft\models\authentication\State;
+use craft\authentication\State;
 use PragmaRX\Google2FAQRCode\Google2FA;
 use yii\base\InvalidConfigException;
 

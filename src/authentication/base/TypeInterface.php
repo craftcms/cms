@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 namespace craft\authentication\base;
 
-use craft\authentication\Branch;
 use craft\elements\User;
-use craft\models\authentication\State;
+use craft\authentication\State;
 use yii\base\InvalidConfigException;
 
 /**
@@ -31,17 +30,9 @@ interface TypeInterface
      *
      * @param array $credentials
      * @param User|null $user
-     * @return State
-     * @throws InvalidConfigException If something went wrong while createing authentication chain.
-     */
-    public function authenticate(array $credentials, User $user = null): State;
-
-    /**
-     * Whether this authentication step requires user input
-     *
      * @return bool
      */
-    public function getRequiresInput(): bool;
+    public function authenticate(array $credentials, User $user = null): bool;
 
     /**
      * Return true if a step is applicable for the currently identified user.
@@ -71,11 +62,4 @@ interface TypeInterface
      * @param State $state
      */
     public function setState(State $state): void;
-
-    /**
-     * Set the authentication chain branch.
-     *
-     * @param Branch $branch
-     */
-    public function setBranch(Branch $branch): void;
 }

@@ -1,8 +1,14 @@
 {% import "_includes/forms" as forms %}
-{% set authenticationInProgress = username|length > 0 or (authenticationChain is not null and not authenticationChain.isComplete) %}
+
+{% set authenticationInProgress = username|length > 0 or (authState is not null and authState.user is not null and not authState.isAuthenticated) %}
+
+{% if (user is not defined or user is null) and authenticationInProgress %}
+    {% set user = authState.user %}
+{% endif %}
 
 {### User greeting ###}
 {% if authenticationInProgress %}
+
     {% set knownUserName = user.username|default(username) %}
     <div id="authentication-greeting">
         {{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)
@@ -12,10 +18,10 @@
 
 {### Authentication step ###}
 <div id="login-form-top">
-    <div id="authentication-step" rel="{{ (authenticationChain and authenticationChain.nextAuthenticationStep) ? authenticationChain.nextAuthenticationStep.stepType : '' }}">
-        {% if authenticationChain is not null %}
-            {% if not authenticationChain.isComplete %}
-                {{ authenticationChain.nextAuthenticationStep.inputFieldHtml|raw }}
+    <div id="authentication-step" rel="{{ (authState and authState.nextStep and authState.user) ? authState.nextStep.stepType : '' }}">
+        {% if authState is not null and authState.user is not null %}
+            {% if not authState.isAuthenticated %}
+                {{ authState.nextStep.inputFieldHtml|raw }}
             {% else %}
                 <div id="spinner-pending" class="spinner big over-bg"></div>
             {% endif %}
@@ -56,10 +62,10 @@
 {### Alternative authentication steps ###}
 {% if alternativeSteps is defined and alternativeSteps is not null %}
     <div id="alternative-types" class="{{ (alternativeSteps|length == 0) ? 'hidden' : '' }}" >
-        <label>Other options:</label>
+        <label>{{ 'Other options:'|t('app') }}</label>
         <ul>
-            {% for type, name in authenticationChain.alternativeSteps %}
-                <li rel="{{ type }}">{{ name }}</li>
+            {% for path, name in alternativeSteps %}
+                <li rel="{{ path }}">{{ name }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -77,7 +83,7 @@
 
 {### Submit button and spinner ###}
 <div class="buttons">
-    {% if not authenticationChain or not authenticationChain.isComplete %}
+    {% if not authState or not authState.isAuthenticated %}
         <button id="submit" class="btn submit" type="submit">{{ 'Submit'|t('app') }}</button>
         <div id="spinner" class="spinner over-bg hidden"></div>
     {% endif %}

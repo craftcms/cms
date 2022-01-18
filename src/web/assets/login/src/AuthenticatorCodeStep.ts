@@ -4,6 +4,6 @@ export class AuthenticatorCodeStep extends VerificationCode
 {
     constructor()
     {
-        super('craft\\authentication\\type\\mfa\\AuthenticatorCode');
+        super('craft\\authentication\\type\\AuthenticatorCode');
     }
 }

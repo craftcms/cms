@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace craft\authentication\webauthn;
 
 use Craft;
-use craft\authentication\type\mfa\WebAuthn;
+use craft\authentication\type\WebAuthn;
 use craft\db\Table;
 use craft\elements\User;
 use craft\errors\MissingComponentException;

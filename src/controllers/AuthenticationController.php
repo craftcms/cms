@@ -10,15 +10,13 @@ namespace craft\controllers;
 
 use Craft;
 use craft\authentication\base\Type;
-use craft\authentication\Chain;
-use craft\authentication\type\mfa\AuthenticatorCode;
-use craft\authentication\type\mfa\WebAuthn;
+use craft\authentication\State;
+use craft\authentication\type\AuthenticatorCode;
+use craft\authentication\type\WebAuthn;
 use craft\authentication\webauthn\CredentialRepository;
 use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
-use craft\services\Authentication;
 use craft\web\Controller;
 use Webauthn\Server;
 use yii\base\InvalidConfigException;
@@ -35,15 +33,41 @@ class AuthenticationController extends Controller
 {
     protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
+    private ?State $_state = null;
+
     /** @var
      * string The session variable name to use to store whether user wants to be remembered.
      */
-    private const REMEMBER_ME = 'authChain.rememberMe';
+    private const REMEMBER_ME = 'auth.rememberMe';
 
     /** @var
      * string The session variable name to use the entered user name.
      */
-    private const AUTH_USER_NAME = 'authChain.userName';
+    private const AUTH_USER_NAME = 'auth.userName';
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        $this->_state = Craft::$app->getAuthentication()->getAuthState();
+        return parent::beforeAction($action);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterAction($action, $result)
+    {
+        if ($this->_state) {
+            Craft::$app->getAuthentication()->persistAuthenticationState($this->_state);
+        } else {
+            Craft::$app->getAuthentication()->invalidateAuthenticationState();
+        }
+
+        return parent::afterAction($action, $result);
+    }
+
 
     /**
      * Start a new authentication chain.
@@ -57,10 +81,11 @@ class AuthenticationController extends Controller
         $username = $request->getBodyParam('loginName');
 
         if (empty($username)) {
-            return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/authentication_chain', [
+            $this->_state = null;
+            return $this->asJson(['loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login_form', [
                 'user' => null,
                 'username' => '',
-                'authenticationChain' => null,
+                'authState' => null,
             ])]);
         }
 
@@ -76,21 +101,17 @@ class AuthenticationController extends Controller
         $userComponent->sendUsernameCookie($user);
 
         $authentication = Craft::$app->getAuthentication();
-        $authentication->invalidateAllAuthenticationStates();
-        $chain = $authentication->getCpAuthenticationChain($user);
-
-        $chain->persistChainState();
-
-        $currentStep = $chain->getNextAuthenticationStep()->getStepType();
-
+        $authentication->invalidateAuthenticationState();
+        $this->_state->setUser($user);
+        $currentStep = $this->_state->getNextStep()->getStepType();
         $session = Craft::$app->getSession();
 
         return $this->asJson([
-            'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login/authentication_chain', [
+            'loginFormHtml' => Craft::$app->getView()->renderTemplate('_special/login_form', [
                 'user' => $user,
                 'username' => $user->username,
-                'authenticationChain' => $chain,
-                'alternativeSteps' => $chain->getAlternativeSteps($currentStep)
+                'authState' => $this->_state,
+                'alternativeSteps' => $this->_state->getAlternativeSteps()
             ]),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
             'stepType' => $currentStep,
@@ -98,6 +119,7 @@ class AuthenticationController extends Controller
             'error' => $session->getError(),
         ]);
     }
+
     /**
      * Perform an authentication step.
      *
@@ -109,9 +131,7 @@ class AuthenticationController extends Controller
     public function actionPerformAuthentication(): Response
     {
         $this->requireAcceptsJson();
-        $scenario = Authentication::CP_AUTHENTICATION_CHAIN;
         $request = Craft::$app->getRequest();
-        $stepType = $request->getBodyParam('stepType', '');
         $username = Craft::$app->getSession()->get(self::AUTH_USER_NAME) ?? Craft::$app->getUser()->getRememberedUsername();
         $user = null;
 
@@ -123,83 +143,83 @@ class AuthenticationController extends Controller
             throw new BadRequestHttpException('Unable to determine user');
         }
 
-        $chain = Craft::$app->getAuthentication()->getAuthenticationChain($scenario, $user);
-        $switch = !empty($request->getBodyParam('switch'));
+        $alternateStep = $request->getBodyParam('alternateStep');
 
-        if ($switch) {
-            return $this->_switchStep($chain, $stepType);
-        }
-
-        try {
-            $step = $chain->getNextAuthenticationStep($stepType);
-        } catch (InvalidConfigException $exception) {
-            throw new BadRequestHttpException('Unable to authenticate', 0, $exception);
-        }
-
-        $session = Craft::$app->getSession();
-        $success = false;
-
-        if ($step !== null) {
-            $data = [];
-
-            if ($fields = $step->getFields()) {
-                foreach ($fields as $fieldName) {
-                    if ($value = $request->getBodyParam($fieldName)) {
-                        $data[$fieldName] = $value;
-                    }
-                }
-            }
-
-            $success = $chain->performAuthenticationStep($stepType, $data);
-
-            if ($success && $request->getBodyParam('rememberMe')) {
-                $session->set(self::REMEMBER_ME, true);
-            }
-        }
-
-        if ($chain->getIsComplete()) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            if ($session->get(self::REMEMBER_ME) && $generalConfig->rememberedUserSessionDuration !== 0) {
-                $duration = $generalConfig->rememberedUserSessionDuration;
-            } else {
-                $duration = $generalConfig->userSessionDuration;
-            }
-
-            Craft::$app->getUser()->login($chain->getAuthenticatedUser(), $duration);
-            $session->remove(self::REMEMBER_ME);
-
-            $userSession = Craft::$app->getUser();
-            $returnUrl = $userSession->getReturnUrl();
-            $userSession->removeReturnUrl();
+        if (!empty($alternateStep)) {
+            $this->_state->selectAlternateStep($alternateStep);
 
             return $this->asJson([
-                'success' => true,
-                'returnUrl' => $returnUrl
+                'html' => $this->_state->getNextStep()->getInputFieldHtml(),
+                'footHtml' => Craft::$app->getView()->getBodyHtml(),
+                'alternatives' => $this->_state->getAlternativeSteps(),
+                'stepType' => $this->_state->getNextStep()->getStepType(),
             ]);
         }
 
-        $output = [
-            'message' => $session->getNotice(),
-            'error' => $session->getError(),
-        ];
+        $step = $this->_state->getNextStep();
 
-        /** @var Type $step */
-        $step = $chain->getNextAuthenticationStep();
+        $session = Craft::$app->getSession();
 
-        if ($success || $chain->getDidSwitchBranches()) {
-            if ($success) {
-                $output['stepComplete'] = true;
+        $data = [];
+        if ($fields = $step->getFields()) {
+            foreach ($fields as $fieldName) {
+                if ($value = $request->getBodyParam($fieldName)) {
+                    $data[$fieldName] = $value;
+                }
             }
-
-            $output['stepType'] = $step->getStepType();
-            $output['html'] = $step->getInputFieldHtml();
-            $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
         }
 
-        $output['alternatives'] = $chain->getAlternativeSteps(get_class($step));
+        $success = $step->authenticate($data, $user);
 
-        return $this->asJson($output);
+        if ($success) {
+            $this->_state->completeStep();
+        }
+
+        if ($success && $request->getBodyParam('rememberMe')) {
+            $session->set(self::REMEMBER_ME, true);
+        }
+
+        if (!$this->_state->getIsAuthenticated()) {
+            $output = [
+                'message' => $session->getNotice(),
+                'error' => $session->getError(),
+            ];
+
+            /** @var Type $step */
+            $step = $this->_state->getNextStep();
+
+            if ($success) {
+                $output['stepComplete'] = true;
+                $output['stepType'] = $step->getStepType();
+                $output['html'] = $step->getInputFieldHtml();
+                $output['footHtml'] = Craft::$app->getView()->getBodyHtml();
+            }
+
+            $output['alternatives'] = $this->_state->getAlternativeSteps();
+
+            return $this->asJson($output);
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($session->get(self::REMEMBER_ME) && $generalConfig->rememberedUserSessionDuration !== 0) {
+            $duration = $generalConfig->rememberedUserSessionDuration;
+        } else {
+            $duration = $generalConfig->userSessionDuration;
+        }
+
+        Craft::$app->getUser()->login($this->_state->getAuthenticatedUser(), $duration);
+        $session->remove(self::REMEMBER_ME);
+        $this->_state = null;
+
+        $userSession = Craft::$app->getUser();
+        $returnUrl = $userSession->getReturnUrl();
+        $userSession->removeReturnUrl();
+
+        return $this->asJson([
+            'success' => true,
+            'returnUrl' => $returnUrl
+        ]);
     }
 
     /**
@@ -345,8 +365,10 @@ class AuthenticationController extends Controller
      * @return Response
      * @throws InvalidConfigException
      */
-    private function _switchStep(Chain $authenticationChain, string $stepType): Response
+    private function _switchStep(State $authState, string $stepType): Response
     {
+        $authState->selectAlternateStep($stepType);
+
         $step = $authenticationChain->switchStep($stepType);
         $session = Craft::$app->getSession();
 

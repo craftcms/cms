@@ -9,8 +9,8 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\authentication\type\mfa\AuthenticatorCode;
-use craft\authentication\type\mfa\WebAuthn;
+use craft\authentication\type\AuthenticatorCode;
+use craft\authentication\type\WebAuthn;
 use craft\authentication\type\Password;
 use craft\base\Field;
 use craft\db\Migration;

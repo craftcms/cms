@@ -4,6 +4,6 @@ export class EmailCodeStep extends VerificationCode
 {
     constructor()
     {
-        super('craft\\authentication\\type\\mfa\\EmailCode');
+        super('craft\\authentication\\type\\EmailCode');
     }
 }

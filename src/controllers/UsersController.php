@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\authentication\base\MfaTypeInterface;
+use craft\authentication\base\Type;
+use craft\authentication\base\TypeInterface;
+use craft\authentication\base\UserConfigurableTypeInterface;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -164,18 +166,20 @@ class UsersController extends Controller
                 $user = AuthenticationHelper::getFakeUser($username);
             }
 
-            $authChain = $user ? Craft::$app->getAuthentication()->getCpAuthenticationChain($user) : null;
-            $alternativeSteps = $authChain ? $authChain->getAlternativeSteps() : null;
+            $alternativeSteps = null;
+            $authenticationService = Craft::$app->getAuthentication();
+            $authState = $authenticationService->getAuthState();
+
+            if ($authState) {
+                if ($user) {
+                    $authState->setUser($user);
+                }
+                $alternativeSteps = $authState->getAlternativeSteps();
+                $authenticationService->persistAuthenticationState($authState);
+            }
+
             $showRememberMe = (bool)$generalConfig->rememberedUserSessionDuration;
-
-            Craft::$app->getUrlManager()->setRouteParams([
-                'username' => $username,
-                'user' => $user,
-                'authenticationChain' => $authChain,
-                'alternativeSteps' => $alternativeSteps,
-                'showRememberMe' => $showRememberMe
-            ]);
-
+            Craft::$app->getUrlManager()->setRouteParams(compact('username', 'user', 'authState', 'alternativeSteps', 'showRememberMe'));
             return null;
         }
 
@@ -769,7 +773,7 @@ class UsersController extends Controller
         $sessionActions = [];
         $destructiveActions = [];
         $miscActions = [];
-        $mfaStepTypes = [];
+        $configurableStepTypes = [];
 
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
@@ -882,11 +886,8 @@ class UsersController extends Controller
                 }
             }
 
-            foreach (Craft::$app->getAuthentication()->getMfaTypes() as $authenticator) {
-                /** @var MfaTypeInterface $authenticator */
-                if ($authenticator::hasUserSetup()) {
-                    $mfaStepTypes[] = new $authenticator();
-                }
+            foreach (Craft::$app->getAuthentication()->getUserConfigurableTypes() as $type) {
+                $configurableStepTypes[] = new $type;
             }
         }
 
@@ -1072,7 +1073,7 @@ class UsersController extends Controller
             'selectedTab',
             'showPhotoField',
             'fieldsHtml',
-            'mfaStepTypes'
+            'configurableStepTypes'
         ));
     }
 

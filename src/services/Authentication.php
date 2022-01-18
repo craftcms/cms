@@ -9,15 +9,17 @@ declare(strict_types=1);
 namespace craft\services;
 
 use Craft;
-use craft\authentication\Chain;
-use craft\authentication\type\mfa\AuthenticatorCode;
-use craft\authentication\type\mfa\EmailCode;
-use craft\authentication\type\mfa\WebAuthn;
+use craft\authentication\base\ElevatedSessionTypeInterface;
+use craft\authentication\base\MfaTypeInterface;
+use craft\authentication\base\UserConfigurableTypeInterface;
+use craft\authentication\State;
+use craft\authentication\type\IpAddress;
+use craft\authentication\type\AuthenticatorCode;
+use craft\authentication\type\EmailCode;
+use craft\authentication\type\Password;
+use craft\authentication\type\WebAuthn;
 use craft\elements\User;
-use craft\errors\AuthenticationStateException;
-use craft\helpers\Authentication as AuthHelper;
-use craft\models\authentication\Scenario;
-use craft\models\authentication\State;
+use craft\errors\AuthenticationException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -25,93 +27,175 @@ class Authentication extends Component
 {
     public const AUTHENTICATION_STATE_KEY = 'craft.authentication.state';
 
-    public const CONFIG_AUTH_CHAINS = 'authentication-chains';
-    public const CP_AUTHENTICATION_CHAIN = 'cpLogin';
+    /**
+     * When state is created, uniqid => state path is generated and stored inside state.
+     * State can return alternative paths - siblings to current location or any of the parents
+     * to further a state
+     */
+
 
     /**
-     * Return an authentication chain based on a scenario.
+     * A list of all the authentication step types.
      *
-     * @param string $scenario
-     * @return Chain
-     * @throws InvalidConfigException
+     * @var array|null
      */
-    public function getAuthenticationChain(string $scenario, User $user): Chain
+    private ?array $_stepTypes = null;
+
+    private ?State $_state = null;
+
+    public function getAuthFlow(?User $user = null): array
     {
-        $chainConfig = $this->getScenarioConfiguration($scenario);
+        // TODO event here
+        $flow = [];
 
-        if (!$chainConfig) {
-            throw new InvalidConfigException("Unable to configure authentication chain for `$scenario`");
+        if ($user && $this->isWebAuthnAvailable($user)) {
+            $flow[] = [
+                'type' => WebAuthn::class,
+            ];
         }
 
-        /** @var string $defaultBranch */
-        $defaultBranch = $chainConfig->getDefaultBranchName();
+        $authentication = [
+            'type' => Password::class
+        ];
 
-        if (!($state = $this->getAuthenticationState($scenario))) {
-            $state = AuthHelper::createAuthState($scenario, $defaultBranch, $user);
+        if ($user && $this->isMfaRequired($user)) {
+            $availableTypes = $this->getAvailableMfaTypes($user);
+
+            if (empty($availableTypes)) {
+                throw new AuthenticationException('Unable to find a supported MFA authentication step type, but it is required.');
+            }
+
+            $authentication['then'] = array_map(static fn ($type) => ['type' => $type], $availableTypes);
         }
 
-        /** @var Chain $chain */
-        try {
-            $chain = Craft::createObject(Chain::class, [$scenario, $state, $chainConfig->branches]);
-        } catch (AuthenticationStateException $exception) {
-            // Try with a fresh state
-            Craft::$app->getErrorHandler()->logException($exception);
-            $state = AuthHelper::createAuthState($scenario, $defaultBranch, $user);
-            $chain = Craft::createObject(Chain::class, [$state, $chainConfig->branches]);
-        }
+        $flow[] = $authentication;
 
-        return $chain;
+        // TODO event here
+        return $flow;
     }
 
     /**
-     * Return a list of all the multi-factor authentication types.
+     * Returns true if WebAuthn credentials are available for a given user.
+     *
+     * @param User $user
+     * @return bool
+     * @throws InvalidConfigException
+     */
+    public function isWebAuthnAvailable(User $user): bool
+    {
+        $config = true;
+        return $config && Craft::$app->getRequest()->getIsSecureConnection() && WebAuthn::userHasCredentialsConfigured($user);
+    }
+
+    /**
+     * Returns true if MFA is required for a given user.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function isMfaRequired(User $user): bool
+    {
+        // user forced by config || $user opted in.
+        $userOption = true;
+
+        return $userOption;
+    }
+
+    /**
+     * Return a list of all the multi-factor authentication step types.
+     *
      * @return string[]
      */
     public function getMfaTypes(): array
     {
-        // TODO event here
-        return [
-            AuthenticatorCode::class,
+        return array_filter($this->getAllStepTypes(), static fn ($type) => is_subclass_of($type, MfaTypeInterface::class));
+    }
+
+    /**
+     * Return a list of all the authentication step types that must be configured by the user.
+     *
+     * @return string[]
+     */
+    public function getUserConfigurableTypes(): array
+    {
+        return array_filter($this->getAllStepTypes(), static fn ($type) => is_subclass_of($type, UserConfigurableTypeInterface::class));
+    }
+
+    /**
+     * Return a list of all the authentication step types that can be used when elevating a session.
+     *
+     * @return array
+     */
+    public function getElevatedSessionTypes(): array
+    {
+        return array_filter($this->getAllStepTypes(), static fn ($type) => is_subclass_of($type, ElevatedSessionTypeInterface::class));
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllStepTypes(): array
+    {
+        if (!is_null($this->_stepTypes)) {
+            return $this->_stepTypes;
+        }
+        $types = [
             WebAuthn::class,
-            EmailCode::class
+            Password::class,
+            AuthenticatorCode::class,
+            EmailCode::class,
+            IpAddress::class,
         ];
+
+        // TODO event here.
+
+        return $this->_stepTypes = $types;
     }
 
     /**
-     * Get the authentication chain for control panel login.
+     * Return an array of all the available mfa types for a given user.
      *
-     * @param User $user The user for which to start a new auth chain.
-     * @return Chain
-     * @throws InvalidConfigException
+     * @param User $user
+     * @return array
      */
-    public function getCpAuthenticationChain(User $user): Chain
+    public function getAvailableMfaTypes(User $user): array
     {
-        return $this->getAuthenticationChain(self::CP_AUTHENTICATION_CHAIN, $user);
-    }
+        $availableTypes = [];
 
-    /**
-     * Get scenario configuration for a give scenario.
-     *
-     * @param string $scenario
-     * @return Scenario|null
-     */
-    public function getScenarioConfiguration(string $scenario): ?Scenario
-    {
-        $scenarios = Craft::$app->getProjectConfig()->get(self::CONFIG_AUTH_CHAINS);
-        return $scenarios[$scenario] ? Craft::createObject(Scenario::class, [$scenarios[$scenario]]) :  null;
+        foreach ($this->getMfaTypes() as $type) {
+            /** @var MfaTypeInterface $type */
+            if ($type::isAvailableForUser($user)) {
+                $availableTypes[] = $type;
+            }
+        }
+
+        return $availableTypes;
     }
 
     /**
      * Get the current authentication state for a scenario.
      *
      * @param string $scenario
-     * @return State
+     * @return State|null
      */
-    public function getAuthenticationState(string $scenario): ?State
+    public function getAuthState(): ?State
     {
-        $authStates = $this->getAllAuthenticationStates();
+        if ($this->_state) {
+            return $this->_state;
+        }
 
-        return !empty($authStates[$scenario]) ? Craft::createObject(State::class, [$authStates[$scenario]]) : null;
+        $session = Craft::$app->getSession();
+        $serializedState = $session->get(self::AUTHENTICATION_STATE_KEY);
+
+        if ($serializedState) {
+            $this->_state = unserialize($serializedState, [State::class, User::class]);
+        } else {
+            $this->_state = Craft::createObject(State::class, [
+                'authFlow' => $this->getAuthFlow()
+            ]);
+        }
+
+        return $this->_state;
     }
 
     /**
@@ -119,43 +203,19 @@ class Authentication extends Component
      *
      * @param State $state
      */
-    public function storeAuthenticationState(State $state): void
+    public function persistAuthenticationState(State $state): void
     {
+        $this->_state = $state;
         $session = Craft::$app->getSession();
-        $scenario = $state->getAuthenticationScenario();
-
-        // Only store one authentication state at a time.
-        $authStates = [$scenario => $state->exportState()];
-        $session->set(self::AUTHENTICATION_STATE_KEY, $authStates);
+        $session->set(self::AUTHENTICATION_STATE_KEY, serialize($state));
     }
 
     /**
      * Invalidate all authentication states for the session.
      */
-    public function invalidateAllAuthenticationStates(): void
+    public function invalidateAuthenticationState(): void
     {
+        $this->_state = null;
         Craft::$app->getSession()->remove(self::AUTHENTICATION_STATE_KEY);
-    }
-
-    /**
-     * Invalidate an authentication state by scenario.
-     *
-     * @param string $scenario
-     */
-    public function invalidateAuthenticationState(string $scenario): void
-    {
-        $states = $this->getAllAuthenticationStates();
-        unset($states[$scenario]);
-        Craft::$app->getSession()->set(self::AUTHENTICATION_STATE_KEY, $states);
-    }
-
-    /**
-     * Return all active authentication states.
-     *
-     * @return mixed
-     */
-    private function getAllAuthenticationStates(): array
-    {
-        return Craft::$app->getSession()->get(self::AUTHENTICATION_STATE_KEY, []);
     }
 }

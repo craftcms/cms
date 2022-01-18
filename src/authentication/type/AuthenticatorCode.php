@@ -1,13 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace craft\authentication\type\mfa;
+namespace craft\authentication\type;
 
 use Craft;
-use craft\authentication\base\MfaType;
+use craft\authentication\base\ElevatedSessionTypeInterface;
+use craft\authentication\base\MfaTypeInterface;
+use craft\authentication\base\Type;
+use craft\authentication\base\UserConfigurableTypeInterface;
 use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
-use craft\models\authentication\State;
+use craft\authentication\State;
 
 /**
  * This step type requires the user to enter TOTP
@@ -18,7 +21,7 @@ use craft\models\authentication\State;
  *
  * @property-read string $inputFieldHtml
  */
-class AuthenticatorCode extends MfaType
+class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurableTypeInterface, ElevatedSessionTypeInterface
 {
     /**
      * The key to store the authenticator secret in session, while attaching it.
@@ -52,10 +55,10 @@ class AuthenticatorCode extends MfaType
     /**
      * @inheritdoc
      */
-    public function authenticate(array $credentials, User $user = null): State
+    public function authenticate(array $credentials, User $user = null): bool
     {
         if (is_null($user) || empty($credentials['verification-code'])) {
-            return $this->state;
+            return false;
         }
 
         $code = $credentials['verification-code'];
@@ -63,10 +66,10 @@ class AuthenticatorCode extends MfaType
 
         if (empty($code) || !$user->verifyAuthenticatorKey($code)) {
             $session->setError(Craft::t('app', 'The verification code is incorrect.'));
-            return $this->state;
+            return false;
         }
 
-        return $this->completeStep($user);
+        return true;
     }
 
     /**
@@ -83,11 +86,6 @@ class AuthenticatorCode extends MfaType
     public static function getIsApplicable(?User $user): bool
     {
         return $user && $user->hasAuthenticatorSecret();
-    }
-
-    public static function hasUserSetup(): bool
-    {
-        return true;
     }
 
     public function getUserSetupFormHtml(User $user): string
@@ -115,5 +113,21 @@ class AuthenticatorCode extends MfaType
 
 
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/setup', compact('user', 'qrAuthenticatorCode'));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getHasUserSetup(): bool
+    {
+       return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isAvailableForUser(User $user): bool
+    {
+        return $user->hasAuthenticatorSecret();
     }
 }

@@ -4,7 +4,7 @@ export class WebAuthnStep extends AuthenticationStep
 {
     constructor()
     {
-        super('craft\\authentication\\type\\mfa\\WebAuthn');
+        super('craft\\authentication\\type\\WebAuthn');
     }
 
     get $button() { return $('#verify-webauthn');};
@@ -43,6 +43,10 @@ export class WebAuthnStep extends AuthenticationStep
 
         // Sort-of deep copy
         const requestOptions = {...optionData};
+
+        if (!optionData) {
+            return {};
+        }
 
         if (optionData.allowCredentials) {
             requestOptions.allowCredentials = [...optionData.allowCredentials];

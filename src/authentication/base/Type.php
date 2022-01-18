@@ -7,7 +7,7 @@ use Craft;
 use craft\authentication\Branch;
 use craft\base\Component;
 use craft\elements\User;
-use craft\models\authentication\State;
+use craft\authentication\State;
 
 /**
  * Authentication step type base class. This class must be implemented for all steps indented to be used in Craft CP.
@@ -61,14 +61,6 @@ abstract class Type extends Component implements TypeInterface
     /**
      * @inheritdoc
      */
-    public function getRequiresInput(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getIsApplicable(?User $user): bool
     {
         return true;
@@ -80,14 +72,6 @@ abstract class Type extends Component implements TypeInterface
     public function setState(State $state): void
     {
         $this->state = $state;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setBranch(Branch $branch): void
-    {
-        $this->branch = $branch;
     }
 
     /**

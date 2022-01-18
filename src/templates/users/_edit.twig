@@ -143,8 +143,8 @@
                     }) }}
                 {% endif %}
 
-                {% if CraftEdition == CraftPro and mfaStepTypes|length > 0%}
-                    {% for stepType in mfaStepTypes %}
+                {% if CraftEdition == CraftPro %}
+                    {% for stepType in configurableStepTypes %}
                         {{ stepType.getUserSetupFormHtml(user)|raw }}
                     {% endfor %}
                 {% endif %}

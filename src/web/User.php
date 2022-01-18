@@ -542,7 +542,7 @@ class User extends \yii\web\User
         }
 
         // Remove any authentication chain states
-        Craft::$app->getAuthentication()->invalidateAllAuthenticationStates();
+        Craft::$app->getAuthentication()->invalidateAuthenticationState();
 
         parent::afterLogout($identity);
     }
