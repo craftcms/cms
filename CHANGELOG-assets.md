@@ -1,5 +1,6 @@
 ### Added
 - Added a new `Filesystems` section under asset settings for configuring filesystems.
+- Added the `fs` and `fsField` macros to the `_includes/forms` control panel template.
 - Added `craft\base\FsInterface`.
 - Added `craft\base\FsTrait`.
 - Added `craft\base\Fs`.
@@ -41,6 +42,7 @@
 - Added `craft\web\Controller::asCpScreen()`.
 - Added `craft\web\Controller::asFailure()`.
 - Added `craft\web\Controller::asSuccess()`.
+- Added `craft\web\twig\variables\Cp::getFsOptions()`.
 - Added the `Craft.CpScreenSlideout` JavaScript class, which can be used to create slideouts from controller actions that return `$this->asCpScreen()`.
 
 ### Changed

@@ -11,12 +11,13 @@ use Craft;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\helpers\ArrayHelper;
-use craft\helpers\UrlHelper;
+use craft\helpers\Cp;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\Response as YiiResponse;
 
 /**
  * The FsController class is a controller that handles various actions related to asset filesystems, such as
@@ -107,26 +108,19 @@ class FsController extends Controller
             $title = Craft::t('app', 'Create a new filesystem');
         }
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings'),
-            ],
-            [
-                'label' => Craft::t('app', 'Filesystems'),
-                'url' => UrlHelper::url('settings/filesystems'),
-            ],
-        ];
-
-        return $this->renderTemplate('settings/filesystems/_edit', [
-            'oldHandle' => $handle,
-            'filesystem' => $filesystem,
-            'fsOptions' => $fsOptions,
-            'fsInstances' => $fsInstances,
-            'fsTypes' => $allFsTypes,
-            'title' => $title,
-            'crumbs' => $crumbs,
-        ]);
+        return $this->asCpScreen()
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
+            ->actionParam('fs/save')
+            ->redirectParam('settings/filesystems')
+            ->contentTemplate('settings/filesystems/_edit', [
+                'oldHandle' => $handle,
+                'filesystem' => $filesystem,
+                'fsOptions' => $fsOptions,
+                'fsInstances' => $fsInstances,
+                'fsTypes' => $allFsTypes,
+            ]);
     }
 
     /**
@@ -135,7 +129,7 @@ class FsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSave(): ?Response
+    public function actionSave(): ?YiiResponse
     {
         $this->requirePostRequest();
 
@@ -152,14 +146,7 @@ class FsController extends Controller
         ]);
 
         if (!$fsService->saveFilesystem($fs)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save filesystem.'));
-
-            // Send the filesystem back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'filesystem' => $fs,
-            ]);
-
-            return null;
+            return $this->asFailure(Craft::t('app', 'Couldn’t save filesystem.'), $fs, 'filesystem');
         }
 
         // Remove the old one?
@@ -171,8 +158,7 @@ class FsController extends Controller
             }
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Filesystem saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t('app', 'Filesystem saved.'), $fs, 'filesystem');
     }
 
     /**

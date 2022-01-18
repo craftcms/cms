@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -683,6 +684,24 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all filesystems for a time zone input.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public function getFsOptions(): array
+    {
+        $options = array_map(fn(FsInterface $fs) => [
+            'label' => $fs->name,
+            'value' => $fs->handle,
+        ], Craft::$app->getFs()->getAllFilesystems());
+
+        ArrayHelper::multisort($options, 'label');
 
         return $options;
     }

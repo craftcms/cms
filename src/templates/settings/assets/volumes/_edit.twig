@@ -36,22 +36,14 @@
 
     <hr>
 
-    {% if fsHandleOptions|length %}
-        {{ forms.selectizeField({
-            label: "Filesytem"|t('app'),
-            instructions: 'Choose which filesystem the volume should connect to.'|t('app'),
-            id: 'fs-handle',
-            name: 'fsHandle',
-            options: fsHandleOptions,
-            includeEnvVars: true,
-            value: volume.getFsHandle(false),
-        }) }}
-    {% else %}
-        {{ forms.field({
-            first: true,
-            label: "Filesytem"|t('app')
-        }, '<p class="error">' ~ "No filesystems exist"|t('app') ~ '</p>') }}
-    {% endif %}
+    {{ forms.fsField({
+        label: 'Filesystem'|t('app'),
+        instructions: 'Choose which filesystem the volume should connect to.'|t('app'),
+        id: 'fs-handle',
+        name: 'fsHandle',
+        includeEnvVars: true,
+        value: volume.getFsHandle(false),
+    }) }}
 
     {% if craft.app.getIsMultiSite() %}
         <hr>

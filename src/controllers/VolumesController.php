@@ -81,19 +81,6 @@ class VolumesController extends Controller
             }
         }
 
-        $allFs = Craft::$app->getFs()->getAllFilesystems();
-        $fsHandleOptions = [];
-
-        foreach ($allFs as $fs) {
-            $fsHandleOptions[] = [
-                'value' => $fs->handle,
-                'label' => $fs->name,
-            ];
-        }
-
-        // Sort them by name
-        ArrayHelper::multisort($fsHandleOptions, 'label');
-
         $isNewVolume = !$volume->id;
 
         if ($isNewVolume) {
@@ -121,7 +108,6 @@ class VolumesController extends Controller
             'volumeId' => $volumeId,
             'volume' => $volume,
             'isNewVolume' => $isNewVolume,
-            'fsHandleOptions' => $fsHandleOptions,
             'title' => $title,
             'crumbs' => $crumbs,
             'typeName' => Asset::displayName(),

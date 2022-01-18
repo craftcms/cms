@@ -17,7 +17,7 @@ use Generator;
  * FieldInterface defines the common interface to be implemented by filesystem classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[FsTrait]].
  *
- * @mixin FsTrait
+ * @mixin Fs
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
