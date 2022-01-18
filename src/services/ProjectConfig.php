@@ -1187,6 +1187,7 @@ class ProjectConfig extends Component
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
         $config[self::PATH_FIELDS] = $this->_getFieldData();
         $config[self::PATH_FIELD_GROUPS] = $this->_getFieldGroupData();
+        $config[self::PATH_FS] = $this->_getFsData();
         $config[self::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
         $config[self::PATH_GRAPHQL] = $this->_getGqlData();
         $config[self::PATH_IMAGE_TRANSFORMS] = $this->_getTransformData();
@@ -1901,6 +1902,21 @@ class ProjectConfig extends Component
         $data = [];
         foreach (Craft::$app->getFields()->getAllGroups() as $group) {
             $data[$group->uid] = $group->getConfig();
+        }
+        return $data;
+    }
+
+    /**
+     * Returns filesystem config data.
+     *
+     * @return array
+     */
+    private function _getFsData(): array
+    {
+        $data = [];
+        $fsService = Craft::$app->getFs();
+        foreach ($fsService->getAllFilesystems() as $fs) {
+            $data[$fs->handle] = $fsService->createFilesystemConfig($fs);
         }
         return $data;
     }
