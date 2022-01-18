@@ -78,7 +78,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";
                     $condition->forProjectConfig = true;
-                    $condition->queryParams = ['status'];
+                    $condition->queryParams = ['site', 'status'];
                     $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
                     $view->startJsBuffer();
@@ -106,7 +106,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $condition->name = 'sources[__SOURCE_KEY__][condition]';
         $condition->mainTag = 'div';
         $condition->forProjectConfig = true;
-        $condition->queryParams = ['status'];
+        $condition->queryParams = ['site', 'status'];
         $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
         $view->startJsBuffer();
