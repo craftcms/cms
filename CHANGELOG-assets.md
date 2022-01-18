@@ -19,6 +19,7 @@
 - Added `craft\errors\InvalidFsException`.
 - Added `craft\errors\MissingFolderException`.
 - Added `craft\events\ImageTransformEvent`.
+- Added `craft\events\TransformImageEvent`.
 - Added `craft\fs\Local`.
 - Added `craft\fs\MissingFs`.
 - Added `craft\fs\Temp`.
@@ -33,7 +34,6 @@
 - Added `craft\services\Fs`.
 - Added `craft\services\ImageTransforms`.
 - Added `craft\services\ProjectConfig::PATH_FS`.
-- Added `craft\events\TransformImageEvent`.
 
 ### Changed
 - Filesystem operations have been decoupled from volumes.
@@ -47,14 +47,23 @@
 - Removed `craft\base\VolumeInterface`.
 - Removed `craft\base\VolumeTrait`.
 - Removed `craft\base\Volume`.
+- Removed `craft\db\Table::ASSETTRANSFORMINDEX`.
+- Removed `craft\db\Table::ASSETTRANSFORMS`.
 - Removed `craft\elements\Asset::getTransformSource()`.
 - Removed `craft\elements\Asset::setTransformSource()`.
+- Removed `craft\errors\AssetTransformException`.
 - Removed `craft\errors\InvalidVolumeException`.
 - Removed `craft\errors\MissingVolumeFolderException`.
 - Removed `craft\errors\VolumeException`.
 - Removed `craft\errors\VolumeObjectExistsException`.
 - Removed `craft\errors\VolumeObjectNotFoundException`.
+- Removed `craft\events\AssetTransformEvent`.
+- Removed `craft\events\AssetTransformImageEvent`.
+- Removed `craft\models\AssetTransformIndex`.
+- Removed `craft\models\AssetTransform`.
 - Removed `craft\models\VolumeListing`.
+- Removed `craft\records\AssetTransform`.
+- Removed `craft\services\AssetTransforms`.
 - Removed `craft\services\ImageTransforms::deleteQueuedSourceFiles()`.
 - Removed `craft\services\ImageTransforms::deleteTransformIndex()`.
 - Removed `craft\services\ImageTransforms::deleteTransformIndexDataByAssetId()`.
@@ -79,12 +88,3 @@
 - Removed `craft\volumes\Local`.
 - Removed `craft\volumes\MissingVolume`.
 - Removed `craft\volumes\Temp`.
-- Removed `craft\db\Table::ASSETTRANSFORMINDEX`.
-- Removed `craft\db\Table::ASSETTRANSFORMS`.
-- Removed `craft\errors\AssetTransformException`.
-- Removed `craft\events\AssetTransformEvent`.
-- Removed `craft\models\AssetTransformIndex`.
-- Removed `craft\models\AssetTransform`.
-- Removed `craft\records\AssetTransform`.
-- Removed `craft\services\AssetTransforms`.
-- Removed `craft\events\AssetTransformImageEvent`.
