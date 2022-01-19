@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -221,7 +222,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'fontIcon' => 'categories',
+                'fontIcon' => 'tree',
             ];
         }
 
@@ -415,21 +416,29 @@ class Cp extends Component
             'iconMask' => '@appicons/newspaper.svg',
             'label' => Craft::t('app', 'Sections'),
         ];
-        $settings[$label]['assets'] = [
-            'iconMask' => '@appicons/photo.svg',
-            'label' => Craft::t('app', 'Assets'),
-        ];
         $settings[$label]['globals'] = [
             'iconMask' => '@appicons/globe.svg',
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@appicons/folder-open.svg',
+            'iconMask' => '@appicons/tree.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
             'iconMask' => '@appicons/tags.svg',
             'label' => Craft::t('app', 'Tags'),
+        ];
+
+        $label = Craft::t('app', 'Media');
+
+        $settings[$label]['filesystems'] = [
+            'iconMask' => '@appicons/folder-open.svg',
+            'label' => Craft::t('app', 'Filesystems'),
+        ];
+
+        $settings[$label]['assets'] = [
+            'iconMask' => '@appicons/photo.svg',
+            'label' => Craft::t('app', 'Assets'),
         ];
 
         $label = Craft::t('app', 'Plugins');
@@ -542,6 +551,10 @@ class Cp extends Component
     public function getEnvOptions(?array $allowedValues = null): array
     {
         if ($allowedValues !== null) {
+            if (empty($allowedValues)) {
+                return [];
+            }
+
             $allowedValues = array_flip($allowedValues);
         }
 
@@ -675,6 +688,24 @@ class Cp extends Component
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all filesystems for a time zone input.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public function getFsOptions(): array
+    {
+        $options = array_map(fn(FsInterface $fs) => [
+            'label' => $fs->name,
+            'value' => $fs->handle,
+        ], Craft::$app->getFs()->getAllFilesystems());
+
+        ArrayHelper::multisort($options, 'label');
 
         return $options;
     }

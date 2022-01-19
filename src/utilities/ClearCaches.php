@@ -204,7 +204,7 @@ class ClearCaches extends Utility
                 'info' => Craft::t('app', 'Record of generated image transforms'),
                 'action' => function() {
                     Craft::$app->getDb()->createCommand()
-                        ->truncateTable(Table::ASSETTRANSFORMINDEX)
+                        ->truncateTable(Table::IMAGETRANSFORMINDEX)
                         ->execute();
                 },
             ],

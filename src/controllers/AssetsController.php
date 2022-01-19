@@ -12,9 +12,9 @@ use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\errors\AssetException;
-use craft\errors\AssetTransformException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
+use craft\errors\FsException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
@@ -25,10 +25,12 @@ use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Image;
+use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\image\Raster;
+use craft\imagetransforms\ImageTransformer;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -511,7 +513,7 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (VolumeException | ForbiddenHttpException $exception) {
+        } catch (FsException | ForbiddenHttpException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }
@@ -523,7 +525,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws VolumeException
+     * @throws FsException
      * @throws Throwable
      */
     public function actionDeleteFolder(): Response
@@ -542,7 +544,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
         try {
             $assets->deleteFoldersByIds($folderId);
-        } catch (VolumeException $exception) {
+        } catch (FsException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -610,8 +612,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
-     * @throws InvalidConfigException
-     * @throws VolumeException
+     * @throws InvalidConfigException|VolumeException
      */
     public function actionRenameFolder(): Response
     {
@@ -632,7 +633,7 @@ class AssetsController extends Controller
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
-        } catch (VolumeException | AssetException $exception) {
+        } catch (FsException | AssetException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -1031,9 +1032,8 @@ class AssetsController extends Controller
                 $asset->setFocalPoint($focal);
 
                 if ($focalChanged) {
-                    $transforms = Craft::$app->getAssetTransforms();
+                    $transforms = Craft::$app->getImageTransforms();
                     $transforms->deleteCreatedTransformsForAsset($asset);
-                    $transforms->deleteTransformIndexDataByAssetId($assetId);
                 }
 
                 // Only replace file if it changed, otherwise just save changed focal points
@@ -1165,38 +1165,38 @@ class AssetsController extends Controller
      *
      * @param int|null $transformId
      * @return Response
-     * @throws BadRequestHttpException
      * @throws NotFoundHttpException if the transform can't be found
      * @throws ServerErrorHttpException if the transform can't be generated
-     * @throws AssetTransformException
      */
     public function actionGenerateTransform(?int $transformId = null): Response
     {
-        // If transform Id was not passed in, see if file id and handle were.
-        $assetTransforms = Craft::$app->getAssetTransforms();
-
-        if ($transformId) {
-            $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
-        } else {
-            $assetId = $this->request->getRequiredBodyParam('assetId');
-            $handle = $this->request->getRequiredBodyParam('handle');
-            $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
-            if ($assetModel === null) {
-                throw new BadRequestHttpException('Invalid asset ID: ' . $assetId);
-            }
-            $transformIndexModel = $assetTransforms->getTransformIndex($assetModel, $handle);
-        }
-
-        if (!$transformIndexModel) {
-            throw new NotFoundHttpException('Image transform not found.');
-        }
-
         try {
-            $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
+            // If transform Id was not passed in, see if file id and handle were.
+            $transformIndexModel = null;
+
+            if ($transformId) {
+                $transformer = Craft::createObject(ImageTransformer::class);
+                $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
+                $assetId = $transformIndexModel->assetId;
+                $transform = $transformIndexModel->getTransform();
+            } else {
+                $assetId = $this->request->getRequiredBodyParam('assetId');
+                $handle = $this->request->getRequiredBodyParam('handle');
+                $transform = ImageTransforms::normalizeTransform($handle);
+                $transformer = $transform->getImageTransformer();
+            }
         } catch (\Exception $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             throw new ServerErrorHttpException('Image transform cannot be created.');
         }
+
+        $asset = Asset::findOne(['id' => $assetId]);
+
+        if (!$asset) {
+            throw new NotFoundHttpException();
+        }
+
+        $url = $transformer->getTransformUrl($asset, $transform, true);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);

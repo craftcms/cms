@@ -23,9 +23,6 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
-        'assetTransforms' => [
-            'class' => craft\services\AssetTransforms::class,
-        ],
         'categories' => [
             'class' => craft\services\Categories::class,
         ],
@@ -59,6 +56,9 @@ return [
         'fields' => [
             'class' => craft\services\Fields::class,
         ],
+        'fs' => [
+            'class' => craft\services\Fs::class,
+        ],
         'gc' => [
             'class' => craft\services\Gc::class,
         ],
@@ -70,6 +70,9 @@ return [
         ],
         'images' => [
             'class' => craft\services\Images::class,
+        ],
+        'imageTransforms' => [
+            'class' => craft\services\ImageTransforms::class,
         ],
         'log' => [
             'class' => craft\log\Dispatcher::class,

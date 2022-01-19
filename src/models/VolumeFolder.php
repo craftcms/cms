@@ -9,13 +9,14 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\base\VolumeInterface;
-use craft\volumes\Temp;
 use yii\base\InvalidConfigException;
 
 /**
  * The VolumeFolder model class.
  *
+ * @property-read Volume $volume
+ * @property-read VolumeFolder|null $parent
+ * @property VolumeFolder[] $children
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -77,13 +78,13 @@ class VolumeFolder extends Model
     }
 
     /**
-     * @return VolumeInterface
+     * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is invalid
      */
-    public function getVolume(): VolumeInterface
+    public function getVolume(): Volume
     {
         if (!isset($this->volumeId)) {
-            return new Temp();
+            return Craft::$app->getVolumes()->getTemporaryVolume();
         }
 
         if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {

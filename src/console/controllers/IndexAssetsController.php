@@ -8,16 +8,16 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\VolumeInterface;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
+use craft\errors\FsObjectNotFoundException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Db;
-use craft\models\VolumeListing;
+use craft\models\FsListing;
+use craft\models\Volume;
 use Throwable;
 use yii\console\ExitCode;
 use yii\db\Exception;
@@ -127,18 +127,17 @@ class IndexAssetsController extends Controller
     /**
      * Indexes the assets in the given volumes.
      *
-     * @param VolumeInterface[] $volumes
+     * @param Volume[] $volumes
      * @param string $path the subfolder path
      * @param int $startAt
      * @return int
      * @throws MissingAssetException
-     * @throws VolumeObjectNotFoundException
+     * @throws FsObjectNotFoundException
      * @throws Exception
      */
     private function _indexAssets(array $volumes, string $path = '', int $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
-        $assetService = Craft::$app->getAssets();
 
         $this->stdout(PHP_EOL);
 
@@ -157,7 +156,7 @@ class IndexAssetsController extends Controller
             $missingRecords = [];
             $missingRecordsByFilename = [];
 
-            /** @var VolumeListing $item */
+            /** @var FsListing $item */
             foreach ($fileList as $item) {
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
@@ -170,9 +169,9 @@ class IndexAssetsController extends Controller
 
                 try {
                     if ($item->getIsDir()) {
-                        $assetIndexer->indexFolderByListing($item, $session->id, $this->createMissingAssets);
+                        $assetIndexer->indexFolderByListing((int)$volume->id, $item, $session->id, $this->createMissingAssets);
                     } else {
-                        $assetIndexer->indexFileByListing($item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                        $assetIndexer->indexFileByListing((int)$volume->id, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
                     }
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
@@ -270,7 +269,7 @@ class IndexAssetsController extends Controller
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-            Craft::$app->getAssetTransforms()->deleteTransformIndexDataByAssetIds($assetIds);
+            Craft::$app->getImageTransforms()->deleteTransformIndexDataByAssetIds($assetIds);
             Db::delete(Table::ASSETS, [
                 'id' => $assetIds,
             ]);

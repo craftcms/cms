@@ -15,8 +15,8 @@
         label: "Name"|t('app'),
         id: 'name',
         name: 'name',
-        value: (volume is defined ? volume.name : null),
-        errors: (volume is defined ? volume.getErrors('name') : null),
+        value: volume.name,
+        errors: volume.getErrors('name'),
         autofocus: true,
         required: true,
     }) }}
@@ -29,61 +29,21 @@
         class: 'code',
         autocorrect: false,
         autocapitalize: false,
-        value: (volume is defined ? volume.handle : null),
-        errors: (volume is defined ? volume.getErrors('handle') : null),
+        value: volume.handle,
+        errors: volume.getErrors('handle'),
         required: true,
     }) }}
 
-    {{ forms.lightswitchField({
-        label: "Assets in this volume have public URLs"|t('app'),
-        name: 'hasUrls',
-        on:   volume.hasUrls,
-        toggle: "url-field"
-    }) }}
-
-    <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
-        {{ forms.autosuggestField({
-            label: "Base URL"|t('app'),
-            instructions: "The base URL to the assets in this volume."|t('app'),
-            id: 'url',
-            class: ['ltr', 'volume-url'],
-            name: 'url',
-            suggestEnvVars: true,
-            suggestAliases: true,
-            value: (volume is defined ? volume.url : null),
-            errors: (volume is defined ? volume.getErrors('url') : null),
-            required: true,
-            placeholder: "//example.com/path/to/folder"
-        }) }}
-    </div>
-
     <hr>
 
-    {{ forms.selectField({
-        label: "Volume Type"|t('app'),
-        instructions: "What type of volume is this?"|t('app'),
-        id: 'type',
-        name: 'type',
-        options: volumeTypeOptions,
-        value: className(volume),
-        toggle: true
+    {{ forms.fsField({
+        label: 'Filesystem'|t('app'),
+        instructions: 'Choose which filesystem the volume should connect to.'|t('app'),
+        id: 'fs-handle',
+        name: 'fsHandle',
+        includeEnvVars: true,
+        value: volume.getFsHandle(false),
     }) }}
-
-    {{ missingVolumePlaceholder|raw }}
-
-    {% for volumeType in volumeTypes %}
-        {% set isCurrent = (volumeType == className(volume)) %}
-
-        <div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-            {% namespace 'types['~volumeType~']' %}
-                {% if isCurrent %}
-                    {{ volume.getSettingsHtml()|raw }}
-                {% else %}
-                    {{ volumeInstances[volumeType].getSettingsHtml()|raw }}
-                {% endif %}
-            {% endnamespace %}
-        </div>
-    {% endfor %}
 
     {% if craft.app.getIsMultiSite() %}
         <hr>

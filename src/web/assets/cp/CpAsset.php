@@ -121,6 +121,7 @@ JS;
             'Apply this to the {number} remaining conflicts?',
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
+            'Are you sure you want to close this screen? Any changes will be lost.',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',

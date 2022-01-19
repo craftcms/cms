@@ -18,13 +18,15 @@ use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
+use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\models\AssetTransform;
+use craft\models\ImageTransform;
+use craft\models\Volume;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
-use craft\volumes\Local;
+use craft\fs\Local;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -84,33 +86,29 @@ class DirectiveTest extends Unit
     {
         $this->_registerDirective($directiveClass);
 
-        $this->tester->mockMethods(
-            Craft::$app,
-            'assets',
-            [
-                'getAssetUrl' => function($asset, $parameters, $generateNow) {
-                    if (is_array($parameters)) {
-                        $parameters = Craft::$app->getAssetTransforms()->normalizeTransform($parameters);
-                    }
-
-                    if ($parameters instanceof AssetTransform) {
-                        $parameters = array_filter($parameters->toArray(['mode', 'width', 'height', 'format', 'position', 'interlace', 'quality']));
-                    }
-
-                    $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
-                    return $transformed . ($generateNow ? ($asset->filename . '-generateNow') : ($asset->filename . 'generateLater'));
-                }
-            ],
-            []
-        );
-
         /** @var Asset $asset */
+        $filename = StringHelper::randomString() . '.jpg';
         $asset = $this->make(Asset::class, [
-            'filename' => StringHelper::randomString() . '.jpg',
-            'getVolume' => $this->make(Local::class, [
-                'hasUrls' => true,
+            'filename' => $filename,
+            'getVolume' => $this->make(Volume::class, [
+                'getFs' => $this->make(Local::class, [
+                    'hasUrls' => true,
+                    'url' => 'http://domain.local/'
+                ]),
             ]),
-            'folderId' => 7
+            'folderId' => 7,
+            'getUrl' => function($parameters) use ($filename) {
+                if (is_array($parameters)) {
+                    $parameters = ImageTransforms::normalizeTransform($parameters);
+                }
+
+                if ($parameters instanceof ImageTransform) {
+                    $parameters = array_filter($parameters->toArray(['mode', 'width', 'height', 'format', 'position', 'interlace', 'quality']));
+                }
+
+                $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
+                return $transformed;
+            }
         ]);
 
         /** @var GqlAssetType $type */
@@ -123,7 +121,6 @@ class DirectiveTest extends Unit
             'fieldNodes' => $fieldNodes
         ]);
 
-        $generateNow = $parameters['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
         unset($parameters['immediately']);
 
         // `handle` parameter overrides everything else.
@@ -132,9 +129,9 @@ class DirectiveTest extends Unit
         }
 
         if ($mustNotBeSame) {
-            self::assertNotEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+            self::assertNotEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
         } else {
-            self::assertEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+            self::assertEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
         }
     }
 

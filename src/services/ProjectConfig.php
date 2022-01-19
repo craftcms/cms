@@ -100,6 +100,7 @@ class ProjectConfig extends Component
     public const PATH_FIELDS = 'fields';
     public const PATH_FIELD_GROUPS = 'fieldGroups';
     public const PATH_GLOBAL_SETS = 'globalSets';
+    public const PATH_FS = 'fs';
     public const PATH_GRAPHQL = 'graphql';
     public const PATH_GRAPHQL_PUBLIC_TOKEN = self::PATH_GRAPHQL . '.' . 'publicToken';
     public const PATH_GRAPHQL_SCHEMAS = self::PATH_GRAPHQL . '.' . 'schemas';
@@ -1186,6 +1187,7 @@ class ProjectConfig extends Component
         $config[self::PATH_ENTRY_TYPES] = $this->_getEntryTypeData();
         $config[self::PATH_FIELDS] = $this->_getFieldData();
         $config[self::PATH_FIELD_GROUPS] = $this->_getFieldGroupData();
+        $config[self::PATH_FS] = $this->_getFsData();
         $config[self::PATH_GLOBAL_SETS] = $this->_getGlobalSetData();
         $config[self::PATH_GRAPHQL] = $this->_getGqlData();
         $config[self::PATH_IMAGE_TRANSFORMS] = $this->_getTransformData();
@@ -1905,6 +1907,21 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Returns filesystem config data.
+     *
+     * @return array
+     */
+    private function _getFsData(): array
+    {
+        $data = [];
+        $fsService = Craft::$app->getFs();
+        foreach ($fsService->getAllFilesystems() as $fs) {
+            $data[$fs->handle] = $fsService->createFilesystemConfig($fs);
+        }
+        return $data;
+    }
+
+    /**
      * Return field data config array.
      *
      * @return array
@@ -1943,7 +1960,7 @@ class ProjectConfig extends Component
         $data = [];
         $volumesService = Craft::$app->getVolumes();
         foreach ($volumesService->getAllVolumes() as $volume) {
-            $data[$volume->uid] = $volumesService->createVolumeConfig($volume);
+            $data[$volume->uid] = $volume->getConfig();
         }
         return $data;
     }
@@ -2066,7 +2083,7 @@ class ProjectConfig extends Component
                 'interlace',
                 'uid',
             ])
-            ->from([Table::ASSETTRANSFORMS])
+            ->from([Table::IMAGETRANSFORMS])
             ->indexBy('uid')
             ->all();
 

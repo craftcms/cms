@@ -52,7 +52,7 @@ var columns = [
 new Craft.VueAdminTable({
     columns: columns,
     container: '#transforms-vue-admin-table',
-    deleteAction: 'asset-transforms/delete-transform',
+    deleteAction: 'image-transforms/delete',
     emptyMessage: Craft.t('app', 'No image transforms exist yet.'),
     tableData: {{ tableData|json_encode|raw }},
     });
