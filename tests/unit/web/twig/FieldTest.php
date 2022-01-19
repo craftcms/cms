@@ -52,7 +52,7 @@ class FieldTest extends Unit
 TWIG;
 
         $html = $this->view->renderString($template, [], View::TEMPLATE_MODE_CP);
-        $this->assertStringContainsString('<div id="foo-field" class="field" data-foo="test">', $html);
+        $this->assertStringContainsString('<div id="foo-field" class="field" data-attribute="foo" data-foo="test">', $html);
         $this->assertStringContainsString('TEST HEADING', $html);
         $this->assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
         $this->assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
