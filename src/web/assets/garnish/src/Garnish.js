@@ -280,7 +280,6 @@ Garnish = $.extend(Garnish, {
      */
     resetModalBackgroundLayerVisibility: function() {
         const highestModalLayer = Garnish.uiLayerManager.highestModalLayer;
-        console.log(highestModalLayer);
 
         // If there is another modal, make it accessible to AT
         if (highestModalLayer) {
