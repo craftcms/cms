@@ -742,7 +742,7 @@ return [
     'Image Height' => 'Image Height',
     'Image Transforms' => 'Image Transforms',
     'Image Width' => 'Image Width',
-    'Image transform driver' => 'Image transform driver',
+    'Image transformer' => 'Image transformer',
     'Image' => 'Image',
     'Impersonate users' => 'Impersonate users',
     'In the local temp folder' => 'In the local temp folder',

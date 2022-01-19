@@ -116,7 +116,7 @@
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\events\ImageTransformEvent`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
-- Added `craft\events\RegisterImageTransformDriversEvent`.
+- Added `craft\events\RegisterImageTransformersEvent`.
 - Added `craft\events\TransformImageEvent`.
 - Added `craft\fieldlayoutelements\AssetAltField`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.

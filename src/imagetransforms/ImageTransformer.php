@@ -560,7 +560,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
         $newIndex = new ImageTransformIndex([
             'assetId' => $asset->id,
             'format' => $transform->format,
-            'driver' => $transform->getDriver(),
+            'transformer' => $transform->getTransformer(),
             'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'transformString' => $transformString,
             'fileExists' => false,
@@ -620,10 +620,9 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
         $values = Db::prepareValuesForDb(
             $index->toArray([
                 'assetId',
-                'driver',
+                'transformer',
                 'filename',
                 'format',
-                'driver',
                 'transformString',
                 'volumeId',
                 'fileExists',

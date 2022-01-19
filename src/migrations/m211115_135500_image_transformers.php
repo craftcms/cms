@@ -6,9 +6,9 @@ use craft\db\Migration;
 use craft\db\Table;
 
 /**
- * m211115_135500_asset_transform_drivers migration.
+ * m211115_135500_image_transformers migration.
  */
-class m211115_135500_asset_transform_drivers extends Migration
+class m211115_135500_image_transformers extends Migration
 {
     /**
      * @inheritdoc
@@ -27,9 +27,8 @@ class m211115_135500_asset_transform_drivers extends Migration
         $this->dropColumn(Table::IMAGETRANSFORMINDEX, 'volumeId');
         $this->createIndex(null, Table::IMAGETRANSFORMINDEX, ['assetId', 'location'], false);
 
-        // Add the driver info.
-        $this->addColumn(Table::IMAGETRANSFORMINDEX, 'driver', $this->string()->null()->after('assetId'));
-        $this->addColumn(Table::IMAGETRANSFORMS, 'driver', $this->string()->null()->after('mode'));
+        // Add the transformer info.
+        $this->addColumn(Table::IMAGETRANSFORMINDEX, 'transformer', $this->string()->null()->after('assetId'));
 
         // Rename the location to `transformString`
         $this->renameColumn(Table::IMAGETRANSFORMINDEX, 'location', 'transformString');
@@ -45,7 +44,7 @@ class m211115_135500_asset_transform_drivers extends Migration
      */
     public function safeDown()
     {
-        echo "m211115_135500_asset_transform_drivers cannot be reverted.\n";
+        echo "m211115_135500_image_transformers cannot be reverted.\n";
         return false;
     }
 }

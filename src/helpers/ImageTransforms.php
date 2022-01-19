@@ -63,7 +63,7 @@ class ImageTransforms
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'],
-            'driver' => ImageTransform::DEFAULT_DRIVER,
+            'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
 
@@ -110,7 +110,7 @@ class ImageTransforms
                 'position',
                 'quality',
                 'interlace',
-                'driver'
+                'transformer',
             ];
 
             $nullables = [
@@ -264,7 +264,7 @@ class ImageTransforms
             return new ImageTransform(ArrayHelper::toArray($transform, [
                 'id',
                 'name',
-                'driver',
+                'transformer',
                 'handle',
                 'width',
                 'height',

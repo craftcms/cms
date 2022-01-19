@@ -10,15 +10,15 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * RegisterImageTransformDriversEvent class.
+ * RegisterImageTransformersEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class RegisterImageTransformDriversEvent extends Event
+class RegisterImageTransformersEvent extends Event
 {
     /**
-     * @var array List of image transform drivers.
+     * @var array List of image transformers
      */
-    public array $drivers = [];
+    public array $transformers = [];
 }

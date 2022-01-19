@@ -150,7 +150,7 @@ class Install extends Migration
         $this->createTable(Table::IMAGETRANSFORMINDEX, [
             'id' => $this->primaryKey(),
             'assetId' => $this->integer()->notNull(),
-            'driver' => $this->string()->null(),
+            'transformer' => $this->string()->null(),
             'filename' => $this->string(),
             'format' => $this->string(),
             'transformString' => $this->string()->notNull(),

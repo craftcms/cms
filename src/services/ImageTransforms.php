@@ -20,7 +20,7 @@ use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
 use craft\events\ConfigEvent;
 use craft\events\ImageTransformEvent;
-use craft\events\RegisterImageTransformDriversEvent;
+use craft\events\RegisterImageTransformersEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -84,9 +84,9 @@ class ImageTransforms extends Component
     public const EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS = 'beforeInvalidateAssetTransforms';
 
     /**
-     * @event RegisterImageTransformDriversEvent The event that is triggered when registering image transform drivers.
+     * @event RegisterImageTransformersEvent The event that is triggered when registering image transformers.
      */
-    public const EVENT_REGISTER_IMAGE_TRANSFORM_DRIVERS = 'registerImageTransformDrivers';
+    public const EVENT_REGISTER_IMAGE_TRANSFORMERS = 'registerImageTransformers';
 
     /**
      * @var Connection|array|string The database connection to use
@@ -417,7 +417,7 @@ class ImageTransforms extends Component
         }
 
         // Get the index conditions
-        $transformsByDriver = [];
+        $transformsByTransformer = [];
 
         /** @var ImageTransform|null $refTransform */
         $refTransform = null;
@@ -453,7 +453,7 @@ class ImageTransforms extends Component
             }
 
             $transform = TransformHelper::normalizeTransform($transform);
-            $transformsByDriver[$transform->getDriver()][] = $transform;
+            $transformsByTransformer[$transform->getTransformer()][] = $transform;
 
             if (!isset($sizeValue)) {
                 // Use this as the reference transform in case any srcset-style transforms follow it
@@ -461,31 +461,31 @@ class ImageTransforms extends Component
             }
         }
 
-        foreach ($transformsByDriver as $driver => $driverTransforms) {
-            $driver = $this->getImageTransformer($driver);
-            if ($driver instanceof EagerImageTransformerInterface) {
-                $driver->eagerLoadTransforms($driverTransforms, $assets);
+        foreach ($transformsByTransformer as $type => $typeTransforms) {
+            $transformer = $this->getImageTransformer($type);
+            if ($transformer instanceof EagerImageTransformerInterface) {
+                $transformer->eagerLoadTransforms($typeTransforms, $assets);
             }
         }
     }
 
     /**
-     * @param string $driver
+     * @param string $type
      * @param array $config
      * @return ImageTransformerInterface
      * @throws InvalidConfigException
      */
-    public function getImageTransformer(string $driver, array $config = []): ImageTransformerInterface
+    public function getImageTransformer(string $type, array $config = []): ImageTransformerInterface
     {
-        if (!array_key_exists($driver, $this->_imageTransformers)) {
-            if (!is_subclass_of($driver, ImageTransformerInterface::class)) {
-                throw new ImageTransformException($driver . ' is not a valid image transform driver');
+        if (!array_key_exists($type, $this->_imageTransformers)) {
+            if (!is_subclass_of($type, ImageTransformerInterface::class)) {
+                throw new ImageTransformException("Invalid image transformer: $type");
             }
 
-            $this->_imageTransformers[$driver] = Craft::createObject(array_merge(['class' => $driver], $config));
+            $this->_imageTransformers[$type] = Craft::createObject(array_merge(['class' => $type], $config));
         }
 
-        return $this->_imageTransformers[$driver];
+        return $this->_imageTransformers[$type];
     }
 
     /**
@@ -549,32 +549,32 @@ class ImageTransforms extends Component
             ]));
         }
 
-        $drivers = $this->getAllImageTransformerDrivers();
+        $transformers = $this->getAllImageTransformers();
 
-        foreach ($drivers as $driver) {
-            $transformer = $this->getImageTransformer($driver);
+        foreach ($transformers as $type) {
+            $transformer = $this->getImageTransformer($type);
             $transformer->invalidateAssetTransforms($asset);
         }
     }
 
     /**
-     * Return a list of all image transform drivers.
+     * Return all available image transformers.
      *
      * @return array
      */
-    public function getAllImageTransformerDrivers(): array
+    public function getAllImageTransformers(): array
     {
-        $drivers = [
+        $transformers = [
             ImageTransformer::class
         ];
 
-        $event = new RegisterImageTransformDriversEvent([
-            'drivers' => $drivers,
+        $event = new RegisterImageTransformersEvent([
+            'transformers' => $transformers,
         ]);
 
-        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORM_DRIVERS, $event);
+        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
 
-        return $event->drivers;
+        return $event->transformers;
     }
 
     /**

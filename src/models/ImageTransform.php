@@ -28,9 +28,9 @@ use DateTime;
 class ImageTransform extends Model
 {
     /**
-     * @var string The default image transform driver.
+     * @var string The default image transformer
      */
-    public const DEFAULT_DRIVER = ImageTransformer::class;
+    public const DEFAULT_TRANSFORMER = ImageTransformer::class;
 
     /**
      * @var int|null ID
@@ -93,11 +93,11 @@ class ImageTransform extends Model
     public ?string $uid = null;
 
     /**
-     * The Image Transform driver to use for image transforms.
+     * The image transformer to use.
      *
      * @var string
      */
-    protected string $driver = self::DEFAULT_DRIVER;
+    protected string $transformer = self::DEFAULT_TRANSFORMER;
 
     /**
      * @inheritdoc
@@ -112,7 +112,7 @@ class ImageTransform extends Model
             'position' => Craft::t('app', 'Position'),
             'quality' => Craft::t('app', 'Quality'),
             'width' => Craft::t('app', 'Width'),
-            'driver' => Craft::t('app', 'Image transform driver'),
+            'transformer' => Craft::t('app', 'Image transformer'),
         ];
     }
 
@@ -231,31 +231,31 @@ class ImageTransform extends Model
      */
     public function getImageTransformer(): ImageTransformerInterface
     {
-        return Craft::$app->getImageTransforms()->getImageTransformer($this->driver);
+        return Craft::$app->getImageTransforms()->getImageTransformer($this->transformer);
     }
 
     /**
-     * Get the transform driver.
+     * Returns the image transformer.
      *
      * @return string
      */
-    public function getDriver(): string
+    public function getTransformer(): string
     {
-        return $this->driver;
+        return $this->transformer;
     }
 
     /**
-     * Set the transform driver.
+     * Sets the image transformer.
      *
-     * @param string $imageTransformDriver
+     * @param string $transformer
      */
-    public function setDriver(string $imageTransformDriver): void
+    public function setTransformer(string $transformer): void
     {
-        if (!is_subclass_of($imageTransformDriver, ImageTransformerInterface::class)) {
-            Craft::warning($imageTransformDriver . ' is not a valid image transform driver.');
-            $imageTransformDriver = self::DEFAULT_DRIVER;
+        if (!is_subclass_of($transformer, ImageTransformerInterface::class)) {
+            Craft::warning("Invalid image transformer: $transformer", __METHOD__);
+            $transformer = self::DEFAULT_TRANSFORMER;
         }
 
-        $this->driver = $imageTransformDriver;
+        $this->transformer = $transformer;
     }
 }

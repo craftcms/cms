@@ -34,9 +34,9 @@ class ImageTransformIndex extends Model
     public ?int $assetId = null;
 
     /**
-     * @var string The transform driver
+     * @var string The image transformer
      */
-    public string $driver = ImageTransform::DEFAULT_DRIVER;
+    public string $transformer = ImageTransform::DEFAULT_TRANSFORMER;
 
     /**
      * @var string|null Filename
