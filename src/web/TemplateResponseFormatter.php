@@ -12,6 +12,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use yii\base\Component;
+use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\web\JsonResponseFormatter;
 use yii\web\ResponseFormatterInterface;
@@ -47,7 +48,12 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         // Render and return the template
-        $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
+        try {
+            $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
+        } catch (ExitException $e) {
+            // Something called Craft::$app->end()
+            return;
+        }
 
         $headers = $response->getHeaders();
 
