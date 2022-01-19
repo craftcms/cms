@@ -4,10 +4,10 @@
  * CP Screen Slideout
  */
 Craft.CpScreenSlideout = Craft.Slideout.extend({
-    url: null,
+    action: null,
 
     namespace: null,
-    action: null,
+    formAction: null,
     deltaNames: null,
     initialData: null,
 
@@ -35,8 +35,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     initialDeltaValues: null,
     fieldsWithErrors: null,
 
-    init: function(url, settings) {
-        this.url = Craft.getCpUrl(url);
+    init: function(action, settings) {
+        this.action = action;
         this.setSettings(settings, Craft.CpScreenSlideout.defaults);
 
         this.fieldsWithErrors = [];
@@ -163,9 +163,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
 
             this.cancelToken = axios.CancelToken.source();
 
-            Craft.sendActionRequest('GET', this.url, {
+            Craft.sendActionRequest('GET', this.action, $.extend({
                 cancelToken: this.cancelToken.token,
-            }).then(response => {
+            }, this.settings.requestOptions)).then(response => {
                 if (this.initialDeltaValues === null) {
                     this.initialDeltaValues = response.data.initialDeltaValues;
                 }
@@ -215,7 +215,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
         refreshInitialData = refreshInitialData !== false;
 
         this.namespace = data.namespace;
-        this.action = data.action;
+        this.formAction = data.action;
         this.$content.html(data.content);
 
         let showHeader = false;
@@ -236,6 +236,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
 
         if (data.sidebar) {
             showHeader = true;
+            this.$container.addClass('has-sidebar');
             this.$sidebarBtn.removeClass('hidden');
             this.$sidebar.html(data.sidebar);
 
@@ -245,9 +246,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
                     $(this).attr('target', '_blank')
                 }
             });
-        } else if (this.$sidebarBtn) {
+        } else {
+            this.$container.removeClass('has-sidebar');
             this.$sidebarBtn.addClass('hidden');
-            this.$sidebar.addClass('hidden');
+            this.$sidebar.addClass('hidden').html('');
         }
 
         if (showHeader) {
@@ -370,7 +372,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
 
         const data = Craft.findDeltaData(this.initialData, this.$container.serialize(), this.deltaNames, null, this.initialDeltaValues);
 
-        Craft.sendActionRequest('post', this.action, {
+        Craft.sendActionRequest('post', this.formAction, {
             data: data,
             headers: {
                 'X-Craft-Namespace': this.namespace,
@@ -449,6 +451,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     },
 }, {
     defaults: {
+        requestOptions: {},
         closeOnSubmit: true,
     },
 });

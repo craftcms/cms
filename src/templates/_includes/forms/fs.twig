@@ -2,7 +2,7 @@
 
 {% set addOptionFn %}
 (createOption, selectize) => {
-    const slideout = new Craft.CpScreenSlideout('settings/filesystems/new');
+    const slideout = new Craft.CpScreenSlideout('fs/edit');
     slideout.on('submit', ev => {
         createOption({
             text: ev.data.name,
