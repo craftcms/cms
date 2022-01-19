@@ -109,10 +109,10 @@ export default Base.extend(
 
         triggerShortcut: function(ev) {
             const shortcut = this.layers[this.layer].shortcuts.find(s => (
-                s.keyCode === ev.keyCode &&
-                s.ctrl === Garnish.isCtrlKeyPressed(ev) &&
-                s.shift === ev.shiftKey &&
-                s.alt === ev.altKey
+                s.shortcut.keyCode === ev.keyCode &&
+                s.shortcut.ctrl === Garnish.isCtrlKeyPressed(ev) &&
+                s.shortcut.shift === ev.shiftKey &&
+                s.shortcut.alt === ev.altKey
             ));
 
             if (shortcut) {
