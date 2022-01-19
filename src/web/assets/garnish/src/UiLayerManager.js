@@ -52,7 +52,6 @@ export default Base.extend(
                 layer: this.layer,
                 $container: this.currentLayer.$container,
             });
-            console.log(this.layers);
             return this;
         },
 
@@ -62,7 +61,6 @@ export default Base.extend(
             }
             this.layers.pop();
             this.trigger('removeLayer');
-            console.log(this.modalLayers);
             return this;
         },
 

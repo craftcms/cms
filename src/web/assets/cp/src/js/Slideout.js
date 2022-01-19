@@ -1,5 +1,3 @@
-import Garnish from "../../../garnish/src";
-
 (function($) {
     /** global: Craft */
     /** global: Garnish */
