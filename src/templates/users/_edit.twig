@@ -225,7 +225,7 @@
                     name: 'preferredLocale',
                     label: "Formatting Locale"|t('app'),
                     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-                    options: localeOptions|unshift({label: 'Same as language'|t('app'), value: ''}),
+                    options: (localeOptions ?? [])|unshift({label: 'Same as language'|t('app'), value: ''}),
                     value: userLocale,
                 }) }}
 
