@@ -25,6 +25,7 @@
 - Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
 - Fixed a bug where Live Preview iframes weren’t full-height when `useIframeResizer` was disabled. ([#10380](https://github.com/craftcms/cms/issues/10380))
 - Fixed an error that could occur if an Assets field was saved while set to a file stored in `storage/runtime/assets/tempuploads/`. ([#10382](https://github.com/craftcms/cms/issues/10382))
+- Fixed a bug where it wasn’t possible to apply a numeric namespace to input names. ([#6656](https://github.com/craftcms/cms/pull/6656))
 
 ## 3.7.29 - 2022-01-18
 
