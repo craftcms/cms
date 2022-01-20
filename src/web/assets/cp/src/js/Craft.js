@@ -1906,6 +1906,14 @@ $.extend(Craft,
         },
 
         /**
+         * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
+         * @param {Object} container
+         */
+        trapFocusWithin: function(container) {
+            Garnish.trapFocusWithin(container);
+        },
+
+        /**
          * Sets focus to the first focusable element within a container.
          * @param {Object} container
          */

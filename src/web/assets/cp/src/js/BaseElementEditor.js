@@ -90,7 +90,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         // Sidebar
         this.$sidebar = $('<div/>', {class: 'ee-sidebar hidden'}).appendTo(this.$body);
-        Garnish.trapFocusWithin(this.$sidebar);
+        Craft.trapFocusWithin(this.$sidebar);
 
         // Footer
         this.$footer = $('<div/>', {class: 'ee-footer hidden'});
