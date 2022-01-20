@@ -50,6 +50,8 @@
                 return;
             }
 
+            this.setTriggerElement(document.activeElement);
+
             this._cancelTransitionListeners();
 
             // Move the shade + container to the end of <body> so they get the highest sub-z-indexes
@@ -83,7 +85,7 @@
 
             this.enable();
             Garnish.uiLayerManager.addLayer(this.$outerContainer);
-            Garnish.hideModalBackgroundLayers();
+            Garnish.hideModalBackgroundLayers(this.$outerContainer);
 
             if (this.settings.closeOnEsc) {
                 Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
@@ -93,6 +95,10 @@
 
             this.isOpen = true;
             this.trigger('open');
+        },
+
+        setTriggerElement: function(trigger) {
+          this.settings.triggerElement = trigger;
         },
 
         close: function() {
@@ -117,11 +123,15 @@
 
             Craft.Slideout.removePanel(this);
             Garnish.uiLayerManager.removeLayer();
-            Garnish.resetModalBackgroundLayerVisibility();
+            Garnish.resetModalBackgroundLayerVisibility(this.$outerContainer);
             this.$container.one('transitionend.slideout', () => {
                 this.$outerContainer.addClass('hidden');
                 this.trigger('close');
             });
+
+            if (this.settings.triggerElement) {
+                this.settings.triggerElement.focus();
+            }
         },
 
         _cancelTransitionListeners: function() {
@@ -154,6 +164,7 @@
             autoOpen: true,
             closeOnEsc: true,
             closeOnShadeClick: true,
+            triggerElement: null,
         },
         openPanels: [],
         addPanel: function(panel) {
