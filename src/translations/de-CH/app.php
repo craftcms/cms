@@ -1243,6 +1243,8 @@ return [
     'Select all' => 'Alle auswählen',
     'Select transform' => 'Transformationen auswählen',
     'Select' => 'Auswählen',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Auswahlbeschriftung',
     'Send activation email' => 'E-Mail zur Aktivierung senden',
     'Send an activation email now' => 'Soll jetzt eine E-Mail zur Aktivierung gesendet werden',

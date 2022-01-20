@@ -1244,6 +1244,8 @@ return [
     'Select all' => 'Vælg alle',
     'Select transform' => 'Vælg transformering',
     'Select' => 'Vælg',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Valgmærkat',
     'Send activation email' => 'Send aktiverings email',
     'Send an activation email now' => 'Send aktiverings-e-mail nu',
