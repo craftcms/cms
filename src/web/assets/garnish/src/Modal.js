@@ -181,6 +181,10 @@ export default Base.extend(
                 this.removeListener(Garnish.$win, 'resize');
             }
 
+            if (this.settings.triggerElement) {
+                this.settings.triggerElement.focus();
+            }
+
             this.visible = false;
             Garnish.Modal.visibleModal = null;
             Garnish.uiLayerManager.removeLayer();
@@ -346,6 +350,7 @@ export default Base.extend(
             closeOtherModals: false,
             hideOnEsc: true,
             hideOnShadeClick: true,
+            triggerElement: null,
             shadeClass: 'modal-shade'
         },
         instances: [],
