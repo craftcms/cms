@@ -1243,6 +1243,8 @@ return [
     'Select all' => 'Összes kiválasztása',
     'Select transform' => 'Átalakítás kiválasztása',
     'Select' => 'Kiválaszt',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Kiválasztási címke',
     'Send activation email' => 'Aktiváló levél küldése',
     'Send an activation email now' => 'Aktivációs email küldése most',
