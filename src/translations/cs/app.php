@@ -1198,6 +1198,8 @@ return [
     'Select all' => 'Vybrat všechny',
     'Select transform' => 'Zvolit transformaci',
     'Select' => 'Výběr',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Označení výběru',
     'Send activation email' => 'Odeslat aktivační email',
     'Send an activation email now' => 'Odeslat nyní aktivační email',
