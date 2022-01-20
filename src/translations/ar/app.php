@@ -1198,6 +1198,8 @@ return [
     'Select all' => 'تحديد الكل',
     'Select transform' => 'تحديد التحويل',
     'Select' => 'تحديد',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'تسمية الاختيار',
     'Send activation email' => 'إرسال رسالة التفعيل',
     'Send an activation email now' => 'إرسال رسالة تفعيل الآن',
