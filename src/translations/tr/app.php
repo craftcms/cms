@@ -1198,6 +1198,8 @@ return [
     'Select all' => 'Tümünü seç',
     'Select transform' => 'Dönüştürücü Seç',
     'Select' => 'Seç',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Seçim Etiketi',
     'Send activation email' => 'Aktivasyon epostası gönder',
     'Send an activation email now' => 'Etkinleştirme epostasını şimdi gönder',
