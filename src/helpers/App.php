@@ -625,19 +625,16 @@ class App
     }
 
     /**
-     * Returns a file-based `mutex` component config.
+     * Returns a file-based mutex driver config.
      *
      * ::: tip
-     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that you
-     * can safely remove your custom `mutex` component config for Craft 3.5.0 and later. Craft now uses a
-     * database-based mutex component by default (see [[dbMutexConfig()]]), which doesn’t care which type of
-     * file system is used.
+     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that
+     * overriding the `mutex` component may no longer be necessary, as Craft no longer uses a mutex
+     * when Dev Mode is enabled.
      * :::
      *
      * @return array
      * @since 3.0.18
-     * @deprecated in 3.5.0.
-     *
      */
     public static function mutexConfig(): array
     {
@@ -651,10 +648,11 @@ class App
     }
 
     /**
-     * Returns the `mutex` component config.
+     * Returns a database-based mutex driver config.
      *
      * @return array
      * @since 3.5.18
+     * @deprecated in 3.7.30. Database-based mutex locking is no longer recommended.
      */
     public static function dbMutexConfig(): array
     {

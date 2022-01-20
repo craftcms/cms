@@ -1198,6 +1198,8 @@ return [
     'Select all' => 'Markera alla',
     'Select transform' => 'Välj förändra',
     'Select' => 'Välj',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Markeringsetikett',
     'Send activation email' => 'Skicka aktiverings-e-post',
     'Send an activation email now' => 'Skicka ett aktiverings-e-postmeddelande nu',

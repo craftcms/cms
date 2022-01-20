@@ -1198,6 +1198,8 @@ return [
     'Select all' => '全选',
     'Select transform' => '选择转换',
     'Select' => '选择',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => '选集标签',
     'Send activation email' => '发送激活电子邮件',
     'Send an activation email now' => '立即发送激活电子邮件',

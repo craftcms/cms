@@ -1198,6 +1198,8 @@ return [
     'Select all' => '모두 선택',
     'Select transform' => '변환 선택하기',
     'Select' => '선택하기',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => '선정 라벨',
     'Send activation email' => '활성화 이메일 전송',
     'Send an activation email now' => '활성화 이메일을 지금 전송하시겠습니까',

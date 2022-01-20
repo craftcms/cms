@@ -1,5 +1,32 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.30 - 2022-01-20
+
+> {warning} The `mutex` component now uses a file-based driver by default. Load-balanced environments should [switch to a different driver](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
+
+### Added
+- Added `craft\mutex\Mutex`.
+- Added `craft\mutex\MutexTrait`.
+- Added `craft\mutex\NullMutex`.
+
+### Changed
+- When a draft is published, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page. ([#10381](https://github.com/craftcms/cms/issues/10381))
+- Improved modal and slideout accessibility for screen readers. ([#10384](https://github.com/craftcms/cms/pull/10384), [#10234](https://github.com/craftcms/cms/pull/10234))
+- The `mutex` component is now set to `craft\mutex\Mutex` by default, and should no longer be overridden directly. Its nested `mutex` property should be [overridden instead](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
+- `craft\helpers\App::mutexConfig()` is no longer deprecated.
+
+### Deprecated
+- Deprecated `craft\helpers\App::dbMutexConfig()`, as database-based mutex locking is no longer recommended.
+- Deprecated `craft\mutex\DbMutexTrait`.
+- Deprecated `craft\mutex\MysqlMutex`.
+- Deprecated `craft\mutex\PgsqlMutex`.
+
+### Fixed
+- Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
+- Fixed a bug where Live Preview iframes weren’t full-height when `useIframeResizer` was disabled. ([#10380](https://github.com/craftcms/cms/issues/10380))
+- Fixed an error that could occur if an Assets field was saved while set to a file stored in `storage/runtime/assets/tempuploads/`. ([#10382](https://github.com/craftcms/cms/issues/10382))
+- Fixed a bug where it wasn’t possible to apply a numeric namespace to input names. ([#6656](https://github.com/craftcms/cms/pull/6656))
+
 ## 3.7.29 - 2022-01-18
 
 ### Added
