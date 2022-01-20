@@ -173,8 +173,8 @@ export default Base.extend(
       }
 
       this.trigger('show');
-      Garnish.shortcutManager.addLayer();
-      Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, function() {
+      Garnish.uiLayerManager.addLayer(this.$container);
+      Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, function() {
         this.hide();
         this.$trigger.focus();
       }.bind(this));
@@ -193,7 +193,7 @@ export default Base.extend(
       this.$trigger.attr('aria-expanded', 'false');
 
       this.trigger('hide');
-      Garnish.shortcutManager.removeLayer();
+      Garnish.uiLayerManager.removeLayer();
     },
 
     setContainerPosition: function () {

@@ -184,7 +184,7 @@ Craft.CP = Garnish.Base.extend({
                 }
             }
             for (let i = 0; i < shortcuts.length; i++) {
-                Garnish.shortcutManager.registerShortcut(shortcuts[i][0], () => {
+                Garnish.uiLayerManager.registerShortcut(shortcuts[i][0], () => {
                     this.submitPrimaryForm(shortcuts[i][1]);
                 });
             }
