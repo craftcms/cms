@@ -26,7 +26,7 @@ class Mutex extends YiiMutex
     /**
      * @var YiiMutex|array|string The internal mutex driver to use.
      */
-    public $mutex = YiiFileMutex::class;
+    public $mutex;
 
     /**
      * @inheritdoc
