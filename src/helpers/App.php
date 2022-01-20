@@ -26,8 +26,6 @@ use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
-use craft\mutex\MysqlMutex;
-use craft\mutex\PgsqlMutex;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
@@ -646,34 +644,6 @@ class App
             'class' => FileMutex::class,
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
-        ];
-    }
-
-    /**
-     * Returns a database-based mutex driver config.
-     *
-     * @return array
-     * @since 3.5.18
-     * @deprecated in 3.7.30. Database-based mutex locking is no longer recommended.
-     */
-    public static function dbMutexConfig(): array
-    {
-        if (!Craft::$app->getIsInstalled()) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            return [
-                'class' => FileMutex::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-            ];
-        }
-
-        $db = Craft::$app->getDb();
-
-        return [
-            'class' => $db->getIsMysql() ? MysqlMutex::class : PgsqlMutex::class,
-            'db' => $db,
-            'namePrefix' => Craft::$app->id,
         ];
     }
 

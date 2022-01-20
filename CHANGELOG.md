@@ -581,7 +581,7 @@
 - Removed `craft\gql\base\Resolver::extractEagerLoadCondition()`.
 - Removed `craft\gql\base\Resolver::getArrayableArguments()`.
 - Removed `craft\gql\base\Resolver::prepareArguments()`.
-- Removed `craft\helpers\App::mutexConfig()`. `dbMutexConfig()` can be used instead.
+- Removed `craft\helpers\App::dbMutexConfig()`.
 - Removed `craft\helpers\ArrayHelper::filterByValue()`. `where()` can be used instead.
 - Removed `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` can be used instead.
 - Removed `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` can be used instead.
@@ -611,6 +611,11 @@
 - Removed `craft\models\Site::overrideBaseUrl()`.
 - Removed `craft\models\Site::overrideName()`.
 - Removed `craft\models\VolumeListing`.
+- Removed `craft\mutex\DbMutexTrait`.
+- Removed `craft\mutex\FileMutex`.
+- Removed `craft\mutex\MysqlMutex`.
+- Removed `craft\mutex\PgsqlMutex`.
+- Removed `craft\mutex\PrefixedMutexTrait`.
 - Removed `craft\queue\jobs\ApplyMatrixPropagationMethod`. `ApplyNewPropagationMethod` can be used instead.
 - Removed `craft\queue\jobs\DeleteStaleTemplateCaches`.
 - Removed `craft\records\AssetTransform`.

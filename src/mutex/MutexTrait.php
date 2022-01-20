@@ -119,5 +119,3 @@ trait MutexTrait
         $this->_releaseQueue = [];
     }
 }
-
-class_alias(MutexTrait::class, DbMutexTrait::class);
