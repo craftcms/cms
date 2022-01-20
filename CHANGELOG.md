@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.30 - 2022-01-20
 
 > {warning} The `mutex` component now uses a file-based driver by default. Load-balanced environments should [switch to a different driver](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
 
