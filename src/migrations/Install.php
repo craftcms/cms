@@ -1221,46 +1221,6 @@ class Install extends Migration
         $siteGroupUid = StringHelper::UUID();
 
         return [
-            'authentication-chains' => [
-                Authentication::CP_AUTHENTICATION_CHAIN => [
-                    'branches' => [
-                        [
-                            'title' => 'WebAuthn',
-                            'steps' => [
-                                [
-                                    'choices' => [
-                                        [
-                                            'type' => WebAuthn::class
-                                        ],
-                                    ],
-                                    'required' => true
-                                ],
-                            ],
-                        ],
-                        [
-                            'title' => 'Optional 2FA',
-                            'steps' => [
-                                [
-                                    'choices' => [
-                                        [
-                                            'type' => Password::class
-                                        ],
-                                    ],
-                                    'required' => true
-                                ],
-                                [
-                                    'choices' => [
-                                        [
-                                            'type' => AuthenticatorCode::class
-                                        ],
-                                    ],
-                                    'required' => false
-                                ],
-                            ],
-                        ],
-                    ],
-                ]
-            ],
             'dateModified' => DateTimeHelper::currentTimeStamp(),
             'fieldGroups' => [
                 StringHelper::UUID() => [
@@ -1302,6 +1262,8 @@ class Install extends Migration
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
                 'photoSubpath' => null,
+                'allowWebAuthn' => true,
+                'require2fa' => []
             ],
         ];
     }

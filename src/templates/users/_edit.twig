@@ -143,6 +143,13 @@
                     }) }}
                 {% endif %}
 
+                {{ forms.checkboxField({
+                    label: "Use two-factor authentication"|t('app'),
+                    name: 'enable2fa',
+                    id: 'enable2fa',
+                    checked: user.enable2fa
+                }) }}
+
                 {% if CraftEdition == CraftPro %}
                     {% for stepType in configurableStepTypes %}
                         {{ stepType.getUserSetupFormHtml(user)|raw }}
@@ -421,6 +428,7 @@
         '#admin:not(:checked)',
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)',
+        '#enable2fa',
     ]);
 
     new Craft.AuthenticatorFormHandler();

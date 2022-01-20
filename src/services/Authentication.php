@@ -13,7 +13,6 @@ use craft\authentication\base\ElevatedSessionTypeInterface;
 use craft\authentication\base\MfaTypeInterface;
 use craft\authentication\base\UserConfigurableTypeInterface;
 use craft\authentication\State;
-use craft\authentication\type\IpAddress;
 use craft\authentication\type\AuthenticatorCode;
 use craft\authentication\type\EmailCode;
 use craft\authentication\type\Password;
@@ -23,16 +22,18 @@ use craft\errors\AuthenticationException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
+/**
+ *
+ * @property-read null|State $authState
+ * @property-read bool $isWebAuthnAllowed
+ * @property-read string[] $allStepTypes
+ * @property-read string[] $mfaTypes
+ * @property-read array $elevatedSessionTypes
+ * @property-read string[] $userConfigurableTypes
+ */
 class Authentication extends Component
 {
     public const AUTHENTICATION_STATE_KEY = 'craft.authentication.state';
-
-    /**
-     * When state is created, uniqid => state path is generated and stored inside state.
-     * State can return alternative paths - siblings to current location or any of the parents
-     * to further a state
-     */
-
 
     /**
      * A list of all the authentication step types.
@@ -83,8 +84,7 @@ class Authentication extends Component
      */
     public function isWebAuthnAvailable(User $user): bool
     {
-        $config = true;
-        return $config && Craft::$app->getRequest()->getIsSecureConnection() && WebAuthn::userHasCredentialsConfigured($user);
+        return $this->getIsWebAuthnAllowed() && Craft::$app->getRequest()->getIsSecureConnection() && WebAuthn::userHasCredentialsConfigured($user);
     }
 
     /**
@@ -95,10 +95,27 @@ class Authentication extends Component
      */
     public function isMfaRequired(User $user): bool
     {
-        // user forced by config || $user opted in.
-        $userOption = true;
+        if ($user->enable2fa) {
+            return true;
+        }
 
-        return $userOption;
+        $require2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['require2fa'] ?? [];
+        if (in_array('everyone', $require2fa, true)) {
+            return true;
+        }
+
+        if ($user->admin && in_array('admin', $require2fa, true)) {
+            return true;
+        }
+
+        $userGroups = $user->getGroups();
+        foreach ($userGroups as $userGroup) {
+            if (in_array($userGroup->handle, $require2fa, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -217,5 +234,15 @@ class Authentication extends Component
     {
         $this->_state = null;
         Craft::$app->getSession()->remove(self::AUTHENTICATION_STATE_KEY);
+    }
+
+    /**
+     * Returns whether WebAuthn is allowed on this environment.
+     *
+     * @return bool
+     */
+    protected function getIsWebAuthnAllowed()
+    {
+        return (bool)(Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['allowWebAuthn'] ?? false);
     }
 }

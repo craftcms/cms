@@ -575,6 +575,11 @@ class User extends Element implements IdentityInterface
     public ?string $password = null;
 
     /**
+     * @var bool Whether this user has enabled 2FA
+     */
+    public ?bool $enable2fa = null;
+
+    /**
      * @var int|null timestamp for last used authenticator code.
      */
     public ?int $authenticatorTimestamp;
@@ -1736,6 +1741,7 @@ class User extends Element implements IdentityInterface
         $record->email = $this->email;
         $record->passwordResetRequired = $this->passwordResetRequired;
         $record->unverifiedEmail = $this->unverifiedEmail;
+        $record->enable2fa = $this->enable2fa;
 
         if ($changePassword = (isset($this->newPassword))) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);

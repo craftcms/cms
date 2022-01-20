@@ -28,6 +28,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $lastName Last name
  * @property string $email Email
  * @property string $password Password
+ * @property bool $enable2fa Password
  * @property string|null $authenticatorSecret Password
  * @property int|null $authenticatorTimestamp Password
 

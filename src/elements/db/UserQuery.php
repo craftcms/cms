@@ -752,6 +752,7 @@ class UserQuery extends ElementQuery
         // todo: cleanup after next breakpoint
         if (Craft::$app->getDb()->columnExists(Table::USERS, 'active')) {
             $this->query->addSelect(['users.active']);
+            $this->query->addSelect(['users.enable2fa']);
         }
 
         // TODO: cleanup after next breakpoint

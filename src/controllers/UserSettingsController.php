@@ -134,6 +134,8 @@ class UserSettingsController extends Controller
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
         }
 
+        $settings['allowWebAuthn'] = $this->request->getBodyParam('allowWebAuthn');
+        $settings['require2fa'] = $this->request->getBodyParam('require2fa');
         $projectConfig->set('users', $settings, 'Update user settings');
 
         $this->setSuccessFlash(Craft::t('app', 'User settings saved.'));

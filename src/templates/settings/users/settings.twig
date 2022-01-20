@@ -5,7 +5,6 @@
 
 {% import "_includes/forms" as forms %}
 
-
 {% if settings is not defined %}
     {% set settings = craft.app.projectConfig.get('users') ?? [] %}
 {% endif %}
@@ -51,6 +50,7 @@
 {% endmacro %}
 
 {% from _self import assetLocationInput %}
+{% from "_includes/forms" import checkbox %}
 
 {% block content %}
     <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
@@ -115,8 +115,66 @@
             </div>
         {% endif %}
 
+        {{ forms.checkboxField({
+            label: 'Allow WebAuthn'|t('app'),
+            instructions: "Should WebAuthn authentication, such as TouchID, FaceID and Yubikey, be allowed for faster logging in."|t('app'),
+            name: 'allowWebAuthn',
+            checked: settings.allowWebAuthn,
+        }) }}
+
+        {% set require2fa = settings.require2fa|default([]) %}
+        {% set groups = {'admin': 'Admin'|t('app')} %}
+        {% for group in craft.app.userGroups.getAllGroups() %}
+            {% set key = group.handle %}
+            {% set groups = groups|merge({(group.handle): group.name}) %}
+        {% endfor %}
+
+            <h3>{{ 'Require 2FA'|t('app') }}</h3>
+            <ul>
+                <li>
+                    {{ checkbox({
+                        label: 'Everyone'|t('all'),
+                        name: 'require2fa[]',
+                        value: 'everyone',
+                        checked: 'everyone' in require2fa,
+                        class: 'cb-everyone'
+                    }) }}
+                </li>
+
+                {% for groupHandle, groupName in groups %}
+                    {% if groupHandle in require2fa %}
+                        {% set checked = true %}
+                    {% else %}
+                        {% set checked = false %}
+                    {% endif %}
+
+                    <li>
+                        {{ checkbox({
+                            label: groupName,
+                            name: 'require2fa[]',
+                            value: groupHandle,
+                            checked: checked,
+                            class: 'cb-group'
+                        }) }}
+                    </li>
+                {% endfor %}
+            </ul>
+
         <div class="buttons">
             <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
         </div>
     </form>
 {% endblock %}
+
+
+{% js %}
+    const $allCb = $('.cb-everyone');
+    const $otherCb = $('.cb-group');
+
+    const toggleCb = () => {
+        $otherCb.prop('disabled', $allCb.is(":checked"));
+    }
+
+    $allCb.on('click', toggleCb);
+    toggleCb();
+{% endjs %}

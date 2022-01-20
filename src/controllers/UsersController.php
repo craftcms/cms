@@ -8,9 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\authentication\base\Type;
-use craft\authentication\base\TypeInterface;
-use craft\authentication\base\UserConfigurableTypeInterface;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -1289,6 +1286,8 @@ class UsersController extends Controller
         if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
         }
+
+        $user->enable2fa = $this->request->getBodyParam('enable2fa', false);
 
         // Manually validate the user so we can pass $clearErrors=false
         if (
