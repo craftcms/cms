@@ -1243,6 +1243,8 @@ return [
     'Select all' => 'すべてを選択',
     'Select transform' => '選択 変換',
     'Select' => '選択',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => '選択ラベル',
     'Send activation email' => '認証メールの送信',
     'Send an activation email now' => '認証メールを今送りますか',
