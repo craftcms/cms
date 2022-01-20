@@ -16,6 +16,7 @@
 - `craft\helpers\App::mutexConfig()` is no longer deprecated.
 
 ### Deprecated
+- Deprecated `craft\helpers\App::dbMutexConfig()`, as database-based mutex locking is no longer recommended.
 - Deprecated `craft\mutex\DbMutexTrait`.
 - Deprecated `craft\mutex\MysqlMutex`.
 - Deprecated `craft\mutex\PgsqlMutex`.

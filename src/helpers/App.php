@@ -652,6 +652,7 @@ class App
      *
      * @return array
      * @since 3.5.18
+     * @deprecated in 3.7.30. Database-based mutex locking is no longer recommended.
      */
     public static function dbMutexConfig(): array
     {
