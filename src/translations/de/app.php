@@ -358,7 +358,7 @@ return [
     'Couldn’t save entry type.' => 'Der Eintragstyp konnte nicht gespeichert werden.',
     'Couldn’t save entry.' => 'Der Eintrag konnte nicht gespeichert werden.',
     'Couldn’t save field.' => 'Das Feld konnte nicht gespeichert werden.',
-    'Couldn’t save filesystem.' => 'Couldn’t save filesystem.',
+    'Couldn’t save filesystem.' => 'Das Dateisystem konnte nicht gespeichert werden.',
     'Couldn’t save global set.' => 'Die Gruppe von globalen Inhalten konnte nicht gespeichert werden.',
     'Couldn’t save group.' => 'Die Gruppe konnte nicht gespeichert werden.',
     'Couldn’t save message.' => 'Nachricht konnte nicht gespeichert werden.',
