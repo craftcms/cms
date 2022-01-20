@@ -4,7 +4,7 @@
 
 ### Changed
 - When a draft is published, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page. ([#10381](https://github.com/craftcms/cms/issues/10381))
-- Improved modal and slideout accessibility for screen readers. ([#10384](https://github.com/craftcms/cms/pull/10384))
+- Improved modal and slideout accessibility for screen readers. ([#10384](https://github.com/craftcms/cms/pull/10384), [#10234](https://github.com/craftcms/cms/pull/10234))
 
 ### Fixed
 - Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
