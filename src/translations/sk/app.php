@@ -1243,6 +1243,8 @@ return [
     'Select all' => 'Vybrať všetko',
     'Select transform' => 'Vybrať transformáciu',
     'Select' => 'Vybrať',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Označenie výberu',
     'Send activation email' => 'Poslať aktivačný email',
     'Send an activation email now' => 'Poslať aktivačný email teraz',

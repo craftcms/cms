@@ -1243,6 +1243,8 @@ return [
     'Select all' => 'Alles selecteren',
     'Select transform' => 'Selecteer transformeren',
     'Select' => 'Selecteren',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Selectie label',
     'Send activation email' => 'Activeringsmail versturen',
     'Send an activation email now' => 'Nu een activeringmail versturen',
