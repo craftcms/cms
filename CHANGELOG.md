@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
+- Fixed a bug where Live Preview iframes weren’t full-height when `useIframeResizer` was disabled. ([#10380](https://github.com/craftcms/cms/issues/10380))
 
 ## 3.7.29 - 2022-01-18
 
