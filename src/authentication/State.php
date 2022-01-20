@@ -93,12 +93,17 @@ class State extends Model
     public function __unserialize(array $data)
     {
         $userId = ArrayHelper::remove($data, 'userId');
-        if ($userId) {
-            $this->user = User::findOne($userId);
-        }
 
         foreach ($data as $prop => $value) {
             $this->{$prop} = $value;
+        }
+
+        if ($userId) {
+            $this->setUser(User::findOne($userId));
+        }
+
+        if (ArrayHelper::getValue($this->authFlow, $this->authPath) === null) {
+            $this->authPath = '0';
         }
     }
 
