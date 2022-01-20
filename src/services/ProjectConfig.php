@@ -31,8 +31,9 @@ use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
- * Project config service.
- * An instance of the ProjectConfig service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getProjectConfig()|`Craft::$app->projectConfig`]].
+ * Project Config service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getProjectConfig()|`Craft::$app->projectConfig`]].
  *
  * @property-read bool $isApplyingYamlChanges
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

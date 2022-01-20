@@ -64,7 +64,8 @@ use yii\db\Exception as DbException;
 
 /**
  * The Elements service provides APIs for managing elements.
- * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -878,6 +879,7 @@ class Elements extends Component
             'rgt' => $canonical->rgt,
             'level' => $canonical->level,
             'dateCreated' => $canonical->dateCreated,
+            'dateDeleted' => null,
             'draftId' => null,
             'revisionId' => null,
             'isProvisionalDraft' => false,
@@ -2572,6 +2574,7 @@ class Elements extends Component
                 $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $element->getFieldLayout()->id ?? 0) ?: null;
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
+                $elementRecord->dateDeleted = $element->dateDeleted;
 
                 // todo: remove this check after the next breakpoint
                 $schemaVersion = Craft::$app->getInstalledSchemaVersion();
@@ -2968,7 +2971,7 @@ SQL;
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, string $attribute = null, string $fallback, string $fullMatch): string
+    private function _getRefTokenReplacement(?ElementInterface $element, ?string $attribute, string $fallback, string $fullMatch): string
     {
         if ($element === null) {
             // Put the ref tag back

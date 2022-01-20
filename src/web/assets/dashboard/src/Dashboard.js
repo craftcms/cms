@@ -323,7 +323,9 @@ import './dashboard.scss';
         },
 
         setColspan: function(colspan) {
-            this.$gridItem.data('colspan', colspan);
+            this.$gridItem
+              .data('colspan', colspan)
+              .attr('data-colspan', colspan);
             window.dashboard.grid.refreshCols(true);
         },
 

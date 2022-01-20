@@ -17,7 +17,6 @@ use craft\helpers\StringHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
 use yii\db\Expression;
-use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -50,11 +49,6 @@ class Craft extends Yii
     private static $_baseCookieConfig;
 
     /**
-     * @var array Field info for autoload()
-     */
-    private static $_fields;
-
-    /**
      * @inheritdoc
      *
      * @template T
@@ -85,27 +79,11 @@ class Craft extends Yii
      * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      * @since 3.1.0
+     * @deprecated in 3.7.29. [[App::parseEnv()]] should be used instead.
      */
     public static function parseEnv(string $str = null)
     {
-        if ($str === null) {
-            return null;
-        }
-
-        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $value = App::env($matches[1]);
-            if ($value !== false) {
-                switch (strtolower($value)) {
-                    case 'true':
-                        return true;
-                    case 'false':
-                        return false;
-                }
-                $str = $value;
-            }
-        }
-
-        return static::getAlias($str, false) ?: $str;
+        return App::parseEnv($str);
     }
 
     /**
@@ -121,18 +99,11 @@ class Craft extends Yii
      * @param mixed $value
      * @return bool|null
      * @since 3.7.22
+     * @deprecated in 3.7.29. [[App::parseBooleanEnv()]] should be used instead.
      */
     public static function parseBooleanEnv($value): ?bool
     {
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if (!is_string($value)) {
-            return null;
-        }
-
-        return filter_var(Craft::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return App::parseBooleanEnv($value);
     }
 
     /**
@@ -213,12 +184,6 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        // todo: remove this once https://github.com/yiisoft/yii2/issues/18832 is resolved
-        if ($className === Inflector::class) {
-            require dirname(__DIR__) . '/lib/yii2/helpers/Inflector.php';
-            return;
-        }
-
         if ($className === CustomFieldBehavior::class) {
             self::_autoloadCustomFieldBehavior();
         }
@@ -229,6 +194,12 @@ class Craft extends Yii
      */
     private static function _autoloadCustomFieldBehavior()
     {
+        if (!static::$app->getIsInstalled()) {
+            // Just load an empty CustomFieldBehavior into memory
+            self::_generateCustomFieldBehavior([], null, false, true);
+            return;
+        }
+
         $fieldsService = Craft::$app->getFields();
         $storedFieldVersion = $fieldsService->getFieldVersion();
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
@@ -293,12 +264,12 @@ class Craft extends Yii
 
     /**
      * @param array $fieldHandles
-     * @param string $filePath
+     * @param string|null $filePath
      * @param bool $write
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateCustomFieldBehavior(array $fieldHandles, string $filePath, bool $write, bool $load)
+    private static function _generateCustomFieldBehavior(array $fieldHandles, ?string $filePath, bool $write, bool $load)
     {
         $methods = [];
         $handles = [];
@@ -374,14 +345,6 @@ EOD;
      */
     private static function _fields(): array
     {
-        if (self::$_fields !== null) {
-            return self::$_fields;
-        }
-
-        if (!static::$app->getIsInstalled()) {
-            return [];
-        }
-
         // Properties are case-sensitive, so get all the binary-unique field handles
         if (static::$app->getDb()->getIsMysql()) {
             $handleColumn = new Expression('binary [[handle]] as [[handle]]');
@@ -390,7 +353,7 @@ EOD;
         }
 
         // Create an array of field handles and their types
-        return self::$_fields = (new Query())
+        return (new Query())
             ->from([Table::FIELDS])
             ->select([$handleColumn, 'type'])
             ->all();

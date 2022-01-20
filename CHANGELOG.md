@@ -1,5 +1,117 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- When a draft is published, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page. ([#10381](https://github.com/craftcms/cms/issues/10381))
+- Improved modal and slideout accessibility for screen readers. ([#10384](https://github.com/craftcms/cms/pull/10384))
+
+### Fixed
+- Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
+- Fixed a bug where Live Preview iframes weren’t full-height when `useIframeResizer` was disabled. ([#10380](https://github.com/craftcms/cms/issues/10380))
+- Fixed an error that could occur if an Assets field was saved while set to a file stored in `storage/runtime/assets/tempuploads/`. ([#10382](https://github.com/craftcms/cms/issues/10382))
+
+## 3.7.29 - 2022-01-18
+
+### Added
+- `resave/*` commands now support bulk-setting an attribute/custom field value via new `--set`, `--to`, and `--if-empty` options. ([#10356](https://github.com/craftcms/cms/pull/10356))
+- Added `craft\fieldlayoutelements\BaseField::statusId()`.
+- Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
+
+### Changed
+- The Users index page now updates the URL based on the selected source. ([#10336](https://github.com/craftcms/cms/issues/10336))
+- Live Preview no longer reloads the iframe when the device type is changed. ([#10353](https://github.com/craftcms/cms/discussions/10353))
+- `admins`, `all`, and `new` are now reserved user group handles.
+- The content in the `resourcepaths` table is now excluded from database backups by default.
+- User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
+- Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
+- Color fields’ hex inputs now have `aria-label` attributes.
+- Field status messages are now included in their `aria-describedby` attributes.
+- User queries will no longer exclude suspended users when `status('pending')` is passed. ([#10361](https://github.com/craftcms/cms/issues/10361))
+- Template autosuggest fields now include suggestions for templates in custom site template roots. ([#10372](https://github.com/craftcms/cms/discussions/10372))
+
+### Deprecated
+- Deprecated `Craft::parseEnv()`. `craft\helpers\App::parseEnv()` should be used instead.
+- Deprecated `Craft::parseBooleanEnv()`. `craft\helpers\App::parseBooleanEnv()` should be used instead.
+
+### Fixed
+- Fixed a bug where admin tables were displaying titles incorrectly.
+- Fixed a bug where `aria-describedby` attributes were getting namespaced incorrectly when they referenced multiple IDs.
+- Fixed a bug where “View” links on Edit Entry pages weren’t getting updated when the entry’s preview target URLs changed. ([#10257](https://github.com/craftcms/cms/issues/10257))
+- Fixed a bug where `craft\base\ApplicationTrait::getIsMultiSite()` would return `false` on the front end, if there was only one enabled site, but additional disabled sites.
+- Fixed a bug where `craft\base\Element::getSite()` would throw an exception on the front end, if the element belonged to a disabled site.
+- Fixed a bug where `craft\services\Sites::getEditableSiteIds()` would exclude disabled sites on the front end.
+- Fixed a bug where validation errors referenced by `aria-describedby` attributes weren’t getting read out by VoiceOver. ([#10355](https://github.com/craftcms/cms/pull/10355))
+- Fixed a bug where element queries’ `withQueries` properties were ignored. ([#10359](https://github.com/craftcms/cms/pull/10359))
+- Fixed a bug where fatal PHP errors were not logged to `stderr` when the `CRAFT_STREAM_LOG` PHP constant was set to `true`. ([#10366](https://github.com/craftcms/cms/pull/10366))
+- Fixed a bug where Dropdown fields with invalid data would not always display a blank option. ([#10365](https://github.com/craftcms/cms/issues/10365))
+
+### Security
+- Fixed an XSS vulnerability.
+
+## 3.7.28 - 2022-01-05
+
+### Changed
+- Updated Yii to 2.0.44.
+
+### Fixed
+- Fixed a Composer error that could occur if `composer.craftcms.com` was missing an expected package/version, but Packagist knew about it. ([#10311](https://github.com/craftcms/cms/issues/10311))
+- Fixed a PHP error that could occur when querying for Matrix blocks. ([#10315](https://github.com/craftcms/cms/issues/10315))
+- Fixed a bug where Single sections’ drafts would get deleted when their section settings were updated. ([#10307](https://github.com/craftcms/cms/issues/10307))
+- Fixed an error that could occur on the Dashboard if there were any Quick Post widgets that included a Title field. ([#10314](https://github.com/craftcms/cms/issues/10314))
+
+## 3.7.27.2 - 2022-01-06
+
+### Fixed
+- Fixed an error that could occur when updating to Craft 3.7.28/Yii 2.0.44 from the control panel.
+
+## 3.7.27.1 - 2022-01-04
+
+### Fixed
+- Fixed a PHP error that would occur when creating a new user. ([#10308](https://github.com/craftcms/cms/issues/10308))
+
+## 3.7.27 - 2022-01-04
+
+### Added
+- Added the `setSchemaOnConnect` database connection setting. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- Added `craft\errors\InvalidHtmlTagException`.
+- Added `craft\helpers\Html::encodeInvalidTags()`.
+- Added `craft\models\FieldLayout::getCustomFieldElements()`.
+- Added `craft\services\Fields::getLayoutsByIds()`.
+- Added `craft\web\twig\variables\Image::getContents()`, `getDataUrl()`, `getMimeType()`, and `getPath()`. ([#10268](https://github.com/craftcms/cms/issues/10268))
+
+### Changed
+- Improved the performance of the control panel, for installs with a large number of entry types.
+- A warning is now logged when a password-reset email could not be sent, if `preventUserEnumeration` is enabled.
+- The `install/check`, `install/craft`, and `setup/db-creds` commands now explicitly check if Craft is installed in the default schema on Postgres.
+- The `setup/db-creds` command now uses existing environment variable values for its default prompt values, if available.
+- The `setup/db-creds` command no longer prompts for the database schema on Postgres, unless `setSchemaOnConnect` is enabled. Instead it will determine the appropriate schema to use based on `SHOW search_path`. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- The web-based installation wizard no longer shows a field for the database schema on Postgres. ([#10273](https://github.com/craftcms/cms/issues/10273))
+- Dashboard widgets’ `data-colspan` attributes are now updated when their colspan changes. ([#10286](https://github.com/craftcms/cms/discussions/10286))
+- `craft\base\ApplicationTrait::getIsInstalled()` will now explicitly check if Craft is installed in the default schema on Postgres, when `true` is passed.
+- `craft\helpers\Html::parseTag()` now throws an `InvalidHtmlTagException` exception when an invalid tag is encountered. (Catching `InvalidArgumentException`s will still work.)
+- `craft\services\Routes::getProjectConfigRoutes()` now returns a numerically-indexed array of URL rule arrays, with `pattern` keys that define the URI patterns.
+- `craft\services\Users::getUserPreferences()` and `getUserPreference()` no longer accept `null` passed to the first argument.
+
+### Deprecated
+- Deprecated `craft\elements\User::mergePreferences()`.
+
+### Fixed
+- Fixed a bug where the details pane could jump down when scrolling on desktop browsers that are less than 974 pixels wide.
+- Fixed a bug where soft-deleted Matrix blocks nested within Neo blocks could become duplicated when restored from a prior revision. ([#10256](https://github.com/craftcms/cms/issues/10256))
+- Fixed a bug where Color fields’ HSL values could be incorrect. ([#10261](https://github.com/craftcms/cms/issues/10261))
+- Fixed a bug where `<video>`, `<embed>`, and `<iframe>` tags within field instructions could be wider than the field’s container. ([#10264](https://github.com/craftcms/cms/issues/10264))
+- Fixed an error that occurred if the first control panel-defined route had a numeric URI pattern. ([#10251](https://github.com/craftcms/cms/issues/10251))
+- Fixed an error that could occur if a section didn’t have any entry types. ([#10272](https://github.com/craftcms/cms/issues/10272))
+- Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t escaping backslashes when modifying the value of an existing environment variable. ([#10274](https://github.com/craftcms/cms/issues/10274))
+- Fixed a bug where Live Preview could fail to load if opened while changes were being autosaved. ([#10280](https://github.com/craftcms/cms/issues/10280))
+- Fixed a bug where the control panel layout could break if any field instructions/tips/warnings included an HTML tag that wasn’t closed properly. Such tags are now encoded so they appear as plain text. ([#10290](https://github.com/craftcms/cms/issues/10290))
+- Fixed a bug where disabled plugins could cause duplicate database queries.
+- Fixed a bug where multiple calls to `craft\services\Users::getUserPreferences()` could cause duplicate database queries.
+
+### Security
+- Fixed a bug where it was possible to identify valid usernames/user emails via password-reset forms when `preventUserEnumeration` was enabled. ([#6000](https://github.com/craftcms/cms/issues/6000))
+
 ## 3.7.26 - 2021-12-15
 
 ### Added

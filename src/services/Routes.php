@@ -16,7 +16,8 @@ use yii\base\Component;
 
 /**
  * Routes service.
- * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -124,15 +125,19 @@ class Routes extends Component
         $this->_projectConfigRoutes = [];
 
         foreach ($routes as $route) {
+            $key = sprintf('pattern:%s', $route['uriPattern']);
             if (
-                !isset($this->_projectConfigRoutes[$route['uriPattern']]) &&
+                !isset($this->_projectConfigRoutes[$key]) &&
                 (empty($route['siteUid']) || $route['siteUid'] === $currentSiteUid)
             ) {
-                $this->_projectConfigRoutes[$route['uriPattern']] = ['template' => $route['template']];
+                $this->_projectConfigRoutes[$key] = [
+                    'pattern' => $route['uriPattern'],
+                    'template' => $route['template'],
+                ];
             }
         }
 
-        return $this->_projectConfigRoutes;
+        return array_values($this->_projectConfigRoutes);
     }
 
     /**

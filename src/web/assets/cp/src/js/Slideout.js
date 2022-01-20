@@ -84,11 +84,11 @@
             Craft.Slideout.addPanel(this);
 
             this.enable();
-            Garnish.shortcutManager.addLayer();
-            Garnish.hideModalBackgroundContent(this.$outerContainer);
+            Garnish.uiLayerManager.addLayer(this.$outerContainer);
+            Garnish.hideModalBackgroundLayers(this.$outerContainer);
 
             if (this.settings.closeOnEsc) {
-                Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+                Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
                     this.close();
                 });
             }
@@ -122,8 +122,8 @@
             }
 
             Craft.Slideout.removePanel(this);
-            Garnish.shortcutManager.removeLayer();
-            Garnish.resetBackgroundContentVisibility(this.$outerContainer);
+            Garnish.uiLayerManager.removeLayer();
+            Garnish.resetModalBackgroundLayerVisibility(this.$outerContainer);
             this.$container.one('transitionend.slideout', () => {
                 this.$outerContainer.addClass('hidden');
                 this.trigger('close');

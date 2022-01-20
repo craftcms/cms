@@ -28,7 +28,8 @@ use yii\db\Exception;
 
 /**
  * User Permissions service.
- * An instance of the User Permissions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -144,7 +145,7 @@ class UserPermissions extends Component
 
         if (Craft::$app->getIsMultiSite()) {
             $label = Craft::t('app', 'Sites');
-            $sites = Craft::$app->getSites()->getAllSites();
+            $sites = Craft::$app->getSites()->getAllSites(true);
 
             foreach ($sites as $site) {
                 $permissions[$label]['editSite:' . $site->uid] = [

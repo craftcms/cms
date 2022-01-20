@@ -24,7 +24,8 @@ use yii\base\InvalidConfigException;
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
- * An instance of the Config service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
  *
  * @property DbConfig $db the DB config settings
  * @property GeneralConfig $general the general config settings
@@ -254,16 +255,21 @@ class Config extends Component
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
         $slashedValue = addslashes($value);
+
         // Only surround with quotes if the value contains a space
         if (strpos($slashedValue, ' ') !== false || strpos($slashedValue, '#') !== false) {
             $slashedValue = "\"$slashedValue\"";
         }
-        $qValue = str_replace('$', '\\$', $slashedValue);
-        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1$name=$qValue", $contents, -1, $count);
 
-        if ($count === 0) {
+        $def = "$name=$slashedValue";
+        $token = StringHelper::randomString();
+        $contents = preg_replace("/^(\s*){$qName}=.*/m", $token, $contents, -1, $count);
+
+        if ($count !== 0) {
+            $contents = str_replace($token, $def, $contents);
+        } else {
             $contents = rtrim($contents);
-            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . "$name=$slashedValue" . PHP_EOL;
+            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . $def . PHP_EOL;
         }
 
         FileHelper::writeToFile($path, $contents);

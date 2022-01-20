@@ -134,13 +134,13 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         });
 
         // Register shortcuts & events
-        Garnish.shortcutManager.registerShortcut({
+        Garnish.uiLayerManager.registerShortcut({
             keyCode: Garnish.S_KEY,
             ctrl: true,
         }, () => {
             this.saveElement();
         });
-        Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
             this.maybeCloseSlideout();
         });
         this.addListener(this.$cancelBtn, 'click', () => {
@@ -445,8 +445,8 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         Garnish.$win.trigger('resize');
         this.$sidebar.trigger('scroll');
 
-        Garnish.shortcutManager.addLayer();
-        Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+        Garnish.uiLayerManager.addLayer(this.$sidebar);
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
             this.hideSidebar();
         });
 
@@ -474,7 +474,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
                 'aria-label': Craft.t('app', 'Show sidebar'),
             });
 
-        Garnish.shortcutManager.removeLayer();
+        Garnish.uiLayerManager.removeLayer();
 
         this.showingSidebar = false;
     },
@@ -557,7 +557,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             return;
         }
 
-        if (!this.isDirty() || confirm('Are you sure you want to close the editor? Any changes will be lost.')) {
+        if (!this.isDirty() || confirm(Craft.t('app', 'Are you sure you want to close the editor? Any changes will be lost.'))) {
             this.closeSlideout();
         }
     },

@@ -33,7 +33,8 @@ use yii\base\Exception;
 
 /**
  * The Matrix service provides APIs for managing Matrix fields.
- * An instance of the Matrix service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getMatrix()|`Craft::$app->matrix`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getMatrix()|`Craft::$app->matrix`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -855,10 +856,7 @@ class Matrix extends Component
                     'propagating' => false,
                 ];
 
-                if (
-                    $target->updatingFromDerivative &&
-                    $block->getCanonical() !== $block // in case the canonical block is soft-deleted
-                ) {
+                if ($target->updatingFromDerivative && $block->getIsDerivative()) {
                     if (
                         ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
