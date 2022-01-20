@@ -1198,6 +1198,8 @@ return [
     'Select all' => 'Выбрать все',
     'Select transform' => 'Выбрать преобразование',
     'Select' => 'Выбрать',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Метка выбора',
     'Send activation email' => 'Отправить письмо для активации',
     'Send an activation email now' => 'Отправить письмо активации сейчас',
