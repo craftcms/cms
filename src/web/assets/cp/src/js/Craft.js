@@ -1918,7 +1918,7 @@ $.extend(Craft,
          * @param {Object} container
          */
         setFocusWithin: function(container) {
-            $(container).find(':focusable:first').focus();
+            Garnish.setFocusWithin(container);
         },
     });
 
