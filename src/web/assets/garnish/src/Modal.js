@@ -43,6 +43,7 @@ export default Base.extend(
 
             if (container) {
                 this.setContainer(container);
+                Garnish.addModalAttributes(container);
 
                 if (this.settings.autoShow) {
                     this.show();
@@ -108,6 +109,7 @@ export default Base.extend(
                         this.$container.velocity('fadeIn', {
                             complete: function() {
                                 this.updateSizeAndPosition();
+                                Garnish.setFocusWithin(this.$container);
                                 this.onFadeIn();
                             }.bind(this)
                         });
@@ -118,6 +120,9 @@ export default Base.extend(
                     this.addListener(this.$shade, 'click', 'hide');
                 }
 
+                // Add focus trap
+                Craft.trapFocusWithin(this.$container);
+
                 this.addListener(Garnish.$win, 'resize', '_handleWindowResize');
             }
 
@@ -127,10 +132,11 @@ export default Base.extend(
                 this.visible = true;
                 Garnish.Modal.visibleModal = this;
 
-                Garnish.shortcutManager.addLayer();
+                Garnish.uiLayerManager.addLayer(this.$container);
+                Garnish.hideModalBackgroundLayers();
 
                 if (this.settings.hideOnEsc) {
-                    Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
+                    Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
                 }
 
                 this.trigger('show');
@@ -177,8 +183,9 @@ export default Base.extend(
 
             this.visible = false;
             Garnish.Modal.visibleModal = null;
-            Garnish.shortcutManager.removeLayer();
+            Garnish.uiLayerManager.removeLayer();
             this.trigger('hide');
+            Garnish.resetModalBackgroundLayerVisibility();
             this.settings.onHide();
         },
 
