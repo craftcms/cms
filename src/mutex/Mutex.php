@@ -25,6 +25,18 @@ class Mutex extends YiiMutex
 
     /**
      * @var YiiMutex|array|string The internal mutex driver to use.
+     *
+     * This can be set from `config/app.php` like so:
+     *
+     * ```php
+     * return [
+     *     'components' => [
+     *         'mutex' => [
+     *             'mutex' => 'yii\redis\Mutex',
+     *         ],
+     *     ],
+     * ];
+     * ```
      */
     public $mutex;
 
