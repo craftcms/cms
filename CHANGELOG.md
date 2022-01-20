@@ -12,11 +12,13 @@
 ### Changed
 - When a draft is published, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page. ([#10381](https://github.com/craftcms/cms/issues/10381))
 - Improved modal and slideout accessibility for screen readers. ([#10384](https://github.com/craftcms/cms/pull/10384), [#10234](https://github.com/craftcms/cms/pull/10234))
-- The `mutex` component is now set to `craft\mutex\Mutex` by default, and should no longer be overridden directly. Its nested `mutex` property should be overridden instead.
+- The `mutex` component is now set to `craft\mutex\Mutex` by default, and should no longer be overridden directly. Its nested `mutex` property should be [overridden instead](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
 - `craft\helpers\App::mutexConfig()` is no longer deprecated.
 
 ### Deprecated
 - Deprecated `craft\mutex\DbMutexTrait`.
+- Deprecated `craft\mutex\MysqlMutex`.
+- Deprecated `craft\mutex\PgsqlMutex`.
 
 ### Fixed
 - Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
