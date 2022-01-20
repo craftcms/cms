@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- When a draft is published, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page. ([#10381](https://github.com/craftcms/cms/issues/10381))
+
 ### Fixed
 - Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
 
