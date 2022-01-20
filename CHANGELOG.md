@@ -2,8 +2,20 @@
 
 ## Unreleased
 
+> {warning} The `mutex` component now uses a file-based driver by default. Load-balanced environments should [switch to a different driver](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
+
+### Added
+- Added `craft\mutex\Mutex`.
+- Added `craft\mutex\MutexTrait`.
+- Added `craft\mutex\NullMutex`.
+
 ### Changed
 - When a draft is published, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page. ([#10381](https://github.com/craftcms/cms/issues/10381))
+- The `mutex` component is now set to `craft\mutex\Mutex` by default, and should no longer be overridden directly. Its nested `mutex` property should be overridden instead.
+- `craft\helpers\App::mutexConfig()` is no longer deprecated.
+
+### Deprecated
+- Deprecated `craft\mutex\DbMutexTrait`.
 
 ### Fixed
 - Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))

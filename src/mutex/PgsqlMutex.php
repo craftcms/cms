@@ -14,5 +14,5 @@ namespace craft\mutex;
  */
 class PgsqlMutex extends \yii\mutex\PgsqlMutex
 {
-    use DbMutexTrait;
+    use MutexTrait;
 }

@@ -14,5 +14,5 @@ namespace craft\mutex;
  */
 class MysqlMutex extends \yii\mutex\MysqlMutex
 {
-    use DbMutexTrait;
+    use MutexTrait;
 }
