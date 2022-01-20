@@ -1198,6 +1198,8 @@ return [
     'Select all' => 'Velg alle',
     'Select transform' => 'Velg omforming',
     'Select' => 'Velg',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Utvalgsetikett',
     'Send activation email' => 'Send e-post for aktivering',
     'Send an activation email now' => 'Send en e-post for aktivering nå',

@@ -24,17 +24,19 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
     init: function(elementType, settings) {
         this.elementType = elementType;
         this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
+        var $headingId = 'elementSelectorModalHeading-' + Date.now();
 
         // Build the modal
-        var $container = $('<div class="modal elementselectormodal"></div>').appendTo(Garnish.$bod),
+        var $container = $('<div class="modal elementselectormodal" aria-labelledby="' + $headingId + '"></div>').appendTo(Garnish.$bod),
+            $heading = $('<h2 id="' + $headingId + '" class="visually-hidden">' + this.settings.modalTitle + '</h2>').appendTo($container),
             $body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
             $footer = $('<div class="footer"/>').appendTo($container);
 
         this.base($container, this.settings);
 
         this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
-        this.$primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
         this.$secondaryButtons = $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
+        this.$primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
         this.$cancelBtn = $('<button/>', {
             type: 'button',
             class: 'btn',
@@ -225,6 +227,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         disabledElementIds: [],
         disableElementsOnSelect: false,
         hideOnSelect: true,
+        modalTitle: Craft.t('app', 'Select element'),
         onCancel: $.noop,
         onSelect: $.noop,
         hideSidebar: false,

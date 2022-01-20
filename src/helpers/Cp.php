@@ -566,6 +566,9 @@ class Cp
             (($label && $fieldset)
                 ? Html::tag('legend', $labelHtml, [
                     'class' => ['visually-hidden'],
+                    'data' => [
+                        'label' => $label,
+                    ],
                 ])
                 : '') .
             ($status

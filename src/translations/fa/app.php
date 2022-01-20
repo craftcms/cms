@@ -1198,6 +1198,8 @@ return [
     'Select all' => 'انتخاب همه',
     'Select transform' => 'انتخاب تغییر شکل',
     'Select' => 'انتخاب',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'برچسب انتخاب',
     'Send activation email' => 'پست الکترونیکی فعالسازی ارسال گردید.',
     'Send an activation email now' => 'هم اکنون یک پست الکترونیکی فعالسازی ارسال کن',
