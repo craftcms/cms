@@ -567,7 +567,7 @@ class Cp
                 ? Html::tag('legend', $labelHtml, [
                     'class' => ['visually-hidden'],
                     'data' => [
-                      'label' => $label,
+                        'label' => $label,
                     ],
                 ])
                 : '') .
