@@ -38,9 +38,11 @@
                 class: 'color-input',
                 autofocus: autofocus,
                 disabled: disabled,
-                aria: {
-                    label: 'Color hex value'|t('app'),
-                }
+                inputAttributes: {
+                    aria: {
+                        label: 'Color hex value'|t('app'),
+                    },
+                },
             }) }}
         </div>
     {% endtag %}

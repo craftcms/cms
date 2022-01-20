@@ -2320,6 +2320,7 @@ class Asset extends Element
         $pathService = Craft::$app->getPath();
         $tempDirs = [
             $this->_normalizeTempPath($pathService->getTempPath()),
+            $this->_normalizeTempPath($pathService->getTempAssetUploadsPath()),
             $this->_normalizeTempPath(sys_get_temp_dir()),
         ];
 

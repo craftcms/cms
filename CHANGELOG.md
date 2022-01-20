@@ -3,13 +3,31 @@
 ## Unreleased
 
 ### Changed
-- User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
+- When a draft is published, Craft now automatically reloads other browser tabs that are opened to the same Edit Entry page. ([#10381](https://github.com/craftcms/cms/issues/10381))
 
-### Deprecated
+### Fixed
+- Fixed a bug where Craft could generate `CustomFieldBehavior` classes that were missing the available fields. ([#6013](https://github.com/craftcms/cms/issues/6013))
+- Fixed a bug where Live Preview iframes weren’t full-height when `useIframeResizer` was disabled. ([#10380](https://github.com/craftcms/cms/issues/10380))
+- Fixed an error that could occur if an Assets field was saved while set to a file stored in `storage/runtime/assets/tempuploads/`. ([#10382](https://github.com/craftcms/cms/issues/10382))
+
+## 3.7.29 - 2022-01-18
+
+### Added
+- `resave/*` commands now support bulk-setting an attribute/custom field value via new `--set`, `--to`, and `--if-empty` options. ([#10356](https://github.com/craftcms/cms/pull/10356))
+- Added `craft\fieldlayoutelements\BaseField::statusId()`.
 - Added `craft\helpers\App::parseEnv()` and `parseBooleanEnv()`, replacing their `Craft` class counterparts. ([#10319](https://github.com/craftcms/cms/discussions/10319))
 
 ### Changed
+- The Users index page now updates the URL based on the selected source. ([#10336](https://github.com/craftcms/cms/issues/10336))
+- Live Preview no longer reloads the iframe when the device type is changed. ([#10353](https://github.com/craftcms/cms/discussions/10353))
+- `admins`, `all`, and `new` are now reserved user group handles.
 - The content in the `resourcepaths` table is now excluded from database backups by default.
+- User caches are now invalidated after login attempts. ([#10313](https://github.com/craftcms/cms/discussions/10313))
+- Assets fields’ “Upload files” buttons now have `aria-describedby` attributes when appropriate.
+- Color fields’ hex inputs now have `aria-label` attributes.
+- Field status messages are now included in their `aria-describedby` attributes.
+- User queries will no longer exclude suspended users when `status('pending')` is passed. ([#10361](https://github.com/craftcms/cms/issues/10361))
+- Template autosuggest fields now include suggestions for templates in custom site template roots. ([#10372](https://github.com/craftcms/cms/discussions/10372))
 
 ### Deprecated
 - Deprecated `Craft::parseEnv()`. `craft\helpers\App::parseEnv()` should be used instead.
@@ -17,6 +35,18 @@
 
 ### Fixed
 - Fixed a bug where admin tables were displaying titles incorrectly.
+- Fixed a bug where `aria-describedby` attributes were getting namespaced incorrectly when they referenced multiple IDs.
+- Fixed a bug where “View” links on Edit Entry pages weren’t getting updated when the entry’s preview target URLs changed. ([#10257](https://github.com/craftcms/cms/issues/10257))
+- Fixed a bug where `craft\base\ApplicationTrait::getIsMultiSite()` would return `false` on the front end, if there was only one enabled site, but additional disabled sites.
+- Fixed a bug where `craft\base\Element::getSite()` would throw an exception on the front end, if the element belonged to a disabled site.
+- Fixed a bug where `craft\services\Sites::getEditableSiteIds()` would exclude disabled sites on the front end.
+- Fixed a bug where validation errors referenced by `aria-describedby` attributes weren’t getting read out by VoiceOver. ([#10355](https://github.com/craftcms/cms/pull/10355))
+- Fixed a bug where element queries’ `withQueries` properties were ignored. ([#10359](https://github.com/craftcms/cms/pull/10359))
+- Fixed a bug where fatal PHP errors were not logged to `stderr` when the `CRAFT_STREAM_LOG` PHP constant was set to `true`. ([#10366](https://github.com/craftcms/cms/pull/10366))
+- Fixed a bug where Dropdown fields with invalid data would not always display a blank option. ([#10365](https://github.com/craftcms/cms/issues/10365))
+
+### Security
+- Fixed an XSS vulnerability.
 
 ## 3.7.28 - 2022-01-05
 

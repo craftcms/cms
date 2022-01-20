@@ -31,7 +31,7 @@ class NavItem_Node extends Node
      * @param $lineno
      * @param $tag
      */
-    public function __construct(AssignNameExpression $valueTarget, Node $indent = null, Node $outdent = null, Node $lowerBody = null, $lineno, $tag = null)
+    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, $lineno, $tag = null)
     {
         parent::__construct([
             'value_target' => $valueTarget,
