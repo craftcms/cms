@@ -1243,6 +1243,8 @@ return [
     'Select all' => 'Select all',
     'Select transform' => 'Select transform',
     'Select' => 'Select',
+    'Select element' => 'Select element',
+    'Select {element}' => 'Select {element}',
     'Selection Label' => 'Selection Label',
     'Send activation email' => 'Send activation email',
     'Send an activation email now' => 'Send an activation email now',
