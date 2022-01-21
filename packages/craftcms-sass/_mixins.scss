@@ -610,7 +610,7 @@ $radioSize: 16px;
 
 @mixin select-input-focused-styles {
   outline-color: transparent;
-  background-color: transparentize($inputColor, 0.5);
+  background-color: transparentize($inputColor, 0.6);
 }
 
 @mixin readable {
