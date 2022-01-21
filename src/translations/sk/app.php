@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'Jedna z migrácií používateľa {name} zlyhala.',
     'One update available!' => 'Jedna aktualizácia k dispozícii!',
     'Online' => 'Online',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'Bloky ukladať len do webov, v ktorých boli vytvorené',
     'Only save entries to the site they were created in' => 'Záznamy ukladať len do webov, v ktorých boli vytvorené',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
