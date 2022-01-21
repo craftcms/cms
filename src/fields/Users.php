@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\db\Table as DbTable;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
@@ -104,5 +105,15 @@ class Users extends BaseRelationField
         $groupIds = Db::idsByUids(DbTable::USERGROUPS, $allowedGroupUids);
 
         return ['groupId' => array_values($groupIds)];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function createSelectionCondition(): ?ElementCondition
+    {
+        $condition = User::createCondition();
+        $condition->queryParams = ['group', 'groupId'];
+        return $condition;
     }
 }

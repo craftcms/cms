@@ -5,6 +5,7 @@ namespace craft\fields\conditions;
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\BaseRelationField;
 use Illuminate\Support\Collection;
@@ -58,6 +59,16 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         /** @var BaseRelationField $field */
         $field = $this->field();
         return (array)$field->getInputSources();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function selectionCondition(): ?ElementConditionInterface
+    {
+        /** @var BaseRelationField $field */
+        $field = $this->field();
+        return $field->getSelectionCondition();
     }
 
     /**

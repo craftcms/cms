@@ -59,6 +59,12 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $source = null;
 
     /**
+     * @var ElementConditionInterface|null
+     * @since 4.0.0
+     */
+    protected ?ElementConditionInterface $condition = null;
+
+    /**
      * @var array|null
      */
     protected ?array $viewState = null;
@@ -95,6 +101,7 @@ class ElementIndexesController extends BaseElementsController
         $this->context = $this->context();
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
+        $this->condition = $this->condition();
 
         if ($action->id !== 'filter-hud') {
             $this->viewState = $this->viewState();
@@ -407,6 +414,15 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
+        if ($this->condition) {
+            foreach ($this->condition->getConditionRules() as $rule) {
+                /** @var ElementConditionRuleInterface $rule */
+                foreach ($rule->getExclusiveQueryParams() as $param) {
+                    $condition->queryParams[] = $param;
+                }
+            }
+        }
+
         $condition->queryParams[] = 'site';
         $condition->queryParams[] = 'status';
 
@@ -453,6 +469,20 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Returns the condition that should be applied to the element query.
+     *
+     * @return ElementConditionInterface|null
+     * @return 4.0.0
+     */
+    protected function condition(): ?ElementConditionInterface
+    {
+        if ($conditionConfig = $this->request->getBodyParam('condition')) {
+            return Craft::$app->getConditions()->createCondition($conditionConfig);
+        }
+        return null;
+    }
+
+    /**
      * Returns the current view state.
      *
      * @return array
@@ -491,6 +521,11 @@ class ElementIndexesController extends BaseElementsController
                 /** @var ElementConditionInterface $sourceCondition */
                 $sourceCondition = $conditionsService->createCondition($this->source['condition']);
                 $sourceCondition->modifyQuery($query);
+        }
+
+        // Was a condition provided?
+        if (isset($this->condition)) {
+            $this->condition->modifyQuery($query);
         }
 
         // Override with the request's params
