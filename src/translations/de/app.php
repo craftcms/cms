@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'Eine der Migrationen von {name} ist fehlgeschlagen.',
     'One update available!' => 'Eine Aktualisierung ist verfügbar!',
     'Online' => 'Online',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'Speichere Blöcke nur auf der Seite, auf welcher sie erstellt wurden',
     'Only save entries to the site they were created in' => 'Speichere Einträge nur auf der Seite, auf welcher sie erstellt wurden',
     'Only show for users who match the following rules:' => 'Zeige nur Benutzer an, die die folgenden Bedingungen erfüllen:',
