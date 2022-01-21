@@ -198,11 +198,17 @@ export class AuthenticationChainHandler
             return;
         }
         this.loginForm.disableForm();
-
         this.clearErrors();
+
+        this.updateCurrentStepType();
         Craft.postActionRequest(this.performAuthenticationEndpoint, {
             alternateStep: stepType,
         }, this.processResponse.bind(this));
+    }
+
+    protected updateCurrentStepType()
+    {
+        this.currentStep = this.authenticationSteps[this.$authenticationStep.attr('rel')!]
     }
 
     /**
@@ -328,10 +334,8 @@ export class AuthenticationChainHandler
             let requestData: AuthenticationRequest;
 
             if (this.isExistingChain()) {
-                const stepType = this.$authenticationStep.attr('rel')!;
-                const stepHandler = this.authenticationSteps[stepType];
-                requestData = {...await stepHandler.prepareData(), ...additionalData};
-                this.currentStep = stepHandler;
+                this.updateCurrentStepType();
+                requestData = {...await this.currentStep!.prepareData(), ...additionalData};
             } else {
                 requestData = additionalData;
             }

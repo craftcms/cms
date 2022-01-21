@@ -22,7 +22,6 @@ export class WebAuthnStep extends AuthenticationStep
         this.$submit.addClass('hidden');
     }
 
-
     public cleanup()
     {
         this.$button.off('click', this.onButtonClick.bind(this));
@@ -75,7 +74,6 @@ export class WebAuthnStep extends AuthenticationStep
                 publicKey: requestOptions
             }) as PublicKeyCredential;
         } catch (error) {
-
             this.$button.removeClass('hidden');
             throw Craft.t('app', 'Failed to authenticate');
         }
