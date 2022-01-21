@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where the “New category” button on the Categories index page wasn’t working. ([#10399](https://github.com/craftcms/cms/issues/10399))
+- Fixed an error that occurred when saving an Assets field with a file that was in a temporary location within the `storage/` folder, if the `storage/` folder didn’t live within the project root. ([#10401](https://github.com/craftcms/cms/issues/10401))
 
 ## 3.7.30 - 2022-01-20
 
