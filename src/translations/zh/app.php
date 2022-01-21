@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => '一次 {name} 迁移失败。',
     'One update available!' => '1个可用更新！',
     'Online' => '在线',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => '只将区块保存到创建区块的站点',
     'Only save entries to the site they were created in' => '只将条目保存到创建条目的站点',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
