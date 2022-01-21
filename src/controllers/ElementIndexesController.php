@@ -393,12 +393,11 @@ class ElementIndexesController extends BaseElementsController
         $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
         // Filter out any condition rules that touch the same query params as the source criteria
-        $source = $this->source();
-        if ($source['type'] === ElementSources::TYPE_NATIVE) {
-            $condition->queryParams = array_keys($source['criteria'] ?? []);
+        if ($this->source['type'] === ElementSources::TYPE_NATIVE) {
+            $condition->queryParams = array_keys($this->source['criteria'] ?? []);
         } else {
             /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
+            $sourceCondition = Craft::$app->getConditions()->createCondition($this->source['condition']);
             $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
@@ -479,6 +478,7 @@ class ElementIndexesController extends BaseElementsController
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
+        $conditionsService = Craft::$app->getConditions();
 
         // Does the source specify any criteria attributes?
         switch ($this->source['type']) {
@@ -488,9 +488,9 @@ class ElementIndexesController extends BaseElementsController
                 }
                 break;
             case ElementSources::TYPE_CUSTOM:
-                /** @var ElementConditionInterface $condition */
-                $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
-                $condition->modifyQuery($query);
+                /** @var ElementConditionInterface $sourceCondition */
+                $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+                $sourceCondition->modifyQuery($query);
         }
 
         // Override with the request's params
@@ -512,12 +512,12 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Override with the custom filters
-        $conditionStr = $this->request->getBodyParam('filters');
-        if ($conditionStr) {
-            parse_str($conditionStr, $conditionConfig);
+        $filterConditionStr = $this->request->getBodyParam('filters');
+        if ($filterConditionStr) {
+            parse_str($filterConditionStr, $filterConditionConfig);
             /** @var ElementConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig['condition']);
-            $condition->modifyQuery($query);
+            $filterCondition = $conditionsService->createCondition($filterConditionConfig['condition']);
+            $filterCondition->modifyQuery($query);
         }
 
         // Exclude descendants of the collapsed element IDs
