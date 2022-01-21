@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.30.1 - 2022-01-21
 
 ### Fixed
 - Fixed a bug where the “New category” button on the Categories index page wasn’t working. ([#10399](https://github.com/craftcms/cms/issues/10399))
