@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'فشلت إحدى عمليات ترحيل {name}.',
     'One update available!' => 'يتوفر تحديث واحد!',
     'Online' => 'متصل',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'حفظ الكتل على الموقع الذي تم إنشاؤها فيه فقط',
     'Only save entries to the site they were created in' => 'حفظ الإدخالات على الموقع الذي تم إنشاؤها فيه فقط',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
