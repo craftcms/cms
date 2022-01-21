@@ -1263,7 +1263,7 @@ ul.icons {
     &:focus,
     &.focus,
     &:hover {
-      background-color: transparentize($inputColor, 0.65);
+      background-color: transparentize($inputColor, 0.7);
     }
 
     &:active,
