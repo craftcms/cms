@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'A(z) {name} egyik áttelepítése nem sikerült.',
     'One update available!' => 'Egy frissítés elérhető!',
     'Online' => 'Online',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'Csak arra a webhelyre mentse a blokkokat, amelyben létrejöttek',
     'Only save entries to the site they were created in' => 'Csak arra a webhelyre mentse a bejegyzéseket, amelyben létrejöttek',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
