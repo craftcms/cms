@@ -1010,7 +1010,7 @@ return [
     'One of {name}’s migrations failed.' => 'En af {name}s migreringer mislykkedes.',
     'One update available!' => 'En opdatering tilgængelig!',
     'Online' => 'Online',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'Gem kun blokke til det site, hvor de blev oprettet',
     'Only save entries to the site they were created in' => 'Gem kun poster til det site, hvor de blev oprettet',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
