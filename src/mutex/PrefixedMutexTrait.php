@@ -12,7 +12,7 @@ namespace craft\mutex;
  * @since 3.6.0
  * @mixin MysqlMutex
  * @mixin PgsqlMutex
- * @deprecated in 3.7.15. [[DbMutexTrait]] should be used instead.
+ * @deprecated in 3.7.15. [[MutexTrait]] should be used instead.
  */
 trait PrefixedMutexTrait
 {
