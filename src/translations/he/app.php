@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'אחת מההעברות של {name} נכשלה.',
     'One update available!' => 'עדכון אחד זמין!',
     'Online' => 'מקוון',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'שמור בלוקים רק באתר שבו הם נוצרו',
     'Only save entries to the site they were created in' => 'שמור רשומות רק באתר שבו הם נוצרו',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
