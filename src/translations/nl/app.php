@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'Een van de migraties van {name} is mislukt.',
     'One update available!' => 'Eén update beschikbaar!',
     'Online' => 'Online',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'Blokken alleen opslaan voor de site waarop ze zijn aangemaakt',
     'Only save entries to the site they were created in' => 'Inhoud alleen opslaan voor de site waarop deze is aangemaakt',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
