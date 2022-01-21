@@ -33,6 +33,10 @@
         {% endif %}
     {% endblock %}
 
+    {% block selectionConditionField %}
+        {{ (selectionCondition ?? false) ? selectionCondition|raw }}
+    {% endblock %}
+
     {% block limitField %}
         {% if field.allowLimit %}
             {{ forms.textField({

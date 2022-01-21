@@ -52,6 +52,7 @@
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
 - Added `craft\controllers\AssetIndexesController`.
 - Added `craft\controllers\ConditionsController`.
+- Added `craft\controllers\ElementIndexesController::$condition`.
 - Added `craft\controllers\FsController`.
 - Added `craft\controllers\ImageTransformsController`.
 - Added `craft\db\Migration::dropAllForeignKeysToTable()`.
@@ -127,6 +128,9 @@
 - Added `craft\fields\Assets::$restrictedLocationSource`, which replaces `$singleUploadLocationSource`.
 - Added `craft\fields\Assets::$restrictedLocationSubpath`, which replaces `$singleUploadLocationSubpath`.
 - Added `craft\fields\Assets::$restrictLocation`, which replaces `$useSingleFolder`.
+- Added `craft\fields\BaseRelationField::createSelectionCondition()`.
+- Added `craft\fields\BaseRelationField::getSelectionCondition()`.
+- Added `craft\fields\BaseRelationField::setSelectionCondition()`.
 - Added `craft\fields\conditions\DateFieldConditionRule`.
 - Added `craft\fields\conditions\FieldConditionRuleInterface`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait`.

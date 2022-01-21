@@ -661,6 +661,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             context: this.settings.context,
             elementType: this.elementType,
             source: this.instanceState.selectedSource,
+            condition: this.settings.condition,
             criteria: criteria,
             disabledElementIds: this.settings.disabledElementIds,
             viewState: $.extend({}, this.getSelectedSourceState()),
@@ -2130,6 +2131,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         context: 'index',
         modal: null,
         storageKey: null,
+        condition: null,
         criteria: null,
         batchSize: 100,
         disabledElementIds: [],
@@ -2204,6 +2206,7 @@ const FilterHud = Garnish.HUD.extend({
             data: {
                 elementType: this.elementIndex.elementType,
                 source: this.sourceKey,
+                condition: this.elementIndex.settings.condition,
                 id: `${this.id}-filters`,
             },
         }).then(response => {

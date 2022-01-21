@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Asset;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\errors\FsObjectNotFoundException;
@@ -725,6 +726,16 @@ class Assets extends BaseRelationField
         }
 
         return $criteria;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function createSelectionCondition(): ?ElementCondition
+    {
+        $condition = Asset::createCondition();
+        $condition->queryParams = ['volume', 'volumeId', 'kind'];
+        return $condition;
     }
 
     /**

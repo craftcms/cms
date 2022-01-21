@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\BlockElementInterface;
+use craft\base\conditions\ConditionInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -17,6 +18,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
@@ -200,6 +202,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected bool $sortable = true;
 
     /**
+     * @var ElementConditionInterface|array|null
+     * @see getSelectionCondition()
+     * @see setSelectionCondition()
+     */
+    private $_selectionCondition = null;
+
+    /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
@@ -268,6 +277,20 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'allowSelfRelations';
 
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+
+        if ($selectionCondition = $this->getSelectionCondition()) {
+            $settings['selectionCondition'] = $selectionCondition->getConfig();
+        }
+
+        return $settings;
     }
 
     /**
@@ -906,10 +929,28 @@ JS;
         /** @var ElementInterface|string $elementType */
         $elementType = $this->elementType();
 
+        $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
+        if ($selectionCondition) {
+            $selectionCondition->mainTag = 'div';
+            $selectionCondition->id = 'selection-condition';
+            $selectionCondition->name = 'selectionCondition';
+            $selectionCondition->forProjectConfig = true;
+
+            $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
+                'label' => Craft::t('app', 'Selectable {type} Condition', [
+                    'type' => $elementType::pluralDisplayName(),
+                ]),
+                'instructions' => Craft::t('app', 'Only allow {type} to be selected if they match following rules:', [
+                    'type' => $elementType::pluralLowerDisplayName(),
+                ]),
+            ]);
+        }
+
         return [
             'field' => $this,
             'elementType' => $elementType::lowerDisplayName(),
             'pluralElementType' => $elementType::pluralLowerDisplayName(),
+            'selectionCondition' => $selectionConditionHtml ?? null,
         ];
     }
 
@@ -970,6 +1011,7 @@ JS;
             'name' => $this->handle,
             'elements' => $value,
             'sources' => $this->getInputSources($element),
+            'condition' => $this->getSelectionCondition(),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => $this->allowSelfRelations,
@@ -1014,6 +1056,51 @@ JS;
         $event = new ElementCriteriaEvent();
         $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
         return $event->criteria;
+    }
+
+    /**
+     * Returns the element condition that should be used to determine which elements are selectable by the field.
+     *
+     * @return ElementConditionInterface|null
+     * @since 4.0.0
+     */
+    public function getSelectionCondition(): ?ElementConditionInterface
+    {
+        if ($this->_selectionCondition !== null && !$this->_selectionCondition instanceof ConditionInterface) {
+            $this->_selectionCondition = Craft::$app->getConditions()->createCondition($this->_selectionCondition);
+        }
+
+        return $this->_selectionCondition;
+    }
+
+    /**
+     * Sets the element condition that should be used to determine which elements are selectable by the field.
+     *
+     * @param ElementConditionInterface|string|array{class: string}|null $condition
+     * @since 4.0.0
+     */
+    public function setSelectionCondition($condition): void
+    {
+        if ($condition instanceof ConditionInterface && !$condition->getConditionRules()) {
+            $condition = null;
+        }
+
+        // Don't instantiate it unless we actually end up needing it.
+        // Avoids an infinite recursion bug (ElementCondition::conditionRuleTypes() => getAllFields() => setSelectionCondition() => ...)
+        $this->_selectionCondition = $condition;
+    }
+
+    /**
+     * Creates an element condition that should be used to determine which elements are selectable by the field.
+     *
+     * The condition’s `queryParams` property should be set to any element query params that are already covered by other field settings.
+     *
+     * @return ElementConditionInterface|null
+     * @since 4.0.0
+     */
+    protected function createSelectionCondition(): ?ElementConditionInterface
+    {
+        return null;
     }
 
     /**
