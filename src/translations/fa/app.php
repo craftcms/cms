@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'یکی از تغییر در ساختارهای {name} با شکست مواجه گردید.',
     'One update available!' => 'یک بروزرسانی موجود است!',
     'Online' => 'آنلاین',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'بلوک ها را تنها در سایتی که در آن ساخته شده اند ذخیره کن',
     'Only save entries to the site they were created in' => 'محتواها را تنها در سایتی که در آن ساخته شده اند ذخیره کن',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
