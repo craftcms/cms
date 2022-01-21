@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => '{name}의 마이그레이션 중 하나가 실패했습니다.',
     'One update available!' => '한 개의 업데이트가 이용 가능합니다!',
     'Online' => '온라인',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => '생성된 사이트에 블록 저장',
     'Only save entries to the site they were created in' => '생성된 사이트에 항목 저장',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
