@@ -18,6 +18,7 @@ use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
 use craft\helpers\Json;
 use craft\web\Controller;
+use Webauthn\PublicKeyCredentialSource;
 use Webauthn\Server;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -96,9 +97,6 @@ class AuthenticationController extends Controller
         }
 
         Craft::$app->getSession()->set(self::AUTH_USER_NAME, $username);
-
-        $userComponent = Craft::$app->getUser();
-        $userComponent->sendUsernameCookie($user);
 
         $authentication = Craft::$app->getAuthentication();
         $authentication->invalidateAuthenticationState();
@@ -208,13 +206,15 @@ class AuthenticationController extends Controller
             $duration = $generalConfig->userSessionDuration;
         }
 
-        Craft::$app->getUser()->login($this->_state->getAuthenticatedUser(), $duration);
+        $userComponent = Craft::$app->getUser();
+        $userComponent->login($this->_state->getAuthenticatedUser(), $duration);
         $session->remove(self::REMEMBER_ME);
         $this->_state = null;
 
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-        $userSession->removeReturnUrl();
+        $returnUrl = $userComponent->getReturnUrl();
+        $userComponent->removeReturnUrl();
+        $userComponent->sendUsernameCookie($user);
+        WebAuthn::refreshCredentialCookie($user);
 
         return $this->asJson([
             'success' => true,
@@ -276,6 +276,7 @@ class AuthenticationController extends Controller
             $options = WebAuthn::getCredentialCreationOptions($currentUser);
             $credentials = $server->loadAndCheckAttestationResponse(Json::encode($payload), $options, $request->asPsr7());
             $credentialRepository->saveNamedCredentialSource($credentials, $credentialName);
+            WebAuthn::setCredentialCookie($currentUser);
 
             $step = new WebAuthn();
             $output['html'] = $step->getUserSetupFormHtml($currentUser);
@@ -353,34 +354,6 @@ class AuthenticationController extends Controller
 
         $step = new AuthenticatorCode();
         $output['html'] = $step->getUserSetupFormHtml($currentUser);
-
-        return $this->asJson($output);
-    }
-
-    /**
-     * Switch to an alternative step on the auth chain.
-     *
-     * @param Chain $authenticationChain
-     * @param string $stepType
-     * @return Response
-     * @throws InvalidConfigException
-     */
-    private function _switchStep(State $authState, string $stepType): Response
-    {
-        $authState->selectAlternateStep($stepType);
-
-        $step = $authenticationChain->switchStep($stepType);
-        $session = Craft::$app->getSession();
-
-        $output = [
-            'html' => $step->getInputFieldHtml(),
-            'footHtml' => Craft::$app->getView()->getBodyHtml(),
-            'alternatives' => $authenticationChain->getAlternativeSteps(get_class($step)),
-            'stepType' => $step->getStepType(),
-            'message' => $session->getNotice(),
-            'error' => $session->getError(),
-
-        ];
 
         return $this->asJson($output);
     }

@@ -84,7 +84,7 @@ class Authentication extends Component
      */
     public function isWebAuthnAvailable(User $user): bool
     {
-        return $this->getIsWebAuthnAllowed() && Craft::$app->getRequest()->getIsSecureConnection() && WebAuthn::userHasCredentialsConfigured($user);
+        return $this->getIsWebAuthnAllowed() && WebAuthn::getIsApplicable($user);
     }
 
     /**
