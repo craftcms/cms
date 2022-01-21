@@ -215,11 +215,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         // Config normalization
         $nullables = [
+            'limit',
+            'selectionLabel',
+            'selectionLabel',
             'source',
             'targetSiteId',
             'viewMode',
-            'limit',
-            'selectionLabel',
         ];
         foreach ($nullables as $name) {
             if (($config[$name] ?? null) === '') {
@@ -265,16 +266,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes[] = 'sources';
-        $attributes[] = 'source';
-        $attributes[] = 'targetSiteId';
-        $attributes[] = 'viewMode';
+        $attributes[] = 'allowSelfRelations';
         $attributes[] = 'limit';
+        $attributes[] = 'localizeRelations';
         $attributes[] = 'selectionLabel';
         $attributes[] = 'showSiteMenu';
-        $attributes[] = 'localizeRelations';
+        $attributes[] = 'source';
+        $attributes[] = 'sources';
+        $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
-        $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'viewMode';
 
         return $attributes;
     }
