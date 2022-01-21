@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'Не удалось выполнить один из переносов {name}.',
     'One update available!' => 'Доступно одно обновление!',
     'Online' => 'Интерактивный режим',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'Сохранять блоки только на том сайте, где они были созданы',
     'Only save entries to the site they were created in' => 'Сохранять записи только на том сайте, где они были созданы',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
