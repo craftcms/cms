@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the “New category” button on the Categories index page wasn’t working. ([#10399](https://github.com/craftcms/cms/issues/10399))
+
 ## 3.7.30 - 2022-01-20
 
 > {warning} The `mutex` component now uses a file-based driver by default. Load-balanced environments should [switch to a different driver](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
