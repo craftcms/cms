@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
+use Twig\Error\RuntimeError;
 use yii\base\Component;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
@@ -50,7 +51,11 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         // Render and return the template
         try {
             $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
-        } catch (ExitException $e) {
+        } catch (RuntimeError $e) {
+            if (!$e->getPrevious() instanceof ExitException) {
+                throw $e;
+            }
+
             // Something called Craft::$app->end()
             return;
         }
