@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => '{name} のマイグレーションの 1 つが失敗しました。',
     'One update available!' => '1件のアップデートがあります！',
     'Online' => 'オンライン',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => '作成したサイトにのみブロックを保存する',
     'Only save entries to the site they were created in' => '作成したサイトにのみエントリを保存する',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
