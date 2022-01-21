@@ -1009,7 +1009,7 @@ return [
     'One of {name}’s migrations failed.' => 'En av {name}s migreringar misslyckades.',
     'One update available!' => 'En uppdatering finns!',
     'Online' => 'Online',
-    'Only allow {type} to be selected if they match following rules:' => 'Only allow {type} to be selected if they match following rules:',
+    'Only allow {type} to be selected if they match the following rules:' => 'Only allow {type} to be selected if they match the following rules:',
     'Only save blocks to the site they were created in' => 'Spara endast block till den webbplats de skapades på',
     'Only save entries to the site they were created in' => 'Spara endast poster till den webbplats de skapades på',
     'Only show for users who match the following rules:' => 'Only show for users who match the following rules:',
