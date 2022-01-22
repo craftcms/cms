@@ -36,18 +36,18 @@ class CpScreenResponseBehavior extends Behavior
     public ?string $title = null;
 
     /**
-     * @var array|null Breadcrumbs.
+     * @var array Breadcrumbs.
      * @see crumbs()
      * @see addCrumb()
      */
-    public ?array $crumbs = null;
+    public array $crumbs = [];
 
     /**
-     * @var array|null Tabs.
+     * @var array Tabs.
      * @see tabs()
      * @see addTab()
      */
-    public ?array $tabs = null;
+    public array $tabs = [];
 
     /**
      * @var string|null The form action
@@ -57,7 +57,7 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * @var string|null The `redirect` param.
-     * @see redirect()
+     * @see redirectParam()
      */
     public ?string $redirectParam = null;
 
@@ -84,10 +84,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the document title.
      *
-     * @param string $value
+     * @param string|null $value
      * @return Response|self
      */
-    public function docTitle(string $value): Response
+    public function docTitle(?string $value): Response
     {
         $this->docTitle = $value;
         return $this->owner;
@@ -96,10 +96,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the page title.
      *
-     * @param string $value
+     * @param string|null $value
      * @return Response|self
      */
-    public function title(string $value): Response
+    public function title(?string $value): Response
     {
         $this->title = $value;
         return $this->owner;
@@ -107,6 +107,8 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * Sets the breadcrumbs.
+     *
+     * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
      *
      * @param array $value
      * @return Response|self
@@ -138,6 +140,16 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * Sets the tabs.
+     *
+     * Each tab should be represented by a nested array with the following keys:
+     *
+     * - `label` – The human-facing tab label.
+     * - `url` – The `href` attribute of the tab’s anchor. Set to `#container-ids` if the tabs are meant to toggle in-page content.
+     * - `class` _(optional)_ - Class name(s) that should be added to the tab’s anchor.
+     * - `visible` _(optional)_ – Whether the tab should be initially visible (defaults to `true`).
+     *
+     * If the tabs are meant to toggle in-page content, the array keys should be set to the `id` attributes of the
+     * container elements they represent.
      *
      * @param array $value
      * @return Response|self
@@ -172,10 +184,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the form action.
      *
-     * @param string $value
+     * @param string|null $value
      * @return Response|self
      */
-    public function actionParam(string $value): Response
+    public function actionParam(?string $value): Response
     {
         $this->actionParam = $value;
         return $this->owner;
@@ -184,10 +196,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the `redirect` param URL.
      *
-     * @param string $value
+     * @param string|null $value
      * @return Response|self
      */
-    public function redirectParam(string $value): Response
+    public function redirectParam(?string $value): Response
     {
         $this->redirectParam = $value;
         return $this->owner;
@@ -196,10 +208,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the `redirect` param that should be used if the form is submitted with a keyboard shortcut.
      *
-     * @param string $value
+     * @param string|null $value
      * @return Response|self
      */
-    public function saveShortcutRedirect(string $value): Response
+    public function saveShortcutRedirect(?string $value): Response
     {
         $this->saveShortcutRedirect = $value;
         return $this->owner;
@@ -208,10 +220,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the callable that returns the rendered content HTML.
      *
-     * @param callable $value
+     * @param callable|null $value
      * @return Response|self
      */
-    public function content(callable $value): Response
+    public function content(?callable $value): Response
     {
         $this->content = $value;
         return $this->owner;
@@ -233,10 +245,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the callable that returns the rendered sidebar HTML.
      *
-     * @param callable $value
+     * @param callable|null $value
      * @return Response|self
      */
-    public function sidebar(callable $value): Response
+    public function sidebar(?callable $value): Response
     {
         $this->sidebar = $value;
         return $this->owner;
