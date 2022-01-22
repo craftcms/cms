@@ -141,9 +141,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public ?string $viewMode = null;
 
     /**
-     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     * @var int|null The maximum number of relations this field can have  (used if [[allowLimit]] is set to true).
+     * @since 4.0.0
      */
-    public ?int $limit = null;
+    public ?int $minRelations = null;
+
+    /**
+     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
+     * @since 4.0.0
+     */
+    public ?int $maxRelations = null;
 
     /**
      * @var string|null The label that should be used on the selection input
@@ -166,7 +173,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public bool $allowMultipleSources = true;
 
     /**
-     * @var bool Whether to allow the Limit setting
+     * @var bool Whether to show the Min Relations and Max Relations settings.
      */
     public bool $allowLimit = true;
 
@@ -213,9 +220,15 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function __construct(array $config = [])
     {
+        // limit => maxRelations
+        if (array_key_exists('limit', $config)) {
+            $config['maxRelations'] = ArrayHelper::remove($config, 'limit');
+        }
+
         // Config normalization
         $nullables = [
-            'limit',
+            'maxRelations',
+            'minRelations',
             'selectionLabel',
             'selectionLabel',
             'source',
@@ -256,7 +269,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['limit'], 'number', 'integerOnly' => true];
+        $rules[] = [['minRelations', 'maxRelations'], 'number', 'integerOnly' => true];
         return $rules;
     }
 
@@ -267,8 +280,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'limit';
         $attributes[] = 'localizeRelations';
+        $attributes[] = 'maxRelations';
+        $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
         $attributes[] = 'showSiteMenu';
         $attributes[] = 'source';
@@ -311,7 +325,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $rules = [
             [
                 ArrayValidator::class,
-                'max' => $this->allowLimit && $this->limit ? $this->limit : null,
+                'min' => $this->allowLimit ? $this->minRelations : null,
+                'max' => $this->allowLimit ? $this->maxRelations : null,
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
             ],
         ];
@@ -461,8 +477,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query->id(false);
         }
 
-        if ($this->allowLimit && $this->limit) {
-            $query->limit($this->limit);
+        if ($this->allowLimit && $this->maxRelations) {
+            $query->limit($this->maxRelations);
         }
 
         return $query;
@@ -1018,7 +1034,7 @@ JS;
             'allowSelfRelations' => $this->allowSelfRelations,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
-            'limit' => $this->allowLimit ? $this->limit : null,
+            'limit' => $this->allowLimit ? $this->maxRelations : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable,

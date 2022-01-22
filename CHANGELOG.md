@@ -7,6 +7,7 @@
 - Admins can now create custom element sources from the Customize Sources modal. ([#8423](https://github.com/craftcms/cms/discussions/8423))
 - Field layout tabs, fields, and UI elements can now be conditionally shown based on properties of the current user and/or element being edited. ([#8099](https://github.com/craftcms/cms/discussions/8099), [#8154](https://github.com/craftcms/cms/discussions/8154))
 - Assets, Entries, and Users fields have new condition settings that can be used to further limit which elements should be relatable, beyond the existing field settings. ([#10393](https://github.com/craftcms/cms/pull/10393))
+- Assets, Entries, and Users fields have new “Min Relations” settings, and their former “Limit” settings have been renamed to “Max Relations”. ([#8621](https://github.com/craftcms/cms/discussions/8621))
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
@@ -295,6 +296,7 @@
 - GraphQL field types that can’t be null now specify so in their type declaration.
 - The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
 - Editable tables now support `allowAdd`, `allowDelete`, and `allowReorder` settings, replacing `staticRows`. ([#10163](https://github.com/craftcms/cms/pull/10163))
+- The `limitField` macro in the `_components/fieldtypes/elementfieldsettings` control panel template has been renamed to `limitFields`.
 - Elements’ `searchScore` GraphQL fields are now returned as integers.
 - Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
 - Plugins’ `$description` properties must now have a `?string` type declaration.
@@ -396,6 +398,7 @@
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
+- `craft\fields\BaseRelationField::$limit` has been renamed to `$maxRelations`.
 - `craft\fields\BaseRelationField::elementType()` is now public.
 - `craft\fields\BaseRelationField::inputSelectionCriteria()` has been renamed to `getInputSelectionCriteria()`, and is now public.
 - `craft\fields\BaseRelationField::inputSources()` has been renamed to `getInputSources()`, and is now public.
