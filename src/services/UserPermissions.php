@@ -21,6 +21,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\models\UserGroup;
+use craft\models\Volume;
 use craft\records\UserPermission as UserPermissionRecord;
 use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use yii\base\Component;
@@ -234,7 +235,7 @@ class UserPermissions extends Component
                 'heading' => Craft::t('app', 'Volume - {volume}', [
                     'volume' => Craft::t('site', $volume->name),
                 ]),
-                'permissions' => $this->_volumePermissions($volume->uid),
+                'permissions' => $this->_volumePermissions($volume),
             ];
         }
 
@@ -495,23 +496,22 @@ class UserPermissions extends Component
      */
     private function _getSingleEntryPermissions(Section $section): array
     {
-        $suffix = ':' . $section->uid;
-
         return [
-            "editEntries$suffix" => [
-                'label' => Craft::t('app', 'Edit “{title}”',
-                    ['title' => Craft::t('site', $section->name)]),
+            "editEntries:$section->uid" => [
+                'label' => Craft::t('app', 'Edit “{title}”', [
+                    'title' => Craft::t('site', $section->name),
+                ]),
                 'nested' => [
-                    "publishEntries$suffix" => [
+                    "publishEntries:$section->uid" => [
                         'label' => Craft::t('app', 'Publish live changes'),
                     ],
-                    "editPeerEntryDrafts$suffix" => [
+                    "editPeerEntryDrafts:$section->uid" => [
                         'label' => Craft::t('app', 'Edit other authors’ drafts'),
                         'nested' => [
-                            "publishPeerEntryDrafts$suffix" => [
+                            "publishPeerEntryDrafts:$section->uid" => [
                                 'label' => Craft::t('app', 'Publish other authors’ drafts'),
                             ],
-                            "deletePeerEntryDrafts$suffix" => [
+                            "deletePeerEntryDrafts:$section->uid" => [
                                 'label' => Craft::t('app', 'Delete other authors’ drafts'),
                             ],
                         ],
@@ -529,39 +529,37 @@ class UserPermissions extends Component
      */
     private function _getEntryPermissions(Section $section): array
     {
-        $suffix = ':' . $section->uid;
-
         return [
-            "editEntries$suffix" => [
+            "editEntries:$section->uid" => [
                 'label' => Craft::t('app', 'Edit entries'),
                 'nested' => [
-                    "createEntries$suffix" => [
+                    "createEntries:$section->uid" => [
                         'label' => Craft::t('app', 'Create entries'),
                     ],
-                    "publishEntries$suffix" => [
+                    "publishEntries:$section->uid" => [
                         'label' => Craft::t('app', 'Publish live changes'),
                     ],
-                    "deleteEntries$suffix" => [
+                    "deleteEntries:$section->uid" => [
                         'label' => Craft::t('app', 'Delete entries'),
                     ],
-                    "editPeerEntries$suffix" => [
+                    "editPeerEntries:$section->uid" => [
                         'label' => Craft::t('app', 'Edit other authors’ entries'),
                         'nested' => [
-                            "publishPeerEntries$suffix" => [
+                            "publishPeerEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Publish live changes for other authors’ entries'),
                             ],
-                            "deletePeerEntries$suffix" => [
+                            "deletePeerEntries:$section->uid" => [
                                 'label' => Craft::t('app', 'Delete other authors’ entries'),
                             ],
                         ],
                     ],
-                    "editPeerEntryDrafts$suffix" => [
+                    "editPeerEntryDrafts:$section->uid" => [
                         'label' => Craft::t('app', 'Edit other authors’ drafts'),
                         'nested' => [
-                            "publishPeerEntryDrafts$suffix" => [
+                            "publishPeerEntryDrafts:$section->uid" => [
                                 'label' => Craft::t('app', 'Publish other authors’ drafts'),
                             ],
-                            "deletePeerEntryDrafts$suffix" => [
+                            "deletePeerEntryDrafts:$section->uid" => [
                                 'label' => Craft::t('app', 'Delete other authors’ drafts'),
                             ],
                         ],
@@ -582,9 +580,10 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($globalSets as $globalSet) {
-            $permissions['editGlobalSet:' . $globalSet->uid] = [
-                'label' => Craft::t('app', 'Edit “{title}”',
-                    ['title' => Craft::t('site', $globalSet->name)]),
+            $permissions["editGlobalSet:$globalSet->uid"] = [
+                'label' => Craft::t('app', 'Edit “{title}”', [
+                    'title' => Craft::t('site', $globalSet->name),
+                ]),
             ];
         }
 
@@ -602,9 +601,10 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($groups as $group) {
-            $permissions['editCategories:' . $group->uid] = [
-                'label' => Craft::t('app', 'Edit “{title}”',
-                    ['title' => Craft::t('site', $group->name)]),
+            $permissions["editCategories:$group->uid"] = [
+                'label' => Craft::t('app', 'Edit “{title}”', [
+                    'title' => Craft::t('site', $group->name),
+                ]),
             ];
         }
 
@@ -614,46 +614,44 @@ class UserPermissions extends Component
     /**
      * Returns the array source permissions.
      *
-     * @param string $volumeUid
+     * @param Volume $volume
      * @return array
      */
-    private function _volumePermissions(string $volumeUid): array
+    private function _volumePermissions(Volume $volume): array
     {
-        $suffix = ':' . $volumeUid;
-
         return [
-            "viewVolume$suffix" => [
+            "viewVolume:$volume->uid" => [
                 'label' => Craft::t('app', 'View volume'),
                 'nested' => [
-                    "saveAssetInVolume$suffix" => [
+                    "saveAssetInVolume:$volume->uid" => [
                         'label' => Craft::t('app', 'Upload files'),
                     ],
-                    "createFoldersInVolume$suffix" => [
+                    "createFoldersInVolume:$volume->uid" => [
                         'label' => Craft::t('app', 'Create subfolders'),
                     ],
-                    "deleteFilesAndFoldersInVolume$suffix" => [
+                    "deleteFilesAndFoldersInVolume:$volume->uid" => [
                         'label' => Craft::t('app', 'Remove files and folders'),
                     ],
-                    "replaceFilesInVolume$suffix" => [
+                    "replaceFilesInVolume:$volume->uid" => [
                         'label' => Craft::t('app', 'Replace files'),
                     ],
-                    "editImagesInVolume$suffix" => [
+                    "editImagesInVolume:$volume->uid" => [
                         'label' => Craft::t('app', 'Edit images'),
                     ],
-                    "viewPeerFilesInVolume$suffix" => [
+                    "viewPeerFilesInVolume:$volume->uid" => [
                         'label' => Craft::t('app', 'View files uploaded by other users'),
                         'nested' => [
-                            "editPeerFilesInVolume$suffix" => [
+                            "editPeerFilesInVolume:$volume->uid" => [
                                 'label' => Craft::t('app', 'Edit files uploaded by other users'),
                             ],
-                            "replacePeerFilesInVolume$suffix" => [
+                            "replacePeerFilesInVolume:$volume->uid" => [
                                 'label' => Craft::t('app', 'Replace files uploaded by other users'),
                                 'warning' => Craft::t('app', 'When someone replaces a file, the record of who uploaded the file will be updated as well.'),
                             ],
-                            "deletePeerFilesInVolume$suffix" => [
+                            "deletePeerFilesInVolume:$volume->uid" => [
                                 'label' => Craft::t('app', 'Remove files uploaded by other users'),
                             ],
-                            "editPeerImagesInVolume$suffix" => [
+                            "editPeerImagesInVolume:$volume->uid" => [
                                 'label' => Craft::t('app', 'Edit images uploaded by other users'),
                             ],
                         ],
