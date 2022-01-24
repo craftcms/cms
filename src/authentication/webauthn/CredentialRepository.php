@@ -9,6 +9,7 @@ use craft\authentication\type\WebAuthn;
 use craft\db\Table;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\records\AuthWebAuthn;
@@ -72,7 +73,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
             $record->credentialId = Base64Url::encode($publicKeyCredentialSource->getPublicKeyCredentialId());
         }
 
-        $record->dateLastUsed = Db::prepareDateForDb($publicKeyCredentialSource->getCounter());
+        $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
         $record->credential = Json::encode($publicKeyCredentialSource);
         $record->save();
 
@@ -82,7 +83,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
 
     /**
      * Update the date last used field for a credential.
-     * 
+     *
      * @param PublicKeyCredentialSource $publicKeyCredentialSource
      * @return bool
      */
@@ -92,7 +93,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
             return false;
         }
 
-        $record->dateLastUsed = Db::prepareDateForDb($publicKeyCredentialSource->getCounter());
+        $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
         return $record->save();
     }
 
