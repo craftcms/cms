@@ -17,7 +17,6 @@ export class WebAuthnStep extends AuthenticationStep
 
     public init()
     {
-        this.$loginForm.trigger('submit');
         this.$button.on('click', this.onButtonClick.bind(this));
         this.$submit.addClass('hidden');
     }
