@@ -705,6 +705,11 @@ Garnish = $.extend(Garnish, {
     },
 
     on: function(target, events, data, handler) {
+        if (typeof target === 'undefined') {
+            console.warn('Garnish.on() called for an invalid target class.');
+            return;
+        }
+
         if (typeof data === 'function') {
             handler = data;
             data = {};
