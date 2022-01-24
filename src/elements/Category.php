@@ -620,7 +620,7 @@ class Category extends Element
         ];
 
         if ($this->structureId) {
-            // Remember the parent ID, in case the entry needs to be restored later
+            // Remember the parent ID, in case the category needs to be restored later
             $parentId = $this->getAncestors(1)
                 ->anyStatus()
                 ->select(['elements.id'])
@@ -716,7 +716,7 @@ class Category extends Element
     }
 
     /**
-     * Returns whether the category has been assigned a new parent entry.
+     * Returns whether the category has been assigned a new parent.
      *
      * @return bool
      * @see beforeSave()
@@ -732,7 +732,7 @@ class Category extends Element
     }
 
     /**
-     * Checks if an category was submitted with a new parent category selected.
+     * Checks if the category has been assigned a new parent.
      *
      * @return bool
      */
