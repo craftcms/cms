@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
+
 ## 3.7.30.1 - 2022-01-21
 
 ### Fixed

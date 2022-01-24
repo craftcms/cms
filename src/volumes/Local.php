@@ -18,6 +18,7 @@ use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
+use yii\base\Exception;
 use yii\validators\InlineValidator;
 
 /**
@@ -77,8 +78,12 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         // If the folder doesn't exist yet, create it with a .gitignore file
         $path = $this->getRootPath();
         if ($created = !file_exists($path)) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
+            try {
+                FileHelper::createDirectory($path);
+                FileHelper::writeGitignoreFile($path);
+            } catch (Exception $exception) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Unable to use the selected directory for the volume.'));
+            }
         }
 
         // Make sure it’s not within any of the system directories
