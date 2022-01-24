@@ -348,7 +348,6 @@ export class AuthenticationChainHandler
             const endpoint = this.recoverAccount ? this.recoverAccountEndpoint : (this.isExistingChain() ? this.performAuthenticationEndpoint : this.startAuthenticationEndpoint);
             this.performStep(endpoint, requestData);
         } catch (error: any) {
-            console.log(error);
             this.loginForm.showError(error)
             this.loginForm.enableForm();
         }
