@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace craft\authentication\webauthn;
 
+use Base64Url\Base64Url;
 use Craft;
 use craft\authentication\type\WebAuthn;
 use craft\db\Table;
@@ -25,7 +26,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
      */
     public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
     {
-        $record = AuthWebAuthn::findOne(['credentialId' => base64_encode($publicKeyCredentialId)]);
+        $record = AuthWebAuthn::findOne(['credentialId' => Base64Url::encode($publicKeyCredentialId)]);
         if ($record) {
             return PublicKeyCredentialSource::createFromArray(Json::decodeIfJson($record->credential));
         }
@@ -64,11 +65,11 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
     public function saveNamedCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource, string $credentialName = ''): void
     {
         // The credential gets re-saved on use. Allow setting userId and credentialId only for new credentials.
-        if (!($record = AuthWebAuthn::findOne(['credentialId' => base64_encode($publicKeyCredentialSource->getPublicKeyCredentialId())]))) {
+        if (!($record = AuthWebAuthn::findOne(['credentialId' => Base64Url::encode($publicKeyCredentialSource->getPublicKeyCredentialId())]))) {
             $record = new AuthWebAuthn();
             $record->userId = Db::idByUid(Table::ELEMENTS, $publicKeyCredentialSource->getUserHandle());
             $record->name = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credentials');
-            $record->credentialId = base64_encode($publicKeyCredentialSource->getPublicKeyCredentialId());
+            $record->credentialId = Base64Url::encode($publicKeyCredentialSource->getPublicKeyCredentialId());
         }
 
         $record->dateLastUsed = Db::prepareDateForDb($publicKeyCredentialSource->getCounter());
@@ -77,6 +78,22 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
 
         Craft::$app->getSession()->remove(WebAuthn::WEBAUTHN_CREDENTIAL_OPTION_KEY);
         Craft::$app->getSession()->remove(WebAuthn::WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY);
+    }
+
+    /**
+     * Update the date last used field for a credential.
+     * 
+     * @param PublicKeyCredentialSource $publicKeyCredentialSource
+     * @return bool
+     */
+    public static function updateDateLastUsed(PublicKeyCredentialSource $publicKeyCredentialSource): bool
+    {
+        if (!($record = AuthWebAuthn::findOne(['credentialId' => Base64Url::encode($publicKeyCredentialSource->getPublicKeyCredentialId())]))) {
+            return false;
+        }
+
+        $record->dateLastUsed = Db::prepareDateForDb($publicKeyCredentialSource->getCounter());
+        return $record->save();
     }
 
     /**

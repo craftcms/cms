@@ -37,7 +37,14 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
      */
     public const WEBAUTHN_CREDENTIAL_OPTION_KEY = 'user.webauthn.credentialOptions';
 
+    /**
+     * The key for session to use for storing the WebAuthn credential options.
+     */
     public const WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY = 'user.webauthn.credentialRequestOptions';
+
+    /**
+     * The key for session to use for storing the WebAuthn credential options.
+     */
     public const WEBAUTHN_COOKIE_NAME = 'craft_webauthn';
 
     /**
@@ -76,7 +83,7 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
         $credentialResponse = Json::encode($credentials['credentialResponse']);
 
         try {
-            self::getWebauthnServer()->loadAndCheckAssertionResponse(
+            $credentials = self::getWebauthnServer()->loadAndCheckAssertionResponse(
                 $credentialResponse,
                 Craft::$app->getSession()->get(self::WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY),
                 self::getUserEntity($user),
@@ -86,6 +93,8 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
             Craft::$app->getErrorHandler()->logException($exception);
             return false;
         }
+
+        CredentialRepository::updateDateLastUsed($credentials);
 
         return true;
     }
