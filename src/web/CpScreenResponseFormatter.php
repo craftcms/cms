@@ -50,7 +50,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     {
         $namespace = StringHelper::randomString(10);
         $view = Craft::$app->getView();
-        $tabs = $behavior->tabs ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
+        $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
             'tabs' => $behavior->tabs
         ], View::TEMPLATE_MODE_CP), $namespace) : null;
         $content = $behavior->content ? $view->namespaceInputs($behavior->content, $namespace) : null;
@@ -60,7 +60,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'namespace' => $namespace,
             'title' => $behavior->title,
             'tabs' => $tabs,
-            'action' => $behavior->actionParam,
+            'action' => $behavior->action,
             'content' => $content,
             'sidebar' => $sidebar,
             'headHtml' => $view->getHeadHtml(),
@@ -75,10 +75,10 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     private function _formatTemplate(YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
         $content = $behavior->content ? call_user_func($behavior->content) : '';
-        if ($behavior->actionParam) {
-            $content .= Html::actionInput($behavior->actionParam);
-            if ($behavior->redirectParam) {
-                $content .= Html::redirectInput($behavior->redirectParam);
+        if ($behavior->action) {
+            $content .= Html::actionInput($behavior->action);
+            if ($behavior->redirectUrl) {
+                $content .= Html::redirectInput($behavior->redirectUrl);
             }
         }
 
@@ -90,8 +90,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'title' => $behavior->title,
                 'crumbs' => $behavior->crumbs,
                 'tabs' => $behavior->tabs,
-                'fullPageForm' => (bool)$behavior->actionParam,
-                'saveShortcutRedirect' => $behavior->saveShortcutRedirect,
+                'fullPageForm' => (bool)$behavior->action,
+                'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl,
                 'content' => $content,
                 'details' => $behavior->sidebar ? call_user_func($behavior->sidebar) : null,
             ],

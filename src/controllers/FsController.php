@@ -112,8 +112,8 @@ class FsController extends Controller
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
-            ->actionParam('fs/save')
-            ->redirectParam('settings/filesystems')
+            ->action('fs/save')
+            ->redirectUrl('settings/filesystems')
             ->contentTemplate('settings/filesystems/_edit', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,

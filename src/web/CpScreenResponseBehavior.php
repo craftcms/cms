@@ -51,21 +51,22 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * @var string|null The form action
-     * @see actionParam()
+     * @see action()
      */
-    public ?string $actionParam = null;
+    public ?string $action = null;
 
     /**
-     * @var string|null The `redirect` param.
-     * @see redirectParam()
+     * @var string|null The URL the form should redirect to after posting
+     * @see redirectUrl()
      */
-    public ?string $redirectParam = null;
+    public ?string $redirectUrl = null;
 
     /**
-     * @var string|null The `redirect` param that should be used if the form is submitted with a keyboard shortcut
-     * @see saveShortcutRedirect()
+     * @var string|null The URL the form should redirect to after posting, if submitted via the
+     * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
+     * @see saveShortcutRedirectUrl()
      */
-    public ?string $saveShortcutRedirect = null;
+    public ?string $saveShortcutRedirectUrl = null;
 
     /**
      * @var callable|null Callable that returns the rendered content HTML
@@ -187,33 +188,34 @@ class CpScreenResponseBehavior extends Behavior
      * @param string|null $value
      * @return Response|self
      */
-    public function actionParam(?string $value): Response
+    public function action(?string $value): Response
     {
-        $this->actionParam = $value;
+        $this->action = $value;
         return $this->owner;
     }
 
     /**
-     * Sets the `redirect` param URL.
+     * Sets the URL the form should redirect to after posting
      *
      * @param string|null $value
      * @return Response|self
      */
-    public function redirectParam(?string $value): Response
+    public function redirectUrl(?string $value): Response
     {
-        $this->redirectParam = $value;
+        $this->redirectUrl = $value;
         return $this->owner;
     }
 
     /**
-     * Sets the `redirect` param that should be used if the form is submitted with a keyboard shortcut.
+     * Sets URL the form should redirect to after posting, if submitted via the
+     * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
      *
      * @param string|null $value
      * @return Response|self
      */
-    public function saveShortcutRedirect(?string $value): Response
+    public function saveShortcutRedirectUrl(?string $value): Response
     {
-        $this->saveShortcutRedirect = $value;
+        $this->saveShortcutRedirectUrl = $value;
         return $this->owner;
     }
 
