@@ -24,6 +24,12 @@ class CpScreenResponseBehavior extends Behavior
     const NAME = 'cp-screen';
 
     /**
+     * @var callable|null Callable that will be called before other properties are added to the screen.
+     * @see prepareScreen()
+     */
+    public $prepareScreen = null;
+
+    /**
      * @var string|null The document title. If null, [[title]] will be used.
      * @see docTitle()
      */
@@ -69,18 +75,30 @@ class CpScreenResponseBehavior extends Behavior
     public ?string $saveShortcutRedirectUrl = null;
 
     /**
-     * @var callable|null Callable that returns the rendered content HTML
+     * @var string|callable|null The content HTML
      * @see content()
      * @see contentTemplate()
      */
     public $content = null;
 
     /**
-     * @var callable|null Callable that returns the rendered sidebar HTML
+     * @var string|callable|null The sidebar HTML
      * @see sidebar()
      * @see sidebarTemplate()
      */
     public $sidebar = null;
+
+    /**
+     * Sets a callable that will be called before other properties are added to the screen.
+     *
+     * @param callable|null $value
+     * @return Response|self
+     */
+    public function prepareScreen(?callable $value): Response
+    {
+        $this->prepareScreen = $value;
+        return $this->owner;
+    }
 
     /**
      * Sets the document title.
@@ -220,12 +238,12 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets the callable that returns the rendered content HTML.
+     * Sets the content HTML.
      *
-     * @param callable|null $value
+     * @param string|callable|null $value
      * @return Response|self
      */
-    public function content(?callable $value): Response
+    public function content($value): Response
     {
         $this->content = $value;
         return $this->owner;
@@ -245,12 +263,12 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets the callable that returns the rendered sidebar HTML.
+     * Sets the sidebar HTML.
      *
-     * @param callable|null $value
+     * @param string|callable|null $value
      * @return Response|self
      */
-    public function sidebar(?callable $value): Response
+    public function sidebar($value): Response
     {
         $this->sidebar = $value;
         return $this->owner;

@@ -50,8 +50,13 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     {
         $namespace = StringHelper::randomString(10);
         $view = Craft::$app->getView();
+        if ($behavior->prepareScreen) {
+            $view->setNamespace($namespace);
+            call_user_func($behavior->prepareScreen, $response);
+            $view->setNamespace(null);
+        }
         $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
-            'tabs' => $behavior->tabs
+            'tabs' => $behavior->tabs,
         ], View::TEMPLATE_MODE_CP), $namespace) : null;
         $content = $behavior->content ? $view->namespaceInputs($behavior->content, $namespace) : null;
         $sidebar = $behavior->sidebar ? $view->namespaceInputs($behavior->sidebar, $namespace) : null;
@@ -74,7 +79,12 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
     private function _formatTemplate(YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
-        $content = $behavior->content ? call_user_func($behavior->content) : '';
+        if ($behavior->prepareScreen) {
+            call_user_func($behavior->prepareScreen, $response);
+        }
+
+        $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
+
         if ($behavior->action) {
             $content .= Html::actionInput($behavior->action);
             if ($behavior->redirectUrl) {
@@ -93,7 +103,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'fullPageForm' => (bool)$behavior->action,
                 'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl,
                 'content' => $content,
-                'details' => $behavior->sidebar ? call_user_func($behavior->sidebar) : null,
+                'details' => is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar,
             ],
             'templateMode' => View::TEMPLATE_MODE_CP,
         ]);
