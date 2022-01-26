@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -358,6 +359,11 @@ class Application extends \yii\web\Application
             return;
         }
 
+        // if CRAFT_EPHEMERAL is defined don't try to create the resource path
+        if (defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true) {
+            return;
+        }
+
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
@@ -460,8 +466,10 @@ class Application extends \yii\web\Application
         $debug = $this->getModule('debug', false);
 
         if ($debug !== null) {
-            $this->getView()->off(View::EVENT_END_BODY,
-                [$debug, 'renderToolbar']);
+            $this->getView()->off(
+                View::EVENT_END_BODY,
+                [$debug, 'renderToolbar']
+            );
         }
     }
 
@@ -619,10 +627,8 @@ class Application extends \yii\web\Application
         // Only run for CP requests and if we're not in the middle of an update.
         if (
             $request->getIsCpRequest() &&
-            !(
-                $request->getIsActionRequest() &&
-                (
-                    ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+            !($request->getIsActionRequest() &&
+                (ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
                     $request->getActionSegments() === ['app', 'migrate']
                 )
             )

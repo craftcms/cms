@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
+- Fixed a bug where Craft would try to create resource paths even if `CRAFT_EPHEMERAL` was defined. ([#10412](https://github.com/craftcms/cms/issues/10412)
 
 ## 3.7.30.1 - 2022-01-21
 
