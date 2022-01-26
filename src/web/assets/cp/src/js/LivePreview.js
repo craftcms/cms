@@ -339,7 +339,7 @@ Craft.LivePreview = Garnish.Base.extend({
             this._scrollY = $doc ? $doc.scrollTop() : 0;
 
             $.ajax({
-                url: this.previewUrl + (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token,
+                url: this.previewUrl,
                 method: 'POST',
                 data: $.extend({}, postData, this.basePostData),
                 headers: {
@@ -364,6 +364,8 @@ Craft.LivePreview = Garnish.Base.extend({
     },
 
     handleSuccess: function(data) {
+        this.previewUrl += (this.previewUrl.indexOf('?') !== -1 ? '&' : '?') + Craft.tokenParam + '=' + this.token;
+
         var html = data +
             '<script type="text/javascript">window.scrollTo(' + this._scrollX + ', ' + this._scrollY + ');</script>';
 
@@ -393,7 +395,7 @@ Craft.LivePreview = Garnish.Base.extend({
             $iframe[0].contentWindow.document.open();
 
             // Set location for frontends that rely on window.location
-            $iframe[0].contentWindow.document.location.assign(this.previewUrl);
+            $iframe[0].contentWindow.history.pushState('', '', this.previewUrl);
 
             $iframe[0].contentWindow.document.write(html);
             $iframe[0].contentWindow.document.close();
