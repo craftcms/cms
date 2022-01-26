@@ -391,6 +391,10 @@ Craft.LivePreview = Garnish.Base.extend({
 
         Garnish.requestAnimationFrame(() => {
             $iframe[0].contentWindow.document.open();
+
+            // Set location for frontends that rely on window.location
+            $iframe[0].contentWindow.document.location.assign(this.previewUrl);
+
             $iframe[0].contentWindow.document.write(html);
             $iframe[0].contentWindow.document.close();
             this.onResponse();
