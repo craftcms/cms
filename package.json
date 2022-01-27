@@ -30,7 +30,7 @@
     "graphql": "^15.5.0",
     "htmx.org": "^1.5.0",
     "iframe-resizer": "^4.3.2",
-    "inputmask": "~3.2.2 || ~3.3.5",
+    "inputmask": "^5.0.7",
     "jquery": "^3.6.0",
     "jquery-ui": "^1.13.0",
     "jquery.payment": "^3.0.0",
