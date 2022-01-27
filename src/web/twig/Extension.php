@@ -57,6 +57,10 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use IteratorAggregate;
+use Money\Currencies\ISOCurrencies;
+use Money\Formatter\IntlMoneyFormatter;
+use Money\Money;
+use NumberFormatter;
 use Throwable;
 use Traversable;
 use Twig\Environment as TwigEnvironment;
@@ -204,6 +208,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('merge', [$this, 'mergeFilter']),
+            new TwigFilter('money', [$this, 'moneyFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
             new TwigFilter('namespace', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
@@ -288,6 +293,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return is_string($obj);
             }),
         ];
+    }
+
+    /**
+     * Outputs a value from a Money object.
+     *
+     * @param Money $money
+     * @param bool|string $formatLocale
+     * @return string
+     */
+    public function moneyFilter(Money $money, $formatLocale = true): string
+    {
+        if ($formatLocale === false) {
+            return $money->getAmount();
+        }
+
+        $localeId = is_string($formatLocale) ? $formatLocale : Craft::$app->getFormattingLocale()->id;
+
+        $currencies = new ISOCurrencies();
+        $numberFormatter = new NumberFormatter($localeId, NumberFormatter::CURRENCY);
+        return (new IntlMoneyFormatter($numberFormatter, $currencies))->format($money);
     }
 
     /**
