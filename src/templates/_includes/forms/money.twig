@@ -1,0 +1,55 @@
+{% import '_includes/forms' as forms %}
+{% do view.registerTranslations('app', [
+    "The decimal precision has been exceeded. Saving this value will result in rounding.",
+]) %}
+{% do view.registerAssetBundle("craft\\web\\assets\\money\\MoneyAsset") %}
+
+{% set id = (id ?? "money#{random()}") ~ '-money' -%}
+{% set currencyId = id ~ '-currency' -%}
+{% set name = name ?? null -%}
+{% set value = not (value ?? false) ? null : value -%}
+{% set currencies = currencies ?? [] -%}
+{% set currency = currency ?? null -%}
+{% set formattingLocale = formattingLocale ?? craft.app.formattingLocale.id -%}
+{% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
+{% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
+
+
+{{ hiddenInput("#{name}[locale]", formattingLocale) }}
+
+<div class="money-container">
+    <div class="money-currency">
+        {% if currencies|length > 1 %}
+            {{ forms.selectize({
+                id: currencyId,
+                name: "#{name}[currency]",
+                options: currencies,
+                value: currency,
+            }) }}
+        {% else %}
+            {# Show a read only currency if there is only one selectable #}
+            {{ hiddenInput({
+                id: currencyId,
+                name: "#{name}[currency]",
+                value: currency,
+            }) }}
+            <div class="money-currency-label">
+                <span>{{ (currencies|first).label }}</span>
+            </div>
+        {% endif %}
+    </div>
+    <div class="money-money">
+        {% include '_includes/forms/text' with {
+            inputAttributes: {
+                name: "#{name}[money]",
+            }
+        } %}
+    </div>
+</div>
+
+{% js %}
+new Craft.Money('{{ id|namespaceInputId }}', '{{ currencyId|namespaceInputId }}', {
+    decimalSeparator: '{{ decimalSeparator }}',
+    groupSeparator: '{{ groupSeparator }}',
+});
+{% endjs %}

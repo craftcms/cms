@@ -1,0 +1,12 @@
+{% import '_includes/forms' as forms %}
+
+{% set config = {
+    id: field.handle|id,
+    name: field.handle,
+    value: value ? value : field.defaultValue ?? '',
+    size: field.size,
+    currency: currency ? currency : field.defaultCurrency,
+    currencies: currencies,
+} %}
+
+{{ forms.money(config) }}
