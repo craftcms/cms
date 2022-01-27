@@ -32,10 +32,6 @@
         url: url('settings/assets/volumes/' ~ volume.id),
         name: volume.name|t('site')|e,
         handle: volume.handle,
-        type: {
-            isMissing: volumeIsMissing,
-            label: volumeIsMissing ? volume.expectedType : volume.displayName()
-        },
     }]) %}
 {% endfor %}
 
@@ -43,14 +39,6 @@
 var columns = [
     { name: '__slot:title', title: Craft.t('app', 'Name') },
     { name: '__slot:handle', title: Craft.t('app', 'Handle') },
-    { name: 'type', title: Craft.t('app', 'Type'), callback: function(value) {
-            if (value.isMissing) {
-                return '<span class="error">' + value.label + '</span>'
-            }
-
-            return value.label
-        }
-    },
 ];
 
 new Craft.VueAdminTable({

@@ -9,14 +9,14 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\VolumeInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Asset;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
+use craft\errors\FsObjectNotFoundException;
+use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
-use craft\errors\InvalidVolumeException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -31,6 +31,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\models\Volume;
 use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
@@ -258,12 +259,20 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function availableSources(): array
+    public function getSourceOptions(): array
     {
-        return ArrayHelper::where(
-            Craft::$app->getElementSources()->getSources(static::elementType(), 'settings'),
-            fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
-        );
+        $sourceOptions = [];
+
+        foreach (Asset::sources('settings') as $key => $volume) {
+            if (!isset($volume['heading'])) {
+                $sourceOptions[] = [
+                    'label' => $volume['label'],
+                    'value' => $volume['key'],
+                ];
+            }
+        }
+
+        return $sourceOptions;
     }
 
     /**
@@ -295,7 +304,7 @@ class Assets extends BaseRelationField
             ]), [
                 'class' => ['warning', 'with-icon'],
             ]);
-        } catch (InvalidVolumeException $e) {
+        } catch (InvalidFsException $e) {
             return Html::tag('p', $e->getMessage(), [
                 'class' => ['warning', 'with-icon'],
             ]);
@@ -416,8 +425,8 @@ class Assets extends BaseRelationField
                     ->id(array_values(array_filter($value)))
                     ->fixedOrder();
 
-                if ($this->allowLimit && $this->limit) {
-                    $query->limit($this->limit);
+                if ($this->allowLimit && $this->maxRelations) {
+                    $query->limit($this->maxRelations);
                 }
 
                 return $query;
@@ -590,7 +599,7 @@ class Assets extends BaseRelationField
                     $asset->avoidFilenameConflicts = true;
                     try {
                         $assetsService->moveAsset($asset, $uploadFolder);
-                    } catch (VolumeObjectNotFoundException $e) {
+                    } catch (FsObjectNotFoundException $e) {
                         // Don't freak out about that.
                         Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
                         Craft::$app->getErrorHandler()->logException($e);
@@ -720,6 +729,16 @@ class Assets extends BaseRelationField
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function createSelectionCondition(): ?ElementCondition
+    {
+        $condition = Asset::createCondition();
+        $condition->queryParams = ['volume', 'volumeId', 'kind'];
+        return $condition;
+    }
+
+    /**
      * Returns any files that were uploaded to the field.
      *
      * @param ElementInterface $element
@@ -792,7 +811,7 @@ class Assets extends BaseRelationField
      * @param bool $createDynamicFolders whether missing folders should be created in the process
      * @return int
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
-     * @throws InvalidVolumeException if the volume root folder doesn’t exist
+     * @throws InvalidFsException if the volume root folder doesn’t exist
      */
     private function _resolveVolumePathToFolderId(string $uploadSource, ?string $subpath, ?ElementInterface $element, bool $createDynamicFolders): int
     {
@@ -802,7 +821,7 @@ class Assets extends BaseRelationField
 
         // Make sure the volume and root folder actually exists
         if ($volumeId === null || ($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId)) === null) {
-            throw new InvalidVolumeException();
+            throw new InvalidFsException();
         }
 
         // Are we looking for a subfolder?
@@ -892,7 +911,7 @@ class Assets extends BaseRelationField
      * @param bool $resolveSubtreeDefaultLocation Whether the folder should resolve to the default upload location for subtree fields.
      * @return int
      * @throws InvalidSubpathException if the folder subpath is not valid
-     * @throws InvalidVolumeException if there's a problem with the field's volume configuration
+     * @throws InvalidFsException if there's a problem with the field's volume configuration
      */
     private function _determineUploadFolderId(?ElementInterface $element = null, bool $createDynamicFolders = true, bool $resolveSubtreeDefaultLocation = true): int
     {
@@ -919,12 +938,12 @@ class Assets extends BaseRelationField
 
         try {
             if (!$uploadVolume) {
-                throw new InvalidVolumeException();
+                throw new InvalidFsException();
             }
 
             $folderId = $this->_resolveVolumePathToFolderId($uploadVolume, $subpath, $element, $createDynamicFolders);
-        } catch (InvalidVolumeException $e) {
-            throw new InvalidVolumeException(Craft::t('app', 'The {field} field’s {setting} setting is set to an invalid volume.', [
+        } catch (InvalidFsException $e) {
+            throw new InvalidFsException(Craft::t('app', 'The {field} field’s {setting} setting is set to an invalid volume.', [
                 'field' => $this->name,
                 'setting' => $settingName,
             ]), 0, $e);
@@ -981,9 +1000,9 @@ class Assets extends BaseRelationField
     /**
      * Returns the target upload volume for the field.
      *
-     * @return VolumeInterface|null
+     * @return Volume|null
      */
-    private function _uploadVolume(): ?VolumeInterface
+    private function _uploadVolume(): ?Volume
     {
         if ($this->restrictLocation) {
             $sourceKey = $this->restrictedLocationSource;

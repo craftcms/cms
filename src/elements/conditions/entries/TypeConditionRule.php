@@ -93,7 +93,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
         $options = [];
         foreach ($this->_sections as $section) {
             if ($section->uid == $this->sectionUid) {
-                foreach ($section->entryTypes as $entryType) {
+                foreach ($section->getEntryTypes() as $entryType) {
                     $options[$entryType->uid] = $entryType->name;
                 }
             }

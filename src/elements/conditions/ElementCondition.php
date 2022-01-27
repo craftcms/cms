@@ -95,6 +95,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             SlugConditionRule::class,
         ];
 
+        if (Craft::$app->getIsMultiSite()) {
+            $types[] = SiteConditionRule::class;
+        }
+
         if ($this->elementType !== null) {
             /** @var string|ElementInterface $elementType */
             $elementType = $this->elementType;

@@ -19,12 +19,9 @@ use yii\db\ActiveQueryInterface;
  * @property int $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
- * @property string $type Type
- * @property bool $hasUrls Whether Volume has URLs
- * @property string $url URL
+ * @property string $fs The filesystem handle, or an environment variable that references it
  * @property string $titleTranslationMethod
  * @property string|null $titleTranslationKeyFormat
- * @property array $settings Settings
  * @property int $sortOrder Sort order
  * @property FieldLayout $fieldLayout Field layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

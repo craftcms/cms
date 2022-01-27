@@ -9,7 +9,6 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Volume;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
 use craft\gql\base\ElementMutationResolver;
@@ -17,6 +16,7 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use craft\models\Volume;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;

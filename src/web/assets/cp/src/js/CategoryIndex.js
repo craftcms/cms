@@ -83,7 +83,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             if (selectedGroup) {
                 href = this._getGroupTriggerHref(selectedGroup);
                 label = (this.settings.context === 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
-                this.$newCategoryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newCategoryBtnGroup);
+                this.$newCategoryBtn = $('<a class="btn submit add icon" ' + href + ' role="button">' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newCategoryBtnGroup);
 
                 if (this.settings.context !== 'index') {
                     this.addListener(this.$newCategoryBtn, 'click', function(ev) {

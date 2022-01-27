@@ -39,7 +39,7 @@ use craft\services\UserGroups;
 use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
-use craft\volumes\Local;
+use craft\fs\Local;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;

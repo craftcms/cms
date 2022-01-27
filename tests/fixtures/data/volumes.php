@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-use craft\volumes\Local;
+use craft\fs\Local;
 use crafttests\fixtures\VolumesFixture;
 
 return [
@@ -13,13 +13,7 @@ return [
         'id' => '1000',
         'name' => 'Test volume 1',
         'handle' => 'testVolume1',
-        'type' => Local::class,
-        'url' => null,
-        'hasUrls' => true,
-        'settings' => [
-            'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => VolumesFixture::BASE_URL
-        ],
+        'fs' => 'localFs',
         'sortOrder' => 5,
         'fieldLayoutType' => 'volume_field_layout',
         'uid' => 'volume-1000----------------------uid',
@@ -29,13 +23,7 @@ return [
         'id' => '1001',
         'name' => 'Test volume 2',
         'handle' => 'testVolume2',
-        'type' => Local::class,
-        'url' => null,
-        'settings' => [
-            'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => VolumesFixture::BASE_URL
-        ],
-        'hasUrls' => true,
+        'fs' => 'localFs',
         'sortOrder' => 6,
         'fieldLayoutType' => 'volume_field_layout',
         'uid' => 'volume-1001----------------------uid',
@@ -46,13 +34,7 @@ return [
         'id' => '1002',
         'name' => 'Test volume 3',
         'handle' => 'testVolume3',
-        'type' => Local::class,
-        'url' => null,
-        'settings' => [
-            'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => VolumesFixture::BASE_URL
-        ],
-        'hasUrls' => true,
+        'fs' => 'localFs',
         'sortOrder' => 7,
         'fieldLayoutType' => 'volume_field_layout',
         'uid' => 'volume-1002----------------------uid',

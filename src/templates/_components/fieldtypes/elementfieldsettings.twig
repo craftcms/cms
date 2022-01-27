@@ -33,16 +33,34 @@
         {% endif %}
     {% endblock %}
 
-    {% block limitField %}
+    {% block selectionConditionField %}
+        {{ (selectionCondition ?? false) ? selectionCondition|raw }}
+    {% endblock %}
+
+    {% block limitFields %}
         {% if field.allowLimit %}
             {{ forms.textField({
-                label: "Limit"|t('app'),
-                instructions: "Limit the number of selectable {type}."|t('app', { type: pluralElementType }),
-                id: 'limit',
-                name: 'limit',
-                value: field.limit,
+                label: 'Min Relations'|t('app'),
+                instructions: 'The minimum number of {type} that may be selected.'|t('app', {
+                    type: pluralElementType,
+                }),
+                id: 'min-relations',
+                name: 'minRelations',
+                value: field.minRelations,
                 size: 2,
-                errors: field.getErrors('limit')
+                errors: field.getErrors('minRelations'),
+            }) }}
+
+            {{ forms.textField({
+                label: 'Max Relations'|t('app'),
+                instructions: 'The maximum number of {type} that may be selected.'|t('app', {
+                    type: pluralElementType,
+                }),
+                id: 'max-relations',
+                name: 'maxRelations',
+                value: field.maxRelations,
+                size: 2,
+                errors: field.getErrors('maxRelations'),
             }) }}
         {% endif %}
     {% endblock %}

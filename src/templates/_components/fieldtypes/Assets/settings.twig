@@ -104,6 +104,8 @@
 
     <hr>
 
+    {{ block('selectionConditionField') }}
+
     {{ forms.checkboxField({
         label: 'Show unpermitted volumes'|t('app'),
         instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
@@ -151,7 +153,7 @@
         checked: field.allowUploads,
     }) }}
 
-    {{ block('limitField') }}
+    {{ block('limitFields') }}
     {{ block('viewModeField') }}
     {{ block('selectionLabelField') }}
     {{ block('validateRelatedElementsField') }}

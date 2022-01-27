@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -10,9 +11,9 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\Field;
-use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
-use craft\base\VolumeInterface;
+use craft\base\Fs;
+use craft\base\FsInterface;
+use craft\base\LocalFsInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
@@ -29,30 +30,32 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
-use craft\errors\AssetTransformException;
 use craft\errors\FileException;
+use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
+use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
+use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\models\AssetTransform;
 use craft\models\FieldLayout;
+use craft\models\ImageTransform;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
-use craft\volumes\Temp;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -74,10 +77,30 @@ use yii\base\UnknownPropertyException;
  * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
  * @property-read Markup|null $img an `<img>` tag based on this asset
  * @property-read VolumeFolder $folder the asset’s volume folder
- * @property-read VolumeInterface $volume the asset’s volume
+ * @property-read Volume $volume the asset’s volume
  * @property-read bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property-read string $extension the file extension
  * @property-read string $path the asset's path in the volume
+ * @property-write string $transformSource
+ * @property-read null|string $dimensions
+ * @property-read string $copyOfFile
+ * @property-read string[] $cacheTags
+ * @property-read string $contents
+ * @property-read bool $hasCheckeredThumb
+ * @property-read bool $supportsImageEditor
+ * @property-read array $previewTargets
+ * @property-read \craft\base\FsInterface $fs
+ * @property-read string $titleTranslationKey
+ * @property-read null|string $titleTranslationDescription
+ * @property-read string $dataUrl
+ * @property-read bool $isTitleTranslatable
+ * @property-read string $sidebarHtml
+ * @property-read string $previewHtml
+ * @property-read string $imageTransformSourcePath
+ * @property \craft\elements\User|null $uploader
+ * @property-read resource $stream
+ * @property-write null|string|array|\craft\models\ImageTransform $transform
+ * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -284,7 +307,7 @@ class Asset extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var VolumeInterface $context */
+        /** @var Volume $context */
         return 'save_' . $context->handle . '_Asset';
     }
 
@@ -375,7 +398,7 @@ class Asset extends Element
             }
 
             // Copy URL
-            if ($volume->hasUrls) {
+            if ($volume->getFs()->hasUrls) {
                 $actions[] = CopyUrl::class;
             }
 
@@ -690,19 +713,14 @@ class Asset extends Element
     private ?array $_focalPoint = null;
 
     /**
-     * @var AssetTransform|null
+     * @var ImageTransform|null
      */
-    private ?AssetTransform $_transform = null;
+    private ?ImageTransform $_transform = null;
 
     /**
-     * @var string
+     * @var Volume|null
      */
-    private string $_transformSource = '';
-
-    /**
-     * @var VolumeInterface|null
-     */
-    private ?VolumeInterface $_volume = null;
+    private ?Volume $_volume = null;
 
     /**
      * @var User|null
@@ -745,7 +763,7 @@ class Asset extends Element
         return (
             parent::__isset($name) ||
             strncmp($name, 'transform:', 10) === 0 ||
-            Craft::$app->getAssetTransforms()->getTransformByHandle($name)
+            Craft::$app->getImageTransforms()->getTransformByHandle($name)
         );
     }
 
@@ -771,7 +789,7 @@ class Asset extends Element
             return parent::__get($name);
         } catch (UnknownPropertyException $e) {
             // Is $name a transform handle?
-            if (($transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name)) !== null) {
+            if (($transform = Craft::$app->getImageTransforms()->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);
             }
 
@@ -964,7 +982,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if (!$volume->hasUrls) {
+        if (!$volume->getFs()->hasUrls) {
             return null;
         }
 
@@ -1007,7 +1025,7 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      * @throws InvalidArgumentException
      * @since 3.5.0
@@ -1056,7 +1074,7 @@ class Asset extends Element
      * ```
      *
      * @param string[] $sizes
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return array
      * @since 3.7.16
      */
@@ -1072,7 +1090,7 @@ class Asset extends Element
             ($transform !== null || $this->_transform) &&
             Image::canManipulateAsImage($this->getExtension())
         ) {
-            $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform ?? $this->_transform);
+            $transform = ImageTransforms::normalizeTransform($transform ?? $this->_transform);
         } else {
             $transform = null;
         }
@@ -1177,20 +1195,22 @@ class Asset extends Element
     /**
      * Returns the asset’s volume.
      *
-     * @return VolumeInterface
+     * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      */
-    public function getVolume(): VolumeInterface
+    public function getVolume(): Volume
     {
         if (isset($this->_volume)) {
             return $this->_volume;
         }
 
+        $volumesService = Craft::$app->getVolumes();
+
         if (!isset($this->_volumeId)) {
-            return new Temp();
+            return $volumesService->getTemporaryVolume();
         }
 
-        if (($volume = Craft::$app->getVolumes()->getVolumeById($this->_volumeId)) === null) {
+        if (($volume = $volumesService->getVolumeById($this->_volumeId)) === null) {
             throw new InvalidConfigException('Invalid volume ID: ' . $this->_volumeId);
         }
 
@@ -1235,13 +1255,13 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return Asset
-     * @throws AssetTransformException if $transform is an invalid transform handle
+     * @throws ImageTransformException if $transform is an invalid transform handle
      */
     public function setTransform($transform): Asset
     {
-        $this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+        $this->_transform = ImageTransforms::normalizeTransform($transform);
 
         return $this;
     }
@@ -1252,16 +1272,14 @@ class Asset extends Element
      * @param string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
-     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
-     * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl($transform = null, ?bool $generateNow = null): ?string
+    public function getUrl($transform = null): ?string
     {
         $volume = $this->getVolume();
 
-        if (!$volume->hasUrls || !$this->folderId) {
+        if (!$volume->getFs()->hasUrls || !$this->folderId) {
             return null;
         }
 
@@ -1285,21 +1303,20 @@ class Asset extends Element
             if (isset($transform['height'])) {
                 $transform['height'] = round((float)$transform['height']);
             }
-            $assetTransformsService = Craft::$app->getAssetTransforms();
-            $transform = $assetTransformsService->normalizeTransform($transform);
+            $transform = ImageTransforms::normalizeTransform($transform);
         }
 
-        if ($transform === null && isset($this->_transform)) {
+        if ($transform === null) {
+            if (!isset($this->_transform)) {
+                return AssetsHelper::generateUrl($volume, $this);
+            }
             $transform = $this->_transform;
         }
 
-        try {
-            return Craft::$app->getAssets()->getAssetUrl($this, $transform, $generateNow);
-        } catch (VolumeObjectNotFoundException $e) {
-            Craft::error("Could not determine asset's URL ($this->id): {$e->getMessage()}");
-            Craft::$app->getErrorHandler()->logException($e);
-            return UrlHelper::actionUrl('not-found', null, null, false);
-        }
+        $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+        $imageTransformer = $transform->getImageTransformer();
+
+        return $imageTransformer->getTransformUrl($this, $transform, $immediately);
     }
 
     /**
@@ -1308,7 +1325,7 @@ class Asset extends Element
     public function getThumbUrl(int $size): ?string
     {
         if ($this->getWidth() && $this->getHeight()) {
-            [$width, $height] = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
+            [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
@@ -1341,11 +1358,11 @@ class Asset extends Element
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @since 3.4.0
      */
-    public function getPreviewThumbImg(int $width, int $height): string
+    public function getPreviewThumbImg(int $desiredWidth, int $desiredHeight): string
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
-        [$width, $height] = Assets::scaledDimensions($this->getWidth() ?? 0, $this->getHeight() ?? 0, $width, $height);
+        [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
@@ -1418,15 +1435,15 @@ class Asset extends Element
      */
     public function getMimeType(): ?string
     {
-        // todo: maybe we should be passing this off to volume types
-        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
+        // todo: maybe we should be passing this off to volume fs
+        // so Local filesystems can call FileHelper::getMimeType() (uses magic file instead of ext)
         return FileHelper::getMimeTypeByExtension($this->_filename);
     }
 
     /**
      * Returns the image height.
      *
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
 
@@ -1448,7 +1465,7 @@ class Asset extends Element
     /**
      * Returns the image width.
      *
-     * @param AssetTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
     public function getWidth($transform = null)
@@ -1521,28 +1538,6 @@ class Asset extends Element
     }
 
     /**
-     * @return string
-     */
-    public function getTransformSource(): string
-    {
-        if (!$this->_transformSource) {
-            Craft::$app->getAssetTransforms()->getLocalImageSource($this);
-        }
-
-        return $this->_transformSource;
-    }
-
-    /**
-     * Set a source to use for transforms for this Assets File.
-     *
-     * @param string $uri
-     */
-    public function setTransformSource(string $uri): void
-    {
-        $this->_transformSource = $uri;
-    }
-
-    /**
      * Returns the asset's path in the volume.
      *
      * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
@@ -1560,10 +1555,10 @@ class Asset extends Element
      */
     public function getImageTransformSourcePath(): string
     {
-        $volume = $this->getVolume();
+        $fs = $this->getFs();
 
-        if ($volume instanceof LocalVolumeInterface) {
-            return FileHelper::normalizePath($volume->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
+        if ($fs instanceof LocalFsInterface) {
+            return FileHelper::normalizePath($fs->getRootPath() . DIRECTORY_SEPARATOR . $this->getPath());
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $this->id . '.' . $this->getExtension();
@@ -1580,7 +1575,7 @@ class Asset extends Element
     {
         $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getFs(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -1594,7 +1589,7 @@ class Asset extends Element
      */
     public function getStream()
     {
-        return $this->getVolume()->getFileStream($this->getPath());
+        return $this->getFs()->getFileStream($this->getPath());
     }
 
     /**
@@ -1904,9 +1899,9 @@ class Asset extends Element
     /**
      * Returns a copy of the asset with the given transform applied to it.
      *
-     * @param AssetTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
+     * @param ImageTransform|string|array|null $transform The transform handle or configuration that should be applied to the image
      * @return Asset
-     * @throws AssetTransformException if $transform is an invalid transform handle
+     * @throws ImageTransformException if $transform is an invalid transform handle
      */
     public function copyWithTransform($transform): Asset
     {
@@ -2059,10 +2054,10 @@ class Asset extends Element
     public function afterDelete(): void
     {
         if (!$this->keepFileOnDelete) {
-            $this->getVolume()->deleteFile($this->getPath());
+            $this->getFs()->deleteFile($this->getPath());
         }
 
-        Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+        Craft::$app->getImageTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
     }
 
@@ -2123,28 +2118,21 @@ class Asset extends Element
     }
 
     /**
-     * Returns whether the current user can move/rename the asset.
+     * Returns the filesystem the asset is stored in.
      *
-     * @return bool
+     * @return FsInterface
+     * @throws InvalidConfigException
+     * @since 4.0.0
      */
-    private function _isMovable(): bool
+    public function getFs(): FsInterface
     {
-        $userSession = Craft::$app->getUser();
-        if ($userSession->getId() == $this->uploaderId) {
-            return true;
-        }
-
-        $volume = $this->getVolume();
-        return (
-            $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
-            $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
-        );
+        return $this->getVolume()->getFs();
     }
 
     /**
      * Returns the width and height of the image.
      *
-     * @param AssetTransform|string|array|null $transform
+     * @param ImageTransform|string|array|null $transform
      * @return array
      */
     private function _dimensions($transform = null): array
@@ -2167,7 +2155,7 @@ class Asset extends Element
             return [$this->_width, $this->_height];
         }
 
-        $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+        $transform = ImageTransforms::normalizeTransform($transform);
 
         if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             $transformRatio = $transform->width / $transform->height;
@@ -2225,7 +2213,7 @@ class Asset extends Element
 
         // Is this just a simple move/rename within the same volume?
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-            $oldVolume->renameFile($oldPath, $newPath);
+            $oldVolume->getFs()->renameFile($oldPath, $newPath);
         } else {
             if (!$this->_validateTempFilePath()) {
                 Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
@@ -2238,7 +2226,7 @@ class Asset extends Element
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
+                Assets::downloadFile($oldVolume->getFs(), $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -2251,15 +2239,15 @@ class Asset extends Element
 
             if ($this->folderId) {
                 // Delete the old file
-                $oldVolume->deleteFile($oldPath);
+                $oldVolume->getFs()->deleteFile($oldPath);
             }
 
             $exception = null;
 
             // Upload the file to the new location
             try {
-                $newVolume->writeFileFromStream($newPath, $stream, [
-                    Volume::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
+                $newVolume->getFs()->writeFileFromStream($newPath, $stream, [
+                    Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ]);
             } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
@@ -2278,7 +2266,7 @@ class Asset extends Element
 
         if ($this->folderId) {
             // Nuke the transforms
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+            Craft::$app->getImageTransforms()->deleteAllTransformData($this);
         }
 
         // Update file properties
@@ -2327,32 +2315,34 @@ class Asset extends Element
 
         $tempFilePath = FileHelper::normalizePath($tempFilePath);
 
-        // Is it within one of our temp directories?
+        // Make sure it's within a known temp path, the project root, or storage/ folder
         $pathService = Craft::$app->getPath();
-        $tempDirs = [
-            $this->_normalizeTempPath($pathService->getTempPath()),
-            $this->_normalizeTempPath(sys_get_temp_dir()),
+        $allowedRoots = [
+            [$pathService->getTempPath(), true],
+            [$pathService->getTempAssetUploadsPath(), true],
+            [sys_get_temp_dir(), true],
+            [Craft::getAlias('@root', false), false],
+            [Craft::getAlias('@storage', false), false],
         ];
 
-        $tempDirs = array_filter($tempDirs, function($value) {
-            return ($value !== false);
-        });
-
-        foreach ($tempDirs as $allowedFolder) {
-            if (StringHelper::startsWith($tempFilePath, $allowedFolder)) {
-                return true;
+        $inAllowedRoot = false;
+        foreach ($allowedRoots as [$root, $isTempDir]) {
+            $root = $this->_normalizeTempPath($root);
+            if ($root !== false && StringHelper::startsWith($tempFilePath, $root)) {
+                // If this is a known temp dir, we’re good here
+                if ($isTempDir) {
+                    return true;
+                }
+                $inAllowedRoot = true;
+                break;
             }
         }
-
-        // Make sure it's within the project root somewhere
-        $projectRoot = $this->_normalizeTempPath(Craft::getAlias('@root'));
-        if (!StringHelper::startsWith($tempFilePath, $projectRoot)) {
+        if (!$inAllowedRoot) {
             return false;
         }
 
-        // Make sure it's not within a system directory
+        // Make sure it's *not* within a system directory though
         $systemDirs = $pathService->getSystemPaths();
-
         $systemDirs = array_map([$this, '_normalizeTempPath'], $systemDirs);
         $systemDirs = array_filter($systemDirs, function($value) {
             return ($value !== false);
@@ -2370,13 +2360,12 @@ class Asset extends Element
     /**
      * Returns a normalized temp path or false, if realpath fails.
      *
-     * @param string $path
+     * @param string|false $path
      * @return false|string
      */
-    private function _normalizeTempPath(string $path)
+    private function _normalizeTempPath($path)
     {
-        $path = realpath($path);
-        if (!$path) {
+        if (!$path || !($path = realpath($path))) {
             return false;
         }
 

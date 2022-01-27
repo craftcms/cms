@@ -1823,7 +1823,7 @@ EOD;
     }
 
     /**
-     * Returns whether the entry has been assigned a new parent entry.
+     * Returns whether the entry has been assigned a new parent.
      *
      * @return bool
      * @see beforeSave()
@@ -1839,7 +1839,7 @@ EOD;
     }
 
     /**
-     * Checks if the entry has been assigned a new parent entry.
+     * Checks if the entry has been assigned a new parent.
      *
      * @return bool
      * @see _hasNewParent()

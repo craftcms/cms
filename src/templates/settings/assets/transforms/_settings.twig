@@ -12,7 +12,7 @@
 
 
 {% block content %}
-        {{ actionInput('asset-transforms/save-transform') }}
+        {{ actionInput('image-transforms/save') }}
         {{ redirectInput('settings/assets/transforms') }}
 
         {% if transform.id %}{{ hiddenInput('transformId', transform.id) }}{% endif %}
