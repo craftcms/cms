@@ -265,8 +265,8 @@
 - Added `craft\web\Controller::CpScreenResponseBehavior()`.
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
-- Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\Controller::TemplateResponseFormatter()`.
+- Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
