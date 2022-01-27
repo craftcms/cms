@@ -457,7 +457,7 @@
 - Removed support for setting custom config settings from `config/general.php`. `config/custom.php` should be used instead. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Removed the `customAsciiCharMappings` config setting.
 - Removed the `siteName` config setting. Environment-specific site names can be defined via environment variables.
-- Removed the `sitUrl` config setting. Environment-specific site URLs can be defined via environment variables.
+- Removed the `siteUrl` config setting. Environment-specific site URLs can be defined via environment variables.
 - Removed the `suppressTemplateErrors` config setting.
 - Removed the `useCompressedJs` config setting.
 - Removed the `useProjectConfigFile` config setting. Override `craft\services\ProjectConfig::$writeYamlAutomatically` to opt into [manual YAML file generation](https://craftcms.com/docs/4.x/project-config.html#manual-yaml-file-generation).
