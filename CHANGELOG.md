@@ -16,6 +16,8 @@
 - Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
+- Added the Money custom field.
+- Added the `|money` twig filter.
 - Added the `assetUploaders` user query param.
 - Added the `authors` user query param.
 - Added the `hasAlt` asset query param.
@@ -108,6 +110,7 @@
 - Added `craft\fields\Assets::$restrictedLocationSource`, which replaces `$singleUploadLocationSource`.
 - Added `craft\fields\Assets::$restrictedLocationSubpath`, which replaces `$singleUploadLocationSubpath`.
 - Added `craft\fields\Assets::$restrictLocation`, which replaces `$useSingleFolder`.
+- Added `craft\fields\Money`.
 - Added `craft\fields\conditions\DateFieldConditionRule`.
 - Added `craft\fields\conditions\FieldConditionRuleInterface`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait`.
@@ -212,10 +215,14 @@
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
 - Added `craft\services\Users::removeCredentials()`.
+- Added `craft\validators\MoneyValidator`.
 - Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
 - Added `craft\web\assets\htmx\HtmxAsset`.
+- Added `craft\web\assets\money\MoneyAsset`.
+- Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
+- Added the Money package.
 - Added the `assets/update-focal-point` action.
 - Added the `Craft.appendBodyHtml()` JavaScript function, which replaces the now-deprecated `appendFootHtml()` function.
 - Added the `Craft.getPageUrl()` JavaScript function.
