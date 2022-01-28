@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'Kopiert til utklippstavlen.',
     'Copy URL' => 'Kopier URL',
     'Copy activation URL' => 'Kopier aktiverings-URL',
-    'Copy impersonation URL' => 'Kopier imitasjons-URL',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'Kopier URL for tilbakestilling av passord',
     'Copy reference tag' => 'Kopier referansestikkord',
     'Copy the URL' => 'Kopier URL',
