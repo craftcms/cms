@@ -24,6 +24,23 @@
                 },
             } %}
 
+            {% set actionBtnLabel = "#{block.getType().name} #{'Actions'|t('app')}" %}
+            {% set actionMenuId = "matrixblock-action-menu-#{blockId}" %}
+
+            {% set actionBtnAttributes = {
+                class: ['btn', 'settings', 'icon', 'menubtn'],
+                type: 'button',
+                role: 'button',
+                title: 'Actions'|t('app'),
+                label: actionBtnLabel,
+                aria: {
+                    controls: actionMenuId|namespaceInputId,
+                },
+                data: {
+                    'disclosure-trigger': true,
+                }
+            } %}
+
             <div {{ attr(blockAttributes) }}>
                 {% if not static %}
                     {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
@@ -70,6 +87,33 @@
                                     {% endfor %}
                                 </ul>
                             {% endif %}
+                        </div>
+
+                        <!-- New button -->
+                        <div data-wrapper>
+                            <button {{ attr(actionBtnAttributes) }}></button>
+                            <div id="{{ actionMenuId }}" class="menu menu--disclosure">
+                                <ul class="padded">
+                                    <li><a role="button" type="button" href="#" data-icon="collapse" data-action="collapse">{{ "Collapse"|t('app') }}</a></li>
+                                    <li class="hidden"><a role="button" type="button" href="#" data-icon="expand" data-action="expand">{{ "Expand"|t('app') }}</a></li>
+                                    <li{% if not block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-icon="disabled" data-action="disable">{{ "Disable"|t('app') }}</a></li>
+                                    <li{% if block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-icon="enabled" data-action="enable">{{ "Enable"|t('app') }}</a></li>
+                                    <li><a role="button" type="button" href="#" data-icon="uarr" data-action="moveUp">{{ 'Move up'|t('app') }}</a></li>
+                                    <li><a role="button" type="button" href="#" data-icon="darr" data-action="moveDown">{{ 'Move down'|t('app') }}</a></li>
+                                </ul>
+                                {% if not staticBlocks %}
+                                <hr class="padded">
+                                <ul class="padded">
+                                    <li><a role="button" type="button" class="error" href="#" data-icon="remove" data-action="delete">{{ "Delete"|t('app') }}</a></li>
+                                </ul>
+                                <hr class="padded">
+                                <ul class="padded">
+                                    {% for blockType in blockTypes %}
+                                    <li><a role="button" type="button" href="#" data-icon="plus" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
                         </div>
                         <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
                     </div>
