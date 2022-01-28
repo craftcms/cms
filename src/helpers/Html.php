@@ -553,7 +553,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an input name.
      *
      * @param string $inputName The input name
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The namespaced input name
      * @since 3.5.0
      */
@@ -566,7 +566,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an ID.
      *
      * @param string $id The ID
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The namespaced ID
      * @since 3.5.0
      */
@@ -614,7 +614,7 @@ class Html extends \yii\helpers\Html
      * ```
      *
      * @param string $html The HTML code
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The HTML with namespaced input names
      * @since 3.5.0
      * @see namespaceHtml()
