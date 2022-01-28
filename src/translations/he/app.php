@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'הועתק ללוח גזירים.',
     'Copy URL' => 'העתק את כתובת ה-URL',
     'Copy activation URL' => 'העתק URL הפעלה',
-    'Copy impersonation URL' => 'העתק את URL ההתחזות',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'העתק קישור לדף איפוס סיסמה',
     'Copy reference tag' => 'העתק תג קישור',
     'Copy the URL' => 'העתק את כתובת ה-URL',
