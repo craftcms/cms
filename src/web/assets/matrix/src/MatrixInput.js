@@ -409,6 +409,7 @@
         $fieldsContainer: null,
         $previewContainer: null,
         $actionMenu: null,
+        $newActionMenu: null,
         $collapsedInput: null,
 
         isNew: null,
@@ -432,12 +433,26 @@
                 menuBtn = new Garnish.MenuBtn($menuBtn);
 
             const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]'),
-                actionMenuBtn = new Garnish.DisclosureMenu($actionMenuBtn);
-            console.log(actionMenuBtn);
+                actionDisclosure = new Garnish.DisclosureMenu($actionMenuBtn);
 
             this.$actionMenu = menuBtn.menu.$container;
 
+            this.$newActionMenu = actionDisclosure.$container;
+
             menuBtn.menu.settings.onOptionSelect = this.onMenuOptionSelect.bind(this);
+
+            actionDisclosure.on('show', () => {
+                if (this.$container.prev('.matrixblock').length) {
+                    this.$newActionMenu.find('a[data-action=moveUp]:first').parent().removeClass('hidden');
+                } else {
+                    this.$newActionMenu.find('a[data-action=moveUp]:first').parent().addClass('hidden');
+                }
+                if (this.$container.next('.matrixblock').length) {
+                    this.$newActionMenu.find('a[data-action=moveDown]:first').parent().removeClass('hidden');
+                } else {
+                    this.$newActionMenu.find('a[data-action=moveDown]:first').parent().addClass('hidden');
+                }
+            });
 
             menuBtn.menu.on('show', () => {
                 this.$container.addClass('active');
@@ -649,6 +664,10 @@
                 this.$container.insertAfter($next);
                 this.matrix.blockSelect.resetItemOrder();
             }
+        },
+
+        onActionBtnClick: function(btn) {
+
         },
 
         onMenuOptionSelect: function(option) {
