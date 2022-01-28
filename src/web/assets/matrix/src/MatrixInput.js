@@ -412,6 +412,8 @@
         $newActionMenu: null,
         $collapsedInput: null,
 
+        actionDisclosure: null,
+
         isNew: null,
         id: null,
 
@@ -438,6 +440,7 @@
             this.$actionMenu = menuBtn.menu.$container;
 
             this.$newActionMenu = actionDisclosure.$container;
+            this.actionDisclosure = actionDisclosure;
 
             menuBtn.menu.settings.onOptionSelect = this.onMenuOptionSelect.bind(this);
 
@@ -453,6 +456,11 @@
                     this.$newActionMenu.find('a[data-action=moveDown]:first').parent().addClass('hidden');
                 }
             });
+
+            this.$actionMenuOptions = this.$newActionMenu.find('a[data-action]');
+
+            this.addListener(this.$actionMenuOptions, 'click', this.handleActionClick);
+            this.addListener(this.$actionMenuOptions, 'keydown', this.handleActionKeydown);
 
             menuBtn.menu.on('show', () => {
                 this.$container.addClass('active');
@@ -666,8 +674,96 @@
             }
         },
 
-        onActionBtnClick: function(btn) {
+        handleActionClick: function(event) {
+            event.preventDefault();
+            this.onActionSelect(event.target);
+        },
 
+        handleActionKeydown: function(event) {
+            const keyCode = event.keyCode;
+
+            if (keyCode !== Garnish.SPACE_KEY) return;
+
+            event.preventDefault();
+            this.onActionSelect(event.target);
+        },
+
+        onActionSelect: function(option) {
+            const batchAction = (this.matrix.blockSelect.totalSelected > 1 && this.matrix.blockSelect.isSelected(this.$container)),
+                $option = $(option);
+
+            switch ($option.data('action')) {
+                case 'collapse': {
+                    if (batchAction) {
+                        this.matrix.collapseSelectedBlocks();
+                    } else {
+                        this.collapse(true);
+                    }
+
+                    break;
+                }
+
+                case 'expand': {
+                    if (batchAction) {
+                        this.matrix.expandSelectedBlocks();
+                    } else {
+                        this.expand();
+                    }
+
+                    break;
+                }
+
+                case 'disable': {
+                    if (batchAction) {
+                        this.matrix.disableSelectedBlocks();
+                    } else {
+                        this.disable();
+                    }
+
+                    break;
+                }
+
+                case 'enable': {
+                    if (batchAction) {
+                        this.matrix.enableSelectedBlocks();
+                    } else {
+                        this.enable();
+                        this.expand();
+                    }
+
+                    break;
+                }
+
+                case 'moveUp': {
+                    this.moveUp();
+                    break;
+                }
+
+                case 'moveDown': {
+                    this.moveDown();
+                    break;
+                }
+
+                case 'add': {
+                    var type = $option.data('type');
+                    this.matrix.addBlock(type, this.$container);
+                    break;
+                }
+
+                case 'delete': {
+                    if (batchAction) {
+                        if (confirm(Craft.t('app', 'Are you sure you want to delete the selected blocks?'))) {
+                            this.matrix.deleteSelectedBlocks();
+                        }
+                    } else {
+                        this.selfDestruct();
+                    }
+
+                    break;
+                }
+            }
+
+            this.actionDisclosure.hide();
         },
 
         onMenuOptionSelect: function(option) {
