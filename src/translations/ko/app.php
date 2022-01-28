@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => '클립보드에 복사했습니다.',
     'Copy URL' => 'URL 복사',
     'Copy activation URL' => '활성화 URL 복사',
-    'Copy impersonation URL' => '가장 URL 복사',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => '패스워드 초기화 URL 복사',
     'Copy reference tag' => '참고 태그 복사하기',
     'Copy the URL' => 'URL 복사',
