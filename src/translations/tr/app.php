@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'Panoya kopyalandı.',
     'Copy URL' => 'URL\'yi kopyala',
     'Copy activation URL' => 'Etkinleştirme URL\'ını kopyala',
-    'Copy impersonation URL' => 'Taklit URL\'yi kopyala',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'Şifre sıfırlama URL\'ını kopyala',
     'Copy reference tag' => 'Referans etiketini kopyala',
     'Copy the URL' => 'URL\'yi kopyala',
