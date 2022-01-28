@@ -377,6 +377,10 @@ Garnish = $.extend(Garnish, {
         $(container).find(':focusable:first').focus();
     },
 
+    getFocusedElement: function() {
+        return $(':focus');
+    },
+
     /**
      * Returns the body's real scrollTop, discarding any window banding in Safari.
      *
