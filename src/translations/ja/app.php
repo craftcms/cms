@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'クリップボードにコピーしました。',
     'Copy URL' => 'URLをコピー',
     'Copy activation URL' => '認証 URL をコピー',
-    'Copy impersonation URL' => '偽装URLをコピー',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'パスワードリセット URL をコピー',
     'Copy reference tag' => '参照タグを',
     'Copy the URL' => 'URLをコピー',
