@@ -32,9 +32,9 @@
                 type: 'button',
                 role: 'button',
                 title: 'Actions'|t('app'),
-                label: actionBtnLabel,
                 aria: {
                     controls: actionMenuId|namespaceInputId,
+                    label: actionBtnLabel,
                 },
                 data: {
                     'disclosure-trigger': true,
@@ -94,7 +94,7 @@
                             <button {{ attr(actionBtnAttributes) }}></button>
                             <div id="{{ actionMenuId }}" class="menu menu--disclosure">
                                 <ul class="padded">
-                                    <li><a role="button" type="button" href="#" data-icon="collapse" data-action="collapse">{{ "Collapse"|t('app') }}</a></li>
+                                    <li><a role="button" type="button" href="#" data-action="collapse"><span data-icon="collapse" aria-hidden="true"></span>{{ "Collapse"|t('app') }}</a></li>
                                     <li class="hidden"><a role="button" type="button" href="#" data-icon="expand" data-action="expand">{{ "Expand"|t('app') }}</a></li>
                                     <li{% if not block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-icon="disabled" data-action="disable">{{ "Disable"|t('app') }}</a></li>
                                     <li{% if block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-icon="enabled" data-action="enable">{{ "Enable"|t('app') }}</a></li>
