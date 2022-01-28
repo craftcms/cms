@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'Kopieret til udklipsholder.',
     'Copy URL' => 'Kopier url',
     'Copy activation URL' => 'Kopier aktiviterings-URL',
-    'Copy impersonation URL' => 'Kopier imiterings-url',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'Kopier password reset URL',
     'Copy reference tag' => 'Kopiér reference mærke',
     'Copy the URL' => 'Kopier url\'en',
