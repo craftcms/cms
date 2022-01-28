@@ -826,7 +826,7 @@ class UsersController extends Controller
                     ];
                     $sessionActions[] = [
                         'id' => 'copy-impersonation-url',
-                        'label' => Craft::t('app', 'Copy impersonation URL'),
+                        'label' => Craft::t('app', 'Copy impersonation URL…'),
                     ];
                 }
 
