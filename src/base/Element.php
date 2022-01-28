@@ -1883,15 +1883,27 @@ abstract class Element extends Component implements ElementInterface
         $names[] = 'structureId';
         $names[] = 'url';
 
-        // Include custom field handles
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+
+        // Include custom fields
         if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
-            foreach ($fieldLayout->getFields() as $field) {
-                $names[] = $field->handle;
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (!isset($fields[$field->handle])) {
+                    $fields[$field->handle] = fn() => $this->getFieldValue($field->handle);
+                }
             }
         }
 
-        // In case there are any field handles that had the same name as an existing property
-        return array_unique($names);
+        return $fields;
     }
 
     /**
