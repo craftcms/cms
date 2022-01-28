@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'تم النسخ إلى الحافظة.',
     'Copy URL' => 'نسخ عنوان URL',
     'Copy activation URL' => 'نسخ عنوان URL الخاص بالتفعيل',
-    'Copy impersonation URL' => 'انسخ عنوان URL الخاص بانتحال الهوية',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'نسخ عنوان URL الخاص بإعادة تعيين كلمة المرور.',
     'Copy reference tag' => 'نسخ علامة المرجع',
     'Copy the URL' => 'نسخ عنوان URL',
