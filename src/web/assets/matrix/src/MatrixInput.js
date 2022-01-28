@@ -431,6 +431,10 @@
             var $menuBtn = this.$container.find('> .actions > .settings'),
                 menuBtn = new Garnish.MenuBtn($menuBtn);
 
+            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]'),
+                actionMenuBtn = new Garnish.DisclosureMenu($actionMenuBtn);
+            console.log(actionMenuBtn);
+
             this.$actionMenu = menuBtn.menu.$container;
 
             menuBtn.menu.settings.onOptionSelect = this.onMenuOptionSelect.bind(this);
