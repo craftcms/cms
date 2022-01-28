@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'Gekopieerd naar klembord.',
     'Copy URL' => 'URL kopiëren',
     'Copy activation URL' => 'Kopieer activerings-url',
-    'Copy impersonation URL' => 'Imitatie-URL kopiëren',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'Kopieer de url om het wachtwoord te herstellen',
     'Copy reference tag' => 'Kopieer referentie-tag',
     'Copy the URL' => 'Kopieer de URL',
