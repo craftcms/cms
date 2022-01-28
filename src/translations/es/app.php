@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'Copiado en el portapapeles.',
     'Copy URL' => 'Copiar URL',
     'Copy activation URL' => 'Copiar URL de activación',
-    'Copy impersonation URL' => 'Copiar URL de suplantación',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'Copiar la URL para restablecer la contraseña',
     'Copy reference tag' => 'Copiar etiqueta de referencia',
     'Copy the URL' => 'Copiar el URL',
