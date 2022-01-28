@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => '已复制到剪贴板。',
     'Copy URL' => '复制 URL',
     'Copy activation URL' => '复制激活 URL',
-    'Copy impersonation URL' => '复制模拟 URL',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => '复制密码重置 URL',
     'Copy reference tag' => '复制参考标签',
     'Copy the URL' => '复制 URL',
