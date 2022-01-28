@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'Скопировано в буфер обмена.',
     'Copy URL' => 'Скопировать URL',
     'Copy activation URL' => 'Скопировать URL активации',
-    'Copy impersonation URL' => 'Копировать URL олицетворения',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'Скопировать URL сброса пароля',
     'Copy reference tag' => 'Скопировать ссылочный тег',
     'Copy the URL' => 'Скопировать URL',
