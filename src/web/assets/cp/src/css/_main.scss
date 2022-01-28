@@ -6099,7 +6099,6 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     display: flex;
     align-items: center;
     position: absolute;
-    z-index: 1;
     top: 5px;
     @include right(14px);
     cursor: default;
@@ -6108,7 +6107,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
       @include margin(0, 0, 0, 5px);
     }
 
-    & > .settings {
+    & .settings {
       padding: 0 8px;
       height: 20px;
       color: var(--ui-control-color);
@@ -6132,7 +6131,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
       }
     }
 
-    a {
+    a:not([data-action]) {
       padding: 0 !important;
       height: 20px;
       text-align: center;
