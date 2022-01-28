@@ -39,6 +39,14 @@ export default Base.extend(
 
       if (!this.$container) return; /* Exit if no disclosure container is found */
 
+      // Is this already a disclosure button?
+      if (this.$trigger.data('trigger')) {
+        Garnish.log('Double-instantiating a disclosure menu on an element');
+        this.$trigger.data('trigger').destroy();
+      }
+
+      this.$trigger.data('trigger', this);
+
       // Get and store expanded state from trigger
       var expanded = this.$trigger.attr('aria-expanded');
 
@@ -278,6 +286,16 @@ export default Base.extend(
       delete this._triggerHeight;
       delete this._menuWidth;
       delete this._menuHeight;
+    },
+
+    /**
+     * Destroy
+     */
+    destroy: function() {
+      this.$trigger.removeData('trigger');
+      this.removeListener(this.$trigger, 'click');
+      this.removeListener(this.$container, 'keydown');
+      this.base();
     },
 
     _alignLeft: function () {
