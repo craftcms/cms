@@ -556,7 +556,7 @@ class View extends \yii\web\View
                         $extra[] = $field;
                     }
                 }
-                $variables = array_merge($object->toArray([], $extra, false), $variables);
+                $variables += $object->toArray([], $extra, false);
             }
 
             $variables['object'] = $object;
