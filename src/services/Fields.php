@@ -1230,15 +1230,9 @@ class Fields extends Component
             return;
         }
 
-        $result = $this->_createLayoutTabQuery()
-            ->where(['layoutId' => array_keys($layouts)])
-            ->all();
-
         $tabsByLayoutId = [];
-        $isMysql = Craft::$app->getDb()->getIsMysql();
-
-        foreach ($result as $row) {
-            $tabsByLayoutId[$row['layoutId']][] = $this->_createLayoutTabFromRow($row, $isMysql);
+        foreach(array_keys($layouts) as $layoutId){
+            $tabsByLayoutId[$layoutId] = $this->getLayoutTabsById($layoutId);
         }
 
         foreach ($tabsByLayoutId as $layoutId => $tabs) {
