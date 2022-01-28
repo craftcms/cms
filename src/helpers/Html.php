@@ -633,7 +633,7 @@ class Html extends \yii\helpers\Html
      */
     private static function _namespaceInputs(string &$html, string $namespace)
     {
-        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
+        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}' . $namespace . '[$3]$4$2', $html);
     }
 
     /**
@@ -691,12 +691,15 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"\s]*)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
-                if ($match[2] === 'data-target-prefix' || isset($ids[$match[4]])) {
-                    return $match[1] . $namespace . '-' . $match[4] . $match[3];
-                }
-                return $match[0];
+                $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
+                    if ($match[2] === 'data-target-prefix' || isset($ids[$id])) {
+                        return sprintf('%s-%s', $namespace, $id);
+                    }
+                    return $id;
+                }, explode(' ', $match[4]));
+                return $match[1] . implode(' ', $namespacedIds) . $match[3];
             }, $html);
 
         // ID references in url() calls
@@ -845,7 +848,7 @@ class Html extends \yii\helpers\Html
      *
      * @param string $html
      * @return string
-     * @since 2.7.27
+     * @since 3.7.27
      */
     public static function encodeInvalidTags(string $html): string
     {

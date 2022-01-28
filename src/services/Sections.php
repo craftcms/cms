@@ -43,7 +43,8 @@ use yii\base\Exception;
 
 /**
  * Sections service.
- * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -1030,7 +1031,6 @@ class Sections extends Component
                     $entryTypesByLayoutId[$layout->id]->setFieldLayout($layout);
                 }
             }
-
         }
 
         return $this->_entryTypes;
@@ -1579,8 +1579,10 @@ class Sections extends Component
             ->id(['not', $entry->id])
             ->anyStatus();
 
-        foreach (Db::each($otherEntriesQuery) as $entry) {
-            $elementsService->deleteElement($entry, true);
+        foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
+            if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
+                $elementsService->deleteElement($entryToDelete, true);
+            }
         }
 
         return $entry;

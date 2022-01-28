@@ -52,7 +52,8 @@
     modalSettings: {
         hideSidebar: hideSidebar,
         defaultSource: defaultUploadLocation
-    }
+    },
+    describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
 } %}
 
 {% js %}

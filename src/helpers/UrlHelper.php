@@ -319,7 +319,7 @@ class UrlHelper
 
         if ($siteId !== null && $siteId != $sites->getCurrentSite()->id) {
             // Get the site
-            $site = $sites->getSiteById($siteId);
+            $site = $sites->getSiteById($siteId, true);
 
             if (!$site) {
                 throw new Exception('Invalid site ID: ' . $siteId);
@@ -620,7 +620,7 @@ class UrlHelper
      * @param bool|null $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, ?string $scheme = null, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
+    private static function _createUrl(string $path, $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);

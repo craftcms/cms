@@ -472,17 +472,20 @@ class Cp
         $tipId = $config['tipId'] ?? "$id-tip";
         $warningId = $config['warningId'] ?? "$id-warning";
         $errorsId = $config['errorsId'] ?? "$id-errors";
+        $statusId = $config['statusId'] ?? "$id-status";
 
         $instructions = $config['instructions'] ?? null;
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
+        $status = $config['status'] ?? null;
 
         if (StringHelper::startsWith($input, 'template:')) {
             // Set a describedBy value in case the input template supports it
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
                     $errors ? $errorsId : null,
+                    $status ? $statusId : null,
                     $instructions ? $instructionsId : null,
                     $tip ? $tipId : null,
                     $warning ? $warningId : null,
@@ -496,7 +499,6 @@ class Cp
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
         $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
-        $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
         if ($label === '__blank__') {
@@ -565,16 +567,21 @@ class Cp
             (($label && $fieldset)
                 ? Html::tag('legend', $labelHtml, [
                     'class' => ['visually-hidden'],
+                    'data' => [
+                        'label' => $label,
+                    ],
                 ])
                 : '') .
             ($status
-                ? Html::tag('div', '', [
+                ? Html::beginTag('div', [
+                    'id' => $statusId,
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
                 ]) .
                 Html::tag('span', $status[1], [
                     'class' => 'visually-hidden',
-                ])
+                ]) .
+                Html::endTag('div')
                 : '') .
             (($label || $showAttribute)
                 ? (
@@ -629,19 +636,10 @@ class Cp
             self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
             self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
             ($errors
-                ? (
-                    Html::beginTag('div', [
-                        'id' => $errorsId,
-                        'class' => 'error-container',
-                    ]) .
-                    Html::tag('p', Craft::t('app', 'Errors:'), [
-                        'class' => 'visually-hidden',
-                    ]) .
-                    static::renderTemplate('_includes/forms/errorList', [
-                        'errors' => $errors,
-                    ]) .
-                    Html::endTag('div')
-                )
+                ? static::renderTemplate('_includes/forms/errorList', [
+                    'id' => $errorsId,
+                    'errors' => $errors,
+                ])
                 : '') .
             Html::endTag($containerTag);
     }

@@ -3,7 +3,6 @@
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
- * @since 3.4.0
  */
 
 namespace craft\base;
@@ -11,7 +10,7 @@ namespace craft\base;
 use yii\base\NotSupportedException;
 
 /**
- * The AssetPreview interface dictates the requirements to register Asset Preview handlers with Craft
+ * AssetPreviewHandlerInterface defines the common interface to be implemented by classes that provide asset previewing functionality.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0

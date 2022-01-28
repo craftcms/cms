@@ -72,6 +72,78 @@ class App
     }
 
     /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`)
+     * and/or an alias (`@aliasName`), and returns the referenced value.
+     *
+     * If the string references an environment variable with a value of `true`
+     * or `false`, a boolean value will be returned.
+     *
+     * ---
+     *
+     * ```php
+     * $value1 = App::parseEnv('$SMTP_PASSWORD');
+     * $value2 = App::parseEnv('@webroot');
+     * ```
+     *
+     * @param string|null $str
+     * @return string|bool|null The parsed value, or the original value if it didn’t
+     * reference an environment variable and/or alias.
+     * @since 3.7.29
+     */
+    public static function parseEnv(string $str = null)
+    {
+        if ($str === null) {
+            return null;
+        }
+
+        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
+            $value = App::env($matches[1]);
+            if ($value !== false) {
+                switch (strtolower($value)) {
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                }
+                $str = $value;
+            }
+        }
+
+        if (StringHelper::startsWith($str, '@')) {
+            $str = Craft::getAlias($str, false) ?: $str;
+        }
+
+        return $str;
+    }
+
+    /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced
+     * boolean value, or `null` if a boolean value can’t be determined.
+     *
+     * ---
+     *
+     * ```php
+     * $status = App::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
+     * ```
+     *
+     * @param mixed $value
+     * @return bool|null
+     * @since 3.7.29
+     */
+    public static function parseBooleanEnv($value): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+    }
+
+    /**
      * Returns whether Craft is running within [Nitro](https://getnitro.sh) v1.
      *
      * @return bool
@@ -544,28 +616,25 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName),
+                App::parseEnv($settings->fromEmail) => App::parseEnv($settings->fromName),
             ],
-            'replyTo' => Craft::parseEnv($settings->replyToEmail),
-            'template' => Craft::parseEnv($settings->template),
+            'replyTo' => App::parseEnv($settings->replyToEmail),
+            'template' => App::parseEnv($settings->template),
             'transport' => $adapter->defineTransport(),
         ];
     }
 
     /**
-     * Returns a file-based `mutex` component config.
+     * Returns a file-based mutex driver config.
      *
      * ::: tip
-     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that you
-     * can safely remove your custom `mutex` component config for Craft 3.5.0 and later. Craft now uses a
-     * database-based mutex component by default (see [[dbMutexConfig()]]), which doesn’t care which type of
-     * file system is used.
+     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that
+     * overriding the `mutex` component may no longer be necessary, as Craft no longer uses a mutex
+     * when Dev Mode is enabled.
      * :::
      *
      * @return array
      * @since 3.0.18
-     * @deprecated in 3.5.0.
-     *
      */
     public static function mutexConfig(): array
     {
@@ -579,10 +648,11 @@ class App
     }
 
     /**
-     * Returns the `mutex` component config.
+     * Returns a database-based mutex driver config.
      *
      * @return array
      * @since 3.5.18
+     * @deprecated in 3.7.30. Database-based mutex locking is no longer recommended.
      */
     public static function dbMutexConfig(): array
     {
@@ -656,7 +726,7 @@ class App
 
             $targets[Dispatcher::TARGET_FILE] = Craft::createObject($fileTargetConfig);
 
-            if (!Craft::$app->getRequest()->isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+            if (!$isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
                 $targets[Dispatcher::TARGET_STDERR] = Craft::createObject([
                     'class' => StreamLogTarget::class,
                     'url' => 'php://stderr',

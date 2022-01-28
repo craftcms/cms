@@ -16,7 +16,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
@@ -24,8 +23,9 @@ use craft\models\FieldLayout;
 use yii\base\Component;
 
 /**
- * The ElementIndexes service provides APIs for managing element indexes.
- * An instance of ElementIndexes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElementIndexes()|`Craft::$app->elementIndexes`]].
+ * The Element Indexes service provides APIs for managing element indexes.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementIndexes()|`Craft::$app->elementIndexes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

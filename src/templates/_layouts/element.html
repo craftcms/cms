@@ -257,6 +257,7 @@
     {% if not isRevision %}
         <div id="revision-spinner" class="spinner hidden" title="{{ 'Saving'|t('app') }}" aria-label="{{ 'Saving'|t('app') }}"></div>
         <div id="revision-status" class="invisible"></div>
+        <div id="revision-status-message" aria-live="polite"></div>
     {% endif %}
 {% endblock %}
 

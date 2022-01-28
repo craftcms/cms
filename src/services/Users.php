@@ -41,7 +41,8 @@ use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
- * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -578,6 +579,9 @@ class Users extends Component
         // Update the User model too
         $user->lastLoginDate = $now;
         $user->invalidLoginCount = null;
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
     }
 
     /**
@@ -635,6 +639,9 @@ class Users extends Component
                 'user' => $user,
             ]));
         }
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
     }
 
     /**

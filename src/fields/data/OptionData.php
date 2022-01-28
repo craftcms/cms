@@ -46,7 +46,7 @@ class OptionData implements Serializable
      * @param bool $selected
      * @param bool $valid
      */
-    public function __construct(string $label = null, string $value = null, bool $selected, bool $valid = true)
+    public function __construct(?string $label, ?string $value, bool $selected, bool $valid = true)
     {
         $this->label = $label;
         $this->value = $value;

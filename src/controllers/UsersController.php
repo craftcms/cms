@@ -764,7 +764,7 @@ class UsersController extends Controller
                         if (!$user->password) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app', 'Copy activation URL'),
+                                'label' => Craft::t('app', 'Copy activation URL…'),
                             ];
                         }
                         $statusActions[] = [
@@ -811,7 +811,7 @@ class UsersController extends Controller
                         if ($userSession->checkPermission('administrateUsers')) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app', 'Copy password reset URL'),
+                                'label' => Craft::t('app', 'Copy password reset URL…'),
                             ];
                         }
                     }
@@ -826,7 +826,7 @@ class UsersController extends Controller
                     ];
                     $sessionActions[] = [
                         'id' => 'copy-impersonation-url',
-                        'label' => Craft::t('app', 'Copy impersonation URL'),
+                        'label' => Craft::t('app', 'Copy impersonation URL…'),
                     ];
                 }
 

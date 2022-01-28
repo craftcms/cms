@@ -155,6 +155,16 @@
       min-height: 100%;
     }
 
+    &:not(.lp-iframe-container--has-device-preview) {
+      // Preview container
+      .lp-device-preview-container {
+        width: auto !important;
+        height: 100% !important;
+        transform: none !important;
+        margin: 0 !important;
+      }
+    }
+
     &--has-device-preview {
       flex: none;
       padding-top: 0 !important;
@@ -203,20 +213,15 @@
       }
     }
 
-    // Animate only the transform (scale, translate and rotate)
-    &--animating {
+    // Animate rotations
+    &--rotating {
       .lp-device-mask {
         transition-duration: .3s;
         transition-property: transform;
       }
-    }
-
-    // Hide the iframe whilst animating or updating
-    &--animating,
-    &--updating {
       .lp-device-preview-container {
         opacity: 0;
-        transition: opacity 0s,
+        transition: opacity 0s;
       }
     }
   }

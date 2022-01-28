@@ -363,7 +363,7 @@ class Section extends Model
     }
 
     /**
-     * Returns the field layout config for this section.
+     * Returns the section’s config.
      *
      * @return array
      * @since 3.5.0

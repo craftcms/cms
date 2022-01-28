@@ -210,7 +210,7 @@ class EntryType extends Model
     }
 
     /**
-     * Returns the field layout config for this entry type.
+     * Returns the entry type’s config.
      *
      * @return array
      * @since 3.5.0

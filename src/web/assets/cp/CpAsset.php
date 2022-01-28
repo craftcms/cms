@@ -404,7 +404,7 @@ JS;
         return Craft::$app->getAnnouncements()->get();
     }
 
-    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
+    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, ?User $currentUser, GeneralConfig $generalConfig): array
     {
         return [
             'constrainInput' => false,

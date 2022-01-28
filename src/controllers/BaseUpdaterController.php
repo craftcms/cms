@@ -19,6 +19,7 @@ use craft\web\Response as CraftResponse;
 use yii\base\Exception;
 use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
+use yii\web\JsonResponseFormatter;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -167,6 +168,9 @@ abstract class BaseUpdaterController extends Controller
      */
     public function actionComposerInstall(): Response
     {
+        // Preload JsonResponseFormatter because the Yii 2.0.44 version requires a newer version of yii\helper\BaseJson
+        class_exists(JsonResponseFormatter::class);
+
         $io = new BufferIO();
 
         try {

@@ -67,7 +67,7 @@ Craft.InfoIcon = Garnish.Base.extend({
                 hudClass: 'hud info-hud',
                 closeOtherHUDs: false,
                 onShow: () => {
-                    Garnish.shortcutManager.registerShortcut(Garnish.SPACE_KEY, () => {
+                    Garnish.uiLayerManager.registerShortcut(Garnish.SPACE_KEY, () => {
                         this.hud.hide();
                     });
                 },

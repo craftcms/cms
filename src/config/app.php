@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.7.27',
+    'version' => '3.7.30.1',
     'schemaVersion' => '3.7.8',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -79,6 +79,9 @@ return [
         ],
         'matrix' => [
             'class' => craft\services\Matrix::class,
+        ],
+        'mutex' => [
+            'class' => craft\mutex\Mutex::class,
         ],
         'path' => [
             'class' => craft\services\Path::class,
@@ -235,11 +238,6 @@ return [
 
         'mailer' => function() {
             $config = craft\helpers\App::mailerConfig();
-            return Craft::createObject($config);
-        },
-
-        'mutex' => function() {
-            $config = craft\helpers\App::dbMutexConfig();
             return Craft::createObject($config);
         },
 
