@@ -298,7 +298,7 @@ return [
     'Copied to clipboard.' => 'Zkopírováno do schránky.',
     'Copy URL' => 'Kopírovat URL',
     'Copy activation URL' => 'Zkopírovat aktivační URL',
-    'Copy impersonation URL' => 'Kopírovat URL zosobnění',
+    'Copy impersonation URL…' => 'Copy impersonation URL…',
     'Copy password reset URL' => 'Zkopírujte adresu pro obnovení hesla',
     'Copy reference tag' => 'Kopírovat referenční tag',
     'Copy the URL' => 'Zkopírovat URL',
