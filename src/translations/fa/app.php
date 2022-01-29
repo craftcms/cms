@@ -1336,7 +1336,7 @@ return [
     'The URI can’t begin with the {setting} config setting.' => 'URI نمی تواند با تنظیم پیکربندی {setting} شروع گردد.',
     'The URL/URI to use for this target.' => 'آدرس اینترنتی/URI برای استفاده در این مقصد',
     'The `@web` alias is not recommended if it is determined automatically.' => 'نام مستعار `@web` در صورتی که به صورت خودکار تشخیص داده شده است توصیه نمی گردد.',
-    'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'هدر `Authorization` که باید برای استفاده از این توکن با درخواست‌های GraphQL API ارسال شود.',
+    'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'هدر مجوزی که باید برای استفاده از این توکن با درخواست‌های GraphQL API ارسال شود.',
     'The allowed values are [{values}]' => 'مقادیر مجاز [{values}] هستند',
     'The asset you’re trying to download does not exist.' => 'فایل پروژه ای که در حال تلاش برای دانلود آن هستید وجود ندارد.',
     'The asset you’re trying to edit does not exist.' => 'فایل پروژه ای  که در حال تلاش برای ویرایش آن هستید وجود ندارد.',
