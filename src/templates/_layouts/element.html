@@ -50,7 +50,6 @@
 {% set allSites = craft.app.isMultiSite
     ? element.getSupportedSites()|map(s => s is array ? s : {siteId: s})
     : [{siteId: element.siteId}] %}
-{% set allSiteIds = allSites|column('siteId') %}
 {% set allEditableSiteIds = craft.app.sites.getEditableSiteIds() %}
 {% set propSiteIds = allSites|filter(s => s.propagate ?? true)|column('siteId') %}
 {% set propEditableSiteIds = propSiteIds|intersect(allEditableSiteIds) %}
