@@ -555,7 +555,8 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Let any other browser windows editing the draft that they can reload themselves
-        $js = <<<JS
+        if ($draft->draftId) {
+            $js = <<<JS
 if (typeof BroadcastChannel !== 'undefined') {
     (new BroadcastChannel('DraftEditor')).postMessage({
         event: 'saveDraft',
@@ -565,7 +566,8 @@ if (typeof BroadcastChannel !== 'undefined') {
     });
 }
 JS;
-        Craft::$app->getSession()->addJsFlash($js);
+            Craft::$app->getSession()->addJsFlash($js);
+        }
 
         return $this->redirectToPostedUrl($newEntry);
     }
