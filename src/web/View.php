@@ -556,7 +556,7 @@ class View extends \yii\web\View
                         $extra[] = $field;
                     }
                 }
-                $variables = array_merge($object->toArray([], $extra, false), $variables);
+                $variables += $object->toArray([], $extra, false);
             }
 
             $variables['object'] = $object;
@@ -1175,7 +1175,7 @@ JS;
      *
      * @param string|null $namespace The new namespace. Set to null to remove the namespace.
      */
-    public function setNamespace(?string $namespace = null): void
+    public function setNamespace(?string $namespace): void
     {
         $this->_namespace = $namespace;
     }
