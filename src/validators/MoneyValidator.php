@@ -33,23 +33,6 @@ class MoneyValidator extends Validator
     public $min;
 
     /**
-     * @var string
-     */
-    public string $invalidMinorUnitMessage;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        if (!isset($this->invalidMinorUnitMessage)) {
-            $this->invalidMinorUnitMessage = Craft::t('app', 'The currency code “{currencyCode}” is not allowed.');
-        }
-    }
-
-    /**
      * @inheritdoc
      */
     public function validateAttribute($model, $attribute): void

@@ -1397,7 +1397,6 @@ return [
     'The base URL to the files in this filesystem.' => 'The base URL to the files in this filesystem.',
     'The base folder path that should be used as the root of the filesystem.' => 'The base folder path that should be used as the root of the filesystem.',
     'The command to run Sendmail with.' => 'The command to run Sendmail with.',
-    'The currency code “{currencyCode}” is not allowed.' => 'The currency code “{currencyCode}” is not allowed.',
     'The database was restored successfully.' => 'The database was restored successfully.',
     'The developer recommends using <a href="{url}">{name}</a> instead.' => 'The developer recommends using <a href="{url}">{name}</a> instead.',
     'The draft could not be saved.' => 'The draft could not be saved.',
