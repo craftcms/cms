@@ -307,7 +307,7 @@ const getConfig = ({
             ],
           },
           {
-            test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|svg)$/,
+            test: /fonts\/[a-zA-Z0-9\-\_]*\.(ttf|woff|woff2|svg)$/,
             type: "asset/resource",
             generator: {
               filename: "fonts/[name][ext][query]",
