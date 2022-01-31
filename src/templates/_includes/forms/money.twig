@@ -12,6 +12,7 @@
 {% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
 {% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
 {% set currencyLabel = currencyLabel ?? null  %}
+{% set size = size ?? null %}
 
 {{ hiddenInput("#{name}[locale]", formattingLocale) }}
 

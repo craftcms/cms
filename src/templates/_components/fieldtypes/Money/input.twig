@@ -1,6 +1,6 @@
 {% import '_includes/forms' as forms %}
 
-{% set config = {
+{{ forms.money({
     id: field.handle|id,
     name: field.handle,
     value: value ? value : defaultValue ?? '',
@@ -8,6 +8,5 @@
     currency: currency ? currency : field.defaultCurrency,
     currencyLabel: currencyLabel,
     decimals: decimals,
-} %}
-
-{{ forms.money(config) }}
+    size: field.size,
+}) }}
