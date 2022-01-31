@@ -7,7 +7,7 @@ files:
     translation: /%two_letters_code%/app.php
     type: php
     excluded_target_languages:
+      - cy
       - id
       - ky
-      - cy
 commit_message: "[ci skip]"
