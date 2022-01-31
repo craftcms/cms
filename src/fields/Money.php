@@ -17,7 +17,6 @@ use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\helpers\Number as NumberHelper;
 use craft\validators\MoneyValidator;
-use Money\Currencies;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Formatter\IntlMoneyFormatter;
