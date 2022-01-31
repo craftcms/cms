@@ -280,7 +280,7 @@ return [
     'Column handles can’t be in the format “{format}”.' => 'Kolomingangen mogen niet de vorm “{format}” hebben.',
     'Community Support (Slack, Stack Exchange)' => 'Communitysupport (Slack, Stack Exchange)',
     'Compatibility' => 'Compatibiliteit',
-    'Compiled classes' => 'Compiled classes',
+    'Compiled classes' => 'Verzamelde klassen',
     'Compiled templates' => 'Verzamelde sjablonen',
     'Complete the Update' => 'Update voltooien',
     'Completed job' => 'Taak voltooid',
