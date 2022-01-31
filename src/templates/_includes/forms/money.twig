@@ -5,39 +5,24 @@
 {% do view.registerAssetBundle("craft\\web\\assets\\money\\MoneyAsset") %}
 
 {% set id = (id ?? "money#{random()}") ~ '-money' -%}
-{% set currencyId = id ~ '-currency' -%}
+{% set decimals = decimals ?? 2 %}
 {% set name = name ?? null -%}
 {% set value = not (value ?? false) ? null : value -%}
-{% set currencies = currencies ?? [] -%}
-{% set currency = currency ?? null -%}
 {% set formattingLocale = formattingLocale ?? craft.app.formattingLocale.id -%}
 {% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
 {% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
-
+{% set currencyLabel = currencyLabel ?? null  %}
 
 {{ hiddenInput("#{name}[locale]", formattingLocale) }}
 
 <div class="money-container">
-    <div class="money-currency">
-        {% if currencies|length > 1 %}
-            {{ forms.selectize({
-                id: currencyId,
-                name: "#{name}[currency]",
-                options: currencies,
-                value: currency,
-            }) }}
-        {% else %}
-            {# Show a read only currency if there is only one selectable #}
-            {{ hiddenInput({
-                id: currencyId,
-                name: "#{name}[currency]",
-                value: currency,
-            }) }}
+    {% if currencyLabel %}
+        <div class="money-currency">
             <div class="money-currency-label">
-                <span>{{ (currencies|first).label }}</span>
+                <span>{{ currencyLabel }}</span>
             </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
     <div class="money-money">
         {% include '_includes/forms/text' with {
             inputAttributes: {
@@ -48,8 +33,9 @@
 </div>
 
 {% js %}
-new Craft.Money('{{ id|namespaceInputId }}', '{{ currencyId|namespaceInputId }}', {
+new Craft.Money('{{ id|namespaceInputId }}', {
     decimalSeparator: '{{ decimalSeparator }}',
     groupSeparator: '{{ groupSeparator }}',
+    decimals: {{ decimals }},
 });
 {% endjs %}

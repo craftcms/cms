@@ -12,26 +12,11 @@
     align-items: center;
     @include padding(7px, 22px, 7px, 10px);
     box-sizing: border-box;
-  }
-
-  .selectize.select:not(.fullwidth),
-  .money-currency-label {
     width: 8em;
-  }
-
-  .selectize-control.single,
-  .selectize.select .selectize-control .selectize-input,
-  .money-currency-label {
-    border-radius: 0;
     border: 0;
-    background: transparent;
-  }
-
-  .selectize-control.single,
-  .money-currency-label {
-    border-bottom-left-radius: 5px;
     border-right: 1px solid transparentize($inputColor, 0.75);
-    border-top-left-radius: 5px;
+    border-radius: 5px 0 0 5px;
+    background: transparent;
   }
 
   .money-money {

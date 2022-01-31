@@ -3,10 +3,11 @@
 {% set config = {
     id: field.handle|id,
     name: field.handle,
-    value: value ? value : field.defaultValue ?? '',
+    value: value ? value : defaultValue ?? '',
     size: field.size,
     currency: currency ? currency : field.defaultCurrency,
-    currencies: currencies,
+    currencyLabel: currencyLabel,
+    decimals: decimals,
 } %}
 
 {{ forms.money(config) }}

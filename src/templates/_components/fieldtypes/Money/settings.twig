@@ -1,34 +1,63 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.textField({
-    label: "Default Value"|t('app'),
+{% macro numberField(config, decimals) %}
+    {% from '_includes/forms' import textField %}
+    {# Only format the value if it isn’t going to be misrepresented #}
+    {% if not craft.app.formatter.willBeMisrepresented(config.value) %}
+        {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+        {% set config = config|merge({
+            name: "#{config.name}[value]",
+            value: config.value|number(decimals),
+        }) %}
+    {% endif %}
+    {{ textField(config) }}
+{% endmacro %}
+
+{% set currencyInput %}
+    {{ forms.select({
+        id: 'currency',
+        name: 'currency',
+        options: currencies|map(currency => {label: currency.getCode(), value: currency.getCode()}),
+        value: field.currency,
+        class: 'selectize',
+    }) }}
+{% endset %}
+
+{{ forms.field({
+    label: 'Currency'|t('app'),
+    errors: field.getErrors('currency'),
+    required: true,
+}, currencyInput) }}
+
+{{ _self.numberField({
+    label: 'Default Value'|t('app'),
     id: 'defaultValue',
     name: 'defaultValue',
     value: field.defaultValue,
     size: 5,
     errors: field.getErrors('defaultValue')
-}) }}
+}, subUnits) }}
 
-{{ forms.textField({
-    label: "Min Value"|t('app'),
+{{ _self.numberField({
+    label: 'Min Value'|t('app'),
     id: 'min',
     name: 'min',
     value: field.min,
     size: 5,
     errors: field.getErrors('min')
-}) }}
+}, subUnits) }}
 
-{{ forms.textField({
-    label: "Max Value"|t('app'),
+{{ _self.numberField({
+    label: 'Max Value'|t('app'),
     id: 'max',
     name: 'max',
     value: field.max,
     size: 5,
     errors: field.getErrors('max')
-}) }}
+}, subUnits) }}
 
 {{ forms.textField({
-    label: "Size"|t('app'),
+    label: 'Size'|t('app'),
     id: 'size',
     name: 'size',
     value: field.size,
@@ -36,79 +65,10 @@
     errors: field.getErrors('size')
 }) }}
 
-{{ forms.multiselectField({
-    label: 'Allowed Currencies'|t('app'),
-    instructions: 'Choose the currencies that are allowed for entry. Leave blank for all currencies.'|t('app'),
-    id: 'allowed-currencies',
-    name: 'allowedCurrencies',
-    options: currencies|map(currency => {label: currency.getCode(), value: currency.getCode()}),
-    values: field.allowedCurrencies,
-    errors: field.getErrors('allowedCurrencies'),
-    class: 'selectize fullwidth',
-}) }}
-
-{% set defaultInput %}
-    {{ forms.select({
-        id: 'default-currency',
-        name: 'defaultCurrency',
-        options: field.allowedCurrencies|length
-            ? field.allowedCurrencies|map(currency => {label: currency, value: currency})
-            : currencies|map(currency => {label: currency.getCode(), value: currency.getCode()}),
-        value: field.defaultCurrency,
-        class: 'selectize',
-    }) }}
-{% endset %}
-
-{{ forms.field({
-    label: 'Default Currency'|t('app'),
-    errors: field.getErrors('defaultCurrency'),
-    required: true,
-}, defaultInput) }}
-
 {% js %}
 (() => {
-    let allCurrencies = {{ currencies|map(currency => currency.getCode())|json_encode|raw }};
-    let $defaultCurrency = $('#{{ 'default-currency'|namespaceInputId|e('js') }}').selectize({
+    const $defaultCurrency = $('#{{ 'currency'|namespaceInputId|e('js') }}').selectize({
         dropdownParent: 'body',
-    });
-
-    $('#{{ 'allowed-currencies'|namespaceInputId|e('js') }}').selectize({
-        plugins: ['remove_button'],
-        dropdownParent: 'body',
-        onChange: function(currencies) {
-            let _defaultCurrency = $defaultCurrency[0].selectize.items[0];
-
-            $defaultCurrency[0].selectize.clear(true);
-            $defaultCurrency[0].selectize.clearOptions(true);
-
-            if (currencies && currencies.length > 0) {
-                currencies.forEach(opt => {
-                    $defaultCurrency[0].selectize.addOption({
-                        value: opt,
-                        text: opt,
-                    });
-                });
-            } else {
-                allCurrencies.forEach(opt => {
-                    $defaultCurrency[0].selectize.addOption({
-                        value: opt,
-                        text: opt,
-                    });
-                });
-            }
-
-            $defaultCurrency[0].selectize.refreshOptions(false);
-
-            const hasCurrenciesSelected = currencies && currencies.length > 0;
-            if (_defaultCurrency&& ((hasCurrenciesSelected && currencies.indexOf(_defaultCurrency) !== -1) || (!hasCurrenciesSelected))) {
-                $defaultCurrency[0].selectize.addItem(_defaultCurrency, true);
-            } else {
-                const _keys = Object.keys($defaultCurrency[0].selectize.options);
-                $defaultCurrency[0].selectize.addItem(_keys[0], true);
-            }
-
-            $defaultCurrency[0].selectize.refreshItems();
-        },
     });
 })();
 {% endjs %}

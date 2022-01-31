@@ -7,26 +7,18 @@ import './Money.scss';
     settings: null,
 
     $field: null,
-    $currencyField: null,
 
-    init: function(fieldId, currencyFieldId, settings) {
+    init: function(fieldId, settings) {
       this.setSettings(settings, this.defaultSettings);
 
       this.$field = $('#' + fieldId);
-      this.$currencyField = $('#' + currencyFieldId);
 
-      this.updateInputMask();
-
-      this.addListener(this.$currencyField, 'change', 'currencyChangeHandler');
-    },
-
-    currencyChangeHandler: function() {
       this.updateInputMask();
     },
 
     updateInputMask: function() {
       const opts = {
-        digits: this.getSubUnits(),
+        digits: this.settings.decimals,
         groupSeparator: this.settings.groupSeparator,
         radixPoint: this.settings.decimalSeparator,
       };
@@ -34,17 +26,10 @@ import './Money.scss';
       this.$field.inputmask($.extend(this.settings.maskOptions, opts));
     },
 
-    getCurrencyCode: function() {
-      return this.$currencyField.val();
-    },
-
-    getSubUnits: function() {
-      return window.Craft.CurrencySubUnits[this.getCurrencyCode()];
-    },
-
     defaultSettings: {
       decimalSeparator: '.',
       groupSeparator: ',',
+      decimals: 2,
       maskOptions: {
         alias: 'currency',
         autoGroup: false,

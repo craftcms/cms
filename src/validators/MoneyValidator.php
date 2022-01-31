@@ -11,6 +11,7 @@ use Craft;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Money;
+use Money\Parser\DecimalMoneyParser;
 use yii\validators\Validator;
 
 /**
@@ -22,24 +23,19 @@ use yii\validators\Validator;
 class MoneyValidator extends Validator
 {
     /**
-     * @var array
+     * @var int|float|null
      */
-    public array $allowedCurrencies = [];
+    public $max;
 
     /**
-     * @var string
+     * @var int|float|null
      */
-    public string $notAllowedMessage;
+    public $min;
 
     /**
      * @var string
      */
     public string $invalidMinorUnitMessage;
-
-    /**
-     * @var ISOCurrencies
-     */
-    private ISOCurrencies $_allIsoCurrencies;
 
     /**
      * @inheritdoc
@@ -48,16 +44,8 @@ class MoneyValidator extends Validator
     {
         parent::init();
 
-        if (!isset($this->notAllowedMessage)) {
-            $this->notAllowedMessage = Craft::t('app', 'The currency code “{currencyCode}” is not allowed.');
-        }
-
         if (!isset($this->invalidMinorUnitMessage)) {
             $this->invalidMinorUnitMessage = Craft::t('app', 'The currency code “{currencyCode}” is not allowed.');
-        }
-
-        if (!isset($this->_allIsoCurrencies)) {
-            $this->_allIsoCurrencies = new ISOCurrencies();
         }
     }
 
@@ -72,10 +60,28 @@ class MoneyValidator extends Validator
             $value = new Money($value['money'], $currency);
         }
 
-        if (!empty($this->allowedCurrencies) && !in_array($value->getCurrency()->getCode(), $this->allowedCurrencies, true)) {
-            $this->addError($model, $attribute, $this->notAllowedMessage, [
-                'currencyCode' => $value->getCurrency()->getCode()
-            ]);
+        if ($this->max !== null) {
+            $max = (new DecimalMoneyParser(new ISOCurrencies()))
+                ->parse((string)$this->max, $value->getCurrency());
+
+            if ($value->greaterThan($max)) {
+                $this->addError($model, $attribute, Craft::t('app', '{attribute} must be no greater than {max}.', [
+                    'attribute' => $model->getAttributeLabel($attribute),
+                    'max' => $this->max,
+                ]));
+            }
+        }
+
+        if ($this->min !== null) {
+            $min = (new DecimalMoneyParser(new ISOCurrencies()))
+                ->parse((string)$this->min, $value->getCurrency());
+
+            if ($value->lessThan($min)) {
+                $this->addError($model, $attribute, Craft::t('app', '{attribute} must be no less than {min}.', [
+                    'attribute' => $model->getAttributeLabel($attribute),
+                    'min' => $this->min,
+                ]));
+            }
         }
 
         if ($normalized) {

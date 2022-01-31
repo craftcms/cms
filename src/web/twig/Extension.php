@@ -299,15 +299,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Outputs a value from a Money object.
      *
      * @param Money $money
-     * @param bool|string $formatLocale
+     * @param string|null $formatLocale
      * @return string
      */
-    public function moneyFilter(Money $money, $formatLocale = true): string
+    public function moneyFilter(Money $money, ?string $formatLocale = null): string
     {
-        if ($formatLocale === false) {
-            return $money->getAmount();
-        }
-
         $localeId = is_string($formatLocale) ? $formatLocale : Craft::$app->getFormattingLocale()->id;
 
         $currencies = new ISOCurrencies();

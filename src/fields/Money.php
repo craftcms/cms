@@ -20,7 +20,6 @@ use craft\validators\MoneyValidator;
 use Money\Currencies;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
-use Money\Formatter\DecimalMoneyFormatter;
 use Money\Formatter\IntlMoneyFormatter;
 use Money\Money as MoneyLibrary;
 use Money\Parser\DecimalMoneyParser;
@@ -63,7 +62,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @var string The default currency
      */
-    public string $defaultCurrency = 'USD';
+    public string $currency = 'USD';
 
     /**
      * @var int|float|null The default value for new elements
@@ -84,11 +83,6 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      * @var int|null The size of the field
      */
     public ?int $size = null;
-
-    /**
-     * @var string[] The allowed list of currencies available for the input
-     */
-    public array $allowedCurrencies = [];
 
     /**
      * @var ISOCurrencies
@@ -136,9 +130,10 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
+        $rules[] = [['defaultValue', 'min', 'max'], 'validateSubUnits', 'skipOnEmpty' => true];
         $rules[] = [['defaultValue', 'min', 'max'], 'number'];
-        $rules[] = [['defaultCurrency'], 'required'];
-        $rules[] = [['defaultCurrency'], 'string', 'max' => 3];
+        $rules[] = [['currency'], 'required'];
+        $rules[] = [['currency'], 'string', 'max' => 3];
         $rules[] = [['size'], 'integer'];
         $rules[] = [
             ['max'],
@@ -151,6 +146,24 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     }
 
     /**
+     * @param $attribute
+     * @param $params
+     * @param $validator
+     * @return void
+     */
+    public function validateSubUnits($attribute, $params, $validator): void
+    {
+        $subUnits = $this->_isoCurrencies->subunitFor(new Currency($this->currency));
+        // Check the number of decimal places in $this->$attribute
+        if (strlen(substr(strrchr($this->$attribute, '.'), 1)) > $subUnits) {
+            $this->addError($attribute, Craft::t('app', '{attribute} must be {number} decimal places.', [
+                'attribute' => $attribute,
+                'number' => $subUnits
+            ]));
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     public function getSettingsHtml(): ?string
@@ -158,27 +171,17 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings',
             [
                 'field' => $this,
-                'currencies' => $this->_isoCurrencies
+                'currencies' => $this->_isoCurrencies,
+                'subUnits' => $this->_isoCurrencies->subunitFor(new Currency($this->currency)),
             ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): array
+    public function getContentColumnType(): string
     {
-        return [
-            'money' => Schema::TYPE_STRING . '(255)',
-            'currency' => Schema::TYPE_STRING . '(5)',
-        ];
-    }
-
-    /**
-     * @return Currency|null
-     */
-    public function getCurrency(): ?Currency
-    {
-        return new Currency('USD');
+        return Schema::TYPE_STRING . '(1020)';
     }
 
     /**
@@ -190,44 +193,36 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             return $value;
         }
 
-        if ($value === null) {
-            if (isset($this->defaultValue) && $this->isFresh($element)) {
-                return $this->defaultValue;
-            }
-            return null;
+        $locale = Craft::$app->getFormattingLocale()->id;
+
+        if ($value === null && isset($this->defaultValue) && $this->isFresh($element)) {
+            $value = $this->defaultValue;
         }
 
-        if (!$value['currency'] instanceof Currency) {
-            $value['currency'] = new Currency($value['currency'] ?? $this->defaultCurrency);
+        if (is_array($value)) {
+            $locale = $value['locale'] ?? $locale;
+            $value = $value['money'] ?? null;
         }
-
         // Was this submitted with a locale ID?
-        if (isset($value['locale'], $value['money'])) {
-            $value['money'] = Localization::normalizeNumber($value['money'], $value['locale']);
-            $currencies = $this->_isoCurrencies;
-            return (new DecimalMoneyParser($currencies))
-                ->parse((string)$value['money'], $value['currency']);
-        }
+        $value = Localization::normalizeNumber($value, $locale);
 
-        return new MoneyLibrary($value['money'], $value['currency']);
+        return (new DecimalMoneyParser($this->_isoCurrencies))
+            ->parse((string)$value, $this->currency);
     }
 
     /**
      * @param $value
      * @param ElementInterface|null $element
-     * @return array|null
+     * @return string|null
      */
-    public function serializeValue($value, ElementInterface $element = null): ?array
+    public function serializeValue($value, ElementInterface $element = null): ?string
     {
         if (!$value) {
             return null;
         }
 
         /** @var MoneyLibrary $value */
-        return [
-            'money' => $value->getAmount(),
-            'currency' => $value->getCurrency()->getCode(),
-        ];
+        return $value->getAmount();
     }
 
     /**
@@ -236,6 +231,11 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     private function _normalizeNumber($value)
     {
+        // Was this submitted with a locale ID?
+        if (isset($value['locale'], $value['value'])) {
+            $value = Localization::normalizeNumber($value['value'], $value['locale']);
+        }
+
         if ($value === '') {
             return null;
         }
@@ -287,70 +287,39 @@ JS;
 
         $view->registerJs($js);
 
-        $currencyCode = $this->defaultCurrency;
+        $decimals = null;
 
-
+        $numberFormatter = new NumberFormatter(Craft::$app->getFormattingLocale()->id, NumberFormatter::DECIMAL);
         if ($value instanceof MoneyLibrary) {
-            $currenciesOptions = $this->_getCurrenciesOptionsList($value);
-            $moneyFormatter = new DecimalMoneyFormatter($this->_isoCurrencies);
-            $currencyCode = $value->getCurrency()->getCode();
-
-            $value = Craft::$app->getFormatter()->asDecimal($moneyFormatter->format($value), $this->_isoCurrencies->subunitFor($value->getCurrency()));
-        } else {
-            $currenciesOptions = $this->_getCurrenciesOptionsList();
+            $decimals = $this->_isoCurrencies->subunitFor($value->getCurrency());
+            $value = (new IntlMoneyFormatter($numberFormatter, $this->_isoCurrencies))->format($value);
         }
+
+        if ($decimals === null) {
+            $decimals = $this->_isoCurrencies->subunitFor(new Currency($this->currency));
+        }
+
+        $defaultValue = null;
+        if (isset($this->defaultValue)) {
+            $defaultValue = $this->normalizeValue($this->defaultValue, $element);
+            $defaultValue = (new IntlMoneyFormatter($numberFormatter, $this->_isoCurrencies))->format($defaultValue);
+        }
+
+        $currencyLabel = Craft::t('app', '({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->currency,
+            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
+        ]);
 
         return $view->renderTemplate('_components/fieldtypes/Money/input', [
             'id' => $id,
+            'currency' => $this->currency,
+            'currencyLabel' => $currencyLabel,
+            'decimals' => $decimals,
+            'defaultValue' => $defaultValue,
             'describedBy' => $this->describedBy,
             'field' => $this,
-            'currency' => $currencyCode,
             'value' => $value,
-            'currencies' => $currenciesOptions,
-            'fieldContainer' => $namespacedId . '-field',
         ]);
-    }
-
-    /**
-     * @param MoneyLibrary|null $value
-     * @return array
-     */
-    private function _getCurrenciesOptionsList(?MoneyLibrary $value = null): array
-    {
-        $currencies = $this->allowedCurrencies;
-
-        if (empty($currencies)) {
-            foreach ($this->_isoCurrencies as $isoCurrency) {
-                $currencies[] = $isoCurrency->getCode();
-            }
-        }
-
-        $currenciesOptionList = [];
-        foreach ($currencies as $currency) {
-            $currenciesOptionList[] = [
-                'label' => Craft::t('app', '({currencyCode}) {currencySymbol}', [
-                    'currencyCode' => $currency,
-                    'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($currency),
-                ]),
-                'value' => $currency
-            ];
-        }
-
-        // Add the current selected currency if it is no longer in the allowed currencies list
-        if ($value instanceof MoneyLibrary && !in_array($value->getCurrency()->getCode(), $currencies, true)) {
-            $currencyCode = $value->getCurrency()->getCode();
-            $currenciesOptionList[] = ['optgroup' => Craft::t('app', 'Currencies not available')];
-            $currenciesOptionList[] = [
-                'label' => Craft::t('app', '({currencyCode}) {currencySymbol}', [
-                    'currencyCode' => $currencyCode,
-                    'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($currencyCode),
-                ]),
-                'value' => $currencyCode,
-                'disabled' => true,
-            ];
-        }
-
-        return $currenciesOptionList;
     }
 
     /**
@@ -359,7 +328,7 @@ JS;
     public function getElementValidationRules(): array
     {
         return [
-            [MoneyValidator::class, 'allowedCurrencies' => $this->allowedCurrencies],
+            [MoneyValidator::class, 'min' => $this->min, 'max' => $this->max],
         ];
     }
 
