@@ -35,11 +35,9 @@ use yii\db\Schema;
  * @property-read array $contentGqlMutationArgumentType
  * @property-read array[] $elementValidationRules
  * @property-read string[] $contentColumnType
- * @property-read null|Currency $currency
  * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
- * @property-read Currencies $currencies
  */
 class Money extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
@@ -146,12 +144,11 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     }
 
     /**
-     * @param $attribute
-     * @param $params
-     * @param $validator
+     * @param string $attribute
+     * @param array|null $params
      * @return void
      */
-    public function validateSubUnits($attribute, $params, $validator): void
+    public function validateSubUnits(string $attribute, ?array $params = null): void
     {
         $subUnits = $this->_isoCurrencies->subunitFor(new Currency($this->currency));
         // Check the number of decimal places in $this->$attribute
