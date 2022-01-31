@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
 - Fixed an error that could occur when calling an element’s `getUrl()` method for a disabled site. ([#10421](https://github.com/craftcms/cms/issues/10421))
+- Fixed a JavaScript error that occurred after saving an unpublished draft.
 
 ## 3.7.30.1 - 2022-01-21
 
