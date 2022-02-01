@@ -101,6 +101,16 @@ Craft.EditableTable = Garnish.Base.extend({
             this.$addRowBtn.css('pointer-events', 'auto');
         }
     },
+    updateDeleteRowButton: function(rowId) {
+        const rowSelector = `[data-id="${rowId}"]`;
+        const $row = this.$table.find(rowSelector);
+        const $deleteBtn = $row.find('button.delete');
+
+        if (!$deleteBtn || !$row) return;
+
+        const label = Craft.t('app', 'Delete row {index}', {index: this.rowCount} );
+        $deleteBtn.attr('aria-label', label);
+    },
     canDeleteRow: function() {
         return (this.rowCount > this.settings.minRows);
     },
@@ -158,6 +168,7 @@ Craft.EditableTable = Garnish.Base.extend({
         }
 
         this.rowCount++;
+        this.updateDeleteRowButton(rowId);
         this.updateAddRowButton();
         this.$table.removeClass('hidden');
 
