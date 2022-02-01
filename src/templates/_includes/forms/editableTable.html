@@ -56,7 +56,8 @@
                     {%- case 'template' %}
                         {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
                 {%- endswitch %}
-                <th scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
+                {% set colHeadingId = "#{id}-col-#{loop.index}" %}
+                <th id="{{ colHeadingId }}" scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
                     {%- if col.headingHtml is defined %}
                         {{- col.headingHtml|raw }}
                     {%- elseif col.heading ?? false %}
@@ -70,7 +71,7 @@
                 </th>
             {% endfor %}
             {% if not staticRows %}
-                <th colspan="{{ fixedRows ? 1 : 2 }}"></th>
+                <th colspan="{{ fixedRows ? 1 : 2 }}"><span class="visually-hidden">Row Actions</span></th>
             {% endif %}
         </tr>
     </thead>
@@ -86,6 +87,7 @@
                     {% elseif col.type == 'html' %}
                         <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</td>
                     {% else %}
+                        {% set labelledBy = "#{id}-col-#{loop.index}" %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
@@ -157,7 +159,7 @@
                                         {% if static %}
                                             <pre class="disabled">{{ value }}</pre>
                                         {% else %}
-                                            <textarea name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            <textarea aria-labelledby="{{ labelledBy }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}
