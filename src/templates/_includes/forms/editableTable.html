@@ -76,6 +76,7 @@
     </thead>
     <tbody>
         {% for rowId, row in rows %}
+            {% set rowNumber = loop.index %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
@@ -164,8 +165,11 @@
                     {% endif %}
                 {% endfor %}
                 {% if not staticRows %}
+                    {% set deleteButtonText = 'Delete row {index}'|t('app', {
+                      index: rowNumber,
+                    }) %}
                     <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}"></a></td>
-                    {% if not fixedRows %}<td class="thin action"><button class="delete icon" type="button" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></button></td>{% endif %}
+                    {% if not fixedRows %}<td class="thin action"><button class="delete icon" type="button" title="{{ 'Delete'|t('app') }}" aria-label="{{ deleteButtonText }}"></button></td>{% endif %}
                 {% endif %}
             </tr>
         {% endfor %}

@@ -454,6 +454,7 @@ return [
     'Delete other authors’ entries' => 'Delete other authors’ entries',
     'Delete permanently' => 'Delete permanently',
     'Delete photo' => 'Delete photo',
+    'Delete row {index}' => 'Delete row {index}',
     'Delete selected group' => 'Delete selected group',
     'Delete tags from the “{tagGroup}” tag group' => 'Delete tags from the “{tagGroup}” tag group',
     'Delete their content' => 'Delete their content',
