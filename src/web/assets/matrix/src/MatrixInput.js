@@ -640,7 +640,6 @@
         },
 
         moveDown: function() {
-            console.log('in move down');
             let $next = this.$container.next('.matrixblock');
             if ($next.length) {
                 this.$container.insertAfter($next);
