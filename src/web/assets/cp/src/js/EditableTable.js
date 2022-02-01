@@ -414,9 +414,10 @@ Craft.EditableTable = Garnish.Base.extend({
         $('<td/>', {
             'class': 'thin action'
         }).append(
-            $('<a/>', {
+            $('<button/>', {
                 'class': 'delete icon',
-                'title': Craft.t('app', 'Delete')
+                'title': Craft.t('app', 'Delete'),
+                'type': 'button',
             })
         ).appendTo($tr);
 
