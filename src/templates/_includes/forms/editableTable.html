@@ -100,7 +100,12 @@
                                                 name: cellName,
                                                 value:  col.value ?? 1,
                                                 checked: value is not empty,
-                                                disabled: static
+                                                disabled: static,
+                                                inputAttributes: {
+                                                  aria: {
+                                                    labelledby: labelledBy,
+                                                  },
+                                                }
                                             } only %}
                                         </div>
                                     {%- case 'color' -%}
@@ -114,7 +119,12 @@
                                         {% include "_includes/forms/date" with {
                                             name: cellName,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            inputAttributes: {
+                                              aria: {
+                                                labelledby: labelledBy,
+                                              },
+                                            }
                                         } only %}
                                     {%- case 'lightswitch' -%}
                                         {% include "_includes/forms/lightswitch" with {
@@ -130,7 +140,12 @@
                                             name: cellName,
                                             options: cell.options ?? col.options,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            inputAttributes: {
+                                              aria: {
+                                                labelledby: labelledBy,
+                                              },
+                                            }
                                         } only %}
                                     {%- case 'time' -%}
                                         {% include "_includes/forms/time" with {
@@ -144,7 +159,12 @@
                                             name: cellName,
                                             placeholder: col.placeholder ?? null,
                                             value:  value,
-                                            disabled: static
+                                            disabled: static,
+                                            inputAttributes: {
+                                              aria: {
+                                                labelledby: labelledBy,
+                                              },
+                                            }
                                         } only %}
                                     {%- case 'autosuggest' or 'template' -%}
                                         {% include "_includes/forms/autosuggest" with {
