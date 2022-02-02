@@ -56,8 +56,8 @@
                     {%- case 'template' %}
                         {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
                 {%- endswitch %}
-                {% set colHeadingId = "#{id}-col-#{loop.index}" %}
-                <th id="{{ colHeadingId }}" scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
+                {% set columnHeadingId = "#{id}-heading-#{loop.index}" %}
+                <th id="{{ columnHeadingId }}" scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
                     {%- if col.headingHtml is defined %}
                         {{- col.headingHtml|raw }}
                     {%- elseif col.heading ?? false %}
@@ -87,7 +87,7 @@
                     {% elseif col.type == 'html' %}
                         <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</td>
                     {% else %}
-                        {% set labelledBy = "#{id}-col-#{loop.index}" %}
+                        {% set labelledBy = "#{id}-heading-#{loop.index}" %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
