@@ -774,8 +774,7 @@ class UsersController extends Controller
                     }
                     break;
                 case User::STATUS_SUSPENDED:
-                    $statusLabel = Craft::t('app', 'Suspended');
-                    if ($userSession->checkPermission('moderateUsers')) {
+                    if (Craft::$app->getUsers()->canSuspend($currentUser, $user)) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend'),
@@ -830,7 +829,7 @@ class UsersController extends Controller
                     ];
                 }
 
-                if ($userSession->checkPermission('moderateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
+                if (Craft::$app->getUsers()->canSuspend($currentUser, $user) && $user->getStatus() != User::STATUS_SUSPENDED) {
                     $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend'),
@@ -1576,7 +1575,6 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         if (!Craft::$app->getUsers()->suspendUser($user, $currentUser)) {

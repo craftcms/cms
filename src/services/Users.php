@@ -36,10 +36,8 @@ use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
-use yii\web\ForbiddenHttpException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -804,14 +802,8 @@ class Users extends Component
             return false;
         }
 
-        if ($moderatingUser) {
-            if (!$moderatingUser->can('moderateUsers')) {
-                throw new ForbiddenHttpException('User is not permitted to perform this action');
-            }
-
-            if (!$moderatingUser->admin && $user->admin) {
-                throw new ForbiddenHttpException('Only admins can suspend other admins');
-            }
+        if ($moderatingUser && !Craft::$app->getUsers()->canSuspend($moderatingUser, $user)) {
+            return false;
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -860,14 +852,8 @@ class Users extends Component
             return false;
         }
 
-        if ($moderatingUser) {
-            if (!$moderatingUser->can('moderateUsers')) {
-                throw new ForbiddenHttpException('User is not permitted to perform this action');
-            }
-
-            if (!$moderatingUser->admin && $user->admin) {
-                throw new ForbiddenHttpException('Only admins can unsuspend other admins');
-            }
+        if ($moderatingUser && !Craft::$app->getUsers()->canSuspend($moderatingUser, $user)) {
+            return false;
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -1240,6 +1226,27 @@ class Users extends Component
             if (!isset($impersonatorPermissions[$permission])) {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns whether the user can suspend the given user
+     *
+     * @param User $suspender
+     * @param User $suspendee
+     * @return bool
+     */
+    public function canSuspend(User $suspender, User $suspendee): bool
+    {
+        if (!$suspender->can('moderateUsers')) {
+            return false;
+        }
+
+        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
+        if (!$suspender->admin && $suspendee->admin) {
+            return false;
         }
 
         return true;
