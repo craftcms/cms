@@ -173,6 +173,7 @@
 - Added `craft\helpers\Gql::getSchemaContainedEntryTypes)()`.
 - Added `craft\helpers\Html::hiddenLabel()`.
 - Added `craft\helpers\ImageTransforms`.
+- Added `craft\helpers\Money`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\helpers\ProjectConfig::encodeValueAsString()`.
