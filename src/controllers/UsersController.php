@@ -1579,11 +1579,7 @@ class UsersController extends Controller
         // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can suspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->suspendUser($user)) {
+        if (!Craft::$app->getUsers()->suspendUser($user, $currentUser)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
@@ -1711,11 +1707,7 @@ class UsersController extends Controller
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can unsuspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->unsuspendUser($user)) {
+        if (!Craft::$app->getUsers()->unsuspendUser($user, $currentUser)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }

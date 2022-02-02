@@ -77,16 +77,22 @@ JS;
 
         /** @var User[] $users */
         $users = $query->all();
-        $usersService = Craft::$app->getUsers();
+        $currentUser = Craft::$app->getUser()->getIdentity();
 
-        foreach ($users as $user) {
-            if (!$user->getIsCurrent()) {
-                $usersService->suspendUser($user);
+        $successCount = count(array_filter($users, function(User $user) use($currentUser) {
+            try {
+                return Craft::$app->getUsers()->suspendUser($user, $currentUser);
+            } catch (\Throwable $e) {
+                return false;
             }
+        }));
+
+        if ($successCount !== count($users)) {
+            $this->setMessage(Craft::t('app', 'Could not suspend all users.'));
+            return false;
         }
 
-        $this->setMessage(Craft::t('app', 'Users suspended.'));
-
+        $this->setMessage(Craft::t('app', 'Users Suspended.'));
         return true;
     }
 }

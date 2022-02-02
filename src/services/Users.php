@@ -36,8 +36,10 @@ use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
+use yii\web\ForbiddenHttpException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -786,10 +788,11 @@ class Users extends Component
      * Suspends a user.
      *
      * @param User $user The user.
+     * @param User|null $moderatingUser The user who is performing the action.
      * @return bool Whether the user was suspended successfully.
      * @throws \Throwable if reasons
      */
-    public function suspendUser(User $user): bool
+    public function suspendUser(User $user, ?User $moderatingUser = null): bool
     {
         // Fire a 'beforeSuspendUser' event
         $event = new UserEvent([
@@ -799,6 +802,17 @@ class Users extends Component
 
         if (!$event->isValid) {
             return false;
+        }
+
+        if ($moderatingUser) {
+            if (!$moderatingUser->can('moderateUsers')) {
+                throw new Exception('User is not permitted to perform this action');
+            }
+
+            if (!$moderatingUser->admin && $user->admin) {
+                throw new Exception('Only admins can suspend other admins');
+            }
+
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -831,10 +845,11 @@ class Users extends Component
      * Unsuspends a user.
      *
      * @param User $user The user.
+     * @param User|null $moderatingUser The user who is performing the action.
      * @return bool Whether the user was unsuspended successfully.
      * @throws \Throwable if reasons
      */
-    public function unsuspendUser(User $user): bool
+    public function unsuspendUser(User $user, ?User $moderatingUser = null): bool
     {
         // Fire a 'beforeUnsuspendUser' event
         $event = new UserEvent([
@@ -844,6 +859,17 @@ class Users extends Component
 
         if (!$event->isValid) {
             return false;
+        }
+
+        if ($moderatingUser) {
+            if (!$moderatingUser->can('moderateUsers')) {
+                throw new Exception('User is not permitted to perform this action');
+            }
+
+            if (!$moderatingUser->admin && $user->admin) {
+                throw new Exception('Only admins can unsuspend other admins');
+            }
+
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
