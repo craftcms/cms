@@ -132,7 +132,12 @@
                                             on: value,
                                             value: col.value ?? 1,
                                             small: true,
-                                            disabled: static
+                                            disabled: static,
+                                            inputAttributes: {
+                                              aria: {
+                                                labelledby: labelledBy,
+                                              },
+                                            }
                                         } only %}
                                     {% case 'select' -%}
                                         {% include "_includes/forms/select" with {
@@ -151,7 +156,12 @@
                                         {% include "_includes/forms/time" with {
                                             name: cellName,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            inputAttributes: {
+                                              aria: {
+                                                labelledby: labelledBy,
+                                              },
+                                            }
                                         } only %}
                                     {%- case 'email' or 'url' -%}
                                         {% include "_includes/forms/text" with {
