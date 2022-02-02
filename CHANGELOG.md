@@ -7,6 +7,7 @@
 - Fixed an error that could occur when calling an element’s `getUrl()` method for a disabled site. ([#10421](https://github.com/craftcms/cms/issues/10421))
 - Fixed a JavaScript error that occurred after saving an unpublished draft.
 - Fixed a bug where Live Preview wasn’t always showing changes for entries that weren’t live. ([#10455](https://github.com/craftcms/cms/issues/10455))
+- Fixed a bug where it was impossible to restore a deleted global set by using project config. ([#10458](https://github.com/craftcms/cms/issues/10458))
 
 ## 3.7.30.1 - 2022-01-21
 
