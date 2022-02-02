@@ -812,7 +812,6 @@ class Users extends Component
             if (!$moderatingUser->admin && $user->admin) {
                 throw new ForbiddenHttpException('Only admins can suspend other admins');
             }
-
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -869,7 +868,6 @@ class Users extends Component
             if (!$moderatingUser->admin && $user->admin) {
                 throw new ForbiddenHttpException('Only admins can unsuspend other admins');
             }
-
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
