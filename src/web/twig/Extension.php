@@ -23,6 +23,7 @@ use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
+use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
@@ -304,11 +305,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function moneyFilter(Money $money, ?string $formatLocale = null): string
     {
-        $localeId = is_string($formatLocale) ? $formatLocale : Craft::$app->getFormattingLocale()->id;
-
-        $currencies = new ISOCurrencies();
-        $numberFormatter = new NumberFormatter($localeId, NumberFormatter::CURRENCY);
-        return (new IntlMoneyFormatter($numberFormatter, $currencies))->format($money);
+        return MoneyHelper::toString($money, $formatLocale);
     }
 
     /**

@@ -1898,7 +1898,6 @@ return [
     '{attribute} must be no later than {max}.' => '{attribute} must be no later than {max}.',
     '{attribute} must be no less than {min}.' => '{attribute} must be no less than {min}.',
     '{attribute} must be set to a new password.' => '{attribute} must be set to a new password.',
-    '{attribute} must be {number} decimal places.' => '{attribute} must be {number} decimal places.',
     '{attribute} must contain “{slug}”' => '{attribute} must contain “{slug}”',
     '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.' => '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.',
     '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.' => '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.',

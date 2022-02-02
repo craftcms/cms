@@ -2,14 +2,11 @@
 
 {% macro numberField(config, decimals) %}
     {% from '_includes/forms' import textField %}
-    {# Only format the value if it isn’t going to be misrepresented #}
-    {% if not craft.app.formatter.willBeMisrepresented(config.value) %}
-        {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
-        {% set config = config|merge({
-            name: "#{config.name}[value]",
-            value: config.value|number(decimals),
-        }) %}
-    {% endif %}
+    {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+    {% set config = config|merge({
+        name: "#{config.name}[value]",
+        value: config.value is not same as(null) ? config.value|number(decimals) : '',
+    }) %}
     {{ textField(config) }}
 {% endmacro %}
 
@@ -34,7 +31,7 @@
     id: 'defaultValue',
     name: 'defaultValue',
     value: field.defaultValue,
-    size: 5,
+    size: 10,
     errors: field.getErrors('defaultValue')
 }, subUnits) }}
 
@@ -43,7 +40,7 @@
     id: 'min',
     name: 'min',
     value: field.min,
-    size: 5,
+    size: 10,
     errors: field.getErrors('min')
 }, subUnits) }}
 
@@ -52,7 +49,7 @@
     id: 'max',
     name: 'max',
     value: field.max,
-    size: 5,
+    size: 10,
     errors: field.getErrors('max')
 }, subUnits) }}
 

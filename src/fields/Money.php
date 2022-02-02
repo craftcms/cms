@@ -12,17 +12,17 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\gql\types\Number as NumberType;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Localization;
-use craft\helpers\Number as NumberHelper;
+use craft\helpers\MoneyHelper;
 use craft\validators\MoneyValidator;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
-use Money\Formatter\IntlMoneyFormatter;
 use Money\Money as MoneyLibrary;
-use Money\Parser\DecimalMoneyParser;
-use NumberFormatter;
 use yii\db\Schema;
 
 /**
@@ -91,31 +91,15 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     public function __construct($config = [])
     {
+        if (!isset($this->_isoCurrencies)) {
+            $this->_isoCurrencies = new ISOCurrencies();
+        }
+
         // Config normalization
         foreach (['defaultValue', 'min', 'max'] as $name) {
             if (isset($config[$name])) {
                 $config[$name] = $this->_normalizeNumber($config[$name]);
             }
-        }
-
-        foreach (['defaultValue', 'max', 'size'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
-        if (($config['min'] ?? null) === '') {
-            $config['min'] = null; // default is 0
-        }
-
-        foreach (['min', 'max', 'defaultValue'] as $name) {
-            if (isset($config[$name])) {
-                $config[$name] = NumberHelper::toIntOrFloat($config[$name]);
-            }
-        }
-
-        if (!isset($this->_isoCurrencies)) {
-            $this->_isoCurrencies = new ISOCurrencies();
         }
 
         parent::__construct($config);
@@ -127,7 +111,6 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['defaultValue', 'min', 'max'], 'validateSubUnits', 'skipOnEmpty' => true];
         $rules[] = [['defaultValue', 'min', 'max'], 'number'];
         $rules[] = [['currency'], 'required'];
         $rules[] = [['currency'], 'string', 'max' => 3];
@@ -143,27 +126,18 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     }
 
     /**
-     * @param string $attribute
-     * @param array|null $params
-     * @return void
-     */
-    public function validateSubUnits(string $attribute, ?array $params = null): void
-    {
-        $subUnits = $this->_isoCurrencies->subunitFor(new Currency($this->currency));
-        // Check the number of decimal places in $this->$attribute
-        if (strlen(substr(strrchr($this->$attribute, '.'), 1)) > $subUnits) {
-            $this->addError($attribute, Craft::t('app', '{attribute} must be {number} decimal places.', [
-                'attribute' => $attribute,
-                'number' => $subUnits
-            ]));
-        }
-    }
-
-    /**
      * @inheritdoc
      */
     public function getSettingsHtml(): ?string
     {
+        foreach (['defaultValue', 'min', 'max'] as $attr) {
+            if ($this->$attr === null) {
+                continue;
+            }
+
+            $this->$attr = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings',
             [
                 'field' => $this,
@@ -189,21 +163,20 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             return $value;
         }
 
-        $locale = Craft::$app->getFormattingLocale()->id;
-
         if ($value === null && isset($this->defaultValue) && $this->isFresh($element)) {
             $value = $this->defaultValue;
         }
 
         if (is_array($value)) {
-            $locale = $value['locale'] ?? $locale;
-            $value = $value['money'] ?? null;
-        }
-        // Was this submitted with a locale ID?
-        $value = Localization::normalizeNumber($value, $locale);
+            // Was this submitted with a locale ID?
+            $value['locale'] = $value['locale'] ?? Craft::$app->getFormattingLocale()->id;
+            $value['value'] = $value['value'] ?? null;
+            $value['currency'] = $this->currency;
 
-        return (new DecimalMoneyParser($this->_isoCurrencies))
-            ->parse((string)$value, $this->currency);
+            return MoneyHelper::toMoney($value);
+        }
+
+        return new MoneyLibrary($value, new Currency($this->currency));
     }
 
     /**
@@ -223,29 +196,28 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
 
     /**
      * @param mixed $value
-     * @return int|float|string|null
+     * @return string|null
      */
-    private function _normalizeNumber($value)
+    private function _normalizeNumber($value): ?string
     {
-        // Was this submitted with a locale ID?
+        $currency = new Currency($this->currency);
+
+        // Was this submitted with a locale ID? (This means the data is coming from the settings form)
         if (isset($value['locale'], $value['value'])) {
-            $value = Localization::normalizeNumber($value['value'], $value['locale']);
+            if ($value['value'] === '') {
+                return null;
+            }
+            $value['currency'] = $this->currency;
+
+            $value = MoneyHelper::toMoney($value);
+            return $value ? $value->getAmount() : null;
         }
 
         if ($value === '') {
             return null;
         }
 
-        if (is_string($value) && is_numeric($value)) {
-            if ((int)$value == $value) {
-                return (int)$value;
-            }
-            if ((float)$value == $value) {
-                return (float)$value;
-            }
-        }
-
-        return $value;
+        return (new MoneyLibrary($value, $currency))->getAmount();
     }
 
     /**
@@ -285,10 +257,9 @@ JS;
 
         $decimals = null;
 
-        $numberFormatter = new NumberFormatter(Craft::$app->getFormattingLocale()->id, NumberFormatter::DECIMAL);
         if ($value instanceof MoneyLibrary) {
             $decimals = $this->_isoCurrencies->subunitFor($value->getCurrency());
-            $value = (new IntlMoneyFormatter($numberFormatter, $this->_isoCurrencies))->format($value);
+            $value = MoneyHelper::toNumber($value);
         }
 
         if ($decimals === null) {
@@ -297,8 +268,7 @@ JS;
 
         $defaultValue = null;
         if (isset($this->defaultValue)) {
-            $defaultValue = $this->normalizeValue($this->defaultValue, $element);
-            $defaultValue = (new IntlMoneyFormatter($numberFormatter, $this->_isoCurrencies))->format($defaultValue);
+            $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($this->defaultValue, new Currency($this->currency)));
         }
 
         $currencyLabel = Craft::t('app', '({currencyCode}) {currencySymbol}', [
@@ -341,12 +311,21 @@ JS;
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        if (!$value instanceof MoneyLibrary) {
-            return '';
-        }
+        return MoneyHelper::toString($value) ?: '';
+    }
 
-        $numberFormatter = new NumberFormatter(Craft::$app->getFormattingLocale()->id, NumberFormatter::CURRENCY);
-        return (new IntlMoneyFormatter($numberFormatter, $this->_isoCurrencies))->format($value);
+    /**
+     * @param ElementQueryInterface $query
+     * @param $value
+     * @return void
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    {
+        /** @var ElementQuery $query */
+        if ($value !== null) {
+            $column = ElementHelper::fieldColumnFromField($this);
+            $query->subQuery->andWhere(Db::parseMoneyParam("content.$column", $this->currency, $value));
+        }
     }
 
     /**
