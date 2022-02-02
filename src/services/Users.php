@@ -806,11 +806,11 @@ class Users extends Component
 
         if ($moderatingUser) {
             if (!$moderatingUser->can('moderateUsers')) {
-                throw new Exception('User is not permitted to perform this action');
+                throw new ForbiddenHttpException('User is not permitted to perform this action');
             }
 
             if (!$moderatingUser->admin && $user->admin) {
-                throw new Exception('Only admins can suspend other admins');
+                throw new ForbiddenHttpException('Only admins can suspend other admins');
             }
 
         }
@@ -863,11 +863,11 @@ class Users extends Component
 
         if ($moderatingUser) {
             if (!$moderatingUser->can('moderateUsers')) {
-                throw new Exception('User is not permitted to perform this action');
+                throw new ForbiddenHttpException('User is not permitted to perform this action');
             }
 
             if (!$moderatingUser->admin && $user->admin) {
-                throw new Exception('Only admins can unsuspend other admins');
+                throw new ForbiddenHttpException('Only admins can unsuspend other admins');
             }
 
         }
