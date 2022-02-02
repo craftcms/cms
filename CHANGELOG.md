@@ -166,7 +166,9 @@
 - Added `craft\helpers\Db::dropIndexIfExists()`.
 - Added `craft\helpers\Db::findForeignKey()`.
 - Added `craft\helpers\Db::findIndex()`.
+- Added `craft\helpers\Db::parseMoneyParam()`.
 - Added `craft\helpers\Db::parseNumericParam()`.
+- Added `craft\helpers\Db::prepareMoneyForDb()`.
 - Added `craft\helpers\Db::renameTable()`.
 - Added `craft\helpers\FileHelper::deleteFileAfterRequest()`.
 - Added `craft\helpers\FileHelper::deleteQueuedFiles()`.
