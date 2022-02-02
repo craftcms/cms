@@ -102,6 +102,10 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             }
         }
 
+        if (isset($config['size']) && !is_numeric($config['size'])) {
+            $config['size'] = null;
+        }
+
         parent::__construct($config);
     }
 
@@ -151,7 +155,10 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING . '(1020)';
+        $min = $this->min ?? null;
+        $max = $this->max ?? null;
+
+        return Db::getNumericalColumnType($min, $max, 0);
     }
 
     /**
