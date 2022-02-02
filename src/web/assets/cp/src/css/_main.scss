@@ -4939,7 +4939,12 @@ fieldset {
 }
 
 #expand-status-btn {
-  margin-left: 5px;
+  body.ltr & {
+    margin-left: 5px;
+  }
+  body.rtl & {
+    margin-right: 5px;
+  }
   width: 30px;
   height: 17px;
   padding: 0;
