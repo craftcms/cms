@@ -71,7 +71,7 @@
                 </th>
             {% endfor %}
             {% if not staticRows %}
-                <th colspan="{{ fixedRows ? 1 : 2 }}"><span class="visually-hidden">Row Actions</span></th>
+                <th colspan="{{ fixedRows ? 1 : 2 }}"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
             {% endif %}
         </tr>
     </thead>

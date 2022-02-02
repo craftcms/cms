@@ -1153,6 +1153,7 @@ return [
     'Route Saved.' => 'Route Saved.',
     'Route deleted.' => 'Route deleted.',
     'Routes' => 'Routes',
+    'Row actions' => 'Row actions',
     'SSL' => 'SSL',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG file recommended. The logo will be displayed at {size} wide.',
     'Same as language' => 'Same as language',
