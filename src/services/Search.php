@@ -95,6 +95,11 @@ class Search extends Component
     public $maxPostgresKeywordLength = 2450;
 
     /**
+     * @var int[]|null
+     */
+    private $_filterElementIds;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -256,6 +261,8 @@ class Search extends Component
         $siteId,
         ?array $customFields
     ): array {
+        $this->_filterElementIds = $elementIds;
+
         if ($elementQuery !== null) {
             $elementQuery = (clone $elementQuery)
                 ->search(null)
@@ -321,8 +328,6 @@ class Search extends Component
                     'elementId' => $elementQuery->select(['elements.id']),
                 ])
                 ->cache(true, new ElementQueryTagDependency($elementQuery));
-        } else if (!empty($elementIds)) {
-            $query->andWhere(['elementId' => $elementIds]);
         }
 
         // Execute the sql
@@ -739,6 +744,11 @@ SQL;
             if ($term->subLeft) {
                 $sql = $this->_sqlWhere('keywords', '!=', '');
             }
+        }
+
+        // Only check keywords that are in the prefiltered results
+        if ($sql !== null && !empty($this->_filterElementIds)) {
+            $sql .= 'AND (elementId IN (' . implode(', ', $this->_filterElementIds) . '))';
         }
 
         // If we have a where clause in the subselect, add the keyword bit to it.
