@@ -75,6 +75,7 @@ use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\ExpressionInterface;
 use yii\validators\NumberValidator;
+use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 
 /**
@@ -2002,34 +2003,56 @@ abstract class Element extends Component implements ElementInterface
             $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
 
-        // Are we validating custom fields?
-        if (static::hasContent() && Craft::$app->getIsInstalled() && $fieldLayout = $this->getFieldLayout()) {
-            $fieldsWithColumns = [];
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterValidate(): void
+    {
+        if (
+            static::hasContent() &&
+            Craft::$app->getIsInstalled() &&
+            $fieldLayout = $this->getFieldLayout()
+        ) {
+            $scenario = $this->getScenario();
 
             foreach ($fieldLayout->getVisibleFields($this) as $field) {
-                $attribute = 'field:' . $field->handle;
-                $isEmpty = [$this, 'isFieldEmpty:' . $field->handle];
+                $attribute = "field:$field->handle";
+                $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
-                if ($field->required) {
-                    // Only validate required custom fields on the LIVE scenario
-                    $rules[] = [[$attribute], 'required', 'isEmpty' => $isEmpty, 'on' => self::SCENARIO_LIVE];
-                }
-
-                if ($field::hasContentColumn()) {
-                    $fieldsWithColumns[] = $field->handle;
+                if ($scenario === self::SCENARIO_LIVE && $field->required) {
+                    (new RequiredValidator(['isEmpty' => $isEmpty]))
+                        ->validateAttribute($this, $attribute);
                 }
 
                 foreach ($field->getElementValidationRules() as $rule) {
-                    $rules[] = $this->_normalizeFieldRule($attribute, $rule, $field, $isEmpty);
+                    $validator = $this->_normalizeFieldValidator($attribute, $rule, $field, $isEmpty);
+                    if (
+                        in_array($scenario, $validator->on) ||
+                        (empty($validator->on) && !in_array($scenario, $validator->except))
+                    ) {
+                        $validator->validateAttributes($this);
+                    }
                 }
-            }
 
-            if (!empty($fieldsWithColumns)) {
-                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+                if ($field::hasContentColumn()) {
+                    $columnType = $field->getContentColumnType();
+                    $value = $field->serializeValue($this->getFieldValue($field->handle), $this);
+
+                    if (is_array($columnType)) {
+                        foreach ($columnType as $key => $type) {
+                            $this->_validateCustomFieldContentSizeInternal($attribute, $field, $type, $value[$key] ?? null);
+                        }
+                    } else {
+                        $this->_validateCustomFieldContentSizeInternal($attribute, $field, $columnType, $value);
+                    }
+                }
             }
         }
 
-        return $rules;
+        parent::afterValidate();
     }
 
     /**
@@ -2049,10 +2072,10 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed $rule
      * @param FieldInterface $field
      * @param callable $isEmpty
-     * @return Validator|array
+     * @return Validator
      * @throws InvalidConfigException
      */
-    private function _normalizeFieldRule(string $attribute, $rule, FieldInterface $field, callable $isEmpty)
+    private function _normalizeFieldValidator(string $attribute, $rule, FieldInterface $field, callable $isEmpty): Validator
     {
         if ($rule instanceof Validator) {
             return $rule;
@@ -2098,7 +2121,7 @@ abstract class Element extends Component implements ElementInterface
             $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
         }
 
-        return $rule;
+        return Validator::createValidator($rule[1], $this, (array)$rule[0], array_slice($rule, 2));
     }
 
     /**
@@ -2135,26 +2158,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $field->isValueEmpty($this->getFieldValue($handle), $this);
-    }
-
-    /**
-     * Validates that the content size is going to fit within the field’s database column.
-     *
-     * @param string $attribute
-     */
-    public function validateCustomFieldContentSize(string $attribute): void
-    {
-        $field = $this->fieldByHandle($attribute);
-        $columnType = $field->getContentColumnType();
-        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
-
-        if (is_array($columnType)) {
-            foreach ($columnType as $key => $type) {
-                $this->_validateCustomFieldContentSizeInternal($attribute, $field, $type, $value[$key] ?? null);
-            }
-        } else {
-            $this->_validateCustomFieldContentSizeInternal($attribute, $field, $columnType, $value);
-        }
     }
 
     /**
