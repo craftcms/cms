@@ -65,7 +65,6 @@ class MoneyHelper
         return (new DecimalMoneyFormatter(self::_getIsoCurrencies()))->format($value);
     }
 
-
     /**
      * Convert money object to localized currency string.
      *
@@ -93,9 +92,10 @@ class MoneyHelper
      * Convert money object to localized decimal string.
      *
      * @param $value
+     * @param string|null $formatLocale
      * @return false|string
      */
-    public static function toNumber($value)
+    public static function toNumber($value, ?string $formatLocale = null)
     {
         if (is_string($value)) {
             return $value;
@@ -105,7 +105,9 @@ class MoneyHelper
             return false;
         }
 
-        $numberFormatter = new NumberFormatter(Craft::$app->getFormattingLocale()->id, NumberFormatter::DECIMAL);
+        $locale = $formatLocale ?? Craft::$app->getFormattingLocale()->id;
+
+        $numberFormatter = new NumberFormatter($locale, NumberFormatter::DECIMAL);
         return (new IntlMoneyFormatter($numberFormatter, self::_getIsoCurrencies()))->format($value);
     }
 
