@@ -113,7 +113,12 @@
                                             name: cellName,
                                             value: value,
                                             small: true,
-                                            disabled: static
+                                            disabled: static,
+                                            inputAttributes: {
+                                              aria: {
+                                                labelledby: labelledBy,
+                                              },
+                                            }
                                         } only %}
                                     {%- case 'date' -%}
                                         {% include "_includes/forms/date" with {
