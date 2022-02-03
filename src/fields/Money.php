@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\gql\types\Money as MoneyType;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -23,7 +24,6 @@ use craft\validators\MoneyValidator;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
-use yii\db\Schema;
 
 /**
  * Money represents a Money field.
@@ -340,7 +340,7 @@ JS;
      */
     public function getContentGqlType()
     {
-        return NumberType::getType();
+        return MoneyType::getType();
     }
 
     /**
@@ -350,7 +350,7 @@ JS;
     {
         return [
             'name' => $this->handle,
-            'type' => NumberType::getType(),
+            'type' => MoneyType::getType(),
             'description' => $this->instructions,
         ];
     }
