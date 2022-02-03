@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft no longer sends a `Permissions-Policy: interest-cohort=()` header by default, as Google has [abandoned](https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/) its FLoC proposal.
+
 ### Fixed
 - Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
 - Fixed an error that could occur when calling an element’s `getUrl()` method for a disabled site. ([#10421](https://github.com/craftcms/cms/issues/10421))
