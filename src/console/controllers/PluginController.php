@@ -27,6 +27,11 @@ class PluginController extends Controller
     public $force = false;
 
     /**
+     * @var string
+     */
+    public $defaultAction = 'list';
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
@@ -49,6 +54,33 @@ class PluginController extends Controller
     {
         Console::ensureProjectConfigFileExists();
         return parent::beforeAction($action);
+    }
+
+    /**
+     * List all plugins.
+     *
+     * @return int
+     */
+    public function actionList(): int
+    {
+        $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+        $tableData = [];
+
+        foreach ($pluginInfo as $handle => $info) {
+            $tableData[$handle] = [
+                $handle,
+                $info['name'],
+                $info['version'],
+                $this->_boolToString($info['isInstalled']),
+                $this->_boolToString($info['isEnabled']),
+            ];
+        }
+
+        $this->stdout(PHP_EOL);
+        $this->table(['Handle', 'Name', 'Version', 'Installed', 'Enabled'], $tableData);
+        $this->stdout(PHP_EOL);
+
+        return ExitCode::OK;
     }
 
     /**
@@ -241,7 +273,8 @@ class PluginController extends Controller
         foreach ($pluginInfo as $handle => $info) {
             $uninstalledPluginInfo[$handle] = [
                 [$handle, 'format' => [Console::FG_YELLOW]],
-                $info['name']
+                $info['name'],
+                $info['version'],
             ];
         }
 
@@ -251,7 +284,7 @@ class PluginController extends Controller
         }
 
         $this->stdout($tableMessage . PHP_EOL . PHP_EOL);
-        $this->table(['Handle', 'Name'], $uninstalledPluginInfo);
+        $this->table(['Handle', 'Name', 'Version'], $uninstalledPluginInfo);
         $this->stdout(PHP_EOL);
 
         return $this->prompt($prompt, [
@@ -259,5 +292,10 @@ class PluginController extends Controller
                 return isset($uninstalledPluginInfo[$input]);
             }
         ]);
+    }
+
+    private function _boolToString(bool $value): string
+    {
+        return $value ? Craft::t('app', 'Yes') : Craft::t('app', 'No');
     }
 }
