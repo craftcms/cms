@@ -14,6 +14,7 @@ use craft\console\Application;
 use craft\elements\Asset;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
+use craft\gql\directives\Money;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
@@ -161,6 +162,7 @@ class DirectiveTest extends Unit
         $mockDirective = MockDirective::class;
         $formatDateTime = FormatDateTime::class;
         $markDownDirective = Markdown::class;
+        $moneyDirective = Money::class;
 
         $dateTime = new DateTime('now');
 
@@ -169,6 +171,16 @@ class DirectiveTest extends Unit
             ['format' => DateTime::ATOM, 'timezone' => 'America/New_York'],
             ['format' => DateTime::COOKIE, 'timezone' => 'America/New_York'],
             ['format' => DateTime::COOKIE, 'timezone' => 'America/New_York'],
+        ];
+
+        $money = \Money\Money::USD(123456);
+
+        $moneyParameters = [
+            ['format' => Money::FORMAT_NUMBER],
+            ['format' => Money::FORMAT_NUMBER, 'locale' => 'nl'],
+            ['format' => Money::FORMAT_DECIMAL],
+            ['format' => Money::FORMAT_STRING],
+            ['format' => Money::FORMAT_AMOUNT],
         ];
 
         return [
@@ -185,6 +197,13 @@ class DirectiveTest extends Unit
 
             // Markdown
             ["Some *string*", $markDownDirective, [$this->_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
+
+            // Money
+            'money-number' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[0])], '1,234.56'],
+            'money-number-locale' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[1])], '1.234,56'],
+            'money-decimal' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[2])], '1234.56'],
+            'money-string' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[3])], '$1,234.56'],
+            'money-amount' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[4])], '123456'],
         ];
     }
 
