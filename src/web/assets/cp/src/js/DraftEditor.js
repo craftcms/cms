@@ -910,7 +910,10 @@ Craft.DraftEditor = Garnish.Base.extend({
                     }
                     this.newSiteIds.forEach(siteId => {
                         const $option = revisionMenu.$options.filter(`[data-site-id=${siteId}]`);
-                        $option.find('.status').removeClass('disabled').addClass('enabled');
+                        const siteSettings = this.settings.addlSites.find(s => s.siteId == siteId);
+                        if (!siteSettings || typeof siteSettings.enabledByDefault === 'undefined' || siteSettings.enabledByDefault) {
+                            $option.find('.status').removeClass('disabled').addClass('enabled');
+                        }
                         const $li = $option.parent().removeClass('hidden');
                         $li.closest('.site-group').removeClass('hidden');
                     });
