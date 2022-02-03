@@ -87,6 +87,18 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function beginForm($action = '', $method = 'post', $options = []): string
+    {
+        if (!isset($options['accept-charset'])) {
+            $options['accept-charset'] = 'UTF8-8';
+        }
+
+        return parent::beginForm($action, $method, $options);
+    }
+
+    /**
      * Generates a hidden `action` input tag.
      *
      * @param string $route The action route
@@ -718,7 +730,7 @@ class Html extends \yii\helpers\Html
             "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
                 $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
-                    if ($match[2] === 'data-target-prefix' || isset($ids[$id])) {
+                    if (in_array($match[2], ['href', 'data-target-prefix']) || isset($ids[$id])) {
                         return sprintf('%s-%s', $namespace, $id);
                     }
                     return $id;

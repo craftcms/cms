@@ -841,6 +841,10 @@ Craft.ui =
                 $field.addClass('first');
             }
 
+            if (config.fieldClass) {
+                $field.addClass(config.fieldClass);
+            }
+
             if (label) {
                 var $heading = $('<div class="heading"/>').appendTo($field);
 

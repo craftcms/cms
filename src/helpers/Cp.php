@@ -239,7 +239,7 @@ class Cp
      *
      * @param ElementInterface $element The element to be rendered
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
-     * @param string $size The size of the element (`small` or `large`)
+     * @param string $thumbSize The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
@@ -252,7 +252,7 @@ class Cp
     public static function elementHtml(
         ElementInterface $element,
         string $context = 'index',
-        string $size = self::ELEMENT_SIZE_SMALL,
+        string $thumbSize = self::ELEMENT_SIZE_SMALL,
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
@@ -267,27 +267,27 @@ class Cp
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
-            $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
-            $thumbUrl = $element->getThumbUrl($thumbSize);
+            $thumbSizePx = $thumbSize === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+            $thumbUrl = $element->getThumbUrl($thumbSizePx);
         } else {
-            $thumbSize = $thumbUrl = null;
+            $thumbSizePx = $thumbUrl = null;
         }
 
         if ($thumbUrl !== null) {
-            $imageSize2x = $thumbSize * 2;
+            $imageSize2x = $thumbSizePx * 2;
             $thumbUrl2x = $element->getThumbUrl($imageSize2x);
 
             $srcsets = [
-                "$thumbUrl {$thumbSize}w",
+                "$thumbUrl {$thumbSizePx}w",
                 "$thumbUrl2x {$imageSize2x}w",
             ];
-            $sizesHtml = "{$thumbSize}px";
+            $sizesHtml = "{$thumbSizePx}px";
             $srcsetHtml = implode(', ', $srcsets);
             $imgHtml = Html::tag('div', '', [
                 'class' => array_filter([
                     'elementthumb',
                     $element->getHasCheckeredThumb() ? 'checkered' : null,
-                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                    $thumbSize === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
                     'sizes' => $sizesHtml,
@@ -302,17 +302,19 @@ class Cp
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => ['element', $size],
+                'class' => ['element', $thumbSize],
                 'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
-                'data' => [
+                'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
+                    'draft-id' => $element->draftId,
+                    'revision-id' => $element->revisionId,
                     'site-id' => $element->siteId,
                     'status' => $element->getStatus(),
                     'label' => (string)$element,
                     'url' => $element->getUrl(),
                     'level' => $element->level,
-                ],
+                ]),
             ]
         );
 
@@ -332,11 +334,13 @@ class Cp
             $attributes['class'][] = 'hasthumb';
         }
 
-        if (ElementHelper::isElementEditable($element)) {
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($element->canView($user)) {
             $attributes['data']['editable'] = true;
         }
 
-        if ($context === 'index' && $element->getIsDeletable()) {
+        if ($context === 'index' && $element->canDelete($user)) {
             $attributes['data']['deletable'] = true;
         }
 
@@ -868,6 +872,19 @@ class Cp
     }
 
     /**
+     * Renders a textarea input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function textareaHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/textarea', $config);
+    }
+
+    /**
      * Renders a textarea field’s HTML.
      *
      * @param array $config
@@ -1311,11 +1328,13 @@ JS;
                 $value = $value();
             }
             if ($value !== false) {
-                $defs[] = Html::tag('div',
-                    Html::tag('dt', Html::encode($label), ['class' => 'heading']) . "\n" .
-                    Html::tag('dd', $value, ['class' => 'value']), [
+                $defs[] =
+                    Html::beginTag('div', [
                         'class' => 'data',
-                    ]);
+                    ]) .
+                    Html::tag('dt', Html::encode($label), ['class' => 'heading']) . "\n" .
+                    Html::tag('dd', $value, ['class' => 'value']) . "\n" .
+                    Html::endTag('div');
             }
         }
 

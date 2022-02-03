@@ -2,7 +2,7 @@
     class: ['pane-tabs']|merge((class ?? [])|explodeClass),
 }|merge(containerAttributes ?? [], recursive=true) %}
 
-{% set selectedTab = selectedTab ?? tabs|filter(t => t.visible ?? true)|keys|first %}
+{% set selectedTab = selectedTab ?? tabs|keys|first %}
 {% set tabs = tabs|map((tab, tabId) => tab|merge({
     selected: tabId == selectedTab,
         class: (tab.class ?? [])|explodeClass,
@@ -12,7 +12,6 @@
     <ul class="scrollable">
         {% for tabId, tab in tabs %}
             {% tag 'li' with {
-                class: not (tab.visible ?? true) ? 'hidden' : null,
                 data: {
                     id: tabId,
                 }

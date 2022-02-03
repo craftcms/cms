@@ -7,15 +7,18 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     action: null,
 
     namespace: null,
-    formAction: null,
-    deltaNames: null,
-    initialData: null,
+
+    showingLoadSpinner: false,
+    hasTabs: false,
+    hasCpLink: false,
+    hasSidebar: false,
 
     $header: null,
     $toolbar: null,
     $tabContainer: null,
-    $sidebarBtn: null,
     $loadSpinner: null,
+    $editLink: null,
+    $sidebarBtn: null,
 
     $body: null,
     $content: null,
@@ -23,16 +26,16 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     $sidebar: null,
 
     $footer: null,
+    $noticeContainer: null,
     $cancelBtn: null,
     $saveBtn: null,
-    $saveSpinner: null,
+    $submitSpinner: null,
 
     tabManager: null,
     showingSidebar: false,
 
     cancelToken: null,
     ignoreFailedRequest: false,
-    initialDeltaValues: null,
     fieldsWithErrors: null,
 
     init: function(action, settings) {
@@ -50,9 +53,16 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
             title: Craft.t('app', 'Loading'),
             'aria-label': Craft.t('app', 'Loading'),
         }).appendTo(this.$toolbar);
+        this.$editLink = $('<a/>', {
+            target: '_blank',
+            class: 'btn header-btn hidden',
+            title: Craft.t('app', 'Open the full edit page in a new tab'),
+            'aria-label': Craft.t('app', 'Open the full edit page in a new tab'),
+            'data-icon': 'external',
+        }).appendTo(this.$toolbar);
         this.$sidebarBtn = $('<button/>', {
             type: 'button',
-            class: 'btn hidden sidebar-btn',
+            class: 'btn header-btn hidden sidebar-btn',
             title: Craft.t('app', 'Show sidebar'),
             'aria-label': Craft.t('app', 'Show sidebar'),
             'data-icon': `sidebar-${Garnish.ltr ? 'right' : 'left'}`,
@@ -74,29 +84,32 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
         this.$content = $('<div/>', {class: 'so-content'}).appendTo(this.$body);
 
         // Sidebar
-        this.$sidebar = $('<div/>', {class: 'so-sidebar hidden'}).appendTo(this.$body);
+        this.$sidebar = $('<div/>', {class: 'so-sidebar details hidden'}).appendTo(this.$body);
         Craft.trapFocusWithin(this.$sidebar);
 
         // Footer
         this.$footer = $('<div/>', {class: 'so-footer hidden'});
+        this.$noticeContainer = $('<div/>', {class: 'so-notice'}).appendTo(this.$footer);
         $('<div/>', {class: 'flex-grow'}).appendTo(this.$footer);
+        const $btnContainer = $('<div/>', {class: 'flex flex-nowrap'}).appendTo(this.$footer);
         this.$cancelBtn = $('<button/>', {
             type: 'button',
             class: 'btn',
             text: Craft.t('app', 'Cancel'),
-        }).appendTo(this.$footer);
+        }).appendTo($btnContainer);
         this.$saveBtn = $('<button/>', {
             type: 'submit',
             class: 'btn submit',
             text: Craft.t('app', 'Save'),
-        }).appendTo(this.$footer);
-        this.$saveSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo(this.$footer);
+        }).appendTo($btnContainer);
+        this.$submitSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo($btnContainer);
 
         let $contents = this.$header.add(this.$body).add(this.$footer);
 
         this.base($contents, {
             containerElement: 'form',
             containerAttributes: {
+                id: `cp-screen-${Math.floor(Math.random() * 100000000)}`,
                 action: '',
                 method: 'post',
                 novalidate: '',
@@ -112,13 +125,13 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
         });
 
         // Register shortcuts & events
-        Garnish.shortcutManager.registerShortcut({
+        Garnish.uiLayerManager.registerShortcut({
             keyCode: Garnish.S_KEY,
             ctrl: true,
-        }, () => {
-            this.submit();
+        }, ev => {
+            this.handleSubmit(ev);
         });
-        Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
             this.closeMeMaybe();
         });
         this.addListener(this.$cancelBtn, 'click', () => {
@@ -138,10 +151,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
                 this.hideSidebar();
             }
         });
-        this.addListener(this.$container, 'submit', ev => {
-            ev.preventDefault();
-            this.submit();
-        });
+        this.addListener(this.$container, 'submit', 'handleSubmit');
 
         this.load();
     },
@@ -164,13 +174,24 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
             this.cancelToken = axios.CancelToken.source();
 
             Craft.sendActionRequest('GET', this.action, $.extend({
+                params: Object.assign({}, this.getParams(), this.settings.params),
                 cancelToken: this.cancelToken.token,
-            }, this.settings.requestOptions)).then(response => {
-                if (this.initialDeltaValues === null) {
-                    this.initialDeltaValues = response.data.initialDeltaValues;
+                headers: {
+                    'X-Craft-Container-Id': this.$container.attr('id'),
                 }
-                this.updateForm(response.data, refreshInitialData);
-                resolve();
+            }, this.settings.requestOptions)).then(response => {
+                this.update(response.data)
+                    .then(() => {
+                        if (refreshInitialData !== false) {
+                            this.$container.data('delta-names', response.data.deltaNames);
+                            this.$container.data('initial-delta-values', response.data.initialDeltaValues);
+                            this.$container.data('initialSerializedValue', this.$container.serialize());
+                        }
+                        resolve();
+                    })
+                    .catch(e => {
+                        reject(e);
+                    });
             }).catch(e => {
                 if (!this.ignoreFailedRequest) {
                     Craft.cp.displayError();
@@ -184,45 +205,124 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
         });
     },
 
-    showHeader: function() {
-        this.$header.removeClass('hidden');
+    getParams: function() {
+        return {};
     },
 
-    hideHeader: function() {
-        this.$header.addClass('hidden');
+    updateHeaderVisibility: function() {
+        // Should the header be shown regardless of viewport size?
+        const forceShow = this.hasTabs || this.hasCpLink || this.showingLoadSpinner;
+
+        if (forceShow || this.hasSidebar) {
+            this.$header.removeClass('hidden');
+        } else {
+            this.$header.addClass('hidden');
+        }
+
+        if (forceShow) {
+            this.$header.addClass('so-visible');
+        } else {
+            this.$header.removeClass('so-visible');
+        }
     },
 
     showLoadSpinner: function() {
-        this.showHeader();
         this.$loadSpinner.removeClass('hidden');
+        this.showingLoadSpinner = true;
+        this.updateHeaderVisibility();
     },
 
     hideLoadSpinner: function() {
         this.$loadSpinner.addClass('hidden');
+        this.showingLoadSpinner = false;
+        this.updateHeaderVisibility();
     },
 
     /**
      * @param {object} data
-     * @param {boolean} [refreshInitialData=true]
+     * @return {Promise}
      */
-    updateForm: function(data, refreshInitialData) {
-        // Cleanup
+    update: function(data) {
+        return new Promise(resolve => {
+            this.namespace = data.namespace;
+            this.$content.html(data.content);
+
+            this.updateTabs(data.tabs);
+
+            if (data.editUrl) {
+                this.$editLink
+                    .removeClass('hidden')
+                    .attr('href', data.editUrl);
+                this.hasCpLink = true;
+            } else {
+                this.$editLink.addClass('hidden');
+                this.hasCpLink = false;
+            }
+
+            if (data.sidebar) {
+                this.$container.addClass('has-sidebar');
+                this.$sidebarBtn.removeClass('hidden');
+                this.$sidebar.html(data.sidebar);
+
+                // Open outbound links in new windows
+                this.$sidebar.find('a').each(function() {
+                    if (this.hostname.length && typeof $(this).attr('target') === 'undefined') {
+                        $(this).attr('target', '_blank')
+                    }
+                });
+
+                this.hasSidebar = true;
+            } else {
+                this.$container.removeClass('has-sidebar');
+                this.$sidebarBtn.addClass('hidden');
+                this.$sidebar.addClass('hidden').html('');
+                this.hasSidebar = false;
+            }
+
+            if (data.notice) {
+                this.$noticeContainer.html(data.notice);
+            } else {
+                this.$noticeContainer.empty();
+            }
+
+            this.updateHeaderVisibility();
+            this.$footer.removeClass('hidden');
+
+            Garnish.requestAnimationFrame(() => {
+                Craft.appendHeadHtml(data.headHtml);
+                Craft.appendBodyHtml(data.bodyHtml);
+
+                Craft.initUiElements(this.$content);
+                new Craft.ElementThumbLoader().load($(this.$content));
+
+                if (data.sidebar) {
+                    Craft.initUiElements(this.$sidebar);
+                    new Craft.ElementThumbLoader().load(this.$sidebar);
+                }
+
+                if (!Garnish.isMobileBrowser()) {
+                    Craft.setFocusWithin(this.$content);
+                }
+
+                resolve();
+                this.trigger('load');
+            });
+        });
+    },
+
+    updateTabs: function(tabs) {
         if (this.tabManager) {
-            this.$tabContainer.html('');
             this.tabManager.destroy();
             this.tabManager = null;
+            this.$tabContainer.html('');
         }
-        refreshInitialData = refreshInitialData !== false;
 
-        this.namespace = data.namespace;
-        this.formAction = data.action;
-        this.$content.html(data.content);
+        this.hasTabs = !!tabs;
 
-        let showHeader = false;
-
-        if (data.tabs) {
-            showHeader = true;
-            this.$tabContainer.replaceWith(this.$tabContainer = $(data.tabs));
+        if (this.hasTabs) {
+            const $tabContainer = $(tabs);
+            this.$tabContainer.replaceWith($tabContainer);
+            this.$tabContainer = $tabContainer;
             this.tabManager = new Craft.Tabs(this.$tabContainer);
             this.tabManager.on('deselectTab', ev => {
                 $(ev.$tab.attr('href')).addClass('hidden');
@@ -233,59 +333,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
                 this.$body.trigger('scroll');
             });
         }
-
-        if (data.sidebar) {
-            showHeader = true;
-            this.$container.addClass('has-sidebar');
-            this.$sidebarBtn.removeClass('hidden');
-            this.$sidebar.html(data.sidebar);
-
-            // Open outbound links in new windows
-            this.$sidebar.find('a').each(function() {
-                if (this.hostname.length && typeof $(this).attr('target') === 'undefined') {
-                    $(this).attr('target', '_blank')
-                }
-            });
-        } else {
-            this.$container.removeClass('has-sidebar');
-            this.$sidebarBtn.addClass('hidden');
-            this.$sidebar.addClass('hidden').html('');
-        }
-
-        if (showHeader) {
-            this.showHeader();
-        } else {
-            this.hideHeader();
-        }
-
-        this.$footer.removeClass('hidden');
-
-        if (refreshInitialData) {
-            this.deltaNames = data.deltaNames;
-        }
-
-        Garnish.requestAnimationFrame(() => {
-            Craft.appendHeadHtml(data.headHtml);
-            Craft.appendBodyHtml(data.bodyHtml);
-
-            Craft.initUiElements(this.$content);
-            new Craft.ElementThumbLoader().load($(this.$content));
-
-            if (data.sidebar) {
-                Craft.initUiElements(this.$sidebar);
-                new Craft.ElementThumbLoader().load(this.$sidebar);
-            }
-
-            if (refreshInitialData) {
-                this.initialData = this.$container.serialize();
-            }
-
-            if (!Garnish.isMobileBrowser()) {
-                Craft.setFocusWithin(this.$content);
-            }
-
-            this.trigger('load');
-        });
     },
 
     showSidebar: function() {
@@ -321,8 +368,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
         Garnish.$win.trigger('resize');
         this.$sidebar.trigger('scroll');
 
-        Garnish.shortcutManager.addLayer();
-        Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
+        Garnish.uiLayerManager.addLayer();
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
             this.hideSidebar();
         });
 
@@ -350,7 +397,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
                 'aria-label': Craft.t('app', 'Show sidebar'),
             });
 
-        Garnish.shortcutManager.removeLayer();
+        Garnish.uiLayerManager.removeLayer();
 
         this.showingSidebar = false;
     },
@@ -367,43 +414,69 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
         };
     },
 
+    showSubmitSpinner: function() {
+        this.$submitSpinner.removeClass('hidden');
+    },
+
+    hideSubmitSpinner: function() {
+        this.$submitSpinner.addClass('hidden');
+    },
+
+    handleSubmit: function(ev) {
+        ev.preventDefault();
+        this.submit();
+    },
+
     submit: function() {
-        this.$saveSpinner.removeClass('hidden');
+        this.showSubmitSpinner();
 
-        const data = Craft.findDeltaData(this.initialData, this.$container.serialize(), this.deltaNames, null, this.initialDeltaValues);
+        const data = Craft.findDeltaData(
+            this.$container.data('initialSerializedValue'),
+            this.$container.serialize(),
+            this.$container.data('delta-names'),
+            null,
+            this.$container.data('initial-delta-values')
+        );
 
-        Craft.sendActionRequest('post', this.formAction, {
-            data: data,
-            headers: {
-                'X-Craft-Namespace': this.namespace,
-            },
-        }).then(response => {
-            this.clearErrors();
-            const data = response.data || {};
-            if (data.message) {
-                Craft.cp.displayNotice(data.message);
-            }
-            this.trigger('submit', {
-                response: response,
-                data: (data.modelName && data[data.modelName]) || {},
+        Craft.sendActionRequest('POST', null, {
+                data,
+                headers: {
+                    'X-Craft-Namespace': this.namespace,
+                },
+            })
+            .then(this.handleSubmitResponse)
+            .catch(this.handleSubmitError)
+            .finally(() => {
+                this.hideSubmitSpinner();
             });
-            if (this.settings.closeOnSubmit) {
-                this.close();
-            }
-        }).catch(error => {
-            if (!error.isAxiosError || !error.response || !error.response.status === 400) {
-                Craft.cp.displayError();
-                throw error;
-            }
+    },
 
-            const data = error.response.data || {};
-            Craft.cp.displayError(data.message);
-            if (data.errors) {
-                this.showErrors(data.errors);
-            }
-        }).finally(() => {
-            this.$saveSpinner.addClass('hidden');
+    handleSubmitResponse: function(response) {
+        this.clearErrors();
+        const data = response.data || {};
+        if (data.message) {
+            Craft.cp.displayNotice(data.message);
+        }
+        this.trigger('submit', {
+            response: response,
+            data: (data.modelName && data[data.modelName]) || {},
         });
+        if (this.settings.closeOnSubmit) {
+            this.close();
+        }
+    },
+
+    handleSubmitError: function(error) {
+        if (!error.isAxiosError || !error.response || !error.response.status === 400) {
+            Craft.cp.displayError();
+            throw error;
+        }
+
+        const data = error.response.data || {};
+        Craft.cp.displayError(data.message);
+        if (data.errors) {
+            this.showErrors(data.errors);
+        }
     },
 
     /**
@@ -428,7 +501,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     },
 
     isDirty: function() {
-        return this.initialData !== null && this.$container.serialize() !== this.initialData;
+        return typeof this.$container.data('initialSerializedValue') !== 'undefined' && this.$container.serialize() !== this.$container.data('initialSerializedValue');
     },
 
     closeMeMaybe: function() {
@@ -451,6 +524,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     },
 }, {
     defaults: {
+        params: {},
         requestOptions: {},
         closeOnSubmit: true,
     },

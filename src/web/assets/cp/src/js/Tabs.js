@@ -43,14 +43,9 @@ Craft.Tabs = Garnish.Base.extend({
                 });
                 this.addListener($a, 'click', ev => {
                     ev.preventDefault();
-                    const $a = $(ev.currentTarget);
                     this.selectTab(ev.currentTarget);
                     this.makeTabFocusable(ev.currentTarget);
                 });
-
-                if (href.substr(1) === window.LOCATION_HASH) {
-                    $initialTab = $a;
-                }
             }
 
             this.addListener($a, 'keydown', ev => {
@@ -188,5 +183,10 @@ Craft.Tabs = Garnish.Base.extend({
         }
 
         return $tab;
-    }
+    },
+
+    destroy: function() {
+        this.$container.removeData('tabs');
+        this.base();
+    },
 });
