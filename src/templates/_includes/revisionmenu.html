@@ -38,6 +38,7 @@
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
 {% set canEditMultipleSites = editableSiteIds|length > 1 %}
 {% set isProvisionalDraft = element.isProvisionalDraft %}
+{% set originalElement = element %}
 {% if isProvisionalDraft %}
     {% set element = element.getCanonical(true) %}
 {% endif %}
@@ -63,7 +64,7 @@
 <div id="context-btngroup" class="btngroup">
     <button type="button" id="context-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
         {%- if showSiteLabel %}
-            {{- element.getSite().name|t('site') }}
+            {{- originalElement.getSite().name|t('site') }}
         {%- endif %}
         {%- if showSiteLabel and showRevisionLabel %} – {% endif %}
         {%- if showRevisionLabel -%}
@@ -94,7 +95,7 @@
                     <ul class="padded">
                         {% for site in groupSites %}
                             {% set status = element.enabled and site.id in enabledSiteIds ? 'enabled' : 'disabled' %}
-                            {% set isSelected = site.id == element.siteId %}
+                            {% set isSelected = site.id == originalElement.siteId %}
                             {% tag 'li' with {
                                 class: [
                                     site.id not in editableSiteIds ? 'hidden' : null,
