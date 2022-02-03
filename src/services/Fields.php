@@ -59,6 +59,7 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1162,10 +1163,10 @@ class Fields extends Component
     /**
      * Returns a layout's tabs by its ID.
      *
-     * @param int $layoutId The field layout’s ID
+     * @param int|int[] $layoutId The field layout’s ID
      * @return FieldLayoutTab[] The field layout’s tabs
      */
-    public function getLayoutTabsById(int $layoutId): array
+    public function getLayoutTabsById(int|array $layoutId): array
     {
         $result = $this->_createLayoutTabQuery()
             ->where(['layoutId' => $layoutId])
@@ -1210,20 +1211,12 @@ class Fields extends Component
             return;
         }
 
-        $result = $this->_createLayoutTabQuery()
-            ->where(['layoutId' => array_keys($layouts)])
-            ->all();
+        $tabs = Collection::make($this->getLayoutTabsById(array_keys($layouts)));
 
-        $tabsByLayoutId = [];
-        $isMysql = Craft::$app->getDb()->getIsMysql();
-
-        foreach ($result as $row) {
-            $tabsByLayoutId[$row['layoutId']][] = $this->_createLayoutTabFromRow($row, $isMysql);
-        }
-
-        foreach ($tabsByLayoutId as $layoutId => $tabs) {
-            $layouts[$layoutId]->setTabs($tabs);
-        }
+        Collection::make($layouts)
+            ->each(function(FieldLayout $layout) use($tabs) {
+                $layout->setTabs($tabs->where('layoutId', $layout->id)->all());
+            });
     }
 
     /**
