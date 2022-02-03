@@ -17,6 +17,8 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% set hexLabelId = "hex-#{id}" %}
+
 {% spaceless %}
     {% tag 'div' with containerAttributes %}
         {% tag 'div' with {
@@ -29,6 +31,7 @@
         {% endtag %}
         <div class="color-input-container">
             <div class="color-hex-indicator light code" aria-hidden="true">#</div>
+            <span id="{{ hexLabelId }}" class="visually-hidden">{{ 'Color hex value'|t('app') }}</span>
             {{ forms.text({
                 id: id,
                 describedBy: describedBy ?? false,
@@ -40,7 +43,7 @@
                 disabled: disabled,
                 inputAttributes: {
                     aria: {
-                        label: 'Color hex value'|t('app'),
+                        labelledBy: hexLabelId,
                     },
                 },
             }) }}
