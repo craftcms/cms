@@ -59,7 +59,6 @@ class PreviewController extends Controller
         $siteId = $this->request->getRequiredParam('siteId');
         $draftId = $this->request->getParam('draftId');
         $revisionId = $this->request->getParam('revisionId');
-        $provisional = (bool)($this->request->getParam('provisional') ?? false);
         $token = $this->request->getParam('previewToken');
         $redirect = $this->request->getParam('redirect');
 
@@ -79,7 +78,7 @@ class PreviewController extends Controller
                 'siteId' => (int)$siteId,
                 'draftId' => (int)$draftId ?: null,
                 'revisionId' => (int)$revisionId ?: null,
-                'provisional' => $provisional,
+                'userId' => Craft::$app->getUser()->getId(),
             ],
         ], null, $token);
 
@@ -102,7 +101,7 @@ class PreviewController extends Controller
      * @param int $siteId
      * @param int|null $draftId
      * @param int|null $revisionId
-     * @param bool $provisional
+     * @param int|null $userId
      * @return Response
      * @throws BadRequestHttpException
      * @throws Throwable
@@ -113,7 +112,7 @@ class PreviewController extends Controller
         int $siteId,
         ?int $draftId = null,
         ?int $revisionId = null,
-        bool $provisional = false
+        ?int $userId = null
     ): Response {
         // Make sure a token was used to get here
         $this->requireToken();
@@ -124,16 +123,29 @@ class PreviewController extends Controller
             ->status(null);
 
         if ($draftId) {
-            $query
+            $element = $query
                 ->draftId($draftId)
-                ->provisionalDrafts($provisional);
+                ->one();
         } else if ($revisionId) {
-            $query->revisionId($revisionId);
+            $element = $query
+                ->revisionId($revisionId)
+                ->one();
         } else {
-            $query->id($sourceId);
-        }
+            if ($userId) {
+                // First check if there's a provisional draft
+                $element = (clone $query)
+                    ->draftOf($sourceId)
+                    ->provisionalDrafts()
+                    ->draftCreator($userId)
+                    ->one();
+            }
 
-        $element = $query->one();
+            if (!isset($element)) {
+                $element = $query
+                    ->id($sourceId)
+                    ->one();
+            }
+        }
 
         if ($element) {
             if (!$element->lft && $element->getIsDerivative()) {
