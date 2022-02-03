@@ -146,12 +146,7 @@ body,
       }
 
       svg {
-        body.ltr & {
-          margin-left: 5px;
-        }
-        body.rtl & {
-          margin-right: 5px;
-        }
+        @include margin-left(5px);
       }
     }
 
