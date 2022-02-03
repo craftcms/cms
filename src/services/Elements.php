@@ -1834,6 +1834,7 @@ class Elements extends Component
             foreach ($elements as $element) {
                 $element->afterRestore();
                 $element->trashed = false;
+                $element->dateDeleted = null;
 
                 // Fire an 'afterRestoreElement' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {

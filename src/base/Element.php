@@ -1545,6 +1545,12 @@ abstract class Element extends Component implements ElementInterface
     private $_canonical;
 
     /**
+     * @var static|null
+     * @see getCanonical()
+     */
+    private $_canonicalAnySite;
+
+    /**
      * @var string|null
      * @see getCanonicalUid()
      */
@@ -2259,8 +2265,10 @@ abstract class Element extends Component implements ElementInterface
             return $this;
         }
 
-        if (!isset($this->_canonical)) {
-            $this->_canonical = static::find()
+        $prop = $anySite ? '_canonicalAnySite' : '_canonical';
+
+        if (!isset($this->$prop)) {
+            $this->$prop = static::find()
                     ->id($this->_canonicalId)
                     ->siteId($anySite ? '*' : $this->siteId)
                     ->preferSites([$this->siteId])
@@ -2272,7 +2280,7 @@ abstract class Element extends Component implements ElementInterface
                     ->one() ?? false;
         }
 
-        return $this->_canonical ?: $this;
+        return $this->$prop ?: $this;
     }
 
     /**
