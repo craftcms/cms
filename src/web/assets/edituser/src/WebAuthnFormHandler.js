@@ -43,7 +43,7 @@ class WebAuthnFormHandler {
             return false;
         }
         this.disable();
-        const credentialName = prompt(Craft.t('app', 'Please enter a name for the credentials'), 'Secure credentials');
+        const credentialName = prompt(Craft.t('app', 'Please enter a name for the security key'), Craft.t('app', 'Security key'));
         const requestData = {
             credentialName: credentialName,
             credentials: {

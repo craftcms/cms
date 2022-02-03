@@ -3,15 +3,16 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 <div id="webauthn-settings">
-    <h2>{{ 'Manage FIDO2 authentication'|t('app') }}</h2>
-    {% if existingCredentials|length > 0 %}
-        <div id="credentials-vue-admin-table" style="margin-top: 15px;"></div>
-    {% endif %}
+    <h2>{{ 'Manage security keys'|t('app') }}</h2>
+    <div id="credentials-vue-admin-table" style="margin-top: 15px;"></div>
 
     {% if isSecureConnection %}
-        <button type="button" id="attach-webauthn" class="btn submit formsubmit" data-credential-options="{{ credentialOptions|e('html_attr') }}">{{ 'Attach a device'|t('app') }}</button>
+        <button type="button" id="attach-webauthn" class="btn submit formsubmit" data-credential-options="{{ credentialOptions|e('html_attr') }}">{{ 'Add a security key'|t('app') }}</button>
+        <div id="webauthn-status">
+
+        </div>
     {% else %}
-        <p>{{ 'A secure connection is required to attach new credentials'|t('app') }}
+        <p>{{ 'A secure connection is required to add a new key'|t('app') }}
     {% endif %}
 </div>
 
@@ -36,7 +37,7 @@
         columns: columns,
         container: '#credentials-vue-admin-table',
         deleteAction: 'authentication/detach-web-authn-credentials',
-        emptyMessage: Craft.t('app', 'No credentials exist yet.'),
+        emptyMessage: Craft.t('app', 'No security keys exist yet'),
         tableData: {{ tableData|json_encode|raw }},
         padded: true,
         deleteCallback: Craft.WebAuthnFormHandler.removeExcludedCredential,

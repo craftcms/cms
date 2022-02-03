@@ -25,3 +25,11 @@
   @include right(0);
   margin-top: 0;
 }
+
+#webauthn-status {
+  line-height: 34px;
+
+  span {
+    @include padding-left(7px);
+  }
+}

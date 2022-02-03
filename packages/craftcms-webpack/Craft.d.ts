@@ -16,7 +16,7 @@ interface ProgressBarInterface {
 interface ElevatedSessionManagerInterface
 {
     fetchingTimeout: boolean,
-    requireElevatedSession(cb: () => void)
+    requireElevatedSession(success: () => void, failure?: () => void)
 }
 
 // Declare existing variables, mock the things we'll use.

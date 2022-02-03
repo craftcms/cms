@@ -59,7 +59,11 @@ class EditUserAsset extends AssetBundle
                 'Copy the impersonation URL, and open it in a new private window.',
                 'Please enter your current password.',
                 'Please enter your password.',
-                'Secure credentials',
+                'Security key',
+                'No security keys exist yet',
+                'Waiting for a security key',
+                'Waiting for elevated session',
+                'Please enter a name for the security key'
             ]);
         }
     }

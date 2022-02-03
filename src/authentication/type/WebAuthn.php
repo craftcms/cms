@@ -19,7 +19,6 @@ use Webauthn\PublicKeyCredentialSource as CredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\Server;
 use yii\base\InvalidConfigException;
-use yii\web\Cookie;
 
 /**
  * This step type requires an authentication type that supports Web Authentication API.
@@ -43,16 +42,11 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
     public const WEBAUTHN_CREDENTIAL_REQUEST_OPTION_KEY = 'user.webauthn.credentialRequestOptions';
 
     /**
-     * The key for session to use for storing the WebAuthn credential options.
-     */
-    public const WEBAUTHN_COOKIE_NAME = 'craft_webauthn';
-
-    /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Authenticate with WebAuthn');
+        return Craft::t('app', 'Authenticate with a security key');
     }
 
     /**
@@ -60,7 +54,7 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
      */
     public static function getDescription(): string
     {
-        return Craft::t('app', 'Authenticate using a Yubikey or TouchID.');
+        return Craft::t('app', 'Authenticate with a security key');
     }
 
     /**
@@ -127,10 +121,7 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
             return false;
         }
 
-        $cookie = Craft::$app->getRequest()->getCookies()->get(self::WEBAUTHN_COOKIE_NAME);
-        $cookieExists = $cookie !== null && $cookie->value == $user->uid;
-
-        return $cookieExists && AuthWebAuthn::findOne(['userId' => $user->id]);
+        return AuthWebAuthn::findOne(['userId' => $user->id]) !== null;
     }
 
     /**
@@ -248,34 +239,5 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
     public static function getRelayingPartyEntity(): PublicKeyCredentialRpEntity
     {
         return new PublicKeyCredentialRpEntity(Craft::$app->getSites()->getPrimarySite()->getName(), Craft::$app->getRequest()->getHostName());
-    }
-
-    /**
-     * Refresh the credential cookie, if it already exists.
-     *
-     * @param User $user
-     */
-    public static function refreshCredentialCookie(User $user): void
-    {
-        if (Craft::$app->getRequest()->getCookies()->has(self::WEBAUTHN_COOKIE_NAME)) {
-            self::setCredentialCookie($user);
-        }
-    }
-    /**
-     * Set the credential cookie for a user.
-     * @param User $user
-     */
-    public static function setCredentialCookie(User $user): void
-    {
-        $cookie = new Cookie();
-        $cookie->secure = true;
-        $cookie->httpOnly = true;
-        $cookie->name = self::WEBAUTHN_COOKIE_NAME;
-        $cookie->value = $user->uid;
-        $week = 60 * 60 * 24 * 7;
-        $cookie->expire = time() + $week;
-        $cookie->sameSite = Cookie::SAME_SITE_STRICT;
-
-        Craft::$app->getResponse()->getCookies()->add($cookie);
     }
 }
