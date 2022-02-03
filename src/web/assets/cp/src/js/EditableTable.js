@@ -15,6 +15,8 @@ Craft.EditableTable = Garnish.Base.extend({
     $table: null,
     $tbody: null,
     $addRowBtn: null,
+    $tableParent: null,
+    $statusMessage: null,
 
     rowCount: 0,
     hasMaxRows: false,
@@ -31,6 +33,8 @@ Craft.EditableTable = Garnish.Base.extend({
 
         this.$table = $('#' + id);
         this.$tbody = this.$table.children('tbody');
+        this.$tableParent = this.$table.parent();
+        this.$statusMessage = this.$tableParent.find('[data-status-message]');
         this.rowCount = this.$tbody.find('tr').length;
 
         // Is this already an editable table?
@@ -96,9 +100,11 @@ Craft.EditableTable = Garnish.Base.extend({
         if (!this.canAddRow()) {
             this.$addRowBtn.css('opacity', '0.2');
             this.$addRowBtn.css('pointer-events', 'none');
+            this.$addRowBtn.attr('aria-disabled', 'true');
         } else {
             this.$addRowBtn.css('opacity', '1');
             this.$addRowBtn.css('pointer-events', 'auto');
+            this.$addRowBtn.attr('aria-disabled', 'false');
         }
     },
     updateDeleteRowButton: function(rowId) {
@@ -111,11 +117,27 @@ Craft.EditableTable = Garnish.Base.extend({
         const label = Craft.t('app', 'Delete row {index}', {index: this.rowCount} );
         $deleteBtn.attr('aria-label', label);
     },
+    updateStatusMessage: function() {
+        this.$statusMessage.empty();
+        let message;
+
+        if (!this.canAddRow()) {
+            message = Craft.t('app', 'Row could not be added. Maximum number of rows reached.');
+        } else {
+            message = Craft.t('app', 'Row could not be deleted. Minimum number of rows reached.');
+        }
+
+        setTimeout(() => {
+            this.$statusMessage.text(message);
+        }, 250);
+
+    },
     canDeleteRow: function() {
         return (this.rowCount > this.settings.minRows);
     },
     deleteRow: function(row) {
         if (!this.canDeleteRow()) {
+            this.updateStatusMessage();
             return;
         }
 
@@ -147,6 +169,7 @@ Craft.EditableTable = Garnish.Base.extend({
     },
     addRow: function(focus, prepend) {
         if (!this.canAddRow()) {
+            this.updateStatusMessage();
             return;
         }
 

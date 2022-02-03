@@ -1154,6 +1154,8 @@ return [
     'Route deleted.' => 'Route deleted.',
     'Routes' => 'Routes',
     'Row actions' => 'Row actions',
+    'Row could not be added. Maximum number of rows reached.' => 'Row could not be added. Maximum number of rows reached.',
+    'Row could not be deleted. Minimum number of rows reached.' => 'Row could not be deleted. Minimum number of rows reached.',
     'SSL' => 'SSL',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG file recommended. The logo will be displayed at {size} wide.',
     'Same as language' => 'Same as language',
