@@ -11,9 +11,6 @@ use Craft;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\MoneyHelper;
-use craft\helpers\StringHelper;
-use craft\i18n\Locale;
-use DateTime;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -64,7 +61,7 @@ class Money extends Directive
                 new FieldArgument([
                     'name' => 'locale',
                     'type' => Type::string(),
-                    'description' => 'The locale to use when formatting the money value. (e.g. `en_US`)',
+                    'description' => 'The locale to use when formatting the money value. (e.g. `en_US`). This argument is only valid with `number` and `string` formats.',
                 ]),
             ],
             'description' => 'This directive allows for formatting a money object to the desired format. It can be applied to all fields, but changes anything only when applied to a Money field.',
