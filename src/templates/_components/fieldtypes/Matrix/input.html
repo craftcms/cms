@@ -94,22 +94,22 @@
                             <button {{ attr(actionBtnAttributes) }}></button>
                             <div id="{{ actionMenuId }}" class="menu menu--disclosure">
                                 <ul class="padded">
-                                    <li><a role="button" type="button" href="#" data-action="collapse"><span data-icon="collapse" aria-hidden="true"></span>{{ "Collapse"|t('app') }}</a></li>
-                                    <li class="hidden"><a role="button" type="button" href="#" data-action="expand"><span data-icon="expand" aria-hidden="true"></span>{{ "Expand"|t('app') }}</a></li>
-                                    <li{% if not block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-action="disable"><span data-icon="disabled" aria-hidden="true"></span>{{ "Disable"|t('app') }}</a></li>
-                                    <li{% if block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-action="enable"><span data-icon="enabled" aria-hidden="true"></span>{{ "Enable"|t('app') }}</a></li>
-                                    <li><a role="button" type="button" href="#" data-action="moveUp"><span data-icon="uarr" aria-hidden="true"></span>{{ 'Move up'|t('app') }}</a></li>
-                                    <li><a role="button" type="button" href="#" data-action="moveDown"><span data-icon="darr" aria-hidden="true"></span>{{ 'Move down'|t('app') }}</a></li>
+                                  <li><a data-icon="collapse" data-action="collapse" href="#" type="button" role="button" aria-label="{{ 'Collapse'|t('app') }}">{{ "Collapse"|t('app') }}</a></li>
+                                  <li class="hidden"><a data-icon="expand" data-action="expand" href="#" type="button" role="button" aria-label="{{ 'Expand'|t('app') }}">{{ "Expand"|t('app') }}</a></li>
+                                  <li{% if not block.enabled %} class="hidden"{% endif %}><a data-icon="disabled" data-action="disable" href="#" type="button" role="button" aria-label="{{ 'Disable'|t('app') }}">{{ "Disable"|t('app') }}</a></li>
+                                  <li{% if block.enabled %} class="hidden"{% endif %}><a data-icon="enabled" data-action="enable" href="#" type="button" role="button" aria-label="{{ 'Enable'|t('app') }}">{{ "Enable"|t('app') }}</a></li>
+                                  <li><a data-icon="uarr" data-action="moveUp" href="#" type="button" role="button" aria-label="{{ 'Move up'|t('app') }}">{{ 'Move up'|t('app') }}</a></li>
+                                  <li><a data-icon="darr" data-action="moveDown" href="#" type="button" role="button" aria-label="{{ 'Move down'|t('app') }}">{{ 'Move down'|t('app') }}</a></li>
                                 </ul>
                                 {% if not staticBlocks %}
                                 <hr class="padded">
                                 <ul class="padded">
-                                    <li><a role="button" type="button" class="error" href="#" data-action="delete"><span class="error" data-icon="remove" aria-hidden="true"></span>{{ "Delete"|t('app') }}</a></li>
+                                  <li><a class="error" data-icon="remove" data-action="delete" href="#" type="button" role="button" aria-label="{{ 'Delete'|t('app') }}">{{ "Delete"|t('app') }}</a></li>
                                 </ul>
                                 <hr class="padded">
                                 <ul class="padded">
                                     {% for blockType in blockTypes %}
-                                    <li><a role="button" type="button" href="#" data-action="add" data-type="{{ blockType.handle }}"><span data-icon="plus" aria-hidden="true"></span>{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
+                                      <li><a data-icon="plus" data-action="add" data-type="{{ blockType.handle }}" href="#" type="button" role="button" aria-label="{{ 'Add {type} above'|t('app', { type: blockType.name|t('site') }) }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
                                     {% endfor %}
                                 </ul>
                                 {% endif %}

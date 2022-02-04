@@ -220,19 +220,19 @@
                     <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}"></button> 
                     <div class="menu">
                       <ul class="padded">
-                        <li><a data-icon="collapse" data-action="collapse">${Craft.t('app', 'Collapse')}</a></li>
-                        <li class="hidden"><a data-icon="expand" data-action="expand">${Craft.t('app', 'Expand')}</a></li>
-                        <li><a data-icon="disabled" data-action="disable">${Craft.t('app', 'Disable')}</a></li>
-                        <li class="hidden"><a data-icon="enabled" data-action="enable">${Craft.t('app', 'Enable')}</a></li>
-                        <li><a data-icon="uarr" data-action="moveUp">${Craft.t('app', 'Move up')}</a></li>
-                        <li><a data-icon="darr" data-action="moveDown">${Craft.t('app', 'Move down')}</a></li>
+                        <li><a data-icon="collapse" data-action="collapse" href="#" aria-label="${Craft.t('app', 'Collapse')}" type="button" role="button">${Craft.t('app', 'Collapse')}</a></li>
+                        <li class="hidden"><a data-icon="expand" data-action="expand" href="#" aria-label="${Craft.t('app', 'Expand')}" type="button" role="button">${Craft.t('app', 'Expand')}</a></li>
+                        <li><a data-icon="disabled" data-action="disable" href="#" aria-label="${Craft.t('app', 'Disable')}" type="button" role="button">${Craft.t('app', 'Disable')}</a></li>
+                        <li class="hidden"><a data-icon="enabled" data-action="enable" href="#" aria-label="${Craft.t('app', 'Enable')}" type="button" role="button">${Craft.t('app', 'Enable')}</a></li>
+                        <li><a data-icon="uarr" data-action="moveUp" href="#" aria-label="${Craft.t('app', 'Move up')}" type="button" role="button">${Craft.t('app', 'Move up')}</a></li>
+                        <li><a data-icon="darr" data-action="moveDown" href="#" aria-label="${Craft.t('app', 'Move down')}" type="button" role="button">${Craft.t('app', 'Move down')}</a></li>
                       </ul>`;
 
                             if (!this.settings.staticBlocks) {
                                 html += `
                       <hr class="padded"/>
                       <ul class="padded">
-                        <li><a class="error" data-icon="remove" data-action="delete">${Craft.t('app', 'Delete')}</a></li>
+                        <li><a class="error" data-icon="remove" data-action="delete" href="#" aria-label="${Craft.t('app', 'Delete')}" type="button" role="button">${Craft.t('app', 'Delete')}</a></li>
                       </ul>
                       <hr class="padded"/>
                       <ul class="padded">`;
@@ -240,7 +240,7 @@
                                 for (var i = 0; i < this.blockTypes.length; i++) {
                                     var blockType = this.blockTypes[i];
                                     html += `
-                        <li><a data-icon="plus" data-action="add" data-type="${blockType.handle}">${Craft.t('app', 'Add {type} above', {type: blockType.name})}</a></li>`;
+                        <li><a data-icon="plus" data-action="add" data-type="${blockType.handle}" href="#" aria-label="${Craft.t('app', 'Add {type} above', {type: blockType.name})}" type="button" role="button">${Craft.t('app', 'Add {type} above', {type: blockType.name})}</a></li>`;
                                 }
 
                                 html += `
