@@ -129,6 +129,10 @@ export class WebAuthnFormHandler extends AuthenticationSetupFormHandler
                 addContainedJsFilesToPage(response.footHtml);
             }
 
+            if (response.error) {
+                this.setErrorStatus(response.error);
+            }
+
             this.enable();
         });
 

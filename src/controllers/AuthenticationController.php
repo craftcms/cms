@@ -301,6 +301,7 @@ class AuthenticationController extends Controller
         $this->requireAcceptsJson();
         $this->requireLogin();
         $this->requireElevatedSession();
+        $this->requireSecureConnection();
 
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
@@ -308,46 +309,28 @@ class AuthenticationController extends Controller
         $request = Craft::$app->getRequest();
         $session = Craft::$app->getSession();
         $output = [];
-        $message = '';
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $code1 = $request->getBodyParam('verification-code-1');
-            $code2 = $request->getBodyParam('verification-code-2');
-            $detach = $request->getBodyParam('detach');
+        $authenticatorCode = $request->getBodyParam('authenticator-code');
+        $detach = $request->getBodyParam('detach');
 
-            if (!empty($code1) || !empty($code2)) {
-                $authenticator = AuthenticationHelper::getCodeAuthenticator();
+        if (!empty($authenticatorCode)) {
+            $authenticator = AuthenticationHelper::getCodeAuthenticator();
 
-                $authenticator->setWindow(4);
-                $existingSecret = $session->get(AuthenticatorCode::AUTHENTICATOR_SECRET_SESSION_KEY);
-                $firstTimestamp = $authenticator->verifyKeyNewer($existingSecret, $code1, 100);
+            $authenticator->setWindow(4);
+            $existingSecret = $session->get(AuthenticatorCode::AUTHENTICATOR_SECRET_SESSION_KEY);
+            $firstTimestamp = $authenticator->verifyKeyNewer($existingSecret, $authenticatorCode, 100);
 
-                if ($firstTimestamp) {
-                    // Ensure sequence of two codes
-                    $secondTimestamp = $authenticator->verifyKeyNewer($existingSecret, $code2, $firstTimestamp);
-
-                    if ($secondTimestamp) {
-                        $currentUser->saveAuthenticator($existingSecret, $secondTimestamp);
-                        $session->remove(AuthenticatorCode::AUTHENTICATOR_SECRET_SESSION_KEY);
-                        $message = Craft::t('app', 'Successfully attached the authenticator.');
-                    }
-                } else {
-                    $message = Craft::t('app', 'Failed to verify two consecutive codes.');
-                }
-            } else if (!empty($detach)) {
-
-                if ($detach === 'detach') {
-                    $currentUser->removeAuthenticator();
-                    $message = Craft::t('app', 'Successfully detached the authenticator.');
-                } else {
-                    $message = Craft::t('app', 'Failed to detach the authenticator.');
-                }
+            if ($firstTimestamp) {
+                $backupCodes = $currentUser->saveAuthenticator($existingSecret, $firstTimestamp);
+                $session->remove(AuthenticatorCode::AUTHENTICATOR_SECRET_SESSION_KEY);
+                $output['message'] = Craft::t('app', 'Successfully attached the authenticator.');
+                $output['codeHtml'] = Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/codes', ['codes' => $backupCodes]);
+            } else {
+                $output['error'] = Craft::t('app', 'Failed to verify the authenticator.');
             }
-
-        }
-
-        if ($message) {
-            $output['message'] = $message;
+        } else if (!empty($detach)) {
+            $currentUser->removeAuthenticator();
+            $output['message'] = Craft::t('app', 'Successfully detached the authenticator.');
         }
 
         $step = new AuthenticatorCode();

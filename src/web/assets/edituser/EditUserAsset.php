@@ -63,7 +63,8 @@ class EditUserAsset extends AssetBundle
                 'No security keys exist yet',
                 'Waiting for a security key',
                 'Waiting for elevated session',
-                'Please enter a name for the security key'
+                'Please enter a name for the security key',
+                'Updating the authenticator settings',
             ]);
         }
     }

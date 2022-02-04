@@ -8,6 +8,7 @@
 namespace craft\elements;
 
 use Craft;
+use craft\authentication\type\AuthenticatorCode;
 use craft\base\Element;
 use craft\conditions\elements\users\UserQueryCondition;
 use craft\conditions\QueryConditionInterface;
@@ -36,7 +37,7 @@ use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
-use craft\records\AuthAuthenticator;
+use craft\records\AuthAuthenticator as AuthRecord;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
@@ -710,6 +711,11 @@ class User extends Element implements IdentityInterface
     private ?string $_authenticatorSecret = null;
 
     /**
+     * @var string[] Authenticator backup codes
+     */
+    private array $_backupCodes = [];
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -1090,8 +1096,19 @@ class User extends Element implements IdentityInterface
      *
      * @param string|null $secret
      */
-    public function setAuthenticatorSecret(?string $secret): void {
+    public function setAuthenticatorSecret(?string $secret): void
+    {
         $this->_authenticatorSecret = $secret;
+    }
+
+    /**
+     * Set the backup codes.
+     *
+     * @param string $backupCodes
+     */
+    public function setBackupCodes(string $backupCodes): void
+    {
+        $this->_backupCodes = explode(',', $backupCodes);
     }
 
     /**
@@ -1099,24 +1116,28 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function hasAuthenticatorSecret(): bool {
+    public function hasAuthenticatorSecret(): bool
+    {
         return !empty($this->_authenticatorSecret);
     }
 
     /**
      * Verify an authenticator key for the user.
      *
-     * @param string $key
+     * @param string $code
      * @return bool
      */
-    public function verifyAuthenticatorKey(string $key): bool {
+    public function verifyAuthenticatorCode(string $code): bool
+    {
+
         if (empty($this->_authenticatorSecret)) {
             return false;
         }
 
         $authenticator = Authentication::getCodeAuthenticator();
+
         try {
-            $result = $authenticator->verifyKeyNewer($this->_authenticatorSecret, $key, $this->authenticatorTimestamp);
+            $result = $authenticator->verifyKeyNewer($this->_authenticatorSecret, $code, $this->authenticatorTimestamp);
         } catch (\Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return false;
@@ -1126,12 +1147,41 @@ class User extends Element implements IdentityInterface
             $this->updateAuthenticatorTimestamp($result);
         }
 
-        return (bool) $result;
+        return (bool)$result;
+    }
+
+    /**
+     * Use an authenticator backup code
+     *
+     * @param string $code
+     * @return bool `true`, if the code was correct.
+     */
+    public function useAuthenticatorBackupCode(string $code): bool
+    {
+        $hashed = AuthenticatorCode::hashBackupCode($code, $this->_authenticatorSecret);
+        $idx = array_search($hashed, $this->_backupCodes, true);
+
+        if ($idx === false) {
+            return false;
+        }
+
+        $record = AuthRecord::findOne(['userId' => $this->id]);
+
+        if (!$record) {
+            return false;
+        }
+
+        unset($this->_backupCodes[$idx]);
+        $record->backupCodes = implode(',', $this->_backupCodes);
+        $record->save();
+
+        return true;
     }
 
     /**
      * Update the timestamp of the last used authenticator code.
      * x
+     *
      * @param int $timestamp
      */
     public function updateAuthenticatorTimestamp(int $timestamp): void
@@ -1147,24 +1197,39 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Save an authenticator for a user.
+     * Save an authenticator for a user and return a list of 20 backup codes that can be used once.
      *
      * @param string $secret
      * @param int $timestamp
+     * @return string[] $backupCodes an array of backup codes for the authenticator.
      */
-    public function saveAuthenticator(string $secret, int $timestamp): void
+    public function saveAuthenticator(string $secret, int $timestamp): array
     {
         if ($this->id) {
             $this->removeAuthenticator();
 
-            $record = new AuthAuthenticator();
+            $backupCodes = [];
+            $hashed = [];
+
+            for ($i = 0; $i < 20; $i++) {
+                $code = StringHelper::toUpperCase(StringHelper::randomString(12));
+                $backupCodes[] = $code;
+                $hashed[] = AuthenticatorCode::hashBackupCode($code, $secret);
+            }
+
+            // todo Maybe move this out. Makes sense because it's a separate piece of funtionality.
+            // OTOH - keeping the secret localized here is good too.
+            $record = new AuthRecord();
             $record->userId = $this->id;
             $record->authenticatorSecret = $secret;
             $record->authenticatorTimestamp = $timestamp;
+            $record->backupCodes = implode(',', $hashed);
             $record->save();
 
             $this->setAuthenticatorSecret($secret);
             $this->authenticatorTimestamp = $timestamp;
+
+            return $backupCodes;
         }
     }
 
@@ -1175,6 +1240,7 @@ class User extends Element implements IdentityInterface
     {
         if ($this->id) {
             AuthAuthenticator::deleteAll(['userId' => $this->id]);
+            $this->_authenticatorSecret = null;
         }
     }
 
@@ -1772,7 +1838,6 @@ class User extends Element implements IdentityInterface
         }
 
         $this->setDirtyAttributes($dirtyAttributes);
-
 
         parent::afterSave($isNew);
 

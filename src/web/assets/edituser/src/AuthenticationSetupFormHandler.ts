@@ -30,13 +30,17 @@ export abstract class AuthenticationSetupFormHandler
      * @param showSpinner
      * @protected
      */
-    protected setStatus(message: string, showSpinner: boolean = true)
+    protected setStatus(message: string, showSpinner: boolean = true, clearAfter: number = 0)
     {
         if (showSpinner) {
             message = `<div class="spinner"></div><span>${message}</span>`;
         }
 
         this.$status.html(message);
+
+        if (clearAfter > 0) {
+            setTimeout(() => this.clearStatus(), clearAfter);
+        }
     }
 
     /**

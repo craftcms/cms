@@ -18,6 +18,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $userId User ID
  * @property string $authenticatorSecret Authenticator secret
  * @property int $authenticatorTimestamp Timestamp for the last used code
+ * @property string $backupCodes A string containing unused backup code hashes, separated by "|"
  * @property-read \yii\db\ActiveQueryInterface $user
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

@@ -761,6 +761,7 @@ class UserQuery extends ElementQuery
             $this->query->addSelect([
                 'authenticator.authenticatorSecret',
                 'authenticator.authenticatorTimestamp',
+                'authenticator.backupCodes',
             ]);
         }
 

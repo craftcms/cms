@@ -71,7 +71,7 @@ class AuthenticatorFormHandler {
         Craft.postActionRequest(this.endpoint, data, (response, textStatus) => {
             this.enable();
             if (response.message) {
-                alert(response.message);
+                this.setStatus()
             }
             if (response.error) {
                 alert(response.error);

@@ -64,7 +64,22 @@ class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurab
         $code = $credentials['verification-code'];
         $session = Craft::$app->getSession();
 
-        if (empty($code) || !$user->verifyAuthenticatorKey($code)) {
+        if (empty($code)) {
+            $session->setError(Craft::t('app', 'Please enter a verification code.'));
+            return false;
+        }
+
+        if (is_numeric($code)) {
+            if (!$user->verifyAuthenticatorCode($code)) {
+                $session->setError(Craft::t('app', 'The verification code is incorrect.'));
+                return false;
+            }
+
+            return true;
+        }
+
+        // Not empty and not numeric. What if it's a backup code?
+        if (!$user->useAuthenticatorBackupCode($code)) {
             $session->setError(Craft::t('app', 'The verification code is incorrect.'));
             return false;
         }
@@ -93,7 +108,7 @@ class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurab
 
         $qrAuthenticatorCode = '';
 
-        if (Craft::$app->getEdition() == Craft::Pro && $user->getIsCurrent() && !$user->hasAuthenticatorSecret()) {
+        if ($user->getIsCurrent() && !$user->hasAuthenticatorSecret()) {
             $session = Craft::$app->getSession();
             $existingSecret = $session->get(self::AUTHENTICATOR_SECRET_SESSION_KEY);
 
@@ -111,8 +126,10 @@ class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurab
             );
         }
 
+        $isSecureConnection = Craft::$app->getRequest()->getIsSecureConnection();
 
-        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/setup', compact('user', 'qrAuthenticatorCode'));
+        return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/AuthenticatorCode/setup',
+            compact('user', 'qrAuthenticatorCode', 'isSecureConnection'));
     }
 
     /**
@@ -129,5 +146,16 @@ class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurab
     public static function isAvailableForUser(User $user): bool
     {
         return $user->hasAuthenticatorSecret();
+    }
+
+    /**
+     * Hash a backup code for comparison.
+     *
+     * @param string $backupCode
+     * @param string $authSecret
+     * @return string
+     */
+    public static function hashBackupCode(string $backupCode, string $authSecret): string {
+        return sha1($authSecret . $backupCode);
     }
 }

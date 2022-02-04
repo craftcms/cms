@@ -186,6 +186,7 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'authenticatorSecret' => $this->char(32),
             'authenticatorTimestamp' => $this->bigInteger(),
+            'backupCodes' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

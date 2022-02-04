@@ -95,11 +95,12 @@ class Authentication extends Component
      */
     public function isMfaRequired(User $user): bool
     {
-        if ($user->enable2fa) {
+        if ($user->enable2fa || $user->hasAuthenticatorSecret()) {
             return true;
         }
 
         $require2fa = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_USERS)['require2fa'] ?? [];
+
         if (in_array('everyone', $require2fa, true)) {
             return true;
         }

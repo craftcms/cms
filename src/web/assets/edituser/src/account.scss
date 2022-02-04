@@ -26,10 +26,18 @@
   margin-top: 0;
 }
 
-#webauthn-status {
+.authentication-setup-status {
   line-height: 34px;
-
   span {
     @include padding-left(7px);
+  }
+}
+#authenticator-backup-codes {
+  max-width: 300px;
+  padding: 20px;
+  .codes {
+    column-count: 2;
+    text-align: center;
+    padding-bottom: 20px;
   }
 }

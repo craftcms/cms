@@ -100,7 +100,7 @@ export class AuthenticatorFormHandler extends AuthenticationSetupFormHandler
                 }
 
                 if (response.message) {
-                    this.setStatus(response.message, false);
+                    this.setStatus(response.message, false, 750);
                 }
 
                 if (response.error) {
