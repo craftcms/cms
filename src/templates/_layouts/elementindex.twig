@@ -8,7 +8,6 @@
 {% endif %}
 
 {% set sources = craft.app.elementSources.getSources(elementType) %}
-{% set customizableSources = (sources is not empty and currentUser.can('customizeSources')) %}
 
 {% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
 {% if showSiteMenu == 'auto' %}
@@ -29,7 +28,7 @@
             {% include "_elements/sources" %}
         </nav>
 
-        {% if customizableSources %}
+        {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
             <button class="customize-sources" type="button">
                 <span class="settings icon"></span>
                 <span class="label">{{ 'Customize'|t('app') }}</span>
