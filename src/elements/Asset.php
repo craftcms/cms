@@ -37,7 +37,6 @@ use craft\events\AssetEvent;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -1478,29 +1477,33 @@ JS;
         }
 
         // Normalize empty transform values
-        $transform = $transform ?: null;
+        $transform = $transform ?? $this->_transform;
 
-        if (is_array($transform)) {
-            if (isset($transform['width'])) {
-                $transform['width'] = round((float)$transform['width']);
+
+        if ($transform) {
+            if (is_array($transform)) {
+                if (isset($transform['width'])) {
+                    $transform['width'] = round((float)$transform['width']);
+                }
+                if (isset($transform['height'])) {
+                    $transform['height'] = round((float)$transform['height']);
+                }
             }
-            if (isset($transform['height'])) {
-                $transform['height'] = round((float)$transform['height']);
-            }
+
+            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             $transform = ImageTransforms::normalizeTransform($transform);
-        }
+            $imageTransformer = $transform->getImageTransformer();
 
-        if ($transform === null) {
-            if (!isset($this->_transform)) {
-                return AssetsHelper::generateUrl($volume, $this);
+            try {
+                return $imageTransformer->getTransformUrl($this, $transform, $immediately);
+            } catch (ImageTransformException $e) {
+                Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return null;
             }
-            $transform = $this->_transform;
         }
 
-        $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        $imageTransformer = $transform->getImageTransformer();
-
-        return $imageTransformer->getTransformUrl($this, $transform, $immediately);
+        return Assets::generateUrl($volume, $this);
     }
 
     /**
