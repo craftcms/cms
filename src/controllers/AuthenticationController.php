@@ -214,7 +214,6 @@ class AuthenticationController extends Controller
         $returnUrl = $userComponent->getReturnUrl();
         $userComponent->removeReturnUrl();
         $userComponent->sendUsernameCookie($user);
-        WebAuthn::refreshCredentialCookie($user);
 
         return $this->asJson([
             'success' => true,
@@ -276,7 +275,6 @@ class AuthenticationController extends Controller
             $options = WebAuthn::getCredentialCreationOptions($currentUser);
             $credentials = $server->loadAndCheckAttestationResponse(Json::encode($payload), $options, $request->asPsr7());
             $credentialRepository->saveNamedCredentialSource($credentials, $credentialName);
-            WebAuthn::setCredentialCookie($currentUser);
 
             $step = new WebAuthn();
             $output['html'] = $step->getUserSetupFormHtml($currentUser);
