@@ -134,7 +134,7 @@ class Volumes extends Component
 
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllVolumes(), function(Volume $volume) use ($userSession) {
-            return $userSession->checkPermission('viewVolume:' . $volume->uid);
+            return $userSession->checkPermission("viewAssets:$volume->uid");
         }, true, true, false);
     }
 

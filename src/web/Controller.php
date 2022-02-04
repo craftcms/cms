@@ -245,13 +245,21 @@ abstract class Controller extends \yii\web\Controller
      * @param string $message
      * @param Model|null $model The model that was being operated on
      * @param string|null $modelName The route param name that the model should be set to
+     * @param array $data Additional data to include in the JSON response
+     * @param string|null $defaultRedirect The default URL to redirect the request, if no `redirect` param is present
      * @return YiiResponse|null
      * @since 4.0.0
      */
-    public function asSuccess(string $message, ?Model $model = null, ?string $modelName = null): YiiResponse
+    public function asSuccess(
+        string $message,
+        ?Model $model = null,
+        ?string $modelName = null,
+        array $data = [],
+        ?string $defaultRedirect = null
+    ): YiiResponse
     {
         if ($this->request->getAcceptsJson()) {
-            return $this->asJson(array_filter([
+            return $this->asJson($data + array_filter([
                 'message' => $message,
                 'modelName' => $modelName,
                 ($modelName ?? 'model') => $model ? $model->toArray() : null,
@@ -259,7 +267,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         $this->setSuccessFlash($message);
-        return $this->redirectToPostedUrl($model);
+        return $this->redirectToPostedUrl($model, $defaultRedirect);
     }
 
     /**
@@ -322,7 +330,7 @@ abstract class Controller extends \yii\web\Controller
     public function requirePermission(string $permissionName): void
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
         }
     }
 
@@ -522,7 +530,6 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirect($url, $statusCode = 302): YiiResponse
     {
-
         if ($url !== null) {
             return $this->response->redirect($url, $statusCode);
         }

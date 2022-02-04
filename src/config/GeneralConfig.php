@@ -1779,7 +1779,8 @@ class GeneralConfig extends BaseObject
      */
     public function getActivateAccountSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1792,7 +1793,8 @@ class GeneralConfig extends BaseObject
      */
     public function getVerifyEmailPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1805,7 +1807,8 @@ class GeneralConfig extends BaseObject
      */
     public function getVerifyEmailSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1817,7 +1820,8 @@ class GeneralConfig extends BaseObject
      */
     public function getInvalidUserTokenPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1829,7 +1833,8 @@ class GeneralConfig extends BaseObject
      */
     public function getLoginPath(?string $siteHandle = null)
     {
-        return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1841,7 +1846,8 @@ class GeneralConfig extends BaseObject
      */
     public function getLogoutPath(?string $siteHandle = null)
     {
-        return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1888,7 +1894,8 @@ class GeneralConfig extends BaseObject
      */
     public function getSetPasswordPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1901,7 +1908,8 @@ class GeneralConfig extends BaseObject
      */
     public function getSetPasswordRequestPath(?string $siteHandle = null): ?string
     {
-        return ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1913,7 +1921,8 @@ class GeneralConfig extends BaseObject
      */
     public function getSetPasswordSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**

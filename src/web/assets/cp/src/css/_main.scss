@@ -123,6 +123,7 @@ p:last-child,
 blockquote:last-child,
 .pane:last-child,
 .grid:last-child,
+.meta:last-child,
 fieldset:last-child,
 .field:last-child,
 .toolbar:last-child,
@@ -167,8 +168,8 @@ table.editable textarea {
 .insecure:before,
 .go:after,
 .required:after,
-#preview-btn:before,
-#share-btn:before,
+.preview-btn:before,
+.share-btn:before,
 [data-icon]:before,
 [data-icon-after]:after {
   @include icon;
@@ -248,19 +249,19 @@ body.rtl [data-icon-after="structure"]:after {
   color: $pink400;
 }
 
-#preview-btn,
-#share-btn {
+.preview-btn,
+.share-btn {
   &:before {
-    @include margin-right(7px);
+    @include margin-right(var(--xs));
   }
 }
 
-#preview-btn:before {
+.preview-btn:before {
   margin-top: -2px;
   content: "view";
 }
 
-#share-btn:before {
+.share-btn:before {
   body.ltr & {
     content: "share";
   }
@@ -428,10 +429,7 @@ button {
 }
 
 /* revision button */
-#context-btngroup {
-  @include margin-right(7px);
-}
-#context-btn.disabled {
+.context-btn.disabled {
   opacity: 1;
   color: $mediumDarkTextColor;
   background-color: transparentize($grey200, 0.5) !important;
@@ -473,7 +471,7 @@ button {
   }
 }
 
-#revision-menu {
+.menu.revision-menu {
   padding: 10px 24px;
 
   hr {
@@ -503,17 +501,6 @@ button {
 
           .btn {
             @include margin-left(14px);
-            color: $textColor !important;
-            background-color: $yellow300;
-
-            &:hover,
-            &:focus {
-              background-color: darken($yellow300, 10%);
-            }
-
-            &:active {
-              background-color: darken($yellow300, 15%);
-            }
           }
         }
       }
@@ -539,6 +526,60 @@ button {
     color: $lightTextColor;
     background-color: $grey050;
     padding: 7px 14px;
+  }
+}
+
+.draft-notice {
+  display: flex;
+  align-items: center;
+  align-content: stretch;
+  justify-content: center;
+  gap: var(--s);
+  color: $blue700;
+
+  #content-notice & {
+    display: inline-flex;
+    justify-content: flex-start;
+  }
+
+  p {
+    flex: 1;
+    margin: 0;
+  }
+
+  .draft-icon {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    border: 2px solid transparentize($blue600, 0.8);
+    box-sizing: border-box;
+
+    &:before {
+      position: relative;
+      left: 1px;
+      color: $blue700 !important;
+      font-size: 18px;
+    }
+  }
+
+  .discard-changes-btn {
+    @include margin-left(var(--xs));
+    background-color: transparent !important;
+    color: $blue700 !important;
+    border: 2px solid $blue600;
+
+    &:hover,
+    &:focus {
+      border-color: darken($blue600, 5%);
+    }
+
+    &:active {
+      border-color: darken($blue600, 10%);
+    }
   }
 }
 
@@ -1171,26 +1212,15 @@ ul.icons {
   display: flex;
   align-items: center;
   align-content: stretch;
+  gap: var(--s);
 
   &:not(.flex-nowrap) {
     flex-wrap: wrap;
-
-    & > * {
-      margin-bottom: 7px;
-    }
   }
 
   & > * {
     &.label {
       white-space: nowrap;
-    }
-
-    &:not(:last-child) {
-      @include margin-right(7px !important);
-    }
-
-    &.spinner {
-      @include margin-left(0 !important);
     }
   }
 
@@ -1199,12 +1229,67 @@ ul.icons {
   }
 }
 
+.inline-flex {
+  display: inline-flex;
+  align-items: center;
+  align-content: stretch;
+  gap: var(--s);
+}
+
+.gap-xs {
+  gap: var(--xs);
+}
+
+.gap-s {
+  gap: var(--s);
+}
+
+.gap-m {
+  gap: var(--m);
+}
+
+.gap-l {
+  gap: var(--l);
+}
+
+.gap-xl {
+  gap: var(--xl);
+}
+
 .flex-grow {
   flex: 1;
 }
 
+.flex-justify {
+  justify-content: space-between;
+}
+
+.flex-justify-start {
+  justify-content: flex-start;
+}
+
+.flex-justify-end {
+  justify-content: flex-end;
+}
+
+.flex-justify-center {
+  justify-content: center;
+}
+
+.flex-start {
+  align-items: flex-start;
+}
+
+.flex-end {
+  align-items: flex-end;
+}
+
 .flex-center {
   align-items: center;
+}
+
+.flex-stretch {
+  align-items: stretch;
 }
 
 .spacer {
@@ -1213,18 +1298,9 @@ ul.icons {
 
 .buttons {
   display: flex;
+  gap: 7px;
   position: relative;
   margin: 24px 0;
-
-  & > .btn,
-  & > .btngroup {
-    &:not(.hidden) {
-      & + .btn,
-      & + .btngroup {
-        @include margin-left(5px);
-      }
-    }
-  }
 
   .hud-footer > &,
   .footer > & {
@@ -1660,8 +1736,8 @@ ul.icons {
 }
 
 .btn.big[data-icon]:before,
-#preview-btn:before,
-#share-btn:before {
+.preview-btn:before,
+.share-btn:before {
   @include margin-left(-2px);
 }
 
@@ -1876,6 +1952,7 @@ div.btn.submit input {
 }
 
 .lightswitch {
+  display: block;
   position: relative;
   border: none !important;
   overflow: hidden;
@@ -2148,8 +2225,8 @@ table {
     thead {
       th,
       td {
-        padding-top: 14px;
-        padding-bottom: 14px;
+        padding-top: 15px;
+        padding-bottom: 15px;
         width: auto;
         background-color: $grey050;
         cursor: default;
@@ -3252,7 +3329,7 @@ ul.tree,
 
 .condition-rule {
   margin: 0;
-  padding: 7px 7px 0;
+  padding: 7px;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
 
@@ -3427,32 +3504,34 @@ ul.tree,
 }
 
 .pane-header {
-  margin: -24px var(--neg-padding) 24px;
-  padding: 7px 24px;
+  margin: calc(var(--xl) * -1) var(--neg-padding) var(--xl);
+  padding: var(--s) var(--xl);
+  min-height: 50px;
+  box-sizing: border-box;
   background: $grey050;
   box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
   border-radius: $largeBorderRadius $largeBorderRadius 0 0;
 
-  .btn {
+  .header-btn {
     margin: 5px 0;
     @include header-btn;
   }
 
   .spinner {
-    margin: 3px 0;
+    margin: 3px 0 !important;
   }
 }
 
 .pane-tabs {
-  margin-bottom: -7px;
+  margin-bottom: calc(var(--s) * -1);
   display: flex;
   flex-direction: row;
   align-items: center;
   max-width: 100%;
 
   ul {
-    margin: -7px var(--neg-padding) 0;
-    padding: 7px var(--padding) 0;
+    margin: calc(var(--s) * -1) var(--neg-padding) 0;
+    padding: var(--s) var(--padding) 0;
     flex: 1;
     display: flex;
     flex-direction: row;
@@ -3496,7 +3575,7 @@ ul.tree,
         padding: 0 12px;
         white-space: nowrap;
         color: $lightTextColor;
-        height: 40px;
+        height: 42px;
 
         &:hover {
           text-decoration: none;
@@ -3526,9 +3605,163 @@ ul.tree,
   }
 }
 
+/* detail sidebars */
+.details {
+  --spacing: var(--l);
+  padding: 0 var(--padding) var(--spacing);
+
+  .meta,
+  .field,
+  hr {
+    margin-left: var(--neg-padding);
+    margin-right: var(--neg-padding);
+  }
+
+  .meta {
+    margin-bottom: var(--spacing);
+
+    &:not(.read-only) {
+      background-color: $grey050 !important;
+    }
+
+    &.read-only {
+      color: $mediumTextColor;
+
+      & > .data {
+        align-items: baseline;
+        min-height: auto;
+
+        & > .heading,
+        & > .value {
+          padding: 6px 0;
+        }
+
+        &:first-child {
+          & > .heading,
+          & > .value {
+            padding-top: 0;
+          }
+        }
+
+        &:last-child {
+          & > .heading,
+          & > .value {
+            padding-bottom: 0;
+          }
+        }
+      }
+    }
+
+    &.warning {
+      padding-top: var(--m);
+      padding-bottom: var(--m);
+      color: $textColor !important;
+      background-color: $yellow050 !important;
+      box-shadow: 0 0 0 1px $yellow300,  0 2px 12px transparentize($grey200, 0.5);
+
+      p {
+        margin-bottom: 5px;
+      }
+
+      .btn {
+        background-color: $yellow300;
+
+        &:hover,
+        &:focus {
+          background-color: darken($yellow300, 10%);
+        }
+
+        &:active {
+          background-color: darken($yellow300, 15%);
+        }
+      }
+    }
+
+    & > .field,
+    & > .data {
+      margin: 0 var(--neg-padding) !important;
+
+      & > .heading > label,
+      & > .heading {
+        color: $grey600;
+      }
+    }
+
+    & > .field  > .status-badge {
+      @include left(0);
+    }
+
+    .text::placeholder,
+    .datewrapper .text + div[data-icon],
+    .timewrapper .text + div[data-icon] {
+      color: $grey300;
+    }
+
+    .ui-datepicker {
+      @include margin(0, 0, 0, -8px);
+    }
+  }
+
+  hr {
+    margin: var(--spacing) 0;
+    border-top-color: $hairlineColor;
+  }
+
+  .spinner {
+    background-image: url(../images/spinner_details.gif);
+  }
+
+  @include placeholder-styles($grey500);
+
+  .text {
+    background-color: transparent !important;
+    resize: none;
+  }
+
+  & > .field > .heading > label,
+  & > fieldset > legend {
+    font-weight: normal;
+    color: $grey600;
+  }
+
+  & > fieldset {
+    margin: 0 0 var(--spacing);
+
+    & > legend {
+      margin-bottom: 5px;
+    }
+  }
+
+  & > .field {
+    margin: 0 0 var(--spacing);
+
+    & > .heading {
+      margin-top: 0;
+    }
+
+    & > .input > .text.fullwidth {
+      margin: 0 var(--neg-padding);
+      padding-left: var(--padding);
+      padding-right: var(--padding);
+      border: none;
+      background-color: $grey050 !important;
+      width: calc(100% + var(--padding) + var(--padding));
+    }
+  }
+
+  & > .text {
+    border-radius: $largeBorderRadius;
+    margin-bottom: var(--spacing);
+
+    &:not(:focus) {
+      border-color: transparentize($inputColor, 0.6);
+    }
+  }
+}
+
 /* meta panes */
 .meta {
-  padding: 0 24px;
+  padding: 0 var(--padding);
   overflow: visible;
 
   &,
@@ -3536,11 +3769,13 @@ ul.tree,
     & > .field,
     & > .data {
       display: flex;
+      min-height: 50px;
+      box-sizing: border-box;
       flex-wrap: wrap; // for error lists
       justify-content: space-between;
       align-items: center;
-      margin: 0 -24px !important;
-      padding: 0 24px;
+      margin: 0 var(--neg-padding) !important;
+      padding: 0 var(--padding);
       transition: padding-left linear 100ms, padding-right linear 100ms;
 
       &.nested {
@@ -3566,8 +3801,8 @@ ul.tree,
       }
 
       & > .heading {
-        flex: 0 0 105px;
-        @include margin(0, 7px, 0, 0);
+        flex: 0 0 104px;
+        @include margin(0, var(--s), 0, 0);
         line-height: 18px;
       }
 
@@ -3595,7 +3830,7 @@ ul.tree,
     }
 
     & > .data > .heading {
-      padding: 7px 0;
+      padding: var(--s) 0;
     }
 
     & > .field > .heading > label,
@@ -3605,7 +3840,7 @@ ul.tree,
 
     & > .field > .input,
     & > .data > .value {
-      padding: 7px 0;
+      padding: var(--s) 0;
       width: calc(100% - 112px);
     }
 
@@ -3659,7 +3894,7 @@ ul.tree,
         & > .datetimewrapper > .timewrapper {
           & > .text {
             display: block;
-            margin: -7px 0;
+            margin: calc(var(--s) * -1) 0;
             padding: 14px 0;
             border-radius: 0;
             background-color: transparent;
@@ -3706,7 +3941,7 @@ ul.tree,
       }
 
       & > .clear-btn {
-        @include margin-right(-24px);
+        @include margin-right(var(--neg-padding));
       }
     }
   }
@@ -3737,7 +3972,7 @@ ul.tree,
 
 .meta > .field > .input > .select {
   display: block;
-  margin: -7px 0;
+  margin: calc(var(--s) * -1) 0;
   width: 100%;
   border-radius: 0;
   box-shadow: none;
@@ -3754,7 +3989,7 @@ ul.tree,
   }
 
   select {
-    @include padding(7px, 12px, 7px, 0);
+    @include padding(var(--s), 12px, var(--s), 0);
     width: 100%;
     background-color: transparent;
   }
@@ -3808,8 +4043,8 @@ ul.tree,
   pointer-events: all;
 
   &.so-mobile {
-    --padding: 10px;
-    --neg-padding: -10px;
+    --padding: 14px;
+    --neg-padding: -14px;
     width: 100%;
     height: 100%;
     left: 0;
@@ -3841,7 +4076,8 @@ ul.tree,
       display: flex;
       flex-direction: row;
       align-items: center;
-      margin-bottom: -7px;
+      margin-bottom: calc(var(--s) * -1);
+      gap: var(--s);
 
       & > .pane-tabs {
         width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
@@ -3871,7 +4107,7 @@ ul.tree,
       height: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      padding: 0 var(--padding);
+      padding: 0 var(--padding) var(--spacing);
       background-color: $grey100;
       overflow: hidden auto;
       z-index: 1;
@@ -3893,17 +4129,14 @@ ul.tree,
         }
       }
 
-      & > .meta {
-        margin: 0 var(--neg-padding);
-        padding: 0 var(--padding);
+      & > .meta.warning {
+        box-shadow: none;
+        border-bottom: 1px solid $yellow300;
+      }
 
-        &:not(.read-only) {
-          background: $grey050;
-        }
-
-        &.read-only {
-          padding-top: 14px;
-          padding-bottom: 14px;
+      & > .field {
+        & > .input > .text.fullwidth {
+          border-radius: 0;
         }
       }
     }
@@ -3912,63 +4145,74 @@ ul.tree,
   & > .so-footer {
     position: relative;
     display: flex;
-    flex-direction: row;
+    gap: 8px;
+    justify-content: space-between;
+    flex-wrap: wrap;
     margin: 0 var(--neg-padding) -24px;
-    padding: var(--padding);
+    padding: 8px var(--padding);
     @include pane;
     background-color: $grey050;
     z-index: 3;
 
-    & > .btn {
-      @include margin-left(5px);
+    & > .so-extra {
+      flex: 0 0 100%;
+      margin: 0 var(--neg-padding);
+      padding: 0 var(--padding) 8px;
+      border-bottom: 1px solid $hairlineColor;
     }
 
-    & > .spinner {
-      @include margin(0, var(--neg-padding), 0, 0);
-    }
-  }
-}
-
-/* Element editor slideouts */
-.element-editor {
-  & > .so-footer {
-    & > .ee-site-select {
-      flex: 1;
+    .spinner {
+      @include margin(0, var(--neg-padding), 0, calc(var(--s) * -1));
     }
   }
 }
 
 @media (min-width: 1536px) {
-  .slideout.has-sidebar {
-    .sidebar-btn {
-      display: none;
-    }
-
-    .so-body {
-      display: flex;
-      flex-direction: row;
-      padding: 0;
-      overflow: hidden;
-
-      & > .so-content {
-        position: relative;
-        z-index: 2;
-        padding: 24px;
-        width: calc(100% - 350px);
-        height: 100%;
-        box-sizing: border-box;
-        box-shadow: 0 0 0 1px transparentize($grey1000, 0.9);
-        overflow: hidden auto;
+  .slideout {
+    &.has-sidebar {
+      .pane-header:not(.so-visible) {
+        display: none;
       }
 
-      & > .so-sidebar {
-        position: relative;
-        display: block !important;
-        top: auto;
-        right: auto !important;
-        left: auto !important;
-        height: 100%;
-        box-shadow: none;
+      .sidebar-btn {
+        display: none;
+      }
+
+      .so-body {
+        display: flex;
+        flex-direction: row;
+        padding: 0;
+        overflow: hidden;
+
+        & > .so-content {
+          position: relative;
+          z-index: 2;
+          padding: 24px;
+          width: calc(100% - 350px);
+          height: 100%;
+          box-sizing: border-box;
+          @include border-right(1px solid $grey200);
+          overflow: hidden auto;
+        }
+
+        & > .so-sidebar {
+          position: relative;
+          display: block !important;
+          top: auto;
+          right: auto !important;
+          left: auto !important;
+          height: 100%;
+          box-shadow: none;
+        }
+      }
+    }
+
+    & > .so-footer {
+      & > .so-extra {
+        margin: 0;
+        padding: 0;
+        border: none;
+        flex: auto 0 1;
       }
     }
   }
@@ -4014,7 +4258,7 @@ ul.tree,
 .footer,
 .hud-footer {
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
-  padding: 14px 24px;
+  padding: var(--s) var(--xl);
   box-shadow: inset 0 1px 0 $hairlineColor;
 
   &.flex {
@@ -4170,7 +4414,7 @@ ul.tree,
 
 .hud .hud-header,
 .hud .hud-footer {
-  padding: 7px 24px;
+  padding: var(--s) var(--xl);
 }
 
 .hud .body {
@@ -4209,6 +4453,7 @@ ul.tree,
   align-items: center;
   height: 190px;
   background-color: $grey900;
+  margin: 0 var(--neg-padding) var(--spacing);
 
   &.checkered img {
     background-color: $white;
@@ -4235,7 +4480,6 @@ ul.tree,
   }
 
   #details & {
-    margin-bottom: 14px;
     border-radius: $largeBorderRadius;
     overflow: hidden;
   }
@@ -4264,6 +4508,9 @@ ul.tree,
     transition: opacity linear 100ms;
 
     .btn {
+      --ui-control-color: $white;
+      --ui-control-hover-color: $white;
+      --ui-control-active-color: $white;
       background-color: $grey600;
       color: $white;
       @include light-on-dark-text;
@@ -4923,7 +5170,7 @@ fieldset {
   & > .status-badge {
     position: absolute;
     top: 0;
-    @include left(-25px);
+    @include left(0);
     width: 2px;
     height: 100%;
     content: "";
@@ -5025,8 +5272,8 @@ fieldset {
   }
 }
 
-#expand-status-btn {
-  margin-left: 5px;
+.expand-status-btn {
+  @include margin-left(5px);
   width: 30px;
   height: 17px;
   padding: 0;

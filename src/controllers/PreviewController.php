@@ -55,11 +55,10 @@ class PreviewController extends Controller
     public function actionCreateToken(): Response
     {
         $elementType = $this->request->getRequiredParam('elementType');
-        $sourceId = $this->request->getRequiredParam('sourceId');
+        $canonicalId = $this->request->getParam('canonicalId') ?? $this->request->getRequiredBodyParam('sourceId');
         $siteId = $this->request->getRequiredParam('siteId');
         $draftId = $this->request->getParam('draftId');
         $revisionId = $this->request->getParam('revisionId');
-        $provisional = (bool)($this->request->getParam('provisional') ?? false);
         $token = $this->request->getParam('previewToken');
         $redirect = $this->request->getParam('redirect');
 
@@ -68,18 +67,18 @@ class PreviewController extends Controller
         } else if ($revisionId) {
             $this->requireAuthorization('previewRevision:' . $revisionId);
         } else {
-            $this->requireAuthorization('previewElement:' . $sourceId);
+            $this->requireAuthorization('previewElement:' . $canonicalId);
         }
 
         // Create the token
         $token = Craft::$app->getTokens()->createPreviewToken([
             'preview/preview', [
                 'elementType' => $elementType,
-                'sourceId' => (int)$sourceId,
+                'canonicalId' => (int)$canonicalId,
                 'siteId' => (int)$siteId,
                 'draftId' => (int)$draftId ?: null,
                 'revisionId' => (int)$revisionId ?: null,
-                'provisional' => $provisional,
+                'userId' => Craft::$app->getUser()->getId(),
             ],
         ], null, $token);
 
@@ -98,22 +97,22 @@ class PreviewController extends Controller
      * Substitutes an element for the element being previewed for the remainder of the request, and reroutes the request.
      *
      * @param string $elementType
-     * @param int $sourceId
+     * @param int $canonicalId
      * @param int $siteId
      * @param int|null $draftId
      * @param int|null $revisionId
-     * @param bool $provisional
+     * @param int|null $userId
      * @return Response
      * @throws BadRequestHttpException
      * @throws Throwable
      */
     public function actionPreview(
         string $elementType,
-        int $sourceId,
+        int $canonicalId,
         int $siteId,
         ?int $draftId = null,
         ?int $revisionId = null,
-        bool $provisional = false
+        ?int $userId = null
     ): Response {
         // Make sure a token was used to get here
         $this->requireToken();
@@ -124,16 +123,29 @@ class PreviewController extends Controller
             ->status(null);
 
         if ($draftId) {
-            $query
+            $element = $query
                 ->draftId($draftId)
-                ->provisionalDrafts($provisional);
+                ->one();
         } else if ($revisionId) {
-            $query->revisionId($revisionId);
+            $element = $query
+                ->revisionId($revisionId)
+                ->one();
         } else {
-            $query->id($sourceId);
-        }
+            if ($userId) {
+                // First check if there's a provisional draft
+                $element = (clone $query)
+                    ->draftOf($canonicalId)
+                    ->provisionalDrafts()
+                    ->draftCreator($userId)
+                    ->one();
+            }
 
-        $element = $query->one();
+            if (!isset($element)) {
+                $element = $query
+                    ->id($canonicalId)
+                    ->one();
+            }
+        }
 
         if ($element) {
             if (!$element->lft && $element->getIsDerivative()) {

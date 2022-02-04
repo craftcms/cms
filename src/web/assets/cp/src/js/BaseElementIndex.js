@@ -1316,10 +1316,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         if (this.settings.buttonContainer) {
             return $(this.settings.buttonContainer);
         } else {
-            var $container = $('#action-button');
+            var $container = $('#action-buttons');
 
             if (!$container.length) {
-                $container = $('<div id="action-button"/>').appendTo($('#header'));
+                $container = $('<div id="action-buttons"/>').appendTo($('#header'));
             }
 
             return $container;

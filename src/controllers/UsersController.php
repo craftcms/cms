@@ -1400,7 +1400,9 @@ class UsersController extends Controller
             }
             $this->setSuccessFlash($default);
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'User saved.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+                'type' => User::displayName(),
+            ]));
         }
 
         // Is this public registration, and is the user going to be activated automatically?

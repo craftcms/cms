@@ -45,7 +45,7 @@ class Entry extends Element
             case 'sectionId':
                 return $source->sectionId;
             case 'typeId':
-                return $source->typeId;
+                return $source->getTypeId();
             case 'sectionHandle':
                 return $source->getSection()->handle;
             case 'typeHandle':

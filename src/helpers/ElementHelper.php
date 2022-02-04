@@ -340,15 +340,17 @@ class ElementHelper
      */
     public static function isElementEditable(ElementInterface $element): bool
     {
-        if ($element->getIsEditable()) {
-            if (Craft::$app->getIsMultiSite()) {
-                foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
-                        return true;
-                    }
-                }
-            } else {
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($element->canView($user)) {
+            if (!Craft::$app->getIsMultiSite()) {
                 return true;
+            }
+
+            foreach (static::supportedSitesForElement($element) as $siteInfo) {
+                if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
+                    return true;
+                }
             }
         }
 
@@ -364,11 +366,12 @@ class ElementHelper
     public static function editableSiteIdsForElement(ElementInterface $element): array
     {
         $siteIds = [];
+        $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->getIsEditable()) {
+        if ($element->canView($user)) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
+                    if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }

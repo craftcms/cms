@@ -181,7 +181,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.postActionRequest('elements/get-modal-body', data, (response, textStatus) => {
+        Craft.postActionRequest('element-selector-modals/body', data, (response, textStatus) => {
             if (textStatus === 'success') {
                 this.$body.html(response.html);
 

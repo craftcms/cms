@@ -183,7 +183,6 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
         this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
 
         Craft.createElementEditor(this.elementType, {
-            hudTrigger: this.$newCategoryBtnGroup,
             siteId: this.siteId,
             attributes: {
                 groupId: groupId

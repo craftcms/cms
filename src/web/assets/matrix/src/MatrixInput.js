@@ -16,6 +16,7 @@
         addBlockBtnContainerWidth: null,
 
         $container: null,
+        $form: null,
         $blockContainer: null,
         $addBlockBtnContainer: null,
         $addBlockBtnGroup: null,
@@ -38,6 +39,7 @@
             this.setSettings(settings, Craft.MatrixInput.defaults);
 
             this.$container = $('#' + this.id);
+            this.$form = this.$container.closest('form');
             this.$blockContainer = this.$container.children('.blocks');
             this.$addBlockBtnContainer = this.$container.children('.buttons');
             this.$addBlockBtnGroup = this.$addBlockBtnContainer.children('.btngroup');
@@ -256,8 +258,8 @@
             var $block = $(html);
 
             // Pause the draft editor
-            if (window.draftEditor) {
-                window.draftEditor.pause();
+            if (this.$form.data('elementEditor')) {
+                this.$form.data('elementEditor').pause();
             }
 
             if ($insertBefore) {
@@ -289,7 +291,7 @@
                 this.blockSelect.addItems($block);
                 this.updateAddBlockBtn();
 
-                Garnish.requestAnimationFrame(function() {
+                Garnish.requestAnimationFrame(() => {
                     if (typeof autofocus === 'undefined' || autofocus) {
                         // Scroll to the block
                         Garnish.scrollContainerToElement($block);
@@ -298,8 +300,8 @@
                     }
 
                     // Resume the draft editor
-                    if (window.draftEditor) {
-                        window.draftEditor.resume();
+                    if (this.$form.data('elementEditor')) {
+                        this.$form.data('elementEditor').resume();
                     }
                 });
             });
@@ -725,8 +727,8 @@
 
         selfDestruct: function() {
             // Pause the draft editor
-            if (window.draftEditor) {
-                window.draftEditor.pause();
+            if (this.matrix.$form.data('elementEditor')) {
+                this.matrix.$form.data('elementEditor').pause();
             }
 
             this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', () => {
@@ -734,8 +736,8 @@
                 this.matrix.updateAddBlockBtn();
 
                 // Resume the draft editor
-                if (window.draftEditor) {
-                    window.draftEditor.resume();
+                if (this.matrix.$form.data('elementEditor')) {
+                    this.matrix.$form.data('elementEditor').resume();
                 }
 
                 this.matrix.trigger('blockDeleted', {
