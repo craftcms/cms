@@ -206,52 +206,52 @@
             var id = 'new' + this.totalNewBlocks;
 
             var html = `
-<div class="matrixblock" data-id="${id}" data-type="${type}">
-  <input type="hidden" name="${this.inputNamePrefix}[sortOrder][]" value="${id}"/>
-  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][type]" value="${type}"/>
-  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][enabled]" value="1"/>
-  <div class="titlebar">
-    <div class="blocktype">${this.getBlockTypeByHandle(type).name}</div>
-    <div class="preview"></div>
-  </div>
-  <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
-  <div class="actions">
-    <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
-    <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}"></button> 
-    <div class="menu">
-      <ul class="padded">
-        <li><a data-icon="collapse" data-action="collapse">${Craft.t('app', 'Collapse')}</a></li>
-        <li class="hidden"><a data-icon="expand" data-action="expand">${Craft.t('app', 'Expand')}</a></li>
-        <li><a data-icon="disabled" data-action="disable">${Craft.t('app', 'Disable')}</a></li>
-        <li class="hidden"><a data-icon="enabled" data-action="enable">${Craft.t('app', 'Enable')}</a></li>
-        <li><a data-icon="uarr" data-action="moveUp">${Craft.t('app', 'Move up')}</a></li>
-        <li><a data-icon="darr" data-action="moveDown">${Craft.t('app', 'Move down')}</a></li>
-      </ul>`;
+                <div class="matrixblock" data-id="${id}" data-type="${type}">
+                  <input type="hidden" name="${this.inputNamePrefix}[sortOrder][]" value="${id}"/>
+                  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][type]" value="${type}"/>
+                  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][enabled]" value="1"/>
+                  <div class="titlebar">
+                    <div class="blocktype">${this.getBlockTypeByHandle(type).name}</div>
+                    <div class="preview"></div>
+                  </div>
+                  <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
+                  <div class="actions">
+                    <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
+                    <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}"></button> 
+                    <div class="menu">
+                      <ul class="padded">
+                        <li><a data-icon="collapse" data-action="collapse">${Craft.t('app', 'Collapse')}</a></li>
+                        <li class="hidden"><a data-icon="expand" data-action="expand">${Craft.t('app', 'Expand')}</a></li>
+                        <li><a data-icon="disabled" data-action="disable">${Craft.t('app', 'Disable')}</a></li>
+                        <li class="hidden"><a data-icon="enabled" data-action="enable">${Craft.t('app', 'Enable')}</a></li>
+                        <li><a data-icon="uarr" data-action="moveUp">${Craft.t('app', 'Move up')}</a></li>
+                        <li><a data-icon="darr" data-action="moveDown">${Craft.t('app', 'Move down')}</a></li>
+                      </ul>`;
 
-            if (!this.settings.staticBlocks) {
-                html += `
-      <hr class="padded"/>
-      <ul class="padded">
-        <li><a class="error" data-icon="remove" data-action="delete">${Craft.t('app', 'Delete')}</a></li>
-      </ul>
-      <hr class="padded"/>
-      <ul class="padded">`;
+                            if (!this.settings.staticBlocks) {
+                                html += `
+                      <hr class="padded"/>
+                      <ul class="padded">
+                        <li><a class="error" data-icon="remove" data-action="delete">${Craft.t('app', 'Delete')}</a></li>
+                      </ul>
+                      <hr class="padded"/>
+                      <ul class="padded">`;
 
-                for (var i = 0; i < this.blockTypes.length; i++) {
-                    var blockType = this.blockTypes[i];
-                    html += `
-        <li><a data-icon="plus" data-action="add" data-type="${blockType.handle}">${Craft.t('app', 'Add {type} above', {type: blockType.name})}</a></li>`;
-                }
+                                for (var i = 0; i < this.blockTypes.length; i++) {
+                                    var blockType = this.blockTypes[i];
+                                    html += `
+                        <li><a data-icon="plus" data-action="add" data-type="${blockType.handle}">${Craft.t('app', 'Add {type} above', {type: blockType.name})}</a></li>`;
+                                }
 
-                html += `
-      </ul>`
-            }
+                                html += `
+                      </ul>`
+                            }
 
-            html += `
-    </div>
-    <a class="move icon" title="${Craft.t('app', 'Reorder')}" role="button"></a>
-  </div>
-</div>`;
+                            html += `
+                    </div>
+                    <a class="move icon" title="${Craft.t('app', 'Reorder')}" role="button"></a>
+                  </div>
+                </div>`;
 
             var $block = $(html);
 
