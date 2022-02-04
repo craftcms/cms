@@ -334,7 +334,7 @@
                 }
 
                 .c-spinner {
-                    @apply .relative .ml-4;
+                    @apply relative ml-4;
                     top: 6px;
                 }
             }
@@ -348,7 +348,7 @@
 
         .item-name {
             .edition-badge {
-                @apply .ml-2;
+                @apply ml-2;
             }
         }
 
@@ -408,7 +408,7 @@
                 }
 
                 td.expiry-date {
-                    @apply .w-3/5;
+                    @apply w-3/5;
                 }
             }
         }

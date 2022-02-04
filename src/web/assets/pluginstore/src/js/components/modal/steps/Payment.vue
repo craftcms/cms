@@ -428,10 +428,10 @@
         }
     }
     .select {
-        @apply .w-full;
+        @apply w-full;
 
         select {
-            @apply .w-full;
+            @apply w-full;
         }
     }
 </style>

@@ -2,7 +2,7 @@
     <div class="plugin-details ps-container">
         <template v-if="!loading && plugin">
             <!-- header -->
-            <div class="plugin-details-header border-b border-solid border-grey-lighter tw-flex mb-6 pb-6 items-center">
+            <div class="plugin-details-header border-b border-solid border-gray-300 tw-flex mb-6 pb-6 items-center">
                 <div class="plugin-icon">
                     <img v-if="plugin.iconUrl" :src="plugin.iconUrl" width="100" />
                     <img v-else :src="defaultPluginSvg" width="100" />
@@ -10,7 +10,7 @@
 
                 <div class="description flex-1">
                     <h1 class="text-lg font-bold mb-2">{{ plugin.name }}</h1>
-                    <p class="mb-2 text-grey-dark">{{ plugin.shortDescription }}</p>
+                    <p class="mb-2 text-gray-800">{{ plugin.shortDescription }}</p>
                     <p class="mb-2"><router-link :to="'/developer/' + plugin.developerId" :title="plugin.developerName">{{ plugin.developerName }}</router-link></p>
                 </div>
 
@@ -23,7 +23,7 @@
             <div class="plugin-details-body">
                 <template v-if="!loading">
                     <template v-if="plugin.abandoned">
-                        <div class="error mb-6 px-4 py-3 rounded border border-solid border-red flex flex-nowrap text-base">
+                        <div class="error mb-6 px-4 py-3 rounded border border-solid border-red-600 flex flex-nowrap text-base">
                             <svg class="w-8 h-8">
                                 <use :xlink:href="alertIcon + '#alert'"></use>
                             </svg>
@@ -72,7 +72,7 @@
                                      xmlns="http://www.w3.org/2000/svg"
                                      x="0px" y="0px" viewBox="0 0 256 448"
                                      xml:space="preserve"
-                                     class="text-blue fill-current w-8 h-8 mr-4 flex items-center">
+                                     class="text-blue-600 fill-current w-8 h-8 mr-4 flex items-center">
 <path fill="currentColor" d="M184,144c0,4.2-3.8,8-8,8s-8-3.8-8-8c0-17.2-26.8-24-40-24c-4.2,0-8-3.8-8-8s3.8-8,8-8C151.2,104,184,116.2,184,144z
 M224,144c0-50-50.8-80-96-80s-96,30-96,80c0,16,6.5,32.8,17,45c4.8,5.5,10.2,10.8,15.2,16.5C82,226.8,97,251.8,99.5,280h57
 c2.5-28.2,17.5-53.2,35.2-74.5c5-5.8,10.5-11,15.2-16.5C217.5,176.8,224,160,224,144z M256,144c0,25.8-8.5,48-25.8,67
@@ -273,7 +273,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
     @import "../../../../../../../../packages/craftcms-sass/mixins";
 
     .plugin-icon {
-        @apply .relative;
+        @apply relative;
         @include margin-right(1.5rem); // .mr-6
     }
 
@@ -281,14 +281,14 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
     /* Plugin Meta */
 
     ul.plugin-meta {
-        @apply .-mx-4 .flex .flex-wrap;
+        @apply -mx-4 flex flex-wrap;
 
         li {
-            @apply .mb-8 .px-4 .flex-no-shrink .flex-no-grow;
+            @apply mb-8 px-4 shrink-0 grow-0;
             flex-basis: 50%;
 
             span {
-                @apply .block .text-grey;
+                @apply block text-gray-500;
             }
         }
     }

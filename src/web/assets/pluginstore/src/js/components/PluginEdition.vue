@@ -16,7 +16,7 @@
                     {{ "Free"|t('app') }}
                 </template>
             </div>
-            <p v-if="!isPluginEditionFree(edition)" class="-mt-8 py-6 text-grey-dark">
+            <p v-if="!isPluginEditionFree(edition)" class="-mt-8 py-6 text-gray-700">
                 {{ "Price includes 1 year of updates."|t('app') }}<br />
                 {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)}) }}
             </p>
@@ -88,27 +88,27 @@
 
 <style lang="scss">
     .plugin-editions-edition {
-        @apply .border .border-grey-light .border-solid .p-8 .rounded .text-center .flex .flex-col;
+        @apply border border-gray-300 border-solid p-8 rounded text-center flex flex-col;
 
         .description {
-            @apply .flex-1;
+            @apply flex-1;
 
             .edition-name {
-                @apply .border-b .border-grey-light .border-solid .text-grey-dark .inline-block .py-1 .uppercase .text-lg .font-bold;
+                @apply border-b border-gray-300 border-solid text-gray-700 inline-block py-1 uppercase text-lg font-bold;
             }
 
             .price {
-                @apply .text-3xl .font-bold .my-8;
+                @apply text-3xl font-bold my-8;
             }
 
             ul {
-                @apply .text-left .mb-8;
+                @apply text-left mb-8;
 
                 li {
-                    @apply .py-2 .border-b .border-grey-lighter .border-solid;
+                    @apply py-2 border-b border-gray-300 border-solid;
 
                     &:first-child {
-                        @apply .border-t;
+                        @apply border-t;
                     }
                 }
             }

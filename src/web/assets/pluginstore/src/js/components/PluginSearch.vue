@@ -35,10 +35,10 @@
 
 <style lang="scss">
     .ps-search {
-        @apply .relative;
+        @apply relative;
 
         .c-icon {
-            @apply .absolute .z-10 .text-grey;
+            @apply absolute z-10 text-gray-600;
             top: 9px;
             left: 10px;
         }

@@ -1,6 +1,6 @@
 @import "@pixelandtonic/craftui/dist/craftui.css";
 
-@tailwind preflight;
+@tailwind base;
 
 @charset "UTF-8";
 @import "@craftcms/sass/mixins";
@@ -13,4 +13,5 @@
 @import "tooltip";
 @import "craftui-overrides";
 
+@tailwind components;
 @tailwind utilities;

@@ -82,31 +82,31 @@
     @import "../../../../../../../../packages/craftcms-sass/mixins";
 
     #pluginstore-modal {
-        @apply .absolute .pin-t .pin-l;
+        @apply absolute top-0 left-0;
         max-width: 850px;
         max-height: 650px;
         z-index: 20000;
 
         .pluginstore-modal-flex {
-            @apply .absolute .pin .flex .flex-col;
+            @apply absolute inset-0 flex flex-col;
 
             header {
                 .btn-left {
-                    @apply .absolute;
+                    @apply absolute;
                     top: 28px;
                     @include left(24px);
                 }
 
                 h1 {
-                    @apply .text-center;
+                    @apply text-center;
                 }
             }
 
             .pluginstore-modal-main {
-                @apply .relative .flex .flex-grow .mb-0 .min-h-0;
+                @apply relative flex flex-grow mb-0 min-h-0;
 
                 .pluginstore-modal-content {
-                    @apply .overflow-auto .flex-grow;
+                    @apply overflow-auto flex-grow;
                     padding: 24px;
                 }
             }
@@ -117,26 +117,26 @@
 
         &.step-payment {
             .blocks {
-                @apply .flex;
+                @apply flex;
                 margin: 0 -20px;
 
                 .block {
-                    @apply .flex-grow .w-1/2;
+                    @apply flex-grow w-1/2;
                     padding: 0 20px;
                 }
             }
 
             .multiselectrow {
-                @apply .flex;
+                @apply flex;
 
                 & > div {
-                    @apply .w-1/2;
+                    @apply w-1/2;
 
                     .select {
-                        @apply .w-full;
+                        @apply w-full;
 
                         select {
-                            @apply .w-full;
+                            @apply w-full;
                         }
                     }
                 }
@@ -147,7 +147,7 @@
 
         &.step-thank-you {
             &.pluginstore-modal .pluginstore-modal-flex .pluginstore-modal-main .pluginstore-modal-content {
-                @apply .flex .p-0 .justify-center .items-center;
+                @apply flex p-0 justify-center items-center;
             }
 
             h2 {
@@ -155,7 +155,7 @@
             }
 
             #thank-you-message {
-                @apply .text-center;
+                @apply text-center;
                 padding: 48px 24px;
             }
         }

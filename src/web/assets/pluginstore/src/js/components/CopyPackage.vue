@@ -25,26 +25,26 @@
 
 <style lang="scss">
     .copy-package {
-        @apply .flex;
+        @apply flex;
 
         .c-textbox {
-            @apply .flex;
+            @apply flex;
 
             &.c-field {
-                @apply .mb-0;
+                @apply mb-0;
             }
 
             .wrapper {
-                @apply .flex .flex-1;
+                @apply flex flex-1;
 
                 input {
-                    @apply .rounded-r-none .font-mono;
+                    @apply rounded-r-none font-mono;
                 }
             }
         }
 
         button.c-btn {
-            @apply .text-black .border .border-solid .border-grey .rounded-l-none .border-l-0;
+            @apply text-black border border-solid border-gray-600 rounded-l-none border-l-0;
 
             -webkit-box-shadow: none !important;
             box-shadow: none !important;

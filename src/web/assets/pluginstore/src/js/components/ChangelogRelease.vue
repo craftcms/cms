@@ -29,55 +29,55 @@
     @import "../../../../../../../packages/craftcms-sass/mixins";
 
     .changelog-release {
-        @apply .pt-2 .pb-4 .border-b .border-grey-light .border-solid;
+        @apply pt-2 pb-4 border-b border-gray-300 border-solid;
 
         .version {
-            @apply .relative;
+            @apply relative;
 
             .anchor {
-                @apply .absolute .text-white .p-1 .rounded-full;
+                @apply absolute text-white p-1 rounded-full;
                 @include left(-24px);
                 top: 0px;
                 font-size: 14px;
                 transform: rotate(45deg);
 
                 &:hover {
-                    @apply .text-black;
+                    @apply text-black;
                 }
             }
 
             &:hover {
                 .anchor {
-                    @apply .text-black;
+                    @apply text-black;
                 }
             }
 
             h2 {
-                @apply .mt-6 .mb-2;
+                @apply mt-6 mb-2;
             }
 
             .date {
-                @apply .text-grey;
+                @apply text-gray-600;
             }
 
             .critical {
-                @apply .uppercase .text-red .border .border-red .border-solid .inline-block .px-1 .py-0 .rounded .text-sm .mt-2;
+                @apply uppercase text-red-600 border border-red-600 border-solid inline-block px-1 py-0 rounded text-sm mt-2;
             }
         }
 
         .details {
-            @apply .pt-6;
+            @apply pt-6;
 
             h3 {
-                @apply .mt-6 .mb-4;
+                @apply mt-6 mb-4;
             }
 
             ul {
-                @apply .mb-4 .ml-6 .leading-normal;
+                @apply mb-4 ml-6 leading-normal;
                 list-style-type: disc;
 
                 li:not(:first-child) {
-                    @apply .mt-1;
+                    @apply mt-1;
                 }
             }
         }
@@ -85,10 +85,10 @@
 
     @media (min-width: 992px) {
         .changelog-release {
-            @apply .flex;
+            @apply flex;
 
             .version {
-                @apply .w-full .max-w-xs;
+                @apply w-full max-w-xs;
 
                 .anchor {
                     top: 20px;
@@ -96,7 +96,7 @@
             }
 
             .details {
-                @apply .flex-1;
+                @apply flex-1;
             }
         }
     }

@@ -1,6 +1,6 @@
 <template>
     <router-link v-if="plugin" :to="'/' + plugin.handle" :title="plugin.name"
-                 class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid no-underline hover:no-underline text-grey-darkest">
+                 class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-gray-300 border-solid no-underline hover:no-underline text-gray-900">
         <div class="plugin-icon mr-4">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl"/>
             <img v-else :src="defaultPluginSvg"/>
@@ -120,14 +120,14 @@ export default {
 @import "../../../../../../../packages/craftcms-sass/mixins";
 
 .plugin-details-header {
-    @apply .leading-normal .overflow-hidden .mb-1;
+    @apply leading-normal overflow-hidden mb-1;
     max-height: 4.75em;
 
     .plugin-name {
-        @apply .flex .mb-1;
+        @apply flex mb-1;
 
         .edition-badge {
-            @apply .ml-2;
+            @apply ml-2;
         }
     }
 }
@@ -149,7 +149,7 @@ export default {
     }
 
     .installed {
-        @apply .absolute;
+        @apply absolute;
         top: 14px;
         @include right(18px);
         color: #ccc;
@@ -158,7 +158,7 @@ export default {
 
 .ps-grid-plugins {
     .plugin-card {
-        @apply .h-full;
+        @apply h-full;
     }
 }
 </style>

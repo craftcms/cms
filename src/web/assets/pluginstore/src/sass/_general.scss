@@ -11,7 +11,7 @@ dl, dt, dd, ol, ul, li, fieldset, form, label, legend, article, main, nav, ins {
 }
 
 hr {
-  @apply .border-grey-lighter;
+  @apply border-gray-200;
 }
 
 h1 {
@@ -19,19 +19,19 @@ h1 {
 }
 
 h2 {
-  @apply .mt-8 .mb-4;
+  @apply mt-8 mb-4;
 }
 
 p {
-  @apply .mb-4;
+  @apply mb-4;
 }
 
 pre {
-  @apply .bg-grey-lighter .p-4 .mb-4 .overflow-auto .max-w-full min-w-0;
+  @apply bg-gray-200 p-4 mb-4 overflow-auto max-w-full min-w-0;
 }
 
 code {
-  @apply .bg-grey-lighter .p-1;
+  @apply bg-gray-200 p-1;
 }
 
 
@@ -50,14 +50,14 @@ code {
 }
 
 input.error {
-  @apply .border-red;
+  @apply border-red-600;
 }
 
 
 /* Header */
 
 .ps-header {
-  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
+  @apply border-b border-solid border-gray-300 py-2 flex justify-between;
 }
 
 
@@ -74,11 +74,11 @@ input.error {
 }
 
 #main-container {
-  @apply .relative;
+  @apply relative;
 }
 
 #main-content #content {
-  @apply .relative;
+  @apply relative;
 }
 
 #container {
@@ -89,7 +89,7 @@ input.error {
 /* Plugin Store actions */
 
 #pluginstore-actions {
-  @apply .flex .justify-between .items-center;
+  @apply flex justify-between items-center;
 
   & > * {
     @include margin-left(18px);
@@ -97,7 +97,7 @@ input.error {
 
   #cart-button {
     svg {
-      @apply .inline-block;
+      @apply inline-block;
       width: 18px;
       height: 18px;
       vertical-align: middle;
@@ -115,7 +115,7 @@ input.error {
 
     .badge {
       @include margin(0, 0, 0, -6px);
-      @apply .relative .inline-block .flex-shrink .text-white;
+      @apply relative inline-block flex-shrink text-white;
       top: -1px;
       padding: 0 6px;
       font-size: 11px;
@@ -127,12 +127,12 @@ input.error {
 
   #craftid-account {
     &:hover {
-      @apply .no-underline;
+      @apply no-underline;
     }
 
     .photo {
       svg {
-        @apply .align-middle;
+        @apply align-middle;
         @include margin-right(7px);
         width: 22px;
         height: 22px;
@@ -141,13 +141,13 @@ input.error {
     }
 
     &:hover .label {
-      @apply .no-underline;
+      @apply no-underline;
     }
   }
 
   #craftid-connect-form {
     .ssl-status {
-      @apply .inline-block;
+      @apply inline-block;
     }
   }
 }

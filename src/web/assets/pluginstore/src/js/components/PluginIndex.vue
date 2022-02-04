@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="border-b border-solid border-grey-light py-2 flex justify-between">
+        <div class="border-b border-solid border-gray-300 py-2 flex justify-between">
             <slot name="header"></slot>
 
             <template v-if="!disableSorting">
@@ -14,7 +14,7 @@
             <p>{{"No results."|t('app')}}</p>
         </div>
 
-        <div v-if="error" class="my-4 text-red">{{error}}</div>
+        <div v-if="error" class="my-4 text-red-600">{{error}}</div>
 
         <spinner v-if="loadingBottom || (disableSorting && loading)" class="my-4"></spinner>
     </div>

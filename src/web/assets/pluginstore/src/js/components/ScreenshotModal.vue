@@ -131,43 +131,43 @@
 
 <style lang="scss">
     #screenshot-modal {
-        @apply .fixed .pin .bg-grey-lightest .overflow-hidden;
+        @apply fixed inset-0 bg-gray-100 overflow-hidden;
         z-index: 101;
 
         .close {
-            @apply .inline-block .text-center .absolute .pin-t .pin-l .z-30;
+            @apply inline-block text-center absolute top-0 left-0 z-30;
             font-size: 30px;
             color: rgba(0, 0, 0, 0.6);
             padding: 14px 24px;
             line-height: 16px;
 
             &:hover {
-                @apply .no-underline;
+                @apply no-underline;
                 color: rgba(0, 0, 0, 0.8);
             }
         }
 
         .carousel {
-            @apply .absolute .flex .pin;
+            @apply absolute flex inset-0;
 
             .swiper-container {
-                @apply .flex;
+                @apply flex;
 
                 .swiper-wrapper {
-                    @apply .flex-1 .flex .w-auto .h-auto;
+                    @apply flex-1 flex w-auto h-auto;
 
                     .swiper-slide {
-                        @apply .flex-1 .flex .text-center .justify-center .items-center;
+                        @apply flex-1 flex text-center justify-center items-center;
 
                         .screenshot {
-                            @apply .flex .flex-1 .justify-center .items-center .h-full;
+                            @apply flex flex-1 justify-center items-center h-full;
                             box-sizing: border-box;
 
                             .swiper-zoom-container {
-                                @apply .w-full .h-full .flex .text-center .justify-center .items-center;
+                                @apply w-full h-full flex text-center justify-center items-center;
 
                                 img {
-                                    @apply .max-w-full .max-h-full;
+                                    @apply max-w-full max-h-full;
                                 }
                             }
                         }
@@ -177,17 +177,17 @@
 
             .swiper-button-prev,
             .swiper-button-next {
-                @apply .flex .justify-center .items-center .w-auto;
+                @apply flex justify-center items-center w-auto;
                 background-color: rgba(248, 250, 252, .7);
                 background-image: none;
 
                 .c-icon {
-                    @apply .flex-1 .pin-t;
+                    @apply flex-1 top-0;
                 }
             }
 
             .swiper-button-prev {
-                @apply .rounded .px-2 .py-8 .pin-l .ml-4;
+                @apply rounded px-2 py-8 left-0 ml-4;
 
                 .c-icon {
                     left: -2px;
@@ -195,25 +195,25 @@
             }
 
             .swiper-button-next {
-                @apply .rounded .px-2 .py-8 .pin-r .mr-4;
+                @apply rounded px-2 py-8 right-0 mr-4;
             }
 
             .pagination-wrapper {
-                @apply .w-full .absolute .pin-b .py-0 .flex .z-10;
+                @apply w-full absolute bottom-0 py-0 flex z-10;
                 bottom: 40px;
 
                 .pagination-content {
-                    @apply .flex .flex-1 .px-8 .max-w-xs .mx-auto;
+                    @apply flex flex-1 px-8 max-w-xs mx-auto;
 
                     .swiper-pagination {
-                        @apply .relative .flex .flex-1 .bg-grey-lighter .p-0 .rounded-full;
+                        @apply relative flex flex-1 bg-gray-200 p-0 rounded-full;
 
                         .swiper-pagination-bullet {
-                            @apply .flex-1 .rounded-full .bg-grey-lighter;
+                            @apply flex-1 rounded-full bg-gray-200;
                             height: 8px;
 
                             &.swiper-pagination-bullet-active {
-                                @apply .bg-grey-darkest;
+                                @apply bg-gray-900;
                             }
                         }
                     }
