@@ -95,21 +95,21 @@
                             <div id="{{ actionMenuId }}" class="menu menu--disclosure">
                                 <ul class="padded">
                                     <li><a role="button" type="button" href="#" data-action="collapse"><span data-icon="collapse" aria-hidden="true"></span>{{ "Collapse"|t('app') }}</a></li>
-                                    <li class="hidden"><a role="button" type="button" href="#" data-icon="expand" data-action="expand">{{ "Expand"|t('app') }}</a></li>
-                                    <li{% if not block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-icon="disabled" data-action="disable">{{ "Disable"|t('app') }}</a></li>
-                                    <li{% if block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-icon="enabled" data-action="enable">{{ "Enable"|t('app') }}</a></li>
-                                    <li><a role="button" type="button" href="#" data-icon="uarr" data-action="moveUp">{{ 'Move up'|t('app') }}</a></li>
-                                    <li><a role="button" type="button" href="#" data-icon="darr" data-action="moveDown">{{ 'Move down'|t('app') }}</a></li>
+                                    <li class="hidden"><a role="button" type="button" href="#" data-action="expand"><span data-icon="expand" aria-hidden="true"></span>{{ "Expand"|t('app') }}</a></li>
+                                    <li{% if not block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-action="disable"><span data-icon="disabled" aria-hidden="true"></span>{{ "Disable"|t('app') }}</a></li>
+                                    <li{% if block.enabled %} class="hidden"{% endif %}><a role="button" type="button" href="#" data-action="enable"><span data-icon="enabled" aria-hidden="true"></span>{{ "Enable"|t('app') }}</a></li>
+                                    <li><a role="button" type="button" href="#" data-action="moveUp"><span data-icon="uarr" aria-hidden="true"></span>{{ 'Move up'|t('app') }}</a></li>
+                                    <li><a role="button" type="button" href="#" data-action="moveDown"><span data-icon="darr" aria-hidden="true"></span>{{ 'Move down'|t('app') }}</a></li>
                                 </ul>
                                 {% if not staticBlocks %}
                                 <hr class="padded">
                                 <ul class="padded">
-                                    <li><a role="button" type="button" class="error" href="#" data-icon="remove" data-action="delete">{{ "Delete"|t('app') }}</a></li>
+                                    <li><a role="button" type="button" class="error" href="#" data-action="delete"><span class="error" data-icon="remove" aria-hidden="true"></span>{{ "Delete"|t('app') }}</a></li>
                                 </ul>
                                 <hr class="padded">
                                 <ul class="padded">
                                     {% for blockType in blockTypes %}
-                                    <li><a role="button" type="button" href="#" data-icon="plus" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
+                                    <li><a role="button" type="button" href="#" data-action="add" data-type="{{ blockType.handle }}"><span data-icon="plus" aria-hidden="true"></span>{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
                                     {% endfor %}
                                 </ul>
                                 {% endif %}

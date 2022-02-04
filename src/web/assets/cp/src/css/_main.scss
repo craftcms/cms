@@ -4470,6 +4470,15 @@ ul.tree,
             content: "check";
           }
         }
+
+        /* Icons separated from parent to prevent SR readout */
+        [data-icon][aria-hidden="true"] {
+          @include floatleft;
+          @include margin(3px, 0, 0, -17px);
+          display: inline-flex;
+          font-size: 14px;
+          color: var(--ui-control-color);
+        }
       }
     }
 
