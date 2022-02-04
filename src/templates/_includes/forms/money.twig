@@ -1,7 +1,4 @@
 {% import '_includes/forms' as forms %}
-{% do view.registerTranslations('app', [
-    "The decimal precision has been exceeded. Saving this value will result in rounding.",
-]) %}
 {% do view.registerAssetBundle("craft\\web\\assets\\money\\MoneyAsset") %}
 
 {% set id = (id ?? "money#{random()}") ~ '-money' -%}
@@ -16,20 +13,25 @@
 
 {{ hiddenInput("#{name}[locale]", formattingLocale) }}
 
-<div class="money-container">
-    {% if currencyLabel %}
-        <div class="money-currency">
-            <div class="money-currency-label">
-                <span>{{ currencyLabel }}</span>
+<div class="flex money-flex">
+    <div class="money-container">
+        {% if currencyLabel %}
+            <div class="money-currency">
+                <div class="money-currency-label">
+                    <span>{{ currencyLabel }}</span>
+                </div>
             </div>
+        {% endif %}
+        <div class="money-money">
+            {% include '_includes/forms/text' with {
+                inputAttributes: {
+                    name: "#{name}[value]",
+                }
+            } %}
         </div>
-    {% endif %}
-    <div class="money-money">
-        {% include '_includes/forms/text' with {
-            inputAttributes: {
-                name: "#{name}[value]",
-            }
-        } %}
+    </div>
+    <div class="money-clear">
+        <button type="button" class="clear-btn hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></button>
     </div>
 </div>
 

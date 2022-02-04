@@ -7,16 +7,48 @@ import './Money.scss';
     settings: null,
 
     $field: null,
+    $clearBtn: null,
 
     init: function(fieldId, settings) {
       this.setSettings(settings, this.defaultSettings);
 
       this.$field = $('#' + fieldId);
+      this.$clearBtn = this.$field.parents('.money-flex').find('.money-clear .clear-btn');
 
+      this.$field.on('focus', $.proxy(this, 'onFocus'));
+      this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
+
+      if (this.$field.val() != '') {
+        this.updateInputMask();
+      }
+    },
+
+    showClearBtn: function() {
+      this.$clearBtn.removeClass('hidden');
+    },
+
+    hideClearBtn: function() {
+      this.$clearBtn.addClass('hidden');
+    },
+
+    onClearBtnClick: function(ev) {
+      ev.preventDefault();
+      this.removeInputMask();
+      this.$field.val('');
+      this.hideClearBtn();
+      this.$field.trigger('keyup');
+    },
+
+    onFocus: function() {
       this.updateInputMask();
     },
 
+    removeInputMask: function() {
+      this.$field.inputmask('remove');
+    },
+
     updateInputMask: function() {
+      this.showClearBtn();
       const opts = {
         digits: this.settings.decimals,
         groupSeparator: this.settings.groupSeparator,

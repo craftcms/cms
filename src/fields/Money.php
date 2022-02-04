@@ -170,14 +170,24 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             return $value;
         }
 
-        if ($value === null && isset($this->defaultValue) && $this->isFresh($element)) {
-            $value = $this->defaultValue;
+        if ($value === null) {
+            if (isset($this->defaultValue) && $this->isFresh($element)) {
+                $value = $this->defaultValue;
+            } else {
+                // Allow a `null` value
+                return null;
+            }
         }
 
         if (is_array($value)) {
             // Was this submitted with a locale ID?
             $value['locale'] = $value['locale'] ?? Craft::$app->getFormattingLocale()->id;
-            $value['value'] = $value['value'] ?? null;
+            $value['value'] = $value['value'] !== '' ? $value['value'] ?? null : null;
+
+            if ($value['value'] === null) {
+                return null;
+            }
+
             $value['currency'] = $this->currency;
 
             return MoneyHelper::toMoney($value);

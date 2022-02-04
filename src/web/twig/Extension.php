@@ -299,12 +299,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Outputs a value from a Money object.
      *
-     * @param Money $money
+     * @param Money|null $money
      * @param string|null $formatLocale
      * @return string
      */
-    public function moneyFilter(Money $money, ?string $formatLocale = null): string
+    public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
     {
+
+        if ($money === null) {
+            return null;
+        }
+
         return MoneyHelper::toString($money, $formatLocale);
     }
 
