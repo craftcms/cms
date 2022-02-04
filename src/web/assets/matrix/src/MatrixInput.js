@@ -20,6 +20,7 @@
         $addBlockBtnContainer: null,
         $addBlockBtnGroup: null,
         $addBlockBtnGroupBtns: null,
+        $statusMessage: null,
 
         blockSort: null,
         blockSelect: null,
@@ -43,6 +44,7 @@
             this.$addBlockBtnGroup = this.$addBlockBtnContainer.children('.btngroup');
             this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
             this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
+            this.$statusMessage = this.$container.find('[data-status-message]');
 
             this.$container.data('matrix', this);
 
@@ -206,8 +208,23 @@
             }
         },
 
+        updateStatusMessage: function() {
+            this.$statusMessage.empty();
+            let message;
+
+            if (!this.canAddMoreBlocks()) {
+                message = Craft.t('app', 'Matrix block could not be added. Maximum number of blocks reached.');
+            }
+
+            setTimeout(() => {
+                this.$statusMessage.text(message);
+            }, 250);
+
+        },
+
         addBlock: function(type, $insertBefore, autofocus) {
             if (!this.canAddMoreBlocks()) {
+                this.updateStatusMessage();
                 return;
             }
 
