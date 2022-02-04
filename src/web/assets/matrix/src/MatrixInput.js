@@ -180,17 +180,20 @@
 
                     if (block) {
                         block.$actionMenu.find('a[data-action=add]').parent().removeClass('disabled');
+                        block.$actionMenu.find('a[data-action=add]').removeAttr('aria-disabled');
                     }
                 }
             } else {
                 this.$addBlockBtnGroup.addClass('disabled');
                 this.$addBlockMenuBtn.addClass('disabled');
+                /* TODO Disable all add buttons */
 
                 for (i = 0; i < this.blockSelect.$items.length; i++) {
                     block = this.blockSelect.$items.eq(i).data('block');
 
                     if (block) {
                         block.$actionMenu.find('a[data-action=add]').parent().addClass('disabled');
+                        block.$actionMenu.find('a[data-action=add]').attr('aria-disabled', 'true');
                     }
                 }
             }
