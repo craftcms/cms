@@ -635,7 +635,7 @@ class Assets extends BaseRelationField
     public function getInputSources(?ElementInterface $element = null)
     {
         $folderId = $this->_determineUploadFolderId($element, false, false);
-        Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
+        Craft::$app->getSession()->authorize('saveAssets:' . $folderId);
 
         $assetsService = Craft::$app->getAssets();
 
@@ -646,7 +646,7 @@ class Assets extends BaseRelationField
                 $volumeId = $this->_volumeIdBySourceKey($this->restrictedLocationSource);
                 $volume = $volumeId ? Craft::$app->getVolumes()->getVolumeById($volumeId) : null;
 
-                if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:$volume->uid")) {
+                if (!$volume || !Craft::$app->getUser()->checkPermission("viewAssets:$volume->uid")) {
                     return [];
                 }
             }
@@ -686,7 +686,7 @@ class Assets extends BaseRelationField
                 // Only show it if they have permission to view it
                 $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
                 $volume = $folder ? $folder->getVolume() : null;
-                return $volume && $userService->checkPermission("viewVolume:$volume->uid");
+                return $volume && $userService->checkPermission("viewAssets:$volume->uid");
             }, true, true, false);
         }
 
@@ -705,7 +705,7 @@ class Assets extends BaseRelationField
         $variables['canUpload'] = (
             $this->allowUploads &&
             $uploadVolume &&
-            Craft::$app->getUser()->checkPermission("saveAssetInVolume:$uploadVolume->uid")
+            Craft::$app->getUser()->checkPermission("saveAssets:$uploadVolume->uid")
         );
         $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
         $variables['defaultUploadLocation'] = $this->_defaultUploadLocation;

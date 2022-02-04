@@ -13,6 +13,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     fieldLabel: null,
 
     $container: null,
+    $form: null,
     $elementsContainer: null,
     $elements: null,
     $addElementBtn: null,
@@ -54,6 +55,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
 
         this.$container = this.getContainer();
+        this.$form = this.$container.closest('form');
         this.fieldLabel = this.getFieldLabel();
 
         // Store a reference to this class
@@ -303,16 +305,16 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
 
         // Pause the draft editor
-        if (window.draftEditor) {
-            window.draftEditor.pause();
+        if (this.$form.data('elementEditor')) {
+            this.$form.data('elementEditor').pause();
         }
 
         $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, () => {
             callback();
 
             // Resume the draft editor
-            if (window.draftEditor) {
-                window.draftEditor.resume();
+            if (this.$form.data('elementEditor')) {
+                this.$form.data('elementEditor').resume();
             }
         });
     },
@@ -478,10 +480,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     onSelectElements: function(elements) {
         this.trigger('selectElements', {elements});
         this.settings.onSelectElements(elements);
-
-        if (window.draftEditor) {
-            window.draftEditor.checkForm();
-        }
+        this.$container.trigger('change');
     },
 
     onAddElements: function () {

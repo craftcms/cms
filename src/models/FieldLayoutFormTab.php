@@ -68,6 +68,17 @@ class FieldLayoutFormTab extends Model
     }
 
     /**
+     * Returns the tab’s UUID.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    public function getUid(): string
+    {
+        return $this->layoutTab->uid;
+    }
+
+    /**
      * Returns the tab’s HTML content.
      *
      * @return string

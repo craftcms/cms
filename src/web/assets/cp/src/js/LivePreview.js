@@ -195,7 +195,7 @@ Craft.LivePreview = Garnish.Base.extend({
             this.slideIn();
         }
 
-        Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+        Garnish.on(Craft.ElementEditorSlideout, 'submit', this._forceUpdateIframeProxy);
         Garnish.on(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
@@ -279,7 +279,8 @@ Craft.LivePreview = Garnish.Base.extend({
             this.$previewContainer.hide();
         });
 
-        Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+        Garnish.off(Craft.ElementEditorSlideout, 'submit', this._forceUpdateIframeProxy);
+        Garnish.off(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
 

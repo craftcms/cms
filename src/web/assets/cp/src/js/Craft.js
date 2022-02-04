@@ -15,14 +15,14 @@ $.extend(Craft,
 
         /**
          * @callback indexKeyCallback
-         * @param {object} currentValue
+         * @param {Object} currentValue
          * @param {number} [index]
          * @return {string}
          */
         /**
          * Indexes an array of objects by a specified key
          *
-         * @param {object[]} arr
+         * @param {Object[]} arr
          * @param {(string|indexKeyCallback)} key
          */
         index: function(arr, key) {
@@ -38,14 +38,14 @@ $.extend(Craft,
 
         /**
          * @callback indexKeyCallback
-         * @param {object} currentValue
+         * @param {Object} currentValue
          * @param {number} [index]
          * @return {string}
          */
         /**
          * Groups an array of objects by a specified key
          *
-         * @param {object[]} arr
+         * @param {Object[]} arr
          * @param {(string|indexKeyCallback)} key
          */
         group: function(arr, key) {
@@ -71,7 +71,7 @@ $.extend(Craft,
          *
          * @param {string} category
          * @param {string} message
-         * @param {object} params
+         * @param {Object} params
          * @return string
          */
         t: function(category, message, params) {
@@ -380,10 +380,10 @@ $.extend(Craft,
         },
 
         /**
+         * @param {string} [path]
+         * @param {Object|string} [params]
+         * @param {string} [baseUrl]
          * @return string
-         * @param path
-         * @param params
-         * @param baseUrl
          */
         getUrl: function(path, params, baseUrl) {
             if (typeof path !== 'string') {
@@ -494,18 +494,18 @@ $.extend(Craft,
         },
 
         /**
+         * @param {string} [path]
+         * @param {Object|string} [params]
          * @return string
-         * @param path
-         * @param params
          */
         getCpUrl: function(path, params) {
             return this.getUrl(path, params, Craft.baseCpUrl);
         },
 
         /**
+         * @param {string} [path]
+         * @param {Object|string} [params]
          * @return string
-         * @param path
-         * @param params
          */
         getSiteUrl: function(path, params) {
             return this.getUrl(path, params, Craft.baseSiteUrl);
@@ -514,12 +514,12 @@ $.extend(Craft,
         /**
          * Returns an action URL.
          *
-         * @param {string} path
-         * @param {object|string|undefined} params
+         * @param {string} action
+         * @param {Object|string} [params]
          * @return string
          */
-        getActionUrl: function(path, params) {
-            return Craft.getUrl(path, params, Craft.actionUrl);
+        getActionUrl: function(action, params) {
+            return Craft.getUrl(action, params, Craft.actionUrl);
         },
 
         /**
@@ -590,9 +590,9 @@ $.extend(Craft,
          * Posts an action request to the server.
          *
          * @param {string} action
-         * @param {object|undefined} data
+         * @param {Object|undefined} data
          * @param {function|undefined} callback
-         * @param {object|undefined} options
+         * @param {Object|undefined} options
          * @return jqXHR
          * @deprecated in 3.4.6. sendActionRequest() should be used instead
          */
@@ -702,16 +702,32 @@ $.extend(Craft,
         /**
          * Sends a request to a Craft/plugin action
          * @param {string} method The request action to use ('GET' or 'POST')
-         * @param {string} action The action to request
-         * @param {Object} options Axios request options
+         * @param {string|null} [action] The action to request
+         * @param {Object} [options] Axios request options
          * @returns {Promise}
          * @since 3.4.6
          */
         sendActionRequest: function(method, action, options) {
+            if ($.isPlainObject(action)) {
+                options = action;
+                action = null;
+            }
+
+            if (method.toUpperCase() === 'POST' && action && options.data) {
+                // Avoid conflicting `action` params
+                if (typeof options.data === 'string') {
+                    const namespace = options && options.headers && options.headers['X-Craft-Namespace'];
+                    const actionName = this.namespaceInputName('action', namespace);
+                    options.data += `&${actionName}=${action}`;
+                } else {
+                    delete options.data.action;
+                }
+            }
+
             return new Promise((resolve, reject) => {
                 options = options ? $.extend({}, options) : {};
                 options.method = method;
-                options.url = Craft.getActionUrl(action);
+                options.url = action ? Craft.getActionUrl(action) : Craft.getCpUrl();
                 options.headers = $.extend({
                     'X-Requested-With': 'XMLHttpRequest',
                 }, options.headers || {}, this._actionHeaders());
@@ -938,15 +954,19 @@ $.extend(Craft,
          *
          * @param {string} oldData
          * @param {string} newData
-         * @param {object} deltaNames
-         * @param {function} [callback] Callback function that should be called whenever a new group of modified params has been found
-         * @param {object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
+         * @param {Object} deltaNames
+         * @param {function|null} [callback] Callback function that should be called whenever a new group of modified params has been found
+         * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
+         * @param {Object} [modifiedDeltaNames} List of delta names that should be considered modified regardles of their param values
          * @return {string}
          */
-        findDeltaData: function(oldData, newData, deltaNames, callback, initialDeltaValues) {
+        findDeltaData: function(oldData, newData, deltaNames, callback, initialDeltaValues, modifiedDeltaNames) {
             // Make sure oldData and newData are always strings. This is important because further below String.split is called.
             oldData = typeof oldData === 'string' ? oldData : '';
             newData = typeof newData === 'string' ? newData : '';
+            deltaNames = $.isArray(deltaNames) ? deltaNames : [];
+            initialDeltaValues = $.isPlainObject(initialDeltaValues) ? initialDeltaValues : {};
+            modifiedDeltaNames = $.isArray(modifiedDeltaNames) ? modifiedDeltaNames : [];
 
             // Sort the delta namespaces from least -> most specific
             deltaNames.sort(function(a, b) {
@@ -957,23 +977,22 @@ $.extend(Craft,
             });
 
             // Group all of the old & new params by namespace
-            if (typeof initialDeltaValues === 'undefined') {
-                initialDeltaValues = Craft.initialDeltaValues;
-            }
             var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false, initialDeltaValues);
             var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true, false);
 
             // Figure out which of the new params should actually be posted
             var params = groupedNewParams.__root__;
-            var modifiedDeltaNames = [];
             for (var n = 0; n < deltaNames.length; n++) {
-                if (Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) || (
-                    typeof groupedNewParams[deltaNames[n]] === 'object' &&
+                if (
+                    Craft.inArray(deltaNames[n], modifiedDeltaNames) ||
                     (
-                        typeof groupedOldParams[deltaNames[n]] !== 'object' ||
-                        JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
+                        typeof groupedNewParams[deltaNames[n]] === 'object' &&
+                        (
+                            typeof groupedOldParams[deltaNames[n]] !== 'object' ||
+                            JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
+                        )
                     )
-                )) {
+                ) {
                     params = params.concat(groupedNewParams[deltaNames[n]]);
                     params.push('modifiedDeltaNames[]=' + deltaNames[n]);
                     if (callback) {
@@ -986,10 +1005,10 @@ $.extend(Craft,
         },
 
         /**
-         * @param {object} params
-         * @param {object} deltaNames
+         * @param {Object} params
+         * @param {Object} deltaNames
          * @param {boolean} withRoot
-         * @param {boolean|object} initialValues
+         * @param {boolean|Object} initialValues
          * @returns {{}}
          * @private
          */
@@ -1039,7 +1058,7 @@ $.extend(Craft,
         /**
          * Expands an array of POST array-style strings into an actual array.
          *
-         * @param {object} arr
+         * @param {Object} arr
          * @return array
          */
         expandPostArray: function(arr) {
@@ -1188,7 +1207,7 @@ $.extend(Craft,
         /**
          * Returns an array of an object's keys.
          *
-         * @param {object} obj
+         * @param {Object} obj
          * @return string
          */
         getObjectKeys: function(obj) {
@@ -1290,7 +1309,7 @@ $.extend(Craft,
         /**
          * Filters an array.
          *
-         * @param {object} arr
+         * @param {Object} arr
          * @param {function} callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
          * @return array
          */
@@ -1332,7 +1351,7 @@ $.extend(Craft,
          * Removes an element from an array.
          *
          * @param elem
-         * @param {object} arr
+         * @param {Object} arr
          * @return boolean Whether the element could be found or not.
          */
         removeFromArray: function(elem, arr) {
@@ -1348,7 +1367,7 @@ $.extend(Craft,
         /**
          * Returns the last element in an array.
          *
-         * @param {object} arr
+         * @param {Object} arr
          * @return mixed
          */
         getLast: function(arr) {
@@ -1468,7 +1487,7 @@ $.extend(Craft,
          * Converts extended ASCII characters to ASCII.
          *
          * @param {string} str
-         * @param {object|undefined} charMap
+         * @param {Object|undefined} charMap
          * @return string
          */
         asciiString: function(str, charMap) {
@@ -1497,6 +1516,28 @@ $.extend(Craft,
             );
         },
 
+        /**
+         * @param {string} name
+         * @param {string} [namespace]
+         * @returns {string}
+         */
+        namespaceInputName: function(name, namespace) {
+            if (!namespace) {
+                return name;
+            }
+
+            return name.replace(/([^'"\[\]]+)([^'"]*)/, `${namespace}[$1]$2`);
+        },
+
+        /**
+         * @param {string} id
+         * @param {string} [namespace]
+         * @returns {string}
+         */
+        namespaceId: function(id, namespace) {
+            return Craft.formatInputId(namespace ? `${namespace}-${id}` : id);
+        },
+
         randomString: function(length) {
             // h/t https://stackoverflow.com/a/1349426/1688568
             var result = '';
@@ -1510,7 +1551,7 @@ $.extend(Craft,
         /**
          * Creates a validation error list.
          *
-         * @param {object} errors
+         * @param {Object} errors
          * @return jQuery
          */
         createErrorList: function(errors) {
@@ -1599,7 +1640,7 @@ $.extend(Craft,
         /**
          * Initializes any common UI elements in a given container.
          *
-         * @param {object} $container
+         * @param {Object} $container
          */
         initUiElements: function($container) {
             $('.grid', $container).grid();
@@ -1674,7 +1715,7 @@ $.extend(Craft,
          *
          * @param {string} elementType
          * @param $container
-         * @param {object} settings
+         * @param {Object} settings
          * @return BaseElementIndex
          */
         createElementIndex: function(elementType, $container, settings) {
@@ -1693,7 +1734,7 @@ $.extend(Craft,
          * Creates a new element selector modal for a given element type.
          *
          * @param {string} elementType
-         * @param {object} settings
+         * @param {Object} settings
          */
         createElementSelectorModal: function(elementType, settings) {
             var func;
@@ -1708,11 +1749,11 @@ $.extend(Craft,
         },
 
         /**
-         * Creates a new element editor HUD for a given element type.
+         * Creates a new element editor slideout for a given element type.
          *
          * @param {string} elementType
          * @param element $element
-         * @param {object} settings
+         * @param {Object} settings
          */
         createElementEditor: function(elementType, element, settings) {
             // Param mapping
@@ -1728,14 +1769,7 @@ $.extend(Craft,
                 settings.elementType = elementType;
             }
 
-            var func;
-            if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
-                func = this._elementEditorClasses[elementType];
-            } else {
-                func = Craft.BaseElementEditor;
-            }
-
-            return new func(element, settings);
+            return new Craft.ElementEditorSlideout(element, settings);
         },
 
         /**
@@ -1923,8 +1957,7 @@ $.extend(Craft,
                     type: 'hidden',
                     name: 'action',
                     val: options.action,
-                })
-                    .appendTo($form);
+                }).appendTo($form);
             }
 
             if (options.redirect) {
@@ -1932,8 +1965,7 @@ $.extend(Craft,
                     type: 'hidden',
                     name: 'redirect',
                     val: options.redirect,
-                })
-                    .appendTo($form);
+                }).appendTo($form);
             }
 
             if (options.params) {
@@ -1943,8 +1975,7 @@ $.extend(Craft,
                         type: 'hidden',
                         name: name,
                         val: value,
-                    })
-                        .appendTo($form);
+                    }).appendTo($form);
                 }
             }
 

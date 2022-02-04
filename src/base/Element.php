@@ -22,11 +22,11 @@ use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
+use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
-use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
@@ -50,6 +50,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -74,7 +75,9 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\ExpressionInterface;
+use yii\validators\BooleanValidator;
 use yii\validators\NumberValidator;
+use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 
 /**
@@ -98,12 +101,12 @@ use yii\validators\Validator;
  * @property array $fieldValues The element’s normalized custom field values, indexed by their handles
  * @property bool $hasDescendants Whether the element has descendants
  * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
- * @property bool $isEditable Whether the current user can edit the element
  * @property Markup|null $link An anchor pre-filled with this element’s URL and title
  * @property ElementInterface|null $canonical The canonical element, if one exists for the current site
  * @property ElementInterface|null $next The next element relative to this one, from a given set of criteria
  * @property ElementInterface|null $nextSibling The element’s next sibling
  * @property ElementInterface|null $parent The element’s parent
+ * @property int|null $parentId The element’s parent’s ID
  * @property ElementInterface|null $prev The previous element relative to this one, from a given set of criteria
  * @property ElementInterface|null $prevSibling The element’s previous sibling
  * @property string|null $ref The reference string to this element
@@ -337,18 +340,124 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_METADATA = 'defineMetadata';
 
     /**
-     * @event DefineValueEvent The event that is triggered when determining whether the element should be editable by the current user.
-     * @see getIsEditable()
-     * @since 3.7.0
+     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
+     *
+     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_AUTHORIZE_VIEW,
+     *     function(AuthorizeUserEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canView()
+     * @since 4.0.0
      */
-    public const EVENT_DEFINE_IS_EDITABLE = 'defineIsEditable';
+    public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
 
     /**
-     * @event DefineValueEvent The event that is triggered when determining whether the element should be deletable by the current user.
-     * @see getIsDeletable()
-     * @since 3.7.0
+     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to save the element in its current state.
+     *
+     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_AUTHORIZE_SAVE,
+     *     function(AuthorizeUserEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canSave()
+     * @since 4.0.0
      */
-    public const EVENT_DEFINE_IS_DELETABLE = 'defineIsDeletable';
+    public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
+
+    /**
+     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to create drafts for the element.
+     *
+     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_AUTHORIZE_CREATE_DRAFTS,
+     *     function(AuthorizeUserEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canCreateDrafts()
+     * @since 4.0.0
+     */
+    public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
+
+    /**
+     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to duplicate the element.
+     *
+     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_AUTHORIZE_DUPLICATE,
+     *     function(AuthorizeUserEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDuplicate()
+     * @since 4.0.0
+     */
+    public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
+
+    /**
+     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to delete the element.
+     *
+     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_AUTHORIZE_DELETE,
+     *     function(AuthorizeUserEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDelete()
+     * @since 4.0.0
+     */
+    public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
+
+    /**
+     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to delete the element for its current site.
+     *
+     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_AUTHORIZE_DELETE_FOR_SITE,
+     *     function(AuthorizeUserEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDelete()
+     * @since 4.0.0
+     */
+    public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested.
@@ -1639,27 +1748,48 @@ abstract class Element extends Component implements ElementInterface
     private $_prevElement;
 
     /**
-     * @var static|false
+     * @var int|false|null Parent ID
+     * @see getParentId()
+     * @see setParentId()
+     */
+    private $_parentId;
+
+    /**
+     * @var static|false|null
+     * @see getParent()
+     * @see setParent()
      */
     private $_parent;
 
     /**
-     * @var static|false
+     * @var bool|null
+     * @see hasNewParent()
+     */
+    private ?bool $_hasNewParent = null;
+
+    /**
+     * @var static|false|null
+     * @see getPrevSibling()
      */
     private $_prevSibling;
 
     /**
-     * @var static|false
+     * @var static|false|null
+     * @see getNextSibling()
      */
     private $_nextSibling;
 
     /**
      * @var Collection[]
+     * @see getEagerLoadedElements()
+     * @see setEagerLoadedElements()
      */
     private array $_eagerLoadedElements = [];
 
     /**
      * @var array
+     * @see getEagerLoadedElementCount()
+     * @see setEagerLoadedElementCount
      */
     private array $_eagerLoadedElementCounts = [];
 
@@ -1708,9 +1838,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __clone()
     {
+        parent::__clone();
+
         // Mark all fields as dirty
         $this->_allDirty = true;
-        parent::__clone();
+        $this->_hasNewParent = null;
     }
 
     /**
@@ -1862,7 +1994,9 @@ abstract class Element extends Component implements ElementInterface
     {
         $names = parent::attributes();
 
-        if (!$this->structureId) {
+        if ($this->structureId) {
+            $names[] = 'parentId';
+        } else {
             ArrayHelper::removeValue($names, 'structureId');
             ArrayHelper::removeValue($names, 'root');
             ArrayHelper::removeValue($names, 'lft');
@@ -1884,6 +2018,9 @@ abstract class Element extends Component implements ElementInterface
         ArrayHelper::removeValue($names, 'hardDelete');
 
         $names[] = 'canonicalId';
+        $names[] = 'isDraft';
+        $names[] = 'isRevision';
+        $names[] = 'isUnpublishedDraft';
         $names[] = 'ref';
         $names[] = 'status';
         $names[] = 'structureId';
@@ -1986,9 +2123,10 @@ abstract class Element extends Component implements ElementInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        $rules[] = [['id', 'contentId', 'parentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         $rules[] = [['siteId'], SiteIdValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        $rules[] = [['isFresh'], BooleanValidator::class];
 
         if (static::hasTitles()) {
             $rules[] = [['title'], 'trim', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
@@ -2008,34 +2146,56 @@ abstract class Element extends Component implements ElementInterface
             $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
         }
 
-        // Are we validating custom fields?
-        if (static::hasContent() && Craft::$app->getIsInstalled() && $fieldLayout = $this->getFieldLayout()) {
-            $fieldsWithColumns = [];
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterValidate(): void
+    {
+        if (
+            static::hasContent() &&
+            Craft::$app->getIsInstalled() &&
+            $fieldLayout = $this->getFieldLayout()
+        ) {
+            $scenario = $this->getScenario();
 
             foreach ($fieldLayout->getVisibleFields($this) as $field) {
-                $attribute = 'field:' . $field->handle;
-                $isEmpty = [$this, 'isFieldEmpty:' . $field->handle];
+                $attribute = "field:$field->handle";
+                $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
-                if ($field->required) {
-                    // Only validate required custom fields on the LIVE scenario
-                    $rules[] = [[$attribute], 'required', 'isEmpty' => $isEmpty, 'on' => self::SCENARIO_LIVE];
-                }
-
-                if ($field::hasContentColumn()) {
-                    $fieldsWithColumns[] = $field->handle;
+                if ($scenario === self::SCENARIO_LIVE && $field->required) {
+                    (new RequiredValidator(['isEmpty' => $isEmpty]))
+                        ->validateAttribute($this, $attribute);
                 }
 
                 foreach ($field->getElementValidationRules() as $rule) {
-                    $rules[] = $this->_normalizeFieldRule($attribute, $rule, $field, $isEmpty);
+                    $validator = $this->_normalizeFieldValidator($attribute, $rule, $field, $isEmpty);
+                    if (
+                        in_array($scenario, $validator->on) ||
+                        (empty($validator->on) && !in_array($scenario, $validator->except))
+                    ) {
+                        $validator->validateAttributes($this);
+                    }
                 }
-            }
 
-            if (!empty($fieldsWithColumns)) {
-                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+                if ($field::hasContentColumn()) {
+                    $columnType = $field->getContentColumnType();
+                    $value = $field->serializeValue($this->getFieldValue($field->handle), $this);
+
+                    if (is_array($columnType)) {
+                        foreach ($columnType as $key => $type) {
+                            $this->_validateCustomFieldContentSizeInternal($attribute, $field, $type, $value[$key] ?? null);
+                        }
+                    } else {
+                        $this->_validateCustomFieldContentSizeInternal($attribute, $field, $columnType, $value);
+                    }
+                }
             }
         }
 
-        return $rules;
+        parent::afterValidate();
     }
 
     /**
@@ -2055,10 +2215,10 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed $rule
      * @param FieldInterface $field
      * @param callable $isEmpty
-     * @return Validator|array
+     * @return Validator
      * @throws InvalidConfigException
      */
-    private function _normalizeFieldRule(string $attribute, $rule, FieldInterface $field, callable $isEmpty)
+    private function _normalizeFieldValidator(string $attribute, $rule, FieldInterface $field, callable $isEmpty): Validator
     {
         if ($rule instanceof Validator) {
             return $rule;
@@ -2104,7 +2264,7 @@ abstract class Element extends Component implements ElementInterface
             $rule['on'] = [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE];
         }
 
-        return $rule;
+        return Validator::createValidator($rule[1], $this, (array)$rule[0], array_slice($rule, 2));
     }
 
     /**
@@ -2141,26 +2301,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $field->isValueEmpty($this->getFieldValue($handle), $this);
-    }
-
-    /**
-     * Validates that the content size is going to fit within the field’s database column.
-     *
-     * @param string $attribute
-     */
-    public function validateCustomFieldContentSize(string $attribute): void
-    {
-        $field = $this->fieldByHandle($attribute);
-        $columnType = $field->getContentColumnType();
-        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
-
-        if (is_array($columnType)) {
-            foreach ($columnType as $key => $type) {
-                $this->_validateCustomFieldContentSizeInternal($attribute, $field, $type, $value[$key] ?? null);
-            }
-        } else {
-            $this->_validateCustomFieldContentSizeInternal($attribute, $field, $columnType, $value);
-        }
     }
 
     /**
@@ -2578,22 +2718,75 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    public function createAnother(): ?ElementInterface
     {
-        $event = new DefineValueEvent([
-            'value' => $this->isEditable(),
-        ]);
-        $this->trigger(self::EVENT_DEFINE_IS_EDITABLE, $event);
-        return $event->value;
+        return null;
     }
 
     /**
-     * Returns whether the current user can edit the element.
-     *
-     * @return bool
-     * @since 3.7.0
+     * @inheritdoc
      */
-    protected function isEditable(): bool
+    public function canView(User $user): bool
+    {
+        $event = new AuthorizationCheckEvent($user);
+        $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
+        return $event->authorized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canSave(User $user): bool
+    {
+        $event = new AuthorizationCheckEvent($user);
+        $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
+        return $event->authorized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        $event = new AuthorizationCheckEvent($user);
+        $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
+        return $event->authorized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        $event = new AuthorizationCheckEvent($user);
+        $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
+        return $event->authorized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDeleteForSite(User $user): bool
+    {
+        $event = new AuthorizationCheckEvent($user);
+        $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
+        return $event->authorized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canCreateDrafts(User $user): bool
+    {
+        $event = new AuthorizationCheckEvent($user);
+        $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
+        return $event->authorized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasRevisions(): bool
     {
         return false;
     }
@@ -2601,24 +2794,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIsDeletable(): bool
+    public function getCpEditRoute(): ?string
     {
-        $event = new DefineValueEvent([
-            'value' => $this->isDeletable(),
-        ]);
-        $this->trigger(self::EVENT_DEFINE_IS_DELETABLE, $event);
-        return $event->value;
-    }
 
-    /**
-     * Returns whether the current user can delete the element.
-     *
-     * @return bool
-     * @since 3.5.12
-     */
-    protected function isDeletable(): bool
-    {
-        return false;
     }
 
     /**
@@ -2654,6 +2832,30 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.7.0
      */
     protected function cpEditUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPostEditUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCrumbs(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAddlButtons(): ?string
     {
         return null;
     }
@@ -2875,21 +3077,65 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns the parent ID.
+     *
+     * @return int|null
+     * @since 4.0.0
+     */
+    public function getParentId(): ?int
+    {
+        if (isset($this->_parentId)) {
+            // If it's false, then we've been explicitly told there's no parent
+            return $this->_parentId ?: null;
+        }
+
+        $parent = $this->getParent();
+        return $parent ? $parent->id : null;
+    }
+
+    /**
+     * Sets the parent ID.
+     *
+     * @param int|int[]|string|false|null $parentId
+     * @since 4.0.0
+     */
+    public function setParentId($parentId): void
+    {
+        if (is_array($parentId)) {
+            $parentId = reset($parentId);
+        }
+
+        $this->_parentId = $parentId ?: false;
+        $this->_parent = null;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getParent(): ?ElementInterface
     {
         if (!isset($this->_parent)) {
-            $ancestors = $this->getAncestors(1);
+            if (isset($this->_parentId)) {
+                if ($this->_parentId === false) {
+                    return null;
+                }
 
-            // Eager-loaded?
-            if (is_array($ancestors)) {
-                $this->_parent = reset($ancestors);
-            } else {
-                $this->_parent = $ancestors
+                $this->_parent = static::find()
+                        ->id($this->_parentId)
+                        ->structureId($this->structureId)
+                        ->siteId($this->siteId)
                         ->status(null)
-                        ->one()
-                    ?? false;
+                        ->one() ?? false;
+            } else {
+                $ancestors = $this->getAncestors(1);
+                // Eager-loaded?
+                if (is_array($ancestors)) {
+                    $this->_parent = reset($ancestors);
+                } else {
+                    $this->_parent = $ancestors
+                            ->status(null)
+                            ->one() ?? false;
+                }
             }
         }
 
@@ -2917,9 +3163,78 @@ abstract class Element extends Component implements ElementInterface
 
         if ($parent) {
             $this->level = $parent->level + 1;
+            $this->_parentId = $parent->id;
         } else {
             $this->level = 1;
+            $this->_parentId = false;
         }
+    }
+
+    /**
+     * Returns whether the element has been assigned a new parent.
+     *
+     * @return bool
+     */
+    protected function hasNewParent(): bool
+    {
+        if (!isset($this->_hasNewParent)) {
+            $this->_hasNewParent = $this->_checkForNewParent();
+        }
+
+        return $this->_hasNewParent;
+    }
+
+    /**
+     * Checks if the element has been assigned a new parent.
+     *
+     * @return bool
+     * @see hasNewParent()
+     */
+    private function _checkForNewParent(): bool
+    {
+        // Make sure this is a structured element, and that it’s either canonical or a provisional draft
+        if (
+            !$this->structureId ||
+            (!$this->getIsCanonical() && !$this->isProvisionalDraft)
+        ) {
+            return false;
+        }
+
+        // Is it a brand new (non-provisional) element?
+        if (!isset($this->id) && !$this->isProvisionalDraft) {
+            return true;
+        }
+
+        // Was a new parent ID actually submitted?
+        if (!isset($this->_parentId)) {
+            return false;
+        }
+
+        // If this is a provisional draft, but doesn't actually exist in the structure yet, check based on the canonical element
+        if ($this->isProvisionalDraft && !isset($this->lft)) {
+            $element = $this->getCanonical(true);
+        } else {
+            $element = $this;
+        }
+
+        // Is it set to the top level now, but it hadn't been before?
+        if (!$this->_parentId && $element->level !== 1) {
+            return true;
+        }
+
+        // Is it set to be under a parent now, but didn't have one before?
+        if ($this->_parentId && $element->level === 1) {
+            return true;
+        }
+
+        // Is the parentId set to a different element ID than its previous parent?
+        return $this->_parentId != static::find()
+                ->ancestorOf($element)
+                ->ancestorDist(1)
+                ->siteId($element->siteId)
+                ->status(null)
+                ->select('elements.id')
+                ->scalar();
     }
 
     /**
@@ -3923,36 +4238,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getEditorHtml(): string
-    {
-        if (!$this->hasFieldLayout()) {
-            // No field layout, so show the meta fields here instead
-            return $this->metaFieldsHtml();
-        }
-
-        // Return a placeholder for displaying the custom fields. If this is *all* that’s returned,
-        // we can safely use the full field layout form render. Otherwise there may be other
-        // fields intermingled by the child method, so only the custom fields should be shown.
-        return '<!-- FIELD LAYOUT -->';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSidebarHtml(): string
+    public function getSidebarHtml(bool $static): string
     {
         $components = [];
 
-        if ($this->hasFieldLayout()) {
-            // The main editor body is reserved for the field layout
-            $metaFieldsHtml = $this->metaFieldsHtml();
-            if ($metaFieldsHtml !== '') {
-                $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']);
-            }
+        $metaFieldsHtml = $this->metaFieldsHtml($static);
+        if ($metaFieldsHtml !== '') {
+            $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']);
         }
 
-        if ($this->id) {
-            $components[] = Cp::metadataHtml($this->getMetadata());
+        if (!$static && static::hasStatuses()) {
+            // Is this a multi-site element?
+            $components[] = '<!-- STATUS -->';
         }
 
         // Fire a defineSidebarHtml event
@@ -3967,13 +4264,16 @@ abstract class Element extends Component implements ElementInterface
      * Returns the HTML for any meta fields that should be shown within the sidebar of element editor
      * slideouts. Or if the element doesn’t have a field layout, they’ll be shown in the main body of the slideout.
      *
+     * @param bool $static Whether the fields should be static (non-interactive)
      * @return string
      * @since 3.7.0
      */
-    protected function metaFieldsHtml(): string
+    protected function metaFieldsHtml(bool $static): string
     {
         // Fire a defineMetaFieldsHtml event
-        $event = new DefineHtmlEvent();
+        $event = new DefineHtmlEvent([
+            'static' => $static,
+        ]);
         $this->trigger(self::EVENT_DEFINE_META_FIELDS_HTML, $event);
         return $event->html;
     }
@@ -3981,11 +4281,32 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the HTML for the element’s Slug field.
      *
+     * @param bool $static Whether the fields should be static (non-interactive)
      * @return string
      * @since 3.7.0
      */
-    protected function slugFieldHtml(): string
+    protected function slugFieldHtml(bool $static): string
     {
+        $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
+
+        if (!$slug && !$static) {
+            $view = Craft::$app->getView();
+            $titleId = $view->namespaceInputId('title');
+            $slugId = $view->namespaceInputId('slug');
+            $site = $this->getSite();
+            $charMapJs = Json::encode($site->language !== Craft::$app->language
+                ? StringHelper::asciiCharMap(true, $site->language)
+                : null
+            );
+
+            $js = <<<JS
+new Craft.SlugGenerator('#$titleId', '#$slugId', {
+    charMap: $charMapJs,
+});
+JS;
+            Craft::$app->getView()->registerJs($js);
+        }
+
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Slug'),
             'siteId' => $this->siteId,
@@ -3994,7 +4315,8 @@ abstract class Element extends Component implements ElementInterface
             'name' => 'slug',
             'autocorrect' => false,
             'autocapitalize' => false,
-            'value' => isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : '',
+            'value' => $slug,
+            'disabled' => $static,
             'errors' => array_merge($this->getErrors('slug'), $this->getErrors('uri')),
         ]);
     }
