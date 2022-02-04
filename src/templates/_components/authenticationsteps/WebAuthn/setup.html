@@ -8,8 +8,7 @@
 
     {% if isSecureConnection %}
         <button type="button" id="attach-webauthn" class="btn submit formsubmit" data-credential-options="{{ credentialOptions|e('html_attr') }}">{{ 'Add a security key'|t('app') }}</button>
-        <div id="webauthn-status">
-
+        <div id="webauthn-status" class="authentication-setup-status">
         </div>
     {% else %}
         <p>{{ 'A secure connection is required to add a new key'|t('app') }}

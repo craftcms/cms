@@ -1,34 +1,63 @@
-export class AuthenticatorFormHandler
-{
+import {AuthenticationSetupFormHandler} from "./AuthenticationSetupFormHandler";
 
+enum OperationType
+{
+    update,
+    remove
+}
+
+export class AuthenticatorFormHandler extends AuthenticationSetupFormHandler
+{
     readonly endpoint = 'authentication/update-authenticator-settings';
 
     private disabled = false;
-    private $container = $('#authenticator-settings');
 
-    constructor()
-    {
-        this.attachEvents();
-
+    private get $container () {
+        return $('#authenticator-settings');
     }
 
-    /**
-     * Attach the listeners for field events.
-     *
-     * @private
-     */
-    private attachEvents()
+    public get $updateAuthenticator()
     {
-        $('.authenticator-field').on('keydown', (event) => {
+        return $('#update-authenticator');
+    }
+
+    public get $removeAuthenticator()
+    {
+        return $('#remove-authenticator');
+    }
+
+    public get $authenticatorField()
+    {
+        return $('#authenticator-code');
+    }
+
+    protected get $status()
+    {
+        return $('#authenticator-status');
+    }
+
+    protected codeModal: any;
+
+    /**
+     * @inheritdoc
+     */
+    protected attachEvents()
+    {
+        this.$authenticatorField.on('keydown', (event) => {
             if (event.key == "Enter") {
                 event.stopImmediatePropagation();
-                this.handleAuthenticatorUpdate();
-                return false;
+                this.handleAuthenticatorUpdate(OperationType.update);
             }
         })
-        $('#update-authenticator').on('click', (event) => {
+
+        this.$updateAuthenticator.on('click', (event) => {
             event.stopImmediatePropagation();
-            this.handleAuthenticatorUpdate();
+            this.handleAuthenticatorUpdate(OperationType.update);
+        });
+
+        this.$removeAuthenticator.on('click', (event) => {
+            event.stopImmediatePropagation();
+            this.handleAuthenticatorUpdate(OperationType.remove);
         });
     }
 
@@ -37,72 +66,76 @@ export class AuthenticatorFormHandler
      *
      * @protected
      */
-    protected handleAuthenticatorUpdate()
+    protected handleAuthenticatorUpdate(type: OperationType)
     {
-        if (Craft.elevatedSessionManager.fetchingTimeout) {
-            return;
-        }
-
-        const $detach = $('.authenticator-field.detach');
-        const $verificationCode1 = $('#verification-code-1');
-        const $verificationCode2 = $('#verification-code-2');
-
-        // If detaching
-        if ($detach.length > 0) {
-            if (($detach.val() as string).length > 0) {
-                if ($detach.val() !== 'detach') {
-                    Garnish.shake($detach);
-                } else {
-                    Craft.elevatedSessionManager.requireElevatedSession(this.submitAuthenticatorUpdate.bind(this));
-                }
-            }
-        } else {
-            if (($verificationCode1.val() as string).length == 0 || ($verificationCode2.val() as string).length == 0) {
-                return;
-            }
-            Craft.elevatedSessionManager.requireElevatedSession(this.submitAuthenticatorUpdate.bind(this));
-        }
-    }
-
-    /**
-     * Submit authenticator setting update.
-     * @protected
-     */
-    protected submitAuthenticatorUpdate()
-    {
-        if (this.disabled) {
+        if (this.disabled || (type == OperationType.update && (this.$authenticatorField.val() as string).length === 0)) {
             return;
         }
 
         this.disable();
 
-        const $fields = $('input.authenticator-field');
+        let data;
 
-        let data: {
-            [key: string]: string
-        } = {};
-
-        for (const field of $fields) {
-            data[field.getAttribute('name')!] = (field as HTMLInputElement).value;
+        switch (type) {
+            case OperationType.update:
+                data = {
+                    'authenticator-code': this.$authenticatorField.val()
+                };
+                break;
+            case OperationType.remove:
+                data = {
+                    'detach': 'detach'
+                };
         }
 
-        Craft.postActionRequest(this.endpoint, data, (response: any, textStatus: string) => {
-            this.enable();
+        const submitUpdate = (payload) => {
+            this.setStatus(Craft.t('app', 'Updating the authenticator settings'));
 
-            if (response.message) {
-                alert(response.message);
-            }
+            Craft.postActionRequest(this.endpoint, payload, (response: any, textStatus: string) => {
+                this.enable();
 
-            if (response.error) {
-                alert(response.error);
-            }
+                if (response.html) {
+                    this.$container.replaceWith(response.html);
+                    this.attachEvents();
+                }
 
-            if (response.html) {
-                this.$container.replaceWith(response.html);
-                this.$container = $('#authenticator-settings');
-                this.attachEvents();
+                if (response.message) {
+                    this.setStatus(response.message, false);
+                }
+
+                if (response.error) {
+                    this.setErrorStatus(response.error);
+                }
+
+                if (response.codeHtml) {
+                    const $codeHtml = $('<div class="modal secure fitted"></div>').append($(response.codeHtml));
+
+                    $codeHtml.find('#close-codes').on('click', () => {
+                        this.codeModal.hide();
+                    })
+                    this.codeModal = new Garnish.Modal($codeHtml, {
+                        closeOtherModals: false,
+                        hideOnEsc: false,
+                        hideOnShadeClick: false,
+                        onFadeOut: () => {
+                            $codeHtml.find('.codes').remove();
+                            this.codeModal.destroy();
+                            this.codeModal = null;
+                        },
+                    });
+                }
+            });
+        }
+
+        this.setStatus(Craft.t('app', 'Waiting for elevated session'));
+
+        Craft.elevatedSessionManager.requireElevatedSession(
+            () => submitUpdate(data),
+            () => {
+                this.enable();
+                this.clearStatus();
             }
-        });
+        );
     }
 
     /**

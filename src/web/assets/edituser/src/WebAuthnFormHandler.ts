@@ -1,4 +1,5 @@
 import {addContainedJsFilesToPage} from "../../login/src/LoginForm";
+import {AuthenticationSetupFormHandler} from "./AuthenticationSetupFormHandler";
 
 interface CraftUserInfo
 {
@@ -7,7 +8,7 @@ interface CraftUserInfo
     uid: string
 }
 
-export class WebAuthnFormHandler
+export class WebAuthnFormHandler extends AuthenticationSetupFormHandler
 {
     readonly attachEndpoint = 'authentication/attach-web-authn-credentials';
     private disabled = false;
@@ -17,18 +18,22 @@ export class WebAuthnFormHandler
         return $('#attach-webauthn');
     };
 
-    private $container = $('#webauthn-settings');
-
     protected get $status()
     {
         return $('#webauthn-status');
     }
 
+    private $container = $('#webauthn-settings');
+
     constructor()
     {
+        super();
         this.attachEvents();
     }
 
+    /**
+     * @inheritdoc
+     */
     protected attachEvents()
     {
         WebAuthnFormHandler.$button.on('click', (ev) => {
@@ -171,42 +176,6 @@ export class WebAuthnFormHandler
     {
         this.disabled = false;
         WebAuthnFormHandler.$button.fadeTo(100, 1);
-    }
-
-    /**
-     * Clears the status and removes the spinner.
-     * 
-     * @protected
-     */
-    protected clearStatus() {
-        this.setStatus('', false);
-    }
-
-    /**
-     * Display a status message and an optional spinner.
-     *
-     * @param message
-     * @param showSpinner
-     * @protected
-     */
-    protected setStatus(message: string, showSpinner: boolean = true)
-    {
-        if (showSpinner) {
-            message = `<div class="spinner"></div><span>${message}</span>`;
-        }
-
-        this.$status.html(message);
-    }
-
-    /**
-     * Set an error status for the user to see.
-     *
-     * @param message
-     * @protected
-     */
-    protected setErrorStatus(message: string)
-    {
-        this.$status.html(`<div class="error">${message}</div<`);
     }
 
     /**
