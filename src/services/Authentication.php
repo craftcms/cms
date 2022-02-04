@@ -19,8 +19,9 @@ use craft\authentication\type\Password;
 use craft\authentication\type\WebAuthn;
 use craft\elements\User;
 use craft\errors\AuthenticationException;
+use craft\events\AuthenticationEvent;
+use craft\events\RegisterComponentTypesEvent;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
 
 /**
  *
@@ -36,18 +37,49 @@ class Authentication extends Component
     public const AUTHENTICATION_STATE_KEY = 'craft.authentication.state';
 
     /**
+     * @event AuthenticationEvent The event that is triggered before an auth flow is configured for the user.
+     * @see getAuthFlow()
+     * @since 4.0.0
+     */
+    public const EVENT_BEFORE_CONSTRUCT_AUTH_FLOW = 'beforeConfigureAuthFlow';
+
+    /**
+     * @event AuthenticationEvent The event that is triggered after the auth flow has been configured for the user.
+     * @see getAuthFlow()
+     * @since 4.0.0
+     */
+    public const EVENT_AFTER_CONSTRUCT_AUTH_FLOW = 'afterConfigureAuthFlow';
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering auth step types.
+     * @see getAllStepTypes()
+     * @since 4.0.0
+     */
+    public const EVENT_REGISTER_AUTH_STEP_TYPES = 'registerAuthStepTypes';
+
+    /**
      * A list of all the authentication step types.
      *
      * @var array|null
      */
     private ?array $_stepTypes = null;
 
+    /**
+     * Authentication state.
+     *
+     * @var State|null
+     */
     private ?State $_state = null;
 
     public function getAuthFlow(?User $user = null): array
     {
-        // TODO event here
-        $flow = [];
+        // Fire a 'beforeConfigureAuthFlow' event
+        $event = new AuthenticationEvent([
+            'flow' => []
+        ]);
+        $this->trigger(self::EVENT_BEFORE_CONSTRUCT_AUTH_FLOW, $event);
+
+        $flow = $event->flow;
 
         if ($user && $this->isWebAuthnAvailable($user)) {
             $flow[] = [
@@ -71,7 +103,12 @@ class Authentication extends Component
 
         $flow[] = $authentication;
 
-        // TODO event here
+        // Fire a 'afterConfigureAuthFlow' event
+        $event = new AuthenticationEvent([
+            'flow' => $flow
+        ]);
+        $this->trigger(self::EVENT_AFTER_CONSTRUCT_AUTH_FLOW, $event);
+
         return $flow;
     }
 
@@ -80,7 +117,6 @@ class Authentication extends Component
      *
      * @param User $user
      * @return bool
-     * @throws InvalidConfigException
      */
     public function isWebAuthnAvailable(User $user): bool
     {
@@ -157,17 +193,22 @@ class Authentication extends Component
         if (!is_null($this->_stepTypes)) {
             return $this->_stepTypes;
         }
-        $types = [
+
+        $stepTypes = [
             WebAuthn::class,
             Password::class,
             AuthenticatorCode::class,
             EmailCode::class,
-            IpAddress::class,
         ];
 
-        // TODO event here.
+        $event = new RegisterComponentTypesEvent([
+            'types' => $stepTypes,
+        ]);
 
-        return $this->_stepTypes = $types;
+        $this->trigger(self::EVENT_REGISTER_AUTH_STEP_TYPES, $event);
+
+
+        return $this->_stepTypes = $event->types;
     }
 
     /**
