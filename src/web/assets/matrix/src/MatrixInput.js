@@ -175,6 +175,10 @@
                 this.$addBlockBtnGroup.removeClass('disabled');
                 this.$addBlockMenuBtn.removeClass('disabled');
 
+                this.$addBlockBtnGroupBtns.each(function () {
+                    $(this).removeAttr('aria-disabled');
+                });
+
                 for (i = 0; i < this.blockSelect.$items.length; i++) {
                     block = this.blockSelect.$items.eq(i).data('block');
 
@@ -186,7 +190,10 @@
             } else {
                 this.$addBlockBtnGroup.addClass('disabled');
                 this.$addBlockMenuBtn.addClass('disabled');
-                /* TODO Disable all add buttons */
+
+                this.$addBlockBtnGroupBtns.each(function () {
+                    $(this).attr('aria-disabled', 'true');
+                });
 
                 for (i = 0; i < this.blockSelect.$items.length; i++) {
                     block = this.blockSelect.$items.eq(i).data('block');
