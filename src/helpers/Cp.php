@@ -336,11 +336,11 @@ class Cp
 
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->canView($user)) {
+        if ($user && $element->canView($user)) {
             $attributes['data']['editable'] = true;
         }
 
-        if ($context === 'index' && $element->canDelete($user)) {
+        if ($user && $context === 'index' && $element->canDelete($user)) {
             $attributes['data']['deletable'] = true;
         }
 
