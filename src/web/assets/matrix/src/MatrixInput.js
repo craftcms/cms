@@ -450,6 +450,7 @@
             this.actionDisclosure = actionDisclosure;
 
             actionDisclosure.on('show', () => {
+                this.$container.addClass('active');
                 if (this.$container.prev('.matrixblock').length) {
                     this.$actionMenu.find('a[data-action=moveUp]:first').parent().removeClass('hidden');
                 } else {
@@ -460,6 +461,10 @@
                 } else {
                     this.$actionMenu.find('a[data-action=moveDown]:first').parent().addClass('hidden');
                 }
+            });
+
+            actionDisclosure.on('hide', () => {
+                this.$container.removeClass('active');
             });
 
             this.$actionMenuOptions = this.$actionMenu.find('a[data-action]');
