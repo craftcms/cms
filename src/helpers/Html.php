@@ -92,7 +92,7 @@ class Html extends \yii\helpers\Html
     public static function beginForm($action = '', $method = 'post', $options = []): string
     {
         if (!isset($options['accept-charset'])) {
-            $options['accept-charset'] = 'UTF8-8';
+            $options['accept-charset'] = 'UTF-8';
         }
 
         return parent::beginForm($action, $method, $options);
