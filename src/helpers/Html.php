@@ -639,7 +639,7 @@ class Html extends \yii\helpers\Html
     /**
      * Prepends a namespace to `id` attributes, and any of the following things that reference those IDs:
      *
-     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
+     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `aria-controls`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
      * - ID selectors within `<style>` tags
      *
      * For example, this:
