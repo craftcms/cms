@@ -313,12 +313,12 @@ class ElementsController extends Controller
         $enablePreview = $previewTargets && !$this->request->isMobileBrowser(true);
 
         if ($previewTargets) {
-            if ($isDraft) {
+            if ($isDraft && !$element->isProvisionalDraft) {
                 Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
             } else if ($isRevision) {
                 Craft::$app->getSession()->authorize("previewRevision:$element->revisionId");
             } else {
-                Craft::$app->getSession()->authorize("previewElement:$element->id");
+                Craft::$app->getSession()->authorize("previewElement:$canonical->id");
             }
         }
 
