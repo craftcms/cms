@@ -572,7 +572,6 @@ return [
     'Enabling the plugin…' => 'Enabling the plugin…',
     'Encryption Method' => 'Encryption Method',
     'Enlarged' => 'Enlarged',
-    'Enter slug' => 'Enter slug',
     'Enter the name of the folder' => 'Enter the name of the folder',
     'Enter the new filename' => 'Enter the new filename',
     'Enter the text you want to appear on the {type} selection input.' => 'Enter the text you want to appear on the {type} selection input.',
