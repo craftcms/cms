@@ -641,8 +641,8 @@
             this.$container.addClass('disabled');
 
             setTimeout(() => {
-                this.$actionMenu.find('a[data-action=disable]:first').parent().addClass('hidden');
-                this.$actionMenu.find('a[data-action=enable]:first').parent().removeClass('hidden');
+                this.$newActionMenu.find('a[data-action=disable]:first').parent().addClass('hidden');
+                this.$newActionMenu.find('a[data-action=enable]:first').parent().removeClass('hidden');
             }, 200);
 
             this.collapse(true);
@@ -653,8 +653,8 @@
             this.$container.removeClass('disabled');
 
             setTimeout(() => {
-                this.$actionMenu.find('a[data-action=disable]:first').parent().removeClass('hidden');
-                this.$actionMenu.find('a[data-action=enable]:first').parent().addClass('hidden');
+                this.$newActionMenu.find('a[data-action=disable]:first').parent().removeClass('hidden');
+                this.$newActionMenu.find('a[data-action=enable]:first').parent().addClass('hidden');
             }, 200);
         },
 
