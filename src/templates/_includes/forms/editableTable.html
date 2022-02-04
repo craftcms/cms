@@ -87,7 +87,7 @@
                     {% elseif col.type == 'html' %}
                         <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</td>
                     {% else %}
-                        {% set labelledBy = "#{id}-heading-#{loop.index}" %}
+                        {% set headingId = "#{id}-heading-#{loop.index}" %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
@@ -103,7 +103,7 @@
                                                 disabled: static,
                                                 inputAttributes: {
                                                   aria: {
-                                                    labelledby: labelledBy,
+                                                    labelledby: headingId,
                                                   },
                                                 }
                                             } only %}
@@ -116,7 +116,7 @@
                                             disabled: static,
                                             inputAttributes: {
                                               aria: {
-                                                labelledby: labelledBy,
+                                                labelledby: headingId,
                                               },
                                             }
                                         } only %}
@@ -127,7 +127,7 @@
                                             disabled: static,
                                             inputAttributes: {
                                               aria: {
-                                                labelledby: labelledBy,
+                                                labelledby: headingId,
                                               },
                                             }
                                         } only %}
@@ -140,7 +140,7 @@
                                             disabled: static,
                                             inputAttributes: {
                                               aria: {
-                                                labelledby: labelledBy,
+                                                labelledby: headingId,
                                               },
                                             }
                                         } only %}
@@ -153,7 +153,7 @@
                                             disabled: static,
                                             inputAttributes: {
                                               aria: {
-                                                labelledby: labelledBy,
+                                                labelledby: headingId,
                                               },
                                             }
                                         } only %}
@@ -164,7 +164,7 @@
                                             disabled: static,
                                             inputAttributes: {
                                               aria: {
-                                                labelledby: labelledBy,
+                                                labelledby: headingId,
                                               },
                                             }
                                         } only %}
@@ -177,7 +177,7 @@
                                             disabled: static,
                                             inputAttributes: {
                                               aria: {
-                                                labelledby: labelledBy,
+                                                labelledby: headingId,
                                               },
                                             }
                                         } only %}
@@ -194,7 +194,7 @@
                                         {% if static %}
                                             <pre class="disabled">{{ value }}</pre>
                                         {% else %}
-                                            <textarea aria-labelledby="{{ labelledBy }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            <textarea aria-labelledby="{{ headingId }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}
