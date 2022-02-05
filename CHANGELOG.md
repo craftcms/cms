@@ -13,7 +13,7 @@
 - Fixed a JavaScript error that occurred after saving an unpublished draft.
 - Fixed a bug where Live Preview wasn’t always showing changes for entries that weren’t live. ([#10455](https://github.com/craftcms/cms/issues/10455))
 - Fixed a bug where it wasn’t possible to restore a soft-deleted global set with project config. ([#10458](https://github.com/craftcms/cms/issues/10458))
-- Fixed a right-to-left layout styling bug. ([#10459](https://github.com/craftcms/cms/issues/10459))
+- Fixed right-to-left layout styling bugs. ([#10459](https://github.com/craftcms/cms/issues/10459), [#10439](https://github.com/craftcms/cms/issues/10439))
 - Fixed a bug where entry revision menus would show newly-added sites as enabled even if they were disabled by default.
 - Fixed a bug where `craft\base\Element::getCanonical()` wasn’t memoizing its result based on the `$anySite` argument.
 - Fixed a JavaScript error. ([#10428](https://github.com/craftcms/cms/issues/10428))
