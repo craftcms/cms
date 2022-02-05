@@ -96,6 +96,7 @@ import './dashboard.scss';
                                     )
                                     .append(
                                         $('<h2/>', {
+                                            class: 'first',
                                             text: Craft.t('app', '{type} Settings', {
                                                 type: $option.data('name')
                                             }),
