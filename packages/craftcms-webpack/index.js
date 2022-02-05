@@ -239,9 +239,6 @@ const getConfig = ({
       resolve: {
         extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
       },
-      externals: {
-        jquery: 'jQuery',
-      },
       module: {
         rules: [
           {
