@@ -39,6 +39,14 @@ export default Base.extend(
 
       if (!this.$container) return; /* Exit if no disclosure container is found */
 
+      // Is this already a disclosure button?
+      if (this.$trigger.data('trigger')) {
+        Garnish.log('Double-instantiating a disclosure menu on an element');
+        this.$trigger.data('trigger').destroy();
+      }
+
+      this.$trigger.data('trigger', this);
+
       // Get and store expanded state from trigger
       var expanded = this.$trigger.attr('aria-expanded');
 
@@ -176,7 +184,6 @@ export default Base.extend(
       Garnish.uiLayerManager.addLayer(this.$container);
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, function() {
         this.hide();
-        this.$trigger.focus();
       }.bind(this));
     },
 
@@ -192,8 +199,18 @@ export default Base.extend(
 
       this.$trigger.attr('aria-expanded', 'false');
 
+      if (this.focusIsInMenu()) {
+        this.$trigger.focus();
+      }
+
       this.trigger('hide');
       Garnish.uiLayerManager.removeLayer();
+    },
+
+    focusIsInMenu: function() {
+      const $focusedEl = Garnish.getFocusedElement();
+
+      return $.contains(this.$container, $focusedEl);
     },
 
     setContainerPosition: function () {
@@ -278,6 +295,16 @@ export default Base.extend(
       delete this._triggerHeight;
       delete this._menuWidth;
       delete this._menuHeight;
+    },
+
+    /**
+     * Destroy
+     */
+    destroy: function() {
+      this.$trigger.removeData('trigger');
+      this.removeListener(this.$trigger, 'click');
+      this.removeListener(this.$container, 'keydown');
+      this.base();
     },
 
     _alignLeft: function () {

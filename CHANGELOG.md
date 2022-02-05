@@ -16,6 +16,7 @@
 - Fixed a right-to-left layout styling bug. ([#10459](https://github.com/craftcms/cms/issues/10459))
 - Fixed a bug where entry revision menus would show newly-added sites as enabled even if they were disabled by default.
 - Fixed a bug where `craft\base\Element::getCanonical()` wasn’t memoizing its result based on the `$anySite` argument.
+- Fixed a JavaScript error. ([#10428](https://github.com/craftcms/cms/issues/10428))
 
 ## 3.7.30.1 - 2022-01-21
 
