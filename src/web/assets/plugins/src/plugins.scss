@@ -21,15 +21,8 @@
       .icon {
         display: block;
         vertical-align: top;
+        @include padding-right(14px);
         position: relative;
-
-        body.ltr & {
-          padding-right: 14px;
-        }
-
-        body.rtl & {
-          padding-left: 14px;
-        }
 
         a {
           display: block;
@@ -190,12 +183,7 @@
             align-items: center;
 
             &:not(:first-child) {
-              body.ltr & {
-                margin-left: 14px;
-              }
-              body.rtl & {
-                margin-right: 14px;
-              }
+              @include margin-left(14px);
             }
 
             a,
