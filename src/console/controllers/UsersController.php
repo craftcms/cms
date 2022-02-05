@@ -300,7 +300,7 @@ class UsersController extends Controller
         }
 
         if ($this->deleteContent && $this->inheritor) {
-            $this->stdout('Only one of --delete-content or --inheritor may be specified.' . PHP_EOL, Console::FG_RED);
+            $this->stderr('Only one of --delete-content or --inheritor may be specified.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
 
@@ -320,7 +320,7 @@ class UsersController extends Controller
 
             if (!$this->confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
                 $this->stdout('Aborting.' . PHP_EOL);
-                return ExitCode::USAGE;
+                return ExitCode::OK;
             }
 
             $user->inheritorOnDelete = $inheritor;
@@ -329,12 +329,12 @@ class UsersController extends Controller
 
             if (!$this->deleteContent) {
                 $this->stdout('Aborting.' . PHP_EOL);
-                return ExitCode::USAGE;
+                return ExitCode::OK;
             }
         }
 
         if (!$user->inheritorOnDelete && !$this->deleteContent) {
-            $this->stdout('You must specify either --delete-content or --inheritor to proceed.' . PHP_EOL, Console::FG_RED);
+            $this->stderr('You must specify either --delete-content or --inheritor to proceed.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
 
@@ -416,7 +416,7 @@ class UsersController extends Controller
         $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
         $url = UrlHelper::urlWithToken($url, $token);
 
-        $this->stdout("Impersonation URL for $user->username: ");
+        $this->stdout("Impersonation URL for “{$user->username}”: ");
         $this->stdout($url . PHP_EOL, Console::FG_CYAN);
         $this->stdout('(Expires in one hour.)' . PHP_EOL, Console::FG_GREY);
 
