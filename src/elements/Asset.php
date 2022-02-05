@@ -1651,7 +1651,7 @@ class Asset extends Element
      */
     public function getFocalPoint(bool $asCss = false)
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return null;
         }
 
