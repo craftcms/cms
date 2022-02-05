@@ -232,6 +232,59 @@ class UsersController extends Controller
     }
 
     /**
+     * Generate an activation URL for a pending user.
+     *
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     */
+    public function actionActivationUrl(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if (!$user->pending) {
+            $this->stderr("User “{$user->username}” has already been activated." . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        $url = Craft::$app->getUsers()->getActivationUrl($user);
+
+        $this->stdout("Activation URL for “{$user->username}”: ");
+        $this->stdout($url . PHP_EOL, Console::FG_CYAN, PHP_EOL);
+
+        Craft::$app->getUsers()->sendActivationEmail($user);
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Generate a password reset URL for a user.
+     *
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     */
+    public function actionPasswordResetUrl(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
+
+        $this->stdout("Password reset URL for “{$user->username}”: ");
+        $this->stdout($url . PHP_EOL, Console::FG_CYAN, PHP_EOL);
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Deletes a user.
      *
      * @param string $user The ID, username, or email address of the user account.
