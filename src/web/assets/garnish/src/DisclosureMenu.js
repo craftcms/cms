@@ -41,7 +41,7 @@ export default Base.extend(
 
       // Is this already a disclosure button?
       if (this.$trigger.data('trigger')) {
-        Garnish.log('Double-instantiating a disclosure menu on an element');
+        console.warn('Double-instantiating a disclosure menu on an element');
         this.$trigger.data('trigger').destroy();
       }
 
