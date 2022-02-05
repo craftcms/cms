@@ -581,15 +581,19 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     getPreviewTokenParams: function() {
-        return {
+        const params = {
             elementType: this.settings.elementType,
             sourceId: this.settings.sourceId,
             siteId: this.settings.siteId,
-            draftId: this.settings.draftId,
             revisionId: this.settings.revisionId,
-            provisional: this.settings.isProvisionalDraft ? 1 : null,
             previewToken: this.settings.previewToken,
         };
+
+        if (this.settings.draftId && !this.settings.isProvisionalDraft) {
+            params.draftId = this.settings.draftId;
+        }
+
+        return params;
     },
 
     getPreviewToken: function() {
@@ -906,7 +910,10 @@ Craft.DraftEditor = Garnish.Base.extend({
                     }
                     this.newSiteIds.forEach(siteId => {
                         const $option = revisionMenu.$options.filter(`[data-site-id=${siteId}]`);
-                        $option.find('.status').removeClass('disabled').addClass('enabled');
+                        const siteSettings = this.settings.addlSites.find(s => s.siteId == siteId);
+                        if (!siteSettings || typeof siteSettings.enabledByDefault === 'undefined' || siteSettings.enabledByDefault) {
+                            $option.find('.status').removeClass('disabled').addClass('enabled');
+                        }
                         const $li = $option.parent().removeClass('hidden');
                         $li.closest('.site-group').removeClass('hidden');
                     });
