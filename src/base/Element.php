@@ -319,6 +319,13 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
 
     /**
+     * @event DefineHtmlEvent The event that is triggered when defining additional buttons that should be shown at the top of the element’s edit page.
+     * @see getAddlButtons()
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_ADDL_BUTTONS = 'defineAddlButtons';
+
+    /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for the element’s editor slideout sidebar.
      * @see getSidebarHtml()
      * @since 3.7.0
@@ -2855,9 +2862,12 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAddlButtons(): ?string
+    public function getAddlButtons(): string
     {
-        return null;
+        // Fire a defineAddlButtons event
+        $event = new DefineHtmlEvent();
+        $this->trigger(self::EVENT_DEFINE_ADDL_BUTTONS, $event);
+        return $event->html;
     }
 
     /**

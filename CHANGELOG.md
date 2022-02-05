@@ -47,6 +47,7 @@
 - Added `craft\base\Element::EVENT_AUTHORIZE_DUPLICATE`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_SAVE`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_VIEW`.
+- Added `craft\base\Element::EVENT_DEFINE_ADDL_BUTTONS`. ([#10420](https://github.com/craftcms/cms/discussions/10420))
 - Added `craft\base\Element::getParentId()`.
 - Added `craft\base\Element::hasNewParent()`.
 - Added `craft\base\Element::setParentId()`.
