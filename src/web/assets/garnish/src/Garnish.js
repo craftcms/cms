@@ -320,7 +320,7 @@ Garnish = $.extend(Garnish, {
         } else if (ariaHiddenAttribute === 'false') {
             $(element).addClass(Garnish.JS_ARIA_FALSE_CLASS);
         } else if (ariaHiddenAttribute === 'true') {
-            $(element.addClass(Garnish.JS_ARIA_TRUE_CLASS));
+            $(element).addClass(Garnish.JS_ARIA_TRUE_CLASS);
         }
 
         $(element).attr('aria-hidden', 'true');
