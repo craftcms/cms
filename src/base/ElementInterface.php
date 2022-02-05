@@ -1509,7 +1509,7 @@ interface ElementInterface extends ComponentInterface
     public function getTableAttributeHtml(string $attribute): string;
 
     /**
-     * Returns the HTML for any fields/info that should be shown within the sidebar of element editor slideouts.
+     * Returns the HTML for any fields/info that should be shown within the editor sidebar.
      *
      * @param bool $static Whether any fields within the sidebar should be static (non-interactive)
      * @return string
@@ -1518,7 +1518,7 @@ interface ElementInterface extends ComponentInterface
     public function getSidebarHtml(bool $static): string;
 
     /**
-     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     * Returns element metadata that should be shown within the editor sidebar.
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      * If a value is `false`, it will be omitted.
