@@ -96,15 +96,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
             class: 'btn',
             text: Craft.t('app', 'Cancel'),
         }).appendTo($btnContainer);
-        this.$saveBtn = $('<button/>', {
-            type: 'submit',
-            class: 'btn submit',
-        }).append($('<div/>', {
-            class: 'label',
-            text: Craft.t('app', 'Save'),
-        })).append($('<div/>', {
-            class: 'spinner',
-        })).appendTo($btnContainer);
+        this.$saveBtn = Craft.ui.createSubmitButton({
+            label: Craft.t('app', 'Save'),
+            spinner: true,
+        }).appendTo($btnContainer);
 
         let $contents = this.$header.add(this.$body).add(this.$footer);
 
