@@ -53,9 +53,7 @@ export default Base.extend(
       // Deprecated
       if (this.settings.attachToElement) {
         this.settings.anchor = this.settings.attachToElement;
-        Garnish.log(
-          "The 'attachToElement' setting is deprecated. Use 'anchor' instead."
-        );
+        console.warn("The 'attachToElement' setting is deprecated. Use 'anchor' instead.");
       }
 
       if (this.settings.anchor) {

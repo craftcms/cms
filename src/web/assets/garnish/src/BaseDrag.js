@@ -178,7 +178,7 @@ export default Base.extend(
 
                 // Make sure this element doesn't belong to another dragger
                 if ($.data(item, 'drag')) {
-                    Garnish.log('Element was added to more than one dragger');
+                    console.warn('Element was added to more than one dragger');
                     $.data(item, 'drag').removeItems(item);
                 }
 

@@ -20,7 +20,7 @@ Craft.Structure = Garnish.Base.extend({
 
         // Is this already a structure?
         if (this.$container.data('structure')) {
-            Garnish.log('Double-instantiating a structure on an element');
+            console.warn('Double-instantiating a structure on an element');
             this.$container.data('structure').destroy();
         }
 
@@ -152,7 +152,12 @@ Craft.Structure = Garnish.Base.extend({
     _removeUl: function($ul) {
         $ul.siblings('.row').children('.toggle').remove();
         $ul.remove();
-    }
+    },
+
+    destroy: function() {
+        this.$container.removeData('structure');
+        this.base();
+    },
 }, {
     baseIndent: 8,
     nestedIndent: 35,
