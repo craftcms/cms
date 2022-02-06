@@ -189,32 +189,32 @@ class SitesController extends Controller
      * Edit a category group.
      *
      * @param int|null $siteId The site’s ID, if editing an existing site
-     * @param Site|null $site The site being edited, if there were any validation errors
+     * @param Site|null $siteModel The site being edited, if there were any validation errors
      * @param int|null $groupId The default group ID that the site should be saved in
      * @return Response
      * @throws NotFoundHttpException if the requested site cannot be found
      * @throws ServerErrorHttpException if no site groups exist
      */
-    public function actionEditSite(?int $siteId = null, ?Site $site = null, ?int $groupId = null): Response
+    public function actionEditSite(?int $siteId = null, ?Site $siteModel = null, ?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
 
         $brandNewSite = false;
 
         if ($siteId !== null) {
-            if ($site === null) {
-                $site = $sitesService->getSiteById($siteId);
+            if ($siteModel === null) {
+                $siteModel = $sitesService->getSiteById($siteId);
 
-                if (!$site) {
+                if (!$siteModel) {
                     throw new NotFoundHttpException('Site not found');
                 }
             }
 
-            $title = trim($site->getName()) ?: Craft::t('app', 'Edit Site');
+            $title = trim($siteModel->getName()) ?: Craft::t('app', 'Edit Site');
         } else {
-            if ($site === null) {
-                $site = new Site();
-                $site->language = $sitesService->getPrimarySite()->language;
+            if ($siteModel === null) {
+                $siteModel = new Site();
+                $siteModel->language = $sitesService->getPrimarySite()->language;
                 $brandNewSite = true;
             }
 
@@ -231,7 +231,7 @@ class SitesController extends Controller
         }
 
         if ($groupId === null) {
-            $groupId = $site->groupId ?? $allGroups[0]->id;
+            $groupId = $siteModel->groupId ?? $allGroups[0]->id;
         }
 
         $siteGroup = $sitesService->getGroupById($groupId);
@@ -276,15 +276,15 @@ class SitesController extends Controller
             ];
         }
 
-        return $this->renderTemplate('settings/sites/_edit', compact(
-            'brandNewSite',
-            'title',
-            'crumbs',
-            'site',
-            'groupId',
-            'groupOptions',
-            'languageOptions'
-        ));
+        return $this->renderTemplate('settings/sites/_edit', [
+            'brandNewSite' => $brandNewSite,
+            'title' => $title,
+            'crumbs' => $crumbs,
+            'site' => $siteModel,
+            'groupId' => $groupId,
+            'groupOptions' => $groupOptions,
+            'languageOptions' => $languageOptions,
+        ]);
     }
 
     /**
@@ -325,7 +325,7 @@ class SitesController extends Controller
 
             // Send the site back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'site' => $site,
+                'siteModel' => $site,
             ]);
 
             return null;
