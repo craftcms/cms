@@ -316,8 +316,12 @@ class ElementIndexesController extends BaseElementsController
         $export = $exporter->export($this->elementQuery);
 
         if ($exporter::isFormattable()) {
-            if (!is_array($export)) {
-                throw new InvalidValueException(get_class($exporter) . '::export() must return an array since isFormattable() returns true.');
+            // Handle being passed in a generator function or other callable
+            if (is_callable($export)) {
+                $export = $export();
+            }
+            if (!is_iterable($export)) {
+                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
             }
 
             $this->response->data = $export;
