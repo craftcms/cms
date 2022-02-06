@@ -39,14 +39,14 @@ use yii\web\Response;
 class ElementIndexesController extends BaseElementsController
 {
     /**
-     * @var string|null
+     * @var string
      */
-    protected ?string $elementType = null;
+    protected string $elementType;
 
     /**
-     * @var string|null
+     * @var string
      */
-    protected ?string $context = null;
+    protected string $context;
 
     /**
      * @var string|null

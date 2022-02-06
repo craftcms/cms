@@ -30,6 +30,7 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
+use craft\services\ElementSources;
 use craft\services\Structures;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -178,7 +179,7 @@ class Category extends Element
     {
         $sources = [];
 
-        if ($context === 'index') {
+        if ($context === ElementSources::CONTEXT_INDEX) {
             $groups = Craft::$app->getCategories()->getEditableGroups();
         } else {
             $groups = Craft::$app->getCategories()->getAllGroups();

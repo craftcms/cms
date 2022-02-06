@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use craft\base\ElementInterface;
 use craft\errors\InvalidTypeException;
+use craft\services\ElementSources;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 
@@ -61,6 +62,6 @@ abstract class BaseElementsController extends Controller
      */
     protected function context(): string
     {
-        return $this->request->getParam('context') ?? 'index';
+        return $this->request->getParam('context') ?? ElementSources::CONTEXT_INDEX;
     }
 }

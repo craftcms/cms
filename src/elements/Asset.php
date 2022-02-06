@@ -53,6 +53,7 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
+use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
@@ -317,21 +318,21 @@ class Asset extends Element
     {
         $volumes = Craft::$app->getVolumes();
 
-        if ($context === 'index') {
+        if ($context === ElementSources::CONTEXT_INDEX) {
             $volumeIds = $volumes->getViewableVolumeIds();
         } else {
             $volumeIds = $volumes->getAllVolumeIds();
         }
 
-        $additionalCriteria = $context === 'settings' ? ['parentId' => ':empty:'] : [];
+        $additionalCriteria = $context === ElementSources::CONTEXT_SETTINGS ? ['parentId' => ':empty:'] : [];
 
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($volumeIds, $additionalCriteria);
 
-        $sourceList = self::_assembleSourceList($tree, $context !== 'settings', Craft::$app->getUser()->getIdentity());
+        $sourceList = self::_assembleSourceList($tree, $context !== ElementSources::CONTEXT_SETTINGS, Craft::$app->getUser()->getIdentity());
 
         // Add the Temporary Uploads location, if that's not set to a real volume
         if (
-            $context !== 'settings' &&
+            $context !== ElementSources::CONTEXT_SETTINGS &&
             !Craft::$app->getRequest()->getIsConsoleRequest() &&
             !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
         ) {
@@ -2339,7 +2340,7 @@ JS;
 
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
-        $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
+        $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
         if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;

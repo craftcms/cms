@@ -792,7 +792,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the sources that elements of this type may belong to.
      *
-     * @param string $context The context ('index', 'modal', or 'settings').
+     * @param string $context The context ('index', 'modal', 'field', or 'settings').
      * @return array The sources.
      * @see sources()
      */
@@ -4077,7 +4077,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns any attributes that should be included in the element’s DOM representation in the control panel.
      *
-     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     * @param string $context The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
      * @return array
      * @see getHtmlAttributes()
      */

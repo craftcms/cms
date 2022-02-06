@@ -291,7 +291,7 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string $context The context ('index', 'modal', or 'settings').
+     * @param string $context The context ('index', 'modal', 'field', or 'settings').
      * @return array The sources.
      */
     public static function sources(string $context): array;
@@ -1490,7 +1490,7 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     * @param string $context The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
      * @return array
      */
     public function getHtmlAttributes(string $context): array;

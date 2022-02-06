@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
+use craft\services\ElementSources;
 use yii\base\Exception;
 
 /**
@@ -546,10 +547,10 @@ class ElementHelper
      *
      * @param string $elementType The element type class
      * @param string $sourceKey The source key/path
-     * @param string|null $context The context
+     * @param string $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, ?string $context = null): ?array
+    public static function findSource(string $elementType, string $sourceKey, string $context = ElementSources::CONTEXT_INDEX): ?array
     {
         $path = explode('/', $sourceKey);
         $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
