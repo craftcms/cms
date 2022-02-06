@@ -18,6 +18,7 @@
 - Fixed a bug where `craft\base\Element::getCanonical()` wasn’t memoizing its result based on the `$anySite` argument.
 - Fixed a JavaScript error. ([#10428](https://github.com/craftcms/cms/issues/10428))
 - Fixed a bug where Dashboard widget flip animations weren’t always working in Firefox.
+- Fixed an error that could occur if an element’s `getSupportedSites()` method returned info for a site that didn’t exist or was soft-deleted.
 
 ## 3.7.30.1 - 2022-01-21
 
