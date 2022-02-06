@@ -35,9 +35,10 @@ interface ElementExporterInterface extends ComponentInterface
     /**
      * Creates the export data for elements fetched with the given element query.
      *
-     * If [[isFormattable()]] returns `true`, then this **must** return an array.
+     * If [[isFormattable()]] returns `true`, then this **must** return an array, or callable
+     * (ideally a [generator function](https://www.php.net/manual/en/language.generators.overview.php) that returns an array
      *
-     * If [[isFormattable()]] returns `false`, a callable (ideally a
+     * If [[isFormattable()]] returns `false`, a string, a callable (ideally a
      * [generator function](https://www.php.net/manual/en/language.generators.overview.php) or a resource can
      * be returned, which will get streamed out to the browser.
      *
