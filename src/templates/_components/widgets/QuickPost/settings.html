@@ -69,14 +69,15 @@
                 {% for entryType in entryTypes %}
                     {% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id or entryTypes|length == 1) %}
                     <div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
-                        {% for field in entryType.getFieldLayout().getFields() %}
+                        {% for layoutElement in fieldsByEntryTypeId[entryType.id] ?? [] %}
+                            {% set field = layoutElement.getField() %}
                             <div>
                                 {{ forms.checkbox({
-                                    label: raw(field.name|e ~ (field.required ? '<span class="required"></span>')),
+                                    label: raw(field.name|e ~ (layoutElement.required ? '<span class="required"></span>')),
                                     name: 'sections['~section.id~'][fields][]',
                                     value: field.id,
-                                    checked: (field.required or field.id in widget.fields),
-                                    disabled: field.required
+                                    checked: (layoutElement.required or field.id in widget.fields),
+                                    disabled: layoutElement.required
                                 }) }}
                             </div>
                         {% endfor %}

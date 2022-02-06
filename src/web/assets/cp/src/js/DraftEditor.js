@@ -68,6 +68,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.$spinner = $('#revision-spinner');
         this.$expandSiteStatusesBtn = $('#expand-status-btn');
         this.$statusIcon = $('#revision-status');
+        this.$statusMessage = $('#revision-status-message');
 
         if (this.settings.canEditMultipleSites) {
             this.addListener(this.$expandSiteStatusesBtn, 'click', 'expandSiteStatuses');
@@ -214,7 +215,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.createEditMetaBtn();
 
         if (this.settings.canUpdateSource) {
-            Garnish.shortcutManager.registerShortcut({
+            Garnish.uiLayerManager.registerShortcut({
                 keyCode: Garnish.S_KEY,
                 ctrl: true,
                 alt: true
@@ -502,6 +503,12 @@ Craft.DraftEditor = Garnish.Base.extend({
             : this.$statusIcon;
     },
 
+    statusMessage: function() {
+        return this.preview
+            ? this.$statusMessage.add(this.preview.$statusMessage)
+            : this.$statusMessage;
+    },
+
     createEditMetaBtn: function() {
         this.$editMetaBtn = $('<button/>', {
             type: 'button',
@@ -518,6 +525,7 @@ Craft.DraftEditor = Garnish.Base.extend({
             target: '_blank',
             data: {
                 targetUrl: target.url,
+                targetLabel: target.label,
             },
         });
 
@@ -533,11 +541,15 @@ Craft.DraftEditor = Garnish.Base.extend({
 
     updatePreviewLinks: function() {
         this.previewLinks.forEach($a => {
-            $a.attr('href', this.getTokenizedPreviewUrl($a.data('targetUrl'), null, false));
+            this.updatePreviewLinkHref($a);
             if (this.activatedPreviewToken) {
                 this.removeListener($a, 'click');
             }
         });
+    },
+
+    updatePreviewLinkHref: function($a) {
+        $a.attr('href', this.getTokenizedPreviewUrl($a.data('targetUrl'), null, false));
     },
 
     activatePreviewToken: function() {
@@ -569,15 +581,19 @@ Craft.DraftEditor = Garnish.Base.extend({
     },
 
     getPreviewTokenParams: function() {
-        return {
+        const params = {
             elementType: this.settings.elementType,
             sourceId: this.settings.sourceId,
             siteId: this.settings.siteId,
-            draftId: this.settings.draftId,
             revisionId: this.settings.revisionId,
-            provisional: this.settings.isProvisionalDraft ? 1 : null,
             previewToken: this.settings.previewToken,
         };
+
+        if (this.settings.draftId && !this.settings.isProvisionalDraft) {
+            params.draftId = this.settings.draftId;
+        }
+
+        return params;
     },
 
     getPreviewToken: function() {
@@ -818,6 +834,9 @@ Craft.DraftEditor = Garnish.Base.extend({
                 .removeClass('invisible checkmark-icon alert-icon fade-out')
                 .addClass('hidden');
 
+            // Clear previous status message
+            this.statusMessage().empty();
+
             if (this.$saveMetaBtn) {
                 this.$saveMetaBtn.addClass('active');
             }
@@ -891,7 +910,10 @@ Craft.DraftEditor = Garnish.Base.extend({
                     }
                     this.newSiteIds.forEach(siteId => {
                         const $option = revisionMenu.$options.filter(`[data-site-id=${siteId}]`);
-                        $option.find('.status').removeClass('disabled').addClass('enabled');
+                        const siteSettings = this.settings.addlSites.find(s => s.siteId == siteId);
+                        if (!siteSettings || typeof siteSettings.enabledByDefault === 'undefined' || siteSettings.enabledByDefault) {
+                            $option.find('.status').removeClass('disabled').addClass('enabled');
+                        }
                         const $li = $option.parent().removeClass('hidden');
                         $li.closest('.site-group').removeClass('hidden');
                     });
@@ -976,11 +998,12 @@ Craft.DraftEditor = Garnish.Base.extend({
                         $('<div/>', {
                             class: 'status-badge modified',
                             title: Craft.t('app', 'This field has been modified.'),
-                        }),
-                        $('<span/>', {
-                            class: 'visually-hidden',
-                            html: Craft.t('app', 'This field has been modified.'),
-                        }),
+                        }).append(
+                            $('<span/>', {
+                                class: 'visually-hidden',
+                                html: Craft.t('app', 'This field has been modified.'),
+                            })
+                        )
                     );
                 }
 
@@ -1027,8 +1050,9 @@ Craft.DraftEditor = Garnish.Base.extend({
             .velocity('stop')
             .css('opacity', '')
             .removeClass('hidden checkmark-icon')
-            .addClass('alert-icon')
-            .attr('title', this._saveFailMessage());
+            .addClass('alert-icon');
+
+        this.setStatusMessage(this._saveFailMessage());
     },
 
     /**
@@ -1099,6 +1123,12 @@ Craft.DraftEditor = Garnish.Base.extend({
             if (currentTarget) {
                 currentTarget.url = newTarget.url;
             }
+
+            const $previewLink = this.previewLinks.find($a => $a.data('targetLabel') === newTarget.label);
+            if ($previewLink) {
+                $previewLink.data('targetUrl', newTarget.url);
+                this.updatePreviewLinkHref($previewLink);
+            }
         });
     },
 
@@ -1110,8 +1140,9 @@ Craft.DraftEditor = Garnish.Base.extend({
             .velocity('stop')
             .css('opacity', '')
             .removeClass('hidden')
-            .addClass('checkmark-icon')
-            .attr('title', this._saveSuccessMessage());
+            .addClass('checkmark-icon');
+
+        this.setStatusMessage(this._saveSuccessMessage());
 
         if (!Craft.autosaveDrafts) {
             // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
@@ -1130,6 +1161,16 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.trigger('update');
 
         this.nextInQueue();
+    },
+
+    setStatusMessage: function(message) {
+        this.statusIcons().attr('title', message);
+        this.statusMessage().empty().append(
+            $('<span/>', {
+                class: 'visually-hidden',
+                text: message,
+            })
+        );
     },
 
     nextInQueue: function() {

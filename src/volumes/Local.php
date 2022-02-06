@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\volumes;
 
@@ -8,10 +13,12 @@ use craft\base\LocalVolumeInterface;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
+use yii\base\Exception;
 use yii\validators\InlineValidator;
 
 /**
@@ -19,10 +26,6 @@ use yii\validators\InlineValidator;
  * Craft.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license http://craftcms.com/license Craft License Agreement
- * @see http://craftcms.com
- * @package craft.app.volumes
  * @since 3.0.0
  */
 class Local extends FlysystemVolume implements LocalVolumeInterface
@@ -75,8 +78,12 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         // If the folder doesn't exist yet, create it with a .gitignore file
         $path = $this->getRootPath();
         if ($created = !file_exists($path)) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
+            try {
+                FileHelper::createDirectory($path);
+                FileHelper::writeGitignoreFile($path);
+            } catch (Exception $exception) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Unable to use the selected directory for the volume.'));
+            }
         }
 
         // Make sure it’s not within any of the system directories
@@ -115,7 +122,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(Craft::parseEnv($this->path));
+        return FileHelper::normalizePath(App::parseEnv($this->path));
     }
 
     /**

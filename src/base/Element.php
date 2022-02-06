@@ -41,6 +41,7 @@ use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -1534,6 +1535,12 @@ abstract class Element extends Component implements ElementInterface
     private $_canonical;
 
     /**
+     * @var static|null
+     * @see getCanonical()
+     */
+    private $_canonicalAnySite;
+
+    /**
      * @var string|null
      * @see getCanonicalUid()
      */
@@ -2256,8 +2263,10 @@ abstract class Element extends Component implements ElementInterface
             return $this;
         }
 
-        if ($this->_canonical === null) {
-            $this->_canonical = static::find()
+        $prop = $anySite ? '_canonicalAnySite' : '_canonical';
+
+        if ($this->$prop === null) {
+            $this->$prop = static::find()
                     ->id($this->_canonicalId)
                     ->siteId($anySite ? '*' : $this->siteId)
                     ->preferSites([$this->siteId])
@@ -2269,7 +2278,7 @@ abstract class Element extends Component implements ElementInterface
                     ->one() ?? false;
         }
 
-        return $this->_canonical ?: $this;
+        return $this->$prop ?: $this;
     }
 
     /**
@@ -2686,7 +2695,7 @@ abstract class Element extends Component implements ElementInterface
 
         foreach ($previewTargets as $previewTarget) {
             if (isset($previewTarget['urlFormat'])) {
-                $url = trim($view->renderObjectTemplate(Craft::parseEnv($previewTarget['urlFormat']), $this));
+                $url = trim($view->renderObjectTemplate(App::parseEnv($previewTarget['urlFormat']), $this));
                 if ($url !== '') {
                     $previewTarget['url'] = $url;
                     unset($previewTarget['urlFormat']);
@@ -4353,7 +4362,7 @@ abstract class Element extends Component implements ElementInterface
     public function getSite(): Site
     {
         if ($this->siteId !== null) {
-            $site = Craft::$app->getSites()->getSiteById($this->siteId);
+            $site = Craft::$app->getSites()->getSiteById($this->siteId, true);
         }
 
         if (empty($site)) {

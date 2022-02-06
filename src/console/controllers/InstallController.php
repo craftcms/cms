@@ -85,7 +85,7 @@ class InstallController extends Controller
      */
     public function actionCheck(): int
     {
-        if (!Craft::$app->getIsInstalled()) {
+        if (!Craft::$app->getIsInstalled(true)) {
             $this->stdout('Craft is not installed yet.' . PHP_EOL);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -101,7 +101,7 @@ class InstallController extends Controller
      */
     public function actionCraft(): int
     {
-        if (Craft::$app->getIsInstalled()) {
+        if (Craft::$app->getIsInstalled(true)) {
             $this->stdout('Craft is already installed!' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }

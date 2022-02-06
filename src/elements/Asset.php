@@ -1651,7 +1651,7 @@ class Asset extends Element
      */
     public function getFocalPoint(bool $asCss = false)
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return null;
         }
 
@@ -2316,32 +2316,34 @@ class Asset extends Element
 
         $tempFilePath = FileHelper::normalizePath($tempFilePath);
 
-        // Is it within one of our temp directories?
+        // Make sure it's within a known temp path, the project root, or storage/ folder
         $pathService = Craft::$app->getPath();
-        $tempDirs = [
-            $this->_normalizeTempPath($pathService->getTempPath()),
-            $this->_normalizeTempPath(sys_get_temp_dir()),
+        $allowedRoots = [
+            [$pathService->getTempPath(), true],
+            [$pathService->getTempAssetUploadsPath(), true],
+            [sys_get_temp_dir(), true],
+            [Craft::getAlias('@root', false), false],
+            [Craft::getAlias('@storage', false), false],
         ];
 
-        $tempDirs = array_filter($tempDirs, function($value) {
-            return ($value !== false);
-        });
-
-        foreach ($tempDirs as $allowedFolder) {
-            if (StringHelper::startsWith($tempFilePath, $allowedFolder)) {
-                return true;
+        $inAllowedRoot = false;
+        foreach ($allowedRoots as [$root, $isTempDir]) {
+            $root = $this->_normalizeTempPath($root);
+            if ($root !== false && StringHelper::startsWith($tempFilePath, $root)) {
+                // If this is a known temp dir, we’re good here
+                if ($isTempDir) {
+                    return true;
+                }
+                $inAllowedRoot = true;
+                break;
             }
         }
-
-        // Make sure it's within the project root somewhere
-        $projectRoot = $this->_normalizeTempPath(Craft::getAlias('@root'));
-        if (!StringHelper::startsWith($tempFilePath, $projectRoot)) {
+        if (!$inAllowedRoot) {
             return false;
         }
 
-        // Make sure it's not within a system directory
+        // Make sure it's *not* within a system directory though
         $systemDirs = $pathService->getSystemPaths();
-
         $systemDirs = array_map([$this, '_normalizeTempPath'], $systemDirs);
         $systemDirs = array_filter($systemDirs, function($value) {
             return ($value !== false);
@@ -2359,13 +2361,12 @@ class Asset extends Element
     /**
      * Returns a normalized temp path or false, if realpath fails.
      *
-     * @param string $path
+     * @param string|false $path
      * @return false|string
      */
-    private function _normalizeTempPath(string $path)
+    private function _normalizeTempPath($path)
     {
-        $path = realpath($path);
-        if (!$path) {
+        if (!$path || !($path = realpath($path))) {
             return false;
         }
 

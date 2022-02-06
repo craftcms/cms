@@ -554,6 +554,21 @@ class EntryRevisionsController extends BaseEntriesController
             $this->setSuccessFlash(Craft::t('app', 'Draft applied.'));
         }
 
+        // Let any other browser windows editing the draft that they can reload themselves
+        if ($draft->draftId) {
+            $js = <<<JS
+if (typeof BroadcastChannel !== 'undefined') {
+    (new BroadcastChannel('DraftEditor')).postMessage({
+        event: 'saveDraft',
+        canonicalId: $draft->canonicalId,
+        draftId: $draft->draftId,
+        isProvisionalDraft: false,
+    });
+}
+JS;
+            Craft::$app->getSession()->addJsFlash($js);
+        }
+
         return $this->redirectToPostedUrl($newEntry);
     }
 

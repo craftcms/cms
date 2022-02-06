@@ -197,7 +197,7 @@ class CategoryGroup extends Model
     }
 
     /**
-     * Returns the field layout config for this category group.
+     * Returns the category group’s config.
      *
      * @return array
      * @since 3.5.0

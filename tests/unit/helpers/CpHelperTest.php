@@ -131,7 +131,7 @@ class CpHelperTest extends Unit
         // errors
         $withErrors = Cp::fieldHtml('<input>', ['errors' => ['Very bad', 'Very, very bad']]);
         self::assertStringContainsString('has-errors', $withErrors);
-        self::assertStringContainsString('<ul class="errors">', $withErrors);
+        self::assertRegExp('/<ul id="[\w\-]+" class="errors">/', $withErrors);
         // invalid template path
         $this->tester->expectThrowable(TemplateLoaderException::class, function() {
             Cp::fieldHtml('template:invalid/template.twig', []);

@@ -68,7 +68,8 @@ use yii\web\BadRequestHttpException;
 
 /**
  * Fields service.
- * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -756,7 +757,7 @@ class Fields extends Component
     }
 
     /**
-     * Returns the field layout config for the given field.
+     * Returns the config for the given field.
      *
      * @param FieldInterface $field
      * @return array
@@ -1092,6 +1093,46 @@ class Fields extends Component
     }
 
     /**
+     * Returns field layouts by their IDs.
+     *
+     * @param int[] $layoutIds The field layouts’ IDs
+     * @return FieldLayout[] The field layouts
+     * @since 3.7.27
+     */
+    public function getLayoutsByIds(array $layoutIds): array
+    {
+        $response = [];
+
+        // Don't re-fetch any layouts we've already memoized
+        if (isset($this->_layoutsById)) {
+            foreach ($layoutIds as $key => $id) {
+                if (array_key_exists($id, $this->_layoutsById)) {
+                    if ($this->_layoutsById[$id] !== null) {
+                        $response[$id] = $this->_layoutsById[$id];
+                    }
+                    unset($layoutIds[$key]);
+                }
+            }
+        }
+
+        if (!empty($layoutIds)) {
+            $result = $this->_createLayoutQuery()
+                ->andWhere(['id' => $layoutIds])
+                ->all();
+
+            $layouts = [];
+
+            foreach ($result as $row) {
+                $this->_layoutsById[$row['id']] = $response[$row['id']] = $layouts[$row['id']] = new FieldLayout($row);
+            }
+
+            $this->_loadTabs($layouts);
+        }
+
+        return $response;
+    }
+
+    /**
      * Returns a field layout by its associated element type.
      *
      * @param string $type The associated element type
@@ -1151,20 +1192,58 @@ class Fields extends Component
      */
     public function getLayoutTabsById(int $layoutId): array
     {
-        $tabs = $this->_createLayoutTabQuery()
+        $result = $this->_createLayoutTabQuery()
             ->where(['layoutId' => $layoutId])
             ->all();
 
         $isMysql = Craft::$app->getDb()->getIsMysql();
 
-        foreach ($tabs as $key => $value) {
-            if ($isMysql) {
-                $value['name'] = html_entity_decode($value['name'], ENT_QUOTES | ENT_HTML5);
-            }
-            $tabs[$key] = new FieldLayoutTab($value);
+        return array_map(function(array $row) use ($isMysql) {
+            return $this->_createLayoutTabFromRow($row, $isMysql);
+        }, $result);
+    }
+
+    /**
+     * Instantiates a field layout tab from its database row.
+     *
+     * @param array $row
+     * @param bool $isMysql
+     * @return FieldLayoutTab
+     */
+    private function _createLayoutTabFromRow(array $row, bool $isMysql): FieldLayoutTab
+    {
+        if ($isMysql) {
+            $row['name'] = html_entity_decode($row['name'], ENT_QUOTES | ENT_HTML5);
         }
 
-        return $tabs;
+        return new FieldLayoutTab($row);
+    }
+
+    /**
+     * Fetches the layout tabs for the given layouts.
+     *
+     * @param FieldLayout[] $layouts Field layouts indexed by their IDs
+     */
+    private function _loadTabs(array $layouts): void
+    {
+        if (empty($layouts)) {
+            return;
+        }
+
+        $result = $this->_createLayoutTabQuery()
+            ->where(['layoutId' => array_keys($layouts)])
+            ->all();
+
+        $tabsByLayoutId = [];
+        $isMysql = Craft::$app->getDb()->getIsMysql();
+
+        foreach ($result as $row) {
+            $tabsByLayoutId[$row['layoutId']][] = $this->_createLayoutTabFromRow($row, $isMysql);
+        }
+
+        foreach ($tabsByLayoutId as $layoutId => $tabs) {
+            $layouts[$layoutId]->setTabs($tabs);
+        }
     }
 
     /**

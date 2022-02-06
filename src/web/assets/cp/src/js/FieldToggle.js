@@ -18,7 +18,7 @@ Craft.FieldToggle = Garnish.Base.extend({
 
         // Is this already a field toggle?
         if (this.$toggle.data('fieldtoggle')) {
-            Garnish.log('Double-instantiating a field toggle on an element');
+            console.warn('Double-instantiating a field toggle on an element');
             this.$toggle.data('fieldtoggle').destroy();
         }
 
@@ -223,5 +223,10 @@ Craft.FieldToggle = Garnish.Base.extend({
                 }
             }
         }
-    }
+    },
+
+    destroy: function() {
+        this.$toggle.removeData('fieldtoggle');
+        this.base();
+    },
 });

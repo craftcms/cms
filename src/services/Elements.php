@@ -64,7 +64,8 @@ use yii\db\Exception as DbException;
 
 /**
  * The Elements service provides APIs for managing elements.
- * An instance of the Elements service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -1838,6 +1839,7 @@ class Elements extends Component
             foreach ($elements as $element) {
                 $element->afterRestore();
                 $element->trashed = false;
+                $element->dateDeleted = null;
 
                 // Fire an 'afterRestoreElement' event
                 if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {
@@ -2970,7 +2972,7 @@ SQL;
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, string $attribute = null, string $fallback, string $fullMatch): string
+    private function _getRefTokenReplacement(?ElementInterface $element, ?string $attribute, string $fallback, string $fullMatch): string
     {
         if ($element === null) {
             // Put the ref tag back

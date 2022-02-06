@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
 
 namespace craft\services;
 
@@ -29,13 +34,11 @@ use yii\base\Component;
 use yii\base\UnknownPropertyException;
 
 /**
- * Class AssetVolumesService
+ * Volumes service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getVolumes()|`Craft::$app->volumes()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license http://craftcms.com/license Craft License Agreement
- * @see http://craftcms.com
- * @package craft.app.services
  * @since 3.0.0
  */
 class Volumes extends Component
@@ -275,7 +278,7 @@ class Volumes extends Component
     }
 
     /**
-     * Returns the field layout config for the given volume.
+     * Returns the config for the given volume.
      *
      * @param VolumeInterface $volume
      * @return array

@@ -1,5 +1,6 @@
 <?php
 
+use craft\helpers\App;
 use PHPUnit\Framework\TestCase;
 
 class CraftTest extends TestCase
@@ -10,7 +11,7 @@ class CraftTest extends TestCase
         putenv("CRAFT_TEST=testing");
 
         // Act
-        $env = Craft::parseEnv('$CRAFT_TEST');
+        $env = App::parseEnv('$CRAFT_TEST');
 
         // Assert
         $this->assertEquals('testing', $env);
@@ -23,7 +24,7 @@ class CraftTest extends TestCase
         putenv("CRAFT_TEST=true");
 
         // Act
-        $env = Craft::parseEnv('$CRAFT_TEST');
+        $env = App::parseEnv('$CRAFT_TEST');
 
         // Assert
         $this->assertEquals(true, $env);
@@ -37,7 +38,7 @@ class CraftTest extends TestCase
         putenv("CRAFT_TEST=false");
 
         // Act
-        $env = Craft::parseEnv('$CRAFT_TEST');
+        $env = App::parseEnv('$CRAFT_TEST');
 
         // Assert
         $this->assertEquals(false, $env);

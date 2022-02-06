@@ -203,7 +203,7 @@ class Tag extends Element
      * @param InlineValidator $validator
      * @since 3.4.12
      */
-    public function validateTitle(string $attribute, array $params = null, InlineValidator $validator)
+    public function validateTitle(string $attribute, ?array $params, InlineValidator $validator)
     {
         $query = static::find()
             ->groupId($this->groupId)

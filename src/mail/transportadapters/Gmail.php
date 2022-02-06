@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\App;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -101,8 +102,8 @@ class Gmail extends BaseTransportAdapter
             'host' => 'smtp.gmail.com',
             'port' => 465,
             'encryption' => 'ssl',
-            'username' => Craft::parseEnv($this->username),
-            'password' => Craft::parseEnv($this->password),
+            'username' => App::parseEnv($this->username),
+            'password' => App::parseEnv($this->password),
             'timeout' => $this->timeout,
         ];
     }

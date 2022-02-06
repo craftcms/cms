@@ -30,8 +30,9 @@ use yii\db\Expression;
 use yii\db\Schema;
 
 /**
- * Handles search operations.
- * An instance of the Search service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->search`]].
+ * Search service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->search`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

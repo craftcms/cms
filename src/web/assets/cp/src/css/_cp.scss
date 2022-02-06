@@ -449,6 +449,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #alerts {
+  position: relative; // to keep it above #global-header's shadow
   background-color: $red050;
   border-left: 5px solid $errorColor;
   padding: 11px 0;

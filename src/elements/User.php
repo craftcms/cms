@@ -210,6 +210,9 @@ class User extends Element implements IdentityInterface
                 'key' => '*',
                 'label' => Craft::t('app', 'All users'),
                 'hasThumbs' => true,
+                'data' => [
+                    'slug' => 'all',
+                ],
             ],
         ];
 
@@ -220,6 +223,9 @@ class User extends Element implements IdentityInterface
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
                 'hasThumbs' => true,
+                'data' => [
+                    'slug' => 'admins',
+                ],
             ];
 
             $groups = Craft::$app->getUserGroups()->getAllGroups();
@@ -233,6 +239,9 @@ class User extends Element implements IdentityInterface
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true,
+                        'data' => [
+                            'slug' => $group->handle,
+                        ],
                     ];
                 }
             }
@@ -632,11 +641,6 @@ class User extends Element implements IdentityInterface
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private $_groups;
-
-    /**
-     * @var array|null The user’s preferences
-     */
-    private $_preferences;
 
     /**
      * @inheritdoc
@@ -1314,11 +1318,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferences(): array
     {
-        if ($this->_preferences === null) {
-            $this->_preferences = Craft::$app->getUsers()->getUserPreferences($this->id);
-        }
-
-        return $this->_preferences;
+        return $this->id ? Craft::$app->getUsers()->getUserPreferences($this->id) : [];
     }
 
     /**
@@ -1378,12 +1378,11 @@ class User extends Element implements IdentityInterface
      *
      * @param array $preferences The new preferences
      * @return array The user’s new preferences.
+     * @deprecated in 3.7.27.
      */
     public function mergePreferences(array $preferences): array
     {
-        $this->_preferences = array_merge($this->getPreferences(), $preferences);
-
-        return $this->_preferences;
+        return $preferences + $this->getPreferences();
     }
 
     /**

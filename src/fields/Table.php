@@ -585,7 +585,7 @@ class Table extends Field
      * @param bool $static
      * @return string
      */
-    private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
+    private function _getInputHtml($value, ?ElementInterface $element, bool $static): string
     {
         if (empty($this->columns)) {
             return '';

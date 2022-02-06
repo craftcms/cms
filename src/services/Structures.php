@@ -21,7 +21,8 @@ use yii\base\Exception;
 
 /**
  * Structures service.
- * An instance of the Structures service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getStructures()|`Craft::$app->structures`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getStructures()|`Craft::$app->structures`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

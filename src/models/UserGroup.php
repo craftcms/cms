@@ -67,7 +67,20 @@ class UserGroup extends Model
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
-        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => [
+                'admins',
+                'all',
+                'dateCreated',
+                'dateUpdated',
+                'id',
+                'new',
+                'title',
+                'uid',
+            ],
+        ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserGroupRecord::class];
         return $rules;
     }
@@ -98,7 +111,7 @@ class UserGroup extends Model
     }
 
     /**
-     * Returns the field layout config for this user group.
+     * Returns the user group’s config.
      *
      * @param bool $withPermissions Whether permissions should be included
      * @return array

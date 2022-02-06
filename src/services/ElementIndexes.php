@@ -23,8 +23,9 @@ use craft\models\FieldLayout;
 use yii\base\Component;
 
 /**
- * The ElementIndexes service provides APIs for managing element indexes.
- * An instance of ElementIndexes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElementIndexes()|`Craft::$app->elementIndexes`]].
+ * The Element Indexes service provides APIs for managing element indexes.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementIndexes()|`Craft::$app->elementIndexes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -328,7 +329,8 @@ class ElementIndexes extends Component
         $processedFieldIds = [];
 
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
                 if (
                     $field instanceof SortableFieldInterface &&
                     !isset($processedFieldIds[$field->id])
