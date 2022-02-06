@@ -370,10 +370,9 @@ class Asset extends Element
 
         // Only match the first folder ID - ignore nested folders
         if (
-            preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches) &&
-            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1])
+            preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
         ) {
-            $volume = $folder->getVolume();
             $isTemp = $volume instanceof Temp;
 
             $actions[] = [
