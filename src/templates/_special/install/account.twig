@@ -33,7 +33,11 @@
         }) }}
 
         <div class="buttons">
-            <button type="submit" class="btn big submit">{{ "Next"|t('app') }}</button>
+            {{ forms.submitButton({
+                class: 'big',
+                label: 'Next'|t('app'),
+                spinner: true,
+            }) }}
         </div>
     </form>
 </div>

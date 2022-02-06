@@ -180,12 +180,11 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         $('<div/>', {class: 'fields', html: contents}).appendTo($body);
         const $footer = $('<div/>', {class: 'fld-element-settings-footer'});
         $('<div/>', {class: 'flex-grow'}).appendTo($footer);
-        $('<button/>', {
-            type: 'submit',
-            class: 'btn submit secondary',
-            text: Craft.t('app', 'Apply'),
+        Craft.ui.createSubmitButton({
+            class: 'secondary',
+            label: Craft.t('app', 'Apply'),
+            spinner: true,
         }).appendTo($footer);
-        $('<div/>', {class: 'spinner hidden'}).appendTo($footer);
         const $contents = $body.add($footer);
 
         const slideout = new Craft.Slideout($contents, {
@@ -355,7 +354,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
         }
 
         // update the UI
-        let $spinner = this.slideout.$container.find('.spinner').removeClass('hidden');
+        let $submitBtn = this.slideout.$container.find('button[type=submit]').addClass('loading');
 
         const config = $.extend({}, this.config);
         delete config.elements;
@@ -373,7 +372,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
             Craft.cp.displayError();
             console.error(e);
         }).finally(() => {
-            $spinner.addClass('hidden');
+            $submitBtn.removeClass('loading');
             this.slideout.close();
         });
     },
@@ -568,7 +567,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 
     applySettings: function() {
         // update the UI
-        let $spinner = this.slideout.$container.find('.spinner').removeClass('hidden');
+        let $submitBtn = this.slideout.$container.find('button[type=submit]').addClass('loading');
 
         Craft.sendActionRequest('POST', 'fields/apply-layout-element-settings', {
             data: {
@@ -585,7 +584,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             Craft.cp.displayError();
             console.error(e);
         }).finally(() => {
-            $spinner.addClass('hidden');
+            $submitBtn.removeClass('loading');
             this.updateRequiredClass();
             this.slideout.close();
         });

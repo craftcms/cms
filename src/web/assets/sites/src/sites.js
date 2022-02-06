@@ -168,7 +168,6 @@
         $rowToDelete: null,
         $deleteActionRadios: null,
         $deleteSubmitBtn: null,
-        $deleteSpinner: null,
 
         _deleting: false,
 
@@ -205,15 +204,14 @@
             return validates;
         },
 
-        submitDeleteLocale: function(ev) {
+        submitDeleteSite: function(ev) {
             ev.preventDefault();
 
             if (this._deleting || !this.validateDeleteInputs()) {
                 return;
             }
 
-            this.$deleteSubmitBtn.addClass('active');
-            this.$deleteSpinner.removeClass('hidden');
+            this.$deleteSubmitBtn.addClass('loading');
             this.disable();
             this._deleting = true;
 
@@ -227,6 +225,8 @@
             }
 
             Craft.postActionRequest(this.settings.deleteAction, data, (response, textStatus) => {
+                this.$deleteSubmitBtn.removeClass('loading');
+
                 if (textStatus === 'success') {
                     this._deleting = false;
                     this.enable();
@@ -242,13 +242,7 @@
             let id = this.getItemId($row);
             let name = this.getItemName($row);
 
-            let $form = $(
-                '<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8">' +
-                Craft.getCsrfInput() +
-                '<input type="hidden" name="action" value="localization/deleteLocale"/>' +
-                '<input type="hidden" name="id" value="' + id + '"/>' +
-                '</form>'
-            ).appendTo(Garnish.$bod);
+            let $form = $('<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8"/>').appendTo(Garnish.$bod);
             let $body = $(
                 '<div class="body">' +
                 '<p>' + Craft.t('app', 'What do you want to do with any content that is only available in {language}?', {language: name}) + '</p>' +
@@ -272,12 +266,11 @@
 
             this.$deleteActionRadios = $body.find('input[type=radio]');
             this.$transferSelect = $('#transferselect').find('> select');
-            this.$deleteSubmitBtn = $('<button/>', {
-                type: 'submit',
-                class: 'btn submit disabled',
-                text: Craft.t('app', 'Delete {site}', {site: name}),
+            this.$deleteSubmitBtn = Craft.ui.createSubmitButton({
+                class: 'disabled',
+                label: Craft.t('app', 'Delete {site}', {site: name}),
+                spinner: true,
             }).appendTo($buttons);
-            this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 
             for (var i = 0; i < Craft.sites.length; i++) {
                 if (Craft.sites[i].id != id) {
@@ -292,7 +285,7 @@
             });
 
             this.addListener(this.$deleteActionRadios, 'change', 'validateDeleteInputs');
-            this.addListener($form, 'submit', 'submitDeleteLocale');
+            this.addListener($form, 'submit', 'submitDeleteSite');
         }
     });
 })(jQuery);

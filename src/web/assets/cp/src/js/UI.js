@@ -2,6 +2,39 @@
 /** global: Garnish */
 Craft.ui =
     {
+        createButton: function(config) {
+            const $btn = $('<button/>', {
+                type: config.type || 'button',
+                class: 'btn'
+            });
+            if (config.id) {
+                $btn.attr('id', id);
+            }
+            if (config.class) {
+                $btn.addClass(config.class);
+            }
+            if (config.html) {
+                $btn.html(html);
+            } else if (config.label) {
+                $btn.append($('<div class="label"/>').text(config.label));
+            } else {
+                $btn.addClass('btn-empty');
+            }
+            if (config.spinner) {
+                $btn.append($('<div class="spinner spinner-absolute"/>'));
+            }
+            return $btn;
+        },
+
+        createSubmitButton: function(config) {
+            const $btn = this.createButton(Object.assign({}, config, {
+                type: 'submit',
+                label: config.label || Craft.t('app', 'Submit'),
+            }));
+            $btn.addClass('submit');
+            return $btn;
+        },
+
         createTextInput: function(config) {
             config = $.extend({
                 autocomplete: false,

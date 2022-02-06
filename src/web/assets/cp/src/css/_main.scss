@@ -1,11 +1,6 @@
 @charset "UTF-8";
 @import "@craftcms/sass/mixins";
 
-@mixin spinner {
-  width: 24px;
-  background: url(../images/spinner.gif) no-repeat 50% 50%;
-}
-
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
   $halfSize: $size * 0.5;
@@ -997,7 +992,7 @@ td.right {
 
     .icon {
       @include margin-right(4px);
-      color: var(--ui-control-color);
+      color: currentColor;
     }
 
     .label {
@@ -1301,6 +1296,7 @@ ul.icons {
   gap: 7px;
   position: relative;
   margin: 24px 0;
+  align-items: center;
 
   .hud-footer > &,
   .footer > & {
@@ -1309,10 +1305,7 @@ ul.icons {
 }
 
 .btn {
-  --ui-control-color: #{$grey600};
-  --ui-control-hover-color: #{$grey700};
-  --ui-control-active-color: #{$grey800};
-
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1325,7 +1318,7 @@ ul.icons {
   cursor: pointer;
   box-sizing: border-box;
   appearance: none;
-  color: $textColor;
+  color: currentColor;
   font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
 
@@ -1346,7 +1339,7 @@ ul.icons {
     }
   }
 
-  &:not(.disabled) {
+  &:not(.disabled):not(.loading) {
     &:focus,
     &.focus,
     &:hover {
@@ -1370,7 +1363,8 @@ ul.icons {
     width: 36px;
   }
 
-  &.active {
+  &.active,
+  &.loading {
     cursor: default;
   }
 
@@ -1378,11 +1372,25 @@ ul.icons {
     text-decoration: none;
   }
 
-  &[data-icon]:not(:empty):before,
-  &.icon:not(:empty):before,
+  &[data-icon]:not(:empty):not(.btn-empty):before,
+  &.icon:not(:empty):not(.btn-empty):before,
   &.menubtn[data-icon]:empty:before,
-  &.menubtn.icon:empty:before {
+  &.menubtn[data-icon].btn-empty:before,
+  &.menubtn.icon:empty:before,
+  &.menubtn.icon.btn-empty:before {
     @include margin-right(5px);
+  }
+
+  &:not(.loading) .spinner {
+    display: none;
+  }
+
+  &.loading {
+    &:before,
+    &:after,
+    .label {
+      visibility: hidden;
+    }
   }
 
   div.checkbox {
@@ -1404,33 +1412,11 @@ ul.icons {
   height: 34px;
 }
 
-.btn[data-icon-after]:not(:empty):after,
-.menu-toggle:not(:empty):after,
-.menubtn:not(:empty):after,
+.btn[data-icon-after]:not(:empty):not(.btn-empty):after,
+.menu-toggle:not(:empty):not(.btn-empty):after,
+.menubtn:not(:empty):not(.btn-empty):after,
 .menubtn.icon:after {
   @include margin-left(6px);
-}
-
-.btn:before,
-.btn:after {
-  color: var(--ui-control-color);
-}
-
-.btn:not(.disabled):not(.inactive) {
-  &:hover,
-  &.hover {
-    &:before,
-    &:after {
-      color: var(--ui-control-hover-color);
-    }
-  }
-  &:active,
-  &.active {
-    &:before,
-    &:after {
-      color: var(--ui-control-active-color);
-    }
-  }
 }
 
 .btn[data-icon]:before,
@@ -1443,35 +1429,6 @@ ul.icons {
 .btn.small[data-icon-after]:after,
 .btn.icon.small:before {
   font-size: 10px;
-}
-
-.btn.icon.add.loading {
-  position: relative;
-}
-
-.btn.icon.add.loading:before {
-  visibility: hidden;
-}
-
-.btn.icon.add.loading:after {
-  position: absolute;
-  content: "";
-  font-size: 0;
-  display: block;
-  width: 24px;
-  height: 100%;
-  left: 5px;
-  top: 0;
-  background: url(../images/spinner.gif) no-repeat 0 50%;
-}
-
-.btn.icon.add.loading.submit:after {
-  background-image: url(../images/spinner_submit.gif);
-}
-
-.secondary-buttons .btn.icon.add.loading.submit:after,
-.btn.secondary.icon.add.loading.submit:after {
-  background-image: url(../images/spinner_submit_secondary.gif);
 }
 
 /* button groups */
@@ -1491,10 +1448,6 @@ ul.icons {
   }
 
   .btn {
-    &.active {
-      cursor: default;
-    }
-
     &:not(.dashed):not(:last-child) {
       @include margin-right(1px);
     }
@@ -1667,40 +1620,68 @@ ul.icons {
     }
   }
 
-  &:empty {
+  &:empty,
+  &.btn-empty {
     @include padding-left(8px);
     @include padding-right(8px);
   }
 }
 
+@keyframes rotator {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  to {
+    -webkit-transform: rotate(1turn);
+    transform: rotate(1turn);
+  }
+}
+
 /* spinner */
 .spinner {
-  display: inline-block;
-  vertical-align: bottom;
-  @include spinner;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size, 24px);
+  height: var(--size, 34px);
 
-  &.over-bg {
-    background-image: url(../images/spinner_bg.gif);
+  &:before {
+    display: block;
+    content: "";
+    font-size: 0;
+    animation: rotator .7s linear infinite;
+    box-sizing: border-box;
+    width: var(--size, 20px);
+    height: var(--size, 20px);
+    object-fit: scale-down;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-right-color: currentColor;
+    border-bottom-color: currentColor;
+    opacity: 0.8;
+  }
+
+  &.small {
+    --size: 12px;
   }
 
   &.big {
-    width: 48px;
-    height: 48px;
-    background: url(../images/spinner_big.gif) no-repeat 50% 50%;
+    --size: 48px;
+  }
 
-    &.over-bg {
-      background-image: url(../images/spinner_big_bg.gif);
-    }
+  &.spinner-absolute {
+    position: absolute;
+    width: var(--size, 20px);
+    height: var(--size, 20px);
+    top: calc(50% - var(--size, 20px) / 2);
+    left: calc(50% - var(--size, 20px) / 2);
   }
 }
 
 .btn + .spinner {
   @include margin-left(7px);
-}
-
-.buttons .spinner {
-  display: block;
-  @include floatleft;
 }
 
 .buttons .btn + .spinner,
@@ -1752,18 +1733,14 @@ ul.icons {
 .btn {
   &.submit,
   &.secondary {
-    &,
-    &:before,
-    &:after {
-      color: $white !important;
-      @include light-on-dark-text;
-    }
+    color: $white !important;
+    @include light-on-dark-text;
   }
 
   &.submit {
     background-color: $primaryColor !important;
 
-    &:not(.disabled):not(.inactive) {
+    &:not(.disabled):not(.inactive):not(.loading) {
       &:hover,
       &.hover,
       &:focus {
@@ -1799,19 +1776,19 @@ ul.icons {
   background-color: $secondaryColor !important;
 }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus,
-.btn.secondary:not(.disabled):not(.inactive):hover,
-.btn.secondary:not(.disabled):not(.inactive).hover,
-.btn.secondary:not(.disabled):not(.inactive):focus {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading):hover,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading).hover,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading):focus,
+.btn.secondary:not(.disabled):not(.inactive):not(.loading):hover,
+.btn.secondary:not(.disabled):not(.inactive):not(.loading).hover,
+.btn.secondary:not(.disabled):not(.inactive):not(.loading):focus {
   background-color: darken($secondaryColor, 5%) !important;
 }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive).active,
-.btn.secondary:not(.disabled):not(.inactive):active,
-.btn.secondary:not(.disabled):not(.inactive).active {
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading):active,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading).active,
+.btn.secondary:not(.disabled):not(.inactive):not(.loading):active,
+.btn.secondary:not(.disabled):not(.inactive):not(.loading).active {
   background-color: darken($secondaryColor, 10%) !important;
 }
 
@@ -2263,17 +2240,17 @@ table {
               transform: rotate(45deg);
             }
           }
+        }
 
-          &.loading {
-            background-image: url(../images/spinner_tableheader.gif);
-            background-repeat: no-repeat;
-            body.ltr & {
-              background-position: 100% 16px;
-            }
-            body.rtl & {
-              background-position: 0 16px;
-            }
-          }
+        &:not(.loading) .spinner {
+          display: none;
+        }
+
+        .spinner {
+          position: absolute;
+          top: calc(50% - 6px);
+          @include right(8px);
+          --size: 12px;
         }
       }
     }
@@ -2437,10 +2414,6 @@ $elementInnerSpacing: 5px;
 
     &:focus {
       background-color: darken($lightSelColor, 5%) !important;
-    }
-
-    &.loading:after {
-      background-image: url(../images/spinner_element.gif);
     }
 
     &.hasthumb {
@@ -2611,21 +2584,6 @@ $elementInnerSpacing: 5px;
     }
   }
 
-  &.loading {
-    @include padding-right($baseElementSidePadding + 24);
-
-    &:after {
-      content: "";
-      font-size: 0;
-      position: absolute;
-      bottom: 0;
-      @include right(3px);
-      @include spinner;
-      height: 32px;
-    }
-  }
-
-  &.loading,
   &:not(.removable) {
     .delete {
       display: none;
@@ -2637,6 +2595,12 @@ $checkboxPadding: $checkboxSize + 4;
 
 .elements {
   position: relative;
+
+  &:not(.busy) {
+    .update-spinner {
+      display: none;
+    }
+  }
 
   &.busy {
     min-height: 200px;
@@ -2650,9 +2614,12 @@ $checkboxPadding: $checkboxSize + 4;
       left: -24px;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
-      background: transparentize($white, 0.25) url(../images/spinner.gif)
-        no-repeat 50% 50%;
+      background: transparentize($white, 0.25);
       border-radius: $largeBorderRadius;
+    }
+
+    .update-spinner {
+      z-index: 1;
     }
   }
 
@@ -3498,7 +3465,6 @@ ul.tree,
       left: -24px;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
-      background: url(../images/spinner.gif) no-repeat 50% 50%;
     }
   }
 }
@@ -3705,10 +3671,6 @@ ul.tree,
   hr {
     margin: var(--spacing) 0;
     border-top-color: $hairlineColor;
-  }
-
-  .spinner {
-    background-image: url(../images/spinner_details.gif);
   }
 
   @include placeholder-styles($grey500);
@@ -4160,10 +4122,6 @@ ul.tree,
       padding: 0 var(--padding) 8px;
       border-bottom: 1px solid $hairlineColor;
     }
-
-    .spinner {
-      @include margin(0, var(--neg-padding), 0, calc(var(--s) * -1));
-    }
   }
 }
 
@@ -4474,8 +4432,12 @@ ul.tree,
       height: 100%;
       left: 0;
       top: 0;
-      background: transparentize($grey900, 0.2) no-repeat 50% 50%
-        url(../images/spinner_dark.gif);
+      background-color: transparentize($grey900, 0.2);
+    }
+
+    .spinner {
+      color: $white;
+      z-index: 1;
     }
   }
 
@@ -4675,20 +4637,6 @@ ul.tree,
 #logoutwarningmodal,
 #loginmodal {
   z-index: 101;
-}
-
-#loginmodal,
-#elevatedsessionmodal {
-  .inputcontainer {
-    position: relative;
-
-    .spinner {
-      position: absolute;
-      top: 0;
-      margin-top: 0;
-      @include right(-24px);
-    }
-  }
 }
 
 .prompt {
@@ -6715,55 +6663,6 @@ body.sitepicker {
   only screen and (-o-min-device-pixel-ratio: 3/2),
   only screen and (min-device-pixel-ratio: 1.5),
   only screen and (min-resolution: 1.5dppx) {
-  table.data {
-    thead {
-      th.ordered.loading {
-        background-image: url(../images/spinner_tableheader_2x.gif);
-        background-size: 26px;
-      }
-    }
-  }
-
-  .spinner,
-  .elements.busy:after {
-    background-image: url(../images/spinner_2x.gif);
-    background-size: 20px;
-  }
-  .spinner {
-    &.over-bg {
-      background-image: url(../images/spinner_bg_2x.gif);
-    }
-    &.big {
-      background-image: url(../images/spinner_big_2x.gif);
-      background-size: 48px;
-      &.over-bg {
-        background-image: url(../images/spinner_big_bg_2x.gif);
-      }
-    }
-  }
-
-  .btn.icon.add.loading:after {
-    background-image: url(../images/spinner_2x.gif);
-    background-size: 20px;
-  }
-  .btn.icon.add.loading.submit:after {
-    background-image: url(../images/spinner_submit_2x.gif);
-  }
-  .secondary-buttons .btn.icon.add.loading.submit:after,
-  .btn.secondary.icon.add.loading.submit:after {
-    background-image: url(../images/spinner_submit_secondary_2x.gif);
-  }
-
-  .sel .element.loading:after,
-  .element.loading.sel:after {
-    background-image: url(../images/spinner_element_2x.gif);
-    background-size: 20px;
-  }
-
-  .preview-thumb-container.loading:after {
-    background-image: url(../images/spinner_dark_2x.gif);
-    background-size: 20px;
-  }
 
   .structure ul li {
     background-size: 40px;

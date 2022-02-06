@@ -7,7 +7,7 @@
         formHtml: null,
         $widget: null,
         $form: null,
-        $spinner: null,
+        $saveBtn: null,
         $errorList: null,
         loading: false,
 
@@ -22,7 +22,7 @@
 
         initForm: function($form) {
             this.$form = $form;
-            this.$spinner = this.$form.find('.spinner');
+            this.$saveBtn = this.$form.find('button[type=submit]');
 
             this.initFields();
 
@@ -51,14 +51,14 @@
             }
 
             this.loading = true;
-            this.$spinner.removeClass('hidden');
+            this.$saveBtn.addClass('loading');
 
             var formData = Garnish.getPostData(this.$form),
                 data = $.extend({enabled: 1}, formData, this.params);
 
             Craft.postActionRequest('entries/save-entry', data, (response, textStatus) => {
                 this.loading = false;
-                this.$spinner.addClass('hidden');
+                this.$saveBtn.removeClass('loading');
 
                 if (this.$errorList) {
                     this.$errorList.children().remove();

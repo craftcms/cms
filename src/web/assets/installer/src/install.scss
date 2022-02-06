@@ -130,11 +130,6 @@ body {
         content: 'larr';
       }
     }
-
-    &.loading:after {
-      content: '' !important;
-      background: url(images/spinner_submit.gif) no-repeat 0 0;
-    }
   }
 }
 
@@ -188,16 +183,5 @@ input.hidden {
       margin: 0;
       float: none;
     }
-  }
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  .buttons .btn.loading:after {
-    background-image: url(images/spinner_submit_2x.gif);
-    background-size: 20px;
   }
 }

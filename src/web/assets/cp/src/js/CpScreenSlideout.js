@@ -29,7 +29,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     $noticeContainer: null,
     $cancelBtn: null,
     $saveBtn: null,
-    $submitSpinner: null,
 
     tabManager: null,
     showingSidebar: false,
@@ -100,9 +99,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
         this.$saveBtn = $('<button/>', {
             type: 'submit',
             class: 'btn submit',
+        }).append($('<div/>', {
+            class: 'label',
             text: Craft.t('app', 'Save'),
-        }).appendTo($btnContainer);
-        this.$submitSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo($btnContainer);
+        })).append($('<div/>', {
+            class: 'spinner',
+        })).appendTo($btnContainer);
 
         let $contents = this.$header.add(this.$body).add(this.$footer);
 
@@ -415,11 +417,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     },
 
     showSubmitSpinner: function() {
-        this.$submitSpinner.removeClass('hidden');
+        this.$saveBtn.addClass('loading');
     },
 
     hideSubmitSpinner: function() {
-        this.$submitSpinner.addClass('hidden');
+        this.$saveBtn.removeClass('loading');
     },
 
     handleSubmit: function(ev) {

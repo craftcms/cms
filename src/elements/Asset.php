@@ -2017,7 +2017,9 @@ JS;
     {
         $thumbContainerId = Craft::$app->getView()->namespaceInputId('thumb-container');
         $js = <<<JS
-$('#$thumbContainerId').addClass('loading');
+$('#$thumbContainerId')
+    .addClass('loading')
+    .append($('<div class="spinner spinner-absolute"/>'));
 Craft.sendActionRequest('POST', 'assets/preview-thumb', {
     data: {
         assetId: $this->id,
@@ -2029,7 +2031,8 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         $('#$thumbContainerId').find('img').replaceWith(response.img);
     }
 }).finally(() => {
-    $('#$thumbContainerId').removeClass('loading');
+    $('#$thumbContainerId').removeClass('loading')
+        .find('.spinner').remove();
 });
 JS;
         return $js;

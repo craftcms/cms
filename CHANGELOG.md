@@ -24,7 +24,7 @@
 - Added the `assetUploaders` user query param.
 - Added the `authors` user query param.
 - Added the `hasAlt` asset query param.
-- Added the `fs` and `fsField` macros to the `_includes/forms` control panel template.
+- Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
@@ -314,6 +314,8 @@
 - Added the `Craft.namespaceId()` JavaScript method.
 - Added the `Craft.namespaceInputName()` JavaScript method.
 - Added the `Craft.Queue` JavaScript class.
+- Added the `Craft.ui.createButton()` JavaScript method.
+- Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 
@@ -337,6 +339,7 @@
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Database backups are now named after the Craft version in the database, rather than the Composer-installed version. ([#9733](https://github.com/craftcms/cms/discussions/9733))
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
+- Improved the look of loading spinners in the control panel. ([#9109](https://github.com/craftcms/cms/discussions/9109))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
 - Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.
