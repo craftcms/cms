@@ -256,8 +256,6 @@ class UsersController extends Controller
         $this->stdout("Activation URL for “{$user->username}”: ");
         $this->stdout($url . PHP_EOL, Console::FG_CYAN, PHP_EOL);
 
-        Craft::$app->getUsers()->sendActivationEmail($user);
-
         return ExitCode::OK;
     }
 
