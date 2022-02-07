@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-4">
+    <div class="tw-mb-4">
         <form @submit.prevent="search()">
             <div class="ps-search">
                 <icon icon="search" />
@@ -35,10 +35,10 @@
 
 <style lang="scss">
     .ps-search {
-        @apply relative;
+        @apply tw-relative;
 
         .c-icon {
-            @apply absolute z-10 text-gray-600;
+            @apply tw-absolute tw-z-10 tw-text-gray-600;
             top: 9px;
             left: 10px;
         }

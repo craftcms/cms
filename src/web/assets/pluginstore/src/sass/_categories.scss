@@ -1,33 +1,33 @@
 ul.categories {
-  @apply -mx-6;
+  @apply tw--mx-6;
 
   li {
     position: relative;
 
     &:before,
     &:last-child:after {
-      @apply absolute left-0 right-0;
+      @apply tw-absolute tw-left-0 tw-right-0;
       content: '';
     }
 
     &:before {
-      @apply top-0;
+      @apply tw-top-0;
     }
 
     &:last-child:after {
-      @apply bottom-0;
+      @apply tw-bottom-0;
     }
 
     a {
-      @apply block relative px-6 py-2 text-gray-900;
+      @apply tw-block tw-relative tw-px-6 tw-py-2 tw-text-gray-900;
 
       img {
-        @apply align-middle mr-2;
+        @apply tw-align-middle tw-mr-2;
         width: 24px;
       }
 
       &:hover {
-        @apply no-underline z-10;
+        @apply tw-no-underline tw-z-10;
         background-color: $grey100;
 
         &:not(.router-link-active) {

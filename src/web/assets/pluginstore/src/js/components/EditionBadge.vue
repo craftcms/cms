@@ -30,25 +30,25 @@
     @import "../../../../../../../packages/craftcms-sass/mixins";
 
     .edition-badge {
-        @apply inline-block;
+        @apply tw-inline-block;
 
         &.is-block {
-            @apply block;
+            @apply tw-block;
         }
 
         &:not(.is-block) {
-            @apply relative;
+            @apply tw-relative;
             top: -1px;
         }
 
         &.is-big {
             .edition-badge-name {
-                @apply text-base px-3 py-1;
+                @apply tw-text-base tw-px-3 tw-py-1;
             }
         }
 
         .edition-badge-name {
-            @apply inline-block uppercase border border-solid border-gray-600 px-2 py-0 text-gray-800 rounded text-xs;
+            @apply tw-inline-block tw-uppercase tw-border tw-border-solid tw-border-gray-600 tw-px-2 tw-py-0 tw-text-gray-800 tw-rounded tw-text-xs;
             letter-spacing: 1.5px;
         }
     }

@@ -1,16 +1,16 @@
 .ps-grid-plugins {
-  @apply flex flex-wrap -mx-4;
+  @apply tw-flex tw-flex-wrap tw--mx-4;
   box-sizing: border-box;
 
   .ps-grid-box {
-    @apply w-full;
+    @apply tw-w-full;
     box-sizing: border-box;
 
     .plugin-card {
-      @apply mx-4;
+      @apply tw-mx-4;
 
       .plugin-icon {
-        @apply shrink-0;
+        @apply tw-shrink-0;
       }
     }
   }
@@ -19,7 +19,7 @@
 @media only screen and (min-width: 600px) {
   .ps-grid-plugins {
     .ps-grid-box {
-      @apply w-1/2;
+      @apply tw-w-1/2;
     }
   }
 }
@@ -27,7 +27,7 @@
 @media only screen and (min-width: 1400px) {
   .ps-grid-plugins {
     .ps-grid-box {
-      @apply w-1/3;
+      @apply tw-w-1/3;
     }
   }
 }
@@ -35,7 +35,7 @@
 @media only screen and (min-width: $minLargeScreenWidth) {
   .ps-grid-plugins {
     .ps-grid-box {
-      @apply w-1/4;
+      @apply tw-w-1/4;
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-    <div class="hidden">
+    <div class="tw-hidden">
         <div ref="pluginstoremodal" id="pluginstore-modal" class="pluginstore-modal modal" :class="'step-'+modalStep">
             <cart v-if="modalStep === 'cart'" @continue-shopping="$root.closeModal()"></cart>
             <identity v-else-if="modalStep === 'identity'" @back="back()"></identity>
@@ -82,31 +82,31 @@
     @import "../../../../../../../../packages/craftcms-sass/mixins";
 
     #pluginstore-modal {
-        @apply absolute top-0 left-0;
+        @apply tw-absolute tw-top-0 tw-left-0;
         max-width: 850px;
         max-height: 650px;
         z-index: 20000;
 
         .pluginstore-modal-flex {
-            @apply absolute inset-0 flex flex-col;
+            @apply tw-absolute tw-inset-0 tw-flex tw-flex-col;
 
             header {
                 .btn-left {
-                    @apply absolute;
+                    @apply tw-absolute;
                     top: 28px;
                     @include left(24px);
                 }
 
                 h1 {
-                    @apply text-center;
+                    @apply tw-text-center;
                 }
             }
 
             .pluginstore-modal-main {
-                @apply relative flex flex-grow mb-0 min-h-0;
+                @apply tw-relative tw-flex tw-flex-grow tw-mb-0 tw-min-h-0;
 
                 .pluginstore-modal-content {
-                    @apply overflow-auto flex-grow;
+                    @apply tw-overflow-auto tw-flex-grow;
                     padding: 24px;
                 }
             }
@@ -117,26 +117,26 @@
 
         &.step-payment {
             .blocks {
-                @apply flex;
+                @apply tw-flex;
                 margin: 0 -20px;
 
                 .block {
-                    @apply flex-grow w-1/2;
+                    @apply tw-flex-grow tw-w-1/2;
                     padding: 0 20px;
                 }
             }
 
             .multiselectrow {
-                @apply flex;
+                @apply tw-flex;
 
                 & > div {
-                    @apply w-1/2;
+                    @apply tw-w-1/2;
 
                     .select {
-                        @apply w-full;
+                        @apply tw-w-full;
 
                         select {
-                            @apply w-full;
+                            @apply tw-w-full;
                         }
                     }
                 }
@@ -147,7 +147,7 @@
 
         &.step-thank-you {
             &.pluginstore-modal .pluginstore-modal-flex .pluginstore-modal-main .pluginstore-modal-content {
-                @apply flex p-0 justify-center items-center;
+                @apply tw-flex tw-p-0 tw-justify-center tw-items-center;
             }
 
             h2 {
@@ -155,7 +155,7 @@
             }
 
             #thank-you-message {
-                @apply text-center;
+                @apply tw-text-center;
                 padding: 48px 24px;
             }
         }

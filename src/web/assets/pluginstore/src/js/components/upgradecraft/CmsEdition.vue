@@ -12,7 +12,7 @@
                 </template>
             </div>
 
-            <p v-if="edition.price && edition.price > 0" class="-mt-8 py-6 text-gray-700">
+            <p v-if="edition.price && edition.price > 0" class="tw--mt-8 tw-py-6 tw-text-gray-700">
                 {{ "Price includes 1 year of updates."|t('app') }}<br />
                 {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)}) }}
             </p>
@@ -84,31 +84,31 @@
 
 <style lang="scss">
     .cms-editions-edition {
-        @apply border border-gray-300 border-solid p-8 rounded text-center flex flex-col;
+        @apply tw-border tw-border-gray-300 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
 
         .description {
-            @apply flex-1;
+            @apply tw-flex-1;
 
             .edition-name {
-                @apply border-b border-gray-300 border-solid text-gray-700 inline-block py-1 uppercase text-lg font-bold;
+                @apply tw-border-b tw-border-gray-300 tw-border-solid tw-text-gray-700 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
             }
 
             .edition-description {
-                @apply text-lg my-6 leading-normal;
+                @apply tw-text-lg tw-my-6 tw-leading-normal;
             }
 
             .price {
-                @apply text-3xl font-bold my-8;
+                @apply tw-text-3xl tw-font-bold tw-my-8;
             }
 
             ul {
-                @apply text-left mb-8;
+                @apply tw-text-left tw-mb-8;
 
                 li {
-                    @apply py-2 border-b border-gray-300 border-solid;
+                    @apply tw-py-2 tw-border-b tw-border-gray-300 tw-border-solid;
 
                     &:first-child {
-                        @apply border-t;
+                        @apply tw-border-t;
                     }
                 }
             }
@@ -124,7 +124,7 @@
             }
 
             .c-btn {
-                @apply mt-3;
+                @apply tw-mt-3;
             }
         }
     }

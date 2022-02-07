@@ -7,18 +7,18 @@
                     :plugins="plugins"
             >
                 <template v-slot:header>
-                    <div v-if="developer" class="developer-card tw-flex pb-2 items-center">
-                        <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
+                    <div v-if="developer" class="developer-card tw-flex tw-pb-2 tw-items-center">
+                        <div class="avatar tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-6 tw-no-line-height">
                             <img :src="developer.photoUrl" width="120" height="120" />
                         </div>
 
-                        <div class="flex-1">
-                            <h1 class="text-lg font-bold mb-2">{{developer.developerName}}</h1>
+                        <div class="tw-flex-1">
+                            <h1 class="tw-text-lg tw-font-bold tw-mb-2">{{developer.developerName}}</h1>
 
-                            <p class="mb-1" v-if="developer.location">{{ developer.location }}</p>
+                            <p class="tw-mb-1" v-if="developer.location">{{ developer.location }}</p>
 
                             <ul v-if="developer.developerUrl">
-                                <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
+                                <li class="tw-mr-4 tw-inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
                             </ul>
                         </div>
                     </div>

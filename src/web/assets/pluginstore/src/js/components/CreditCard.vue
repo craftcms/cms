@@ -4,12 +4,12 @@
             <cleave class="fullwidth" :class="{error: errors.number}" type="tel" v-model="number" id="cc-number" autocomplete="off" :placeholder="'Card number'|t('app')" :options="{ creditCard: true }"></cleave>
         </div>
         <div class="field">
-            <div class="flex">
-                <div class="flex-grow">
-                    <cleave class="w-full" :class="{error: errors.exp}" type="tel" v-model="exp" id="cc-exp" autocomplete="off" :placeholder="'MM / YY'|t('app')" :options="{ date: true, datePattern: ['m', 'y'] }"></cleave>
+            <div class="tw-flex">
+                <div class="tw-flex-grow">
+                    <cleave class="tw-w-full" :class="{error: errors.exp}" type="tel" v-model="exp" id="cc-exp" autocomplete="off" :placeholder="'MM / YY'|t('app')" :options="{ date: true, datePattern: ['m', 'y'] }"></cleave>
                 </div>
-                <div class="flex-grow">
-                    <cleave class="w-full" :class="{error: errors.cvc}" v-model="cvc" id="cc-cvc" autocomplete="off" :placeholder="'CVC'|t('app')" :options="{ numericOnly: true, blocks: [4] }"></cleave>
+                <div class="tw-flex-grow">
+                    <cleave class="tw-w-full" :class="{error: errors.cvc}" v-model="cvc" id="cc-cvc" autocomplete="off" :placeholder="'CVC'|t('app')" :options="{ numericOnly: true, blocks: [4] }"></cleave>
                 </div>
             </div>
         </div>

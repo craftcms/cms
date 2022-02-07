@@ -14,7 +14,7 @@
         <td>
             <template v-if="activeTrial.price">
                 <template v-if="activeTrial.discountPrice">
-                    <del class="mr-1">{{activeTrial.price|currency}}</del>
+                    <del class="tw-mr-1">{{activeTrial.price|currency}}</del>
                     <strong>{{(activeTrial.discountPrice)|currency}}</strong>
                 </template>
                 <template v-else>
@@ -22,11 +22,11 @@
                 </template>
             </template>
         </td>
-        <td class="w-1/4">
-            <div class="text-right">
+        <td class="tw-w-1/4">
+            <div class="tw-text-right">
                 <template v-if="!addToCartLoading">
                     <a @click="addToCart()" :loading="addToCartLoading" :class="{
-                        'disabled hover:no-underline': activeTrial.licenseMismatched
+                        'disabled hover:tw-no-underline': activeTrial.licenseMismatched
                     }">{{ "Add to cart"|t('app') }}</a>
                 </template>
                 <template v-else>

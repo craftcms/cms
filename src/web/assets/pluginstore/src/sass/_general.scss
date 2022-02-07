@@ -11,7 +11,7 @@ dl, dt, dd, ol, ul, li, fieldset, form, label, legend, article, main, nav, ins {
 }
 
 hr {
-  @apply border-gray-200;
+  @apply tw-border-gray-200;
 }
 
 h1 {
@@ -19,19 +19,19 @@ h1 {
 }
 
 h2 {
-  @apply mt-8 mb-4;
+  @apply tw-mt-8 tw-mb-4;
 }
 
 p {
-  @apply mb-4;
+  @apply tw-mb-4;
 }
 
 pre {
-  @apply bg-gray-200 p-4 mb-4 overflow-auto max-w-full min-w-0;
+  @apply tw-bg-gray-200 tw-p-4 tw-mb-4 tw-overflow-auto tw-max-w-full tw-min-w-0;
 }
 
 code {
-  @apply bg-gray-200 p-1;
+  @apply tw-bg-gray-200 tw-p-1;
 }
 
 
@@ -50,14 +50,14 @@ code {
 }
 
 input.error {
-  @apply border-red-600;
+  @apply tw-border-red-600;
 }
 
 
 /* Header */
 
 .ps-header {
-  @apply border-b border-solid border-gray-300 py-2 flex justify-between;
+  @apply tw-border-b tw-border-solid tw-border-gray-300 tw-py-2 tw-flex tw-justify-between;
 }
 
 
@@ -74,11 +74,11 @@ input.error {
 }
 
 #main-container {
-  @apply relative;
+  @apply tw-relative;
 }
 
 #main-content #content {
-  @apply relative;
+  @apply tw-relative;
 }
 
 #container {
@@ -89,7 +89,7 @@ input.error {
 /* Plugin Store actions */
 
 #pluginstore-actions {
-  @apply flex justify-between items-center;
+  @apply tw-flex tw-justify-between tw-items-center;
 
   & > * {
     @include margin-left(18px);
@@ -97,7 +97,7 @@ input.error {
 
   #cart-button {
     svg {
-      @apply inline-block;
+      @apply tw-inline-block;
       width: 18px;
       height: 18px;
       vertical-align: middle;
@@ -115,7 +115,7 @@ input.error {
 
     .badge {
       @include margin(0, 0, 0, -6px);
-      @apply relative inline-block flex-shrink text-white;
+      @apply tw-relative tw-inline-block tw-flex-shrink tw-text-white;
       top: -1px;
       padding: 0 6px;
       font-size: 11px;
@@ -127,12 +127,12 @@ input.error {
 
   #craftid-account {
     &:hover {
-      @apply no-underline;
+      @apply tw-no-underline;
     }
 
     .photo {
       svg {
-        @apply align-middle;
+        @apply tw-align-middle;
         @include margin-right(7px);
         width: 22px;
         height: 22px;
@@ -141,13 +141,13 @@ input.error {
     }
 
     &:hover .label {
-      @apply no-underline;
+      @apply tw-no-underline;
     }
   }
 
   #craftid-connect-form {
     .ssl-status {
-      @apply inline-block;
+      @apply tw-inline-block;
     }
   }
 }

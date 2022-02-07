@@ -2,16 +2,16 @@
     <div class="plugin-details ps-container">
         <template v-if="!loading && plugin">
             <!-- header -->
-            <div class="plugin-details-header border-b border-solid border-gray-300 tw-flex mb-6 pb-6 items-center">
+            <div class="plugin-details-header tw-border-b tw-border-solid tw-border-gray-300 tw-tw-flex tw-mb-6 tw-pb-6 tw-items-center">
                 <div class="plugin-icon">
                     <img v-if="plugin.iconUrl" :src="plugin.iconUrl" width="100" />
                     <img v-else :src="defaultPluginSvg" width="100" />
                 </div>
 
                 <div class="description flex-1">
-                    <h1 class="text-lg font-bold mb-2">{{ plugin.name }}</h1>
-                    <p class="mb-2 text-gray-800">{{ plugin.shortDescription }}</p>
-                    <p class="mb-2"><router-link :to="'/developer/' + plugin.developerId" :title="plugin.developerName">{{ plugin.developerName }}</router-link></p>
+                    <h1 class="tw-text-lg tw-font-bold tw-mb-2">{{ plugin.name }}</h1>
+                    <p class="tw-mb-2 tw-text-gray-800">{{ plugin.shortDescription }}</p>
+                    <p class="tw-mb-2"><router-link :to="'/developer/' + plugin.developerId" :title="plugin.developerName">{{ plugin.developerName }}</router-link></p>
                 </div>
 
                 <div v-if="actionsLoading">
@@ -23,12 +23,12 @@
             <div class="plugin-details-body">
                 <template v-if="!loading">
                     <template v-if="plugin.abandoned">
-                        <div class="error mb-6 px-4 py-3 rounded border border-solid border-red-600 flex flex-nowrap text-base">
-                            <svg class="w-8 h-8">
+                        <div class="error tw-mb-6 tw-px-4 tw-py-3 tw-rounded tw-border tw-border-solid tw-border-red-600 tw-flex tw-flex-nowrap tw-text-base">
+                            <svg class="tw-w-8 tw-h-8">
                                 <use :xlink:href="alertIcon + '#alert'"></use>
                             </svg>
 
-                            <div class="flex-1 mb-0">
+                            <div class="tw-flex-1 tw-mb-0">
                                 <strong>{{ "This plugin is no longer maintained."|t('app') }} </strong>
                                 <span v-if="recommendedLabel" v-html="recommendedLabel"></span>
                             </div>
@@ -41,15 +41,15 @@
                         <hr>
                     </template>
 
-                    <div class="lg:flex">
-                        <div class="lg:flex-1 lg:pr-8 lg:mr-4">
+                    <div class="lg:tw-flex">
+                        <div class="lg:tw-flex-1 lg:tw-pr-8 lg:tw-mr-4">
                             <div v-if="longDescription" v-html="longDescription" class="readable"></div>
                             <div v-else-if="plugin.shortDescription" v-html="plugin.shortDescription" class="readable"></div>
                             <p v-else>No description.</p>
                         </div>
-                        <div class="lg:pl-8 lg:ml-4">
+                        <div class="lg:tw-pl-8 lg:tw-ml-4">
                             <ul>
-                                <li v-if="plugin.documentationUrl" class="py-1">
+                                <li v-if="plugin.documentationUrl" class="tw-py-1">
                                     <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
                                         <icon icon="book"></icon> {{ "Documentation"|t('app') }}
                                     </a>
@@ -63,16 +63,16 @@
 
                     <hr>
 
-                    <div class="py-8">
+                    <div class="tw-py-8">
                         <plugin-editions :plugin="plugin"></plugin-editions>
 
-                        <div v-if="licenseMismatched" class="mx-auto max-w-sm px-8">
+                        <div v-if="licenseMismatched" class="tw-mx-auto tw-max-w-sm tw-px-8">
                             <div class="tw-flex items-center">
                                 <svg version="1.1"
                                      xmlns="http://www.w3.org/2000/svg"
                                      x="0px" y="0px" viewBox="0 0 256 448"
                                      xml:space="preserve"
-                                     class="text-blue-600 fill-current w-8 h-8 mr-4 flex items-center">
+                                     class="tw-text-blue-600 tw-fill-current tw-w-8 tw-h-8 tw-mr-4 tw-flex tw-items-center">
 <path fill="currentColor" d="M184,144c0,4.2-3.8,8-8,8s-8-3.8-8-8c0-17.2-26.8-24-40-24c-4.2,0-8-3.8-8-8s3.8-8,8-8C151.2,104,184,116.2,184,144z
 M224,144c0-50-50.8-80-96-80s-96,30-96,80c0,16,6.5,32.8,17,45c4.8,5.5,10.2,10.8,15.2,16.5C82,226.8,97,251.8,99.5,280h57
 c2.5-28.2,17.5-53.2,35.2-74.5c5-5.8,10.5-11,15.2-16.5C217.5,176.8,224,160,224,144z M256,144c0,25.8-8.5,48-25.8,67
@@ -90,15 +90,15 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
 
                     <hr>
 
-                    <div class="max-w-xs mx-auto py-8">
-                        <h2 class="mt-0">{{ "Package Name"|t('app') }}</h2>
+                    <div class="tw-max-w-xs tw-mx-auto tw-py-8">
+                        <h2 class="tw-mt-0">{{ "Package Name"|t('app') }}</h2>
                         <p>{{ "Copy the package’s name for this plugin."|t('app') }}</p>
                         <copy-package :plugin="plugin"></copy-package>
                     </div>
 
                     <hr>
 
-                    <h2 class="mb-4">{{ "Information"|t('app') }}</h2>
+                    <h2 class="tw-mb-4">{{ "Information"|t('app') }}</h2>
                     <div class="plugin-infos">
                         <ul class="plugin-meta">
                             <li><span>{{ "Version"|t('app') }}</span> <strong>{{ plugin.version }}</strong></li>
@@ -118,7 +118,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
                     </div>
 
                     <p>
-                        <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"><icon icon="exclamation-circle" class="mr-2" />{{ "Report an issue"|t('app') }}</a>
+                        <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"><icon icon="exclamation-circle" class="tw-mr-2" />{{ "Report an issue"|t('app') }}</a>
                     </p>
 
                     <hr>
@@ -273,7 +273,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
     @import "../../../../../../../../packages/craftcms-sass/mixins";
 
     .plugin-icon {
-        @apply relative;
+        @apply tw-relative;
         @include margin-right(1.5rem); // .mr-6
     }
 
@@ -281,14 +281,14 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
     /* Plugin Meta */
 
     ul.plugin-meta {
-        @apply -mx-4 flex flex-wrap;
+        @apply tw--mx-4 tw-flex tw-flex-wrap;
 
         li {
-            @apply mb-8 px-4 shrink-0 grow-0;
+            @apply tw-mb-8 tw-px-4 tw-shrink-0 tw-grow-0;
             flex-basis: 50%;
 
             span {
-                @apply block text-gray-500;
+                @apply tw-block tw-text-gray-500;
             }
         }
     }

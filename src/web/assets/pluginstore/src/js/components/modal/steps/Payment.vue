@@ -32,26 +32,26 @@
 
                         <h2>{{ "Coupon Code"|t('app') }}</h2>
                         <textbox placeholder="XXXXXXX" id="coupon-code" v-model="couponCode" size="12" @input="couponCodeChange" :errors="couponCodeError" />
-                        <spinner v-if="couponCodeLoading" class="mt-2"></spinner>
+                        <spinner v-if="couponCodeLoading" class="tw-mt-2"></spinner>
                     </div>
 
                     <div class="block">
                         <h2>{{ "Billing"|t('app') }}</h2>
 
-                        <div class="flex">
-                            <div class="flex-grow">
+                        <div class="tw-flex">
+                            <div class="tw-flex-grow">
                                 <textbox :placeholder="'First Name'|t('app')" id="first-name" v-model="billingInfo.firstName" :errors="errors['billingAddress.firstName']" />
                             </div>
-                            <div class="flex-grow">
+                            <div class="tw-flex-grow">
                                 <textbox :placeholder="'Last Name'|t('app')" id="last-name" v-model="billingInfo.lastName" :errors="errors['billingAddress.lastName']" />
                             </div>
                         </div>
 
-                        <div class="flex">
-                            <div class="flex-grow">
+                        <div class="tw-flex">
+                            <div class="tw-flex-grow">
                                 <textbox :placeholder="'Business Name'|t('app')" id="business-name" v-model="billingInfo.businessName" :errors="errors['billingAddress.businessName']" />
                             </div>
-                            <div class="flex-grow">
+                            <div class="tw-flex-grow">
                                 <textbox :placeholder="'Business Tax ID'|t('app')" id="business-tax-id" v-model="billingInfo.businessTaxId" :errors="errors['billingAddress.businessTaxId']" />
                             </div>
                         </div>
@@ -60,20 +60,20 @@
 
                         <textbox :placeholder="'Address Line 2'|t('app')" id="address-2" v-model="billingInfo.address2" :errors="errors['billingAddress.address2']" />
 
-                        <div class="flex">
-                            <div class="flex-grow">
+                        <div class="tw-flex">
+                            <div class="tw-flex-grow">
                                 <textbox :class="{ error: errors['billingAddress.city'] }" :placeholder="'City'|t('app')" id="city" v-model="billingInfo.city" />
                             </div>
-                            <div class="flex-grow">
+                            <div class="tw-flex-grow">
                                 <textbox :class="{ error: errors['billingAddress.zipCode'] }" :placeholder="'Zip Code'|t('app')" id="zip-code" v-model="billingInfo.zipCode" />
                             </div>
                         </div>
 
-                        <div class="flex items-start">
-                            <div class="flex-grow">
+                        <div class="tw-flex tw-items-start">
+                            <div class="tw-flex-grow">
                                 <dropdown v-model="billingInfo.country" :options="countryOptions" @input="onCountryChange" :errors="errors['billingAddress.country']" />
                             </div>
-                            <div class="flex-grow">
+                            <div class="tw-flex-grow">
                                 <dropdown v-model="billingInfo.state" :options="stateOptions" :errors="errors['billingAddress.state']" />
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                 <div class="centeralign">
                     <p v-if="error" class="error">{{ error }}</p>
 
-                    <div class="mb-4">
+                    <div class="tw-mb-4">
                         <btn kind="primary" type="submit" :loading="loading" :disabled="loading || couponCodeLoading">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
                     </div>
 
@@ -428,10 +428,10 @@
         }
     }
     .select {
-        @apply w-full;
+        @apply tw-w-full;
 
         select {
-            @apply w-full;
+            @apply tw-w-full;
         }
     }
 </style>

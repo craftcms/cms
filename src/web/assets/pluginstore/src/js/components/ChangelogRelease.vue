@@ -29,55 +29,55 @@
     @import "../../../../../../../packages/craftcms-sass/mixins";
 
     .changelog-release {
-        @apply pt-2 pb-4 border-b border-gray-300 border-solid;
+        @apply tw-pt-2 tw-pb-4 tw-border-b tw-border-gray-300 tw-border-solid;
 
         .version {
-            @apply relative;
+            @apply tw-relative;
 
             .anchor {
-                @apply absolute text-white p-1 rounded-full;
+                @apply tw-absolute tw-text-white tw-p-1 tw-rounded-full;
                 @include left(-24px);
                 top: 0px;
                 font-size: 14px;
                 transform: rotate(45deg);
 
                 &:hover {
-                    @apply text-black;
+                    @apply tw-text-black;
                 }
             }
 
             &:hover {
                 .anchor {
-                    @apply text-black;
+                    @apply tw-text-black;
                 }
             }
 
             h2 {
-                @apply mt-6 mb-2;
+                @apply tw-mt-6 tw-mb-2;
             }
 
             .date {
-                @apply text-gray-600;
+                @apply tw-text-gray-600;
             }
 
             .critical {
-                @apply uppercase text-red-600 border border-red-600 border-solid inline-block px-1 py-0 rounded text-sm mt-2;
+                @apply tw-uppercase tw-text-red-600 tw-border tw-border-red-600 tw-border-solid tw-inline-block tw-px-1 tw-py-0 tw-rounded tw-text-sm tw-mt-2;
             }
         }
 
         .details {
-            @apply pt-6;
+            @apply tw-pt-6;
 
             h3 {
-                @apply mt-6 mb-4;
+                @apply tw-mt-6 tw-mb-4;
             }
 
             ul {
-                @apply mb-4 ml-6 leading-normal;
+                @apply tw-mb-4 tw-ml-6 tw-leading-normal;
                 list-style-type: disc;
 
                 li:not(:first-child) {
-                    @apply mt-1;
+                    @apply tw-mt-1;
                 }
             }
         }
@@ -85,10 +85,10 @@
 
     @media (min-width: 992px) {
         .changelog-release {
-            @apply flex;
+            @apply tw-flex;
 
             .version {
-                @apply w-full max-w-xs;
+                @apply tw-w-full tw-max-w-xs;
 
                 .anchor {
                     top: 20px;
@@ -96,7 +96,7 @@
             }
 
             .details {
-                @apply flex-1;
+                @apply tw-flex-1;
             }
         }
     }

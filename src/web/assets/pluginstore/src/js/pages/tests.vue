@@ -10,7 +10,7 @@
 
         <p><a @click="openModal()">Open Garnish Modal</a></p>
 
-        <div class="hidden">
+        <div class="tw-hidden">
             <div ref="garnishmodalcontent" class="modal">
                 <div class="body">
                     Hello World
