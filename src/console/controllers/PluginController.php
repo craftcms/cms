@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use yii\console\ExitCode;
 
@@ -27,7 +28,7 @@ class PluginController extends Controller
     public $force = false;
 
     /**
-     * @var string
+     * @inheritdoc
      */
     public $defaultAction = 'list';
 
@@ -60,24 +61,38 @@ class PluginController extends Controller
      * List all plugins.
      *
      * @return int
+     * @since 3.7.31
      */
     public function actionList(): int
     {
         $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+        ArrayHelper::multisort($pluginInfo, ['isEnabled', 'isInstalled'], [SORT_DESC, SORT_DESC]);
         $tableData = [];
 
         foreach ($pluginInfo as $handle => $info) {
-            $tableData[$handle] = [
-                $handle,
+            $row = [
                 $info['name'],
+                $handle,
                 $info['version'],
                 $this->_boolToString($info['isInstalled']),
                 $this->_boolToString($info['isEnabled']),
             ];
+
+            if ($info['isEnabled']) {
+                $color = Console::FG_GREEN;
+            } else if ($info['isInstalled']) {
+                $color = Console::FG_YELLOW;
+            } else {
+                $color = Console::FG_GREY;
+            }
+
+            $tableData[] = array_map(function($value) use ($color) {
+                return [$value, 'format' => [$color]];
+            }, $row);
         }
 
         $this->stdout(PHP_EOL);
-        $this->table(['Handle', 'Name', 'Version', 'Installed', 'Enabled'], $tableData);
+        $this->table(['Name', 'Handle', 'Version', 'Installed', 'Enabled'], $tableData);
         $this->stdout(PHP_EOL);
 
         return ExitCode::OK;
