@@ -159,7 +159,6 @@
             ...mapState({
                 activeTrialPlugins: state => state.cart.activeTrialPlugins,
                 cart: state => state.cart.cart,
-                craftId: state => state.craft.craftId,
                 craftLogo: state => state.craft.craftLogo,
                 expiryDateOptions: state => state.pluginStore.expiryDateOptions,
             }),
@@ -244,32 +243,7 @@
             },
 
             payment() {
-                if (this.craftId) {
-                    if (this.craftId.email === this.cart.email) {
-                        // Move straight to the cart if Craft ID account email and cart email are the same
-                        this.$root.openModal('payment')
-                    } else {
-                        // Otherwise update the cart’s email with the one from the Craft ID account
-                        let data = {
-                            email: this.craftId.email,
-                        }
-
-                        this.loadingCheckout = true
-
-                        this.$store.dispatch('cart/saveCart', data)
-                            .then(() => {
-                                this.loadingCheckout = false
-                                this.$root.openModal('payment')
-                            })
-                            .catch((error) => {
-                                this.loadingCheckout = false
-                                this.$root.displayError("Couldn’t update cart.")
-                                throw error
-                            })
-                    }
-                } else {
-                    this.$root.openModal('identity')
-                }
+              console.log('Redirect to Craft Console’s cart')
             },
 
             removeFromCart(itemKey) {
