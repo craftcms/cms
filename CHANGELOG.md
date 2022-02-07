@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `clear-deprecations` command. ([#10430](https://github.com/craftcms/cms/discussions/10430))
+
 ### Changed
 - Craft no longer sends a `Permissions-Policy: interest-cohort=()` header by default, as Google has [abandoned](https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/) its FLoC proposal.
 - Craft no longer attempts to create the `cpresources` folder when `CRAFT_EPHEMERAL` is set to `true`. ([#10412](https://github.com/craftcms/cms/issues/10412))
