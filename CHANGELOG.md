@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `clear-deprecations` command. ([#10430](https://github.com/craftcms/cms/discussions/10430))
+- Added the `plugin/list` command. ([#10470](https://github.com/craftcms/cms/pull/10470))
 
 ### Changed
 - Improved focus styles in the control panel. ([#10398](https://github.com/craftcms/cms/pull/10398))
