@@ -3,18 +3,18 @@
 use craft\helpers\StringHelper;
 
 return [
-    'assets/edit/<assetId:\d+><filename:(?:-[^\/]*)?>' => 'assets/edit-asset',
+    'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
     'assets/<defaultSource:{handle}(\/.*)?>' => ['template' => 'assets'],
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
-    'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
-    'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-[^\/]*)?>' => 'categories/edit-category',
+    'categories/<groupHandle:{handle}>/new' => 'categories/create',
+    'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'dashboard' => 'dashboard/index',
-    'edit/<id:\d+>' => 'edit/by-id',
-    'edit/<uid:' . StringHelper::UUID_PATTERN . '>' => 'edit/by-uid',
+    'edit/<elementId:\d+>' => 'elements/redirect',
+    'edit/<elementUid:' . StringHelper::UUID_PATTERN . '>' => 'elements/redirect',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
-    'entries/<section:{handle}>/new' => 'entry-revisions/create-draft',
-    'entries/<section:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>' => 'entries/edit-entry',
+    'entries/<section:{handle}>/new' => 'entries/create',
+    'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'myaccount' => [

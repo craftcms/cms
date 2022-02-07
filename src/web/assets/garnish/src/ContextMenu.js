@@ -20,7 +20,7 @@ export default Base.extend(
 
             // Is this already a context menu target?
             if (this.$target.data('contextmenu')) {
-                Garnish.log('Double-instantiating a context menu on an element');
+                console.warn('Double-instantiating a context menu on an element');
                 this.$target.data('contextmenu').destroy();
             }
 

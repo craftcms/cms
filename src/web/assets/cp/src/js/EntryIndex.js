@@ -195,28 +195,34 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         var newEntryBtnText = this.$newEntryBtn.text();
         this.$newEntryBtn.text(Craft.t('app', 'New {section} entry', {section: section.name}));
 
-        Craft.createElementEditor(this.elementType, {
-            hudTrigger: this.$newEntryBtnGroup,
-            siteId: this.siteId,
-            attributes: {
+        Craft.sendActionRequest('POST', 'elements/create', {
+            data: {
+                elementType: this.elementType,
+                siteId: this.siteId,
                 sectionId: sectionId,
                 typeId: section.entryTypes[0].id,
-                enabled: section.canPublish ? 1 : 0,
+                enabled: section.canSave ? 1 : 0,
             },
-            onHideHud: () => {
-                this.$newEntryBtn.removeClass('inactive').text(newEntryBtnText);
-            },
-            onSaveElement: response => {
+        }).then(ev => {
+            const slideout = Craft.createElementEditor(this.elementType, {
+                siteId: this.siteId,
+                elementId: ev.data.element.id,
+                draftId: ev.data.element.draftId,
+            });
+            slideout.on('submit', () => {
                 // Make sure the right section is selected
-                var sectionSourceKey = 'section:' + section.uid;
+                const sectionSourceKey = `section:${section.uid}`;
 
                 if (this.sourceKey !== sectionSourceKey) {
                     this.selectSourceByKey(sectionSourceKey);
                 }
 
-                this.selectElementAfterUpdate(response.id);
+                this.selectElementAfterUpdate(ev.data.element.id);
                 this.updateElements();
-            },
+            });
+            slideout.on('close', () => {
+                this.$newEntryBtn.removeClass('inactive').text(newEntryBtnText);
+            });
         });
     }
 });

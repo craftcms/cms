@@ -15,7 +15,7 @@ Craft.Listbox = Garnish.Base.extend({
 
         // Is this already a listbox?
         if (this.$container.data('listbox')) {
-            Garnish.log('Double-instantiating a listbox on an element');
+            console.warn('Double-instantiating a listbox on an element');
             this.$container.data('listbox').destroy();
         }
 
@@ -101,6 +101,11 @@ Craft.Listbox = Garnish.Base.extend({
         } else {
             this.select(this.selectedOptionIndex + 1);
         }
+    },
+
+    destroy: function() {
+        this.$container.removeData('listbox')
+        this.base();
     },
 }, {
     defaults: {

@@ -32,7 +32,7 @@ class GlobalSet extends Element
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Global Set');
+        return Craft::t('app', 'Global set');
     }
 
     /**
@@ -48,7 +48,7 @@ class GlobalSet extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Global Sets');
+        return Craft::t('app', 'Global sets');
     }
 
     /**
@@ -94,9 +94,33 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    protected function isEditable(): bool
+    public function canView(User $user): bool
     {
-        return Craft::$app->getUser()->checkPermission("editGlobalSet:$this->uid");
+        return $user->can("editGlobalSet:$this->uid");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canSave(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        return false;
     }
 
     /**

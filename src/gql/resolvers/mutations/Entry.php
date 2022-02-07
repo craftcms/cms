@@ -101,13 +101,14 @@ class Entry extends ElementMutationResolver
         $siteId = $arguments['siteId'] ?? null;
 
         $elementService = Craft::$app->getElements();
+        /** @var EntryElement $entry */
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
             return;
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
+        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->getTypeId());
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
 
         $elementService->deleteElementById($entryId);
@@ -134,7 +135,7 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
+        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->getTypeId());
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
         $draftName = $arguments['name'] ?? '';
@@ -142,7 +143,7 @@ class Entry extends ElementMutationResolver
         $provisional = $arguments['provisional'] ?? false;
 
         /** @var Entry|DraftBehavior $draft */
-        $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->authorId, $draftName, $draftNotes, [], $provisional);
+        $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 
         return $draft->draftId;
     }
@@ -159,6 +160,7 @@ class Entry extends ElementMutationResolver
      */
     public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): int
     {
+        /** @var EntryElement|DraftBehavior $draft */
         $draft = Craft::$app->getElements()
             ->createElementQuery(EntryElement::class)
             ->status(null)
@@ -169,7 +171,7 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->typeId);
+        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->getTypeId());
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
         /** @var EntryElement $draft */
@@ -224,12 +226,12 @@ class Entry extends ElementMutationResolver
         }
 
         // Null the field layout id in case the entry type changes.
-        if ($entry->typeId != $entryType->id) {
+        if ($entry->getTypeId() !== $entryType->id) {
             $entry->fieldLayoutId = null;
         }
 
         $entry->sectionId = $section->id;
-        $entry->typeId = $entryType->id;
+        $entry->setTypeId($entryType->id);
 
         return $entry;
     }

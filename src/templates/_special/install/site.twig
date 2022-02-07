@@ -40,7 +40,11 @@
         }, languageInput) }}
 
         <div class="buttons">
-            <button type="submit" class="btn big submit">{{ "Finish up"|t('app') }}</button>
+            {{ forms.submitButton({
+                class: 'big',
+                label: 'Finish up'|t('app'),
+                spinner: true,
+            }) }}
         </div>
     </form>
 </div>

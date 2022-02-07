@@ -93,8 +93,13 @@ class Application extends \yii\web\Application
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
+
         parent::init();
-        $this->ensureResourcePathExists();
+
+        if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL !== true) {
+            $this->ensureResourcePathExists();
+        }
+
         $this->_postInit();
         $this->authenticate();
         $this->debugBootstrap();

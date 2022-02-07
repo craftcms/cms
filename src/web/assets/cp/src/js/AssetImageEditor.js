@@ -17,7 +17,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
     $editorContainer: null,
     $straighten: null,
     $croppingCanvas: null,
-    $spinnerCanvas: null,
+    $spinner: null,
 
     // FabricJS objects
     canvas: null,
@@ -58,7 +58,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
     scaleFactor: 1,
     flipData: {},
     focalPointState: false,
-    spinnerInterval: null,
     maxImageSize: null,
     lastLoadedDimensions: null,
     imageIsLoading: false,
@@ -66,6 +65,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
     croppingConstraint: false,
     constraintOrientation: 'landscape',
     showingCustomConstraint: false,
+    saving: false,
 
     // Rendering proxy functions
     renderImage: null,
@@ -96,20 +96,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             class: 'btn cancel',
             text: Craft.t('app', 'Cancel'),
         }).appendTo(this.$buttons);
-        this.$replaceBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn submit save replace',
-            text: Craft.t('app', 'Save'),
-        }).appendTo(this.$buttons);
 
         if (this.settings.allowSavingAsNew) {
-            this.$saveBtn = $('<button/>', {
-                type: 'button',
-                class: 'btn submit save copy',
-                text: Craft.t('app', 'Save as a new asset'),
+            this.$saveBtn = Craft.ui.createButton({
+                class: 'save copy',
+                label: Craft.t('app', 'Save as a new asset'),
+                spinner: true,
             }).appendTo(this.$buttons);
             this.addListener(this.$saveBtn, 'activate', this.saveImage);
         }
+
+        this.$replaceBtn = Craft.ui.createSubmitButton({
+            class: 'save replace',
+            label: Craft.t('app', 'Save'),
+            spinner: true,
+        }).appendTo(this.$buttons);
 
         this.addListener(this.$replaceBtn, 'activate', this.saveImage);
         this.addListener(this.$cancelBtn, 'activate', this.hide);
@@ -301,13 +302,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this.$container.addClass('vertical');
         } else {
             this.$container.removeClass('vertical');
-        }
-
-        if (this.$spinnerCanvas) {
-            this.$spinnerCanvas.css({
-                left: ((this.$spinnerCanvas.parent().width() / 2) - (this.$spinnerCanvas.width() / 2)) + 'px',
-                top: ((this.$spinnerCanvas.parent().height() / 2) - (this.$spinnerCanvas.height() / 2)) + 'px'
-            });
         }
 
         // If image is already loaded, make sure it looks pretty.
@@ -1264,12 +1258,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
      */
     saveImage: function(ev) {
         var $button = $(ev.currentTarget);
-        if ($button.hasClass('disabled')) {
+        if (this.saving) {
             return false;
         }
 
-        $('.btn', this.$buttons).addClass('disabled');
-        this.$buttons.append('<div class="spinner"></div>');
+        this.saving = true;
+        $button.addClass('loading');
 
         var postData = {
             assetId: this.assetId,
@@ -1301,7 +1295,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         postData.zoom = this.zoomRatio;
 
         Craft.postActionRequest('assets/save-image', postData, data => {
-            this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
+            this.$buttons.find('.btn').removeClass('loading');
+            this.saving = false;
 
             if (data.error) {
                 alert(data.error);
@@ -1602,38 +1597,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
     },
 
     _showSpinner: function() {
-        this.$spinnerCanvas = $('<canvas id="spinner-canvas"></canvas>').appendTo($('.image', this.$container));
-        var canvas = document.getElementById('spinner-canvas');
-        var context = canvas.getContext('2d');
-        var start = new Date();
-        var lines = 16,
-            cW = context.canvas.width,
-            cH = context.canvas.height;
-
-        var draw = function() {
-            var rotation = parseInt(((new Date() - start) / 1000) * lines) / lines;
-            context.save();
-            context.clearRect(0, 0, cW, cH);
-            context.translate(cW / 2, cH / 2);
-            context.rotate(Math.PI * 2 * rotation);
-            for (var i = 0; i < lines; i++) {
-                context.beginPath();
-                context.rotate(Math.PI * 2 / lines);
-                context.moveTo(cW / 10, 0);
-                context.lineTo(cW / 4, 0);
-                context.lineWidth = cW / 30;
-                context.strokeStyle = "rgba(255,255,255," + i / lines + ")";
-                context.stroke();
-            }
-            context.restore();
-        };
-        this.spinnerInterval = window.setInterval(draw, 1000 / 30);
+        if (!this.$spinner) {
+            this.$spinner = $('<div class="spinner big spinner-absolute"/>');
+        }
+        this.$spinner.appendTo(this.$container.find('.image'));
     },
 
     _hideSpinner: function() {
-        window.clearInterval(this.spinnerInterval);
-        this.$spinnerCanvas.remove();
-        this.$spinnerCanvas = null;
+        this.$spinner.remove();
     },
 
     /**

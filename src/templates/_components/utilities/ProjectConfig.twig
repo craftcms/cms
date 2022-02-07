@@ -11,7 +11,9 @@
         {% endif %}
         {{ csrfInput() }}
         {% if areChangesPending %}
-            <div id="diff" class="pane loading" tabindex="0"></div>
+            <div id="diff" class="pane loading" tabindex="0">
+                <div class="spinner spinner-absolute"></div>
+            </div>
             <div class="readable">
                 <blockquote class="note $noteClass">
                     <p>
@@ -173,6 +175,7 @@
             let $diffPane = $('#diff')
                 .removeClass('loading')
                 .addClass('highlight');
+            $diffPane.find('.spinner').remove();
             let $pre = $('<pre/>', {
                 class: 'language-diff',
             }).appendTo($diffPane);

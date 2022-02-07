@@ -1030,16 +1030,10 @@ class GeneralConfig extends BaseObject
     /**
      * @var string|null The `Permissions-Policy` header that should be sent for web responses.
      *
-     * The default value prevents FLoC tracking due to security & privacy concerns:
-     * - https://www.theverge.com/2021/4/16/22387492/google-floc-ad-tech-privacy-browsers-brave-vivaldi-edge-mozilla-chrome-safari
-     * - https://www.bleepingcomputer.com/news/security/wordpress-may-automatically-disable-google-floc-on-websites/
-     *
-     * This can be set to `null` to prevent the header from being sent.
-     *
      * @since 3.6.14
      * @group System
      */
-    public ?string $permissionsPolicyHeader = 'interest-cohort=()';
+    public ?string $permissionsPolicyHeader = null;
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
@@ -1779,7 +1773,8 @@ class GeneralConfig extends BaseObject
      */
     public function getActivateAccountSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1792,7 +1787,8 @@ class GeneralConfig extends BaseObject
      */
     public function getVerifyEmailPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1805,7 +1801,8 @@ class GeneralConfig extends BaseObject
      */
     public function getVerifyEmailSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1817,7 +1814,8 @@ class GeneralConfig extends BaseObject
      */
     public function getInvalidUserTokenPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1829,7 +1827,8 @@ class GeneralConfig extends BaseObject
      */
     public function getLoginPath(?string $siteHandle = null)
     {
-        return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1841,7 +1840,8 @@ class GeneralConfig extends BaseObject
      */
     public function getLogoutPath(?string $siteHandle = null)
     {
-        return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1888,7 +1888,8 @@ class GeneralConfig extends BaseObject
      */
     public function getSetPasswordPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1901,7 +1902,8 @@ class GeneralConfig extends BaseObject
      */
     public function getSetPasswordRequestPath(?string $siteHandle = null): ?string
     {
-        return ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1913,7 +1915,8 @@ class GeneralConfig extends BaseObject
      */
     public function getSetPasswordSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**

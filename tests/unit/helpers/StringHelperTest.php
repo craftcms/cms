@@ -3599,21 +3599,7 @@ class StringHelperTest extends Unit
     public function slugifyDataProvider(): array
     {
         return [
-            ['foo-bar', ' foo  bar '],
-            ['foo-bar', 'foo -.-"-...bar'],
-            ['another-foo-bar', 'another..& foo -.-"-...bar'],
-            ['foo-dbar', " Foo d'Bar "],
-            ['a-string-with-dashes', 'A string-with-dashes'],
-            ['using-strings-like-foo-bar', 'Using strings like fòô bàř'],
-            ['numbers-1234', 'numbers 1234'],
-            ['perevirka-ryadka', 'перевірка рядка'],
-            ['bukvar-s-bukvoi-y', 'букварь с буквой ы'],
-            ['podexal-k-podezdu-moego-doma', 'подъехал к подъезду моего дома'],
-            ['foo:bar:baz', 'Foo bar baz', ':'],
-            ['a_string_with_underscores', 'A_string with_underscores', '_'],
-            ['a_string_with_dashes', 'A string-with-dashes', '_'],
-            ['a\string\with\dashes', 'A string-with-dashes', '\\'],
-            ['an_odd_string', '--   An odd__   string-_', '_'],
+            ['foo-bar', 'foo bar'],
         ];
     }
 

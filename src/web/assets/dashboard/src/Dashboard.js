@@ -96,6 +96,7 @@ import './dashboard.scss';
                                     )
                                     .append(
                                         $('<h2/>', {
+                                            class: 'first',
                                             text: Craft.t('app', '{type} Settings', {
                                                 type: $option.data('name')
                                             }),
@@ -108,10 +109,9 @@ import './dashboard.scss';
                                     .append(
                                         $('<div/>', {'class': 'buttons clearafter'})
                                             .append(
-                                                $('<button/>', {
-                                                    type: 'submit',
-                                                    'class': 'btn submit',
-                                                    text: Craft.t('app', 'Save'),
+                                                Craft.ui.createSubmitButton({
+                                                    label: Craft.t('app', 'Save'),
+                                                    spinner: true,
                                                 })
                                             )
                                             .append(
@@ -120,9 +120,6 @@ import './dashboard.scss';
                                                     'class': 'btn',
                                                     text: Craft.t('app', 'Cancel')
                                                 })
-                                            )
-                                            .append(
-                                                $('<div/>', {'class': 'spinner hidden'})
                                             )
                                     )
                             )
@@ -255,7 +252,7 @@ import './dashboard.scss';
         $back: null,
         $settingsForm: null,
         $settingsContainer: null,
-        $settingsSpinner: null,
+        $saveBtn: null,
         $settingsErrorList: null,
 
         id: null,
@@ -312,7 +309,7 @@ import './dashboard.scss';
             this.$settingsForm = this.$back.children('form');
             this.$settingsContainer = this.$settingsForm.children('.settings');
             var $btnsContainer = this.$settingsForm.children('.buttons');
-            this.$settingsSpinner = $btnsContainer.children('.spinner');
+            this.$saveBtn = $btnsContainer.children('button[type=submit]');
 
             this.addListener($btnsContainer.children('.btn:nth-child(2)'), 'click', 'cancelSettings');
             this.addListener(this.$settingsForm, 'submit', 'saveSettings');
@@ -362,36 +359,41 @@ import './dashboard.scss';
             this.refreshSettings();
 
             this.$back.removeClass('hidden');
-            Garnish.requestAnimationFrame(() => {
+            setTimeout(() => {
                 this.$container
                     .addClass('flipped')
                     .velocity({height: this.$back.height()}, {
                         complete: this.onShowBack.bind(this)
                     });
-            });
+            }, 100);
         },
 
         hideSettings: function() {
             this.$front.removeClass('hidden');
 
-            Garnish.requestAnimationFrame(() => {
+            setTimeout(() => {
                 this.$container
                     .removeClass('flipped')
                     .velocity({height: this.$front.height()}, {
                         complete: this.onShowFront.bind(this)
                     });
-            });
+            }, 100);
         },
 
         saveSettings: function(e) {
             e.preventDefault();
-            this.$settingsSpinner.removeClass('hidden');
+
+            if (this.$saveBtn.hasClass('loading')) {
+                return;
+            }
+
+            this.$saveBtn.addClass('loading');
 
             var action = this.$container.hasClass('new') ? 'dashboard/create-widget' : 'dashboard/save-widget-settings',
                 data = this.$settingsForm.serialize();
 
             Craft.postActionRequest(action, data, (response, textStatus) => {
-                this.$settingsSpinner.addClass('hidden');
+                this.$saveBtn.removeClass('loading');
 
                 if (textStatus === 'success') {
                     if (this.$settingsErrorList) {
