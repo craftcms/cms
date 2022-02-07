@@ -337,7 +337,7 @@ class I18N extends \yii\i18n\I18N
     /**
      * @inheritdoc
      */
-    public function translate($category, $message, $params, $language): string
+    public function translate($category, $message, $params, $language): ?string
     {
         $translation = parent::translate($category, $message, $params, $language);
 
