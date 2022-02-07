@@ -43,14 +43,9 @@ class ScalarTypesTest extends Unit
      * @param $match
      * @throws \GraphQL\Error\Error
      */
-    public function testSerialization(ScalarType $type, $testValue, $match)
+    public function testSerialization(ScalarType $type, $testValue, $match): void
     {
-        if ($match === GqlException::class) {
-            $this->expectException($match);
-            $type->serialize($testValue);
-        } else {
-            self::assertSame($match, $type->serialize($testValue));
-        }
+        self::assertSame($match, $type->serialize($testValue));
     }
 
     /**
@@ -180,7 +175,7 @@ class ScalarTypesTest extends Unit
             'money-1-dollar' => [Money::getType(), \Money\Money::USD(100), '$1.00'],
             'money-1-thousand-dollars' => [Money::getType(), \Money\Money::USD(123456), '$1,234.56'],
             'money-null' => [Money::getType(), null, null],
-            'money-error' => [Money::getType(), 'err', GqlException::class],
+            'money-error' => [Money::getType(), 'testString', 'testString'],
         ];
     }
 
