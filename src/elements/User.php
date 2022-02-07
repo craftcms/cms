@@ -1187,7 +1187,7 @@ class User extends Element implements IdentityInterface
     public function updateAuthenticatorTimestamp(int $timestamp): void
     {
         if ($this->id && $this->hasAuthenticatorSecret()) {
-            $record = AuthAuthenticator::findOne(['userId' => $this->id]);
+            $record = AuthRecord::findOne(['userId' => $this->id]);
             if ($record) {
                 $record->authenticatorTimestamp = $timestamp;
                 $record->save();
