@@ -67,7 +67,7 @@ class ProjectConfigController extends Controller
         }
 
         $projectConfig->regenerateExternalConfig();
-        $this->setSuccessFlash(Craft::t('app', 'Project config external changes discarded.'));
+        $this->setSuccessFlash(Craft::t('app', 'External project config changes discarded.'));
         return $this->redirectToPostedUrl();
     }
 

@@ -9,8 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\conditions\elements\categories\CategoryQueryCondition;
-use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -21,6 +19,8 @@ use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
+use craft\elements\conditions\categories\CategoryCondition;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -133,11 +133,11 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     * @return CategoryQueryCondition
+     * @return CategoryCondition
      */
-    public static function createCondition(): QueryConditionInterface
+    public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(CategoryQueryCondition::class, [static::class]);
+        return Craft::createObject(CategoryCondition::class, [static::class]);
     }
 
     /**
@@ -484,12 +484,7 @@ class Category extends Element
             $path .= '/new';
         }
 
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::cpUrl($path, $params);
+        return UrlHelper::cpUrl($path);
     }
 
     /**

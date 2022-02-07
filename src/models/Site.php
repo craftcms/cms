@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\App;
 use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
@@ -104,7 +105,7 @@ class Site extends Model
      */
     public function getName(bool $parse = true): string
     {
-        return ($parse ? Craft::parseEnv($this->_name) : $this->_name) ?? '';
+        return ($parse ? App::parseEnv($this->_name) : $this->_name) ?? '';
     }
 
     /**
@@ -128,7 +129,7 @@ class Site extends Model
     public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
-            return $parse ? rtrim(Craft::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
+            return $parse ? rtrim(App::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
         }
 
         return null;

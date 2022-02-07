@@ -170,7 +170,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 for (var i = 0; i < $selected.length; i++) {
                     var $source = $selected.eq(i);
 
-                    if (!this._getFolderUidFromSourceKey($source.data('key'))) {
+                    if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
                         continue;
                     }
 
@@ -215,7 +215,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                     var $source = this.$sources.eq(i),
                         key = $source.data('key');
 
-                    if (!this._getFolderUidFromSourceKey(key)) {
+                    if (!this._getVolumeOrFolderUidFromSourceKey(key)) {
                         continue;
                     }
 
@@ -784,11 +784,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             });
         }
 
-        history.replaceState({}, '', Craft.getUrl(uri));
+        const url = Craft.getUrl(uri, document.location.search + document.location.hash);
+        history.replaceState({}, '', url);
     },
 
-    _getFolderUidFromSourceKey: function(sourceKey) {
-        var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
+    _getVolumeOrFolderUidFromSourceKey: function(sourceKey) {
+        var m = sourceKey.match(/\b(?:folder|volume):([0-9a-f\-]+)$/);
 
         return m ? m[1] : null;
     },
@@ -1240,7 +1241,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
     _createFolderContextMenu: function($source) {
         // Make sure it's a volume folder
-        if (!this._getFolderUidFromSourceKey($source.data('key'))) {
+        if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
             return;
         }
 

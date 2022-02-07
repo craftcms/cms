@@ -12,9 +12,9 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\conditions\elements\fields\LightswitchFieldConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -166,7 +166,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getQueryConditionRuleType()
+    public function getElementConditionRuleType()
     {
         return LightswitchFieldConditionRule::class;
     }

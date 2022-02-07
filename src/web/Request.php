@@ -1779,7 +1779,7 @@ class Request extends \yii\web\Request
      */
     private function _normalizeParam(string $name): string
     {
-        if (preg_match('/^\w+(?:\[[^\[\]]+\])+$/', $name)) {
+        if (preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $name)) {
             $name = rtrim(preg_replace('/[\[\]]+/', '.', $name), '.');
         }
         return $name;

@@ -129,9 +129,11 @@ abstract class BaseField extends FieldLayoutElement
         $innerHtml = '';
 
         $label = $this->showLabel() ? $this->label() : null;
-        $requiredHtml = $this->required ? Html::tag('span', '', [
+        $requiredHtml = $this->required ? Html::tag('div', '', [
             'class' => 'fld-required-indicator',
             'title' => Craft::t('app', 'This field is required'),
+            'aria' => ['label' => Craft::t('app', 'This field is required')],
+            'data' => ['icon' => 'asterisk'],
         ]) : '';
 
         if ($label !== null) {
@@ -185,7 +187,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml(): ?string
+    protected function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
             'field' => $this,

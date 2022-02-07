@@ -162,14 +162,42 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 24px;
 }
 
+.fld-required-indicator {
+  display: inline-flex;
+  font-size: 9px;
+  color: $linkColor;
+  @include margin-left(4px);
+}
+
+@mixin striped-bg($color) {
+  background-color: $color;
+
+  &.has-conditions:after {
+    position: absolute;
+    content: ' ';
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    border: 4px solid transparent;
+    border-radius: $mediumBorderRadius;
+    background-image: linear-gradient($color, $color),
+    repeating-linear-gradient(-45deg, transparentize($grey400, 0.9), transparentize($grey500, 0.9) 10px, transparent 10px, transparent 20px);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+  }
+}
+
 .fld-element {
   position: relative;
+  z-index: 0; // required for the striped-bg
   display: flex;
   align-items: center;
   padding: 7px 10px;
   box-shadow: inset 0 0 0 1px $hairlineColor;
-  background-color: $white;
   border-radius: $mediumBorderRadius;
+  @include striped-bg($white);
 
   body:not(.dragging) & {
     cursor: move;
@@ -194,7 +222,7 @@ $gridColor: hsl(212, 50%, 95%);
 
   &.fld-field {
     color: $mediumTextColor;
-    background-color: $grey100;
+    @include striped-bg($grey100);
 
     &:not(.draghelper) {
       box-shadow: none;
@@ -240,6 +268,7 @@ $gridColor: hsl(212, 50%, 95%);
     .fld-attribute {
       flex: 1;
       display: flex;
+      align-items: center;
     }
 
     .fld-element-label h4,
@@ -253,26 +282,6 @@ $gridColor: hsl(212, 50%, 95%);
       font-weight: normal;
       color: $textColor;
       margin: 0;
-
-      & + .fld-required-indicator {
-        color: var(--ui-control-color);
-      }
-    }
-
-    .fld-attribute .fld-required-indicator {
-      margin-top: -1px;
-    }
-  }
-
-  &.fld-required .fld-required-indicator {
-    @include margin-left(2px);
-    line-height: 1;
-
-    &:after {
-      @include icon;
-      content: 'asterisk';
-      font-size: 8px;
-      line-height: 1;
     }
   }
 }
@@ -308,6 +317,33 @@ body.dragging {
   }
 }
 
-.fld-element-settings {
-  width: $tabWidth;
+.fld-element-settings-body {
+  flex: 1;
+  margin: -24px var(--neg-padding) 0;
+  padding: 24px var(--padding);
+  overflow: hidden auto;
+  position: relative;
+}
+
+.fld-element-settings-footer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  margin: 0 var(--neg-padding) -24px;
+  padding: var(--padding);
+  @include pane;
+  background-color: $grey050;
+  z-index: 3;
+
+  & > .ee-site-select {
+    flex: 1;
+  }
+
+  & > .btn {
+    @include margin-left(5px);
+  }
+
+  & > .spinner {
+    @include margin(0, var(--neg-padding), 0, 0);
+  }
 }

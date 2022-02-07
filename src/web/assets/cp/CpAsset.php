@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
+use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -200,6 +201,8 @@ JS;
             'More',
             'More…',
             'Move down',
+            'Move to the left',
+            'Move to the right',
             'Move up',
             'Move',
             'Name',
@@ -278,8 +281,10 @@ JS;
             'Upload failed for {filename}',
             'Upload files',
             'User Groups',
+            'View',
             'What do you want to do with their content?',
             'What do you want to do?',
+            'You must specify a tab name.',
             'Your changes could not be stored.',
             'Your changes have been stored.',
             'Your session has ended.',
@@ -384,7 +389,7 @@ JS;
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'scriptName' => basename($request->getScriptFile()),
-            'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
+            'siteId' => $upToDate ? (Cp::requestedSite()->id ?? null) : null,
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,

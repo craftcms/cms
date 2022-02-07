@@ -13,8 +13,6 @@ use craft\base\Field;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
-use craft\conditions\elements\assets\AssetQueryCondition;
-use craft\conditions\QueryConditionInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
@@ -26,6 +24,8 @@ use craft\elements\actions\EditImage;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
+use craft\elements\conditions\assets\AssetCondition;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
@@ -214,11 +214,11 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @return AssetQueryCondition
+     * @return AssetCondition
      */
-    public static function createCondition(): QueryConditionInterface
+    public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AssetQueryCondition::class, [static::class]);
+        return Craft::createObject(AssetCondition::class, [static::class]);
     }
 
     /**
@@ -296,14 +296,14 @@ class Asset extends Element
         $volumes = Craft::$app->getVolumes();
 
         if ($context === 'index') {
-            $sourceIds = $volumes->getViewableVolumeIds();
+            $volumeIds = $volumes->getViewableVolumeIds();
         } else {
-            $sourceIds = $volumes->getAllVolumeIds();
+            $volumeIds = $volumes->getAllVolumeIds();
         }
 
         $additionalCriteria = $context === 'settings' ? ['parentId' => ':empty:'] : [];
 
-        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
+        $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($volumeIds, $additionalCriteria);
 
         $sourceList = self::_assembleSourceList($tree, $context !== 'settings', Craft::$app->getUser()->getIdentity());
 
@@ -542,7 +542,7 @@ class Asset extends Element
         );
 
         $source = [
-            'key' => 'folder:' . $folder->uid,
+            'key' => $folder->parentId ? "folder:$folder->uid" : "volume:$volume->uid",
             'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
@@ -588,6 +588,12 @@ class Asset extends Element
      * @var string|null Kind
      */
     public ?string $kind = null;
+
+    /**
+     * @var string|null Alternative text
+     * @since 4.0.0
+     */
+    public ?string $alt = null;
 
     /**
      * @var int|null Size
@@ -780,6 +786,11 @@ class Asset extends Element
     public function init(): void
     {
         parent::init();
+
+        if ($this->alt === '') {
+            $this->alt = null;
+        }
+
         $this->_oldVolumeId = $this->_volumeId;
     }
 
@@ -933,12 +944,7 @@ class Asset extends Element
         $filename = $this->getFilename(false);
         $path = "assets/edit/$this->id-$filename";
 
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::cpUrl($path, $params);
+        return UrlHelper::cpUrl($path);
     }
 
     /**
@@ -972,7 +978,7 @@ class Asset extends Element
             'width' => $this->getWidth(),
             'height' => $this->getHeight(),
             'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-            'alt' => $this->title,
+            'alt' => $this->alt ?? $this->title,
         ]);
 
         if (isset($oldTransform)) {
@@ -1308,6 +1314,14 @@ class Asset extends Element
         }
 
         return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbAlt(): ?string
+    {
+        return $this->alt;
     }
 
     /**
@@ -2000,6 +2014,7 @@ class Asset extends Element
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
+            $record->alt = $this->alt;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
             $record->height = (int)$this->_height ?: null;

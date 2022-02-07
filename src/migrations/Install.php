@@ -77,6 +77,7 @@ class Install extends Migration
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
+        $this->db->getSchema()->refresh();
         $this->insertDefaultData();
         return true;
     }
@@ -139,6 +140,7 @@ class Install extends Migration
             'uploaderId' => $this->integer(),
             'filename' => $this->string()->notNull(),
             'kind' => $this->string(50)->notNull()->defaultValue(Asset::KIND_UNKNOWN),
+            'alt' => $this->text(),
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
@@ -407,6 +409,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'layoutId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
+            'settings' => $this->text(),
             'elements' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),

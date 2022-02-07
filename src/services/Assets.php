@@ -350,20 +350,20 @@ class Assets extends Component
     }
 
     /**
-     * Get the folder tree for Assets by volume ids
+     * Returns a list of hierarchical folders for the given volume IDs, indexed by volume ID.
      *
-     * @param array $allowedVolumeIds
+     * @param array $volumeIds
      * @param array $additionalCriteria additional criteria for filtering the tree
      * @return array
      */
-    public function getFolderTreeByVolumeIds(array $allowedVolumeIds, array $additionalCriteria = []): array
+    public function getFolderTreeByVolumeIds(array $volumeIds, array $additionalCriteria = []): array
     {
         static $volumeFolders = [];
 
         $tree = [];
 
         // Get the tree for each source
-        foreach ($allowedVolumeIds as $volumeId) {
+        foreach ($volumeIds as $volumeId) {
             // Add additional criteria but prevent overriding volumeId and order.
             $criteria = array_merge($additionalCriteria, [
                 'volumeId' => $volumeId,
@@ -1104,7 +1104,7 @@ class Assets extends Component
     }
 
     /**
-     * Return the folder tree form a list of folders.
+     * Arranges the given array of folders hierarchically.
      *
      * @param VolumeFolder[] $folders
      * @return array

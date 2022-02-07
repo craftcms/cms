@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Throwable;
@@ -209,7 +210,7 @@ class Html extends \yii\helpers\Html
      * @return array An array containing `type`, `attributes`, `children`, `start`, `end`, `htmlStart`, and `htmlEnd`
      * properties. Nested text nodes will be represented as arrays within `children` with `type` set to `'text'`, and a
      * `value` key containing the text value.
-     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @throws InvalidHtmlTagException if `$tag` doesn't contain a valid HTML tag
      * @since 3.3.0
      */
     public static function parseTag(string $tag, int $offset = 0): array
@@ -240,7 +241,7 @@ class Html extends \yii\helpers\Html
                         }
                         $children[] = $subtag;
                         $cursor = $subtag['end'];
-                    } catch (InvalidArgumentException $e) {
+                    } catch (InvalidHtmlTagException $e) {
                         // We must have just reached the end
                         break;
                     }
@@ -249,7 +250,7 @@ class Html extends \yii\helpers\Html
 
             // Find the closing tag
             if (($htmlEnd = stripos($tag, "</$type>", $cursor)) === false) {
-                throw new InvalidArgumentException("Could not find a </$type> tag in string: $tag");
+                throw new InvalidHtmlTagException("Could not find a </$type> tag in string: $tag", $type, $attributes, $start, $htmlStart);
             }
 
             $end = $htmlEnd + strlen($type) + 3;
@@ -486,13 +487,13 @@ class Html extends \yii\helpers\Html
      * @param string $html
      * @param int $offset
      * @return array The tag type and starting position
-     * @throws
+     * @throws InvalidHtmlTagException
      */
     private static function _findTag(string $html, int $offset = 0): array
     {
         // Find the first HTML tag that isn't a DTD or a comment
         if (!preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
-            throw new InvalidArgumentException('Could not find an HTML tag in string: ' . $html);
+            throw new InvalidHtmlTagException('Could not find an HTML tag in string: ' . $html);
         }
 
         return [strtolower($match[1][0]), $match[0][1]];
@@ -714,12 +715,15 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"\s]*)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
-                if ($match[2] === 'data-target-prefix' || isset($ids[$match[4]])) {
-                    return $match[1] . $namespace . '-' . $match[4] . $match[3];
-                }
-                return $match[0];
+                $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
+                    if ($match[2] === 'data-target-prefix' || isset($ids[$id])) {
+                        return sprintf('%s-%s', $namespace, $id);
+                    }
+                    return $id;
+                }, explode(' ', $match[4]));
+                return $match[1] . implode(' ', $namespacedIds) . $match[3];
             }, $html);
 
         // ID references in url() calls
@@ -878,5 +882,37 @@ class Html extends \yii\helpers\Html
                 'visually-hidden',
             ]),
         ]));
+    }
+
+    /**
+     * Encodes invalid (unclosed) HTML tags so they appear as plain text.
+     *
+     * @param string $html
+     * @return string
+     * @since 3.7.27
+     */
+    public static function encodeInvalidTags(string $html): string
+    {
+        $offset = 0;
+        $return = '';
+
+        while (true) {
+            try {
+                $tag = static::parseTag($html, $offset);
+            } catch (InvalidHtmlTagException $e) {
+                if ($e->type === null) {
+                    return $return . substr($html, $offset);
+                }
+                $preTagLength = $e->start - $offset;
+                $innerTagOffset = $e->start + 1;
+                $innerTagLength = $e->htmlStart - $innerTagOffset - 1;
+                $return .= sprintf('%s&lt;%s&gt;', substr($html, $offset, $preTagLength), substr($html, $innerTagOffset, $innerTagLength));
+                $offset = $e->htmlStart;
+                continue;
+            }
+
+            $return .= substr($html, $offset, $tag['end'] - $offset);
+            $offset = $tag['end'];
+        }
     }
 }

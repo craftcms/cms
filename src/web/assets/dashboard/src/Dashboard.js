@@ -323,7 +323,9 @@ import './dashboard.scss';
         },
 
         setColspan: function(colspan) {
-            this.$gridItem.data('colspan', colspan);
+            this.$gridItem
+              .data('colspan', colspan)
+              .attr('data-colspan', colspan);
             window.dashboard.grid.refreshCols(true);
         },
 
@@ -474,7 +476,7 @@ import './dashboard.scss';
 
             Craft.initUiElements(this.$bodyContainer);
             Craft.appendHeadHtml(response.headHtml);
-            Craft.appendFootHtml(response.footHtml);
+            Craft.appendBodyHtml(response.bodyHtml);
 
             this.setSettingsHtml(response.info.settingsHtml, function() {
                 eval(response.info.settingsJs);

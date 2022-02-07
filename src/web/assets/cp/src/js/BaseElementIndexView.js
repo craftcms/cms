@@ -279,7 +279,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
 
             this.appendElements($newElements);
             Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendFootHtml(response.data.footHtml);
+            Craft.appendBodyHtml(response.data.bodyHtml);
 
             if (this.elementSelect) {
                 this.elementSelect.addItems($newElements.filter(':not(.disabled)'));

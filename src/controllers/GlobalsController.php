@@ -10,12 +10,10 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\elements\GlobalSet;
+use craft\helpers\Cp;
 use craft\helpers\Json;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use DateTime;
 use yii\web\BadRequestHttpException;
-use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -134,70 +132,16 @@ class GlobalsController extends Controller
      * Edits a global set's content.
      *
      * @param string $globalSetHandle The global set’s handle.
-     * @param string|null $siteHandle The site handle, if specified.
      * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent(string $globalSetHandle, ?string $siteHandle = null, ?GlobalSet $globalSet = null): Response
+    public function actionEditContent(string $globalSetHandle, ?GlobalSet $globalSet = null): Response
     {
-        if (Craft::$app->getIsMultiSite()) {
-            // Get the sites the user is allowed to edit
-            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
-
-            if (empty($editableSiteIds)) {
-                throw new ForbiddenHttpException('User not permitted to edit content in any sites');
-            }
-
-            $siteCookieName = 'Craft-' . Craft::$app->getSystemUid() . ':siteId';
-
-            // Make sure a specific site was requested
-            if ($siteHandle === null) {
-                // See if they have a cookie for it
-                $siteId = $this->request->getRawCookies()->getValue($siteCookieName);
-                if ($siteId && in_array($siteId, $editableSiteIds, false)) {
-                    $site = Craft::$app->getSites()->getSiteById($siteId);
-                } else {
-                    // Are they allowed to edit the current site?
-                    /** @noinspection PhpUnhandledExceptionInspection */
-                    $currentSite = Craft::$app->getSites()->getCurrentSite();
-                    if (in_array($currentSite->id, $editableSiteIds, false)) {
-                        $site = $currentSite;
-                    } else {
-                        // Just use the first site they are allowed to edit
-                        $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
-                    }
-                }
-
-                // Redirect to the site-specific URL
-                return $this->redirect(UrlHelper::cpUrl("globals/$site->handle/$globalSetHandle"));
-            }
-
-            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
-
-            if (!$site) {
-                throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
-            }
-
-            // Make sure the user has permission to edit that site
-            if (!in_array($site->id, $editableSiteIds, false)) {
-                throw new ForbiddenHttpException('User not permitted to edit content in this site');
-            }
-
-            // Set the siteId cookie
-            /** @var Cookie $cookie */
-            $cookie = Craft::createObject(Craft::cookieConfig([
-                'class' => Cookie::class,
-                'name' => $siteCookieName,
-                'value' => $site->id,
-                'httpOnly' => false,
-                'expire' => (new DateTime('+1 year'))->getTimestamp(),
-            ]));
-            $this->response->getRawCookies()->add($cookie);
-        } else {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $site = Craft::$app->getSites()->getPrimarySite();
+        $site = Cp::requestedSite();
+        if (!$site) {
+            throw new ForbiddenHttpException('User not permitted to edit content in any sites');
         }
 
         // Get the global sets the user is allowed to edit, in the requested site

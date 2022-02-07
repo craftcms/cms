@@ -443,7 +443,7 @@ class ElementsController extends BaseElementsController
                         $fields = [];
 
                         foreach ($fieldLayout->getTabs() as $tab) {
-                            foreach ($tab->elements as $layoutElement) {
+                            foreach ($tab->getElements() as $layoutElement) {
                                 if ($layoutElement instanceof BaseField) {
                                     $fields[] = $layoutElement->formHtml($element);
                                 }
@@ -484,7 +484,7 @@ class ElementsController extends BaseElementsController
             'fieldHtml' => implode("\n", $fieldHtml),
             'sidebarHtml' => $sidebarHtml,
             'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
             'initialDeltaValues' => $view->getInitialDeltaValues(),
             'editUrl' => $element->getCpEditUrl(),

@@ -111,9 +111,9 @@ class Mailer extends \yii\swiftmailer\Mailer
             $settings = App::mailSettings();
             $variables = ($message->variables ?: []) + [
                     'emailKey' => $message->key,
-                    'fromEmail' => Craft::parseEnv($settings->fromEmail),
-                    'replyToEmail' => Craft::parseEnv($settings->replyToEmail),
-                    'fromName' => Craft::parseEnv($settings->fromName),
+                    'fromEmail' => App::parseEnv($settings->fromEmail),
+                    'replyToEmail' => App::parseEnv($settings->replyToEmail),
+                    'fromName' => App::parseEnv($settings->fromName),
                 ];
 
             // Temporarily disable lazy transform generation

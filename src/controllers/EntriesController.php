@@ -16,6 +16,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -48,14 +49,13 @@ class EntriesController extends BaseEntriesController
      * @param int|null $entryId The entry’s ID, if editing an existing entry.
      * @param int|null $draftId The entry draft’s ID, if editing an existing draft.
      * @param int|null $revisionId The entry revision’s ID, if editing an existing revision.
-     * @param string|null $site The site handle, if specified.
      * @param Entry|null $entry The entry being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      * @throws ForbiddenHttpException
      * @throws BadRequestHttpException
      */
-    public function actionEditEntry(string $section, ?int $entryId = null, ?int $draftId = null, ?int $revisionId = null, ?string $site = null, ?Entry $entry = null): Response
+    public function actionEditEntry(string $section, ?int $entryId = null, ?int $draftId = null, ?int $revisionId = null, ?Entry $entry = null): Response
     {
         if ($draftId && $revisionId) {
             throw new BadRequestHttpException('Only a draftId or revisionId can be specified.');
@@ -68,15 +68,6 @@ class EntriesController extends BaseEntriesController
             'revisionId' => $revisionId,
             'entry' => $entry,
         ];
-
-        if ($site !== null) {
-            $siteHandle = $site;
-            $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
-
-            if (!$variables['site']) {
-                throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
-            }
-        }
 
         if (($response = $this->_prepEditEntryVariables($variables)) !== null) {
             return $response;
@@ -631,14 +622,12 @@ class EntriesController extends BaseEntriesController
         $siteIds = $this->editableSiteIds($variables['section']);
 
         if (empty($variables['site'])) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $variables['site'] = Craft::$app->getSites()->getCurrentSite();
-
-            if (!in_array($variables['site']->id, $siteIds, false)) {
-                $variables['site'] = Craft::$app->getSites()->getSiteById($siteIds[0]);
+            $site = Cp::requestedSite();
+            if (!$site) {
+                throw new ForbiddenHttpException('User not permitted to edit content in any sites');
             }
 
-            $site = $variables['site'];
+            $variables['site'] = $site;
         } else {
             // Make sure they were requesting a valid site
             /** @var Site $site */

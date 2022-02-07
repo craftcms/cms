@@ -14,7 +14,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
-use craft\conditions\elements\fields\RelationalFieldConditionRule;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
@@ -24,6 +23,7 @@ use craft\elements\db\ElementRelationParamParser;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
+use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -40,7 +40,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -79,12 +78,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns the element class associated with this field type.
      *
      * @return string The Element class name
-     * @throws NotSupportedException if the method hasn't been implemented by the subclass
      */
-    protected static function elementType(): string
-    {
-        throw new NotSupportedException('"elementType()" is not implemented.');
-    }
+    abstract public static function elementType(): string;
 
     /**
      * Returns the default [[selectionLabel]] value.
@@ -461,14 +456,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getQueryConditionRuleType()
+    public function getElementConditionRuleType()
     {
-        return [
-            'class' => RelationalFieldConditionRule::class,
-            'elementType' => static::elementType(),
-            'sources' => (array)$this->inputSources(),
-            'criteria' => $this->inputSelectionCriteria(),
-        ];
+        return RelationalFieldConditionRule::class;
     }
 
     /**
@@ -948,7 +938,7 @@ JS;
             }
         }
 
-        $selectionCriteria = $this->inputSelectionCriteria();
+        $selectionCriteria = $this->getInputSelectionCriteria();
         $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
         $disabledElementIds = [];
@@ -979,7 +969,7 @@ JS;
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'elements' => $value,
-            'sources' => $this->inputSources($element),
+            'sources' => $this->getInputSources($element),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => $this->allowSelfRelations,
@@ -1002,7 +992,7 @@ JS;
      * @param ElementInterface|null $element
      * @return array|string
      */
-    protected function inputSources(?ElementInterface $element = null)
+    public function getInputSources(?ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -1018,7 +1008,7 @@ JS;
      *
      * @return array
      */
-    protected function inputSelectionCriteria(): array
+    public function getInputSelectionCriteria(): array
     {
         // Fire a defineSelectionCriteria event
         $event = new ElementCriteriaEvent();

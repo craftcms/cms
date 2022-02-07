@@ -37,6 +37,7 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
@@ -69,6 +70,78 @@ class App
     public static function env(string $name)
     {
         return $_SERVER[$name] ?? getenv($name);
+    }
+
+    /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`)
+     * and/or an alias (`@aliasName`), and returns the referenced value.
+     *
+     * If the string references an environment variable with a value of `true`
+     * or `false`, a boolean value will be returned.
+     *
+     * ---
+     *
+     * ```php
+     * $value1 = App::parseEnv('$SMTP_PASSWORD');
+     * $value2 = App::parseEnv('@webroot');
+     * ```
+     *
+     * @param string|null $str
+     * @return string|bool|null The parsed value, or the original value if it didn’t
+     * reference an environment variable and/or alias.
+     * @since 3.7.29
+     */
+    public static function parseEnv(string $str = null)
+    {
+        if ($str === null) {
+            return null;
+        }
+
+        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
+            $value = App::env($matches[1]);
+            if ($value !== false) {
+                switch (strtolower($value)) {
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                }
+                $str = $value;
+            }
+        }
+
+        if (StringHelper::startsWith($str, '@')) {
+            $str = Craft::getAlias($str, false) ?: $str;
+        }
+
+        return $str;
+    }
+
+    /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced
+     * boolean value, or `null` if a boolean value can’t be determined.
+     *
+     * ---
+     *
+     * ```php
+     * $status = App::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
+     * ```
+     *
+     * @param mixed $value
+     * @return bool|null
+     * @since 3.7.29
+     */
+    public static function parseBooleanEnv($value): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -480,7 +553,7 @@ class App
             ];
         }
 
-        return [
+        $config = [
             'class' => Connection::class,
             'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
@@ -497,6 +570,16 @@ class App
             'attributes' => $dbConfig->attributes,
             'enableSchemaCache' => !YII_DEBUG,
         ];
+
+        if ($driver === Connection::DRIVER_PGSQL && $dbConfig->setSchemaOnConnect && $dbConfig->schema) {
+            $config['on afterOpen'] = function(Event $event) use ($dbConfig) {
+                /** @var Connection $db */
+                $db = $event->sender;
+                $db->createCommand("SET search_path TO $dbConfig->schema;")->execute();
+            };
+        }
+
+        return $config;
     }
 
     /**
@@ -535,10 +618,10 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName),
+                App::parseEnv($settings->fromEmail) => App::parseEnv($settings->fromName),
             ],
-            'replyTo' => Craft::parseEnv($settings->replyToEmail),
-            'template' => Craft::parseEnv($settings->template),
+            'replyTo' => App::parseEnv($settings->replyToEmail),
+            'template' => App::parseEnv($settings->template),
             'transport' => $adapter->defineTransport(),
         ];
     }

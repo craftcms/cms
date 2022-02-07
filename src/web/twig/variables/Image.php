@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\variables;
 
+use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Image as ImageHelper;
 
 /**
@@ -90,5 +92,49 @@ class Image
     public function getUrl(): string
     {
         return $this->url;
+    }
+
+    /**
+     * Returns the image’s path.
+     *
+     * @return string
+     * @since 3.7.27
+     */
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    /**
+     * Returns the file’s MIME type, if it can be determined.
+     *
+     * @return string|null
+     * @since 3.7.27
+     */
+    public function getMimeType(): ?string
+    {
+        return FileHelper::getMimeTypeByExtension($this->path);
+    }
+
+    /**
+     * Returns the file’s contents.
+     *
+     * @return string
+     * @since 3.7.27
+     */
+    public function getContents(): string
+    {
+        return file_get_contents($this->path);
+    }
+
+    /**
+     * Returns a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the image.
+     *
+     * @return string
+     * @since 3.7.27
+     */
+    public function getDataUrl(): string
+    {
+        return Html::dataUrlFromString($this->getContents(), $this->getMimeType());
     }
 }

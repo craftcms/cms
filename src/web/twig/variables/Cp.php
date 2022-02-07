@@ -18,6 +18,7 @@ use craft\helpers\Authentication;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
@@ -811,5 +812,18 @@ class Cp extends Component
     public function field(string $input, array $config = []): string
     {
         return CpHelper::fieldHtml($input, $config);
+    }
+
+    /**
+     * Renders a field layout designer’s HTML.
+     *
+     * @param FieldLayout $fieldLayout
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
+    {
+        return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
     }
 }

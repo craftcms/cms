@@ -80,8 +80,8 @@
                         </template>
                         <template slot="title" slot-scope="props">
                             <span v-if="props.rowData.status !== undefined" class="status" :class="{enabled: props.rowData.status}"></span>
-                            <a :class="{'cell-bold': props.rowData.status === undefined || props.rowData.status === false}" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
-                            <span :class="{'cell-bold': props.rowData.status === undefined || props.rowData.status === false}" v-else>{{ props.rowData.title }}</span>
+                            <a :class="{'cell-bold': props.rowData.status === undefined}" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
+                            <span :class="{'cell-bold': props.rowData.status === undefined}" v-else>{{ props.rowData.title }}</span>
                         </template>
                         <template slot="handle" slot-scope="props">
                             <code>{{ props.rowData.handle }}</code>

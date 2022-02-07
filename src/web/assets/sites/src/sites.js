@@ -96,7 +96,7 @@
                     let $cancelBtn = $('<button/>', {type: 'button', class: 'btn', text: Craft.t('app', 'Cancel')}).appendTo($buttons);
                     let $saveBtn = $('<button/>', {type: 'submit', class: 'btn submit', text: Craft.t('app', 'Save')}).appendTo($buttons);
 
-                    Craft.appendFootHtml(response.data.js);
+                    Craft.appendBodyHtml(response.data.js);
 
                     let success = false;
                     let modal = new Garnish.Modal($form, {

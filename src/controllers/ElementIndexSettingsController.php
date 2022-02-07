@@ -75,13 +75,14 @@ class ElementIndexSettingsController extends BaseElementsController
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
                     $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
+                    $condition->mainTag = 'div';
+                    $condition->name = "sources[{$source['key']}][condition]";
+                    $condition->forProjectConfig = true;
+                    $condition->queryParams = ['status'];
+                    $condition->addRuleLabel = Craft::t('app', 'Add a filter');
+
                     $view->startJsBuffer();
-                    $conditionBuilderHtml = $view->namespaceInputs(function() use ($condition) {
-                        return $condition->getBuilderHtml([
-                            'mainTag' => 'div',
-                            'projectConfigTypes' => true,
-                        ]);
-                    }, "sources[{$source['key']}][condition]");
+                    $conditionBuilderHtml = $condition->getBuilderHtml();
                     $conditionBuilderJs = $view->clearJsBuffer();
                     $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
                 }
@@ -100,14 +101,16 @@ class ElementIndexSettingsController extends BaseElementsController
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
+        $condition = $elementType::createCondition();
+        $condition->id = '__ID__';
+        $condition->name = 'sources[__SOURCE_KEY__][condition]';
+        $condition->mainTag = 'div';
+        $condition->forProjectConfig = true;
+        $condition->queryParams = ['status'];
+        $condition->addRuleLabel = Craft::t('app', 'Add a filter');
+
         $view->startJsBuffer();
-        $conditionBuilderHtml = $view->namespaceInputs(function() use ($elementType) {
-            return $elementType::createCondition()->getBuilderHtml([
-                'id' => '__ID__',
-                'mainTag' => 'div',
-                'projectConfigTypes' => true,
-            ]);
-        }, 'sources[__SOURCE_KEY__][condition]');
+        $conditionBuilderHtml = $condition->getBuilderHtml();
         $conditionBuilderJs = $view->clearJsBuffer();
 
         $userGroups = collect(Craft::$app->getUserGroups()->getAllGroups())

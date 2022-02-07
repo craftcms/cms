@@ -27,6 +27,7 @@ use craft\events\DefineGqlTypeFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
+use craft\fieldlayoutelements\AssetAltField;
 use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
@@ -332,17 +333,15 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is installed.
      *
-     * @param bool $refresh
+     * @param bool $strict Whether to ignore the cached value and explicitly check from the default schema.
      * @return bool
      */
-    public function getIsInstalled(bool $refresh = false): bool
+    public function getIsInstalled(bool $strict = false): bool
     {
-        if ($refresh) {
+        if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
-        }
-
-        if (isset($this->_isInstalled)) {
+        } else if (isset($this->_isInstalled)) {
             return $this->_isInstalled;
         }
 
@@ -351,8 +350,20 @@ trait ApplicationTrait
         }
 
         try {
+            if ($strict) {
+                $db = Craft::$app->getDb();
+                if ($db->getIsPgsql()) {
+                    // Look for the `info` row, explicitly in the default schema.
+                    return $this->_isInstalled = (new Query())
+                        ->from([sprintf('%s.%s', $db->getSchema()->defaultSchema, Table::INFO)])
+                        ->where(['id' => 1])
+                        ->exists();
+                }
+            }
+
             $info = $this->getInfo(true);
-        } catch (DbException | ServerErrorHttpException $e) {
+            return $this->_isInstalled = !empty($info->id);
+        } catch (DbException|ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
             if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
                 throw $e;
@@ -364,8 +375,6 @@ trait ApplicationTrait
             $errorHandler->logException($e);
             return $this->_isInstalled = false;
         }
-
-        return $this->_isInstalled = !empty($info->id);
     }
 
     /**
@@ -429,7 +438,7 @@ trait ApplicationTrait
         if (!$refresh && isset($this->_isMultiSite)) {
             return $this->_isMultiSite;
         }
-        return $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
+        return $this->_isMultiSite = count($this->getSites()->getAllSites(true)) > 1;
     }
 
     /**
@@ -608,7 +617,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return Craft::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
+        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
     }
 
     /**
@@ -666,7 +675,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException | DbConnectException $e) {
+        } catch (DbException|DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -771,7 +780,7 @@ trait ApplicationTrait
     public function getSystemName(): string
     {
         if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
-            return Craft::parseEnv($name);
+            return App::parseEnv($name);
         }
 
         try {
@@ -803,7 +812,7 @@ trait ApplicationTrait
     {
         try {
             $this->getDb()->open();
-        } catch (DbConnectException | InvalidConfigException $e) {
+        } catch (DbConnectException|InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -1461,7 +1470,7 @@ trait ApplicationTrait
         $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
-            $this->setTimeZone(Craft::parseEnv($timeZone));
+            $this->setTimeZone(App::parseEnv($timeZone));
         }
     }
 
@@ -1516,6 +1525,7 @@ trait ApplicationTrait
                     break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
+                    $event->fields[] = AssetAltField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;

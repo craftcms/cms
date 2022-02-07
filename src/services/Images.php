@@ -121,6 +121,10 @@ class Images extends Component
             $supportedFormats[] = 'webp';
         }
 
+        if ($this->getSupportsAvif()) {
+            $supportedFormats[] = 'avif';
+        }
+
         return $supportedFormats;
     }
 
@@ -180,6 +184,17 @@ class Images extends Component
     public function getSupportsWebP(): bool
     {
         return $this->getIsImagick() ? !empty(Imagick::queryFormats('WEBP')) : function_exists('imagewebp');
+    }
+
+
+    /**
+     * Returns whether the Avif image format is supported.
+     *
+     * @return bool
+     */
+    public function getSupportsAvif(): bool
+    {
+        return $this->getIsImagick() ? !empty(Imagick::queryFormats('AVIF')) : function_exists('imageavif');
     }
 
     /**

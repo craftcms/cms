@@ -67,7 +67,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Asset::class;
     }
@@ -240,24 +240,6 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        parent::init();
-
-        $this->defaultUploadLocationSource = $this->_folderSourceToVolumeSource($this->defaultUploadLocationSource);
-        $this->restrictedLocationSource = $this->_folderSourceToVolumeSource($this->restrictedLocationSource);
-        $this->restrictedLocationSource = $this->_folderSourceToVolumeSource($this->restrictedLocationSource);
-
-        if (is_array($this->sources)) {
-            foreach ($this->sources as &$source) {
-                $source = $this->_folderSourceToVolumeSource($source);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -318,23 +300,6 @@ class Assets extends BaseRelationField
                 'class' => ['warning', 'with-icon'],
             ]);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsHtml(): ?string
-    {
-        $this->restrictedLocationSource = $this->_volumeSourceToFolderSource($this->restrictedLocationSource);
-        $this->defaultUploadLocationSource = $this->_volumeSourceToFolderSource($this->defaultUploadLocationSource);
-
-        if (is_array($this->sources)) {
-            foreach ($this->sources as &$source) {
-                $source = $this->_volumeSourceToFolderSource($source);
-            }
-        }
-
-        return parent::getSettingsHtml();
     }
 
     /**
@@ -658,7 +623,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputSources(?ElementInterface $element = null)
+    public function getInputSources(?ElementInterface $element = null)
     {
         $folderId = $this->_determineUploadFolderId($element, false, false);
         Craft::$app->getSession()->authorize('saveAssetInVolume:' . $folderId);
@@ -690,19 +655,10 @@ class Assets extends BaseRelationField
             return $sources;
         }
 
-        $sources = [];
-
-        // If it's a list of source IDs, we need to convert them to their folder counterparts
         if (is_array($this->sources)) {
-            foreach ($this->sources as $source) {
-                if (strpos($source, 'volume:') === 0) {
-                    // volume:x → folder:x
-                    $sources[] = $this->_volumeSourceToFolderSource($source);
-                } else {
-                    $sources[] = $source;
-                }
-            }
+            $sources = array_merge($this->sources);
         } else {
+            $sources = [];
             foreach (Craft::$app->getElementSources()->getSources(Asset::class) as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
@@ -751,9 +707,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputSelectionCriteria(): array
+    public function getInputSelectionCriteria(): array
     {
-        $criteria = parent::inputSelectionCriteria();
+        $criteria = parent::getInputSelectionCriteria();
         $criteria['kind'] = ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [];
 
         if ($this->showUnpermittedFiles) {
@@ -1043,51 +999,6 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * Convert a folder:UID source key to a volume:UID source key.
-     *
-     * @param mixed $sourceKey
-     * @return string
-     */
-    private function _folderSourceToVolumeSource($sourceKey): string
-    {
-        if ($sourceKey && is_string($sourceKey) && strpos($sourceKey, 'folder:') === 0) {
-            $parts = explode(':', $sourceKey);
-            $folder = Craft::$app->getAssets()->getFolderByUid($parts[1]);
-
-            if ($folder) {
-                try {
-                    $volume = $folder->getVolume();
-                    return 'volume:' . $volume->uid;
-                } catch (InvalidConfigException $e) {
-                    // The volume is probably soft-deleted. Just pretend the folder didn't exist.
-                }
-            }
-        }
-
-        return (string)$sourceKey;
-    }
-
-    /**
-     * Convert a volume:UID source key to a folder:UID source key.
-     *
-     * @param mixed $sourceKey
-     * @return string
-     */
-    private function _volumeSourceToFolderSource($sourceKey): string
-    {
-        if ($sourceKey && is_string($sourceKey) && strpos($sourceKey, 'volume:') === 0) {
-            $parts = explode(':', $sourceKey);
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
-
-            if ($volume && $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)) {
-                return 'folder:' . $folder->uid;
-            }
-        }
-
-        return (string)$sourceKey;
-    }
-
-    /**
      * Generate the full path for a folder in a volume in the form of folder:UID/folder:UID... based on a folder id.
      *
      * @param int $folderId
@@ -1101,7 +1012,8 @@ class Assets extends BaseRelationField
         // Construct the path
         while ($folder->parentId && $folder->volumeId !== null) {
             $parent = $folder->getParent();
-            $folderPath = 'folder:' . $parent->uid . '/' . $folderPath;
+            $segment = $parent->parentId ? 'folder:' . $parent->uid : 'volume:' . $parent->getVolume()->uid;
+            $folderPath = $segment . '/' . $folderPath;
             $folder = $parent;
         }
 

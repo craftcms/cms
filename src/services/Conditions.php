@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\conditions\ConditionInterface;
-use craft\conditions\ConditionRuleInterface;
+use craft\base\conditions\ConditionInterface;
+use craft\base\conditions\ConditionRuleInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use ReflectionException;

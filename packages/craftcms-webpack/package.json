@@ -1,6 +1,6 @@
 {
   "name": "@craftcms/webpack",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "description": "Webpack build tools for Craft CMS",
   "keywords": [
     "craftcms",
@@ -37,6 +37,7 @@
     "dotenv-webpack": "^7.0.3",
     "eslint": "^8.2.0",
     "eslint-plugin-vue": "^8.0.3",
+    "expose-loader": "^3.1.0",
     "glob": "^7.2.0",
     "json-minimizer-webpack-plugin": "^3.1.1",
     "mini-css-extract-plugin": "^2.4.4",

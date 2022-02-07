@@ -60,9 +60,9 @@ Craft.Tabs = Garnish.Base.extend({
                 ) {
                     let $tab;
                     if (ev.keyCode === (Craft.orientation === 'ltr' ? Garnish.LEFT_KEY : Garnish.RIGHT_KEY)) {
-                        $tab = $(ev.currentTarget).parent().prev('li').children('a');
+                        $tab = $(ev.currentTarget).parent().prevAll('li:not(.hidden):first').children('a');
                     } else {
-                        $tab = $(ev.currentTarget).parent().next('li').children('a');
+                        $tab = $(ev.currentTarget).parent().nextAll('li:not(.hidden):first').children('a');
                     }
                     if ($tab.length) {
                         ev.preventDefault();

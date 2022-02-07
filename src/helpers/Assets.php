@@ -492,6 +492,7 @@ class Assets
                 Asset::KIND_IMAGE => [
                     'label' => Craft::t('app', 'Image'),
                     'extensions' => [
+                        'avif',
                         'bmp',
                         'gif',
                         'jfif',

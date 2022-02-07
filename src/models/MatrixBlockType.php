@@ -13,7 +13,6 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix;
-use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -170,9 +169,6 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
             ($fieldLayout = $this->getFieldLayout()) &&
             ($fieldLayoutConfig = $fieldLayout->getConfig())
         ) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = StringHelper::UUID();
-            }
             $config['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
         }
 

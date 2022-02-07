@@ -16,6 +16,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const { WebpackManifestPlugin } = _require('webpack-manifest-plugin');
 const JsonMinimizerPlugin = require('json-minimizer-webpack-plugin');
+const requestedConfig = argv['config-name'] ?? null;
 
 /**
  * Returns the first existing file based on a list of paths.
@@ -41,7 +42,10 @@ const getConfigs = (
   options = {
     cwd: module.parent.path,
   }
-) => glob.sync(globPattern, options).map((match) => {
+) => glob.sync(globPattern, options).filter((match) => {
+  // filter out unnecessary configs if we are only trying to build or serve one asset
+  return !requestedConfig || requestedConfig == path.basename(path.dirname(match))
+}).map((match) => {
   return require(path.resolve(options.cwd, match));
 });
 
@@ -80,7 +84,7 @@ const getConfig = ({
     );
   }
 
-  const configName = path.basename(context);
+  const configName = config.name || path.basename(context);
 
   if (!watchPaths) {
     watchPaths = [
@@ -104,8 +108,11 @@ const getConfig = ({
     ].filter(Boolean));
 
     if (envFilePath) {
-      return dotenv.config({path: envFilePath});
+      dotenv.config({path: envFilePath})
+      return envFilePath;
     }
+
+    return false;
   };
 
   const getDevServer = ({context, watchPaths}) => {
@@ -210,6 +217,14 @@ const getConfig = ({
     watchPaths,
     postcssConfig
   }) => {
+    // Apply .env file first if applicable
+    const dotenvResult = applyDotEnv({
+      context,
+      configName,
+      currentConfigName,
+      rootPath
+    });
+
     const config = {
       name: configName,
       context: path.join(context, "src"),
@@ -223,6 +238,9 @@ const getConfig = ({
       devtool: "source-map",
       resolve: {
         extensions: [".wasm", ".ts", ".tsx", ".mjs", ".js", ".json", ".vue"],
+      },
+      externals: {
+        jquery: 'jQuery',
       },
       module: {
         rules: [
@@ -324,18 +342,11 @@ const getConfig = ({
       },
     };
 
-    const dotenvResult = applyDotEnv({
-      context,
-      configName,
-      currentConfigName,
-      rootPath
-    });
-
     if (dotenvResult) {
-      config.plugins.push(new Dotenv());
+      config.plugins.push(new Dotenv({ path: dotenvResult }));
     }
 
-    if (!isDevServerRunning) {
+    if (!process.env.NODE_ENV === "production") {
       config.plugins.push(new CleanWebpackPlugin());
       config.optimization.minimize = true;
       config.optimization.minimizer =  [

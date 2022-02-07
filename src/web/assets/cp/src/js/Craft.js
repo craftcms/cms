@@ -391,60 +391,45 @@ $.extend(Craft,
             }
 
             // Normalize the params
-            var anchor = '';
-
-            if ($.isPlainObject(params)) {
-                var aParams = [];
-
-                for (var name in params) {
-                    if (!params.hasOwnProperty(name)) {
-                        continue;
-                    }
-
-                    var value = params[name];
-
-                    if (name === '#') {
-                        anchor = value;
-                    } else if (value !== null && value !== '') {
-                        aParams.push(name + '=' + value);
-                    }
+            let anchor = null;
+            if ($.isPlainObject(params) && typeof params['#'] !== 'undefined') {
+                anchor = params['#'];
+                delete params['#'];
+            } else if (typeof params === 'string') {
+                let anchorPos = params.indexOf('#');
+                if (anchorPos !== -1) {
+                    anchor = params.substr(anchorPos + 1);
+                    params = params.substr(0, anchorPos);
                 }
-
-                params = aParams;
-            }
-
-            if (Garnish.isArray(params)) {
-                params = params.join('&');
-            } else {
-                params = Craft.trim(params, '&?');
+                params = Object.fromEntries((new URLSearchParams(params)).entries())
             }
 
             // Was there already an anchor on the path?
-            var apos = path.indexOf('#');
-            if (apos !== -1) {
+            let anchorPos = path.indexOf('#');
+            if (anchorPos !== -1) {
                 // Only keep it if the params didn't specify a new anchor
                 if (!anchor) {
-                    anchor = path.substr(apos + 1);
+                    anchor = path.substr(anchorPos + 1);
                 }
-                path = path.substr(0, apos);
+                path = path.substr(0, anchorPos);
             }
 
             // Were there already any query string params in the path?
-            var qpos = path.indexOf('?');
-            if (qpos !== -1) {
-                params = path.substr(qpos + 1) + (params ? '&' + params : '');
-                path = path.substr(0, qpos);
+            let qsPos = path.indexOf('?');
+            if (qsPos !== -1) {
+                params = $.extend(Object.fromEntries((new URLSearchParams(path.substr(qsPos + 1))).entries()), params);
+                path = path.substr(0, qsPos);
             }
 
             // Return path if it appears to be an absolute URL.
             if (path.search('://') !== -1 || path[0] === '/') {
-                return path + (params ? '?' + params : '') + (anchor ? '#' + anchor : '');
+                return path + (params ? '?' + $.param(params) : '') + (anchor ? '#' + anchor : '');
             }
 
             path = Craft.trim(path, '/');
 
             // Put it all together
-            var url;
+            let url;
 
             if (baseUrl) {
                 url = baseUrl;
@@ -462,10 +447,10 @@ $.extend(Craft,
             }
 
             // Does the base URL already have a query string?
-            qpos = url.indexOf('?');
-            if (qpos !== -1) {
-                params = url.substr(qpos + 1) + (params ? '&' + params : '');
-                url = url.substr(0, qpos);
+            qsPos = url.indexOf('?');
+            if (qsPos !== -1) {
+                params = $.extend(Object.fromEntries((new URLSearchParams(url.substr(qsPos + 1))).entries()), params);
+                url = url.substr(0, qsPos);
             }
 
             if (!Craft.omitScriptNameInUrls && path) {
@@ -478,26 +463,17 @@ $.extend(Craft,
                     // Move the path into the query string params
 
                     // Is the path param already set?
-                    if (params && params.substr(0, Craft.pathParam.length + 1) === Craft.pathParam + '=') {
-                        var basePath,
-                            endPath = params.indexOf('&');
-
-                        if (endPath !== -1) {
-                            basePath = params.substring(2, endPath);
-                            params = params.substr(endPath + 1);
-                        } else {
-                            basePath = params.substr(2);
-                            params = null;
-                        }
-
-                        // Just in case
-                        basePath = Craft.rtrim(basePath);
-
+                    if (params && typeof params[Craft.pathParam] !== 'undefined') {
+                        let basePath = Craft.rtrim(params[Craft.pathParam]);
                         path = basePath + (path ? '/' + path : '');
                     }
 
                     // Now move the path into the params
-                    params = Craft.pathParam + '=' + path + (params ? '&' + params : '');
+                    if (typeof params !== 'object') {
+                        params = {};
+                    }
+
+                    params[Craft.pathParam] = path;
                     path = null;
                 }
             }
@@ -507,7 +483,7 @@ $.extend(Craft,
             }
 
             if (params) {
-                url += '?' + params;
+                url += '?' + $.param(params);
             }
 
             if (anchor) {
@@ -553,6 +529,48 @@ $.extend(Craft,
          */
         redirectTo: function(url) {
             document.location.href = this.getUrl(url);
+        },
+
+        /**
+         * Returns the current URL with a certain page added to it.
+         *
+         * @param {int} page
+         * @return {string}
+         */
+        getPageUrl: function(page) {
+            let url = document.location.href;
+            if (document.location.search) {
+                url = url.replace(document.location.search, '');
+            }
+            if (document.location.hash) {
+                url = url.replace(document.location.hash, '');
+            }
+            url = Craft.rtrim(url, '/');
+
+            let qs = document.location.search ? document.location.search.substr(1) : '';
+
+            // query string-based pagination?
+            if (Craft.pageTrigger[0] === '?') {
+                const pageParam = Craft.pageTrigger.substr(1);
+                // remove the existing page param
+                if (document.location.search) {
+                    const params = $.extend(Object.fromEntries((new URLSearchParams(qs)).entries()), params);
+                    delete params[pageParam];
+                    qs = $.param(params);
+                }
+                if (page !== 1) {
+                    qs += (qs !== '' ? '&' : '') + `${pageParam}=${page}`;
+                }
+            } else {
+                // Remove the existing page segment(s)
+                url = url.replace(new RegExp('/' + Craft.escapeRegex(Craft.pageTrigger) + '\\d+$'), '');
+
+                if (page !== 1) {
+                    url += `/${Craft.pageTrigger}${page}`;
+                }
+            }
+
+            return url + (qs ? `?${qs}` : '') + document.location.hash;
         },
 
         /**
@@ -1231,7 +1249,7 @@ $.extend(Craft,
          * Trim characters off of the end of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         rtrim: function(str, chars) {
@@ -1507,6 +1525,11 @@ $.extend(Craft,
             return $ul;
         },
 
+        /**
+         * Appends HTML to the page `<head>`.
+         *
+         * @param {string} html
+         */
         appendHeadHtml: function(html) {
             if (!html) {
                 return;
@@ -1532,7 +1555,13 @@ $.extend(Craft,
             $('head').append(html);
         },
 
-        appendFootHtml: function(html) {
+
+        /**
+         * Appends HTML to the page `<body>`.
+         *
+         * @param {string} html
+         */
+        appendBodyHtml: function(html) {
             if (!html) {
                 return;
             }
@@ -1555,6 +1584,16 @@ $.extend(Craft,
             }
 
             Garnish.$bod.append(html);
+        },
+
+        /**
+         * Appends HTML to the page `<body>`.
+         *
+         * @deprecated in 4.0.0. `appendBodyHtml()` should be used instead
+         */
+        appendFootHtml: function(html) {
+            console.warn('Craft.appendFootHtml() is deprecated. Craft.appendBodyHtml() should be used instead.');
+            this.appendBodyHtml(html);
         },
 
         /**

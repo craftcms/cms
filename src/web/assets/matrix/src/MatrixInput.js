@@ -268,7 +268,7 @@
 
             var $fieldsContainer = $('<div class="fields"/>').appendTo($block),
                 bodyHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].bodyHtml, id),
-                footHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].footHtml, id);
+                js = this.getParsedBlockHtml(this.blockTypesByHandle[type].js, id);
 
             $(bodyHtml).appendTo($fieldsContainer);
 
@@ -282,7 +282,7 @@
                 'margin-bottom': 10
             }, 'fast', () => {
                 $block.css('margin-bottom', '');
-                Garnish.$bod.append(footHtml);
+                Garnish.$bod.append(js);
                 Craft.initUiElements($fieldsContainer);
                 new MatrixBlock(this, $block);
                 this.blockSort.addItems($block);

@@ -13,8 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\conditions\elements\entries\EntryQueryCondition;
-use craft\conditions\QueryConditionInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -27,6 +25,8 @@ use craft\elements\actions\NewSiblingBefore;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
@@ -188,11 +188,11 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @return EntryQueryCondition
+     * @return EntryCondition
      */
-    public static function createCondition(): QueryConditionInterface
+    public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(EntryQueryCondition::class, [static::class]);
+        return Craft::createObject(EntryCondition::class, [static::class]);
     }
 
     /**
@@ -1333,12 +1333,7 @@ class Entry extends Element
         $path = 'entries/' . $section->handle . '/' . $this->getCanonicalId() .
             ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
 
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
-        }
-
-        return UrlHelper::cpUrl($path, $params);
+        return UrlHelper::cpUrl($path);
     }
 
     /**
@@ -1468,7 +1463,7 @@ class Entry extends Element
         \$typeInput.on('change', function(ev) {
             editor.setElementAttribute('typeId', \$typeInput.val());
             editor.setElementAttribute('fieldLayoutId', fieldLayoutIds[`type-\${\$typeInput.val()}`]);
-            editor.load();
+            editor.load({}, false);
         });
     }
 })();

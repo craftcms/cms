@@ -15,6 +15,7 @@ use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
+use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -282,7 +283,7 @@ JS;
         return $this->asJson([
             'settingsHtml' => $html,
             'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 
@@ -379,19 +380,49 @@ JS;
     // -------------------------------------------------------------------------
 
     /**
-     * Renders a field layout element’s selector HTML.
+     * Applies a field layout tab’s settings.
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @since 3.5.0
+     * @since 4.0.0
      */
-    public function actionRenderLayoutElementSelector(): Response
+    public function actionApplyLayoutTabSettings(): Response
     {
-        $config = $this->request->getRequiredBodyParam('config');
-        $element = Craft::$app->getFields()->createLayoutElement($config);
+        $tab = new FieldLayoutTab($this->_fldComponentConfig());
 
         return $this->asJson([
-            'html' => $element->selectorHtml(),
+            'config' => $tab->toArray(),
         ]);
+    }
+
+    /**
+     * Applies a field layout element’s settings.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 4.0.0
+     */
+    public function actionApplyLayoutElementSettings(): Response
+    {
+        $element = Craft::$app->getFields()->createLayoutElement($this->_fldComponentConfig());
+
+        return $this->asJson([
+            'config' => ['type' => get_class($element)] + $element->toArray(),
+            'selectorHtml' => $element->selectorHtml(),
+        ]);
+    }
+
+    /**
+     * Returns the posted settings.
+     *
+     * @return array
+     */
+    private function _fldComponentConfig(): array
+    {
+        $config = $this->request->getRequiredBodyParam('config');
+        $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
+        $settingsStr = $this->request->getRequiredBodyParam('settings');
+        parse_str($settingsStr, $settings);
+        return array_merge($config, $settings[$settingsNamespace]);
     }
 }

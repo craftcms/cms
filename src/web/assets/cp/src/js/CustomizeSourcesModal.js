@@ -93,7 +93,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             Craft.appendHeadHtml(response.headHtml);
         }
         if (response.bodyHtml) {
-            Craft.appendFootHtml(response.bodyHtml);
+            Craft.appendBodyHtml(response.bodyHtml);
         }
 
         // Create the source item sorter
@@ -493,7 +493,7 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
                 type: this.modal.elementTypeName,
             }),
         }).appendTo($container);
-        Craft.appendFootHtml(conditionBuilderJs);
+        Craft.appendBodyHtml(conditionBuilderJs);
 
         this.createTableAttributesField($container);
 

@@ -8,6 +8,7 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\StringHelper;
 use yii\base\Behavior;
 use yii\base\Model;
@@ -96,7 +97,7 @@ class EnvAttributeParserBehavior extends Behavior
                 $value = $this->owner->$attribute;
             }
 
-            if (($parsed = Craft::parseEnv($value)) !== $value) {
+            if (($parsed = App::parseEnv($value)) !== $value) {
                 $this->_values[$attribute] = $value;
                 $this->owner->$attribute = $parsed;
 

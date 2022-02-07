@@ -37,11 +37,12 @@ class FieldLayoutForm extends Model
     {
         $menu = [];
         foreach ($this->tabs as $tab) {
-            $tabId = $this->_tabId($tab->id);
+            $tabId = $this->_tabId($tab->getId());
             $menu[$tabId] = [
-                'label' => $tab->name,
+                'label' => $tab->getName(),
                 'url' => "#$tabId",
                 'class' => $tab->hasErrors ? 'error' : null,
+                'visible' => $tab->visible,
             ];
         }
         return $menu;
@@ -58,8 +59,8 @@ class FieldLayoutForm extends Model
         $html = [];
         foreach ($this->tabs as $i => $tab) {
             $show = $showFirst && $i === 0;
-            $html[] = Html::tag('div', $tab->content, [
-                'id' => $this->_tabId($tab->id),
+            $html[] = Html::tag('div', $tab->getContent(), [
+                'id' => $this->_tabId($tab->getId()),
                 'class' => array_filter([
                     'flex-fields',
                     !$show ? 'hidden' : null,
@@ -78,5 +79,24 @@ class FieldLayoutForm extends Model
     private function _tabId(string $tabId): string
     {
         return ($this->tabIdPrefix ? "$this->tabIdPrefix-" : '') . $tabId;
+    }
+
+    /**
+     * Returns lists of visible layout elements, indexed by tab UUIDs.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public function getVisibleElements(): array
+    {
+        $response = [];
+
+        foreach ($this->tabs as $tab) {
+            if ($tab->visible) {
+                $response[$tab->getId()] = array_keys(array_filter($tab->elementHtml));
+            }
+        }
+
+        return $response;
     }
 }

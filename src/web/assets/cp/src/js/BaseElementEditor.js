@@ -214,7 +214,12 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         return data;
     },
 
-    load: function(data) {
+    /**
+     * @param {object} [data={}]
+     * @param {boolean} [refreshInitialData=true]
+     * @returns {Promise}
+     */
+    load: function(data, refreshInitialData) {
         return new Promise((resolve, reject) => {
             this.trigger('beforeLoad');
             // todo: remove this in Craft 4
@@ -244,7 +249,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
                 if (this.initialDeltaValues === null) {
                     this.initialDeltaValues = response.data.initialDeltaValues;
                 }
-                this.updateForm(response.data, true);
+                this.updateForm(response.data, refreshInitialData);
                 this.cancelToken = null;
                 resolve();
             }).catch(e => {
@@ -300,6 +305,10 @@ Craft.BaseElementEditor = Garnish.Base.extend({
         });
     },
 
+    /**
+     * @param {object} data
+     * @param {boolean} [refreshInitialData=true]
+     */
     updateForm: function(data, refreshInitialData) {
         // Cleanup
         if (this.tabManager) {
@@ -307,6 +316,7 @@ Craft.BaseElementEditor = Garnish.Base.extend({
             this.tabManager.destroy();
             this.tabManager = null;
         }
+        refreshInitialData = refreshInitialData !== false;
 
         this.siteId = data.siteId;
         this.$fieldsContainer.html(data.fieldHtml);
@@ -381,13 +391,13 @@ Craft.BaseElementEditor = Garnish.Base.extend({
 
         this.$footer.removeClass('hidden');
 
-        if (refreshInitialData !== false) {
+        if (refreshInitialData) {
             this.deltaNames = data.deltaNames;
         }
 
         Garnish.requestAnimationFrame(() => {
             Craft.appendHeadHtml(data.headHtml);
-            Craft.appendFootHtml(data.footHtml);
+            Craft.appendBodyHtml(data.bodyHtml);
             Craft.initUiElements(this.$fieldsContainer);
 
             if (refreshInitialData) {

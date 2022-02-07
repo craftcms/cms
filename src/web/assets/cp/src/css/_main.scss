@@ -739,8 +739,7 @@ td.right {
 }
 
 .token:focus {
-  box-shadow: 0 0 0 1px transparentize($grey500, 0.75);
-  background-color: $white;
+  @include active-token-styles;
 }
 
 // Override .token for Prism
@@ -5002,8 +5001,11 @@ fieldset {
 .checkboxfield .instructions {
   color: $mediumTextColor;
 
-  img {
-    max-width: 100%;
+  img,
+  video,
+  embed,
+  iframe {
+    max-width: 100% !important;
   }
 
   ul,
@@ -5656,24 +5658,39 @@ body .selectize-dropdown {
 
 /* multi select styles */
 .selectize.multiselect .selectize-control.multi .selectize-input {
-  padding: 6px 8px;
-}
+  min-height: 34px;
+  padding-bottom: 3px;
 
-.selectize.multiselect .selectize-control.multi .selectize-input.has-items {
-  padding: 5px 8px;
-}
+  & > .item {
+    @include token-styles;
+    display: inline-flex;
+    flex-direction: row;
+    padding: 3px 7px !important;
 
-.selectize.multiselect .selectize-control.multi .selectize-input > div {
-  @include token-styles;
-  margin-top: 1px;
-  margin-bottom: 1px;
-}
+    &.active {
+      @include active-token-styles;
+    }
 
-.selectize.multiselect
-  .selectize-control.plugin-remove_button
-  [data-value]
-  .remove {
-  padding: 0;
+    & > .remove {
+      position: static;
+      @include margin(-1px, -3px, 0, 3px);
+      border-left: none;
+      padding: 0;
+      font-size: 0;
+      color: var(--ui-control-color);
+
+      &:hover {
+        color: var(--ui-control-hover-color);
+        background-color: transparent;
+      }
+
+      &:before {
+        font-size: 14px;
+        @include icon;
+        content: 'remove';
+      }
+    }
+  }
 }
 
 /* shared styles */
@@ -5683,13 +5700,11 @@ body .selectize-dropdown {
 
 /* menu styles */
 body .selectize-dropdown {
-  @include menu-styles;
   margin-top: 1px;
-  padding: 0;
 }
 
 body .selectize-dropdown-content {
-  padding: 3px 14px;
+  @include menu-styles;
 }
 
 body .selectize-dropdown-content > div[data-value="new"]:before {

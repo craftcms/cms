@@ -10,7 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
@@ -22,6 +22,8 @@ use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -146,10 +148,10 @@ class FieldLayout extends Model
 
         if (!empty($config['tabs']) && is_array($config['tabs'])) {
             foreach ($config['tabs'] as $tabConfig) {
-                $tab = FieldLayoutTab::createFromConfig($tabConfig);
+                $tab = FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig);
 
                 // Ignore empty tabs
-                if (!empty($tab->elements)) {
+                if (!empty($tab->getElements())) {
                     $tabs[] = $tab;
                 }
             }
@@ -170,9 +172,9 @@ class FieldLayout extends Model
     public ?string $type = null;
 
     /**
-     * @var string|null UID
+     * @var string UID
      */
-    public ?string $uid = null;
+    public string $uid;
 
     /**
      * @var string[]|null Reserved custom field handles
@@ -214,6 +216,18 @@ class FieldLayout extends Model
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -235,13 +249,13 @@ class FieldLayout extends Model
 
         // Make sure no fields are using one of our reserved attribute names
         foreach ($this->getTabs() as $tab) {
-            foreach ($tab->elements as $element) {
+            foreach ($tab->getElements() as $layoutElement) {
                 if (
-                    $element instanceof CustomField &&
-                    in_array($element->attribute(), $this->reservedFieldHandles, true)
+                    $layoutElement instanceof CustomField &&
+                    in_array($layoutElement->attribute(), $this->reservedFieldHandles, true)
                 ) {
                     $this->addError('fields', Craft::t('app', '“{handle}” is a reserved word.', [
-                        'handle' => $element->attribute(),
+                        'handle' => $layoutElement->attribute(),
                     ]));
                 }
             }
@@ -255,25 +269,49 @@ class FieldLayout extends Model
      */
     public function getTabs(): array
     {
-        if (isset($this->_tabs)) {
-            return $this->_tabs;
+        if (!isset($this->_tabs)) {
+            if ($this->id) {
+                $this->setTabs(Craft::$app->getFields()->getLayoutTabsById($this->id));
+            } else {
+                $this->setTabs([]);
+            }
         }
 
+        return $this->_tabs;
+    }
+
+    /**
+     * Sets the layout’s tabs.
+     *
+     * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
+     * objects or arrays defining the tab’s attributes.
+     */
+    public function setTabs(array $tabs): void
+    {
+        $this->_tabs = [];
         $this->_fields = [];
 
-        if ($this->id) {
-            $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
+        $index = 0;
 
-            // Take stock of all the selected layout elements
-            foreach ($this->_tabs as $tab) {
-                foreach ($tab->elements as $element) {
-                    if ($element instanceof BaseField) {
-                        $this->_fields[$element->attribute()] = $element;
-                    }
+        foreach ($tabs as $tab) {
+            if (is_array($tab)) {
+                // Set the layout before anything else
+                $tab = ['layout' => $this] + $tab;
+                $tab = new FieldLayoutTab($tab);
+            } else {
+                $tab->setLayout($this);
+            }
+            $tab->sortOrder = ++$index;
+            $this->_tabs[] = $tab;
+        }
+
+        // Take stock of all the selected layout elements
+        foreach ($this->_tabs as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                if ($layoutElement instanceof BaseField) {
+                    $this->_fields[$layoutElement->attribute()] = $layoutElement;
                 }
             }
-        } else {
-            $this->_tabs = [];
         }
 
         // Make sure that we aren't missing any mandatory fields
@@ -291,33 +329,17 @@ class FieldLayout extends Model
             $tab = reset($this->_tabs);
             if (!$tab) {
                 $this->_tabs[] = $tab = new FieldLayoutTab([
+                    'layout' => $this,
                     'layoutId' => $this->id,
                     'name' => Craft::t('app', 'Content'),
                     'sortOrder' => 1,
                     'elements' => [],
                 ]);
             }
-            array_unshift($tab->elements, ...array_values($missingFields));
-        }
 
-        return $this->_tabs;
-    }
-
-    /**
-     * Sets the layout’s tabs.
-     *
-     * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
-     * objects or arrays defining the tab’s attributes.
-     */
-    public function setTabs(array $tabs): void
-    {
-        $this->_tabs = [];
-        foreach ($tabs as $tab) {
-            if (is_array($tab)) {
-                $tab = new FieldLayoutTab($tab);
-            }
-            $tab->setLayout($this);
-            $this->_tabs[] = $tab;
+            $layoutElements = $tab->getElements();
+            array_unshift($layoutElements, ...array_values($missingFields));
+            $tab->setElements($layoutElements);
         }
     }
 
@@ -335,7 +357,10 @@ class FieldLayout extends Model
             foreach (Craft::$app->getFields()->getAllGroups() as $group) {
                 $groupName = Craft::t('site', $group->name);
                 foreach ($group->getFields() as $field) {
-                    $this->_availableCustomFields[$groupName][] = Craft::createObject(CustomField::class, [$field]);
+                    $this->_availableCustomFields[$groupName][] = Craft::createObject([
+                        'class' => CustomField::class,
+                        'layout' => $this,
+                    ], [$field]);
                 }
             }
         }
@@ -364,6 +389,7 @@ class FieldLayout extends Model
                 if (!$field instanceof BaseField) {
                     throw new InvalidConfigException('Invalid standard field config');
                 }
+                $field->setLayout($this);
             }
         }
         return $this->_availableStandardFields;
@@ -372,7 +398,7 @@ class FieldLayout extends Model
     /**
      * Returns the layout elements that are available to the field layout, grouped by the type name and (optionally) group name.
      *
-     * @return FieldLayoutElementInterface[]
+     * @return FieldLayoutElement[]
      * @since 3.5.0
      */
     public function getAvailableUiElements(): array
@@ -400,7 +426,7 @@ class FieldLayout extends Model
             if (is_string($element) || is_array($element)) {
                 $element = Craft::createObject($element);
             }
-            if (!$element instanceof FieldLayoutElementInterface) {
+            if (!$element instanceof FieldLayoutElement) {
                 throw new InvalidConfigException('Invalid UI element config');
             }
         }
@@ -483,6 +509,54 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns the layout elements representing custom fields.
+     *
+     * @return CustomField[]
+     * @since 3.7.27
+     */
+    public function getCustomFieldElements(): array
+    {
+        $response = [];
+
+        foreach ($this->getTabs() as $tab) {
+            foreach ($tab->getElements() as $element) {
+                if ($element instanceof CustomField) {
+                    $response[] = $element;
+                }
+            }
+        }
+
+        return $response;
+    }
+
+
+    /**
+     * Returns the custom fields included in the layout, which are configured to be shown for the given element
+     *
+     * @param ElementInterface $element
+     * @return FieldInterface[]
+     * @since 4.0.0
+     */
+    public function getVisibleFields(ElementInterface $element): array
+    {
+        $fields = [];
+
+        foreach ($this->getTabs() as $tab) {
+            if ($tab->showInForm($element)) {
+                foreach ($tab->getElements() as $layoutElement) {
+                    if ($layoutElement instanceof CustomField && $layoutElement->showInForm($element)) {
+                        $field = $layoutElement->getField();
+                        $field->required = $layoutElement->required;
+                        $fields[] = $field;
+                    }
+                }
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
      * Returns a custom field by its handle.
      *
      * @param string $handle The field handle.
@@ -517,6 +591,7 @@ class FieldLayout extends Model
      * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
      * - `namespace` – Namespace that should be applied to the tab contents
      * - `registerDeltas` – Whether delta name registration should be enabled/disabled for the form (by default its state will be left alone)
+     * - `visibleElements` – Lists of already-visible layout elements from [[FieldLayoutForm::getVisibleElements()]]
      *
      * @param ElementInterface|null $element The element the form is being rendered for
      * @param bool $static Whether the form should be static (non-interactive)
@@ -541,6 +616,9 @@ class FieldLayout extends Model
             $view->setIsDeltaRegistrationActive($registerDeltas);
         }
 
+        // Any already-included layout elements?
+        $visibleElements = ArrayHelper::remove($config, 'visibleElements') ?? [];
+
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
 
@@ -557,25 +635,43 @@ class FieldLayout extends Model
         }
 
         foreach ($tabs as $tab) {
-            $tabHtml = [];
+            $elementHtml = [];
+            $tabHtmlId = $tab->getHtmlId();
+            $showTab = $tab->showInForm($element);
+            $hasVisibleFields = false;
 
-            foreach ($tab->elements as $formElement) {
-                $elementHtml = $view->namespaceInputs(function() use ($formElement, $element, $static) {
-                    return (string)$formElement->formHtml($element, $static);
-                }, $namespace);
-                if ($elementHtml !== '') {
-                    $tabHtml[] = $elementHtml;
+            foreach ($tab->getElements() as $layoutElement) {
+                if ($showTab && $layoutElement->showInForm($element)) {
+                    // If it was already included and we just need the missing elements, only keep track that it’s still included
+                    if (isset($visibleElements[$tabHtmlId]) && in_array($layoutElement->uid, $visibleElements[$tabHtmlId])) {
+                        $elementHtml[$layoutElement->uid] = true;
+                        $hasVisibleFields = true;
+                    } else {
+                        $html = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
+                            return $layoutElement->formHtml($element, $static);
+                        }, $namespace);
+                        if ($html) {
+                            $elementHtml[$layoutElement->uid] = Html::modifyTagAttributes($html, [
+                                'data' => [
+                                    'layout-element' => $layoutElement->uid,
+                                ],
+                            ]);
+                            $hasVisibleFields = true;
+                        } else {
+                            $elementHtml[$layoutElement->uid] = false;
+                        }
+                    }
+                } else {
+                    $elementHtml[$layoutElement->uid] = false;
                 }
             }
 
-            if (!empty($tabHtml)) {
-                $form->tabs[] = new FieldLayoutFormTab([
-                    'name' => Craft::t('site', $tab->name),
-                    'id' => $tab->getHtmlId(),
-                    'hasErrors' => $element && $tab->elementHasErrors($element),
-                    'content' => implode("\n", $tabHtml),
-                ]);
-            }
+            $form->tabs[] = new FieldLayoutFormTab([
+                'layoutTab' => $tab,
+                'hasErrors' => $element && $tab->elementHasErrors($element),
+                'elementHtml' => $elementHtml,
+                'visible' => $hasVisibleFields,
+            ]);
         }
 
         if ($changeDeltaRegistration) {
@@ -584,5 +680,34 @@ class FieldLayout extends Model
         }
 
         return $form;
+    }
+
+    /**
+     * Returns the form HTML for any layout elements that aren’t currently shown in a form but should be,
+     * as well as an indication of whether already-visible layout elements should or shouldn’t continue to
+     * be shown.
+     *
+     * The `$config` array can contain the following keys:
+     *
+     * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
+     * - `visibleElements` – Lists of already-visible layout elements from [[FieldLayoutForm::getVisibleElements()]]
+     * - `namespace` – Namespace that should be applied to the tab contents
+     *
+     * @param ElementInterface $element The element the form is being rendered for
+     * @param array $config The [[FieldLayoutForm]] config
+     * @return array
+     * @since 4.0.0
+     */
+    public function renderMissingElements(ElementInterface $element, array $visibleElements, array $config = []): array
+    {
+        $config['registerDeltas'] = false;
+        $config['visibleElements'] = $visibleElements;
+        $form = $this->createForm($element, false, $config);
+        $tabHtmlIds = array_map(fn(FieldLayoutFormTab $tab) => $tab->getId(), $form->tabs);
+        $tabInfo = array_map(fn(FieldLayoutFormTab $tab) => [
+            'visible' => $tab->visible,
+            'elementHtml' => $tab->elementHtml,
+        ], $form->tabs);
+        return array_combine($tabHtmlIds, $tabInfo);
     }
 }

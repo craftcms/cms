@@ -12,9 +12,9 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\conditions\elements\fields\DateFieldConditionRule;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
@@ -378,7 +378,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getQueryConditionRuleType()
+    public function getElementConditionRuleType()
     {
         return DateFieldConditionRule::class;
     }

@@ -72,7 +72,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
     actions: null,
     actionsHeadHtml: null,
-    actionsFootHtml: null,
+    actionsBodyHtml: null,
     $selectAllContainer: null,
     $selectAllCheckbox: null,
     showingActionTriggers: false,
@@ -568,12 +568,38 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     },
 
     storeSortAttributeAndDirection: function() {
-        var attr = this.getSelectedSortAttribute();
+        const attr = this.getSelectedSortAttribute();
 
         if (attr !== 'score') {
+            const history = [];
+
+            if (attr) {
+                // Remember the previous choices
+                const attributes = [attr];
+
+                // Only include the most last attribute if it changed
+                const lastAttr = this.getSelectedSourceState('order');
+                if (lastAttr && lastAttr !== attr) {
+                    history.push([lastAttr, this.getSelectedSourceState('sort')]);
+                    attributes.push(lastAttr);
+                }
+
+                const oldHistory = this.getSelectedSourceState('orderHistory', []);
+                for (let i = 0; i < oldHistory.length; i++) {
+                    const [a] = oldHistory[i];
+                    if (a && !attributes.includes(a)) {
+                        history.push(oldHistory[i]);
+                        attributes.push(a);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
             this.setSelecetedSourceState({
                 order: attr,
-                sort: this.getSelectedSortDirection()
+                sort: this.getSelectedSortDirection(),
+                orderHistory: history,
             });
         }
     },
@@ -589,19 +615,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         page = Math.max(page, 1);
         this.page = page;
 
-        // Update the URL
-        var url = document.location.href
-            .replace(/\?.*$/, '')
-            .replace(new RegExp('/' + Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\d+$'), '')
-            .replace(/\/+$/, '');
-
-        if (this.page !== 1) {
-            if (Craft.pageTrigger[0] !== '?') {
-                url += '/';
-            }
-            url += Craft.pageTrigger + this.page;
-        }
-
+        const url = Craft.getPageUrl(this.page);
         history.replaceState({}, '', url);
     },
 
@@ -665,7 +679,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
         if (this.filterHuds[this.sourceKey] && this.filterHuds[this.sourceKey].serialized) {
-            params.condition = this.filterHuds[this.sourceKey].serialized;
+            params.filters = this.filterHuds[this.sourceKey].serialized;
         }
 
         // Give plugins a chance to hook in here
@@ -1657,7 +1671,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         // Get rid of the old action triggers regardless of whether the new batch has actions or not
         if (this.actions) {
             this.hideActionTriggers();
-            this.actions = this.actionsHeadHtml = this.actionsFootHtml = this._$triggers = null;
+            this.actions = this.actionsHeadHtml = this.actionsBodyHtml = this._$triggers = null;
         }
 
         // Update the count text
@@ -1738,7 +1752,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         this.$elements.html(response.html);
         Craft.appendHeadHtml(response.headHtml);
-        Craft.appendFootHtml(response.footHtml);
+        Craft.appendBodyHtml(response.bodyHtml);
 
         // Batch actions setup
         // -------------------------------------------------------------
@@ -1749,7 +1763,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             if (this.$selectAllContainer.length) {
                 this.actions = response.actions;
                 this.actionsHeadHtml = response.actionsHeadHtml;
-                this.actionsFootHtml = response.actionsFootHtml;
+                this.actionsBodyHtml = response.actionsBodyHtml;
 
                 // Create the select all checkbox
                 this.$selectAllCheckbox = $('<div class="checkbox"/>').prependTo(this.$selectAllContainer);
@@ -1946,7 +1960,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         this._$triggers.appendTo(this.$toolbar);
         Craft.appendHeadHtml(this.actionsHeadHtml);
-        Craft.appendFootHtml(this.actionsFootHtml);
+        Craft.appendBodyHtml(this.actionsBodyHtml);
 
         Craft.initUiElements(this._$triggers);
 
@@ -2190,8 +2204,7 @@ const FilterHud = Garnish.HUD.extend({
             data: {
                 elementType: this.elementIndex.elementType,
                 source: this.sourceKey,
-                baseInputName: `${this.id}-condition`,
-                id: `${this.id}-condition`,
+                id: `${this.id}-filters`,
             },
         }).then(response => {
             this.loading = false;
@@ -2200,7 +2213,7 @@ const FilterHud = Garnish.HUD.extend({
 
             this.$main.append(response.data.hudHtml);
             Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendFootHtml(response.data.bodyHtml);
+            Craft.appendBodyHtml(response.data.bodyHtml);
 
             const $btnContainer = $('<div/>', {
                 class: 'flex flex-nowrap',

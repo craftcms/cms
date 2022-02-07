@@ -2,6 +2,7 @@
 /** global: Garnish */
 Craft.FieldLayoutDesigner = Garnish.Base.extend({
     $container: null,
+    $configInput: null,
     $tabContainer: null,
     $newTabBtn: null,
     $sidebar: null,
@@ -18,9 +19,14 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
     tabGrid: null,
     elementDrag: null,
 
+    _config: null,
+
     init: function(container, settings) {
         this.$container = $(container);
         this.setSettings(settings, Craft.FieldLayoutDesigner.defaults);
+
+        this.$configInput = this.$container.children('input[data-config-input]');
+        this._config = JSON.parse(this.$configInput.val());
 
         let $workspace = this.$container.children('.fld-workspace');
         this.$tabContainer = $workspace.children('.fld-tabs');
@@ -48,13 +54,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         for (let i = 0; i < $tabs.length; i++) {
             this.initTab($($tabs[i]));
         }
-
-        // create a placeholder input so *something* gets posted even if there are no tabs/elements
-        $('<input/>', {
-            type: 'hidden',
-            name: this.settings.elementPlacementInputName.replace('[__TAB_NAME__][]', ''),
-            value: '',
-        }).insertBefore(this.$container);
 
         this.elementDrag = new Craft.FieldLayoutDesigner.ElementDrag(this);
 
@@ -114,144 +113,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
     },
 
     initTab: function($tab) {
-        if (this.settings.customizableTabs) {
-            let $editBtn = $tab.find('.tabs .settings');
-            $('<div class="menu" data-align="center"/>')
-                .insertAfter($editBtn)
-                .append(
-                    $('<ul/>')
-                        .append($('<li/>')
-                            .append($('<a/>', {
-                                'data-action': 'rename',
-                                text: Craft.t('app', 'Rename')
-                            })))
-                        .append($('<li/>')
-                            .append($('<a/>', {
-                                'data-action': 'remove',
-                                text: Craft.t('app', 'Remove')
-                            })))
-                )
-                .append($('<hr/>'))
-                .append(
-                    $('<ul/>')
-                        .append($('<li/>')
-                            .append($('<a/>', {
-                                'data-action': 'moveLeft',
-                                text: Craft.t('app', 'Move to the left')
-                            })))
-                        .append($('<li/>')
-                            .append($('<a/>', {
-                                'data-action': 'moveRight',
-                                text: Craft.t('app', 'Move to the right')
-                            })))
-                );
-
-            let menuBtn = new Garnish.MenuBtn($editBtn, {
-                onOptionSelect: this.onTabOptionSelect.bind(this)
-            });
-            menuBtn.menu.on('show', () => {
-                if ($tab.prev('.fld-tab').length) {
-                    menuBtn.menu.$container.find('[data-action=moveLeft]').removeClass('disabled');
-                } else {
-                    menuBtn.menu.$container.find('[data-action=moveLeft]').addClass('disabled');
-                }
-
-                if ($tab.next('.fld-tab').length) {
-                    menuBtn.menu.$container.find('[data-action=moveRight]').removeClass('disabled');
-                } else {
-                    menuBtn.menu.$container.find('[data-action=moveRight]').addClass('disabled');
-                }
-            });
-        }
-
-        // initialize the elements
-        let $elements = $tab.children('.fld-tabcontent').children();
-
-        for (let i = 0; i < $elements.length; i++) {
-            this.initElement($($elements[i]));
-        }
-    },
-
-    initElement: function($element) {
-        new Craft.FieldLayoutDesigner.Element(this, $element);
-    },
-
-    onTabOptionSelect: function(option) {
-        if (!this.settings.customizableTabs) {
-            return;
-        }
-
-        let $option = $(option);
-        let $tab = $option.data('menu').$anchor.parent().parent().parent();
-        let action = $option.data('action');
-
-        switch (action) {
-            case 'rename':
-                this.renameTab($tab);
-                break;
-            case 'remove':
-                this.removeTab($tab);
-                break;
-            case 'moveLeft':
-                let $prev = $tab.prev('.fld-tab');
-                if ($prev.length) {
-                    $tab.insertBefore($prev);
-                }
-                break;
-            case 'moveRight':
-                let $next = $tab.next('.fld-tab');
-                if ($next.length) {
-                    $tab.insertAfter($next);
-                }
-                break;
-        }
-    },
-
-    renameTab: function($tab) {
-        if (!this.settings.customizableTabs) {
-            return;
-        }
-
-        const $labelSpan = $tab.find('.tabs .tab span');
-        const oldName = $labelSpan.text();
-        const newName = this.promptForTabName(oldName);
-
-        if (newName && newName !== oldName) {
-            $labelSpan.text(newName);
-            $tab.find('.placement-input').attr('name', this.getElementPlacementInputName(newName));
-        }
-    },
-
-    promptForTabName: function(oldName) {
-        return Craft.escapeHtml(prompt(Craft.t('app', 'Give your tab a name.'), oldName));
-    },
-
-    removeTab: function($tab) {
-        if (!this.settings.customizableTabs) {
-            return;
-        }
-
-        // Find all the fields in this tab
-        let $fields = $tab.find('.fld-element');
-
-        for (let i = 0; i < $fields.length; i++) {
-            let attribute = $($fields[i]).attr('data-attribute');
-            this.removeFieldByHandle(attribute);
-        }
-
-        this.tabGrid.removeItems($tab);
-        this.tabDrag.removeItems($tab);
-
-        $tab.remove();
-    },
-
-    removeField: function($field) {
-        let attribute = $field.attr('data-attribute');
-
-        $field.remove();
-
-        this.removeFieldByHandle(attribute);
-        this.tabGrid.refreshCols(true);
+        return new Craft.FieldLayoutDesigner.Tab(this, $tab);
     },
 
     removeFieldByHandle: function(attribute) {
@@ -265,7 +127,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
             return;
         }
 
-        const name = this.promptForTabName();
+        const name = Craft.escapeHtml(prompt(Craft.t('app', 'Give your tab a name.')));
+
         if (!name) {
             return;
         }
@@ -275,77 +138,360 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
   <div class="tabs">
     <div class="tab sel draggable">
       <span>${name}</span>
-      <a class="settings icon" title="${Craft.t('app', 'Rename')}"></a>
+      <a class="settings icon" title="${Craft.t('app', 'Settings')}"></a>
     </div>
   </div>
   <div class="fld-tabcontent"></div>
 </div>
 `)
+            .data('config', {name: name, elements: []})
             .appendTo(this.$tabContainer);
 
         this.tabGrid.addItems($tab);
         this.tabDrag.addItems($tab);
 
-        this.initTab($tab);
+        const tab = this.initTab($tab);
+        tab.updatePositionInConfig();
     },
 
-    getElementPlacementInputName: function(tabName) {
-        return this.settings.elementPlacementInputName.replace(/__TAB_NAME__/g, Craft.encodeUriComponent(tabName));
-    }
+    get config() {
+        return this._config;
+    },
+
+    set config(config) {
+        this._config = config;
+        this.$configInput.val(JSON.stringify(config));
+    },
+
+    updateConfig: function(callback) {
+        const config = callback(this.config);
+        if (config !== false) {
+            this.config = config;
+        }
+    },
 }, {
     defaults: {
         customizableTabs: true,
         customizableUi: true,
-        elementPlacementInputName: 'elementPlacements[__TAB_NAME__][]',
-        elementConfigInputName: 'elementConfigs[__ELEMENT_KEY__]',
-    }
+    },
+
+    createSlideout: function(contents, js) {
+        const $body = $('<div/>', {class: 'fld-element-settings-body'});
+        $('<div/>', {class: 'fields', html: contents}).appendTo($body);
+        const $footer = $('<div/>', {class: 'fld-element-settings-footer'});
+        $('<div/>', {class: 'flex-grow'}).appendTo($footer);
+        $('<button/>', {
+            type: 'submit',
+            class: 'btn submit secondary',
+            text: Craft.t('app', 'Apply'),
+        }).appendTo($footer);
+        $('<div/>', {class: 'spinner hidden'}).appendTo($footer);
+        const $contents = $body.add($footer);
+
+        const slideout = new Craft.Slideout($contents, {
+            containerElement: 'form',
+            containerAttributes: {
+                action: '',
+                method: 'post',
+                novalidate: '',
+                class: 'fld-element-settings',
+            },
+        });
+        slideout.on('open', () => {
+            // Hold off a sec until it's positioned...
+            Garnish.requestAnimationFrame(() => {
+                // Focus on the first text input
+                slideout.$container.find('.text:first').trigger('focus');
+            });
+        });
+
+        if (js) {
+            eval(js);
+        }
+
+        Craft.initUiElements(slideout.$container);
+
+        return slideout;
+    },
 });
 
-Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
+Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     designer: null,
+    uid: null,
     $container: null,
-    $placementInput: null,
-    $configInput: null,
-    $settingsContainer: null,
-    $editBtn: null,
-
-    config: null,
-    isField: false,
-    attribute: null,
-    requirable: false,
-    key: null,
-    hasCustomWidth: false,
-    hasSettings: false,
-    hud: null,
+    slideout: null,
 
     init: function(designer, $container) {
         this.designer = designer;
         this.$container = $container;
-        this.$container.data('fld-element', this);
+        this.$container.data('fld-tab', this);
+        this.uid = this.$container.data('uid');
 
-        this.config = this.$container.data('config');
-        if (!$.isPlainObject(this.config)) {
-            this.config = {};
+        // New tab?
+        if (!this.uid) {
+            this.uid = Craft.uuid();
+            this.config = $.extend(this.$container.data('config'), {uid: this.uid});
+            this.$container.data('settings-namespace', this.designer.$container.data('new-tab-settings-namespace').replace(/\bTAB_UID\b/g, this.uid));
+            this.$container.data('settings-html', this.designer.$container.data('new-tab-settings-html').replace(/\bTAB_UID\b/g, this.uid).replace(/\bTAB_NAME\b/g, this.config.name));
+            this.$container.data('settings-js', this.designer.$container.data('new-tab-settings-js').replace(/\bTAB_UID\b/g, this.uid));
         }
-        this.config.type = this.$container.data('type');
+
+        if (this.designer.settings.customizableTabs) {
+            this.settingsNamespace = this.$container.data('settings-namespace');
+            this.createMenu();
+        }
+
+        // initialize the elements
+        const $elements = this.$container.children('.fld-tabcontent').children();
+
+        for (let i = 0; i < $elements.length; i++) {
+            this.initElement($($elements[i]));
+        }
+    },
+
+    createMenu: function() {
+        const $editBtn = this.$container.find('.tabs .settings');
+
+        $('<div class="menu" data-align="center"/>')
+          .insertAfter($editBtn)
+          .append(
+            $('<ul/>')
+              .append($('<li/>')
+                .append($('<a/>', {
+                    'data-action': 'settings',
+                    text: Craft.t('app', 'Settings')
+                })))
+              .append($('<li/>')
+                .append($('<a/>', {
+                    'data-action': 'remove',
+                    text: Craft.t('app', 'Remove')
+                })))
+          )
+          .append($('<hr/>'))
+          .append(
+            $('<ul/>')
+              .append($('<li/>')
+                .append($('<a/>', {
+                    'data-action': 'moveLeft',
+                    text: Craft.t('app', 'Move to the left')
+                })))
+              .append($('<li/>')
+                .append($('<a/>', {
+                    'data-action': 'moveRight',
+                    text: Craft.t('app', 'Move to the right')
+                })))
+          );
+
+        let menuBtn = new Garnish.MenuBtn($editBtn, {
+            onOptionSelect: this.onTabOptionSelect.bind(this)
+        });
+
+        menuBtn.menu.on('show', () => {
+            if (this.$container.prev('.fld-tab').length) {
+                menuBtn.menu.$container.find('[data-action=moveLeft]').removeClass('disabled');
+            } else {
+                menuBtn.menu.$container.find('[data-action=moveLeft]').addClass('disabled');
+            }
+
+            if (this.$container.next('.fld-tab').length) {
+                menuBtn.menu.$container.find('[data-action=moveRight]').removeClass('disabled');
+            } else {
+                menuBtn.menu.$container.find('[data-action=moveRight]').addClass('disabled');
+            }
+        });
+    },
+
+    onTabOptionSelect: function(option) {
+        if (!this.designer.settings.customizableTabs) {
+            return;
+        }
+
+        let $option = $(option);
+        let action = $option.data('action');
+
+        switch (action) {
+            case 'settings':
+                if (!this.slideout) {
+                    this.createSettings();
+                } else {
+                    this.slideout.open();
+                }
+                break;
+            case 'remove':
+                this.destroy();
+                break;
+            case 'moveLeft':
+                let $prev = this.$container.prev('.fld-tab');
+                if ($prev.length) {
+                    this.$container.insertBefore($prev);
+                    this.updatePositionInConfig();
+                }
+                break;
+            case 'moveRight':
+                let $next = this.$container.next('.fld-tab');
+                if ($next.length) {
+                    this.$container.insertAfter($next);
+                    this.updatePositionInConfig();
+                }
+                break;
+        }
+    },
+
+    createSettings: function() {
+        const settingsHtml = this.$container.data('settings-html');
+        const settingsJs = this.$container.data('settings-js');
+        this.slideout = Craft.FieldLayoutDesigner.createSlideout(settingsHtml, settingsJs);
+
+        this.slideout.$container.on('submit', ev => {
+            ev.preventDefault();
+            this.applySettings();
+        });
+    },
+
+    applySettings: function() {
+        if (!this.slideout.$container.find('[name$="[name]"]').val()) {
+            alert(Craft.t('app', 'You must specify a tab name.'));
+            return;
+        }
+
+        // update the UI
+        let $spinner = this.slideout.$container.find('.spinner').removeClass('hidden');
+
+        const config = $.extend({}, this.config);
+        delete config.elements;
+
+        Craft.sendActionRequest('POST', 'fields/apply-layout-tab-settings', {
+            data: {
+                config: config,
+                settingsNamespace: this.settingsNamespace,
+                settings: this.slideout.$container.serialize(),
+            },
+        }).then(response => {
+            this.updateConfig(config => $.extend(response.data.config, {elements: config.elements}));
+            this.slideout.close();
+        }).catch(e => {
+            Craft.cp.displayError();
+            console.error(e);
+        }).finally(() => {
+            $spinner.addClass('hidden');
+            this.slideout.close();
+        });
+    },
+
+    initElement: function($element) {
+        return new Craft.FieldLayoutDesigner.Element(this, $element);
+    },
+
+    get index() {
+        return this.designer.config.tabs.findIndex(c => c.uid === this.uid);
+    },
+
+    get config() {
+        return this.designer.config.tabs.find(c => c.uid === this.uid);
+    },
+
+    set config(config) {
+        // Is the name changing?
+        if (this.config && config.name !== this.config.name) {
+            this.$container.find('.tabs .tab span').text(config.name);
+        }
+
+        const designerConfig = this.designer.config;
+        const index = this.index;
+        if (index !== -1) {
+            designerConfig.tabs[index] = config;
+        } else {
+            const newIndex = $.inArray(this.$container[0], this.$container.parent().children('.fld-tab'));
+            designerConfig.tabs.splice(newIndex, 0, config);
+        }
+        this.designer.config = designerConfig;
+    },
+
+    updateConfig: function(callback) {
+        const config = callback(this.config);
+        if (config !== false) {
+            this.config = config;
+        }
+    },
+
+    updatePositionInConfig: function() {
+        this.designer.updateConfig(config => {
+            const tabConfig = this.config;
+            const oldIndex = this.index;
+            const newIndex = $.inArray(this.$container[0], this.$container.parent().children('.fld-tab'));
+            if (oldIndex !== -1) {
+                config.tabs.splice(oldIndex, 1);
+            }
+            config.tabs.splice(newIndex, 0, tabConfig);
+            return config;
+        });
+    },
+
+    destroy: function() {
+        this.designer.updateConfig(config => {
+            const index = this.index;
+            if (index === -1) {
+                return false;
+            }
+            config.tabs.splice(index, 1);
+            return config;
+        });
+
+        // First destroy the tab's elements
+        let $elements = this.$container.find('.fld-element');
+        for (let i = 0; i < $elements.length; i++) {
+            $elements.eq(i).data('fld-element').destroy();
+        }
+
+        this.designer.tabGrid.removeItems(this.$container);
+        this.designer.tabDrag.removeItems(this.$container);
+        this.$container.remove();
+
+        this.base();
+    },
+});
+
+Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
+    tab: null,
+    $container: null,
+    $settingsContainer: null,
+    $editBtn: null,
+
+    uid: null,
+    isField: false,
+    attribute: null,
+    requirable: false,
+    hasCustomWidth: false,
+    hasSettings: false,
+    settingsNamespace: null,
+    slideout: null,
+
+    init: function(tab, $container) {
+        this.tab = tab;
+        this.$container = $container;
+        this.$container.data('fld-element', this);
+        this.uid = this.$container.data('uid');
+
+        // New element?
+        if (!this.uid) {
+            this.uid = Craft.uuid();
+            this.config = $.extend(this.$container.data('config'), {uid: this.uid});
+        }
 
         this.isField = this.$container.hasClass('fld-field');
         this.requirable = this.isField && Garnish.hasAttr(this.$container, 'data-requirable');
-        this.key = Craft.randomString(10);
 
         if (this.isField) {
             this.attribute = this.$container.data('attribute');
         }
 
-        let settingsHtml = this.$container.data('settings-html');
+        this.settingsNamespace = this.$container.data('settings-namespace').replace(/\bELEMENT_UID\b/g, this.uid);
+        let settingsHtml = (this.$container.data('settings-html') || '').replace(/\bELEMENT_UID\b/g, this.uid);
         let isRequired = this.requirable && this.$container.hasClass('fld-required');
-        this.hasCustomWidth = this.designer.settings.customizableUi && Garnish.hasAttr(this.$container, 'data-has-custom-width');
+        this.hasCustomWidth = this.tab.designer.settings.customizableUi && Garnish.hasAttr(this.$container, 'data-has-custom-width');
         this.hasSettings = settingsHtml || this.requirable;
 
         if (this.hasSettings) {
-            // swap the __ELEMENT_KEY__ placeholder for the actual element key
-            settingsHtml = settingsHtml ? settingsHtml.replace(/\b__ELEMENT_KEY__\b/g, this.key) : '';
-
             // create the setting container
             this.$settingsContainer = $('<div/>', {
                 class: 'hidden',
@@ -360,11 +506,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             });
 
             this.$editBtn.on('click', () => {
-                if (!this.hud) {
-                    this.createSettingsHud(settingsHtml, isRequired);
+                if (!this.slideout) {
+                    this.createSettings(settingsHtml, isRequired);
                 } else {
-                    this.hud.show();
-                    this.hud.updateSizeAndPosition(true);
+                    this.slideout.open();
                 }
             });
         }
@@ -372,26 +517,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         this.initUi();
 
         // cleanup
-        this.$container.attr('data-config', null);
         this.$container.attr('data-keywords', null);
         this.$container.attr('data-settings-html', null);
     },
 
     initUi: function() {
-        this.$placementInput = $('<input/>', {
-            class: 'placement-input',
-            type: 'hidden',
-            name: '',
-            value: this.key,
-        }).appendTo(this.$container);
-        this.updatePlacementInput();
-
-        this.$configInput = $('<input/>', {
-            type: 'hidden',
-            name: this.designer.settings.elementConfigInputName.replace(/\b__ELEMENT_KEY__\b/g, this.key),
-        }).appendTo(this.$container);
-        this.updateConfigInput();
-
         if (this.hasCustomWidth) {
             let widthSlider = new Craft.SlidePicker(this.config.width || 100, {
                 min: 25,
@@ -401,8 +531,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
                     return Craft.t('app', '{pct} width', {pct: `${width}%`});
                 },
                 onChange: width => {
-                    this.config.width = width;
-                    this.updateConfigInput();
+                    this.updateConfig(config => {
+                        config.width = width;
+                        return config;
+                    });
                 }
             });
             widthSlider.$container.appendTo(this.$container);
@@ -413,85 +545,50 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         }
     },
 
-    createSettingsHud: function(settingsHtml, isRequired) {
-        let bodyHtml = `
-<div class="fld-element-settings">
-  ${settingsHtml}
-  <div class="hud-footer">
-    <div class="buttons right">
-      <button class="btn submit" type="submit">${Craft.t('app', 'Apply')}</button>
-      <div class="spinner hidden"></div>
-    </div>
-  </div>
-</div>
-`;
-        this.hud = new Garnish.HUD(this.$container, bodyHtml, {
-            onShow: (e) => {
-                // Hold off a sec until it's positioned...
-                Garnish.requestAnimationFrame(() => {
-                    // Focus on the first text input
-                    this.hud.$main.find('.text:first').trigger('focus');
-                });
-            },
-            onSubmit: () => {
-                this.applyHudSettings();
-            }
-        });
+    createSettings: function(settingsHtml, isRequired) {
+        const settingsJs = (this.$container.data('settings-js') || '').replace(/\bELEMENT_UID\b/g, this.uid);
+        this.slideout = Craft.FieldLayoutDesigner.createSlideout(settingsHtml, settingsJs);
 
-        Craft.initUiElements(this.hud.$main);
+        this.slideout.$container.on('submit', ev => {
+            ev.preventDefault();
+            this.applySettings();
+        });
 
         if (this.requirable) {
-            let $lightswitchField = Craft.ui.createLightswitchField({
+            const $fieldsContainer = this.slideout.$container.find('.fields:first');
+            Craft.ui.createLightswitchField({
                 label: Craft.t('app', 'Required'),
-                id: `${this.key}-required`,
-                name: 'required',
+                name: `${this.settingsNamespace}[required]`,
                 on: isRequired,
-            }).prependTo(this.hud.$main);
+            }).prependTo($fieldsContainer);
         }
 
-        this.trigger('createSettingsHud');
+        this.trigger('createSettings');
     },
 
-    applyHudSettings: function() {
-        this.hud.$body.serializeArray().forEach(({name, value}) => {
-            this.config[name] = value;
-        });
-        this.updateConfigInput();
-
+    applySettings: function() {
         // update the UI
-        let $spinner = this.hud.$body.find('.spinner').removeClass('hidden');
+        let $spinner = this.slideout.$container.find('.spinner').removeClass('hidden');
 
-        Craft.sendActionRequest('POST', 'fields/render-layout-element-selector', {
+        Craft.sendActionRequest('POST', 'fields/apply-layout-element-settings', {
             data: {
                 config: this.config,
-            }
+                settingsNamespace: this.settingsNamespace,
+                settings: this.slideout.$container.serialize(),
+            },
         }).then(response => {
-            $spinner.addClass('hidden');
+            this.config = response.data.config;
             this.$editBtn.detach();
-            this.$container.html($(response.data.html).html());
+            this.$container.html($(response.data.selectorHtml).html());
             this.initUi();
-            this.updateRequiredClass();
-            this.hud.hide();
         }).catch(e => {
-            // oh well, not worth fussing over
+            Craft.cp.displayError();
             console.error(e);
+        }).finally(() => {
             $spinner.addClass('hidden');
             this.updateRequiredClass();
-            this.hud.hide();
+            this.slideout.close();
         });
-    },
-
-    updatePlacementInput: function() {
-        let $tab = this.$container.closest('.fld-tab').find('.tab span');
-        if (!$tab.length) {
-            return;
-        }
-        let inputName = this.designer.getElementPlacementInputName($tab.text());
-        this.$placementInput.attr('name', inputName);
-    },
-
-    updateConfigInput: function() {
-        this.$configInput.val(JSON.stringify(this.config));
     },
 
     updateRequiredClass: function() {
@@ -504,7 +601,71 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         } else {
             this.$container.removeClass('fld-required');
         }
-    }
+    },
+
+    get index() {
+        const tabConfig = this.tab.config;
+        if (typeof tabConfig === 'undefined') {
+            return -1;
+        }
+        return tabConfig.elements.findIndex(c => c.uid === this.uid);
+    },
+
+    get config() {
+        return this.tab.config.elements.find(c => c.uid === this.uid);
+    },
+
+    set config(config) {
+        const tabConfig = this.tab.config;
+        const index = this.index;
+        if (index !== -1) {
+            tabConfig.elements[index] = config;
+        } else {
+            const newIndex = $.inArray(this.$container[0], this.$container.parent().children('.fld-element'));
+            tabConfig.elements.splice(newIndex, 0, config);
+        }
+        this.tab.config = tabConfig;
+    },
+
+    updateConfig: function(callback) {
+        const config = callback(this.config);
+        if (config !== false) {
+            this.config = config;
+        }
+    },
+
+    updatePositionInConfig: function() {
+        this.tab.updateConfig(config => {
+            const elementConfig = this.config;
+            const oldIndex = this.index;
+            const newIndex = $.inArray(this.$container[0], this.$container.parent().children('.fld-element'));
+            if (oldIndex !== -1) {
+                config.elements.splice(oldIndex, 1);
+            }
+            config.elements.splice(newIndex, 0, elementConfig);
+            return config;
+        });
+    },
+
+    destroy: function() {
+        this.tab.updateConfig(config => {
+            const index = this.index;
+            if (index === -1) {
+                return false;
+            }
+            config.elements.splice(index, 1);
+            return config;
+        });
+
+        this.tab.designer.elementDrag.removeItems(this.$container);
+        this.$container.remove();
+
+        if (this.isField) {
+            this.tab.designer.removeFieldByHandle(this.attribute);
+        }
+
+        this.base();
+    },
 });
 
 Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
@@ -716,6 +877,8 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
             display: this.draggeeDisplay,
             visibility: 'hidden',
         });
+
+        this.$draggee.data('fld-tab').updatePositionInConfig();
     },
 
     /**
@@ -753,6 +916,7 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
     draggingLibraryElement: false,
     draggingField: false,
+    originalTab: null,
 
     /**
      * On Drag Start
@@ -776,7 +940,10 @@ Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.exten
 
         // Swap the draggee with the insertion if dragging a selected item
         if (!this.draggingLibraryElement) {
+            this.originalTab = this.$draggee.closest('.fld-tab').data('fld-tab');
             this.swapDraggeeWithInsertion();
+        } else {
+            this.originalTab = null;
         }
 
         this.setMidpoints();
@@ -848,8 +1015,7 @@ Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.exten
         if (showingInsertion) {
             if (this.draggingLibraryElement) {
                 // Create a new element based on that one
-                let $element = this.$draggee.clone().removeClass('unused');
-                this.designer.initElement($element);
+                const $element = this.$draggee.clone().removeClass('unused');
 
                 if (this.draggingField) {
                     // Hide the library field
@@ -878,8 +1044,8 @@ Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.exten
                 $libraryElement.closest('.fld-field-group').removeClass('hidden');
             }
 
-            // forget the original element
-            this.removeItems(this.$draggee);
+            // Destroy the original element
+            this.$draggee.data('fld-element').destroy();
 
             // Set this.$draggee to the library element, as if we were dragging that all along
             this.$draggee = $libraryElement;
@@ -893,7 +1059,33 @@ Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.exten
         });
 
         if (showingInsertion) {
-            this.$draggee.data('fld-element').updatePlacementInput();
+            const tab = this.$draggee.closest('.fld-tab').data('fld-tab');
+            let element;
+
+            if (this.draggingLibraryElement) {
+                element = tab.initElement(this.$draggee);
+            } else {
+                element = this.$draggee.data('fld-element');
+
+                // New tab?
+                if (tab !== this.originalTab) {
+                    const config = element.config;
+
+                    this.originalTab.updateConfig(config => {
+                        const index = element.index;
+                        if (index === -1) {
+                            return false;
+                        }
+                        config.elements.splice(index, 1);
+                        return config;
+                    });
+
+                    this.$draggee.data('fld-element').tab = tab;
+                    element.config = config;
+                }
+            }
+
+            element.updatePositionInConfig();
         }
     }
 });

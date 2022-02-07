@@ -223,13 +223,8 @@ class PrepareQueryTest extends Unit
                 }
             ],
             [
-                UserResolver::class, [null, ['groupId' => 2, 'email' => 'foo@bar.org']], function($result) {
-                    return $result->groupId == 2 && $result->email == 'foo@bar.org';
-            }
-            ],
-            [
                 UserResolver::class, [null, []], function($result) {
-                    return !empty($result->groupBy);
+                    return !empty($result->groupId);
                 }
             ],
 

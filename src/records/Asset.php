@@ -22,6 +22,7 @@ use yii\db\ActiveQueryInterface;
  * @property int|null $uploaderId Uploader ID
  * @property string $filename Filename
  * @property string $kind Kind
+ * @property string|null $alt Alternative text
  * @property int $width Width
  * @property int $height Height
  * @property int $size Size

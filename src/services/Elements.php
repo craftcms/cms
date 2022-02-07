@@ -871,6 +871,7 @@ class Elements extends Component
             'rgt' => $canonical->rgt,
             'level' => $canonical->level,
             'dateCreated' => $canonical->dateCreated,
+            'dateDeleted' => null,
             'draftId' => null,
             'revisionId' => null,
             'isProvisionalDraft' => false,
@@ -2537,6 +2538,9 @@ class Elements extends Component
         $oldUpdateSearchIndex = $this->_updateSearchIndex;
         $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
 
+        $newSiteIds = $element->newSiteIds;
+        $element->newSiteIds = [];
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
@@ -2566,6 +2570,7 @@ class Elements extends Component
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
                 $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
+                $elementRecord->dateDeleted = $element->dateDeleted;
 
                 if ($isNewElement) {
                     if (isset($element->dateCreated)) {
@@ -2685,8 +2690,6 @@ class Elements extends Component
 
             // Update the element across the other sites?
             if ($propagate) {
-                $element->newSiteIds = [];
-
                 foreach ($supportedSites as $siteInfo) {
                     // Skip the initial site
                     if ($siteInfo['siteId'] != $element->siteId) {
@@ -2712,6 +2715,7 @@ class Elements extends Component
             throw $e;
         } finally {
             $this->_updateSearchIndex = $oldUpdateSearchIndex;
+            $element->newSiteIds = $newSiteIds;
         }
 
         if (!$element->propagating) {

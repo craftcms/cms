@@ -12,10 +12,11 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\conditions\QueryConditionInterface;
-use craft\conditions\QueryConditionRuleInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
@@ -385,29 +386,31 @@ class ElementIndexesController extends BaseElementsController
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
         $id = $this->request->getRequiredBodyParam('id');
+        /** @var ElementCondition $condition */
         $condition = $elementType::createCondition();
+        $condition->mainTag = 'div';
+        $condition->id = $id;
+        $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
         // Filter out any condition rules that touch the same query params as the source criteria
         $source = $this->source();
         if ($source['type'] === ElementSources::TYPE_NATIVE) {
-            $queryParams = array_keys($source['criteria'] ?? []);
+            $condition->queryParams = array_keys($source['criteria'] ?? []);
         } else {
-            /** @var QueryConditionInterface $sourceCondition */
+            /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
-            $queryParams = [];
+            $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
-                /** @var QueryConditionRuleInterface $rule */
+                /** @var ElementConditionRuleInterface $rule */
                 foreach ($rule->getExclusiveQueryParams() as $param) {
-                    $queryParams[] = $param;
+                    $condition->queryParams[] = $param;
                 }
             }
         }
 
-        $html = $condition->getBuilderHtml([
-            'mainTag' => 'div',
-            'id' => $id,
-            'queryParams' => $queryParams,
-        ]);
+        $condition->queryParams[] = 'status';
+
+        $html = $condition->getBuilderHtml();
 
         $view = Craft::$app->getView();
         return $this->asJson([
@@ -484,7 +487,7 @@ class ElementIndexesController extends BaseElementsController
                 }
                 break;
             case ElementSources::TYPE_CUSTOM:
-                /** @var QueryConditionInterface $condition */
+                /** @var ElementConditionInterface $condition */
                 $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
                 $condition->modifyQuery($query);
         }
@@ -508,11 +511,11 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Override with the custom filters
-        $conditionStr = $this->request->getBodyParam('condition');
+        $conditionStr = $this->request->getBodyParam('filters');
         if ($conditionStr) {
             parse_str($conditionStr, $conditionConfig);
-            /** @var QueryConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+            /** @var ElementConditionInterface $condition */
+            $condition = Craft::$app->getConditions()->createCondition($conditionConfig['condition']);
             $condition->modifyQuery($query);
         }
 
@@ -580,7 +583,7 @@ class ElementIndexesController extends BaseElementsController
         if ($includeActions) {
             $responseData['actions'] = $this->actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
-            $responseData['actionsFootHtml'] = $view->getBodyHtml();
+            $responseData['actionsBodyHtml'] = $view->getBodyHtml();
             $responseData['exporters'] = $this->exporterData();
         }
 
@@ -599,7 +602,7 @@ class ElementIndexesController extends BaseElementsController
             );
 
             $responseData['headHtml'] = $view->getHeadHtml();
-            $responseData['footHtml'] = $view->getBodyHtml();
+            $responseData['bodyHtml'] = $view->getBodyHtml();
         } else {
             $responseData['html'] = '';
         }

@@ -516,7 +516,7 @@ class DashboardController extends Controller
                 'success' => true,
                 'info' => $info,
                 'headHtml' => $view->getHeadHtml(),
-                'footHtml' => $view->getBodyHtml(),
+                'bodyHtml' => $view->getBodyHtml(),
             ]);
         }
 

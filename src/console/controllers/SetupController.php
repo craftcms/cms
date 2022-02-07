@@ -26,6 +26,7 @@ use Seld\CliPrompt\CliPrompt;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
+use yii\db\Exception as DbException;
 
 /**
  * Craft CMS setup installer.
@@ -46,11 +47,11 @@ class SetupController extends Controller
     /**
      * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public ?int $port = 0;
+    public ?int $port = null;
     /**
      * @var string|null The database username to connect with.
      */
-    public ?string $user = 'root';
+    public ?string $user = null;
     /**
      * @var string|null The database password to connect with.
      */
@@ -60,7 +61,7 @@ class SetupController extends Controller
      */
     public ?string $database = null;
     /**
-     * @var string|null The database schema to use (PostgreSQL only).
+     * @var string|null The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public ?string $schema = null;
@@ -69,6 +70,12 @@ class SetupController extends Controller
      * be no more than 5 characters, and must be all lowercase.
      */
     public ?string $tablePrefix = null;
+
+    /**
+     * @var bool Whether existing environment variables should be used as the default values by the `db-creds` command.
+     * @see _env()
+     */
+    private $_useEnvDefaults = true;
 
     /**
      * @inheritdoc
@@ -219,29 +226,27 @@ EOD;
         top:
 
         // driver
-        if ($this->driver) {
-            if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
-                $this->stderr('--driver must be either "' . Connection::DRIVER_MYSQL . '" or "' . Connection::DRIVER_PGSQL . '".' . PHP_EOL, Console::FG_RED);
-                return ExitCode::USAGE;
-            }
-        } else if ($this->interactive) {
-            $this->driver = $this->select('Which database driver are you using?', [
-                Connection::DRIVER_MYSQL => 'MySQL',
-                Connection::DRIVER_PGSQL => 'PostgreSQL',
-            ]);
-        }
+        $envDriver = App::env('DB_DRIVER');
+        $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
+            'required' => true,
+            'default' => $this->driver ?? $envDriver ?: 'mysql',
+            'validator' => function(string $input) {
+                return in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]);
+            },
+        ]);
+        $this->_useEnvDefaults = !$envDriver || $envDriver === $this->driver;
 
         // server
         $this->server = $this->prompt('Database server name or IP address:', [
             'required' => true,
-            'default' => $this->server ?: '127.0.0.1',
+            'default' => $this->server ?? $this->_envDefault('DB_SERVER') ?? '127.0.0.1',
         ]);
         $this->server = strtolower($this->server);
 
         // port
         $this->port = (int)$this->prompt('Database port:', [
             'required' => true,
-            'default' => $this->port ?: ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
+            'default' => $this->port ?? $this->_envDefault('DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
             'validator' => function(string $input): bool {
                 return is_numeric($input);
             },
@@ -251,12 +256,17 @@ EOD;
 
         // user & password
         $this->user = $this->prompt('Database username:', [
-            'default' => $this->user ?: null,
+            'default' => $this->user ?? $this->_envDefault('DB_USER') ?? 'root',
         ]);
 
-        if ($this->interactive) {
-            $this->stdout('Database password: ');
-            $this->password = CliPrompt::hiddenPrompt(true);
+        if (!$this->password && $this->interactive) {
+            $envPassword = App::env('DB_PASSWORD');
+            if ($envPassword && $this->confirm('Use the password provided by $DB_PASSWORD?', true)) {
+                $this->password = $envPassword;
+            } else {
+                $this->stdout('Database password: ');
+                $this->password = CliPrompt::hiddenPrompt(true);
+            }
         }
 
         if ($badUserCredentials) {
@@ -271,20 +281,12 @@ EOD;
         }
         $this->database = $this->prompt('Database name:', [
             'required' => true,
-            'default' => $this->database ?: null,
+            'default' => $this->database ?? $this->_envDefault('DB_DATABASE') ?? null,
         ]);
-
-        // schema
-        if ($this->driver === Connection::DRIVER_PGSQL) {
-            $this->schema = $this->prompt('Database schema:', [
-                'required' => true,
-                'default' => $this->schema ?: 'public',
-            ]);
-        }
 
         // tablePrefix
         $this->tablePrefix = $this->prompt('Database table prefix' . ($this->tablePrefix ? ' (type "none" for none)' : '') . ':', [
-            'default' => $this->tablePrefix ?: null,
+            'default' => $this->tablePrefix ?? $this->_envDefault('DB_TABLE_PREFIX') ?? null,
             'validator' => function(string $input): bool {
                 if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
                     $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
@@ -320,7 +322,6 @@ EOD;
         $dbConfig->dsn = "$this->driver:host=$this->server;port=$this->port;dbname=$this->database;";
         $dbConfig->user = $this->user;
         $dbConfig->password = $this->password;
-        $dbConfig->schema = $this->schema;
         $dbConfig->tablePrefix = $this->tablePrefix;
 
         $db = Craft::$app->getDb();
@@ -377,9 +378,67 @@ EOD;
             goto top;
         }
 
+        $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
+
+        // Determine the default schema if Postgres
+        if ($this->driver === Connection::DRIVER_PGSQL) {
+            if ($dbConfig->setSchemaOnConnect) {
+                $this->schema = $this->prompt('Database schema:', [
+                    'required' => true,
+                    'default' => $this->schema ?? App::env('DB_SCHEMA') ?: 'public',
+                ]);
+                $db->createCommand("SET search_path TO $this->schema;")->execute();
+            } else if ($this->schema === null) {
+                // Make sure that the DB is actually configured to use the provided schema by default
+                $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
+                $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
+
+                // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
+                try {
+                    $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
+                } catch (DbException $e) {
+                    try {
+                        $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
+                    } catch (DbException $e) {
+                        $allSchemas = null;
+                    }
+                }
+
+                if ($allSchemas !== null) {
+                    // Use the first default schema that actually exists
+                    foreach ($defaultSchemas as $schema) {
+                        // "$user" => username
+                        if ($schema === '"$user"') {
+                            $schema = $this->user;
+                        }
+
+                        if (in_array($schema, $allSchemas)) {
+                            $this->schema = $schema;
+                            break;
+                        }
+                    }
+                } else {
+                    // Use the first non-user schema
+                    foreach ($defaultSchemas as $schema) {
+                        if ($schema !== '"$user"') {
+                            $this->schema = $schema;
+                            break;
+                        }
+                    }
+                }
+
+                if ($this->schema === null) {
+                    // Assume 'public'
+                    $this->schema = 'public';
+                }
+
+                $this->stdout('Using default schema "' . $this->schema . '".' . PHP_EOL, Console::FG_YELLOW);
+            }
+        }
+
+        $db->getSchema()->defaultSchema = $this->schema;
         Craft::$app->setIsInstalled(null);
 
-        $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         // If there's a DB_DSN environment variable, go with that
@@ -518,5 +577,16 @@ EOD;
         }
 
         return true;
+    }
+
+    /**
+     * Returns an environment variable value, if we are using them for defaults.
+     *
+     * @param string $name
+     * @return string|null
+     */
+    private function _envDefault(string $name): ?string
+    {
+        return $this->_useEnvDefaults ? (App::env($name) ?: null) : null;
     }
 }

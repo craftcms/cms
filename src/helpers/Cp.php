@@ -9,10 +9,15 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
+use craft\fieldlayoutelements\BaseField;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\models\Site;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use yii\base\Event;
@@ -40,6 +45,12 @@ class Cp
      * @since 3.5.8
      */
     public const ELEMENT_SIZE_LARGE = 'large';
+
+    /**
+     * @var Site|false
+     * @see requestedSite()
+     */
+    private static $_requestedSite;
 
     /**
      * Renders a control panel template.
@@ -281,6 +292,7 @@ class Cp
                 'data' => [
                     'sizes' => $sizesHtml,
                     'srcset' => $srcsetHtml,
+                    'alt' => $element->getThumbAlt(),
                 ],
             ]);
         } else {
@@ -523,7 +535,7 @@ class Cp
         }
 
         $instructionsHtml = $instructions
-            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
+            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
                 'id' => $instructionsId,
                 'class' => ['instructions'],
             ])
@@ -666,7 +678,7 @@ class Cp
             Html::tag('span', "$label ", [
                 'class' => 'visually-hidden',
             ]) .
-            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($message)) .
+            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message))) .
             Html::endTag('p');
     }
 
@@ -1000,6 +1012,288 @@ class Cp
     }
 
     /**
+     * Renders a field layout designer.
+     *
+     * @param FieldLayout $fieldLayout
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public static function fieldLayoutDesignerHtml(FieldLayout $fieldLayout, array $config = []): string
+    {
+        $config += [
+            'id' => 'fld' . mt_rand(),
+            'customizableTabs' => true,
+            'customizableUi' => true,
+        ];
+
+        $tabs = $fieldLayout->getTabs();
+
+        if (!$config['customizableTabs']) {
+            $tab = array_shift($tabs) ?? new FieldLayoutTab();
+            $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
+
+            // Any extra tabs?
+            if (!empty($tabs)) {
+                $elements = $tab->getElements();
+                foreach ($tabs as $extraTab) {
+                    array_push($elements, ...$extraTab->getElements());
+                }
+                $tab->setElements($elements);
+            }
+
+            $tabs = [$tab];
+        }
+
+        $view = Craft::$app->getView();
+        $jsSettings = Json::encode([
+            'customizableTabs' => $config['customizableTabs'],
+            'customizableUi' => $config['customizableUi'],
+        ]);
+        $namespacedId = $view->namespaceInputId($config['id']);
+
+        $js = <<<JS
+new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings);
+JS;
+        $view->registerJs($js);
+
+        $availableCustomFields = $fieldLayout->getAvailableCustomFields();
+        $availableNativeFields = $fieldLayout->getAvailableNativeFields();
+        $availableUiElements = $fieldLayout->getAvailableUiElements();
+
+        // Make sure everything has the field layout set properly
+        foreach ($availableCustomFields as $groupFields) {
+            self::_setLayoutOnElements($groupFields, $fieldLayout);
+        }
+        self::_setLayoutOnElements($availableNativeFields, $fieldLayout);
+        self::_setLayoutOnElements($availableUiElements, $fieldLayout);
+
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+        $fieldLayoutConfig['uid'] = $fieldLayout->uid;
+        if ($fieldLayout->id) {
+            $fieldLayoutConfig['id'] = $fieldLayout->id;
+        }
+
+        $newTabSettingsData = self::_fldTabSettingsData(new FieldLayoutTab([
+            'uid' => 'TAB_UID',
+            'name' => 'TAB_NAME',
+            'layout' => $fieldLayout,
+        ]));
+
+        return
+            Html::beginTag('div', [
+                'id' => $config['id'],
+                'class' => 'layoutdesigner',
+                'data' => [
+                    'new-tab-settings-namespace' => $newTabSettingsData['settings-namespace'],
+                    'new-tab-settings-html' => $newTabSettingsData['settings-html'],
+                    'new-tab-settings-js' => $newTabSettingsData['settings-js'],
+                ],
+            ]) .
+            Html::hiddenInput('fieldLayout', Json::encode($fieldLayoutConfig), [
+                'data' => ['config-input' => true],
+            ]) .
+            Html::beginTag('div', ['class' => 'fld-workspace']) .
+            Html::beginTag('div', ['class' => 'fld-tabs']) .
+            implode('', array_map(fn(FieldLayoutTab $tab) => self::_fldTabHtml($tab, $config['customizableTabs']), $tabs)) .
+            Html::endTag('div') . // .fld-tabs
+            ($config['customizableTabs']
+                ? Html::button(Craft::t('app', 'New Tab'), [
+                    'type' => 'button',
+                    'class' => ['fld-new-tab-btn', 'btn', 'add', 'icon'],
+                ])
+                : '') .
+            Html::endTag('div') . // .fld-workspace
+            Html::beginTag('div', ['class' => 'fld-sidebar']) .
+            ($config['customizableTabs']
+                ? Html::beginTag('div', [
+                    'role' => 'listbox',
+                    'class' => ['btngroup', 'small', 'fullwidth'],
+                    'aria' => ['label' => Craft::t('app', 'Layout element types')],
+                    'tabindex' => '0',
+                ]) .
+                Html::button(Craft::t('app', 'Fields'), [
+                    'role' => 'option',
+                    'type' => 'button',
+                    'class' => ['btn', 'small', 'active'],
+                    'aria' => ['selected' => 'true'],
+                    'data' => ['library' => 'field'],
+                    'tabindex' => '-1',
+                ]) .
+                Html::button(Craft::t('app', 'UI Elements'), [
+                    'role' => 'option',
+                    'type' => 'button',
+                    'class' => ['btn', 'small'],
+                    'aria' => ['selected' => 'false'],
+                    'data' => ['library' => 'ui'],
+                    'tabindex' => '-1',
+                ]) .
+                Html::endTag('div') // .btngroup
+                : '') .
+            Html::beginTag('div', ['class' => 'fld-field-library']) .
+            Html::beginTag('div', ['class' => ['texticon', 'search', 'icon', 'clearable']]) .
+            static::textHtml([
+                'class' => 'fullwidth',
+                'inputmode' => 'search',
+                'placeholder' => Craft::t('app', 'Search'),
+            ]) .
+            Html::tag('div', '', [
+                'class' => ['clear', 'hidden'],
+                'title' => Craft::t('app', 'Clear'),
+                'aria' => ['label' => Craft::t('app', 'Clear')],
+            ]) .
+            Html::endTag('div') . // .texticon
+            self::_fldFieldSelectorsHtml(Craft::t('app', 'Native Fields'), $availableNativeFields, $fieldLayout) .
+            implode('', array_map(fn(string $groupName) => self::_fldFieldSelectorsHtml($groupName, $availableCustomFields[$groupName], $fieldLayout), array_keys($availableCustomFields))) .
+            Html::endTag('div') . // .fld-field-library
+            ($config['customizableUi']
+                ? Html::beginTag('div', ['class' => ['fld-ui-library', 'hidden']]) .
+                implode('', array_map(fn(FieldLayoutElement $element) => self::_fldElementSelectorHtml($element, true), $availableUiElements)) .
+                Html::endTag('div') // .fld-ui-library
+                : '') .
+            Html::endTag('div') . // .fld-sidebar
+            Html::endTag('div'); // .layoutdesigner
+    }
+
+    /**
+     * @param FieldLayoutElement[] $elements
+     * @param FieldLayout $fieldLayout
+     */
+    private static function _setLayoutOnElements(array $elements, FieldLayout $fieldLayout): void
+    {
+        foreach ($elements as $element) {
+            $element->setLayout($fieldLayout);
+        }
+    }
+
+    /**
+     * @param FieldLayoutTab $tab
+     * @param bool $customizable
+     * @return string
+     */
+    private static function _fldTabHtml(FieldLayoutTab $tab, bool $customizable): string
+    {
+        return
+            Html::beginTag('div', [
+                'class' => 'fld-tab',
+                'data' => array_merge([
+                    'uid' => $tab->uid,
+                ], self::_fldTabSettingsData($tab)),
+            ]) .
+            Html::beginTag('div', ['class' => 'tabs']) .
+            Html::beginTag('div', [
+                'class' => array_filter([
+                    'tab',
+                    'sel',
+                    $customizable ? 'draggable' : null,
+                ])
+            ]) .
+            Html::tag('span', $tab->name) .
+            ($customizable
+                ? Html::a(null, null, [
+                    'role' => 'button',
+                    'class' => ['settings', 'icon'],
+                    'title' => Craft::t('app', 'Edit'),
+                    'aria' => ['label' => Craft::t('app', 'Edit')],
+                ]) :
+                '') .
+            Html::endTag('div') . // .tab
+            Html::endTag('div') . // .tabs
+            Html::beginTag('div', ['class' => 'fld-tabcontent']) .
+            implode('', array_map(fn(FieldLayoutElement $element) => self::_fldElementSelectorHtml($element, false), $tab->getElements())) .
+            Html::endTag('div') . // .fld-tabcontent
+            Html::endTag('div'); // .fld-tab
+    }
+
+    /**
+     * @param FieldLayoutTab $tab
+     * @return array
+     */
+    private static function _fldTabSettingsData(FieldLayoutTab $tab): array
+    {
+        $namespace = "tab-$tab->uid";
+        $view = Craft::$app->getView();
+        $view->startJsBuffer();
+        $settingsHtml = $view->namespaceInputs(fn() => $tab->getSettingsHtml(), $namespace);
+        $settingsJs = $view->clearJsBuffer(false);
+
+        return [
+            'settings-namespace' => $namespace,
+            'settings-html' => $settingsHtml,
+            'settings-js' => $settingsJs,
+        ];
+    }
+
+    /**
+     * @param FieldLayoutElement $element
+     * @param bool $forLibrary
+     * @param array $attr
+     * @return string
+     */
+    private static function _fldElementSelectorHtml(FieldLayoutElement $element, bool $forLibrary, array $attr = []): string
+    {
+        if ($element instanceof BaseField) {
+            $attr = ArrayHelper::merge($attr, [
+                'class' => !$forLibrary && $element->required ? ['fld-required'] : [],
+                'data' => [
+                    'keywords' => $forLibrary ? implode(' ', array_map('mb_strtolower', $element->keywords())) : false,
+                ],
+            ]);
+        }
+
+        $settingsNamespace = 'element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid);
+        $view = Craft::$app->getView();
+        $view->startJsBuffer();
+        $settingsHtml = $view->namespaceInputs(fn() => $element->getSettingsHtml(), $settingsNamespace);
+        $settingsJs = $view->clearJsBuffer(false);
+
+        $attr = ArrayHelper::merge($attr, [
+            'class' => array_filter([
+                'fld-element',
+                $forLibrary ? 'unused' : null,
+                !$forLibrary && $element->hasConditions() ? 'has-conditions' : null,
+            ]),
+            'data' => [
+                'uid' => !$forLibrary ? $element->uid : false,
+                'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
+                'has-custom-width' => $element->hasCustomWidth(),
+                'settings-namespace' => $settingsNamespace,
+                'settings-html' => $settingsHtml ?: false,
+                'settings-js' => $settingsJs ?: false,
+            ]
+        ]);
+
+        return Html::modifyTagAttributes($element->selectorHtml(), $attr);
+    }
+
+    /**
+     * @param string $groupName
+     * @param BaseField[] $groupFields
+     * @param FieldLayout $fieldLayout
+     * @return string
+     */
+    private static function _fldFieldSelectorsHtml(string $groupName, array $groupFields, FieldLayout $fieldLayout): string
+    {
+        $showGroup = ArrayHelper::contains($groupFields, fn(BaseField $field) => !$fieldLayout->isFieldIncluded($field->attribute()));
+
+        return
+            Html::beginTag('div', [
+                'class' => array_filter([
+                    'fld-field-group',
+                    $showGroup ? null : 'hidden',
+                ]),
+                'data' => ['name' => mb_strtolower($groupName)],
+            ]) .
+            Html::tag('h6', $groupName) .
+            implode('', array_map(fn(BaseField $field) => self::_fldElementSelectorHtml($field, true, [
+                'class' => array_filter([
+                    $fieldLayout->isFieldIncluded($field->attribute()) ? 'hidden' : null,
+                ]),
+            ]), $groupFields)) .
+            Html::endTag('div'); // .fld-field-group
+    }
+
+    /**
      * Returns a metadata component’s HTML.
      *
      * @param array $data The data, with keys representing the labels. The values can either be strings or callables.
@@ -1070,5 +1364,40 @@ class Cp
         }
 
         return [$docTitle, $title];
+    }
+
+    /**
+     * Returns the site the control panel is currently working with, via a `site` query string param if sent.
+     *
+     * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
+     * @since 4.0.0
+     */
+    public static function requestedSite(): ?Site
+    {
+        if (!isset(self::$_requestedSite)) {
+            $sitesService = Craft::$app->getSites();
+            $editableSiteIds = $sitesService->getEditableSiteIds();
+
+            if (!empty($editableSiteIds)) {
+                if (
+                    ($handle = Craft::$app->getRequest()->getQueryParam('site')) !== null &&
+                    ($site = $sitesService->getSiteByHandle($handle, true)) !== null &&
+                    in_array($site->id, $editableSiteIds, false)
+                ) {
+                    self::$_requestedSite = $site;
+                } else {
+                    self::$_requestedSite = $sitesService->getCurrentSite();
+
+                    if (!in_array(self::$_requestedSite->id, $editableSiteIds, false)) {
+                        // Just go with the first editable site
+                        self::$_requestedSite = $sitesService->getSiteById($editableSiteIds[0]);
+                    }
+                }
+            } else {
+                self::$_requestedSite = false;
+            }
+        }
+
+        return self::$_requestedSite ?: null;
     }
 }

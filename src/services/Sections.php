@@ -193,15 +193,33 @@ class Sections extends Component
     {
         if (!isset($this->_sections)) {
             $sections = [];
+
             foreach ($this->_createSectionQuery()->all() as $result) {
                 if (!empty($result['previewTargets'])) {
                     $result['previewTargets'] = Json::decode($result['previewTargets']);
                 } else {
                     $result['previewTargets'] = [];
                 }
-                $sections[] = new Section($result);
+                $sections[$result['id']] = new Section($result);
             }
-            $this->_sections = new MemoizableArray($sections);
+
+            $this->_sections = new MemoizableArray(array_values($sections));
+
+            if (!empty($sections) && Craft::$app->getRequest()->getIsCpRequest()) {
+                // Eager load the site settings
+                $allSiteSettings = $this->_createSectionSiteSettingsQuery()
+                    ->where(['sections_sites.sectionId' => array_keys($sections)])
+                    ->all();
+
+                $siteSettingsBySection = [];
+                foreach ($allSiteSettings as $siteSettings) {
+                    $siteSettingsBySection[$siteSettings['sectionId']][] = new Section_SiteSettings($siteSettings);
+                }
+
+                foreach ($siteSettingsBySection as $sectionId => $sectionSiteSettings) {
+                    $sections[$sectionId]->setSiteSettings($sectionSiteSettings);
+                }
+            }
         }
 
         return $this->_sections;
@@ -381,20 +399,8 @@ class Sections extends Component
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        $siteSettings = (new Query())
-            ->select([
-                'sections_sites.id',
-                'sections_sites.sectionId',
-                'sections_sites.siteId',
-                'sections_sites.enabledByDefault',
-                'sections_sites.hasUrls',
-                'sections_sites.uriFormat',
-                'sections_sites.template',
-            ])
-            ->from(['sections_sites' => Table::SECTIONS_SITES])
-            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
+        $siteSettings = $this->_createSectionSiteSettingsQuery()
             ->where(['sections_sites.sectionId' => $sectionId])
-            ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->all();
 
         foreach ($siteSettings as $key => $value) {
@@ -985,6 +991,17 @@ class Sections extends Component
                 $entryTypes[] = new EntryType($result);
             }
             $this->_entryTypes = new MemoizableArray($entryTypes);
+
+            if (!empty($entryTypes) && Craft::$app->getRequest()->getIsCpRequest()) {
+                // Eager load the field layouts
+                /** @var EntryType[] $entryTypesByLayoutId */
+                $entryTypesByLayoutId = ArrayHelper::index($entryTypes, 'fieldLayoutId');
+                $allLayouts = Craft::$app->getFields()->getLayoutsByIds(array_filter(array_keys($entryTypesByLayoutId)));
+
+                foreach ($allLayouts as $layout) {
+                    $entryTypesByLayoutId[$layout->id]->setFieldLayout($layout);
+                }
+            }
         }
 
         return $this->_entryTypes;
@@ -1405,6 +1422,28 @@ class Sections extends Component
     }
 
     /**
+     * Returns a new section site settings query.
+     *
+     * @return Query
+     */
+    private function _createSectionSiteSettingsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'sections_sites.id',
+                'sections_sites.sectionId',
+                'sections_sites.siteId',
+                'sections_sites.enabledByDefault',
+                'sections_sites.hasUrls',
+                'sections_sites.uriFormat',
+                'sections_sites.template',
+            ])
+            ->from(['sections_sites' => Table::SECTIONS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
+            ->orderBy(['sites.sortOrder' => SORT_ASC]);
+    }
+
+    /**
      * Ensures that the given Single section has its one and only entry, and returns it.
      *
      * @param Section $section
@@ -1493,8 +1532,10 @@ class Sections extends Component
             ->id(['not', $entry->id])
             ->status(null);
 
-        foreach (Db::each($otherEntriesQuery) as $entry) {
-            $elementsService->deleteElement($entry, true);
+        foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
+            if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
+                $elementsService->deleteElement($entryToDelete, true);
+            }
         }
 
         return $entry;

@@ -1364,7 +1364,7 @@ JS;
      *
      * ```html
      * <label for="bar-title">Title</label>
-     * <input type="text" name="bar[title]" id="title">
+     * <input type="text" name="bar[title]" id="bar-title">
      * ```
      *
      * would become:

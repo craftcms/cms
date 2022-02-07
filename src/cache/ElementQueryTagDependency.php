@@ -11,7 +11,7 @@ use craft\elements\db\ElementQuery;
 use yii\caching\TagDependency;
 
 /**
- * ElementQueryTagDependency is used to determine if Craft’s base path has changed.
+ * ElementQueryTagDependency is used to determine if an entry query’s cache tags have changed.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.14

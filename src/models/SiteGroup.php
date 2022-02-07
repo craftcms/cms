@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\records\SiteGroup as SiteGroupRecord;
 use craft\validators\UniqueValidator;
@@ -46,7 +47,7 @@ class SiteGroup extends Model
      */
     public function getName(bool $parse = true): string
     {
-        return ($parse ? Craft::parseEnv($this->_name) : $this->_name) ?? '';
+        return ($parse ? App::parseEnv($this->_name) : $this->_name) ?? '';
     }
 
     /**

@@ -44,7 +44,7 @@ class Heading extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml(): ?string
+    protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Heading'),

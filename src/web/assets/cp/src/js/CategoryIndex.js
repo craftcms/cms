@@ -143,7 +143,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
                 uri += '/' + selectedSourceHandle;
             }
 
-            history.replaceState({}, '', Craft.getUrl(uri));
+            const url = Craft.getUrl(uri, document.location.search + document.location.hash);
+            history.replaceState({}, '', url);
         }
     },
 

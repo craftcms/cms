@@ -11,6 +11,7 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
@@ -103,6 +104,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->reservedFieldHandles = [
+            'alt',
             'folder',
             'volume',
         ];
@@ -132,7 +134,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             return null;
         }
 
-        return rtrim(Craft::parseEnv($this->url), '/') . '/';
+        return rtrim(App::parseEnv($this->url), '/') . '/';
     }
 
     /**

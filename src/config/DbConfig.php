@@ -36,7 +36,7 @@ class DbConfig extends BaseObject
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
-     * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'` can connect via SSL,
+     * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/mysql-secure-deployment-guide/5.7/en/secure-deployment-secure-connections.html) and `'user'` can connect via SSL,
      * you’d set these:
      *
      * ```php
@@ -102,9 +102,27 @@ class DbConfig extends BaseObject
 
     /**
      * @var string|null The schema that Postgres is configured to use by default (PostgreSQL only).
+     *
+     * ::: tip
+     * To force Craft to use the specified schema regardless of PostgreSQL’s `search_path` setting, you must enable
+     * the [[setSchemaOnConnect]] setting.
+     * :::
+     *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public ?string $schema = 'public';
+
+    /**
+     * @var bool Whether the [[schema]] should be explicitly used for database queries (PostgreSQL only).
+     *
+     * ::: warning
+     * This will cause an extra `SET search_path` SQL query to be executed per database connection. Ideally,
+     * PostgreSQL’s `search_path` setting should be configured to prioritize the desired schema.
+     * :::
+     *
+     * @since 3.7.27
+     */
+    public $setSchemaOnConnect = false;
 
     /**
      * @var string If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),

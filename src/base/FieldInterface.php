@@ -368,13 +368,13 @@ interface FieldInterface extends SavableComponentInterface
     public function copyValue(ElementInterface $from, ElementInterface $to): void;
 
     /**
-     * Returns the condition rule class that should be used for this field.
+     * Returns the element condition rule class that should be used for this field.
      *
-     * The rule class must be an instance of [[\craft\conditions\elements\fields\FieldConditionRuleInterface]].
+     * The rule class must be an instance of [[\craft\fields\conditions\FieldConditionRuleInterface]].
      *
      * @return string|array{class: string}|null
      */
-    public function getQueryConditionRuleType();
+    public function getElementConditionRuleType();
 
     /**
      * Modifies an element query.
