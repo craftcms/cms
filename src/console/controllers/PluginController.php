@@ -296,6 +296,6 @@ class PluginController extends Controller
 
     private function _boolToString(bool $value): string
     {
-        return $value ? Craft::t('app', 'Yes') : Craft::t('app', 'No');
+        return $value ? 'Yes' : 'No';
     }
 }
