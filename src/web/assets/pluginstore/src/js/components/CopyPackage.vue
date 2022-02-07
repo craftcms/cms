@@ -1,8 +1,8 @@
 <template>
-    <div class="copy-package">
-        <textbox ref="input" class="tw-w-full" :value="plugin.packageName" readonly="readonly" @focus="select" />
-        <btn @click="copy"><icon icon="copy" /></btn>
-    </div>
+  <div class="tw-flex">
+    <input ref="input" class="tw-font-mono tw-border tw-border-r-0 tw-border-solid tw-border-gray-300 tw-w-full tw-py-2 tw-px-3 tw-rounded-l" :value="plugin.packageName" readonly="readonly" @focus="select" />
+    <button class="tw-border tw-border-solid tw-border-gray-300 tw-py-2 tw-px-3 tw-rounded-r tw-bg-gray-50 hover:tw-bg-gray-100 active:tw-bg-gray-200 hover:tw-cursor-pointer" @click="copy"><icon class="tw-text-gray-500" icon="copy" /></button>
+  </div>
 </template>
 
 <script>
@@ -22,32 +22,3 @@
         }
     }
 </script>
-
-<style lang="scss">
-    .copy-package {
-        @apply tw-flex;
-
-        .c-textbox {
-            @apply tw-flex;
-
-            &.c-field {
-                @apply tw-mb-0;
-            }
-
-            .wrapper {
-                @apply tw-flex tw-flex-1;
-
-                input {
-                    @apply tw-rounded-r-none tw-font-mono;
-                }
-            }
-        }
-
-        button.c-btn {
-            @apply tw-text-black tw-border tw-border-solid tw-border-gray-600 tw-rounded-l-none tw-border-l-0;
-
-            -webkit-box-shadow: none !important;
-            box-shadow: none !important;
-        }
-    }
-</style>
