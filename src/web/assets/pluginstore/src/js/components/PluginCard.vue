@@ -1,6 +1,6 @@
 <template>
     <router-link v-if="plugin" :to="'/' + plugin.handle" :title="plugin.name"
-                 class="plugin-card tw-relative tw-tw-flex tw-flex-no-wrap tw-items-start tw-py-6 tw-border-b tw-border-gray-300 tw-border-solid tw-no-underline hover:tw-no-underline tw-text-gray-900">
+                 class="plugin-card tw-relative tw-tw-flex tw-flex-no-wrap tw-items-start tw-py-6 tw-border-b tw-border-gray-200 tw-border-solid tw-no-underline hover:tw-no-underline tw-text-gray-900">
         <div class="plugin-icon tw-mr-4">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl"/>
             <img v-else :src="defaultPluginSvg"/>

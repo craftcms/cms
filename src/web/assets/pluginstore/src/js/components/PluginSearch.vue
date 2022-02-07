@@ -6,7 +6,7 @@
               <icon icon="search" />
             </div>
             <input type="text"
-                   class="tw-flex-1 tw-w-full tw-pl-9 tw-pr-3 tw-py-2 tw-rounded tw-border-solid tw-border-gray-300 tw-text-sm"
+                   class="tw-flex-1 tw-w-full tw-pl-9 tw-pr-3 tw-py-2 tw-rounded tw-border-solid tw-border-gray-200 tw-text-sm"
                         id="searchQuery"
                         v-model="searchQuery"
                         :placeholder="'Search plugins'|t('app')"

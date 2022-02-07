@@ -84,13 +84,13 @@
 
 <style lang="scss">
     .cms-editions-edition {
-        @apply tw-border tw-border-gray-300 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
+        @apply tw-border tw-border-gray-200 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
 
         .description {
             @apply tw-flex-1;
 
             .edition-name {
-                @apply tw-border-b tw-border-gray-300 tw-border-solid tw-text-gray-700 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
+                @apply tw-border-b tw-border-gray-200 tw-border-solid tw-text-gray-700 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
             }
 
             .edition-description {
@@ -105,7 +105,7 @@
                 @apply tw-text-left tw-mb-8;
 
                 li {
-                    @apply tw-py-2 tw-border-b tw-border-gray-300 tw-border-solid;
+                    @apply tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid;
 
                     &:first-child {
                         @apply tw-border-t;
