@@ -260,7 +260,7 @@ class AssetsController extends Controller
                     'filename' => $asset->conflictingFilename,
                     'conflictingAssetId' => $conflictingAsset->id ?? null,
                     'suggestedFilename' => $asset->suggestedFilename,
-                    'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->hasUrls) ? $conflictingAsset->getUrl() : null,
+                    'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->getFs()->hasUrls) ? $conflictingAsset->getUrl() : null,
                 ]);
             }
 
