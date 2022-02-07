@@ -82,6 +82,7 @@ Garnish = $.extend(Garnish, {
      * Logs a message to the browser's console, if the browser has one.
      *
      * @param {string} msg
+     * @deprecated
      */
     log: function(msg) {
         if (typeof console !== 'undefined' && typeof console.log === 'function') {
@@ -320,7 +321,7 @@ Garnish = $.extend(Garnish, {
         } else if (ariaHiddenAttribute === 'false') {
             $(element).addClass(Garnish.JS_ARIA_FALSE_CLASS);
         } else if (ariaHiddenAttribute === 'true') {
-            $(element.addClass(Garnish.JS_ARIA_TRUE_CLASS));
+            $(element).addClass(Garnish.JS_ARIA_TRUE_CLASS);
         }
 
         $(element).attr('aria-hidden', 'true');
@@ -375,6 +376,10 @@ Garnish = $.extend(Garnish, {
      */
     setFocusWithin: function(container) {
         $(container).find(':focusable:first').focus();
+    },
+
+    getFocusedElement: function() {
+        return $(':focus');
     },
 
     /**
@@ -705,6 +710,11 @@ Garnish = $.extend(Garnish, {
     },
 
     on: function(target, events, data, handler) {
+        if (typeof target === 'undefined') {
+            console.warn('Garnish.on() called for an invalid target class.');
+            return;
+        }
+
         if (typeof data === 'function') {
             handler = data;
             data = {};

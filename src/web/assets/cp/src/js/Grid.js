@@ -29,7 +29,7 @@ Craft.Grid = Garnish.Base.extend({
 
         // Is this already a grid?
         if (this.$container.data('grid')) {
-            Garnish.log('Double-instantiating a grid on an element');
+            console.warn('Double-instantiating a grid on an element');
             this.$container.data('grid').destroy();
         }
 
@@ -467,7 +467,12 @@ Craft.Grid = Garnish.Base.extend({
     onRefreshCols: function() {
         this.trigger('refreshCols');
         this.settings.onRefreshCols();
-    }
+    },
+
+    destroy: function() {
+        this.$container.removeData('grid');
+        this.base();
+    },
 }, {
     defaults: {
         itemSelector: '.item',

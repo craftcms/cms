@@ -43,7 +43,7 @@ export default Base.extend(
 
             // Is this already a select?
             if (this.$container.data('select')) {
-                Garnish.log('Double-instantiating a select on an element');
+                console.warn('Double-instantiating a select on an element');
                 this.$container.data('select').destroy();
             }
 
@@ -398,7 +398,7 @@ export default Base.extend(
 
                 // Make sure this element doesn't belong to another selector
                 if ($.data(item, 'select')) {
-                    Garnish.log('Element was added to more than one selector');
+                    console.warn('Element was added to more than one selector');
                     $.data(item, 'select').removeItems(item);
                 }
 

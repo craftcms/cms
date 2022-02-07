@@ -58,7 +58,7 @@ export default Base.extend(
 
             // Is this already a modal?
             if (this.$container.data('modal')) {
-                Garnish.log('Double-instantiating a modal on an element');
+                console.warn('Double-instantiating a modal on an element');
                 this.$container.data('modal').destroy();
             }
 

@@ -9,7 +9,6 @@ namespace craft\mutex;
 
 use craft\helpers\App;
 use yii\di\Instance;
-use yii\mutex\FileMutex as YiiFileMutex;
 use yii\mutex\Mutex as YiiMutex;
 
 /**
