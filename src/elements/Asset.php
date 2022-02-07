@@ -37,7 +37,6 @@ use craft\events\AssetEvent;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -54,6 +53,7 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
+use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
@@ -318,21 +318,21 @@ class Asset extends Element
     {
         $volumes = Craft::$app->getVolumes();
 
-        if ($context === 'index') {
+        if ($context === ElementSources::CONTEXT_INDEX) {
             $volumeIds = $volumes->getViewableVolumeIds();
         } else {
             $volumeIds = $volumes->getAllVolumeIds();
         }
 
-        $additionalCriteria = $context === 'settings' ? ['parentId' => ':empty:'] : [];
+        $additionalCriteria = $context === ElementSources::CONTEXT_SETTINGS ? ['parentId' => ':empty:'] : [];
 
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($volumeIds, $additionalCriteria);
 
-        $sourceList = self::_assembleSourceList($tree, $context !== 'settings', Craft::$app->getUser()->getIdentity());
+        $sourceList = self::_assembleSourceList($tree, $context !== ElementSources::CONTEXT_SETTINGS, Craft::$app->getUser()->getIdentity());
 
         // Add the Temporary Uploads location, if that's not set to a real volume
         if (
-            $context !== 'settings' &&
+            $context !== ElementSources::CONTEXT_SETTINGS &&
             !Craft::$app->getRequest()->getIsConsoleRequest() &&
             !Craft::$app->getProjectConfig()->get('assets.tempVolumeUid')
         ) {
@@ -370,10 +370,9 @@ class Asset extends Element
 
         // Only match the first folder ID - ignore nested folders
         if (
-            preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches) &&
-            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1])
+            preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
         ) {
-            $volume = $folder->getVolume();
             $isTemp = $volume instanceof Temp;
 
             $actions[] = [
@@ -1040,7 +1039,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getAddlButtons(): ?string
+    public function getAddlButtons(): string
     {
         $volume = $this->getVolume();
         $user = Craft::$app->getUser()->getIdentity();
@@ -1146,7 +1145,7 @@ JS;
             $view->registerJs($js);
         }
 
-        return $html;
+        return $html . parent::getAddlButtons();
     }
 
     /**
@@ -1478,29 +1477,33 @@ JS;
         }
 
         // Normalize empty transform values
-        $transform = $transform ?: null;
+        $transform = $transform ?? $this->_transform;
 
-        if (is_array($transform)) {
-            if (isset($transform['width'])) {
-                $transform['width'] = round((float)$transform['width']);
+
+        if ($transform) {
+            if (is_array($transform)) {
+                if (isset($transform['width'])) {
+                    $transform['width'] = round((float)$transform['width']);
+                }
+                if (isset($transform['height'])) {
+                    $transform['height'] = round((float)$transform['height']);
+                }
             }
-            if (isset($transform['height'])) {
-                $transform['height'] = round((float)$transform['height']);
-            }
+
+            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             $transform = ImageTransforms::normalizeTransform($transform);
-        }
+            $imageTransformer = $transform->getImageTransformer();
 
-        if ($transform === null) {
-            if (!isset($this->_transform)) {
-                return AssetsHelper::generateUrl($volume, $this);
+            try {
+                return $imageTransformer->getTransformUrl($this, $transform, $immediately);
+            } catch (ImageTransformException $e) {
+                Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+                return null;
             }
-            $transform = $this->_transform;
         }
 
-        $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        $imageTransformer = $transform->getImageTransformer();
-
-        return $imageTransformer->getTransformUrl($this, $transform, $immediately);
+        return Assets::generateUrl($volume, $this);
     }
 
     /**
@@ -1831,7 +1834,7 @@ JS;
      */
     public function getFocalPoint(bool $asCss = false)
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return null;
         }
 
@@ -2014,7 +2017,9 @@ JS;
     {
         $thumbContainerId = Craft::$app->getView()->namespaceInputId('thumb-container');
         $js = <<<JS
-$('#$thumbContainerId').addClass('loading');
+$('#$thumbContainerId')
+    .addClass('loading')
+    .append($('<div class="spinner spinner-absolute"/>'));
 Craft.sendActionRequest('POST', 'assets/preview-thumb', {
     data: {
         assetId: $this->id,
@@ -2026,7 +2031,8 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         $('#$thumbContainerId').find('img').replaceWith(response.img);
     }
 }).finally(() => {
-    $('#$thumbContainerId').removeClass('loading');
+    $('#$thumbContainerId').removeClass('loading')
+        .find('.spinner').remove();
 });
 JS;
         return $js;
@@ -2336,7 +2342,7 @@ JS;
 
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
-        $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
+        $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
         if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;

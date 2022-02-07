@@ -1350,6 +1350,23 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Returns whether the user is authorized to assign any user groups to users.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canAssignUserGroups(): bool
+    {
+        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            if ($this->can("assignUserGroup:$group->uid")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns whether the user has shunned a given message.
      *
      * @param string $message

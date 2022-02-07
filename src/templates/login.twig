@@ -87,8 +87,11 @@
                 </div>
 
                 <div class="buttons">
-                    <button id="submit" class="btn submit" type="submit">{{ 'Login'|t('app') }}</button>
-                    <div id="spinner" class="spinner over-bg hidden"></div>
+                    {{ forms.submitButton({
+                        id: 'submit',
+                        label: 'Login'|t('app'),
+                        spinner: true,
+                    }) }}
                 </div>
             </form>
 

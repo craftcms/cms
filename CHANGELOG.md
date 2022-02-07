@@ -26,7 +26,7 @@
 - Added the `assetUploaders` user query param.
 - Added the `authors` user query param.
 - Added the `hasAlt` asset query param.
-- Added the `fs` and `fsField` macros to the `_includes/forms` control panel template.
+- Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
@@ -49,6 +49,7 @@
 - Added `craft\base\Element::EVENT_AUTHORIZE_DUPLICATE`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_SAVE`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_VIEW`.
+- Added `craft\base\Element::EVENT_DEFINE_ADDL_BUTTONS`. ([#10420](https://github.com/craftcms/cms/discussions/10420))
 - Added `craft\base\Element::getParentId()`.
 - Added `craft\base\Element::hasNewParent()`.
 - Added `craft\base\Element::setParentId()`.
@@ -134,6 +135,7 @@
 - Added `craft\elements\conditions\users\UserCondition`.
 - Added `craft\elements\conditions\users\UsernameConditionRule`.
 - Added `craft\elements\User::$active`.
+- Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\FsException`.
@@ -322,6 +324,8 @@
 - Added the `Craft.namespaceId()` JavaScript method.
 - Added the `Craft.namespaceInputName()` JavaScript method.
 - Added the `Craft.Queue` JavaScript class.
+- Added the `Craft.ui.createButton()` JavaScript method.
+- Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 
@@ -345,6 +349,7 @@
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Database backups are now named after the Craft version in the database, rather than the Composer-installed version. ([#9733](https://github.com/craftcms/cms/discussions/9733))
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
+- Improved the look of loading spinners in the control panel. ([#9109](https://github.com/craftcms/cms/discussions/9109))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
 - Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.
@@ -586,6 +591,9 @@
 - Removed Matrix block queries’ `ownerLocale` param. The `site` or `siteId` param can be used instead.
 - Removed Matrix block queries’ `ownerSite` param. The `site` param can be used instead.
 - Removed Matrix block queries’ `ownerSiteId` param. The `siteId` param can be used instead.
+- Removed the `assignUserGroups` user permission, which authorized users to assign other users to their own groups. Authorization must now be explicitly granted for each group.
+- Removed the `customizeSources` user permission. Only admins can customize element sources now, and only from an environment that allows admin changes.
+- Removed the `publishPeerEntryDrafts:<uid>` permissions, as they were pointless. (If a user is authorized to save an entry and view other users’ drafts of it, there’s nothing stopping them from making the same changes themselves.)
 - Removed support for the `staticRows` editable table setting. `allowAdd`, `allowDelete`, and `allowReorder` can be used instead.
 - Removed support for the `CRAFT_LOCALE` PHP constant. `CRAFT_SITE` can be used instead.
 - Removed `Craft::Client`. `Pro` can be used instead.

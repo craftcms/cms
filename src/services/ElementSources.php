@@ -41,6 +41,7 @@ class ElementSources extends Component
     const TYPE_NATIVE = 'native';
     const TYPE_CUSTOM = 'custom';
 
+    const CONTEXT_FIELD = 'field';
     const CONTEXT_INDEX = 'index';
     const CONTEXT_MODAL = 'modal';
     const CONTEXT_SETTINGS = 'settings';

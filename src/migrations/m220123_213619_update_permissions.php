@@ -18,7 +18,10 @@ class m220123_213619_update_permissions extends Migration
     public function safeUp(): bool
     {
         $map = [];
-        $delete = [];
+        $delete = [
+            'assignUserGroups',
+            'customizeSources',
+        ];
 
         foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
             $map += [
@@ -95,11 +98,9 @@ class m220123_213619_update_permissions extends Migration
             $delete[] = $oldPermission;
         }
 
-        if (!empty($delete)) {
-            $this->delete(Table::USERPERMISSIONS, [
-                'name' => $delete,
-            ]);
-        }
+        $this->delete(Table::USERPERMISSIONS, [
+            'name' => $delete,
+        ]);
 
         // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
@@ -108,27 +109,25 @@ class m220123_213619_update_permissions extends Migration
         if (version_compare($schemaVersion, '4.0.0', '<')) {
             foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
                 $groupPermissions = array_flip($group['permissions'] ?? []);
-                $changed = false;
 
                 foreach ($map as $oldPermission => $newPermissions) {
                     if (isset($groupPermissions[$oldPermission])) {
                         foreach ($newPermissions as $newPermission) {
                             $groupPermissions[$newPermission] = true;
                         }
-                        $changed = true;
                     }
                 }
 
                 foreach ($delete as $permission) {
                     if (isset($groupPermissions[$permission])) {
                         unset($groupPermissions[$permission]);
-                        $changed = true;
                     }
                 }
 
-                if ($changed) {
-                    $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
-                }
+                // assignUserGroup:<uid> permissions are explicitly required going forward
+                $groupPermissions["assignUserGroup:$uid"] = true;
+
+                $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
             }
         }
 

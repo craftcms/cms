@@ -841,7 +841,8 @@ li.breadcrumb-toggle-wrapper {
   .menubtn:after,
   [data-icon]:before,
   [data-icon-after]:after {
-    color: var(--ui-control-color);
+    color: currentColor;
+    opacity: 0.8;
   }
 
   .text {
@@ -874,10 +875,6 @@ li.breadcrumb-toggle-wrapper {
     &:not(:focus) {
       background-clip: border-box;
     }
-  }
-
-  .spinner {
-    background-image: url(../images/spinner_toolbar.gif);
   }
 }
 
@@ -1485,36 +1482,6 @@ li.breadcrumb-toggle-wrapper {
         // same BG color as the hairline around the content pane’s 1px shadow
         background-color: transparentize($grey200, 0.5);
       }
-    }
-  }
-}
-
-/* retina */
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  #details {
-    .spinner {
-      background-image: url(../images/spinner_details_2x.gif);
-      background-size: 20px;
-    }
-  }
-  #toolbar {
-    .spinner {
-      background-image: url(../images/spinner_toolbar_2x.gif);
-      background-size: 20px;
-    }
-  }
-  #upgrademodal.loading {
-    background-image: url(../images/spinner_big_2x.gif);
-    background-size: 48px;
-  }
-  #upgrademodal-success {
-    .message {
-      background-image: url(../images/success_2x.png);
-      background-size: 48px;
     }
   }
 }

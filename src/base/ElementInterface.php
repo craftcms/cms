@@ -291,7 +291,7 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string $context The context ('index', 'modal', or 'settings').
+     * @param string $context The context ('index', 'modal', 'field', or 'settings').
      * @return array The sources.
      */
     public static function sources(string $context): array;
@@ -859,7 +859,7 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      * @since 4.0.0
      */
-    public function getAddlButtons(): ?string;
+    public function getAddlButtons(): string;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
@@ -1490,7 +1490,7 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     * @param string $context The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
      * @return array
      */
     public function getHtmlAttributes(string $context): array;
@@ -1509,7 +1509,7 @@ interface ElementInterface extends ComponentInterface
     public function getTableAttributeHtml(string $attribute): string;
 
     /**
-     * Returns the HTML for any fields/info that should be shown within the sidebar of element editor slideouts.
+     * Returns the HTML for any fields/info that should be shown within the editor sidebar.
      *
      * @param bool $static Whether any fields within the sidebar should be static (non-interactive)
      * @return string
@@ -1518,7 +1518,7 @@ interface ElementInterface extends ComponentInterface
     public function getSidebarHtml(bool $static): string;
 
     /**
-     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     * Returns element metadata that should be shown within the editor sidebar.
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      * If a value is `false`, it will be omitted.

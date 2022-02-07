@@ -6,11 +6,23 @@
                 <th class="checkbox-cell selectallcontainer orderable"></th>
             {% endif %}
             {% for attribute in attributes %}
-                {% set icon = (attribute[1].icon is defined ? attribute[1].icon : null) %}
-                <th scope="col" data-attribute="{{ attribute[0] }}"
-                        {%- if icon %} data-icon="{{ icon }}" title="{{ attribute[1].label }}" aria-label="{{ attribute[1].label }}"{% endif %}>
-                    {%- if not icon %}{{ attribute[1].label|t('site') }}{% endif -%}
-                </th>
+                {% set icon = attribute[1].icon ?? false %}
+                {% tag 'th' with {
+                    scope: 'col',
+                    title: icon ? attribute[1].label : false,
+                    aria: {
+                        label: icon ? attribute[1].label : false,
+                    },
+                    data: {
+                        attribute: attribute[0],
+                        icon: icon,
+                    },
+                } %}
+                    {% if not icon %}
+                        {{ attribute[1].label|t('site') }}
+                    {% endif %}
+                    <div class="spinner"></div>
+                {% endtag %}
             {% endfor %}
         </tr>
         </thead>

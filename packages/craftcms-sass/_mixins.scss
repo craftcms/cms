@@ -178,7 +178,7 @@ $radioSize: 16px;
   opacity: 0.8;
 }
 
-@mixin angle($dir: down, $color: var(--ui-control-color)) {
+@mixin angle($dir: down, $color: currentColor) {
   display: block;
   content: '';
   font-size: 0;
@@ -186,6 +186,7 @@ $radioSize: 16px;
   height: 5px;
   border: solid $color;
   border-width: 0 2px 2px 0;
+  opacity: 0.8;
 
   @if $dir == up {
     transform: rotate(225deg);

@@ -6,6 +6,23 @@
 {# Inputs #}
 
 
+{% macro button(config) %}
+    {% include '_includes/forms/button' with config only %}
+{% endmacro %}
+
+
+{% macro submitButton(config) %}
+    {{ _self.button(config|merge({
+        type: 'submit',
+        class: (config.class ?? [])|explodeClass|merge(['submit']),
+        label: config.label ?? 'Submit'|t('app'),
+    })) }}
+{% endmacro %}
+
+
+{# Inputs #}
+
+
 {% macro hidden(config) -%}
     {% include "_includes/forms/hidden" with config only %}
 {%- endmacro %}

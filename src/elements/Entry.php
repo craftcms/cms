@@ -45,6 +45,7 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
 use craft\records\Entry as EntryRecord;
+use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
@@ -202,7 +203,7 @@ class Entry extends Element
      */
     protected static function defineSources(string $context): array
     {
-        if ($context === 'index') {
+        if ($context === ElementSources::CONTEXT_INDEX) {
             $sections = Craft::$app->getSections()->getEditableSections();
             $editable = true;
         } else {

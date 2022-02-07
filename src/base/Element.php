@@ -319,14 +319,21 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
 
     /**
-     * @event DefineHtmlEvent The event that is triggered when defining the HTML for the element’s editor slideout sidebar.
+     * @event DefineHtmlEvent The event that is triggered when defining additional buttons that should be shown at the top of the element’s edit page.
+     * @see getAddlButtons()
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_ADDL_BUTTONS = 'defineAddlButtons';
+
+    /**
+     * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
      * @see getSidebarHtml()
      * @since 3.7.0
      */
     public const EVENT_DEFINE_SIDEBAR_HTML = 'defineSidebarHtml';
 
     /**
-     * @event DefineHtmlEvent The event that is triggered when defining the HTML for meta fields within the element’s editor slideout sidebar.
+     * @event DefineHtmlEvent The event that is triggered when defining the HTML for meta fields within the editor sidebar.
      * @see metaFieldsHtml()
      * @since 3.7.0
      */
@@ -785,7 +792,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Defines the sources that elements of this type may belong to.
      *
-     * @param string $context The context ('index', 'modal', or 'settings').
+     * @param string $context The context ('index', 'modal', 'field', or 'settings').
      * @return array The sources.
      * @see sources()
      */
@@ -2855,9 +2862,12 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAddlButtons(): ?string
+    public function getAddlButtons(): string
     {
-        return null;
+        // Fire a defineAddlButtons event
+        $event = new DefineHtmlEvent();
+        $this->trigger(self::EVENT_DEFINE_ADDL_BUTTONS, $event);
+        return $event->html;
     }
 
     /**
@@ -4067,7 +4077,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns any attributes that should be included in the element’s DOM representation in the control panel.
      *
-     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     * @param string $context The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
      * @return array
      * @see getHtmlAttributes()
      */
@@ -4261,8 +4271,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the HTML for any meta fields that should be shown within the sidebar of element editor
-     * slideouts. Or if the element doesn’t have a field layout, they’ll be shown in the main body of the slideout.
+     * Returns the HTML for any meta fields that should be shown within the editor sidebar.
      *
      * @param bool $static Whether the fields should be static (non-interactive)
      * @return string
@@ -4389,7 +4398,7 @@ JS;
     }
 
     /**
-     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     * Returns element metadata that should be shown within the editor sidebar.
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      * If a value is `false`, it will be omitted.
