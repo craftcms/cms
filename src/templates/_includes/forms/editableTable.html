@@ -148,11 +148,8 @@
                                             name: cellName,
                                             value: value,
                                             disabled: static,
-                                            inputAttributes: {
-                                              aria: {
-                                                labelledby: headingId,
-                                              },
-                                            }
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'email' or 'url' -%}
                                         {% include "_includes/forms/text" with {
