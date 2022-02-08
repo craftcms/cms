@@ -17,6 +17,7 @@
 - Video assets’ focal points are no longer suppressed, if they were set by a plugin or module. ([#10415](https://github.com/craftcms/cms/discussions/10415))
 - Plugins are now consistently loaded in the same order across all environments. ([#10441](https://github.com/craftcms/cms/issues/10441))
 - Element exporters’ `export()` methods can now return an array or generator function, even if `isFormattable()` returns `true`. ([#10484](https://github.com/craftcms/cms/pull/10484))
+- `Craft.BaseElementSelectorModal` now supports a `fullscreen` setting.
 
 ### Fixed
 - Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
