@@ -24,7 +24,15 @@
             name: "#{name}[value]",
         }
     } %}
-    <button type="button" class="clear-btn hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></button>
+    <div class="money-clear">
+        {{ forms.button({
+            attributes: {
+                title: 'Clear'|t('app'),
+                class: 'clear-btn hidden',
+                'aria-label': 'Clear'|t('app'),
+            }
+        }) }}
+    </div>
 </div>
 
 {% js %}
