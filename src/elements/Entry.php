@@ -279,7 +279,7 @@ class Entry extends Element
                     if ($type == Section::TYPE_STRUCTURE) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $source['structureEditable'] = $user->can("saveEntries:$section->uid");
+                        $source['structureEditable'] = $user && $user->can("saveEntries:$section->uid");
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }

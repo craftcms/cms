@@ -578,10 +578,8 @@ class Asset extends Element
             ],
         ];
 
-        if ($user) {
-            if (!$user->can("viewPeerAssets:$volume->uid")) {
-                $source['criteria']['uploaderId'] = $user->id;
-            }
+        if ($user && !$user->can("viewPeerAssets:$volume->uid")) {
+            $source['criteria']['uploaderId'] = $user->id;
         }
 
         if ($includeNestedFolders) {
