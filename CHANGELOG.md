@@ -17,7 +17,6 @@
 - Video assets’ focal points are no longer suppressed, if they were set by a plugin or module. ([#10415](https://github.com/craftcms/cms/discussions/10415))
 - Plugins are now consistently loaded in the same order across all environments. ([#10441](https://github.com/craftcms/cms/issues/10441))
 - Element exporters’ `export()` methods can now return an array or generator function, even if `isFormattable()` returns `true`. ([#10484](https://github.com/craftcms/cms/pull/10484))
-- Fixed GraphiQL layout issues for users with a RTL language set. ([#10465](https://github.com/craftcms/cms/pull/10465))
 
 ### Fixed
 - Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
@@ -31,6 +30,7 @@
 - Fixed a JavaScript error. ([#10428](https://github.com/craftcms/cms/issues/10428))
 - Fixed a bug where Dashboard widget flip animations weren’t always working in Firefox.
 - Fixed an error that could occur if an element’s `getSupportedSites()` method returned info for a site that didn’t exist or was soft-deleted.
+- Fixed GraphiQL layout issues for users with a RTL language set. ([#10465](https://github.com/craftcms/cms/pull/10465))
 
 ## 3.7.30.1 - 2022-01-21
 
