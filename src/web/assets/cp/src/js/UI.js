@@ -100,6 +100,46 @@ Craft.ui =
             return $container;
         },
 
+        createCopyTextBtn: function(config) {
+            let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
+            let value = config.value;
+
+            let $btn = $('<div/>', {
+                id,
+                'class': 'copytextbtn',
+                'role': 'button',
+                'title': Craft.t('app', 'Copy to clipboard'),
+                'aria-label': Craft.t('app', 'Copy to clipboard'),
+                'tabindex': '0',
+            });
+
+            if (config.class) {
+                $btn.addClass(config.class);
+            }
+
+            let $input = $('<input/>', {
+                value,
+                readonly: true,
+                size: value.length,
+                tabindex: '-1',
+            }).appendTo($btn);
+
+            let $icon = $('<span/>', {
+                'data-icon': 'clipboard',
+                'aria-hidden': 'true',
+            }).appendTo($btn);
+
+            $btn.on('click', () => {
+                $input[0].select();
+                document.execCommand('copy');
+                Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+                $btn.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
+            });
+
+            return $btn;
+        },
+
         createCopyTextField: function(config) {
             if (!config.id) {
                 config.id = 'copytext' + Math.floor(Math.random() * 1000000000);
