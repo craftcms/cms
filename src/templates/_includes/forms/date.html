@@ -2,6 +2,7 @@
 {% set name = name ?? null -%}
 {% set value = (value ?? false) ? date(value, false) : null -%}
 {% set isMobile = craft.app.request.isMobileBrowser %}
+{% set describedBy = describedBy ?? null %}
 
 {% set containerAttributes = {
     class: ['datewrapper']|merge((class ?? [])|explodeClass),

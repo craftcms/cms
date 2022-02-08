@@ -12,6 +12,7 @@
 ### Changed
 - Improved focus styles in the control panel. ([#10398](https://github.com/craftcms/cms/pull/10398))
 - Improved Matrix field accessibility for screen readers. ([#10480](https://github.com/craftcms/cms/pull/10480))
+- Improved Table field accessibility for screen readers. ([#10502](https://github.com/craftcms/cms/pull/10502))
 - Handles within admin tables are now displayed as copy-buttons. ([#10475](https://github.com/craftcms/cms/discussions/10475))
 - Craft no longer sends a `Permissions-Policy: interest-cohort=()` header by default, as Google has [abandoned](https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/) its FLoC proposal.
 - Craft no longer attempts to create the `cpresources` folder when `CRAFT_EPHEMERAL` is set to `true`. ([#10412](https://github.com/craftcms/cms/issues/10412))
