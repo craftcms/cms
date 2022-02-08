@@ -642,6 +642,7 @@ class Table extends Field
             'maxRows' => $this->maxRows,
             'static' => $static,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
+            'describedBy' => $this->describedBy,
         ]);
     }
 }

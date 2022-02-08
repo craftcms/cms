@@ -7,6 +7,7 @@
 {%- set maxRows = maxRows ?? null %}
 {%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and rows|length == 1) %}
 {%- set fixedRows = not staticRows and (minRows and minRows == maxRows and minRows == rows|length) %}
+{%- set describedBy = describedBy ?? null %}
 
 {% if not static %}
     {{ hiddenInput(name, '') }}
@@ -101,11 +102,8 @@
                                                 value:  col.value ?? 1,
                                                 checked: value is not empty,
                                                 disabled: static,
-                                                inputAttributes: {
-                                                  aria: {
-                                                    labelledby: headingId,
-                                                  },
-                                                }
+                                                labelledBy: headingId,
+                                                describedBy: describedBy,
                                             } only %}
                                         </div>
                                     {%- case 'color' -%}
@@ -114,22 +112,16 @@
                                             value: value,
                                             small: true,
                                             disabled: static,
-                                            inputAttributes: {
-                                              aria: {
-                                                labelledby: headingId,
-                                              },
-                                            }
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'date' -%}
                                         {% include "_includes/forms/date" with {
                                             name: cellName,
                                             value: value,
                                             disabled: static,
-                                            inputAttributes: {
-                                              aria: {
-                                                labelledby: headingId,
-                                              },
-                                            }
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'lightswitch' -%}
                                         {% include "_includes/forms/lightswitch" with {
@@ -138,11 +130,7 @@
                                             value: col.value ?? 1,
                                             small: true,
                                             disabled: static,
-                                            inputAttributes: {
-                                              aria: {
-                                                labelledby: headingId,
-                                              },
-                                            }
+                                            labelledBy: headingId,
                                         } only %}
                                     {% case 'select' -%}
                                         {% include "_includes/forms/select" with {

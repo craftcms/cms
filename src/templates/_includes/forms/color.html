@@ -2,11 +2,13 @@
 
 {% set id = id ?? "color#{random()}" -%}
 {% set containerId = containerId ?? id~'-container' -%}
+{% set hexLabelId = "hex-#{id}" %}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
 {% set small = small ?? false -%}
 {% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
 {% set disabled = disabled ?? false -%}
+{% set labelledBy = labelledBy ?? null %}
 
 {% set containerAttributes = {
     id: containerId,
@@ -16,8 +18,6 @@
 {%- if block('attr') is defined %}
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
-
-{% set hexLabelId = "hex-#{id}" %}
 
 {% spaceless %}
     {% tag 'div' with containerAttributes %}
@@ -41,11 +41,7 @@
                 class: 'color-input',
                 autofocus: autofocus,
                 disabled: disabled,
-                inputAttributes: {
-                    aria: {
-                        labelledBy: hexLabelId,
-                    },
-                },
+                labelledBy: [labelledBy, hexLabelId]|filter|join(' '),
             }) }}
         </div>
     {% endtag %}
