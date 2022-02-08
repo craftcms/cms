@@ -243,7 +243,11 @@
             },
 
             payment() {
-              console.log('Redirect to Craft Console’s cart')
+              // Redirect to Craft Console with the order number
+              this.$store.dispatch('cart/getOrderNumber')
+                .then(orderNumber => {
+                  window.location.href = `${window.craftIdEndpoint}/cart?orderNumber=${orderNumber}`
+                });
             },
 
             removeFromCart(itemKey) {
