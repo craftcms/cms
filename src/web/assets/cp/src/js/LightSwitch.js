@@ -20,7 +20,7 @@ Craft.LightSwitch = Garnish.Base.extend({
 
         // Is this already a lightswitch?
         if (this.$outerContainer.data('lightswitch')) {
-            Garnish.log('Double-instantiating a lightswitch on an element');
+            console.warn('Double-instantiating a lightswitch on an element');
             this.$outerContainer.data('lightswitch').destroy();
         }
 
@@ -223,6 +223,7 @@ Craft.LightSwitch = Garnish.Base.extend({
     },
 
     destroy: function() {
+        this.$outerContainer.removeData('lightswitch')
         this.base();
         this.dragger.destroy();
     },

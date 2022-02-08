@@ -82,6 +82,7 @@ Garnish = $.extend(Garnish, {
      * Logs a message to the browser's console, if the browser has one.
      *
      * @param {string} msg
+     * @deprecated
      */
     log: function(msg) {
         if (typeof console !== 'undefined' && typeof console.log === 'function') {
