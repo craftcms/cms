@@ -1,7 +1,5 @@
 <template>
-  <div class="flex">
-    <div class="flex-grow"></div>
-  </div>
+  <div></div>
 </template>
 
 <script>
@@ -16,9 +14,9 @@
         },
 
         mounted() {
-          $(this.$el).prepend(Craft.ui.createCopyTextBtn({
+          $(this.$el).html(Craft.ui.createCopyTextBtn({
             value: this.value,
-            class: 'code small light',
+            class: 'code small light copytextbtn-to-r',
           }));
         }
     }

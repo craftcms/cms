@@ -1479,7 +1479,7 @@ ul.icons {
 }
 
 .copytextbtn {
-  display: flex;
+  display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
   border: 1px solid $hairlineColor;
@@ -1517,8 +1517,6 @@ ul.icons {
 
   &:hover,
   &:focus {
-    // Prevent the button from jumping if the added width would otherwise bump it down to the next line
-    @include margin-left(-16px);
     border-color: $mediumHairlineColor;
 
     span {
@@ -1534,6 +1532,21 @@ ul.icons {
       font-size: 11px !important;
       height: 20px;
     }
+  }
+}
+
+// Prevent the button from jumping if the added width would otherwise bump it down to the next line
+.copytextbtn-to-r {
+  &:hover,
+  &:focus {
+    @include margin-right(-16px);
+  }
+}
+
+.copytextbtn-to-l {
+  &:hover,
+  &:focus {
+    @include margin-left(-16px);
   }
 }
 
