@@ -162,12 +162,12 @@ class Element extends InterfaceType
             'revisionId' => [
                 'name' => 'revisionId',
                 'type' => Type::int(),
-                'description' => 'Returns the entry’s revision ID. (from the `revisions` table)',
+                'description' => 'The revision ID (from the `revisions` table).',
             ],
             'draftId' => [
                 'name' => 'draftId',
                 'type' => Type::int(),
-                'description' => 'The ID of the draft to return (from the `drafts` table)',
+                'description' => 'The draft ID (from the `drafts` table).',
             ],
             'isUnpublishedDraft' => [
                 'name' => 'isUnpublishedDraft',
