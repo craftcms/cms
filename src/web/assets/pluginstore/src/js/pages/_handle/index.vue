@@ -23,10 +23,8 @@
             <div class="plugin-details-body">
                 <template v-if="!loading">
                     <template v-if="plugin.abandoned">
-                        <div class="error tw-mb-6 tw-px-4 tw-py-3 tw-rounded tw-border tw-border-solid tw-border-red-600 tw-flex tw-flex-nowrap tw-text-base">
-                            <svg class="tw-w-8 tw-h-8">
-                                <use :xlink:href="alertIcon + '#alert'"></use>
-                            </svg>
+                        <div class="error tw-mb-6 tw-px-4 tw-py-3 tw-rounded tw-border tw-border-solid tw-border-red-500 tw-flex tw-flex-nowrap tw-text-base tw-items-center">
+                            <icon icon="alert" class="tw-w-8 tw-h-8 tw-mr-2"></icon>
 
                             <div class="tw-flex-1 tw-mb-0">
                                 <strong>{{ "This plugin is no longer maintained."|t('app') }} </strong>
@@ -169,7 +167,6 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
                 plugin: state => state.pluginStore.plugin,
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
-                alertIcon: state => state.craft.alertIcon,
             }),
 
             ...mapGetters({
