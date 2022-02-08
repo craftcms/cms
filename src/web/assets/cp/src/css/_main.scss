@@ -4027,17 +4027,26 @@ ul.tree,
 
 .modal {
   position: fixed;
-  width: 66%;
-  height: 66%;
-  min-width: 600px;
-  min-height: 400px;
   overflow: hidden;
+
+  &:not(.fitted):not(.fullscreen) {
+    width: 66%;
+    height: 66%;
+    min-width: 600px;
+    min-height: 400px;
+  }
 
   &.fitted {
     width: auto;
     height: auto;
     min-width: 0;
     min-height: 0;
+  }
+
+  &.fullscreen {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
   }
 
   &.alert .body {
@@ -4335,6 +4344,8 @@ ul.tree,
     left: 0;
     width: 100%;
     margin: 0;
+    height: 62px;
+    box-sizing: border-box;
 
     .spinner {
       @include floatright;

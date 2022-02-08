@@ -66,9 +66,11 @@ class PluginStoreController extends Controller
             'composerPhpVersion' => Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null,
         ];
 
-        foreach ($variables as $name => $value) {
-            $view->registerJs("window.$name = " . Json::encode($value) . ';', View::POS_BEGIN);
-        }
+        $view->registerJsWithVars(function($variables) {
+            return <<<JS
+Object.assign(window, $variables);
+JS;
+        }, [$variables], View::POS_BEGIN);
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
