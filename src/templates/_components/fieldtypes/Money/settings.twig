@@ -53,10 +53,10 @@
     errors: field.getErrors('max')
 }, subUnits) }}
 
-{{ forms.checkboxField({
-    label: 'Show the currency'|t('app'),
+{{ forms.lightswitchField({
+    label: 'Show Currency'|t('app'),
     name: 'showCurrency',
-    checked: field.showCurrency,
+    on: field.showCurrency,
 }) }}
 
 {{ forms.textField({
