@@ -83,9 +83,12 @@
                             <a :class="{'cell-bold': props.rowData.status === undefined}" v-if="props.rowData.url" :href="props.rowData.url">{{ props.rowData.title }}</a>
                             <span :class="{'cell-bold': props.rowData.status === undefined}" v-else>{{ props.rowData.title }}</span>
                         </template>
-                        <template slot="handle" slot-scope="props">
-                            <code>{{ props.rowData.handle }}</code>
-                        </template>
+
+                      <template slot="handle" slot-scope="props">
+                        <admin-table-copy-text-button
+                            :value="props.rowData.handle"
+                        ></admin-table-copy-text-button>
+                      </template>
                         <template slot="menu" slot-scope="props">
                             <template v-if="props.rowData.menu.showItems">
                                 <a :href="props.rowData.menu.url">{{props.rowData.menu.label}} ({{props.rowData.menu.items.length}})</a>
@@ -146,11 +149,13 @@
     import AdminTableActionButton from './js/components/AdminTableActionButton';
     import AdminTableDetailRow from './js/components/AdminTableDetailRow';
     import AdminTableButton from './js/components/AdminTableButton';
+    import AdminTableCopyTextButton from "./js/components/AdminTableCopyTextButton";
     import Sortable from 'sortablejs'
     import {debounce, map} from 'lodash'
 
     export default {
         components: {
+            AdminTableCopyTextButton,
             AdminTableActionButton,
             AdminTableCheckbox,
             AdminTableDeleteButton,
