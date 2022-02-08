@@ -60,10 +60,16 @@
   --ui-control-color: #{$grey400};
   --ui-control-hover-color: #{$grey500};
   --ui-control-active-color: #{$grey600};
+  --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)}, #{lightness($lightFocusColor)};
+  --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
+  --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
+  --focus-hsl: var(--dark-focus-hsl); // use the dark color by default
+  --focus-ring: 0 0 0 1px hsl(var(--focus-hsl)), 0 0 0 3px hsla(var(--focus-hsl), 0.7);
 }
 
 body,
 html {
+  box-shadow: $lightFocusRing;
   background-color: $grey100;
 }
 
@@ -1263,7 +1269,7 @@ ul.icons {
     &:focus,
     &.focus,
     &:hover {
-      background-color: transparentize($inputColor, 0.65);
+      background-color: transparentize($inputColor, 0.7);
     }
 
     &:active,
@@ -1404,6 +1410,10 @@ ul.icons {
   }
 
   .btn {
+    &:focus {
+      z-index: 1;
+    }
+
     &.active {
       cursor: default;
     }
@@ -4572,7 +4582,7 @@ ul.tree,
 
   body:not(.reduce-focus-visibility) &:focus,
   body.reduce-focus-visibility &.focus-visible {
-    box-shadow: inset 0 0 0 3px transparentize($darkFocusColor, 0.3);
+    box-shadow: inset 0 0 0 3px hsla(var(--focus-hsl), 0.7);
   }
 }
 
@@ -4703,7 +4713,7 @@ table.editable {
   }
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  body.reduce-focus-visibility &.focus-visible {
     @include input-focused-styles;
   }
 }
@@ -4939,7 +4949,7 @@ fieldset {
 }
 
 #expand-status-btn {
-  margin-left: 5px;
+  @include margin-left(5px);
   width: 30px;
   height: 17px;
   padding: 0;
@@ -5062,15 +5072,15 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.checkbox:focus-visible + label:before,
-  :focus-visible div.checkbox:before {
+  input.checkbox.focus-visible + label:before,
+  .focus-visible div.checkbox:before {
     @include input-focused-styles;
   }
 }
 
 .monaco-mouse-cursor-text {
   &:focus,
-  &:focus-visible {
+  &.focus-visible {
     box-shadow: none !important;
   }
 }
@@ -5169,8 +5179,8 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.radio:focus-visible + label:before,
-  :focus-visible div.radio:before {
+  input.radio.focus-visible + label:before,
+  .focus-visible div.radio:before {
     @include input-focused-styles;
   }
 }
@@ -5182,7 +5192,7 @@ body.reduce-focus-visibility {
   appearance: none;
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  body.reduce-focus-visibility &.focus-visible {
     @include input-focused-styles;
   }
 
@@ -5435,7 +5445,7 @@ body.reduce-focus-visibility {
   }
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &:focus-visible {
+  body.reduce-focus-visibility &.focus-visible {
     @include select-input-focused-styles;
   }
 }

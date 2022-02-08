@@ -96,6 +96,7 @@ import './dashboard.scss';
                                     )
                                     .append(
                                         $('<h2/>', {
+                                            class: 'first',
                                             text: Craft.t('app', '{type} Settings', {
                                                 type: $option.data('name')
                                             }),
@@ -362,25 +363,25 @@ import './dashboard.scss';
             this.refreshSettings();
 
             this.$back.removeClass('hidden');
-            Garnish.requestAnimationFrame(() => {
+            setTimeout(() => {
                 this.$container
                     .addClass('flipped')
                     .velocity({height: this.$back.height()}, {
                         complete: this.onShowBack.bind(this)
                     });
-            });
+            }, 100);
         },
 
         hideSettings: function() {
             this.$front.removeClass('hidden');
 
-            Garnish.requestAnimationFrame(() => {
+            setTimeout(() => {
                 this.$container
                     .removeClass('flipped')
                     .velocity({height: this.$front.height()}, {
                         complete: this.onShowFront.bind(this)
                     });
-            });
+            }, 100);
         },
 
         saveSettings: function(e) {

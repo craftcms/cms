@@ -41,7 +41,7 @@ export default Base.extend(
 
       // Is this already a disclosure button?
       if (this.$trigger.data('trigger')) {
-        Garnish.log('Double-instantiating a disclosure menu on an element');
+        console.warn('Double-instantiating a disclosure menu on an element');
         this.$trigger.data('trigger').destroy();
       }
 
@@ -184,7 +184,6 @@ export default Base.extend(
       Garnish.uiLayerManager.addLayer(this.$container);
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, function() {
         this.hide();
-        this.$trigger.focus();
       }.bind(this));
     },
 
@@ -200,8 +199,18 @@ export default Base.extend(
 
       this.$trigger.attr('aria-expanded', 'false');
 
+      if (this.focusIsInMenu()) {
+        this.$trigger.focus();
+      }
+
       this.trigger('hide');
       Garnish.uiLayerManager.removeLayer();
+    },
+
+    focusIsInMenu: function() {
+      const $focusedEl = Garnish.getFocusedElement();
+
+      return $.contains(this.$container, $focusedEl);
     },
 
     setContainerPosition: function () {

@@ -35,7 +35,7 @@ Craft.EditableTable = Garnish.Base.extend({
 
         // Is this already an editable table?
         if (this.$table.data('editable-table')) {
-            Garnish.log('Double-instantiating an editable table on an element');
+            console.warn('Double-instantiating an editable table on an element');
             this.$table.data('editable-table').destroy();
         }
 
@@ -260,6 +260,11 @@ Craft.EditableTable = Garnish.Base.extend({
                 row = this.addRow(false);
             }
         }
+    },
+
+    destroy: function() {
+        this.$table.removeData('editable-table');
+        this.base();
     },
 }, {
     textualColTypes: [
