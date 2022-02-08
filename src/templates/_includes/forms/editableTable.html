@@ -168,13 +168,15 @@
                                             suggestEnvVars: col.suggestEnvVars ?? false,
                                             suggestAliases: col.suggestAliases ?? false,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- default -%}
                                         {% if static %}
                                             <pre class="disabled">{{ value }}</pre>
                                         {% else %}
-                                            <textarea aria-labelledby="{{ headingId }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            <textarea aria-labelledby="{{ headingId }}" aria-describedby="{{ describedBy }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}
