@@ -831,6 +831,7 @@ return [
     'Matrix Block' => 'Blok v matici',
     'Matrix Blocks' => 'Bloky matice',
     'Matrix block' => 'Blok matice',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => 'Bloky matice',
     'Matrix' => 'Matice',
     'Max Blocks' => 'Maximální počet bloků',
