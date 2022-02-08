@@ -1479,7 +1479,7 @@
         },
         {
             "name": "illuminate/collections",
-            "version": "v8.82.0",
+            "version": "v8.83.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/collections.git",
@@ -1533,7 +1533,7 @@
         },
         {
             "name": "illuminate/contracts",
-            "version": "v8.82.0",
+            "version": "v8.83.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -1581,7 +1581,7 @@
         },
         {
             "name": "illuminate/macroable",
-            "version": "v8.82.0",
+            "version": "v8.83.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -4607,12 +4607,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "voku\\": "src/voku/"
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "voku\\": "src/voku/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -6434,9 +6434,6 @@
             "require": {
                 "php": "^7.1 || ^8.0"
             },
-            "replace": {
-                "myclabs/deep-copy": "self.version"
-            },
             "require-dev": {
                 "doctrine/collections": "^1.0",
                 "doctrine/common": "^2.6",
@@ -6593,16 +6590,16 @@
         },
         {
             "name": "phar-io/version",
-            "version": "3.1.0",
+            "version": "3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phar-io/version.git",
-                "reference": "bae7c545bef187884426f042434e561ab1ddb182"
+                "reference": "15a90844ad40f127afd244c0cad228de2a80052a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phar-io/version/zipball/bae7c545bef187884426f042434e561ab1ddb182",
-                "reference": "bae7c545bef187884426f042434e561ab1ddb182",
+                "url": "https://api.github.com/repos/phar-io/version/zipball/15a90844ad40f127afd244c0cad228de2a80052a",
+                "reference": "15a90844ad40f127afd244c0cad228de2a80052a",
                 "shasum": ""
             },
             "require": {
@@ -6638,9 +6635,9 @@
             "description": "Library for handling version information and constraints",
             "support": {
                 "issues": "https://github.com/phar-io/version/issues",
-                "source": "https://github.com/phar-io/version/tree/3.1.0"
+                "source": "https://github.com/phar-io/version/tree/3.1.1"
             },
-            "time": "2021-02-23T14:00:09+00:00"
+            "time": "2022-02-07T21:56:48+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -6782,16 +6779,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.4.5",
+            "version": "1.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "150d1fbd82fb71ff76b3bd7f6ea6006d89c5f0c3"
+                "reference": "8a7761f1c520e0dad6e04d862fdc697445457cfe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/150d1fbd82fb71ff76b3bd7f6ea6006d89c5f0c3",
-                "reference": "150d1fbd82fb71ff76b3bd7f6ea6006d89c5f0c3",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8a7761f1c520e0dad6e04d862fdc697445457cfe",
+                "reference": "8a7761f1c520e0dad6e04d862fdc697445457cfe",
                 "shasum": ""
             },
             "require": {
@@ -6822,7 +6819,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.4.5"
+                "source": "https://github.com/phpstan/phpstan/tree/1.4.6"
             },
             "funding": [
                 {
@@ -6842,7 +6839,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-02-02T19:35:10+00:00"
+            "time": "2022-02-06T12:56:13+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -7224,11 +7221,11 @@
                 }
             },
             "autoload": {
-                "classmap": [
-                    "src/"
-                ],
                 "files": [
                     "src/Framework/Assert/Functions.php"
+                ],
+                "classmap": [
+                    "src/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -8869,5 +8866,5 @@
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }
