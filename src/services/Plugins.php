@@ -195,6 +195,7 @@ class Plugins extends Component
 
         // Find all of the installed plugins
         $pluginInfo = $this->_createPluginQuery()
+            ->orderBy(['handle' => SORT_ASC])
             ->indexBy('handle')
             ->all();
 

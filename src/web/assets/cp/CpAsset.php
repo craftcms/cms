@@ -198,6 +198,7 @@ JS;
             'Login',
             'Make not required',
             'Make required',
+            'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
             'More',
             'More…',

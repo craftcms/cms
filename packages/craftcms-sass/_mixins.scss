@@ -105,12 +105,14 @@ $mediumHairlineColor: transparentize($grey600, 0.75);
 $darkHairlineColor: transparentize($grey400, 0.5);
 
 // focus colors
-$lightFocusColor: $blue600;
-$darkFocusColor: $blue700;
+$lightFocusColor: $blue300;
+$mediumFocusColor: $blue500;
+$darkFocusColor: #0F74B1;
 
 // focus rings
-$lightFocusRing: 0 0 0 1px $lightFocusColor, 0 0 0 3px transparentize($lightFocusColor, 0.5);
-$darkFocusRing: 0 0 0 1px $darkFocusColor, 0 0 0 3px transparentize($darkFocusColor, 0.5);
+$lightFocusRing: 0 0 0 1px $lightFocusColor, 0 0 0 3px transparentize($lightFocusColor, 0.3);
+$mediumFocusRing: 0 0 0 1px $mediumFocusColor, 0 0 0 3px transparentize($mediumFocusColor, 0.3);
+$darkFocusRing: 0 0 0 1px $darkFocusColor, 0 0 0 3px transparentize($darkFocusColor, 0.3);
 
 // selection colors
 $lightSelColor: $grey200;
@@ -226,7 +228,7 @@ $radioSize: 16px;
   box-shadow: 0 0 0 1px $grey200, 0 2px 12px transparentize($grey200, 0.5);
 
   &:focus {
-    box-shadow: $darkFocusRing
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -537,8 +539,8 @@ $radioSize: 16px;
 }
 
 @mixin input-focused-styles {
-  border-color: $darkFocusColor;
-  box-shadow: 0 0 0 2px transparentize($darkFocusColor, 0.5);
+  border-color: hsl(var(--focus-hsl));
+  box-shadow: 0 0 0 2px hsla(var(--focus-hsl), 0.7);
 }
 
 @mixin placeholder-styles($color) {
@@ -614,7 +616,8 @@ $radioSize: 16px;
 
 @mixin select-input-focused-styles {
   outline-color: transparent;
-  background-color: transparentize($inputColor, 0.5);
+  background-color: transparentize($inputColor, 0.6);
+  box-shadow: var(--focus-ring);
 }
 
 @mixin readable {
