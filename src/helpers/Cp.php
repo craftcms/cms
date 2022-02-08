@@ -612,7 +612,7 @@ class Cp
                             'class' => ['flex-grow'],
                         ]) . static::renderTemplate('_includes/forms/copytextbtn', [
                             'id' => "$id-attribute",
-                            'class' => ['code', 'small', 'light', 'copytextbtn-to-l'],
+                            'class' => ['code', 'small', 'light', 'copytextbtn-expand-l'],
                             'value' => $config['attribute'],
                         ])
                         : '') .

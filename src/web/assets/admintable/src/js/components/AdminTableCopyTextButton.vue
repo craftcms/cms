@@ -16,7 +16,7 @@
         mounted() {
           $(this.$el).html(Craft.ui.createCopyTextBtn({
             value: this.value,
-            class: 'code small light copytextbtn-to-r',
+            class: 'code small light copytextbtn-expand-r',
           }));
         }
     }
