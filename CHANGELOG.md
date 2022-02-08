@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.31 - 2022-02-08
 
 ### Added
 - Added the `clear-deprecations` command. ([#10430](https://github.com/craftcms/cms/discussions/10430))
