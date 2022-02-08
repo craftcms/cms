@@ -831,6 +831,7 @@ return [
     'Matrix Block' => '매트릭스 블록',
     'Matrix Blocks' => '행렬 블록',
     'Matrix block' => '행렬 블록',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => '행렬 블록',
     'Matrix' => '매트릭스',
     'Max Blocks' => '최대 블록',

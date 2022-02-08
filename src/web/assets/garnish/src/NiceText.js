@@ -61,7 +61,7 @@ export default Base.extend(
 
             // Is this already a transparent text input?
             if (this.$input.data('nicetext')) {
-                Garnish.log('Double-instantiating a transparent text input on an element');
+                console.warn('Double-instantiating a transparent text input on an element');
                 this.$input.data('nicetext').destroy();
             }
 

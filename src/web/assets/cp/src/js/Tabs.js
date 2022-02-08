@@ -23,7 +23,7 @@ Craft.Tabs = Garnish.Base.extend({
 
         // Is there already a tab manager?
         if (this.$container.data('tabs')) {
-            Garnish.log('Double-instantiating a tab manager on an element');
+            console.warn('Double-instantiating a tab manager on an element');
             this.$container.data('tabs').destroy();
         }
 
@@ -188,5 +188,10 @@ Craft.Tabs = Garnish.Base.extend({
         }
 
         return $tab;
-    }
+    },
+
+    destroy: function() {
+        this.$container.removeData('tabs');
+        this.base();
+    },
 });

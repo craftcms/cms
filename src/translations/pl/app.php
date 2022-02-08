@@ -831,6 +831,7 @@ return [
     'Matrix Block' => 'Blok pola matrix',
     'Matrix Blocks' => 'Bloki pola matrix',
     'Matrix block' => 'Blok pola matrix',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => 'Bloki pola matrix',
     'Matrix' => 'Matrix',
     'Max Blocks' => 'Maksymalna ilość bloków',

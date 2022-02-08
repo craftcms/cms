@@ -831,6 +831,7 @@ return [
     'Matrix Block' => 'الكتلة البرمجية للمصفوفة',
     'Matrix Blocks' => 'الكتل البرمجية للمصفوفة',
     'Matrix block' => 'الكتلة البرمجية للمصفوفة',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => 'الكتلة البرمجية للمصفوفة',
     'Matrix' => 'مصفوفة',
     'Max Blocks' => 'الحد الأقصى للكتل',

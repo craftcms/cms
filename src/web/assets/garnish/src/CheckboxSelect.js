@@ -16,8 +16,8 @@ export default Base.extend(
 
             // Is this already a checkbox select?
             if (this.$container.data('checkboxSelect')) {
-                Garnish.log('Double-instantiating a checkbox select on an element');
-                this.$container.data('checkbox-select').destroy();
+                console.warn('Double-instantiating a checkbox select on an element');
+                this.$container.data('checkboxSelect').destroy();
             }
 
             this.$container.data('checkboxSelect', this);
@@ -44,6 +44,6 @@ export default Base.extend(
         destroy: function() {
             this.$container.removeData('checkboxSelect');
             this.base();
-        }
+        },
     }
 );
