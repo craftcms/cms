@@ -18,7 +18,7 @@ use UnitTester;
  * Unit tests for the Money Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 class MoneyHelperTest extends Unit
 {
@@ -47,7 +47,7 @@ class MoneyHelperTest extends Unit
      */
     public function testToDecimal($value, $expected): void
     {
-       self::assertEquals($expected, MoneyHelper::toDecimal($value));
+        self::assertEquals($expected, MoneyHelper::toDecimal($value));
     }
 
     /**

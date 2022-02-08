@@ -21,7 +21,7 @@ use yii\widgets\MaskedInputAsset;
  * Asset bundle for Money field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 class MoneyAsset extends AssetBundle
 {

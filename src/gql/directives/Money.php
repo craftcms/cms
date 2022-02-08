@@ -21,7 +21,7 @@ use GraphQL\Type\Definition\Type;
  * Class Money
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 class Money extends Directive
 {
@@ -105,10 +105,10 @@ class Money extends Directive
     /**
      * Returns the default time zone to be used.
      *
-     * @since 4.0.0
+     * @return string
      */
     public static function defaultTimeZone(): string
     {
-        return Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : self::DEFAULT_TIMEZONE;
+        return Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : FormatDateTime::DEFAULT_TIMEZONE;
     }
 }

@@ -34,7 +34,7 @@ use Money\Money as MoneyLibrary;
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 class Money extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {

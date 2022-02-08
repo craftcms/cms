@@ -22,7 +22,7 @@ use GraphQL\Type\Definition\ScalarType;
  * Class Money implements the Money scalar type for GraphQL.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 class Money extends ScalarType implements SingularTypeInterface
 {

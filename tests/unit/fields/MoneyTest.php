@@ -19,7 +19,7 @@ use UnitTester;
  * Unit tests for the Money custom field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * @since 4.0.0
  */
 class MoneyTest extends Unit
 {
@@ -69,7 +69,7 @@ class MoneyTest extends Unit
     public function testNormalizeValue($money, string $value, string $currency, ?string $defaultValue, ?ElementInterface $element): void
     {
         $this->field->defaultValue = $defaultValue;
-        $normalized  = $this->field->normalizeValue($money, $element);
+        $normalized = $this->field->normalizeValue($money, $element);
 
         self::assertInstanceOf(\Money\Money::class, $normalized);
         self::assertEquals($value, $normalized->getAmount());
@@ -167,10 +167,12 @@ class MoneyTest extends Unit
         return [
             'money-object' => [new \Money\Money(100, new Currency('USD')), '100', 'USD', null, null],
             'default-value' => [null, '123', 'USD', '123', $freshEntry],
-            'array-passed' => [[
-                'value' => '1,23',
-                'locale' => 'nl'
-            ], '123', 'USD', null, null],
+            'array-passed' => [
+                [
+                    'value' => '1,23',
+                    'locale' => 'nl'
+                ], '123', 'USD', null, null
+            ],
         ];
     }
 

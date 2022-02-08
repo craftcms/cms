@@ -175,7 +175,7 @@ class Db
      *
      * @param mixed $money The money to be prepared
      * @return string|null The prepped date, or `null` if it could not be prepared
-     * @since 4.0
+     * @since 4.0.0
      */
     public static function prepareMoneyForDb($money): ?string
     {
@@ -693,7 +693,7 @@ class Db
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return mixed
-     * @since 4.0
+     * @since 4.0.0
      */
     public static function parseMoneyParam(string $column, string $currency, $value, string $defaultOperator = '=')
     {
