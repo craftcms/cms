@@ -33,9 +33,11 @@ import './Money.scss';
 
     onClearBtnClick: function(ev) {
       ev.preventDefault();
-      this.removeInputMask();
-      this.$field.val('');
       this.hideClearBtn();
+      this.removeInputMask();
+
+      this.$field.removeAttr('placeholder');
+      this.$field.val('');
       this.$field.trigger('keyup');
     },
 

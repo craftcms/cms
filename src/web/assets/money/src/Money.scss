@@ -11,12 +11,13 @@
     @include border-right(none);
     @include border-top-right-radius(0);
     @include border-bottom-right-radius(0);
-    height: 100%;
-    display: flex;
     align-items: center;
-    padding: 6px 9px;
     box-sizing: border-box;
     background: transparent;
+    display: flex;
+    height: 100%;
+    padding: 6px 9px;
+    white-space: nowrap;
 
     & + .text {
       @include border-top-left-radius(0);
