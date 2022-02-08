@@ -10,10 +10,10 @@ import './Money.scss';
     $clearBtn: null,
 
     init: function(fieldId, settings) {
-      this.setSettings(settings, this.defaultSettings);
+      this.setSettings(settings, Craft.Money.defaults);
 
       this.$field = $('#' + fieldId);
-      this.$clearBtn = this.$field.parents('.money-flex').find('.money-clear .clear-btn');
+      this.$clearBtn = this.$field.closest('.money-container').find('.clear-btn');
 
       this.$field.on('focus', $.proxy(this, 'onFocus'));
       this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
@@ -57,8 +57,8 @@ import './Money.scss';
 
       this.$field.inputmask($.extend(this.settings.maskOptions, opts));
     },
-
-    defaultSettings: {
+  }, {
+    defaults: {
       decimalSeparator: '.',
       groupSeparator: ',',
       decimals: 2,
@@ -73,6 +73,6 @@ import './Money.scss';
         prefix: '',
         radixPoint: '.',
       },
-    },
+    }
   });
 })(jQuery);

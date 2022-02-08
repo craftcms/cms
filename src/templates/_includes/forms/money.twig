@@ -13,26 +13,18 @@
 
 {{ hiddenInput("#{name}[locale]", formattingLocale) }}
 
-<div class="flex money-flex">
-    <div class="money-container">
-        {% if currencyLabel %}
-            <div class="money-currency">
-                <div class="money-currency-label">
-                    <span>{{ currencyLabel }}</span>
-                </div>
-            </div>
-        {% endif %}
-        <div class="money-money">
-            {% include '_includes/forms/text' with {
-                inputAttributes: {
-                    name: "#{name}[value]",
-                }
-            } %}
+<div class="money-container">
+    {% if currencyLabel and showCurrency ?? true %}
+        <div class="money-currency-label">
+            <span>{{ currencyLabel }}</span>
         </div>
-    </div>
-    <div class="money-clear">
-        <button type="button" class="clear-btn hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></button>
-    </div>
+    {% endif %}
+    {% include '_includes/forms/text' with {
+        inputAttributes: {
+            name: "#{name}[value]",
+        }
+    } %}
+    <button type="button" class="clear-btn hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></button>
 </div>
 
 {% js %}

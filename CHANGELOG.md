@@ -14,6 +14,7 @@
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
+- Added the Money field type.
 - Craft now provides a native “Alternative Text” (`alt`) field for assets. ([#10302](https://github.com/craftcms/cms/discussions/10302))
 - Asset thumbnails in the control panel now have `alt` attributes, for assets with a filled-in Alternative Text value.
 - Added the `index-assets/cleanup` command.
@@ -21,7 +22,6 @@
 - Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
-- Added the Money custom field.
 - Added the `|money` Twig filter.
 - Added the `assetUploaders` user query param.
 - Added the `authors` user query param.
@@ -301,7 +301,6 @@
 - Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
-- Added the Money package.
 - Added the `assets/update-focal-point` action.
 - Added the `categories/create` action.
 - Added the `elements/apply-draft` action.
@@ -328,6 +327,7 @@
 - Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
+- Added the Money package.
 
 ### Changed
 - Craft now requires PHP 7.4 or later.

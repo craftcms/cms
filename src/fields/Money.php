@@ -15,7 +15,6 @@ use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\gql\types\Money as MoneyType;
-use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
@@ -26,10 +25,7 @@ use Money\Currency;
 use Money\Money as MoneyLibrary;
 
 /**
- * Money represents a Money field.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0
+ * Money field type
  *
  * @property-read array $contentGqlMutationArgumentType
  * @property-read array[] $elementValidationRules
@@ -37,6 +33,8 @@ use Money\Money as MoneyLibrary;
  * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0
  */
 class Money extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
@@ -53,7 +51,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     public static function valueType(): string
     {
-        return MoneyLibrary::class . '|null';
+        return MoneyLibrary::class;
     }
 
     /**
@@ -77,6 +75,11 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     public $max;
 
     /**
+     * @var bool Whether to show the currency label.
+     */
+    public bool $showCurrency = true;
+
+    /**
      * @var int|null The size of the field
      */
     public ?int $size = null;
@@ -87,13 +90,11 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     private ISOCurrencies $_isoCurrencies;
 
     /**
-     * @inheritdoc
+     * Constructor
      */
     public function __construct($config = [])
     {
-        if (!isset($this->_isoCurrencies)) {
-            $this->_isoCurrencies = new ISOCurrencies();
-        }
+        $this->_isoCurrencies = new ISOCurrencies();
 
         // Config normalization
         foreach (['defaultValue', 'min', 'max'] as $name) {
@@ -135,19 +136,16 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     public function getSettingsHtml(): ?string
     {
         foreach (['defaultValue', 'min', 'max'] as $attr) {
-            if ($this->$attr === null) {
-                continue;
+            if ($this->$attr !== null) {
+                $this->$attr = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
             }
-
-            $this->$attr = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings',
-            [
-                'field' => $this,
-                'currencies' => $this->_isoCurrencies,
-                'subUnits' => $this->_isoCurrencies->subunitFor(new Currency($this->currency)),
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings', [
+            'field' => $this,
+            'currencies' => $this->_isoCurrencies,
+            'subUnits' => $this->_isoCurrencies->subunitFor(new Currency($this->currency)),
+        ]);
     }
 
     /**
@@ -155,10 +153,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     public function getContentColumnType(): string
     {
-        $min = $this->min ?? null;
-        $max = $this->max ?? null;
-
-        return Db::getNumericalColumnType($min, $max, 0);
+        return Db::getNumericalColumnType($this->min, $this->max, 0);
     }
 
     /**
@@ -217,7 +212,9 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     private function _normalizeNumber($value): ?string
     {
-        $currency = new Currency($this->currency);
+        if ($value === '') {
+            return null;
+        }
 
         // Was this submitted with a locale ID? (This means the data is coming from the settings form)
         if (isset($value['locale'], $value['value'])) {
@@ -230,11 +227,8 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             return $value ? $value->getAmount() : null;
         }
 
-        if ($value === '') {
-            return null;
-        }
-
-        return (new MoneyLibrary($value, $currency))->getAmount();
+        $money = new MoneyLibrary($value, new Currency($this->currency));
+        return $money->getAmount();
     }
 
     /**
@@ -297,6 +291,7 @@ JS;
             'id' => $id,
             'currency' => $this->currency,
             'currencyLabel' => $currencyLabel,
+            'showCurrency' => $this->showCurrency,
             'decimals' => $decimals,
             'defaultValue' => $defaultValue,
             'describedBy' => $this->describedBy,

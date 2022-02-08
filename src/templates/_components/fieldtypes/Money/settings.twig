@@ -53,6 +53,12 @@
     errors: field.getErrors('max')
 }, subUnits) }}
 
+{{ forms.checkboxField({
+    label: 'Show the currency'|t('app'),
+    name: 'showCurrency',
+    checked: field.showCurrency,
+}) }}
+
 {{ forms.textField({
     label: 'Size'|t('app'),
     id: 'size',
@@ -64,7 +70,7 @@
 
 {% js %}
 (() => {
-    const $defaultCurrency = $('#{{ 'currency'|namespaceInputId|e('js') }}').selectize({
+    $('#{{ 'currency'|namespaceInputId|e('js') }}').selectize({
         dropdownParent: 'body',
     });
 })();
