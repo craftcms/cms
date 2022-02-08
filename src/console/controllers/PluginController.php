@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use yii\console\ExitCode;
 
@@ -25,6 +26,11 @@ class PluginController extends Controller
      * @since 3.6.14
      */
     public $force = false;
+
+    /**
+     * @inheritdoc
+     */
+    public $defaultAction = 'list';
 
     /**
      * @inheritdoc
@@ -49,6 +55,47 @@ class PluginController extends Controller
     {
         Console::ensureProjectConfigFileExists();
         return parent::beforeAction($action);
+    }
+
+    /**
+     * List all plugins.
+     *
+     * @return int
+     * @since 3.7.31
+     */
+    public function actionList(): int
+    {
+        $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+        ArrayHelper::multisort($pluginInfo, ['isEnabled', 'isInstalled'], [SORT_DESC, SORT_DESC]);
+        $tableData = [];
+
+        foreach ($pluginInfo as $handle => $info) {
+            $row = [
+                $info['name'],
+                $handle,
+                $info['version'],
+                $this->_boolToString($info['isInstalled']),
+                $this->_boolToString($info['isEnabled']),
+            ];
+
+            if ($info['isEnabled']) {
+                $color = Console::FG_GREEN;
+            } else if ($info['isInstalled']) {
+                $color = Console::FG_YELLOW;
+            } else {
+                $color = Console::FG_GREY;
+            }
+
+            $tableData[] = array_map(function($value) use ($color) {
+                return [$value, 'format' => [$color]];
+            }, $row);
+        }
+
+        $this->stdout(PHP_EOL);
+        $this->table(['Name', 'Handle', 'Version', 'Installed', 'Enabled'], $tableData);
+        $this->stdout(PHP_EOL);
+
+        return ExitCode::OK;
     }
 
     /**
@@ -241,7 +288,8 @@ class PluginController extends Controller
         foreach ($pluginInfo as $handle => $info) {
             $uninstalledPluginInfo[$handle] = [
                 [$handle, 'format' => [Console::FG_YELLOW]],
-                $info['name']
+                $info['name'],
+                $info['version'],
             ];
         }
 
@@ -251,7 +299,7 @@ class PluginController extends Controller
         }
 
         $this->stdout($tableMessage . PHP_EOL . PHP_EOL);
-        $this->table(['Handle', 'Name'], $uninstalledPluginInfo);
+        $this->table(['Handle', 'Name', 'Version'], $uninstalledPluginInfo);
         $this->stdout(PHP_EOL);
 
         return $this->prompt($prompt, [
@@ -259,5 +307,10 @@ class PluginController extends Controller
                 return isset($uninstalledPluginInfo[$input]);
             }
         ]);
+    }
+
+    private function _boolToString(bool $value): string
+    {
+        return $value ? 'Yes' : 'No';
     }
 }

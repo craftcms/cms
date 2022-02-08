@@ -33,7 +33,7 @@ export default Base.extend(
                     $menu = this.$btn.data('menubtn').menu.$container;
                 }
 
-                Garnish.log('Double-instantiating a menu button on an element');
+                console.warn('Double-instantiating a menu button on an element');
                 this.$btn.data('menubtn').destroy();
             }
             else if (!menu) {

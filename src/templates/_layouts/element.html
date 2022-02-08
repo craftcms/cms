@@ -74,12 +74,12 @@
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
 {% if previewTargets %}
-    {% if isDraft %}
+    {% if isDraft and not isProvisionalDraft %}
         {% do craft.app.session.authorize('previewDraft:' ~ element.draftId) %}
     {% elseif isRevision %}
         {% do craft.app.session.authorize('previewRevision:' ~ element.revisionId) %}
     {% else %}
-        {% do craft.app.session.authorize('previewElement:' ~ element.id) %}
+        {% do craft.app.session.authorize('previewElement:' ~ element.getCanonicalId()) %}
     {% endif %}
 {% endif %}
 
