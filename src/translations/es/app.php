@@ -831,6 +831,7 @@ return [
     'Matrix Block' => 'Bloque de matriz',
     'Matrix Blocks' => 'Bloques de matrices',
     'Matrix block' => 'Bloque de matriz',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => 'Bloques de matrices',
     'Matrix' => 'Matriz',
     'Max Blocks' => 'Bloques máximos',
