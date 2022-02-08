@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="vue-admin-table-buttons" v-if="buttons && buttons.length">
-                    <div class="flex">
+                    <div class="flex flex-nowrap">
                         <div v-for="(button, index) in buttons" :key="index">
                             <admin-table-button
                                 :label="button.label"
