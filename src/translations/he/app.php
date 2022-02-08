@@ -831,6 +831,7 @@ return [
     'Matrix Block' => 'בלוק מטריצה',
     'Matrix Blocks' => 'מטריצת בלוקים',
     'Matrix block' => 'בלוק מטריצה',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => 'בלוקי מטריצה',
     'Matrix' => 'מטריקס',
     'Max Blocks' => 'מקסימום בלוקים',
