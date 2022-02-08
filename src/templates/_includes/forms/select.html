@@ -6,6 +6,7 @@
 {%- set options = options ?? [] %}
 {%- set value = value ?? null %}
 {%- set hasOptgroups = false -%}
+{% set labelledBy = labelledBy ?? null %}
 
 {%- set containerAttributes = {
     class: class,
@@ -25,6 +26,7 @@
     disabled: disabled ?? false,
     aria: {
         describedby: describedBy ?? false,
+        labelledby: labelledBy ?? false,
     },
     data: {
         'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,

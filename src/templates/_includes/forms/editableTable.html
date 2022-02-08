@@ -131,6 +131,7 @@
                                             small: true,
                                             disabled: static,
                                             labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {% case 'select' -%}
                                         {% include "_includes/forms/select" with {
@@ -139,11 +140,8 @@
                                             options: cell.options ?? col.options,
                                             value: value,
                                             disabled: static,
-                                            inputAttributes: {
-                                              aria: {
-                                                labelledby: headingId,
-                                              },
-                                            }
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'time' -%}
                                         {% include "_includes/forms/time" with {
