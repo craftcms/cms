@@ -843,6 +843,7 @@ return [
     'Matrix Block' => '矩阵块',
     'Matrix Blocks' => '矩阵块',
     'Matrix block' => '矩阵块',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => '矩阵块',
     'Matrix' => '矩阵',
     'Max Blocks' => '最大区块',
