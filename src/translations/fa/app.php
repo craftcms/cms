@@ -832,6 +832,7 @@ return [
     'Matrix Block' => 'بلوک ماتریسی',
     'Matrix Blocks' => 'بلوک های ماتریسی',
     'Matrix block' => 'بلوک ماتریس',
+    'Matrix block could not be added. Maximum number of blocks reached.' => 'Matrix block could not be added. Maximum number of blocks reached.',
     'Matrix blocks' => 'بلوک‌های ماتریس',
     'Matrix' => 'ماتریس',
     'Max Blocks' => 'حداکثر بلوک',
