@@ -58,7 +58,7 @@ class PluginController extends Controller
     }
 
     /**
-     * List all plugins.
+     * Lists all plugins.
      *
      * @return int
      * @since 3.7.31
