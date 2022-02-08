@@ -639,7 +639,7 @@ class Html extends \yii\helpers\Html
     /**
      * Prepends a namespace to `id` attributes, and any of the following things that reference those IDs:
      *
-     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
+     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `aria-controls`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
      * - ID selectors within `<style>` tags
      *
      * For example, this:
@@ -691,7 +691,7 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
                 $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
                     if ($match[2] === 'data-target-prefix' || isset($ids[$id])) {
