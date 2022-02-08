@@ -34,6 +34,7 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $this->requireAcceptsJson();
+        $this->requireAdmin();
 
         return true;
     }
@@ -45,8 +46,6 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        $this->requirePermission('customizeSources');
-
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
         $conditionsService = Craft::$app->getConditions();
@@ -139,8 +138,6 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
-        $this->requirePermission('customizeSources');
-
         $elementType = $this->elementType();
 
         // Get the old source configs

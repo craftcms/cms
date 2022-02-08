@@ -1260,9 +1260,55 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected function isEditable(): bool
+    public function canView(User $user): bool
     {
-        return Craft::$app->getUser()->checkPermission('editUsers');
+        if (parent::canView($user)) {
+            return true;
+        }
+
+        return (
+            $user->id === $this->id ||
+            $user->can('editUsers')
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canSave(User $user): bool
+    {
+        if (!$this->id) {
+            return $user->can('registerUsers');
+        }
+
+        if ($user->id === $this->id) {
+            return true;
+        }
+
+        return $user->can('editUsers');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        if (parent::canDelete($user)) {
+            return true;
+        }
+
+        return (
+            $user->id !== $this->id &&
+            $user->can('deleteUsers')
+        );
     }
 
     /**
@@ -1301,6 +1347,23 @@ class User extends Element implements IdentityInterface
         }
 
         return true;
+    }
+
+    /**
+     * Returns whether the user is authorized to assign any user groups to users.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canAssignUserGroups(): bool
+    {
+        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            if ($this->can("assignUserGroup:$group->uid")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1511,14 +1574,15 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected function metaFieldsHtml(): string
+    protected function metaFieldsHtml(bool $static): string
     {
         return implode('', [
             Craft::$app->getView()->renderTemplate('users/_accountfields', [
                 'user' => $this,
                 'isNewUser' => !$this->id,
+                'static' => $static,
             ]),
-            parent::metaFieldsHtml(),
+            parent::metaFieldsHtml($static),
         ]);
     }
 

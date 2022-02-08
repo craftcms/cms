@@ -1,5 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Dashboard"|t('app') %}
+{% import '_includes/forms' as forms %}
 
 {% block actionButton %}
     <div class="buttons">
@@ -55,9 +56,8 @@
                             <div class="settings"></div>
                             <hr>
                             <div class="buttons clearafter">
-                                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
-                                <button type="button" class="btn">{{ 'Cancel'|t('app') }}</button>
-                                <div class="spinner hidden"></div>
+                                {{ forms.submitButton({label: 'Save'|t('app'), spinner: true}) }}
+                                {{ forms.button({label: 'Cancel'|t('app')}) }}
                             </div>
                         </form>
                     </div>

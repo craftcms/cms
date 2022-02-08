@@ -48,6 +48,7 @@ class Db
      * @var string[] Numeric column types
      */
     private static array $_numericColumnTypes = [
+        Schema::TYPE_TINYINT,
         Schema::TYPE_SMALLINT,
         Schema::TYPE_INTEGER,
         Schema::TYPE_BIGINT,
@@ -138,6 +139,10 @@ class Db
             (is_object($value) || is_array($value))
         ) {
             return Json::encode($value);
+        }
+
+        if ($columnType && static::isNumericColumnType($columnType) && is_bool($value)) {
+            return (int)$value;
         }
 
         return $value;

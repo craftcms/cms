@@ -21,6 +21,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
@@ -147,7 +148,7 @@ class Categories extends BaseRelationField
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
-            $source = ElementHelper::findSource(static::elementType(), $this->source, 'field');
+            $source = ElementHelper::findSource(static::elementType(), $this->source, ElementSources::CONTEXT_FIELD);
         }
 
         if (empty($source)) {

@@ -11,7 +11,6 @@ import './login.scss';
         $forgotPasswordLink: null,
         $rememberPasswordLink: null,
         $submitBtn: null,
-        $spinner: null,
         $errors: null,
 
         forgotPassword: false,
@@ -25,7 +24,6 @@ import './login.scss';
             this.$forgotPasswordLink = $('#forgot-password');
             this.$rememberPasswordLink = $('#remember-password');
             this.$submitBtn = $('#submit');
-            this.$spinner = $('#spinner');
             this.$errors = $('#login-errors');
 
             new Craft.PasswordInput(this.$passwordInput, {
@@ -101,8 +99,7 @@ import './login.scss';
                 return;
             }
 
-            this.$submitBtn.addClass('active');
-            this.$spinner.removeClass('hidden');
+            this.$submitBtn.addClass('loading');
 
             this.clearErrors();
 
@@ -158,8 +155,7 @@ import './login.scss';
         },
 
         onSubmitResponse: function() {
-            this.$submitBtn.removeClass('active');
-            this.$spinner.addClass('hidden');
+            this.$submitBtn.removeClass('loading');
         },
 
         showError: function(error) {

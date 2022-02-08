@@ -42,7 +42,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
             selectionLabel: this.settings.selectionLabel
         };
 
-        Craft.postActionRequest('elements/get-categories-input-html', data, (response, textStatus) => {
+        Craft.postActionRequest('categories/input-html', data, (response, textStatus) => {
             this.modal.enable();
             this.modal.enableCancelBtn();
             this.modal.enableSelectBtn();

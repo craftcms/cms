@@ -104,6 +104,7 @@ JS;
     public function performAction(ElementQueryInterface $query): bool
     {
         $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
 
         // Fetch the elements in some other site than the selected one
         $otherSiteElements = (clone $query)
@@ -122,7 +123,7 @@ JS;
 
             // Resave the elements
             foreach ($otherSiteElements as $element) {
-                if (!$element->getIsDeletable()) {
+                if (!$element->canDelete($user)) {
                     continue;
                 }
 
@@ -138,7 +139,7 @@ JS;
             ->all();
 
         foreach ($singleSiteElements as $element) {
-            if (!$element->getIsDeletable()) {
+            if (!$element->canDelete($user)) {
                 continue;
             }
 

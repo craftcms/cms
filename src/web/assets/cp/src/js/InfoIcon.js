@@ -12,7 +12,7 @@ Craft.InfoIcon = Garnish.Base.extend({
         this.$icon = $(icon);
 
         if (this.$icon.data('infoicon')) {
-            Garnish.log('Double-instantiating an info icon on an element');
+            console.warn('Double-instantiating an info icon on an element');
             this.content = this.$icon.data('infoicon').content;
             this.$icon.data('infoicon').destroy();
         } else {
@@ -76,5 +76,10 @@ Craft.InfoIcon = Garnish.Base.extend({
         } else {
             this.hud.show();
         }
-    }
+    },
+
+    destroy: function() {
+        this.$icon.removeData('infoicon');
+        this.base();
+    },
 });

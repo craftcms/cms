@@ -56,7 +56,7 @@ import './updates.scss';
                             .insertAfter($('#header > .flex:last'));
                     }
                 } else {
-                    $graphic.addClass('success');
+                    $graphic.removeClass('spinner').addClass('success');
                     $status.text(Craft.t('app', 'You’re all up to date!'));
                 }
             });

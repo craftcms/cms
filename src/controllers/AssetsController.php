@@ -15,19 +15,15 @@ use craft\errors\AssetException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FsException;
-use craft\errors\SiteNotFoundException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
-use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\image\Raster;
 use craft\imagetransforms\ImageTransformer;
@@ -70,99 +66,6 @@ class AssetsController extends Controller
     protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     /**
-     * Edits an asset.
-     *
-     * @param int $assetId The asset ID
-     * @param Asset|null $asset The asset being edited, if there were any validation errors.
-     * @return Response
-     * @throws BadRequestHttpException if `$assetId` is invalid
-     * @throws ForbiddenHttpException if the user isn't permitted to edit the asset
-     * @throws InvalidConfigException
-     * @throws SiteNotFoundException
-     * @since 3.4.0
-     */
-    public function actionEditAsset(int $assetId, ?Asset $asset = null): Response
-    {
-        $site = Cp::requestedSite();
-        if (!$site) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any sites');
-        }
-
-        if ($asset === null) {
-            $asset = Asset::find()
-                ->id($assetId)
-                ->siteId($site->id)
-                ->one();
-            if ($asset === null) {
-                throw new BadRequestHttpException("Invalid asset ID: $assetId");
-            }
-        }
-
-        $this->requireVolumePermissionByAsset('viewVolume', $asset);
-        $this->requirePeerVolumePermissionByAsset('viewPeerFilesInVolume', $asset);
-
-
-        $volume = $asset->getVolume();
-        $uri = "assets/$volume->handle";
-
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('assets'),
-            ],
-            [
-                'label' => Craft::t('site', $volume->name),
-                'url' => UrlHelper::url($uri),
-            ],
-        ];
-
-        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $asset->folderPath));
-        foreach ($subfolders as $subfolder) {
-            $uri .= "/$subfolder";
-            $crumbs[] = [
-                'label' => $subfolder,
-                'url' => UrlHelper::url($uri),
-            ];
-        }
-
-        // See if the user is allowed to replace the file
-        $userSession = Craft::$app->getUser();
-        $canReplaceFile = (
-            $userSession->checkPermission("replaceFilesInVolume:$volume->uid") &&
-            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:$volume->uid"))
-        );
-
-        // See if the user is allowed to delete the asset
-        try {
-            $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-            $this->requirePeerVolumePermissionByAsset('deletePeerFilesInVolume', $asset);
-            $canDelete = true;
-        } catch (ForbiddenHttpException $e) {
-            $canDelete = false;
-        }
-
-        if (in_array($asset->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT], true)) {
-            $assetUrl = $asset->getUrl();
-        } else {
-            $assetUrl = null;
-        }
-
-        return $this->renderTemplate('assets/_edit', [
-            'element' => $asset,
-            'volume' => $volume,
-            'assetUrl' => $assetUrl,
-            'crumbs' => $crumbs,
-            'previewHtml' => $asset->getPreviewHtml(),
-            'formattedSize' => $asset->getFormattedSize(0),
-            'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
-            'dimensions' => $asset->getDimensions(),
-            'canReplaceFile' => $canReplaceFile,
-            'canEdit' => $asset->getIsEditable(),
-            'canDeleteSource' => $canDelete,
-        ]);
-    }
-
-    /**
      * Returns an updated preview image for an asset.
      *
      * @return Response
@@ -201,6 +104,7 @@ class AssetsController extends Controller
      * @throws ElementNotFoundException
      * @throws InvalidRouteException
      * @since 3.4.0
+     * @deprecated in 4.0.0
      */
     public function actionSaveAsset(): ?Response
     {
@@ -223,8 +127,8 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
-        $this->requireVolumePermissionByAsset('saveAssetInVolume', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerFilesInVolume', $asset);
+        $this->requireVolumePermissionByAsset('saveAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('savePeerAssets', $asset);
 
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
@@ -326,7 +230,7 @@ class AssetsController extends Controller
             }
 
             // Check the permissions to upload in the resolved folder.
-            $this->requireVolumePermissionByFolder('saveAssetInVolume', $folder);
+            $this->requireVolumePermissionByFolder('saveAssets', $folder);
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
 
@@ -356,7 +260,7 @@ class AssetsController extends Controller
                     'filename' => $asset->conflictingFilename,
                     'conflictingAssetId' => $conflictingAsset->id ?? null,
                     'suggestedFilename' => $asset->suggestedFilename,
-                    'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->hasUrls) ? $conflictingAsset->getUrl() : null,
+                    'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->getFs()->hasUrls) ? $conflictingAsset->getUrl() : null,
                 ]);
             }
 
@@ -414,8 +318,8 @@ class AssetsController extends Controller
             throw new NotFoundHttpException('Asset not found.');
         }
 
-        $this->requireVolumePermissionByAsset('replaceFilesInVolume', $assetToReplace ?: $sourceAsset);
-        $this->requirePeerVolumePermissionByAsset('replacePeerFilesInVolume', $assetToReplace ?: $sourceAsset);
+        $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace ?: $sourceAsset);
+        $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace ?: $sourceAsset);
 
         try {
             // Handle the Element Action
@@ -497,7 +401,7 @@ class AssetsController extends Controller
 
         try {
             // Check if it's possible to create subfolders in target Volume.
-            $this->requireVolumePermissionByFolder('createFoldersInVolume', $parentFolder);
+            $this->requireVolumePermissionByFolder('createFolders', $parentFolder);
 
             $folderModel = new VolumeFolder();
             $folderModel->name = $folderName;
@@ -541,7 +445,7 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects in the target Volume.
-        $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
+        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
         try {
             $assets->deleteFoldersByIds($folderId);
         } catch (FsException $exception) {
@@ -571,8 +475,8 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects in the target Volume.
-        $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-        $this->requirePeerVolumePermissionByAsset('deletePeerFilesInVolume', $asset);
+        $this->requireVolumePermissionByAsset('deleteAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
 
         try {
             $success = Craft::$app->getElements()->deleteElement($asset);
@@ -628,8 +532,8 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects and create folders in target Volume.
-        $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
-        $this->requireVolumePermissionByFolder('createFoldersInVolume', $folder);
+        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
+        $this->requireVolumePermissionByFolder('createFolders', $folder);
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
@@ -679,10 +583,10 @@ class AssetsController extends Controller
         $filename = $this->request->getBodyParam('filename') ?? $asset->getFilename();
 
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
-        $this->requireVolumePermissionByFolder('saveAssetInVolume', $folder);
-        $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerFilesInVolume', $asset);
-        $this->requirePeerVolumePermissionByAsset('deletePeerFilesInVolume', $asset);
+        $this->requireVolumePermissionByFolder('saveAssets', $folder);
+        $this->requireVolumePermissionByAsset('deleteAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('savePeerAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
 
         if ($this->request->getBodyParam('force')) {
             // Check for a conflicting Asset
@@ -749,9 +653,9 @@ class AssetsController extends Controller
 
         // Check if it's possible to delete objects in source Volume, create folders
         // in target Volume and save Assets in target Volume.
-        $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folderToMove);
-        $this->requireVolumePermissionByFolder('createFoldersInVolume', $destinationFolder);
-        $this->requireVolumePermissionByFolder('saveAssetInVolume', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deleteAssets', $folderToMove);
+        $this->requireVolumePermissionByFolder('createFolders', $destinationFolder);
+        $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
 
         $targetVolume = $destinationFolder->getVolume();
 
@@ -932,8 +836,8 @@ class AssetsController extends Controller
 
             // Do what you want with your own photo.
             if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
-                $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
-                $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
+                $this->requireVolumePermissionByAsset('editImages', $asset);
+                $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
             }
 
             // Verify parameter adequacy
@@ -1092,8 +996,8 @@ class AssetsController extends Controller
         }
 
         foreach ($assets as $asset) {
-            $this->requireVolumePermissionByAsset('viewVolume', $asset);
-            $this->requirePeerVolumePermissionByAsset('viewPeerFilesInVolume', $asset);
+            $this->requireVolumePermissionByAsset('viewAssets', $asset);
+            $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
         }
 
         // If only one asset was selected, send it back unzipped
@@ -1235,8 +1139,8 @@ class AssetsController extends Controller
                 $variables['editFocal'] = true;
 
                 try {
-                    $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
-                    $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
+                    $this->requireVolumePermissionByAsset('editImages', $asset);
+                    $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
                 } catch (ForbiddenHttpException $exception) {
                     $variables['editFocal'] = false;
                 }
@@ -1285,8 +1189,8 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset UID: $assetUid");
         }
 
-        $this->requireVolumePermissionByAsset('editImagesInVolume', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerImagesInVolume', $asset);
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
 
         $asset->setFocalPoint($focalData);
         Craft::$app->getElements()->saveElement($asset);

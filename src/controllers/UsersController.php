@@ -694,14 +694,14 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $edition = Craft::$app->getEdition();
-        $userSession = Craft::$app->getUser();
+        $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
-                    ->id($userId === 'current' ? $userSession->getId() : $userId)
+                    ->id($userId === 'current' ? $currentUser->id : $userId)
                     ->status(null)
                     ->one();
             } else if ($edition === Craft::Pro) {
@@ -729,7 +729,6 @@ class UsersController extends Controller
             }
         }
 
-        $currentUser = $userSession->getIdentity();
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
 
@@ -847,7 +846,7 @@ class UsersController extends Controller
                     ];
                 }
 
-                if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
+                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
                     $destructiveActions[] = [
                         'id' => 'delete-btn',
                         'label' => Craft::t('app', 'Delete…'),
@@ -910,13 +909,13 @@ class UsersController extends Controller
         $tabs += $form->getTabMenu();
 
         // Show the permission tab for the users that can change them on Craft Pro editions
-        if (
+        $canAssignUserGroups = $currentUser->canAssignUserGroups();
+        $showPermissionsTab = (
             $edition === Craft::Pro &&
-            (
-                $userSession->checkPermission('assignUserPermissions') ||
-                $userSession->checkPermission('assignUserGroups')
-            )
-        ) {
+            ($currentUser->can('assignUserPermissions') || $canAssignUserGroups)
+        );
+
+        if ($showPermissionsTab) {
             $tabs['perms'] = [
                 'label' => Craft::t('app', 'Permissions'),
                 'url' => '#perms',
@@ -1037,6 +1036,8 @@ class UsersController extends Controller
             'tabs',
             'selectedTab',
             'showPhotoField',
+            'showPermissionsTab',
+            'canAssignUserGroups',
             'fieldsHtml'
         ));
     }
@@ -1400,7 +1401,9 @@ class UsersController extends Controller
             }
             $this->setSuccessFlash($default);
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'User saved.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+                'type' => User::displayName(),
+            ]));
         }
 
         // Is this public registration, and is the user going to be activated automatically?
@@ -2097,11 +2100,6 @@ class UsersController extends Controller
      */
     private function _saveUserGroups(User $user, User $currentUser): void
     {
-        if (!$currentUser->can('assignUserGroups')) {
-            return;
-        }
-
-        // Save any user groups
         $groupIds = $this->request->getBodyParam('groups');
 
         if ($groupIds === null) {
@@ -2127,10 +2125,7 @@ class UsersController extends Controller
                 $hasNewGroups = true;
 
                 // Make sure the current user is in the group or has permission to assign it
-                if (
-                    !$currentUser->isInGroup($groupId) &&
-                    !$currentUser->can("assignUserGroup:$group->uid")
-                ) {
+                if (!$currentUser->can("assignUserGroup:$group->uid")) {
                     throw new ForbiddenHttpException("Your account doesn't have permission to assign user group “{$group->name}” to a user.");
                 }
             }

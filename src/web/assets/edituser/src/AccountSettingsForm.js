@@ -9,7 +9,7 @@ import './account.scss';
 
         $copyPasswordResetUrlBtn: null,
         $copyImpersonationUrlBtn: null,
-        $actionSpinner: null,
+        $actionBtn: null,
 
         confirmDeleteModal: null,
         $deleteBtn: null,
@@ -22,7 +22,7 @@ import './account.scss';
 
             this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
             this.$copyImpersonationUrlBtn = $('#copy-impersonation-url')
-            this.$actionSpinner = $('#action-spinner');
+            this.$actionBtn = $('#action-menubtn');
             this.$deleteBtn = $('#delete-btn');
 
             this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'handleCopyPasswordResetUrlBtnClick');
@@ -36,14 +36,14 @@ import './account.scss';
         },
 
         getPasswordResetUrl: function() {
-            this.$actionSpinner.removeClass('hidden');
+            this.$actionBtn.addClass('loading');
 
             var data = {
                 userId: this.userId
             };
 
             Craft.postActionRequest('users/get-password-reset-url', data, (response, textStatus) => {
-                this.$actionSpinner.addClass('hidden');
+                this.$actionBtn.removeClass('loading');
 
                 if (textStatus === 'success') {
                     Craft.ui.createCopyTextPrompt({
@@ -55,14 +55,14 @@ import './account.scss';
         },
 
         handleCopyImpersonationUrlBtnClick: function() {
-            this.$actionSpinner.removeClass('hidden');
+            this.$actionBtn.addClass('loading');
 
             var data = {
                 userId: this.userId
             };
 
             Craft.postActionRequest('users/get-impersonation-url', data, (response, textStatus) => {
-                this.$actionSpinner.addClass('hidden');
+                this.$actionBtn.removeClass('loading');
 
                 if (textStatus === 'success') {
                     Craft.ui.createCopyTextPrompt({
@@ -75,9 +75,9 @@ import './account.scss';
 
         showConfirmDeleteModal: function() {
             if (!this.confirmDeleteModal) {
-                this.$actionSpinner.removeClass('hidden');
+                this.$actionBtn.addClass('loading');
                 Craft.postActionRequest('users/user-content-summary', {userId: this.userId}, (response, textStatus) => {
-                    this.$actionSpinner.addClass('hidden');
+                    this.$actionBtn.removeClass('loading');
                     if (textStatus === 'success') {
                         this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
                             contentSummary: response,

@@ -10,6 +10,7 @@ namespace craft\base;
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
@@ -290,7 +291,7 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string $context The context ('index', 'modal', or 'settings').
+     * @param string $context The context ('index', 'modal', 'field', or 'settings').
      * @return array The sources.
      */
     public static function sources(string $context): array;
@@ -742,19 +743,90 @@ interface ElementInterface extends ComponentInterface
     public function getRef(): ?string;
 
     /**
-     * Returns whether the current user can edit the element.
+     * Creates a new element (without saving it) based on this one.
      *
-     * @return bool
+     * This will be called by the “Save and add another” action on the element’s edit page.
+     *
+     * Note that permissions don’t need to be considered here. The created element’s [[canSave()]] method will be called before saving.
+     *
+     * @return ElementInterface|null
      */
-    public function getIsEditable(): bool;
+    public function createAnother(): ?ElementInterface;
 
     /**
-     * Returns whether the current user can delete the element.
+     * Returns whether the given user is authorized to view this element’s edit page.
+     *
+     * If they can view but not [[canSave()|save]], the edit form will either render statically,
+     * or be restricted to only saving changes as a draft, depending on [[canCreateDraft()]].
+     *
+     * @param User $user
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canView(User $user): bool;
+
+    /**
+     * Returns whether the given user is authorized to save this element in its current form.
+     *
+     * This will only be called if the element can be [[canView()|viewed]].
+     *
+     * @param User $user
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canSave(User $user): bool;
+
+    /**
+     * Returns whether the given user is authorized to duplicate this element.
+     *
+     * This will only be called if the element can be [[canSave()|viewed]] and [[canSave()|saved]].
+     *
+     * @param User $user
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canDuplicate(User $user): bool;
+
+    /**
+     * Returns whether the given user is authorized to delete this element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]].
+     *
+     * @param User $user
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canDelete(User $user): bool;
+
+    /**
+     * Returns whether the given user is authorized to delete this element for its current site.
+     *
+     * This will only be called if the element can be [[canView()|viewed]] and [[canDelete()|deleted]].
+     *
+     * @param User $user
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canDeleteForSite(User $user): bool;
+
+    /**
+     * Returns whether the given user is authorized to create drafts for thisc element.
+     *
+     * This will only be called if the element can be [[canView()|viewed]].
+     *
+     * @param User $user
+     * @return bool
+     * @since 4.0.0
+     */
+    public function canCreateDrafts(User $user): bool;
+
+    /**
+     * Returns whether revisions should be created when this element is saved.
      *
      * @return bool
-     * @since 3.5.12
+     * @since 4.0.0
      */
-    public function getIsDeletable(): bool;
+    public function hasRevisions(): bool;
 
     /**
      * Returns the element’s edit URL in the control panel.
@@ -762,6 +834,32 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getCpEditUrl(): ?string;
+
+    /**
+     * Returns the URL that users should be redirected to after editing the element.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    public function getPostEditUrl(): ?string;
+
+    /**
+     * Returns the breadcrumbs for the element’s edit page.
+     *
+     * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public function getCrumbs(): array;
+
+    /**
+     * Returns additional buttons that should be shown at the top of the element’s edit page.
+     *
+     * @return string|null
+     * @since 4.0.0
+     */
+    public function getAddlButtons(): string;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
@@ -1392,7 +1490,7 @@ interface ElementInterface extends ComponentInterface
      * instead of this method.
      * :::
      *
-     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     * @param string $context The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
      * @return array
      */
     public function getHtmlAttributes(string $context): array;
@@ -1411,22 +1509,16 @@ interface ElementInterface extends ComponentInterface
     public function getTableAttributeHtml(string $attribute): string;
 
     /**
-     * Returns the HTML for the element’s editor slideout.
+     * Returns the HTML for any fields/info that should be shown within the editor sidebar.
      *
-     * @return string The HTML for the editor slideout
-     */
-    public function getEditorHtml(): string;
-
-    /**
-     * Returns the HTML for any fields/info that should be shown within the sidebar of element editor slideouts.
-     *
+     * @param bool $static Whether any fields within the sidebar should be static (non-interactive)
      * @return string
      * @since 3.7.0
      */
-    public function getSidebarHtml(): string;
+    public function getSidebarHtml(bool $static): string;
 
     /**
-     * Returns element metadata that can be shown on its edit page or within element editor slideouts.
+     * Returns element metadata that should be shown within the editor sidebar.
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      * If a value is `false`, it will be omitted.

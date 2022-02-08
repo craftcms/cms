@@ -68,13 +68,6 @@ class QuickPost extends Widget
      */
     public function __construct($config = [])
     {
-        // Config normalization
-        foreach (['section', 'entryType', 'fields'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
         // If we're saving the widget settings, all of the section-specific
         // attributes will be tucked away in a 'sections' array
         if (isset($config['sections'], $config['section'])) {
@@ -85,6 +78,13 @@ class QuickPost extends Widget
             }
 
             unset($config['sections']);
+        }
+
+        // Config normalization
+        foreach (['section', 'entryType', 'fields'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
         }
 
         parent::__construct($config);

@@ -192,6 +192,15 @@ Craft.CP = Garnish.Base.extend({
 
         this.initTabs();
 
+        if (this.tabManager) {
+            if (window.LOCATION_HASH) {
+                const $tab = this.tabManager.$tabs.filter(`[href="#${window.LOCATION_HASH}"]`);
+                if ($tab.length) {
+                    this.tabManager.selectTab($tab);
+                }
+            }
+        }
+
         // Should we match the previous scroll position?
         let scrollY = Craft.getLocalStorage('scrollY');
         if (typeof scrollY !== 'undefined') {
@@ -260,6 +269,25 @@ Craft.CP = Garnish.Base.extend({
         }
     },
 
+    get $contentHeader() {
+        const $contentHeader = $('#content-header');
+        if ($contentHeader.length) {
+            return $contentHeader;
+        }
+        return $('<header/>', {
+            id: 'content-header',
+            class: 'pane-header',
+        }).prependTo($('#content'));
+    },
+
+    get $noticeContainer() {
+        const $noticeContainer = $('#content-notice');
+        if ($noticeContainer.length) {
+            return $noticeContainer;
+        }
+        return $('<div id="content-notice"/>').prependTo(this.$contentHeader);
+    },
+
     initSpecialForms: function() {
         // Look for forms that we should watch for changes on
         this.$confirmUnloadForms = $('form[data-confirm-unload]');
@@ -269,11 +297,11 @@ Craft.CP = Garnish.Base.extend({
             return;
         }
 
-        var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
-        var $form, serialized;
+        const $forms = this.$confirmUnloadForms.add(this.$deltaForms);
 
-        for (var i = 0; i < $forms.length; i++) {
-            $form = $forms.eq(i);
+        for (let i = 0; i < $forms.length; i++) {
+            const $form = $forms.eq(i);
+            let serialized;
             if (!$form.data('initialSerializedValue')) {
                 if (typeof $form.data('serializer') === 'function') {
                     serialized = $form.data('serializer')();
@@ -288,13 +316,20 @@ Craft.CP = Garnish.Base.extend({
                 }
                 if (Garnish.hasAttr($form, 'data-delta')) {
                     ev.preventDefault();
-                    var serialized;
+                    let serialized;
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
                     } else {
                         serialized = $form.serialize();
                     }
-                    var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                    const data = Craft.findDeltaData(
+                        $form.data('initialSerializedValue'),
+                        serialized,
+                        $form.data('delta-names'),
+                        null,
+                        $form.data('initial-delta-values'),
+                        $form.data('modified-delta-names')
+                    );
                     Craft.createForm(data)
                         .appendTo(Garnish.$bod)
                         .submit();
@@ -303,13 +338,13 @@ Craft.CP = Garnish.Base.extend({
         }
 
         this.addListener(Garnish.$win, 'beforeunload', function(ev) {
-            var confirmUnload = false;
-            var $form, serialized;
+            let confirmUnload = false;
             if (typeof Craft.livePreview !== 'undefined' && Craft.livePreview.inPreviewMode) {
                 confirmUnload = true;
             } else {
-                for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                    $form = this.$confirmUnloadForms.eq(i);
+                for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
+                    const $form = this.$confirmUnloadForms.eq(i);
+                    let serialized;
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
                     } else {
@@ -494,12 +529,25 @@ Craft.CP = Garnish.Base.extend({
                 $(ev.$tab.attr('href')).addClass('hidden');
             }
         });
+    },
 
-        if (window.LOCATION_HASH) {
-            const $tab = this.tabManager.$tabs.filter(`[href="#${window.LOCATION_HASH}"]`);
-            if ($tab.length) {
-                this.tabManager.selectTab($tab);
+    updateTabs: function(tabs) {
+        if (tabs) {
+            const $tabContainer = $(tabs).attr('id', 'tabs');
+            if (this.tabManager) {
+                this.tabManager.$container.replaceWith($tabContainer);
+            } else {
+                $tabContainer.appendTo(this.$contentHeader);
             }
+            this.initTabs();
+        } else if (this.tabManager) {
+            if (this.tabManager.$container.siblings().length) {
+                this.tabManager.$container.remove();
+            } else {
+                this.tabManager.$container.parent().remove();
+            }
+            this.tabManager.destroy();
+            this.tabManager = null;
         }
     },
 

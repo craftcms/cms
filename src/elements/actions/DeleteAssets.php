@@ -79,10 +79,11 @@ JS;
     public function performAction(ElementQueryInterface $query): bool
     {
         $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
 
         try {
             foreach ($query->all() as $asset) {
-                if ($asset->getIsDeletable()) {
+                if ($asset->canDelete($user)) {
                     $elementsService->deleteElement($asset);
                 }
             }

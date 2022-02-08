@@ -68,6 +68,6 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue($element->authorId);
+        return $this->matchValue($element->getAuthorId());
     }
 }

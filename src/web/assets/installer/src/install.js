@@ -178,14 +178,14 @@ import './install.scss';
             this.$currentScreen.find('ul.errors').remove();
 
             var $submitBtn = this.$currentScreen.find('.btn.submit');
-            $submitBtn.addClass('sel loading');
+            $submitBtn.addClass('loading');
 
             var action = 'install/validate-' + what;
             var data = this.getInputData(what, inputs, false);
 
             Craft.postActionRequest(action, data, (response, textStatus) => {
                 this.loading = false;
-                $submitBtn.removeClass('sel loading');
+                $submitBtn.removeClass('loading');
 
                 if (textStatus === 'success') {
                     if (response.validates) {
