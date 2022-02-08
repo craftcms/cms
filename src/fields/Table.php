@@ -329,6 +329,14 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
@@ -634,6 +642,7 @@ class Table extends Field
             'maxRows' => $this->maxRows,
             'static' => $static,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
+            'describedBy' => $this->describedBy,
         ]);
     }
 }

@@ -764,7 +764,7 @@ class UsersController extends Controller
                         if (!$user->password) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app', 'Copy activation URL'),
+                                'label' => Craft::t('app', 'Copy activation URL…'),
                             ];
                         }
                         $statusActions[] = [
@@ -811,7 +811,7 @@ class UsersController extends Controller
                         if ($userSession->checkPermission('administrateUsers')) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app', 'Copy password reset URL'),
+                                'label' => Craft::t('app', 'Copy password reset URL…'),
                             ];
                         }
                     }
@@ -826,7 +826,7 @@ class UsersController extends Controller
                     ];
                     $sessionActions[] = [
                         'id' => 'copy-impersonation-url',
-                        'label' => Craft::t('app', 'Copy impersonation URL'),
+                        'label' => Craft::t('app', 'Copy impersonation URL…'),
                     ];
                 }
 
@@ -1008,12 +1008,15 @@ class UsersController extends Controller
 
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
-        $userIdJs = Json::encode($user->id);
-        $isCurrentJs = ($isCurrentUser ? 'true' : 'false');
-        $settingsJs = Json::encode([
-            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
-        ]);
-        $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
+        $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
+
+        $this->getView()->registerJsWithVars(function($userId, $isCurrent, $deleteModalRedirect) {
+            return <<<JS
+new Craft.AccountSettingsForm($userId, $isCurrent, {
+    deleteModalRedirect: $deleteModalRedirect,
+})";
+JS;
+        }, [$user->id, $isCurrentUser, $deleteModalRedirect], View::POS_END);
 
         return $this->renderTemplate('users/_edit', compact(
             'user',

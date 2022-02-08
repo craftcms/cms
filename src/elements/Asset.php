@@ -1651,7 +1651,7 @@ class Asset extends Element
      */
     public function getFocalPoint(bool $asCss = false)
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return null;
         }
 
@@ -2082,7 +2082,9 @@ class Asset extends Element
      */
     protected function htmlAttributes(string $context): array
     {
-        $attributes = [];
+        $attributes = [
+            'data-kind' => $this->kind,
+        ];
 
         if ($this->kind === self::KIND_IMAGE) {
             $attributes['data-image-width'] = $this->getWidth();
@@ -2322,8 +2324,8 @@ class Asset extends Element
             [$pathService->getTempPath(), true],
             [$pathService->getTempAssetUploadsPath(), true],
             [sys_get_temp_dir(), true],
-            [Craft::getAlias('@root'), false],
-            [Craft::getAlias('@storage'), false],
+            [Craft::getAlias('@root', false), false],
+            [Craft::getAlias('@storage', false), false],
         ];
 
         $inAllowedRoot = false;
@@ -2361,13 +2363,12 @@ class Asset extends Element
     /**
      * Returns a normalized temp path or false, if realpath fails.
      *
-     * @param string $path
+     * @param string|false $path
      * @return false|string
      */
-    private function _normalizeTempPath(string $path)
+    private function _normalizeTempPath($path)
     {
-        $path = realpath($path);
-        if (!$path) {
+        if (!$path || !($path = realpath($path))) {
             return false;
         }
 

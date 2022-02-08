@@ -196,6 +196,7 @@ class Plugins extends Component
         // todo: remove try/catch after next breakpoint
         try {
             $pluginInfo = $this->_createPluginQuery()
+                ->orderBy(['handle' => SORT_ASC])
                 ->indexBy('handle')
                 ->all();
         } catch (Exception $e) {

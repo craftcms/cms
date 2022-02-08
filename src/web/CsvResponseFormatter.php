@@ -65,7 +65,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
         }
         $response->getHeaders()->set('Content-Type', $this->contentType);
 
-        $data = is_array($response->data) ? $response->data : [];
+        $data = is_iterable($response->data) ? $response->data : [];
         if (empty($data) && empty($this->headers)) {
             $response->content = '';
             return;
@@ -78,11 +78,6 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
         // h/t https://www.php.net/manual/en/function.fputcsv.php#118252
         fputs($fp, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-        if ($this->includeHeaderRow) {
-            $headers = $this->headers ?? array_keys(reset($data));
-            fputcsv($fp, $headers, ',');
-        }
-
         $suspectCharacters = ['=', '-', '+', '@'];
 
         $escapeChar = $this->escapeChar;
@@ -90,7 +85,14 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
             $escapeChar = '\\';
         }
 
+        $headersIncluded = false;
         foreach ($data as $row) {
+            // Include the headers
+            if (!$headersIncluded && $this->includeHeaderRow) {
+                $headers = $this->headers ?? array_keys($row);
+                fputcsv($fp, $headers, ',');
+                $headersIncluded = true;
+            }
             foreach ($row as &$field) {
                 if (is_scalar($field)) {
                     $field = (string)$field;
