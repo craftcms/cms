@@ -158,11 +158,8 @@
                                             placeholder: col.placeholder ?? null,
                                             value:  value,
                                             disabled: static,
-                                            inputAttributes: {
-                                              aria: {
-                                                labelledby: headingId,
-                                              },
-                                            }
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'autosuggest' or 'template' -%}
                                         {% include "_includes/forms/autosuggest" with {
