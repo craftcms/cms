@@ -2,10 +2,17 @@
 
 ## Unreleased
 
+### Added
+- Added the `clear-deprecations` command. ([#10430](https://github.com/craftcms/cms/discussions/10430))
+- Added the `plugin/list` command. ([#10470](https://github.com/craftcms/cms/pull/10470))
+
 ### Changed
+- Improved focus styles in the control panel. ([#10398](https://github.com/craftcms/cms/pull/10398))
+- Improved Matrix field accessibility for screen readers. ([#10480](https://github.com/craftcms/cms/pull/10480))
 - Craft no longer sends a `Permissions-Policy: interest-cohort=()` header by default, as Google has [abandoned](https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/) its FLoC proposal.
 - Craft no longer attempts to create the `cpresources` folder when `CRAFT_EPHEMERAL` is set to `true`. ([#10412](https://github.com/craftcms/cms/issues/10412))
 - Video assets’ focal points are no longer suppressed, if they were set by a plugin or module. ([#10415](https://github.com/craftcms/cms/discussions/10415))
+- Plugins are now consistently loaded in the same order across all environments. ([#10441](https://github.com/craftcms/cms/issues/10441))
 
 ### Fixed
 - Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
@@ -18,6 +25,7 @@
 - Fixed a bug where `craft\base\Element::getCanonical()` wasn’t memoizing its result based on the `$anySite` argument.
 - Fixed a JavaScript error. ([#10428](https://github.com/craftcms/cms/issues/10428))
 - Fixed a bug where Dashboard widget flip animations weren’t always working in Firefox.
+- Fixed an error that could occur if an element’s `getSupportedSites()` method returned info for a site that didn’t exist or was soft-deleted.
 
 ## 3.7.30.1 - 2022-01-21
 
