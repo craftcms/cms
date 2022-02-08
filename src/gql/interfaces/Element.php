@@ -159,6 +159,11 @@ class Element extends InterfaceType
                 'type' => Type::boolean(),
                 'description' => 'Returns whether this is a revision.',
             ],
+            'revisionId' => [
+                'name' => 'revisionId',
+                'type' => Type::int(),
+                'description' => 'Returns the entry’s revision ID. (from the `revisions` table)',
+            ],
             'draftId' => [
                 'name' => 'draftId',
                 'type' => Type::int(),
