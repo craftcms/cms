@@ -356,11 +356,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addPrimaryKey($name, $table, $columns)
     {
-        if ($name === null) {
-            $name = $this->db->getPrimaryKeyName($table, $columns);
-        }
-
-        return parent::addPrimaryKey($name, $table, $columns);
+        parent::addPrimaryKey($name ?? $this->db->getPrimaryKeyName(), $table, $columns);
     }
 
     /**
@@ -375,11 +371,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
     {
-        if ($name === null) {
-            $name = $this->db->getForeignKeyName();
-        }
-
-        return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+        parent::addForeignKey($name ?? $this->db->getForeignKeyName(), $table, $columns, $refTable, $refColumns, $delete, $update);
     }
 
     /**
@@ -393,11 +385,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function createIndex($name, $table, $columns, $unique = false)
     {
-        if ($name === null) {
-            $name = $this->db->getIndexName();
-        }
-
-        return parent::createIndex($name, $table, $columns, $unique);
+        parent::createIndex($name ?? $this->db->getIndexName(), $table, $columns, $unique);
     }
 
     /**
