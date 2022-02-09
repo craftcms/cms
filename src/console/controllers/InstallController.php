@@ -26,32 +26,32 @@ use yii\console\ExitCode;
 class InstallController extends Controller
 {
     /**
-     * @var string|null The default email address for the first user to create during install
+     * @var string|null The default email address for the first user to create during install.
      */
     public $email;
 
     /**
-     * @var string|null The default username for the first user to create during install
+     * @var string|null The default username for the first user to create during install.
      */
     public $username;
 
     /**
-     * @var string|null The default password for the first user to create during install
+     * @var string|null The default password for the first user to create during install.
      */
     public $password;
 
     /**
-     * @var string|null The default site name for the first site to create during install
+     * @var string|null The default site name for the first site to create during install.
      */
     public $siteName;
 
     /**
-     * @var string|null The default site url for the first site to create during install
+     * @var string|null The default site URL for the first site to create during install.
      */
     public $siteUrl;
 
     /**
-     * @var string|null The default langcode for the first site to create during install
+     * @var string|null The default langcode for the first site to create during install.
      */
     public $language;
 
