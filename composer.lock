@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa5a32b0cc69f17f7655c50bbe8011ed",
+    "content-hash": "dba9d260d71024a4ad5e718ace90c481",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -721,16 +721,16 @@
         },
         {
             "name": "craftcms/server-check",
-            "version": "2.0.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/server-check.git",
-                "reference": "d1e9962926108b7e30f386c1ad9353c2f3be9886"
+                "reference": "29b682639addc0708aeb4068168c505d4f76365e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/server-check/zipball/d1e9962926108b7e30f386c1ad9353c2f3be9886",
-                "reference": "d1e9962926108b7e30f386c1ad9353c2f3be9886",
+                "url": "https://api.github.com/repos/craftcms/server-check/zipball/29b682639addc0708aeb4068168c505d4f76365e",
+                "reference": "29b682639addc0708aeb4068168c505d4f76365e",
                 "shasum": ""
             },
             "type": "library",
@@ -759,7 +759,7 @@
                 "rss": "https://github.com/craftcms/server-check/releases.atom",
                 "source": "https://github.com/craftcms/server-check"
             },
-            "time": "2021-11-06T18:28:26+00:00"
+            "time": "2022-02-09T19:48:06+00:00"
         },
         {
             "name": "creocoder/yii2-nested-sets",
