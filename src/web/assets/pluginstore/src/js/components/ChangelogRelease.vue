@@ -6,7 +6,7 @@
       <a
         :href="'#' + release.version"
         class="anchor">
-        <icon icon="link" />
+        <c-icon icon="link" />
       </a>
       <h2 :id="release.version">
         {{ "Version {version}"|t('app', {version: release.version}) }}</h2>

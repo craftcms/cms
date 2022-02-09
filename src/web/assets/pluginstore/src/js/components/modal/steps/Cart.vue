@@ -71,13 +71,13 @@
                                                 )
                                             )
                                         )">
-                    <dropdown
+                    <c-dropdown
                       v-model="selectedExpiryDates[itemKey]"
                       :options="itemExpiryDateOptions(itemKey)"
                       @input="onSelectedExpiryDateChange(itemKey)" />
                   </template>
 
-                  <spinner v-if="itemLoading(itemKey)"></spinner>
+                  <c-spinner v-if="itemLoading(itemKey)"/>
                 </td>
                 <td class="price">
                   <strong>{{ item.lineItem.price|currency }}</strong>
@@ -118,7 +118,7 @@
                         }}</a>
                     </template>
                     <template v-else>
-                      <spinner class="sm"></spinner>
+                      <c-spinner class="sm"/>
                     </template>
                   </div>
                 </td>
@@ -137,11 +137,11 @@
             </table>
 
             <div class="tw-py-4 tw-flex">
-              <btn
+              <c-btn
                 kind="primary"
                 @click="payment()"
                 :loading="loadingCheckout">{{ "Checkout"|t('app') }}
-              </btn>
+              </c-btn>
             </div>
           </template>
 
@@ -156,7 +156,7 @@
         <active-trials></active-trials>
       </template>
       <template v-else>
-        <spinner></spinner>
+        <c-spinner/>
       </template>
     </template>
   </step>

@@ -25,9 +25,9 @@
       class="tw-my-4 tw-text-red-600">{{ error }}
     </div>
 
-    <spinner
+    <c-spinner
       v-if="loadingBottom || (disableSorting && loading)"
-      class="tw-my-4"></spinner>
+      class="tw-my-4"/>
   </div>
 </template>
 

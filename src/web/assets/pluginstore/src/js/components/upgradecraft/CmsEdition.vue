@@ -28,7 +28,7 @@
         <li
           v-for="(feature, key) in features"
           :key="key">
-          <icon icon="check" />
+          <c-icon icon="check" />
           {{ feature.name }}
 
           <info-hud v-if="feature.description">

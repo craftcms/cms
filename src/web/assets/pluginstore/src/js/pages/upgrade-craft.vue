@@ -16,7 +16,7 @@
       </template>
     </template>
     <template v-else>
-      <spinner></spinner>
+      <c-spinner/>
     </template>
   </div>
 </template>

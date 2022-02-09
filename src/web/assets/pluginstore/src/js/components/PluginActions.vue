@@ -5,7 +5,7 @@
     <template v-if="!isPluginEditionFree">
       <template v-if="isInCart(plugin, edition)">
         <!-- Already in cart -->
-        <btn
+        <c-btn
           v-if="allowUpdates"
           kind="primary"
           icon="check"
@@ -15,12 +15,12 @@
           @click="$root.openModal('cart')">{{
             "Already in your cart"|t('app')
           }}
-        </btn>
+        </c-btn>
       </template>
 
       <template v-else>
         <!-- Add to cart / Upgrade (from lower edition) -->
-        <btn
+        <c-btn
           v-if="allowUpdates && isEditionMoreExpensiveThanLicensed"
           kind="primary"
           @click="addEditionToCart(edition.handle)"
@@ -28,16 +28,16 @@
           :disabled="addToCartloading || !plugin.latestCompatibleVersion || !plugin.phpVersionCompatible || licenseMismatched || plugin.abandoned"
           block
           large>{{ "Add to cart"|t('app') }}
-        </btn>
+        </c-btn>
 
         <!-- Licensed -->
-        <btn
+        <c-btn
           v-else-if="licensedEdition === edition.handle"
           kind="primary"
           block
           large
           disabled>{{ "Licensed"|t('app') }}
-        </btn>
+        </c-btn>
       </template>
     </template>
 
@@ -93,47 +93,47 @@
 
         <!-- Install (Free) -->
         <template v-if="isPluginEditionFree">
-          <btn
+          <c-btn
             kind="primary"
             type="submit"
             :loading="loading"
             :disabled="!plugin.latestCompatibleVersion || !plugin.phpVersionCompatible"
             block
             large>{{ "Install"|t('app') }}
-          </btn>
+          </c-btn>
         </template>
 
         <template v-else>
           <template v-if="(isEditionMoreExpensiveThanLicensed && currentEdition === edition.handle) || (licensedEdition === edition.handle && !currentEdition)">
             <!-- Install (Commercial) -->
-            <btn
+            <c-btn
               type="submit"
               :loading="loading"
               :disabled="!plugin.latestCompatibleVersion || !plugin.phpVersionCompatible"
               block
               large>{{ "Install"|t('app') }}
-            </btn>
+            </c-btn>
           </template>
 
           <template v-else-if="isEditionMoreExpensiveThanLicensed && currentEdition !== edition.handle">
             <!-- Try -->
-            <btn
+            <c-btn
               type="submit"
               :disabled="(!((pluginLicenseInfo && pluginLicenseInfo.isInstalled && pluginLicenseInfo.isEnabled) || !pluginLicenseInfo)) || !plugin.latestCompatibleVersion || !plugin.phpVersionCompatible"
               :loading="loading"
               block
               large>{{ "Try"|t('app') }}
-            </btn>
+            </c-btn>
           </template>
 
           <template v-else-if="currentEdition && licensedEdition === edition.handle && currentEdition !== edition.handle">
             <!-- Reactivate -->
-            <btn
+            <c-btn
               type="submit"
               :loading="loading"
               block
               large>{{ "Reactivate"|t('app') }}
-            </btn>
+            </c-btn>
           </template>
         </template>
       </form>
@@ -142,22 +142,22 @@
     <template v-else>
       <template v-if="currentEdition !== licensedEdition && !isPluginEditionFree">
         <!-- Installed as a trial -->
-        <btn
+        <c-btn
           icon="check"
           :disabled="true"
           large
           block> {{ "Installed as a trial"|t('app') }}
-        </btn>
+        </c-btn>
       </template>
 
       <template v-else>
         <!-- Installed -->
-        <btn
+        <c-btn
           icon="check"
           :disabled="true"
           block
           large> {{ "Installed"|t('app') }}
-        </btn>
+        </c-btn>
       </template>
     </template>
 

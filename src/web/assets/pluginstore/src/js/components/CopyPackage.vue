@@ -9,7 +9,7 @@
     <button
       class="tw-border tw-border-solid tw-border-gray-200 tw-py-2 tw-px-3 tw-rounded-r tw-bg-gray-50 hover:tw-bg-gray-100 active:tw-bg-gray-200 hover:tw-cursor-pointer"
       @click="copy">
-      <icon
+      <c-icon
         class="tw-text-gray-500"
         icon="copy" />
     </button>

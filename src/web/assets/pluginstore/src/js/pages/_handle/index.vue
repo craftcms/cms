@@ -11,9 +11,9 @@
           </template>
           <template v-else>
             <div class="tw-bg-gray-100 tw-w-24 tw-h-24 tw-flex tw-items-center tw-justify-center tw-rounded-full">
-              <icon
+              <c-icon
                 icon="plug"
-                class="tw-w-10 tw-h-10 tw-text-gray-400"></icon>
+                class="tw-w-10 tw-h-10 tw-text-gray-400"/>
             </div>
           </template>
         </div>
@@ -32,7 +32,7 @@
         </div>
 
         <div v-if="actionsLoading">
-          <spinner></spinner>
+          <c-spinner/>
         </div>
       </div>
 
@@ -41,9 +41,9 @@
         <template v-if="!loading">
           <template v-if="plugin.abandoned">
             <div class="error tw-mb-6 tw-px-4 tw-py-3 tw-rounded tw-border tw-border-solid tw-border-red-500 tw-flex tw-flex-nowrap tw-text-base tw-items-center">
-              <icon
+              <c-icon
                 icon="alert"
-                class="tw-w-8 tw-h-8 tw-mr-2"></icon>
+                class="tw-w-8 tw-h-8 tw-mr-2"/>
 
               <div class="tw-flex-1 tw-mb-0">
                 <strong>{{
@@ -158,7 +158,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z" />
 
           <p>
             <a :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')">
-              <icon
+              <c-icon
                 icon="exclamation-circle"
                 class="tw-mr-2" />
               {{ "Report an issue"|t('app') }}</a>
@@ -169,12 +169,12 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z" />
           <plugin-changelog :pluginId="plugin.id"></plugin-changelog>
         </template>
         <template v-else>
-          <spinner></spinner>
+          <c-spinner/>
         </template>
       </div>
     </template>
     <template v-else>
-      <spinner></spinner>
+      <c-spinner/>
     </template>
   </div>
 </template>

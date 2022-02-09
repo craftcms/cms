@@ -2,10 +2,10 @@
   <div class="status-message">
     <div>
       <template v-if="error">
-        <icon icon="exclamation-triangle"></icon>
+        <c-icon icon="exclamation-triangle"/>
       </template>
       <template v-else>
-        <spinner size="lg"></spinner>
+        <c-spinner size="lg"/>
       </template>
       <div class="message">{{ message }}</div>
     </div>

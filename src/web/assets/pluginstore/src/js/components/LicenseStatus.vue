@@ -1,5 +1,5 @@
 <template>
-  <btn
+  <c-btn
     icon="check"
     :disabled="true"
     :class="'license-status ' + status"
@@ -7,7 +7,7 @@
     large
     outline>
     {{ description }}
-  </btn>
+  </c-btn>
 </template>
 
 <script>

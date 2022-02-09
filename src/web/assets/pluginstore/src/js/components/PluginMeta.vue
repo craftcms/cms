@@ -7,7 +7,7 @@
       <!-- Documentation Button -->
       <template v-if="plugin.documentationUrl">
         <li>
-          <btn
+          <c-btn
             block
             target="_blank"
             rel="noopener"
@@ -15,7 +15,7 @@
             :title="plugin.name + ' Documentation'"
           >
             <div>
-              <icon
+              <c-icon
                 class="tw-mr-2"
                 icon="book"
               />
@@ -36,13 +36,13 @@
                 />
               </svg>
             </div>
-          </btn>
+          </c-btn>
         </li>
       </template>
 
       <!-- Repository Button -->
       <li>
-        <btn
+        <c-btn
           block
           class="tw-flex tw-items-center"
           rel="noopener"
@@ -50,7 +50,7 @@
           :href="plugin.repository"
           :title="plugin.name + ' Repository'"
         >
-          <icon
+          <c-icon
             class="tw-mr-2"
             icon="github"
             set="solid"
@@ -71,7 +71,7 @@
               d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
             />
           </svg>
-        </btn>
+        </c-btn>
       </li>
     </ul>
 
@@ -188,17 +188,17 @@
       <!-- Report an issue -->
       <ul class="list-reset space-y-2 mt-8">
         <li>
-          <btn
+          <c-btn
             kind="danger"
             :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"
           >
-            <icon
+            <c-icon
               class="mr-1"
               icon="flag"
               set="solid"
             />
             Report plugin
-          </btn>
+          </c-btn>
         </li>
       </ul>
     </dl>

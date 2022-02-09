@@ -3,42 +3,42 @@
     <!-- Show the "Buy" button if this edition is greater than the licensed edition -->
     <template v-if="edition > licensedEdition">
       <template v-if="!isCmsEditionInCart(editionHandle)">
-        <btn
+        <c-btn
           kind="primary"
           @click="buyCraft(editionHandle)"
           block
           large>{{ "Buy now"|t('app') }}
-        </btn>
+        </c-btn>
       </template>
       <template v-else>
-        <btn
+        <c-btn
           block
           large
           submit
           disabled>{{ "Added to cart"|t('app') }}
-        </btn>
+        </c-btn>
       </template>
     </template>
 
     <!-- Show the "Try" button if they're on a testable domain, this is not the current edition, and is greater than the licensed edition -->
     <template v-if="canTestEditions && edition != CraftEdition && edition > licensedEdition">
-      <btn
+      <c-btn
         @click="installCraft(editionHandle)"
         block
         large>{{ "Try for free"|t('app') }}
-      </btn>
+      </c-btn>
     </template>
 
     <!-- Show the "Reactivate" button if they’re licensed to use this edition but not currently on it -->
     <template v-if="edition == licensedEdition && edition != CraftEdition">
-      <btn
+      <c-btn
         @click="installCraft(editionHandle)"
         block
         large>{{ "Reactivate"|t('app') }}
-      </btn>
+      </c-btn>
     </template>
 
-    <spinner v-if="loading"></spinner>
+    <c-spinner v-if="loading"/>
   </div>
 </template>
 

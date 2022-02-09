@@ -12,9 +12,10 @@
       </template>
       <template v-else>
         <div class="tw-bg-gray-100 tw-w-16 tw-h-16 tw-flex tw-items-center tw-justify-center tw-rounded-full">
-          <icon
+          <c-icon
             icon="plug"
-            class="tw-w-7 tw-h-7 tw-text-gray-400"></icon>
+            class="tw-w-7 tw-h-7 tw-text-gray-400"
+          />
         </div>
       </template>
     </div>

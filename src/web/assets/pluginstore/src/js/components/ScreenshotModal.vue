@@ -27,12 +27,12 @@
 
       <template v-if="screenshotModalImages.length > 1">
         <div class="swiper-button-prev">
-          <icon
+          <c-icon
             icon="chevron-left"
             size="xl" />
         </div>
         <div class="swiper-button-next">
-          <icon
+          <c-icon
             icon="chevron-right"
             size="xl" />
         </div>

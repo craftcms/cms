@@ -13,10 +13,10 @@ import Modal from './js/components/modal/Modal'
 import StatusMessage from './js/components/StatusMessage'
 import App from './App'
 import './js/plugins/vue-awesome-swiper'
-import Btn from './js/components/ui/Btn'
-import Dropdown from './js/components/ui/Dropdown'
-import Icon from './js/components/ui/Icon'
-import Spinner from './js/components/ui/Spinner'
+import CBtn from './js/components/ui/CBtn'
+import CDropdown from './js/components/ui/CDropdown'
+import CIcon from './js/components/ui/CIcon'
+import CSpinner from './js/components/ui/CSpinner'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
@@ -24,10 +24,10 @@ Vue.filter('formatDate', formatDate)
 Vue.filter('formatNumber', formatNumber)
 Vue.filter('t', t)
 
-Vue.component('btn', Btn)
-Vue.component('dropdown', Dropdown)
-Vue.component('icon', Icon)
-Vue.component('spinner', Spinner)
+Vue.component('c-btn', CBtn)
+Vue.component('c-dropdown', CDropdown)
+Vue.component('c-icon', CIcon)
+Vue.component('c-spinner', CSpinner)
 
 Garnish.$doc.ready(function() {
   Craft.initUiElements()

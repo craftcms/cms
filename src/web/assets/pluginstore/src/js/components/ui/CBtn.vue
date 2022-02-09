@@ -61,18 +61,18 @@
     @click="$emit('click')"
   >
     <template v-if="loading">
-      <spinner :animationClass="`border-${animationColor} group-hover:border-${animationColorHover}`"></spinner>
+      <c-spinner :animationClass="`border-${animationColor} group-hover:border-${animationColorHover}`"/>
     </template>
 
     <div class="c-btn-content">
-      <icon
+      <c-icon
         v-if="icon && icon.length > 0"
         :icon="icon"
         size="sm" />
 
       <slot></slot>
 
-      <icon
+      <c-icon
         class="ml-1"
         v-if="trailingIcon && trailingIcon.length > 0"
         :icon="trailingIcon"

@@ -3,7 +3,7 @@
     <form @submit.prevent="search()">
       <div class="ps-search tw-relative tw-flex tw-w-full">
         <div class="tw-absolute tw-inset-y-0 tw-flex tw-items-center tw-pl-3 tw-z-10 tw-text-gray-500">
-          <icon icon="search" />
+          <c-icon icon="search" />
         </div>
         <input
           type="text"

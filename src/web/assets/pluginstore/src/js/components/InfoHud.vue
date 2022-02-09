@@ -1,7 +1,7 @@
 <template>
   <div class="info-hud">
     <v-popover placement="right">
-      <icon icon="info-circle" />
+      <c-icon icon="info-circle" />
 
       <template slot="popover">
         <slot></slot>

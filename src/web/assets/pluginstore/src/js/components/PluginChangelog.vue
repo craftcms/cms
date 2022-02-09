@@ -5,7 +5,7 @@
     <h2>{{ "Changelog"|t('app') }}</h2>
 
     <template v-if="loading">
-      <spinner class="tw-mt-4"></spinner>
+      <c-spinner class="tw-mt-4"/>
     </template>
 
     <template v-else>

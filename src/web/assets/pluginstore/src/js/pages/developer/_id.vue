@@ -27,10 +27,10 @@
 
               <ul v-if="developer.developerUrl">
                 <li class="tw-mr-4 tw-inline-block">
-                  <btn
+                  <c-btn
                     :href="developer.developerUrl"
                     block>{{ "Website"|t('app') }}
-                  </btn>
+                  </c-btn>
                 </li>
               </ul>
             </div>
@@ -39,7 +39,7 @@
       </plugin-index>
     </template>
     <template v-else>
-      <spinner></spinner>
+      <c-spinner/>
     </template>
   </div>
 </template>

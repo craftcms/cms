@@ -1,8 +1,8 @@
 <template>
   <div class="tw-flex tw-self-end">
-    <spinner
+    <c-spinner
       v-if="loading"
-      class="mt-2 mr-4"></spinner>
+      class="mt-2 mr-4"/>
 
     <sort-menu-btn
       :attributes="sortMenuBtnAttributes"
