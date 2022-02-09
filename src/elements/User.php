@@ -1574,6 +1574,21 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    protected function htmlAttributes(string $context): array
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+
+        return [
+            'data' => [
+                'suspended' => $this->suspended,
+                'can-suspend' => Craft::$app->getUsers()->canSuspend($currentUser, $this),
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function metaFieldsHtml(bool $static): string
     {
         return implode('', [

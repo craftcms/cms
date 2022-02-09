@@ -85,7 +85,6 @@
 - Added `craft\controllers\ImageTransformsController`.
 - Added `craft\db\Migration::dropAllForeignKeysToTable()`.
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
-- Added `craft\db\Migration::dropIndexIfExists()`.
 - Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.

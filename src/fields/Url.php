@@ -205,7 +205,7 @@ class Url extends Field implements PreviewableFieldInterface
             $valueType = reset($this->types);
         }
 
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
         $typeOptions = [];
 
         foreach ($this->types as $type) {

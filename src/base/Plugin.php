@@ -13,7 +13,9 @@ use craft\db\MigrationManager;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\i18n\PhpMessageSource;
+use craft\services\Plugins;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\Event;
@@ -61,7 +63,7 @@ class Plugin extends Module implements PluginInterface
      * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettings()
      */
-    private $_settingsModel;
+    private $_settings;
 
     /**
      * @inheritdoc
@@ -165,15 +167,11 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettings(): ?Model
     {
-        if (!isset($this->_settingsModel)) {
-            $this->_settingsModel = $this->createSettingsModel() ?: false;
+        if (!isset($this->_settings)) {
+            $this->_settings = $this->createSettingsModel() ?: false;
         }
 
-        if ($this->_settingsModel !== false) {
-            return $this->_settingsModel;
-        }
-
-        return null;
+        return $this->_settings ?: null;
     }
 
     /**
@@ -194,10 +192,25 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse()
     {
-        $view = Craft::$app->getView();
-        $settingsHtml = $view->namespaceInputs(function() {
+        // Temporarily swap over to the settings stored in the project config
+        $pcSettings = $this->createSettingsModel();
+        if ($pcSettings) {
+            $settings = $this->_settings;
+            $this->_settings = $pcSettings;
+            $path = sprintf('%s.%s.settings', Plugins::CONFIG_PLUGINS_KEY, $this->id);
+            $pcAttributes = Craft::$app->getProjectConfig()->get($path);
+            if ($pcAttributes) {
+                $pcSettings->setAttributes(ProjectConfigHelper::unpackAssociativeArrays($pcAttributes), false);
+            }
+        }
+
+        $settingsHtml = Craft::$app->getView()->namespaceInputs(function() {
             return (string)$this->settingsHtml();
         }, 'settings');
+
+        if ($pcSettings) {
+            $this->_settings = $settings;
+        }
 
         /** @var Controller $controller */
         $controller = Craft::$app->controller;

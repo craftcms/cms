@@ -19,7 +19,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -126,7 +125,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     protected function inputHtml($value, ?ElementInterface $element = null): string
     {
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
             'id' => $id,
             'labelId' => "$id-label",
