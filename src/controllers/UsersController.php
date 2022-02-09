@@ -978,8 +978,9 @@ class UsersController extends Controller
         $fieldsHtml = $form->render(false);
 
         // Add address book management fields
+        $placeholderAddress = new Address(['countryCode' => 'US']);
         $addressesHtml = Craft::$app->getView()->renderTemplate('users/_addresses', [
-            'addresses' => $user->getAddresses()
+            'addresses' => $user->getAddresses() ?: [$placeholderAddress],
         ]);
 
         // Prepare the language/locale options

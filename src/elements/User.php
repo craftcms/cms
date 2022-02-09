@@ -980,10 +980,6 @@ class User extends Element implements IdentityInterface
      */
     public function getAddresses(): array
     {
-        $address = new Address(['countryCode' => 'US']);
-
-        return [$address];
-
         if (isset($this->_addresses)) {
             return $this->_addresses;
         }
@@ -1950,11 +1946,10 @@ class User extends Element implements IdentityInterface
             // Validation of the addresses is done in the User element
             Craft::$app->getElements()->saveElement($address, false);
             $updatedAddresses[] = $address;
-            $relationship = new Address_User([
+            (new Address_User([
                 'addressId' => $address->id,
                 'userId' => $this->id,
-            ]);
-            $relationship->save();
+            ]))->save();
         }
 
         $this->setAddresses($updatedAddresses);
