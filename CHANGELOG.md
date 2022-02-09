@@ -4,6 +4,12 @@
 
 ### Added
 - Added `craft\base\FieldInterface::getInputId()`.
+- Added `craft\db\Migration::createIndexIfMissing()`.
+- Added `craft\db\Migration::dropIndexIfExists()`.
+
+### Changed
+- Improved element query performance. ([#10418](https://github.com/craftcms/cms/discussions/10418))
+- Improved asset transform eager-loading performance. ([#10427](https://github.com/craftcms/cms/discussions/10427))
 
 ### Fixed
 - Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
