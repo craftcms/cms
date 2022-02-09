@@ -24,7 +24,7 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": ">=7.4",
+    "php": ">=8.0",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-intl": "*",
@@ -98,7 +98,7 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "7.4"
+      "php": "8.0"
     },
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
