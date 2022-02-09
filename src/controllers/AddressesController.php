@@ -15,7 +15,7 @@ use craft\web\Response;
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
- * The AddressController class is a controller that handles asset indexing tasks.
+ * The AddressController class is a controller that handles various address-related actions.
  * Note that all actions in the controller require an authenticated Craft session as well as the relevant permissions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
