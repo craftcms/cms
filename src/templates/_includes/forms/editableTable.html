@@ -7,6 +7,7 @@
 {%- set maxRows = maxRows ?? null %}
 {%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and rows|length == 1) %}
 {%- set fixedRows = not staticRows and (minRows and minRows == maxRows and minRows == rows|length) %}
+{%- set describedBy = describedBy ?? null %}
 
 {% if not static %}
     {{ hiddenInput(name, '') }}
@@ -45,7 +46,7 @@
 {%- if block('attr') is defined %}
   {%- set tableAttributes = tableAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
-
+<span aria-live="assertive" class="visually-hidden" data-status-message></span>
 {% tag 'table' with tableAttributes %}
     <thead>
         <tr>
@@ -56,7 +57,8 @@
                     {%- case 'template' %}
                         {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
                 {%- endswitch %}
-                <th scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
+                {% set columnHeadingId = "#{id}-heading-#{loop.index}" %}
+                <th id="{{ columnHeadingId }}" scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
                     {%- if col.headingHtml is defined %}
                         {{- col.headingHtml|raw }}
                     {%- elseif col.heading ?? false %}
@@ -70,12 +72,13 @@
                 </th>
             {% endfor %}
             {% if not staticRows %}
-                <th colspan="{{ fixedRows ? 1 : 2 }}"></th>
+                <th colspan="{{ fixedRows ? 1 : 2 }}"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
             {% endif %}
         </tr>
     </thead>
     <tbody>
         {% for rowId, row in rows %}
+            {% set rowNumber = loop.index %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
@@ -85,6 +88,7 @@
                     {% elseif col.type == 'html' %}
                         <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}">{{ value|raw }}</td>
                     {% else %}
+                        {% set headingId = "#{id}-heading-#{loop.index}" %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
@@ -97,7 +101,9 @@
                                                 name: cellName,
                                                 value:  col.value ?? 1,
                                                 checked: value is not empty,
-                                                disabled: static
+                                                disabled: static,
+                                                labelledBy: headingId,
+                                                describedBy: describedBy,
                                             } only %}
                                         </div>
                                     {%- case 'color' -%}
@@ -105,13 +111,17 @@
                                             name: cellName,
                                             value: value,
                                             small: true,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'date' -%}
                                         {% include "_includes/forms/date" with {
                                             name: cellName,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'lightswitch' -%}
                                         {% include "_includes/forms/lightswitch" with {
@@ -119,7 +129,9 @@
                                             on: value,
                                             value: col.value ?? 1,
                                             small: true,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {% case 'select' -%}
                                         {% include "_includes/forms/select" with {
@@ -127,13 +139,17 @@
                                             name: cellName,
                                             options: cell.options ?? col.options,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'time' -%}
                                         {% include "_includes/forms/time" with {
                                             name: cellName,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'email' or 'url' -%}
                                         {% include "_includes/forms/text" with {
@@ -141,7 +157,9 @@
                                             name: cellName,
                                             placeholder: col.placeholder ?? null,
                                             value:  value,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- case 'autosuggest' or 'template' -%}
                                         {% include "_includes/forms/autosuggest" with {
@@ -150,13 +168,15 @@
                                             suggestEnvVars: col.suggestEnvVars ?? false,
                                             suggestAliases: col.suggestAliases ?? false,
                                             value: value,
-                                            disabled: static
+                                            disabled: static,
+                                            labelledBy: headingId,
+                                            describedBy: describedBy,
                                         } only %}
                                     {%- default -%}
                                         {% if static %}
                                             <pre class="disabled">{{ value }}</pre>
                                         {% else %}
-                                            <textarea name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            <textarea aria-labelledby="{{ headingId }}" aria-describedby="{{ describedBy }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}
@@ -164,8 +184,11 @@
                     {% endif %}
                 {% endfor %}
                 {% if not staticRows %}
+                    {% set deleteButtonText = 'Delete row {index}'|t('app', {
+                      index: rowNumber,
+                    }) %}
                     <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}"></a></td>
-                    {% if not fixedRows %}<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></a></td>{% endif %}
+                    {% if not fixedRows %}<td class="thin action"><button class="delete icon" type="button" title="{{ 'Delete'|t('app') }}" aria-label="{{ deleteButtonText }}"></button></td>{% endif %}
                 {% endif %}
             </tr>
         {% endfor %}
@@ -173,7 +196,8 @@
 {% endtag %}
 
 {% if not staticRows and not fixedRows %}
-    <button type="button" class="btn add icon">{{ addRowLabel ?? "Add a row"|t('app') }}</button>
+    {% set buttonText = addRowLabel ?? "Add a row"|t('app') %}
+    <button type="button" class="btn add icon" aria-label="{{ buttonText }}">{{ buttonText }}</button>
 {% endif %}
 
 {% if initJs %}

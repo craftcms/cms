@@ -19,7 +19,7 @@ Craft.PasswordInput = Garnish.Base.extend({
 
         // Is this already a password input?
         if (this.$passwordInput.data('passwordInput')) {
-            Garnish.log('Double-instantiating a password input on an element');
+            console.warn('Double-instantiating a password input on an element');
             this.$passwordInput.data('passwordInput').destroy();
         }
 
@@ -143,7 +143,12 @@ Craft.PasswordInput = Garnish.Base.extend({
         } else {
             this.togglePassword();
         }
-    }
+    },
+
+    destroy: function() {
+        this.$passwordInput.removeData('passwordInput')
+        this.base();
+    },
 }, {
     defaults: {
         onToggleInput: $.noop

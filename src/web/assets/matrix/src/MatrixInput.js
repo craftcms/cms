@@ -20,6 +20,7 @@
         $addBlockBtnContainer: null,
         $addBlockBtnGroup: null,
         $addBlockBtnGroupBtns: null,
+        $statusMessage: null,
 
         blockSort: null,
         blockSelect: null,
@@ -43,6 +44,7 @@
             this.$addBlockBtnGroup = this.$addBlockBtnContainer.children('.btngroup');
             this.$addBlockBtnGroupBtns = this.$addBlockBtnGroup.children('.btn');
             this.$addBlockMenuBtn = this.$addBlockBtnContainer.children('.menubtn');
+            this.$statusMessage = this.$container.find('[data-status-message]');
 
             this.$container.data('matrix', this);
 
@@ -175,83 +177,111 @@
                 this.$addBlockBtnGroup.removeClass('disabled');
                 this.$addBlockMenuBtn.removeClass('disabled');
 
+                this.$addBlockBtnGroupBtns.each(function () {
+                    $(this).removeAttr('aria-disabled');
+                });
+
                 for (i = 0; i < this.blockSelect.$items.length; i++) {
                     block = this.blockSelect.$items.eq(i).data('block');
 
                     if (block) {
                         block.$actionMenu.find('a[data-action=add]').parent().removeClass('disabled');
+                        block.$actionMenu.find('a[data-action=add]').removeAttr('aria-disabled');
                     }
                 }
             } else {
                 this.$addBlockBtnGroup.addClass('disabled');
                 this.$addBlockMenuBtn.addClass('disabled');
 
+                this.$addBlockBtnGroupBtns.each(function () {
+                    $(this).attr('aria-disabled', 'true');
+                });
+
                 for (i = 0; i < this.blockSelect.$items.length; i++) {
                     block = this.blockSelect.$items.eq(i).data('block');
 
                     if (block) {
                         block.$actionMenu.find('a[data-action=add]').parent().addClass('disabled');
+                        block.$actionMenu.find('a[data-action=add]').attr('aria-disabled', 'true');
                     }
                 }
             }
         },
 
+        updateStatusMessage: function() {
+            this.$statusMessage.empty();
+            let message;
+
+            if (!this.canAddMoreBlocks()) {
+                message = Craft.t('app', 'Matrix block could not be added. Maximum number of blocks reached.');
+            }
+
+            setTimeout(() => {
+                this.$statusMessage.text(message);
+            }, 250);
+
+        },
+
         addBlock: function(type, $insertBefore, autofocus) {
             if (!this.canAddMoreBlocks()) {
+                this.updateStatusMessage();
                 return;
             }
 
             this.totalNewBlocks++;
 
             var id = 'new' + this.totalNewBlocks;
+            const actionMenuId = `matrixblock-action-menu-${id}`;
 
             var html = `
-<div class="matrixblock" data-id="${id}" data-type="${type}">
-  <input type="hidden" name="${this.inputNamePrefix}[sortOrder][]" value="${id}"/>
-  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][type]" value="${type}"/>
-  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][enabled]" value="1"/>
-  <div class="titlebar">
-    <div class="blocktype">${this.getBlockTypeByHandle(type).name}</div>
-    <div class="preview"></div>
-  </div>
-  <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
-  <div class="actions">
-    <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
-    <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}"></button> 
-    <div class="menu">
-      <ul class="padded">
-        <li><a data-icon="collapse" data-action="collapse">${Craft.t('app', 'Collapse')}</a></li>
-        <li class="hidden"><a data-icon="expand" data-action="expand">${Craft.t('app', 'Expand')}</a></li>
-        <li><a data-icon="disabled" data-action="disable">${Craft.t('app', 'Disable')}</a></li>
-        <li class="hidden"><a data-icon="enabled" data-action="enable">${Craft.t('app', 'Enable')}</a></li>
-        <li><a data-icon="uarr" data-action="moveUp">${Craft.t('app', 'Move up')}</a></li>
-        <li><a data-icon="darr" data-action="moveDown">${Craft.t('app', 'Move down')}</a></li>
-      </ul>`;
+                <div class="matrixblock" data-id="${id}" data-type="${type}">
+                  <input type="hidden" name="${this.inputNamePrefix}[sortOrder][]" value="${id}"/>
+                  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][type]" value="${type}"/>
+                  <input type="hidden" name="${this.inputNamePrefix}[blocks][${id}][enabled]" value="1"/>
+                  <div class="titlebar">
+                    <div class="blocktype">${this.getBlockTypeByHandle(type).name}</div>
+                    <div class="preview"></div>
+                  </div>
+                  <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
+                  <div class="actions">
+                    <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
+                    <div data-wrapper>
+                      <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}" aria-controls="${ actionMenuId }" data-disclosure-trigger></button>
+                        <div id="${ actionMenuId }" class="menu menu--disclosure">
+                         <ul class="padded">
+                            <li><a data-icon="collapse" data-action="collapse" href="#" aria-label="${Craft.t('app', 'Collapse')}" type="button" role="button">${Craft.t('app', 'Collapse')}</a></li>
+                            <li class="hidden"><a data-icon="expand" data-action="expand" href="#" aria-label="${Craft.t('app', 'Expand')}" type="button" role="button">${Craft.t('app', 'Expand')}</a></li>
+                            <li><a data-icon="disabled" data-action="disable" href="#" aria-label="${Craft.t('app', 'Disable')}" type="button" role="button">${Craft.t('app', 'Disable')}</a></li>
+                            <li class="hidden"><a data-icon="enabled" data-action="enable" href="#" aria-label="${Craft.t('app', 'Enable')}" type="button" role="button">${Craft.t('app', 'Enable')}</a></li>
+                            <li><a data-icon="uarr" data-action="moveUp" href="#" aria-label="${Craft.t('app', 'Move up')}" type="button" role="button">${Craft.t('app', 'Move up')}</a></li>
+                            <li><a data-icon="darr" data-action="moveDown" href="#" aria-label="${Craft.t('app', 'Move down')}" type="button" role="button">${Craft.t('app', 'Move down')}</a></li>
+                          </ul>`;
 
-            if (!this.settings.staticBlocks) {
-                html += `
-      <hr class="padded"/>
-      <ul class="padded">
-        <li><a class="error" data-icon="remove" data-action="delete">${Craft.t('app', 'Delete')}</a></li>
-      </ul>
-      <hr class="padded"/>
-      <ul class="padded">`;
+                                if (!this.settings.staticBlocks) {
+                                    html += `
+                          <hr class="padded"/>
+                          <ul class="padded">
+                            <li><a class="error" data-icon="remove" data-action="delete" href="#" aria-label="${Craft.t('app', 'Delete')}" type="button" role="button">${Craft.t('app', 'Delete')}</a></li>
+                          </ul>
+                          <hr class="padded"/>
+                          <ul class="padded">`;
 
-                for (var i = 0; i < this.blockTypes.length; i++) {
-                    var blockType = this.blockTypes[i];
-                    html += `
-        <li><a data-icon="plus" data-action="add" data-type="${blockType.handle}">${Craft.t('app', 'Add {type} above', {type: blockType.name})}</a></li>`;
-                }
+                                    for (var i = 0; i < this.blockTypes.length; i++) {
+                                        var blockType = this.blockTypes[i];
+                                        html += `
+                            <li><a data-icon="plus" data-action="add" data-type="${blockType.handle}" href="#" aria-label="${Craft.t('app', 'Add {type} above', {type: blockType.name})}" type="button" role="button">${Craft.t('app', 'Add {type} above', {type: blockType.name})}</a></li>`;
+                                    }
 
-                html += `
-      </ul>`
-            }
+                                    html += `
+                          </ul>`
+                                }
 
-            html += `
-    </div>
-    <a class="move icon" title="${Craft.t('app', 'Reorder')}" role="button"></a>
-  </div>
-</div>`;
+                                html += `
+                        </div>
+                      </div>
+                    <a class="move icon" title="${Craft.t('app', 'Reorder')}" role="button"></a>
+                  </div>
+                </div>`;
 
             var $block = $(html);
 
@@ -411,6 +441,8 @@
         $actionMenu: null,
         $collapsedInput: null,
 
+        actionDisclosure: null,
+
         isNew: null,
         id: null,
 
@@ -428,14 +460,13 @@
             this.id = this.$container.data('id');
             this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substr(0, 3) === 'new'));
 
-            var $menuBtn = this.$container.find('> .actions > .settings'),
-                menuBtn = new Garnish.MenuBtn($menuBtn);
+            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]'),
+                actionDisclosure = new Garnish.DisclosureMenu($actionMenuBtn);
 
-            this.$actionMenu = menuBtn.menu.$container;
+            this.$actionMenu = actionDisclosure.$container;
+            this.actionDisclosure = actionDisclosure;
 
-            menuBtn.menu.settings.onOptionSelect = this.onMenuOptionSelect.bind(this);
-
-            menuBtn.menu.on('show', () => {
+            actionDisclosure.on('show', () => {
                 this.$container.addClass('active');
                 if (this.$container.prev('.matrixblock').length) {
                     this.$actionMenu.find('a[data-action=moveUp]:first').parent().removeClass('hidden');
@@ -448,9 +479,15 @@
                     this.$actionMenu.find('a[data-action=moveDown]:first').parent().addClass('hidden');
                 }
             });
-            menuBtn.menu.on('hide', () => {
+
+            actionDisclosure.on('hide', () => {
                 this.$container.removeClass('active');
             });
+
+            this.$actionMenuOptions = this.$actionMenu.find('a[data-action]');
+
+            this.addListener(this.$actionMenuOptions, 'click', this.handleActionClick);
+            this.addListener(this.$actionMenuOptions, 'keydown', this.handleActionKeydown);
 
             // Was this block already collapsed?
             if (Garnish.hasAttr(this.$container, 'data-collapsed')) {
@@ -647,8 +684,22 @@
             }
         },
 
-        onMenuOptionSelect: function(option) {
-            var batchAction = (this.matrix.blockSelect.totalSelected > 1 && this.matrix.blockSelect.isSelected(this.$container)),
+        handleActionClick: function(event) {
+            event.preventDefault();
+            this.onActionSelect(event.target);
+        },
+
+        handleActionKeydown: function(event) {
+            const keyCode = event.keyCode;
+
+            if (keyCode !== Garnish.SPACE_KEY) return;
+
+            event.preventDefault();
+            this.onActionSelect(event.target);
+        },
+
+        onActionSelect: function(option) {
+            const batchAction = (this.matrix.blockSelect.totalSelected > 1 && this.matrix.blockSelect.isSelected(this.$container)),
                 $option = $(option);
 
             switch ($option.data('action')) {
@@ -721,6 +772,8 @@
                     break;
                 }
             }
+
+            this.actionDisclosure.hide();
         },
 
         selfDestruct: function() {

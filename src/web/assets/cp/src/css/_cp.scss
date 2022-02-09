@@ -30,7 +30,7 @@ body {
   :focus {
     outline-style: solid;
     outline-color: transparent;
-    box-shadow: $darkFocusRing;
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -40,7 +40,7 @@ body {
   }
 
   .focus-visible {
-    box-shadow: $darkFocusRing;
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -95,9 +95,9 @@ $sidebarLinkSecondaryColor: $grey200;
   @include light-on-dark-text;
   background-color: $grey800;
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
-    box-shadow: $lightFocusRing;
+  body:not(.reduce-focus-visibility) & :focus,
+  body.reduce-focus-visibility & .focus-visible {
+    --focus-hsl: var(--light-focus-hsl);
   }
 
   a {
@@ -278,15 +278,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     a {
+      position: relative;
       padding-left: 14px;
       padding-right: 14px;
+
+      &:focus {
+        z-index: 1;
+      }
 
       &.menubtn {
         line-height: 26px;
       }
 
       &.external:after {
-        margin-left: 5px;
+        @include margin-left(5px);
         @include icon;
         content: 'external';
       }
@@ -928,6 +933,11 @@ li.breadcrumb-toggle-wrapper {
 
     li {
       a {
+        position: relative;
+
+        &:focus {
+          z-index: 1;
+        }
         &:not(.sel) {
           &:hover {
             background-color: $grey200;

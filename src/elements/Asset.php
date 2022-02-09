@@ -1651,7 +1651,7 @@ class Asset extends Element
      */
     public function getFocalPoint(bool $asCss = false)
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return null;
         }
 
@@ -2082,7 +2082,9 @@ class Asset extends Element
      */
     protected function htmlAttributes(string $context): array
     {
-        $attributes = [];
+        $attributes = [
+            'data-kind' => $this->kind,
+        ];
 
         if ($this->kind === self::KIND_IMAGE) {
             $attributes['data-image-width'] = $this->getWidth();

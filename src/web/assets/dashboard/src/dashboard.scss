@@ -4,110 +4,126 @@
 /* widgets */
 .widget {
   position: relative;
-  perspective: 1000;
+  perspective: 1000px;
   transition: opacity linear 200ms, transform linear 200ms;
   margin-bottom: 14px;
-}
 
-.widget.scaleout {
-  opacity: 0;
-  transform: scale(0.5);
-}
-
-.widget > .front,
-.widget > .back {
-  backface-visibility: hidden;
-  transition: 600ms;
-}
-
-.widget > .back {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
-
-.widget:not(.flipped) > .front {
-  transform: rotateY(0deg);
-}
-
-.widget:not(.flipped) > .back {
-  transform: rotateY(-180deg);
-}
-
-.widget.flipped > .front {
-  transform: rotateY(180deg);
-}
-
-.widget.flipped > .back {
-  transform: rotateY(0deg);
-}
-
-.widget:not(.flipped) > .back,
-.widget.flipped > .front {
-  opacity: 0;
-}
-
-.widget > .front > .pane > .spinner.body-loading {
-  display: none;
-}
-
-.widget.loading > .front > .pane > .spinner.body-loading {
-  display: block;
-  @include floatright;
-  @include margin-left(10px);
-}
-
-.widget.loading-new.new > .front > .pane {
-  height: 252px;
-}
-
-.widget.loading-new.new > .front > .pane > .spinner.body-loading {
-  display: block;
-  position: absolute;
-  top: calc(50% - 15px);
-  left: calc(50% - 12px);
-}
-
-.widget > .front > .pane > .icon.settings {
-  display: block;
-  opacity: 0;
-  cursor: pointer;
-  @include right(24px);
-  top: 24px;
-  transition: opacity linear 200ms;
-  position: absolute;
-}
-
-.widget:not(.flipped):hover > .front > .pane > .icon.settings {
-  opacity: 0.3;
-}
-
-.widget:not(.flipped) > .front > .pane > .icon.settings:hover {
-  opacity: 1;
-}
-
-.widget .widget-heading {
-  margin-bottom: 15px;
-
-  h2 {
-    margin-bottom: 3px;
+  &.scaleout {
+    opacity: 0;
+    transform: scale(0.5);
   }
-  h5 {
-    margin-top: 0;
+
+  & > .front,
+  & > .back {
+    backface-visibility: hidden;
+    transition: 600ms;
   }
-}
 
-.widget form + .errors {
-  margin-top: 15px;
-}
+  &:not(.flipped) {
+    & > .front {
+      transform: rotateY(0deg);
 
-.widget > .back > .pane {
-  background: $grey050;
-}
+      & > .pane > .icon.settings:hover {
+        opacity: 1 !important;
+      }
+    }
+    & > .back {
+      transform: rotateY(-180deg);
+    }
 
-.widget > .back > .pane > .errors {
-  margin-top: 24px;
+    &:hover > .front > .pane > .icon.settings {
+      opacity: 0.3;
+    }
+  }
+
+  &.flipped {
+    & > .front {
+      transform: rotateY(180deg);
+    }
+    & > .back {
+      transform: rotateY(0deg);
+    }
+  }
+
+  &:not(.flipped) > .back,
+  &.flipped > .front {
+    opacity: 0;
+  }
+
+  & > .front {
+    & > .pane {
+      & > .icon.settings {
+        display: block;
+        opacity: 0;
+        cursor: pointer;
+        @include right(24px);
+        top: 24px;
+        transition: opacity linear 200ms;
+        position: absolute;
+      }
+
+      & > .spinner.body-loading {
+        display: none;
+      }
+    }
+  }
+
+  & > .back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    & > .pane {
+      background: $grey050;
+
+      & > .errors {
+        margin-top: 24px;
+      }
+    }
+  }
+
+  &.loading {
+    & > .front {
+      & > .pane {
+        & > .spinner.body-loading {
+          display: block;
+          @include floatright;
+          @include margin-left(10px);
+        }
+      }
+    }
+  }
+
+  &.loading-new.new {
+    & > .front {
+      & > .pane {
+        height: 252px;
+
+        & > .spinner.body-loading {
+          display: block;
+          position: absolute;
+          top: calc(50% - 15px);
+          left: calc(50% - 12px);
+        }
+      }
+    }
+  }
+
+  .widget-heading {
+    margin-bottom: 15px;
+
+    h2 {
+      margin-bottom: 3px;
+    }
+    h5 {
+      margin-top: 0;
+    }
+  }
+
+  form + .errors {
+    margin-top: 15px;
+  }
 }
 
 /* Recent Entries widget */
@@ -125,13 +141,13 @@
 .newwidgetmenu ul li a {
   position: relative;
   @include padding-left(40px);
-}
 
-.newwidgetmenu ul li a .icon {
-  position: absolute;
-  top: 11px;
-  @include left(14px);
-  width: 16px;
+  .icon {
+    position: absolute;
+    top: 11px;
+    @include left(14px);
+    width: 16px;
+  }
 }
 
 .newwidgetmenu ul li a .icon svg,

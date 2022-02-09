@@ -352,12 +352,7 @@ class Users extends Component
      */
     public function sendActivationEmail(User $user): bool
     {
-        // If the user doesn't have a password yet, use a Password Reset URL
-        if (!$user->password) {
-            $url = $this->getPasswordResetUrl($user);
-        } else {
-            $url = $this->getEmailVerifyUrl($user);
-        }
+        $url = $this->getActivationUrl($user);
 
         return Craft::$app->getMailer()
             ->composeFromKey('account_activation', ['link' => Template::raw($url)])
@@ -399,6 +394,22 @@ class Users extends Component
             ->composeFromKey('forgot_password', ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
+    }
+
+    /**
+     * Sets a new verification code on a user, and returns their activation URL.
+     *
+     * @param User $user
+     * @return string
+     */
+    public function getActivationUrl(User $user): string
+    {
+        // If the user doesn't have a password yet, use a Password Reset URL
+        if (!$user->password) {
+            return $this->getPasswordResetUrl($user);
+        }
+
+        return $this->getEmailVerifyUrl($user);
     }
 
     /**

@@ -313,6 +313,10 @@ class ElementHelper
                 $site['siteId'] = (int)$site['siteId'];
             }
 
+            if (!isset($siteUidMap[$site['siteId']])) {
+                continue;
+            }
+
             $site['siteUid'] = $siteUidMap[$site['siteId']];
 
             $site += [
