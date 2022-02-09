@@ -23,6 +23,7 @@ use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\Address;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
@@ -450,6 +451,7 @@ class Fields extends Component
     public function getAllFieldTypes(): array
     {
         $fieldTypes = [
+            Address::class,
             AssetsField::class,
             CategoriesField::class,
             Checkboxes::class,
@@ -1127,7 +1129,7 @@ class Fields extends Component
 
         if (!$result) {
             return $this->_layoutsByType[$type] = new FieldLayout([
-                'type' => $type,
+                'type' => $type
             ]);
         }
 
