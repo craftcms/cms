@@ -1468,7 +1468,7 @@ class User extends Element implements IdentityInterface
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
-        if (Craft::$app->getUsers()->canSuspend($currentUser, $this)) {
+        if ($currentUser && Craft::$app->getUsers()->canSuspend($currentUser, $this)) {
             $attributes['data-can-suspend'] = null;
         }
 
