@@ -1013,7 +1013,7 @@ class UsersController extends Controller
             return <<<JS
 new Craft.AccountSettingsForm($userId, $isCurrent, {
     deleteModalRedirect: $deleteModalRedirect,
-})";
+})
 JS;
         }, [$user->id, $isCurrentUser, $deleteModalRedirect], View::POS_END);
 

@@ -22,6 +22,7 @@
 - Fixed an error that could occur when saving an entry programmatically on a front-end request, if any sites were disabled. ([#10499](https://github.com/craftcms/cms/issues/10499))
 - Fixed a bug where Date and Time inputs weren’t clearable on mobile. ([#10500](https://github.com/craftcms/cms/issues/10500))
 - Fixed a bug where Date and Time fields created by JavaScript weren’t getting native `date` and `time` inputs on mobile.
+- Fixed a JavaScript error on the Edit User page. ([#10509](https://github.com/craftcms/cms/issues/10509))
 
 ### Security
 - Fixed a GraphQL API vulnerability.
