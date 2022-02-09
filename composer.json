@@ -45,6 +45,7 @@
     "illuminate/collections": "^8.55",
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
+    "moneyphp/money": "^3.3",
     "pixelandtonic/imagine": "~1.2.4.1",
     "seld/cli-prompt": "^1.0.4",
     "symfony/yaml": "^5.2.3",

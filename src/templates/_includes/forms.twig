@@ -148,6 +148,11 @@
 {% endmacro %}
 
 
+{% macro money(config) %}
+    {% include "_includes/forms/money" with config only %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -369,6 +374,12 @@
         label: 'Field Layout'|t('app'),
         errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
     }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
+{% endmacro %}
+
+
+{% macro moneyField(config) %}
+    {% set config = config|merge({id: config.id ?? "money#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/money') }}
 {% endmacro %}
 
 

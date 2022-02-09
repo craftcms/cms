@@ -34,6 +34,7 @@ use craft\fields\Entries as EntriesField;
 use craft\fields\Lightswitch;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
+use craft\fields\Money;
 use craft\fields\MultiSelect;
 use craft\fields\Number;
 use craft\fields\PlainText;
@@ -459,6 +460,7 @@ class Fields extends Component
             EntriesField::class,
             Lightswitch::class,
             MatrixField::class,
+            Money::class,
             MultiSelect::class,
             Number::class,
             PlainText::class,

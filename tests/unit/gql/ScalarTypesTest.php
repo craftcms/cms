@@ -15,6 +15,7 @@ use craft\fields\Date;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
+use craft\gql\types\Money;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
 use GraphQL\Language\AST\BooleanValueNode;
@@ -42,7 +43,7 @@ class ScalarTypesTest extends Unit
      * @param $match
      * @throws \GraphQL\Error\Error
      */
-    public function testSerialization(ScalarType $type, $testValue, $match)
+    public function testSerialization(ScalarType $type, $testValue, $match): void
     {
         self::assertSame($match, $type->serialize($testValue));
     }
@@ -103,7 +104,7 @@ class ScalarTypesTest extends Unit
 
     /**
      * Test the useSystemTimezoneForGraphQlDates setting.
-     * 
+     *
      * @throws \GraphQL\Error\Error
      */
     public function testTimeZoneConfigSetting()
@@ -170,6 +171,11 @@ class ScalarTypesTest extends Unit
             [QueryArgument::getType(), 2, 2],
             [QueryArgument::getType(), true, true],
             [QueryArgument::getType(), 2.9, '2.9'],
+
+            'money-1-dollar' => [Money::getType(), \Money\Money::USD(100), '$1.00'],
+            'money-1-thousand-dollars' => [Money::getType(), \Money\Money::USD(123456), '$1,234.56'],
+            'money-null' => [Money::getType(), null, null],
+            'money-error' => [Money::getType(), 'testString', 'testString'],
         ];
     }
 
@@ -191,6 +197,11 @@ class ScalarTypesTest extends Unit
             [QueryArgument::getType(), true, true, false],
             [QueryArgument::getType(), 2.0, null, GqlException::class],
 
+            [Money::getType(), 2, 2, false],
+            [Money::getType(), 2.0, 2.0, false],
+            [Money::getType(), null, null, false],
+            [Money::getType(), -2.0, -2.0, false],
+            [Money::getType(), 'err', null, GqlException::class],
         ];
     }
 
@@ -216,6 +227,12 @@ class ScalarTypesTest extends Unit
             [QueryArgument::getType(), new BooleanValueNode(['value' => true]), true, false],
             [QueryArgument::getType(), new FloatValueNode(['value' => '2']), null, GqlException::class],
 
+            [Money::getType(), new StringValueNode(['value' => '2.4']), 2.4, false],
+            [Money::getType(), new StringValueNode(['value' => 'fake']), 0.0, false],
+            [Money::getType(), new FloatValueNode(['value' => 2.4]), 2.4, false],
+            [Money::getType(), new IntValueNode(['value' => 2]), 2, false],
+            [Money::getType(), new NullValueNode([]), null, false],
+            [Money::getType(), new BooleanValueNode(['value' => false]), null, GqlException::class],
         ];
     }
 }
