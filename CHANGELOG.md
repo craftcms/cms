@@ -11,12 +11,12 @@
 ### Changed
 - Improved element query performance. ([#10418](https://github.com/craftcms/cms/discussions/10418))
 - Improved asset transform eager-loading performance. ([#10427](https://github.com/craftcms/cms/discussions/10427))
-- It’s no longer possible for non-admins to suspend/unsuspend admins. ([#10422](https://github.com/craftcms/cms/issues/10422))
 - The “Suspend” and “Unsuspend” user actions are now smarter about when they should be available, based on the selected users.
 
 ### Fixed
 - Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
 - Fixed a bug where the last control panel breadcrumb could be collapsed under a “More…” menu when there was enough room to display it. ([#10495](https://github.com/craftcms/cms/issues/10495))
+- Fixed a bug where it was possible for non-admins to suspend/unsuspend admins from the Users index page. ([#10422](https://github.com/craftcms/cms/issues/10422))
 
 ### Security
 - Fixed a GraphQL API vulnerability.
