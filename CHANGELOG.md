@@ -14,6 +14,7 @@
 - Improved asset transform eager-loading performance. ([#10427](https://github.com/craftcms/cms/discussions/10427))
 - The “Suspend” and “Unsuspend” user actions are now smarter about when they should be available, based on the selected users.
 - Plugin settings forms now display the values stored in the project config, even if they’ve been overridden by the plugin’s config file.
+- Improved the styling of field tips and warnings.
 
 ### Fixed
 - Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
