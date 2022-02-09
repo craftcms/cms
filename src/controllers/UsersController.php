@@ -1018,13 +1018,15 @@ class UsersController extends Controller
 
         $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
 
-        $this->getView()->registerJsWithVars(function($userId, $isCurrent, $deleteModalRedirect) {
-            return <<<JS
+        $this->getView()->registerJsWithVars(
+            fn($userId, $isCurrent, $deleteModalRedirect) => <<<JS
 new Craft.AccountSettingsForm($userId, $isCurrent, {
     deleteModalRedirect: $deleteModalRedirect,
-})";
-JS;
-        }, [$user->id, $isCurrentUser, $deleteModalRedirect], View::POS_END);
+})
+JS,
+            [$user->id, $isCurrentUser, $deleteModalRedirect],
+            View::POS_END
+        );
 
         return $this->renderTemplate('users/_edit', compact(
             'user',

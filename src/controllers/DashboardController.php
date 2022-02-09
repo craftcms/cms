@@ -133,9 +133,10 @@ class DashboardController extends Controller
 
         // Include all the JS and CSS stuff
         $view->registerAssetBundle(DashboardAsset::class);
-        $view->registerJsWithVars(function($widgetTypeInfo) {
-            return "window.dashboard = new Craft.Dashboard($widgetTypeInfo)";
-        }, [$widgetTypeInfo]);
+        $view->registerJsWithVars(
+            fn($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
+            [$widgetTypeInfo]
+        );
         $view->registerJs($allWidgetJs);
 
         $variables['widgetTypes'] = $widgetTypeInfo;

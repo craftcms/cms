@@ -70,11 +70,11 @@ class PluginStoreController extends Controller
             'composerPhpVersion' => Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null,
         ];
 
-        $view->registerJsWithVars(function($variables) {
-            return <<<JS
-Object.assign(window, $variables);
-JS;
-        }, [$variables], View::POS_BEGIN);
+        $view->registerJsWithVars(
+            fn($variables) => "Object.assign(window, $variables)",
+            [$variables],
+            View::POS_BEGIN
+        );
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 

@@ -4300,20 +4300,23 @@ abstract class Element extends Component implements ElementInterface
 
         if (!$slug && !$static) {
             $view = Craft::$app->getView();
-            $titleId = $view->namespaceInputId('title');
-            $slugId = $view->namespaceInputId('slug');
             $site = $this->getSite();
             $charMapJs = Json::encode($site->language !== Craft::$app->language
                 ? StringHelper::asciiCharMap(true, $site->language)
                 : null
             );
 
-            $js = <<<JS
-new Craft.SlugGenerator('#$titleId', '#$slugId', {
+            Craft::$app->getView()->registerJsWithVars(
+                fn($titleSelector, $slugSelector) => <<<JS
+new Craft.SlugGenerator($titleSelector, $slugSelector, {
     charMap: $charMapJs,
-});
-JS;
-            Craft::$app->getView()->registerJs($js);
+})
+JS,
+                [
+                    sprintf('#%s', $view->namespaceInputId('title')),
+                    sprintf('#%s', $view->namespaceInputId('slug')),
+                ]
+            );
         }
 
         return Cp::textFieldHtml([

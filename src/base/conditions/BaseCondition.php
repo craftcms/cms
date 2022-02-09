@@ -420,8 +420,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     ]);
                 }
             } else {
-                $view->registerJs("htmx.process(htmx.find('#$namespacedId'));");
-                $view->registerJs("htmx.trigger(htmx.find('#$namespacedId'), 'htmx:load');");
+                $view->registerJsWithVars(
+                    fn($containerSelector) => <<<JS
+htmx.process(htmx.find($containerSelector));
+htmx.trigger(htmx.find($containerSelector), 'htmx:load');
+JS,
+                    [sprintf('#%s', $namespacedId)]
+                );
             }
 
             $html .= Html::endTag('div'); //condition-main
