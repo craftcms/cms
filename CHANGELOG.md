@@ -322,6 +322,7 @@
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Craft now requires MySQL 5.7.8 / MariaDB 10.2.7 or later.
+- Craft now requires the [Intl](https://php.net/manual/en/book.intl.php) PHP extension.
 - The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
 - The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
 - Users are no longer required to have a username or email.
@@ -518,6 +519,7 @@
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
+- Deprecated `craft\i18n\I18N::getIsIntlLoaded()`.
 - Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
 - Deprecated `craft\services\ProjectConfig::applyYamlChanges()`. `applyExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
@@ -684,6 +686,7 @@
 - Removed `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` can be used instead.
 - Removed `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` can be used instead.
 - Removed `craft\helpers\FileHelper::removeFile()`. `unlink()` can be used instead.
+- Removed `craft\helpers\Localization::localeData()`.
 - Removed `craft\helpers\MailerHelper::createMailer()`. `craft\helpers\mailerConfig()` can be used instead.
 - Removed `craft\helpers\Stringy`.
 - Removed `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` can be used instead.
@@ -692,6 +695,7 @@
 - Removed `craft\i18n\Locale::getId()`. `$id` can be used instead.
 - Removed `craft\i18n\Locale::getName()`. `getDisplayName()` can be used instead.
 - Removed `craft\i18n\Locale::getNativeName()`. `getDisplayName()` can be used instead.
+- Removed `craft\i18n\Locale::setDateTimeFormats()`.
 - Removed `craft\models\AssetTransform`.
 - Removed `craft\models\AssetTransformIndex`.
 - Removed `craft\models\BaseEntryRevisionModel`.

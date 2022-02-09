@@ -127,7 +127,7 @@ class Application extends \yii\web\Application
     {
         parent::setTimeZone($value);
 
-        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+        if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */

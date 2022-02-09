@@ -48,13 +48,6 @@
             required: true
         }) }}
 
-        {% if not craft.app.i18n.getIsIntlLoaded() %}
-            {% set languageWarning = 'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.'|t('app', {
-                link1: 'https://php.net/manual/en/book.intl.php',
-                link2: 'https://github.com/craftcms/locales'
-            }) %}
-        {% endif %}
-
         {{ forms.selectField({
             label: "Language"|t('app'),
             instructions: "The language content in this site will use."|t('app'),
@@ -63,7 +56,6 @@
             value: site.language,
             options: languageOptions,
             errors: site.getErrors('language'),
-            warning: languageWarning ?? null
         }) }}
 
         {% if (craft.app.isMultiSite or not site.id) and not site.primary %}
