@@ -1581,7 +1581,7 @@ class User extends Element implements IdentityInterface
         return [
             'data' => [
                 'suspended' => $this->suspended,
-                'can-suspend' => Craft::$app->getUsers()->canSuspend($currentUser, $this),
+                'can-suspend' => $currentUser && Craft::$app->getUsers()->canSuspend($currentUser, $this),
             ],
         ];
     }
