@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
+- Fixed a bug where the last control panel breadcrumb could be collapsed under a “More…” menu when there was enough room to display it. ([#10495](https://github.com/craftcms/cms/issues/10495))
 
 ## 3.7.31 - 2022-02-08
 
