@@ -67,9 +67,14 @@ Craft.LightSwitch = Garnish.Base.extend({
         this.indeterminate = false;
 
         this.$outerContainer.addClass('dragging');
-        var animateCss = {};
-        animateCss['margin-' + Craft.left] = 0;
-        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, this._onSettle.bind(this));
+
+        if (Garnish.prefersReducedMotion()) {
+            this.$innerContainer.css('margin-' + Craft.left, 0);
+        } else {
+            var animateCss = {};
+            animateCss['margin-' + Craft.left] = 0;
+            this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, this._onSettle.bind(this));
+        }
 
         this.$input.val(this.settings.value);
         this.$outerContainer.addClass('on');
@@ -88,9 +93,14 @@ Craft.LightSwitch = Garnish.Base.extend({
         this.indeterminate = false;
 
         this.$outerContainer.addClass('dragging');
-        var animateCss = {};
-        animateCss['margin-' + Craft.left] = this._getOffMargin();
-        this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, this._onSettle.bind(this));
+
+        if (Garnish.prefersReducedMotion()) {
+            this.$innerContainer.css('margin-' + Craft.left, this._getOffMargin());
+        } else {
+            var animateCss = {};
+            animateCss['margin-' + Craft.left] = this._getOffMargin();
+            this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, this._onSettle.bind(this));
+        }
 
         this.$input.val('');
         this.$outerContainer.removeClass('on');
