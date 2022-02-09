@@ -867,6 +867,36 @@ class View extends \yii\web\View
     }
 
     /**
+     * Registers JavaScript code with the given variables, pre-JSON-encoded.
+     *
+     * @param callable $jsFn callback function that returns the JS code to be registered.
+     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     * @param int $position the position at which the JS script tag should be inserted
+     * in a page. The possible values are:
+     *
+     * - [[POS_HEAD]]: in the head section
+     * - [[POS_BEGIN]]: at the beginning of the body section
+     * - [[POS_END]]: at the end of the body section
+     * - [[POS_LOAD]]: enclosed within jQuery(window).load().
+     *   Note that by using this position, the method will automatically register the jQuery js file.
+     * - [[POS_READY]]: enclosed within jQuery(document).ready(). This is the default value.
+     *   Note that by using this position, the method will automatically register the jQuery js file.
+     *
+     * @param string|null $key the key that identifies the JS code block. If null, it will use
+     * $js as the key. If two JS code blocks are registered with the same key, the latter
+     * will overwrite the former.
+     * @since 3.7.31
+     */
+    public function registerJsWithVars(callable $jsFn, array $vars, int $position = self::POS_READY, ?string $key = null): void
+    {
+        $jsVars = array_map(function($variable) {
+            return Json::encode($variable);
+        }, $vars);
+        $js = call_user_func($jsFn, ...array_values($jsVars));
+        $this->registerJs($js, $position, $key);
+    }
+
+    /**
      * Starts a JavaScript buffer.
      *
      * JavaScript buffers work similarly to [output buffers](https://php.net/manual/en/intro.outcontrol.php) in PHP.

@@ -31,6 +31,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             $body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
             $footer = $('<div class="footer"/>').appendTo($container);
 
+        if (this.settings.fullscreen) {
+            $container.addClass('fullscreen');
+            this.settings.minGutter = 0;
+        }
+
         this.base($container, this.settings);
 
         this.$secondaryButtons = $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
@@ -217,6 +222,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
     }
 }, {
     defaults: {
+        fullscreen: false,
         resizable: true,
         storageKey: null,
         sources: null,

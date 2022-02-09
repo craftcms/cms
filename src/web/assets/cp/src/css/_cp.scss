@@ -296,7 +296,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       }
 
       &.external:after {
-        margin-left: 5px;
+        @include margin-left(5px);
         @include icon;
         content: 'external';
       }

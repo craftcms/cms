@@ -1016,12 +1016,15 @@ class UsersController extends Controller
 
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
-        $userIdJs = Json::encode($user->id);
-        $isCurrentJs = ($isCurrentUser ? 'true' : 'false');
-        $settingsJs = Json::encode([
-            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
-        ]);
-        $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
+        $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
+
+        $this->getView()->registerJsWithVars(function($userId, $isCurrent, $deleteModalRedirect) {
+            return <<<JS
+new Craft.AccountSettingsForm($userId, $isCurrent, {
+    deleteModalRedirect: $deleteModalRedirect,
+})";
+JS;
+        }, [$user->id, $isCurrentUser, $deleteModalRedirect], View::POS_END);
 
         return $this->renderTemplate('users/_edit', compact(
             'user',
