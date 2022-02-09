@@ -26,7 +26,7 @@ cache:
   - "$HOME/.composer/cache"
   - "$HOME/.npm"
 addons:
-  postgresql: "10.0"
+  postgresql: "10"
   apt:
     packages:
       - postgresql-10
