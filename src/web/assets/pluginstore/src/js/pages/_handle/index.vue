@@ -52,16 +52,7 @@
                             <p v-else>No description.</p>
                         </div>
                         <div class="lg:tw-pl-8 lg:tw-ml-4">
-                            <ul>
-                                <li v-if="plugin.documentationUrl" class="tw-py-1">
-                                    <a :href="plugin.documentationUrl" rel="noopener" target="_blank">
-                                        <icon icon="book"></icon> {{ "Documentation"|t('app') }}
-                                    </a>
-                                </li>
-
-                                <li><a :href="plugin.repository" rel="noopener" target="_blank"><icon icon="link" /> Repository</a></li>
-                            </ul>
-
+                            <plugin-meta :plugin="plugin"></plugin-meta>
                         </div>
                     </div>
 
@@ -149,6 +140,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
     import PluginEditions from '../../components/PluginEditions'
     import PluginScreenshots from '../../components/PluginScreenshots'
     import licensesMixin from '../../mixins/licenses'
+    import PluginMeta from '../../components/PluginMeta'
 
     export default {
         mixins: [licensesMixin],
@@ -158,6 +150,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
             PluginChangelog,
             PluginEditions,
             PluginScreenshots,
+            PluginMeta
         },
 
         data() {
