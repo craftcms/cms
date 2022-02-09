@@ -207,6 +207,7 @@
 
 <script>
 import MetaStat from './MetaStat';
+
 export default {
   components: {MetaStat},
   props: {

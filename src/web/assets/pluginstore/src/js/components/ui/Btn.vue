@@ -1,5 +1,12 @@
 <template>
-    <component :is="component" class="c-btn truncate" :to="to" :href="href" :target="target" :type="computedType" :class="[{
+  <component
+    :is="component"
+    class="c-btn truncate"
+    :to="to"
+    :href="href"
+    :target="target"
+    :type="computedType"
+    :class="[{
                 small,
                 large,
                 block,
@@ -50,142 +57,149 @@
                 'hover:tw-bg-interactive-danger': kind === 'danger' && outline,
                 'active:tw-bg-interactive-danger-active': kind === 'danger' && outline
             }]"
-               v-bind="additionalAttributes"
-               @click="$emit('click')"
-    >
-        <template v-if="loading">
-            <spinner :animationClass="`border-${animationColor} group-hover:border-${animationColorHover}`"></spinner>
-        </template>
+    v-bind="additionalAttributes"
+    @click="$emit('click')"
+  >
+    <template v-if="loading">
+      <spinner :animationClass="`border-${animationColor} group-hover:border-${animationColorHover}`"></spinner>
+    </template>
 
-        <div class="c-btn-content">
-            <icon v-if="icon && icon.length > 0" :icon="icon" size="sm" />
+    <div class="c-btn-content">
+      <icon
+        v-if="icon && icon.length > 0"
+        :icon="icon"
+        size="sm" />
 
-            <slot></slot>
+      <slot></slot>
 
-            <icon class="ml-1" v-if="trailingIcon && trailingIcon.length > 0" :icon="trailingIcon" size="sm" />
-        </div>
-    </component>
+      <icon
+        class="ml-1"
+        v-if="trailingIcon && trailingIcon.length > 0"
+        :icon="trailingIcon"
+        size="sm" />
+    </div>
+  </component>
 </template>
 
 <script>
 export default {
-    name: 'Btn',
+  name: 'Btn',
 
-    props: {
-        /**
-         * 'button', 'submit', 'reset', or 'menu'
-         */
-        type: {
-            type: String,
-            default: 'button',
-        },
-        /**
-         * 'default', 'primary', or 'danger'
-         */
-        kind: {
-            type: String,
-            default: 'secondary',
-        },
-        /**
-         * Smaller version of button if set to `true`.
-         */
-        small: {
-            type: Boolean,
-            default: false,
-        },
-        /**
-         * Larger version of button if set to `true`.
-         */
-        large: {
-            type: Boolean,
-            default: false,
-        },
-        /**
-         * Block version of button if set to `true`.
-         */
-        block: {
-            type: Boolean,
-            default: false,
-        },
-        /**
-         * Disabled version of button if set to `true`.
-         */
-        disabled: {
-            type: Boolean,
-            default: false,
-        },
-        /**
-         * Outline version of button if set to `true`.
-         */
-        outline: {
-            type: Boolean,
-            default: false,
-        },
-        icon: {
-            type: [String, Array],
-            default: null,
-        },
-        trailingIcon: {
-            type: String,
-            default: null,
-        },
-        loading: {
-            type: Boolean,
-            default: false,
-        },
-        to: {
-            type: String,
-            default: null,
-        },
-        href: {
-            type: String,
-            default: null,
-        },
-        target: {
-            type: String,
-            default: null,
-        },
+  props: {
+    /**
+     * 'button', 'submit', 'reset', or 'menu'
+     */
+    type: {
+      type: String,
+      default: 'button',
+    },
+    /**
+     * 'default', 'primary', or 'danger'
+     */
+    kind: {
+      type: String,
+      default: 'secondary',
+    },
+    /**
+     * Smaller version of button if set to `true`.
+     */
+    small: {
+      type: Boolean,
+      default: false,
+    },
+    /**
+     * Larger version of button if set to `true`.
+     */
+    large: {
+      type: Boolean,
+      default: false,
+    },
+    /**
+     * Block version of button if set to `true`.
+     */
+    block: {
+      type: Boolean,
+      default: false,
+    },
+    /**
+     * Disabled version of button if set to `true`.
+     */
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    /**
+     * Outline version of button if set to `true`.
+     */
+    outline: {
+      type: Boolean,
+      default: false,
+    },
+    icon: {
+      type: [String, Array],
+      default: null,
+    },
+    trailingIcon: {
+      type: String,
+      default: null,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+    to: {
+      type: String,
+      default: null,
+    },
+    href: {
+      type: String,
+      default: null,
+    },
+    target: {
+      type: String,
+      default: null,
+    },
+  },
+
+  computed: {
+    additionalAttributes() {
+      const attrs = {}
+
+      if (this.disabled) {
+        attrs.disabled = true
+      }
+
+      return attrs
     },
 
-    computed: {
-        additionalAttributes() {
-            const attrs = {}
+    component() {
+      if (this.to !== null && this.to !== '') {
+        return 'router-link'
+      }
 
-            if (this.disabled) {
-                attrs.disabled = true
-            }
+      if (this.href !== null && this.href !== '') {
+        return 'a'
+      }
 
-            return attrs
-        },
+      return 'button'
+    },
 
-        component() {
-            if (this.to !== null && this.to !== '') {
-                return 'router-link'
-            }
+    computedType() {
+      if (this.to !== null || this.href !== null) {
+        return null
+      }
 
-            if (this.href !== null && this.href !== '') {
-                return 'a'
-            }
+      return this.type
+    },
 
-            return 'button'
-        },
+    animationColor() {
+      return (this.kind === 'secondary' ? 'interactive' : (!this.outline ? 'text-inverse' : 'interactive-' + this.kind))
+    },
 
-        computedType() {
-            if (this.to !== null || this.href !== null) {
-                return null
-            }
-
-            return this.type
-        },
-
-        animationColor() {
-            return (this.kind === 'secondary' ? 'interactive' : (!this.outline ? 'text-inverse' : 'interactive-'+this.kind))
-        },
-
-        animationColorHover() {
-            return this.kind === 'secondary' ? 'interactive' : 'text-inverse'
-        }
+    animationColorHover() {
+      return this.kind === 'secondary' ? 'interactive' : 'text-inverse'
     }
+  }
 }
 </script>
 
@@ -195,58 +209,58 @@ export default {
 .c-btn,
 a.c-btn,
 button.c-btn {
-    &:focus {
-        @apply tw-outline-none tw-ring;
-    }
+  &:focus {
+    @apply tw-outline-none tw-ring;
+  }
 
-    &.block {
-        @apply tw-w-full tw-my-2;
-    }
+  &.block {
+    @apply tw-w-full tw-my-2;
+  }
 
-    &.small {
-        @apply tw-px-3 tw-leading-4;
-
-        .c-icon {
-            width: 12px;
-            height: 12px;
-        }
-    }
-
-    &.large {
-        @apply tw-text-base tw-leading-6;
-    }
-
-
-    &.outline {
-        .c-icon {
-            @apply tw-fill-current;
-        }
-    }
-
-    &.loading {
-        @apply tw-relative;
-
-        .c-spinner {
-            @apply tw-absolute tw-inset-0 tw-flex tw-justify-center tw-items-center;
-        }
-
-        .c-btn-content {
-            @apply tw-invisible;
-        }
-    }
+  &.small {
+    @apply tw-px-3 tw-leading-4;
 
     .c-icon {
-        @apply tw-align-middle;
+      width: 12px;
+      height: 12px;
     }
+  }
 
-    &:not(.c-btn-icon) {
-        .c-icon {
-            /*@include mr(1);*/
-        }
+  &.large {
+    @apply tw-text-base tw-leading-6;
+  }
+
+
+  &.outline {
+    .c-icon {
+      @apply tw-fill-current;
+    }
+  }
+
+  &.loading {
+    @apply tw-relative;
+
+    .c-spinner {
+      @apply tw-absolute tw-inset-0 tw-flex tw-justify-center tw-items-center;
     }
 
     .c-btn-content {
-        @apply tw-inline-block;
+      @apply tw-invisible;
     }
+  }
+
+  .c-icon {
+    @apply tw-align-middle;
+  }
+
+  &:not(.c-btn-icon) {
+    .c-icon {
+      /*@include mr(1);*/
+    }
+  }
+
+  .c-btn-content {
+    @apply tw-inline-block;
+  }
 }
 </style>
