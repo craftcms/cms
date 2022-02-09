@@ -120,8 +120,16 @@ class ArgumentManager extends Component
     public function prepareArguments($arguments): array
     {
         $orderBy = $arguments['orderBy'] ?? null;
-        if ($orderBy && (StringHelper::containsAny($orderBy, ['(', ')']) || preg_match('/^\w+(\.\w+)?( (asc|desc))?$/i', $orderBy))) {
-            throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');
+        if ($orderBy) {
+            if (StringHelper::containsAny($orderBy, ['(', ')'])) {
+                throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');
+            }
+            $chunks = StringHelper::split($orderBy);
+            foreach ($chunks as $chunk) {
+                if (!preg_match('/^\w+(\.\w+)?( (asc|desc))?$/i', $chunk)) {
+                    throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');
+                }
+            }
         }
 
         $this->createHandlers();
