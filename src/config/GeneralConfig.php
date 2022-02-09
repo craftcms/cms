@@ -691,10 +691,6 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
-     *
-     * Only use this setting if your server has the Intl PHP extension, or if you’ve saved the corresponding
-     * [locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
-     *
      * @since 3.0.24
      * @group System
      */

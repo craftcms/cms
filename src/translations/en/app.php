@@ -565,7 +565,6 @@ return [
     'Email verified' => 'Email verified',
     'Email' => 'Email',
     'Enable focal point' => 'Enable focal point',
-    'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.' => 'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.',
     'Enable versioning for entries in this section' => 'Enable versioning for entries in this section',
     'Enable' => 'Enable',
     'Enabled for {site}' => 'Enabled for {site}',

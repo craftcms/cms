@@ -27,6 +27,7 @@
     "php": ">=7.4",
     "ext-curl": "*",
     "ext-dom": "*",
+    "ext-intl": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
     "ext-openssl": "*",
@@ -81,8 +82,7 @@
   },
   "suggest": {
     "ext-imagick": "Adds support for more image processing formats and options.",
-    "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
-    "ext-intl": "Adds rich internationalization support."
+    "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8."
   },
   "autoload": {
     "psr-4": {
@@ -98,7 +98,11 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php":  "7.4"
+      "php": "7.4"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
     }
   }
 }

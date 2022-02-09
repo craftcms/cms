@@ -79,35 +79,6 @@ class Localization
     }
 
     /**
-     * Returns fallback data for a locale if the Intl extension isn't loaded.
-     *
-     * @param string $localeId
-     * @return array|null
-     */
-    public static function localeData(string $localeId): ?array
-    {
-        $data = null;
-
-        // Load the locale data
-        $appDataPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
-        $customDataPath = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
-
-        if (is_file($appDataPath)) {
-            $data = require $appDataPath;
-        }
-
-        if (is_file($customDataPath)) {
-            if ($data !== null) {
-                $data = ArrayHelper::merge($data, require $customDataPath);
-            } else {
-                $data = require $customDataPath;
-            }
-        }
-
-        return $data;
-    }
-
-    /**
      * Looks for a missing translation string in Yii's core translations.
      *
      * @param MissingTranslationEvent $event
