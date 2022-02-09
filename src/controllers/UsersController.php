@@ -1578,9 +1578,10 @@ JS;
             $this->_noUserExists();
         }
 
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if (!Craft::$app->getUsers()->suspendUser($user, $currentUser)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
@@ -1706,9 +1707,10 @@ JS;
         }
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if (!Craft::$app->getUsers()->unsuspendUser($user, $currentUser)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }

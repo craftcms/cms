@@ -797,11 +797,10 @@ class Users extends Component
      * Suspends a user.
      *
      * @param User $user The user.
-     * @param User|null $moderatingUser The user who is performing the action.
      * @return bool Whether the user was suspended successfully.
      * @throws \Throwable if reasons
      */
-    public function suspendUser(User $user, ?User $moderatingUser = null): bool
+    public function suspendUser(User $user): bool
     {
         // Fire a 'beforeSuspendUser' event
         $event = new UserEvent([
@@ -810,10 +809,6 @@ class Users extends Component
         $this->trigger(self::EVENT_BEFORE_SUSPEND_USER, $event);
 
         if (!$event->isValid) {
-            return false;
-        }
-
-        if ($moderatingUser && !Craft::$app->getUsers()->canSuspend($moderatingUser, $user)) {
             return false;
         }
 
@@ -847,11 +842,10 @@ class Users extends Component
      * Unsuspends a user.
      *
      * @param User $user The user.
-     * @param User|null $moderatingUser The user who is performing the action.
      * @return bool Whether the user was unsuspended successfully.
      * @throws \Throwable if reasons
      */
-    public function unsuspendUser(User $user, ?User $moderatingUser = null): bool
+    public function unsuspendUser(User $user): bool
     {
         // Fire a 'beforeUnsuspendUser' event
         $event = new UserEvent([
@@ -860,10 +854,6 @@ class Users extends Component
         $this->trigger(self::EVENT_BEFORE_UNSUSPEND_USER, $event);
 
         if (!$event->isValid) {
-            return false;
-        }
-
-        if ($moderatingUser && !Craft::$app->getUsers()->canSuspend($moderatingUser, $user)) {
             return false;
         }
 
@@ -1248,6 +1238,7 @@ class Users extends Component
      * @param User $suspender
      * @param User $suspendee
      * @return bool
+     * @since 3.7.32
      */
     public function canSuspend(User $suspender, User $suspendee): bool
     {

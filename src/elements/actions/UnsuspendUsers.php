@@ -31,17 +31,52 @@ class UnsuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
+    public function getTriggerHtml()
+    {
+        Craft::$app->getView()->registerJsWithVars(function($type) {
+            return <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
+        batch: true,
+        validateSelection: \$selectedItems => {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                const \$element = \$selectedItems.eq(i).find('.element');
+                if (
+                    !Garnish.hasAttr(\$element, 'data-can-suspend') ||
+                    !Garnish.hasAttr(\$element, 'data-suspended')
+                ) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    });
+})();
+JS;
+        }, [
+            static::class,
+        ]);
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function performAction(ElementQueryInterface $query): bool
     {
         // Get the users that are suspended
         $query->status(User::STATUS_SUSPENDED);
         /** @var User[] $users */
         $users = $query->all();
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        $successCount = count(array_filter($users, function(User $user) use($currentUser) {
+        $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
             try {
-                return Craft::$app->getUsers()->unsuspendUser($user, $currentUser);
+                return $usersService->canSuspend($currentUser, $user) && $usersService->unsuspendUser($user);
             } catch (\Throwable $e) {
                 return false;
             }
