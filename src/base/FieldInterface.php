@@ -156,6 +156,14 @@ interface FieldInterface extends SavableComponentInterface
     public function getStatus(ElementInterface $element): ?array;
 
     /**
+     * Returns the input’s ID, which the `<label>`’s `for` attribute should reference.
+     *
+     * @return string
+     * @since 3.7.32
+     */
+    public function getInputId(): string;
+
+    /**
      * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
      *
      * @return bool

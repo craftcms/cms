@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\base\FieldInterface::getInputId()`.
+
+### Fixed
+- Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
+
 ## 3.7.31 - 2022-02-08
 
 ### Added

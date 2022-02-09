@@ -14,7 +14,6 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 use yii\base\InvalidArgumentException;
@@ -276,7 +275,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             }
         }
 
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
         $view = Craft::$app->getView();
         $namespacedId = $view->namespaceInputId($id);
 
