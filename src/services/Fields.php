@@ -805,6 +805,12 @@ class Fields extends Component
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
+        if ($field instanceof MissingField) {
+            $error = $field->errorMessage ?? "Unable to find component class '$field->expectedType'.";
+            $field->addError('type', $error);
+            return false;
+        }
+
         $isNewField = $field->getIsNew();
 
         // Fire a 'beforeSaveField' event

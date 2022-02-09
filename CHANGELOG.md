@@ -15,6 +15,7 @@
 - The “Suspend” and “Unsuspend” user actions are now smarter about when they should be available, based on the selected users.
 - Plugin settings forms now display the values stored in the project config, even if they’ve been overridden by the plugin’s config file.
 - Improved the styling of field tips and warnings.
+- The Edit Field page will now instantiate a new field instance of the expected field type, if it had been previously saved while the field type was missing. ([#10437](https://github.com/craftcms/cms/issues/10437))
 
 ### Fixed
 - Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
@@ -25,6 +26,7 @@
 - Fixed a bug where Date and Time inputs weren’t clearable on mobile. ([#10500](https://github.com/craftcms/cms/issues/10500))
 - Fixed a bug where Date and Time fields created by JavaScript weren’t getting native `date` and `time` inputs on mobile.
 - Fixed a JavaScript error on the Edit User page. ([#10509](https://github.com/craftcms/cms/issues/10509))
+- Fixed a bug where it was possible to save a custom field whose type was missing. ([#10437](https://github.com/craftcms/cms/issues/10437))
 
 ### Security
 - Fixed a GraphQL API vulnerability.
