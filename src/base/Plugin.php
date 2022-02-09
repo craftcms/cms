@@ -62,7 +62,7 @@ class Plugin extends Module implements PluginInterface
      * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettings()
      */
-    private $_settingsModel;
+    private $_settings;
 
     /**
      * @inheritdoc
@@ -182,15 +182,11 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettings()
     {
-        if ($this->_settingsModel === null) {
-            $this->_settingsModel = $this->createSettingsModel() ?: false;
+        if ($this->_settings === null) {
+            $this->_settings = $this->createSettingsModel() ?: false;
         }
 
-        if ($this->_settingsModel !== false) {
-            return $this->_settingsModel;
-        }
-
-        return null;
+        return $this->_settings ?: null;
     }
 
     /**
