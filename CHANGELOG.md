@@ -593,7 +593,7 @@
 - Removed Matrix block queries’ `ownerLocale` param. The `site` or `siteId` param can be used instead.
 - Removed Matrix block queries’ `ownerSite` param. The `site` param can be used instead.
 - Removed Matrix block queries’ `ownerSiteId` param. The `siteId` param can be used instead.
-- Removed the `assignUserGroups` user permission, which authorized users to assign other users to their own groups. Authorization must now be explicitly granted for each group.
+- Removed the `assignUserGroups` user permission, which authorized users to assign other users to their own groups. Authorization must now be explicitly granted for each group. ([#10422](https://github.com/craftcms/cms/issues/10422))
 - Removed the `customizeSources` user permission. Only admins can customize element sources now, and only from an environment that allows admin changes.
 - Removed the `publishPeerEntryDrafts:<uid>` permissions, as they were pointless. (If a user is authorized to save an entry and view other users’ drafts of it, there’s nothing stopping them from making the same changes themselves.)
 - Removed support for the `staticRows` editable table setting. `allowAdd`, `allowDelete`, and `allowReorder` can be used instead.
