@@ -188,7 +188,7 @@ class UpdateController extends Controller
     }
 
     /**
-     * Installs dependencies based on the current composer.json & composer.lock.
+     * Installs dependencies based on the current `composer.json` & `composer.lock`.
      *
      * @return int
      */

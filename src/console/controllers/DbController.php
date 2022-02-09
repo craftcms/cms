@@ -130,6 +130,11 @@ class DbController extends Controller
     /**
      * Restores a database backup.
      *
+     * Example:
+     * ```
+     * php craft db/restore ./my-backup.sql
+     * ```
+     *
      * @param string|null $path The path to the database backup file.
      * @return int
      */
@@ -187,6 +192,11 @@ class DbController extends Controller
 
     /**
      * Converts tables’ character sets and collations. (MySQL only)
+     *
+     * Example:
+     * ```
+     * php craft db/convert-charset utf8 utf8_unicode_ci
+     * ```
      *
      * @param string|null $charset The target character set, which honors `DbConfig::$charset`
      *                               or defaults to `utf8`.
