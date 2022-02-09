@@ -15,6 +15,10 @@ namespace craft\db;
  */
 abstract class Table
 {
+    /** @since 4.0.0 */
+    public const ADDRESSES = '{{%addresses}}';
+    /** @since 4.0.0 */
+    public const ADDRESSES_USERS = '{{%addresses_users}}';
     /** @since 3.7.0 */
     public const ANNOUNCEMENTS = '{{%announcements}}';
     public const ASSETINDEXDATA = '{{%assetindexdata}}';

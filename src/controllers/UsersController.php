@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -908,6 +909,19 @@ class UsersController extends Controller
 
         $tabs += $form->getTabMenu();
 
+        $addressError = false;
+        foreach ($user->getAddresses() as $address) {
+            if ($address->hasErrors()) {
+                $addressError = true;
+                break;
+            }
+        }
+        $tabs['addresses'] = [
+            'label' => Craft::t('app', 'Addresses'),
+            'url' => '#addresses',
+            'class' => $addressError ? 'error' : null,
+        ];
+
         // Show the permission tab for the users that can change them on Craft Pro editions
         $canAssignUserGroups = $currentUser->canAssignUserGroups();
         $showPermissionsTab = (
@@ -962,6 +976,11 @@ class UsersController extends Controller
         }
 
         $fieldsHtml = $form->render(false);
+
+        // Add address book management fields
+        $addressesHtml = Craft::$app->getView()->renderTemplate('users/_addresses', [
+            'addresses' => $user->getAddresses()
+        ]);
 
         // Prepare the language/locale options
         // ---------------------------------------------------------------------
@@ -1043,7 +1062,7 @@ JS,
             'showPhotoField',
             'showPermissionsTab',
             'canAssignUserGroups',
-            'fieldsHtml'
+            'addressesHtml'
         ));
     }
 
@@ -1217,6 +1236,8 @@ JS,
 
         $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
         $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
+
+        $user->setAddresses($this->request->getBodyParam('addresses', []));
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email

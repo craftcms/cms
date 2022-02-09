@@ -11,6 +11,9 @@ return [
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'addresses' => [
+            'class' => craft\services\Addresses::class,
+        ],
         'announcements' => [
             'class' => craft\services\Announcements::class,
         ],
@@ -150,6 +153,9 @@ return [
         ],
         'volumes' => [
             'class' => craft\services\Volumes::class,
+        ],
+        'userAddresses' => [
+            'class' => craft\services\UserAddresses::class,
         ],
         'userGroups' => [
             'class' => craft\services\UserGroups::class,

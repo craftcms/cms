@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\commerce\elements\Variant;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -35,7 +36,10 @@ use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
+use craft\records\Address_User;
 use craft\records\User as UserRecord;
+use craft\records\Address as AddressRecord;
+use craft\services\Addresses;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
@@ -59,6 +63,7 @@ use yii\web\IdentityInterface;
  * @property string $name the user's full name or username
  * @property string|null $friendlyName the user's first name or username
  * @property string|null $fullName the user's full name
+ * @property Address[]|null $addresses the user's addresses
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property-read array $preferences the user’s preferences
@@ -468,10 +473,23 @@ class User extends Element implements IdentityInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
-        if ($handle === 'photo') {
-            // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        // Get the source element IDs
+        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
+        if ($handle == 'addresses') {
+            $map = (new Query())
+                ->select(['userId as source', 'addressId as target'])
+                ->from([Table::ADDRESSES_USERS])
+                ->where(['userId' => $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Address::class,
+                'map' => $map,
+            ];
+        }
+
+        if ($handle === 'photo') {
             $map = (new Query())
                 ->select(['id as source', 'photoId as target'])
                 ->from([Table::USERS])
@@ -676,6 +694,11 @@ class User extends Element implements IdentityInterface
     public ?User $inheritorOnDelete = null;
 
     /**
+     * @var Address[]|null Addresses
+     */
+    private ?array $_addresses = null;
+
+    /**
      * @var string|null
      * @see getName()
      * @see setName()
@@ -774,6 +797,7 @@ class User extends Element implements IdentityInterface
     {
         $names = parent::extraFields();
         $names[] = 'groups';
+        $names[] = 'addresses';
         $names[] = 'photo';
         return $names;
     }
@@ -869,6 +893,20 @@ class User extends Element implements IdentityInterface
             },
         ];
 
+        $rules[] = [
+            ['addresses'],
+            function() {
+                foreach ($this->getAddresses() as $i => $address) {
+                    if ($this->getScenario() === self::SCENARIO_LIVE) {
+                        $address->setScenario(self::SCENARIO_LIVE);
+                    }
+                    if (!$address->validate()) {
+                        $this->addModelErrors($address, "addresses[$i]");
+                    }
+                }
+            },
+        ];
+
         return $rules;
     }
 
@@ -933,6 +971,41 @@ class User extends Element implements IdentityInterface
     public function getFieldLayout(): ?FieldLayout
     {
         return Craft::$app->getFields()->getLayoutByType(self::class);
+    }
+
+    /**
+     * Gets the user's addresses.
+     *
+     * @return Address[]
+     */
+    public function getAddresses(): array
+    {
+        $address = new Address(['countryCode' => 'US']);
+
+        return [$address];
+
+        if (isset($this->_addresses)) {
+            return $this->_addresses;
+        }
+
+        return $this->_addresses = Craft::$app->getUserAddresses()->getAddressesByUserId($this->id);
+    }
+
+    /**
+     * Sets the user's addresses.
+     *
+     * @param Addresses[]|array $addresses
+     */
+    public function setAddresses(array $addresses): void
+    {
+        foreach ($addresses as $i => $address) {
+            if (!$address instanceof Address) {
+                $address = new Address($address);
+            }
+            $addresses[$i] = $address;
+        }
+
+        $this->_addresses = $addresses;
     }
 
     /**
@@ -1709,6 +1782,9 @@ class User extends Element implements IdentityInterface
 
         $record->save(false);
 
+        // Save addresses
+        $this->_saveAddresses();
+
         // Make sure that the photo is located in the right place
         if (!$isNew && $this->photoId) {
             Craft::$app->getUsers()->relocateUserPhoto($this);
@@ -1856,5 +1932,31 @@ class User extends Element implements IdentityInterface
         }
 
         return null;
+    }
+
+    /**
+     * @return void
+     */
+    public function _saveAddresses(): void
+    {
+        $addresses = $this->getAddresses();
+
+        Address_User::deleteAll([
+            'userId' => $this->id,
+        ]);
+
+        $updatedAddresses = [];
+        foreach ($addresses as $address) {
+            // Validation of the addresses is done in the User element
+            Craft::$app->getElements()->saveElement($address, false);
+            $updatedAddresses[] = $address;
+            $relationship = new Address_User([
+                'addressId' => $address->id,
+                'userId' => $this->id,
+            ]);
+            $relationship->save();
+        }
+
+        $this->setAddresses($updatedAddresses);
     }
 }

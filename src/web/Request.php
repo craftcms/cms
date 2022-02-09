@@ -905,7 +905,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new BadRequestHttpException('Request missing required body param');
+        throw new BadRequestHttpException("Request missing required body param: $name");
     }
 
     /**

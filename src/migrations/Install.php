@@ -90,6 +90,33 @@ class Install extends Migration
      */
     public function createTables(): void
     {
+        $this->createTable(Table::ADDRESSES, [
+            'id' => $this->integer()->notNull(),
+            'label' => $this->string()->notNull(),
+            'givenName' => $this->string(),
+            'additionalName' => $this->string(),
+            'familyName' => $this->string(),
+            'countryCode' => $this->string()->notNull(),
+            'administrativeArea' => $this->string(),
+            'locality' => $this->string(),
+            'dependentLocality' => $this->string(),
+            'postalCode' => $this->string(),
+            'sortingCode' => $this->string(),
+            'addressLine1' => $this->string(),
+            'addressLine2' => $this->string(),
+            'organization' => $this->string(),
+            'metadata' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'PRIMARY KEY(id)',
+        ]);
+        $this->createTable(Table::ADDRESSES_USERS, [
+            'id' => $this->primaryKey(),
+            'addressId' => $this->integer()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull()
+        ]);
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
@@ -766,6 +793,7 @@ class Install extends Migration
      */
     public function createIndexes(): void
     {
+        $this->createIndex(null, Table::ADDRESSES_USERS, ['userId', 'addressId'], true);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
@@ -953,6 +981,9 @@ class Install extends Migration
      */
     public function addForeignKeys(): void
     {
+        $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::ADDRESSES_USERS, ['addressId'], Table::ADDRESSES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ADDRESSES_USERS, ['userId'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
@@ -1177,7 +1208,8 @@ class Install extends Migration
                 $pluginsService->installPlugin($handle);
                 echo "done\n";
             }
-        } finally {
+        }
+        finally {
             // Put the real response back
             Craft::$app->set('response', $realResponse);
         }

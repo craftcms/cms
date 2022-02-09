@@ -40,6 +40,7 @@ use craft\mail\Mailer;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
+use craft\services\Addresses;
 use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
@@ -80,6 +81,7 @@ use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
 use craft\services\Updates;
+use craft\services\UserAddresses;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -110,6 +112,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @property bool $isInstalled Whether Craft is installed
  * @property int $edition The active Craft edition
+ * @property-read Addresses $addresses The addresses service
  * @property-read Announcements $announcements The announcements service
  * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
@@ -161,6 +164,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read Updates $updates The updates service
+ * @property-read UserAddresses $userAddresses The user addresses service
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
  * @property-read Users $users The users service
@@ -824,6 +828,18 @@ trait ApplicationTrait
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the addresses service.
+     *
+     * @return Addresses The addresses service
+     * @since 4.0.0
+     */
+    public function getAddresses(): Addresses
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('addresses');
+    }
+
+    /**
      * Returns the announcements service.
      *
      * @return Announcements The announcements service
@@ -1337,6 +1353,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the user addresses service.
+     *
+     * @return UserAddresses The user addresses service
+     */
+    public function getUserAddresses(): UserAddresses
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('userAddresses');
+    }
+
+    /**
      * Returns the user groups service.
      *
      * @return UserGroups The user groups service
@@ -1538,6 +1565,10 @@ trait ApplicationTrait
     private function _registerConfigListeners(): void
     {
         $this->getProjectConfig()
+            // Address field layout
+            ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
+            ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
+            ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
             // Field groups
             ->onAdd(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
             ->onUpdate(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))

@@ -1,0 +1,15 @@
+<div class="address-cards">
+    {% for address in addresses %}
+        {% include '_includes/forms/address' with {
+            name : 'addresses[new]',
+            address : address,
+            availableCountries : null,
+            defaultCountryCode : 'US',
+            hasErrors: address.hasErrors()
+        } %}
+    {% endfor %}
+
+    <button class="address-card add icon">
+        Add an address
+    </button>
+</div>
