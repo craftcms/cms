@@ -773,39 +773,50 @@ td.right {
   color: $successColor !important;
 }
 
+.notice,
+.warning {
+  &.with-icon,
+  .icon {
+    &:before {
+      @include margin(-2px, 2px, 0, 0);
+      @include icon;
+      width: 1em;
+    }
+  }
+
+  &.has-icon {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: start;
+
+    .icon {
+      flex-shrink: 1;
+    }
+  }
+}
+
 .notice {
   color: $noticeColor !important;
   a {
     text-decoration: underline;
   }
+
+  &.with-icon,
+  .icon {
+    &:before {
+      content: "lightbulb";
+    }
+  }
 }
 
 .warning {
   color: $warningColor !important;
-}
 
-.notice .icon,
-.warning .icon,
-.with-icon.notice,
-.with-icon.warning {
-  &:before {
-    @include margin(-2px, 2px, 0, 0);
-    @include icon;
-    width: 1em;
-  }
-}
-
-.notice .icon,
-.with-icon.notice {
-  &:before {
-    content: "lightbulb";
-  }
-}
-
-.warning .icon,
-.with-icon.warning {
-  &:before {
-    content: "alert";
+  &.with-icon,
+  .icon {
+    &:before {
+      content: "alert";
+    }
   }
 }
 
@@ -5233,6 +5244,11 @@ body.reduce-focus-visibility {
 
 .text {
   background-color: $white;
+
+  &:not(.small) {
+    box-sizing: border-box;
+    min-height: 34px;
+  }
 
   &.small {
     padding: 3px;

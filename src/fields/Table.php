@@ -16,7 +16,6 @@ use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
@@ -634,7 +633,7 @@ class Table extends Field
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
-            'id' => Html::id($this->handle),
+            'id' => $this->getInputId(),
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,

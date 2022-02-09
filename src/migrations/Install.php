@@ -792,6 +792,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
         $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['volumeId', 'assetId', 'location'], false);
+        $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['assetId', 'format', 'location'], false);
         $this->createIndex(null, Table::ASSETTRANSFORMS, ['name']);
         $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle']);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
@@ -817,6 +818,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);

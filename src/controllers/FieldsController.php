@@ -125,18 +125,11 @@ class FieldsController extends Controller
         // The field
         // ---------------------------------------------------------------------
 
-        $missingFieldPlaceholder = null;
-
         if ($field === null && $fieldId !== null) {
             $field = $fieldsService->getFieldById($fieldId);
 
             if ($field === null) {
                 throw new NotFoundHttpException('Field not found');
-            }
-
-            if ($field instanceof MissingField) {
-                $missingFieldPlaceholder = $field->getPlaceholderHtml();
-                $field = $field->createFallback(PlainText::class);
             }
         }
 
@@ -168,10 +161,15 @@ class FieldsController extends Controller
 
         /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
+        $foundCurrent = false;
+        $missingFieldPlaceholder = null;
 
         foreach ($allFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
-                $compatible = in_array($class, $compatibleFieldTypes, true);
+            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : get_class($field));
+            $foundCurrent = $foundCurrent || $isCurrent;
+
+            if ($isCurrent || $class::isSelectable()) {
+                $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
@@ -181,6 +179,15 @@ class FieldsController extends Controller
 
         // Sort them by name
         ArrayHelper::multisort($fieldTypeOptions, 'label');
+
+        if ($field instanceof MissingField) {
+            if ($foundCurrent) {
+                $field = $fieldsService->createField($field->expectedType);
+            } else {
+                array_unshift($fieldTypeOptions, ['value' => $field->expectedType, 'label' => '']);
+                $missingFieldPlaceholder = $field->getPlaceholderHtml();
+            }
+        }
 
         // Groups
         // ---------------------------------------------------------------------

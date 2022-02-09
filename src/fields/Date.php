@@ -20,7 +20,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
-use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\validators\DateTimeValidator;
 use DateTime;
@@ -235,11 +234,19 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
+    public function getInputId(): string
+    {
+        return sprintf('%s-date', parent::getInputId());
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
         $variables = [
-            'id' => Html::id($this->handle),
+            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-date"
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,

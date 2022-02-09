@@ -26,7 +26,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
@@ -599,7 +598,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         $view = Craft::$app->getView();
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
         $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
@@ -968,7 +967,7 @@ JS;
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => static::elementType(),
-            'id' => Html::id($this->handle),
+            'id' => $this->getInputId(),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'describedBy' => $this->describedBy,

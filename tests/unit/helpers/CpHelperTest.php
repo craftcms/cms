@@ -119,12 +119,12 @@ class CpHelperTest extends Unit
         self::assertStringContainsString('id="inst-id"', $withInstructions);
         self::assertStringContainsString('<p><strong>Test</strong></p>', $withInstructions);
         // tip
-        self::assertStringContainsString('<p id="tip" class="notice"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><strong>Test</strong></p>', Cp::fieldHtml('<input>', [
+        self::assertStringContainsString('<p id="tip" class="notice has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><span><strong>Test</strong></span></p>', Cp::fieldHtml('<input>', [
             'tipId' => 'tip',
             'tip' => '**Test**',
         ]));
         // warning
-        self::assertStringContainsString('<p id="warning" class="warning"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><strong>Test</strong></p>', Cp::fieldHtml('<input>', [
+        self::assertStringContainsString('<p id="warning" class="warning has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><span><strong>Test</strong></span></p>', Cp::fieldHtml('<input>', [
             'warningId' => 'warning',
             'warning' => '**Test**',
         ]));

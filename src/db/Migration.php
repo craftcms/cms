@@ -9,6 +9,7 @@ namespace craft\db;
 
 use Craft;
 use craft\helpers\Db;
+use craft\helpers\MigrationHelper;
 use yii\db\ColumnSchemaBuilder;
 
 /**
@@ -356,11 +357,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addPrimaryKey($name, $table, $columns)
     {
-        if ($name === null) {
-            $name = $this->db->getPrimaryKeyName($table, $columns);
-        }
-
-        return parent::addPrimaryKey($name, $table, $columns);
+        parent::addPrimaryKey($name ?? $this->db->getPrimaryKeyName(), $table, $columns);
     }
 
     /**
@@ -375,11 +372,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
     {
-        if ($name === null) {
-            $name = $this->db->getForeignKeyName();
-        }
-
-        return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+        parent::addForeignKey($name ?? $this->db->getForeignKeyName(), $table, $columns, $refTable, $refColumns, $delete, $update);
     }
 
     /**
@@ -393,11 +386,36 @@ abstract class Migration extends \yii\db\Migration
      */
     public function createIndex($name, $table, $columns, $unique = false)
     {
-        if ($name === null) {
-            $name = $this->db->getIndexName();
-        }
+        parent::createIndex($name ?? $this->db->getIndexName(), $table, $columns, $unique);
+    }
 
-        return parent::createIndex($name, $table, $columns, $unique);
+    /**
+     * Creates a new index if a similar one doesn’t already exist.
+     *
+     * @param string $table the table that the new index will be created for. The table name will be properly quoted by the method.
+     * @param string|array $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
+     * by commas or use an array.
+     * @param bool $unique whether to add UNIQUE constraint on the created index.
+     * @since 3.7.32
+     */
+    public function createIndexIfMissing(string $table, $columns, bool $unique = false): void
+    {
+        if (!MigrationHelper::doesIndexExist($table, $columns, $unique, $this->db)) {
+            $this->createIndex(null, $table, $columns, $unique);
+        }
+    }
+
+    /**
+     * Builds and executes a SQL statement for dropping an index, if it exists.
+     * @param string $table the table whose index is to be dropped. The name will be properly quoted by the method.
+     * @param string|array $columns the column(s) that are included in the index. If there are multiple columns, please separate them
+     * by commas or use an array.
+     * @param bool $unique whether the index has a UNIQUE constraint.
+     * @since 3.7.32
+     */
+    public function dropIndexIfExists(string $table, $columns, bool $unique): void
+    {
+        MigrationHelper::dropIndexIfExists($table, $columns, $unique, $this);
     }
 
     /**

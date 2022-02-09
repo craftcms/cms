@@ -661,7 +661,7 @@ class Cp
         return
             Html::beginTag('p', [
                 'id' => $id,
-                'class' => $class,
+                'class' => [$class, 'has-icon'],
             ]) .
             Html::tag('span', '', [
                 'class' => 'icon',
@@ -672,7 +672,7 @@ class Cp
             Html::tag('span', "$label: ", [
                 'class' => 'visually-hidden',
             ]) .
-            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message))) .
+            Html::tag('span', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message)))) .
             Html::endTag('p');
     }
 

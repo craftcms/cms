@@ -1,5 +1,36 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.32 - 2022-02-09
+
+### Added
+- Added `craft\base\FieldInterface::getInputId()`.
+- Added `craft\db\Migration::createIndexIfMissing()`.
+- Added `craft\db\Migration::dropIndexIfExists()`.
+- Added `craft\services\Users::canSuspend()`.
+- Added `craft\validators\SiteIdValidator::$allowDisabled`.
+
+### Changed
+- Improved element query performance. ([#10418](https://github.com/craftcms/cms/discussions/10418))
+- Improved asset transform eager-loading performance. ([#10427](https://github.com/craftcms/cms/discussions/10427))
+- The “Suspend” and “Unsuspend” user actions are now smarter about when they should be available, based on the selected users.
+- Plugin settings forms now display the values stored in the project config, even if they’ve been overridden by the plugin’s config file.
+- Improved the styling of field tips and warnings.
+- The Edit Field page will now instantiate a new field instance of the expected field type, if it had been previously saved while the field type was missing. ([#10437](https://github.com/craftcms/cms/issues/10437))
+
+### Fixed
+- Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
+- Fixed a bug where the last control panel breadcrumb could be collapsed under a “More…” menu when there was enough room to display it. ([#10495](https://github.com/craftcms/cms/issues/10495))
+- Fixed a bug where it was possible for non-admins to suspend/unsuspend admins from the Users index page. ([#10422](https://github.com/craftcms/cms/issues/10422))
+- Fixed a bug where the `project-config/apply` command output could get mangled. ([#9900](https://github.com/craftcms/cms/issues/9900))
+- Fixed an error that could occur when saving an entry programmatically on a front-end request, if any sites were disabled. ([#10499](https://github.com/craftcms/cms/issues/10499))
+- Fixed a bug where Date and Time inputs weren’t clearable on mobile. ([#10500](https://github.com/craftcms/cms/issues/10500))
+- Fixed a bug where Date and Time fields created by JavaScript weren’t getting native `date` and `time` inputs on mobile.
+- Fixed a JavaScript error on the Edit User page. ([#10509](https://github.com/craftcms/cms/issues/10509))
+- Fixed a bug where it was possible to save a custom field whose type was missing. ([#10437](https://github.com/craftcms/cms/issues/10437))
+
+### Security
+- Fixed a GraphQL API vulnerability.
+
 ## 3.7.31 - 2022-02-08
 
 ### Added
