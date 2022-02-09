@@ -5234,6 +5234,11 @@ body.reduce-focus-visibility {
 .text {
   background-color: $white;
 
+  &:not(.small) {
+    box-sizing: border-box;
+    min-height: 34px;
+  }
+
   &.small {
     padding: 3px;
   }

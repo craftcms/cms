@@ -1,4 +1,8 @@
 <div class="datetimewrapper">
-    {% include '_includes/forms/date' %}
-    {% include '_includes/forms/time' %}
+    {% include '_includes/forms/date' with {
+        hasOuterContainer: true,
+    } %}
+    {% include '_includes/forms/time' with {
+        hasOuterContainer: true,
+    } %}
 </div>

@@ -20,6 +20,8 @@
 - Fixed a bug where it was possible for non-admins to suspend/unsuspend admins from the Users index page. ([#10422](https://github.com/craftcms/cms/issues/10422))
 - Fixed a bug where the `project-config/apply` command output could get mangled. ([#9900](https://github.com/craftcms/cms/issues/9900))
 - Fixed an error that could occur when saving an entry programmatically on a front-end request, if any sites were disabled. ([#10499](https://github.com/craftcms/cms/issues/10499))
+- Fixed a bug where Date and Time inputs weren’t clearable on mobile. ([#10500](https://github.com/craftcms/cms/issues/10500))
+- Fixed a bug where Date and Time fields created by JavaScript weren’t getting native `date` and `time` inputs on mobile.
 
 ### Security
 - Fixed a GraphQL API vulnerability.
