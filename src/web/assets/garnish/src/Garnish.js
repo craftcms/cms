@@ -114,6 +114,19 @@ Garnish = $.extend(Garnish, {
     },
 
     /**
+     * Returns whether user prefers reduced motion
+     *
+     * @return {boolean}
+     */
+    prefersReducedMotion: function () {
+        // Grab the prefers reduced media query.
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+        // Check if the media query matches or is not available.
+        return !mediaQuery || mediaQuery.matches;
+    },
+
+    /**
      * Returns whether a variable is an array.
      *
      * @param {object} val
