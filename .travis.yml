@@ -5,6 +5,8 @@ os: linux
 env:
   global:
   - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
+  - PGPORT=5432
+  - PGUSER=postgres
 branches:
   only:
   - develop
@@ -25,6 +27,10 @@ cache:
   - "$HOME/.npm"
 addons:
   postgresql: "10.0"
+  apt:
+    packages:
+      - postgresql-10
+      - postgresql-client-10
 install:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
