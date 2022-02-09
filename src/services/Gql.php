@@ -1202,30 +1202,31 @@ class Gql extends Component
      * Return the content arguments based on an element class and contexts for it.
      *
      * @param FieldLayoutBehavior[] $contexts
-     * @param string $elementClass
+     * @param string $elementType
      * @return array
      */
-    public function getContentArguments(array $contexts, $elementClass): array
+    public function getContentArguments(array $contexts, string $elementType): array
     {
-        if (!array_key_exists($elementClass, $this->_contentFieldCache)) {
+        if (!array_key_exists($elementType, $this->_contentFieldCache)) {
+            $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
             $contentArguments = [];
 
             foreach ($contexts as $context) {
-                if (!GqlHelper::isSchemaAwareOf($elementClass::gqlScopesByContext($context))) {
+                if (!GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
                     continue;
                 }
 
                 foreach ($context->getFields() as $contentField) {
-                    if (!$contentField instanceof GqlInlineFragmentFieldInterface) {
+                    if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField)) {
                         $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
                     }
                 }
             }
 
-            $this->_contentFieldCache[$elementClass] = $contentArguments;
+            $this->_contentFieldCache[$elementType] = $contentArguments;
         }
 
-        return $this->_contentFieldCache[$elementClass];
+        return $this->_contentFieldCache[$elementType];
     }
 
     /**
@@ -1252,9 +1253,14 @@ class Gql extends Component
             // If devMode enabled, substitute the original exception here.
             if ($devMode && !empty($originException->getMessage())) {
                 $error = $originException;
+            } else if (!$originException instanceof Error) {
+                // If devMode not enabled and the error seems to be originating from Craft, display a generic message
+                $error = new Error(
+                    Craft::t('app', 'Something went wrong when processing the GraphQL query.')
+                );
             }
 
-            // Otherwise, just log it.
+            // Log it.
             Craft::$app->getErrorHandler()->logException($originException);
         }
 
