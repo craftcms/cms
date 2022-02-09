@@ -7,6 +7,7 @@
 - Added `craft\db\Migration::createIndexIfMissing()`.
 - Added `craft\db\Migration::dropIndexIfExists()`.
 - Added `craft\services\Users::canSuspend()`.
+- Added `craft\validators\SiteIdValidator::$allowDisabled`.
 
 ### Changed
 - Improved element query performance. ([#10418](https://github.com/craftcms/cms/discussions/10418))
@@ -17,6 +18,7 @@
 - Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
 - Fixed a bug where the last control panel breadcrumb could be collapsed under a “More…” menu when there was enough room to display it. ([#10495](https://github.com/craftcms/cms/issues/10495))
 - Fixed a bug where it was possible for non-admins to suspend/unsuspend admins from the Users index page. ([#10422](https://github.com/craftcms/cms/issues/10422))
+- Fixed an error that could occur when saving an entry programmatically on a front-end request, if any sites were disabled. ([#10499](https://github.com/craftcms/cms/issues/10499))
 
 ### Security
 - Fixed a GraphQL API vulnerability.
