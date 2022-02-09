@@ -1062,6 +1062,7 @@ JS,
             'showPhotoField',
             'showPermissionsTab',
             'canAssignUserGroups',
+            'fieldsHtml',
             'addressesHtml'
         ));
     }
