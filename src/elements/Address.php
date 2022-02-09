@@ -6,6 +6,8 @@ use Craft;
 use CommerceGuys\Addressing\AddressInterface;
 use craft\base\Element;
 use craft\commerce\fieldlayoutelements\VariantsField;
+use craft\elements\db\AddressQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\AddressField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -155,6 +157,15 @@ class Address extends Element implements AddressInterface
     public static function hasStatuses(): bool
     {
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     * @return AddressQuery The newly created [[AddressQuery]] instance.
+     */
+    public static function find(): ElementQueryInterface
+    {
+        return new AddressQuery(static::class);
     }
 
     protected static function defineSearchableAttributes(): array
