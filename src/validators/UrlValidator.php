@@ -40,7 +40,7 @@ class UrlValidator extends YiiUrlValidator
             $config['pattern'] = '/' . self::URL_PATTERN . '/i';
         }
 
-        // Enable support for validating international domain names if the intl extension is available.
+        // Enable support for validating international domain names if the server supports IDNA ASCII strings
         if (!isset($config['enableIDN']) && App::supportsIdn()) {
             $config['enableIDN'] = true;
         }

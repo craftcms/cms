@@ -382,7 +382,7 @@ class App
      */
     public static function supportsIdn(): bool
     {
-        return function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
+        return defined('INTL_IDNA_VARIANT_UTS46');
     }
 
     /**

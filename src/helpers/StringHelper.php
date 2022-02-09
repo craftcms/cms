@@ -1569,10 +1569,8 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toAscii(string $str, ?string $language = null): string
     {
-        // If Intl is installed, normalize NFD chars to NFC
-        if (class_exists(Normalizer::class)) {
-            $str = Normalizer::normalize($str, Normalizer::FORM_C);
-        }
+        // Normalize NFD chars to NFC
+        $str = Normalizer::normalize($str, Normalizer::FORM_C);
 
         return (string)BaseStringy::create($str)->toAscii($language ?? Craft::$app->language);
     }
@@ -1887,7 +1885,7 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Converts an email from IDNA ASCII to Unicode, if the Intl extension is installed.
+     * Converts an email from IDNA ASCII to Unicode, if the server supports IDNA ASCII strings.
      *
      * @param string $email
      * @return string
@@ -1895,9 +1893,10 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function idnToUtf8Email(string $email): string
     {
-        if (!function_exists('idn_to_utf8') || !defined('INTL_IDNA_VARIANT_UTS46')) {
+        if (!App::supportsIdn()) {
             return $email;
         }
+
         $parts = explode('@', $email, 2);
         foreach ($parts as &$part) {
             if (($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {
