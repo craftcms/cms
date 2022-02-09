@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.32 - 2022-02-09
 
 ### Added
 - Added `craft\base\FieldInterface::getInputId()`.
