@@ -13,6 +13,7 @@ const state = {
   featuredSections: [],
   plugin: null,
   pluginChangelog: null,
+  pluginChangelogPluginId: null,
 
   // plugin index
   plugins: [],
@@ -31,6 +32,12 @@ const getters = {
   getPluginEdition() {
     return (plugin, editionHandle) => {
       return plugin.editions.find(edition => edition.handle === editionHandle)
+    }
+  },
+
+  getPluginEditions() {
+    return plugin => {
+      return plugin.editions
     }
   },
 
@@ -53,6 +60,12 @@ const getters = {
   isPluginEditionFree() {
     return edition => {
       return edition.price === null
+    }
+  },
+
+  isCommercial() {
+    return plugin => {
+      return !!plugin.editions.find(edition => edition.price > 0)
     }
   },
 }
@@ -123,7 +136,10 @@ const actions = {
     return new Promise((resolve, reject) => {
       api.getPluginChangelog(pluginId)
         .then(responseData => {
-          commit('updatePluginChangelog', responseData)
+          commit('updatePluginChangelog', {
+            pluginId,
+            changelog: responseData
+          })
           resolve(responseData)
         })
         .catch(error => {
@@ -251,7 +267,8 @@ const mutations = {
     state.featuredSections = featuredSections
   },
 
-  updatePluginChangelog(state, changelog) {
+  updatePluginChangelog(state, {pluginId, changelog}) {
+    state.pluginChangelogPluginId = pluginId
     state.pluginChangelog = changelog
   },
 

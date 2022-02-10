@@ -64,10 +64,6 @@ export default {
         this.loading = false
       })
   },
-
-  destroyed() {
-    this.$store.commit('pluginStore/updatePluginChangelog', null)
-  }
 }
 </script>
 
