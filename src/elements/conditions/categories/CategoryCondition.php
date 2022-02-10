@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\categories;
 
 use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\LevelConditionRule;
 
 /**
  * Category query condition.
@@ -19,6 +20,7 @@ class CategoryCondition extends ElementCondition
     {
         return array_merge(parent::conditionRuleTypes(), [
             GroupConditionRule::class,
+            LevelConditionRule::class,
         ]);
     }
 }
