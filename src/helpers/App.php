@@ -506,6 +506,17 @@ class App
         return static::constant('CRAFT_EPHEMERAL', $bool = true);
     }
 
+    /**
+     * Returns whether Craft is logging to stdout/stderr.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function isStreamLog(): bool
+    {
+        return defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true;
+    }
+
     // App component configs
     // -------------------------------------------------------------------------
 
@@ -699,52 +710,45 @@ class App
         // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
         // targets haven’t been instantiated yet.
 
-        $targets = [];
-
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
-        if ($isConsoleRequest || Craft::$app->getUser()->enableSession) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+        // Only log console requests and web requests that aren't getAuthTimeout requests
+        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
+            return [];
+        }
 
-            $fileTargetConfig = [
+        $targets = [];
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $baseTargetConfig = [
+            'includeUserIp' => $generalConfig->storeUserIps,
+            'except' => [
+                PhpMessageSource::class . ':*',
+            ],
+        ];
+
+        if (self::isStreamLog()) {
+            $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
+                'class' => StreamLogTarget::class,
+                'url' => 'php://stderr',
+                'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
+            ]));
+
+            // Don't pollute console request output
+            if (!$isConsoleRequest && YII_DEBUG) {
+                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
+                    'class' => StreamLogTarget::class,
+                    'url' => 'php://stdout',
+                    'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
+                ]));
+            }
+        } else {
+            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
                 'class' => FileTarget::class,
                 'fileMode' => $generalConfig->defaultFileMode,
                 'dirMode' => $generalConfig->defaultDirMode,
-                'includeUserIp' => $generalConfig->storeUserIps,
-                'except' => [
-                    PhpMessageSource::class . ':*',
-                ],
-            ];
-
-            if ($isConsoleRequest) {
-                $fileTargetConfig['logFile'] = '@storage/logs/console.log';
-            } else {
-                $fileTargetConfig['logFile'] = '@storage/logs/web.log';
-            }
-
-            if (!YII_DEBUG) {
-                $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
-            }
-
-            $targets[Dispatcher::TARGET_FILE] = Craft::createObject($fileTargetConfig);
-
-            if (!$isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
-                $targets[Dispatcher::TARGET_STDERR] = Craft::createObject([
-                    'class' => StreamLogTarget::class,
-                    'url' => 'php://stderr',
-                    'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
-                    'includeUserIp' => $generalConfig->storeUserIps,
-                ]);
-
-                if (YII_DEBUG) {
-                    $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject([
-                        'class' => StreamLogTarget::class,
-                        'url' => 'php://stdout',
-                        'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
-                        'includeUserIp' => $generalConfig->storeUserIps,
-                    ]);
-                }
-            }
+                'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
+                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
+            ]));
         }
 
         return $targets;

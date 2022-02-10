@@ -144,7 +144,7 @@ if (!App::constant('CRAFT_LICENSE_KEY')) {
     }
 }
 
-if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
+if (!App::isEphemeral()) {
     $ensureFolderIsReadable($storagePath, true);
 
     // Create the storage/runtime/ folder if it doesn't already exist
@@ -159,10 +159,11 @@ if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
 // Log errors to storage/logs/phperrors.log or php://stderr
 if (!App::constant('CRAFT_LOG_PHP_ERRORS', $bool = true)) {
     ini_set('log_errors', 1);
-    ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
 
-    if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG) {
+    if (App::isStreamLog()) {
         ini_set('error_log', 'php://stderr');
+    } else {
+        ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
     }
 }
 
