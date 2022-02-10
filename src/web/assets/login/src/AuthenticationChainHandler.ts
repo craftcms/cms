@@ -325,6 +325,27 @@ export class AuthenticationChainHandler
     }
 
     /**
+     * Trigger a submit event on the current login form.
+     */
+    public triggerLoginFormSubmit () {
+        this.loginForm.$loginForm.trigger('submit');
+    }
+
+    /**
+     * Hide the submit button of the current login form.
+     */
+    public hideSubmitButton() {
+        this.loginForm.$submit.removeClass('hidden');
+    }
+
+    /**
+     * Show the submit button of the current login form.
+     */
+    public showSubmitButton() {
+        this.loginForm.$submit.addClass('hidden');
+    }
+
+    /**
      * Invoke the current step handler
      * @param ev
      */

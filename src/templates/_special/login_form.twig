@@ -1,14 +1,15 @@
 {% import "_includes/forms" as forms %}
 
 {% set authenticationInProgress = username|length > 0 or (authState is not null and authState.user is not null and not authState.isAuthenticated) %}
+{% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
 
 {% if (user is not defined or user is null) and authenticationInProgress %}
     {% set user = authState.user %}
 {% endif %}
 
 {### User greeting ###}
-{% if authenticationInProgress %}
 
+{% if authenticationInProgress %}
     {% set knownUserName = user.username|default(username) %}
     <div id="authentication-greeting">
         {{ 'Hello, {user}'|t('app', {user: knownUserName}) }}. (<a id="restart-authentication">{{ 'Not {user}?'|t('app', {user: knownUserName}) }}</a>)
@@ -84,7 +85,10 @@
 {### Submit button and spinner ###}
 <div class="buttons">
     {% if not authState or not authState.isAuthenticated %}
-        <button id="submit" class="btn submit" type="submit">{{ 'Submit'|t('app') }}</button>
+        {{ forms.submitButton({
+            id: "submit",
+            spinner: true,
+        }) }}
         <div id="spinner" class="spinner over-bg hidden"></div>
     {% endif %}
 </div>

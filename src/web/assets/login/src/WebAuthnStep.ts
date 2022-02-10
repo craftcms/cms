@@ -18,20 +18,20 @@ export class WebAuthnStep extends AuthenticationStep
     public init()
     {
         this.$button.on('click', this.onButtonClick.bind(this));
-        this.$submit.addClass('hidden');
+        Craft.AuthenticationChainHandler.hideSubmitButton();
     }
 
     public cleanup()
     {
         this.$button.off('click', this.onButtonClick.bind(this));
-        this.$submit.removeClass('hidden');
+        Craft.AuthenticationChainHandler.showSubmitButton();
     }
 
     /**
      * Submit the form again, when the authentication button is clicked.
      */
     public onButtonClick (){
-        this.$loginForm.trigger('submit');
+        Craft.AuthenticationChainHandler.triggerLoginFormSubmit();
     };
 
 

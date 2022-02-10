@@ -3,7 +3,6 @@
 {% set title = "Login"|t('app') %}
 {% set bodyClass = 'login' %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
 {% set showRememberMe = craft.app.config.general.rememberedUserSessionDuration %}
 
 {% set hasLogo = CraftEdition == CraftPro and craft.rebrand.isLogoUploaded %}

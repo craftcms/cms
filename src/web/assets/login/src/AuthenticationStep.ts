@@ -34,9 +34,6 @@ export abstract class AuthenticationStep
         this.doInit();
     }
 
-    get $loginForm() { return Craft.AuthenticationChainHandler.loginForm.$loginForm;}
-    get $submit() { return Craft.AuthenticationChainHandler.loginForm.$submit;}
-
     protected doInit() {
         this.cleanup();
         this.init();
