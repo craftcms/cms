@@ -21,6 +21,7 @@ class EntryCondition extends ElementCondition
             AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
             ExpiryDateConditionRule::class,
+            LevelConditionRule::class,
             PostDateConditionRule::class,
             SectionConditionRule::class,
             TypeConditionRule::class,
