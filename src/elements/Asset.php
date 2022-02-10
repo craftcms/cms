@@ -34,6 +34,7 @@ use craft\errors\FileException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\fieldlayoutelements\AssetAltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -67,6 +68,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use yii\validators\RequiredValidator;
 
 /**
  * Asset represents an asset element.
@@ -840,6 +842,23 @@ class Asset extends Element
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'dateModified';
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterValidate(): void
+    {
+        $scenario = $this->getScenario();
+
+        if ($scenario === self::SCENARIO_LIVE) {
+            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AssetAltField::class, $this);
+            if ($altElement && $altElement->required) {
+                (new RequiredValidator())->validateAttribute($this, 'alt');
+            }
+        }
+
+        parent::afterValidate();
     }
 
     /**

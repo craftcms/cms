@@ -32,6 +32,11 @@ class AssetAltField extends TextareaField
     /**
      * @inheritdoc
      */
+    public bool $requirable = true;
+
+    /**
+     * @inheritdoc
+     */
     public function __construct($config = [])
     {
         unset(
@@ -39,6 +44,7 @@ class AssetAltField extends TextareaField
             $config['autofocus'],
             $config['mandatory'],
             $config['maxlength'],
+            $config['requirable'],
             $config['translatable'],
         );
 
