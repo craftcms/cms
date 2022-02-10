@@ -77,7 +77,7 @@
                   class="readable"></div>
                 <p v-else>No description.</p>
               </div>
-              <div class="lg:tw-pl-8 lg:tw-ml-4">
+              <div class="lg:tw-ml-4 lg:tw-w-60 tw-mt-8 lg:tw-mt-0">
                 <plugin-meta :plugin="plugin"></plugin-meta>
               </div>
             </div>
