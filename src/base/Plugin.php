@@ -15,7 +15,7 @@ use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\i18n\PhpMessageSource;
-use craft\services\Plugins;
+use craft\services\ProjectConfig;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\Event;
@@ -197,7 +197,7 @@ class Plugin extends Module implements PluginInterface
         if ($pcSettings) {
             $settings = $this->_settings;
             $this->_settings = $pcSettings;
-            $path = sprintf('%s.%s.settings', Plugins::CONFIG_PLUGINS_KEY, $this->id);
+            $path = sprintf('%s.%s.settings', ProjectConfig::PATH_PLUGINS, $this->id);
             $pcAttributes = Craft::$app->getProjectConfig()->get($path);
             if ($pcAttributes) {
                 $pcSettings->setAttributes(ProjectConfigHelper::unpackAssociativeArrays($pcAttributes), false);
