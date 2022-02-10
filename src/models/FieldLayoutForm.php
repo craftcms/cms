@@ -69,6 +69,11 @@ class FieldLayoutForm extends Model
                     'id' => $id,
                     'layout-tab' => $tab->getUid(),
                 ],
+                'role' => 'tabpanel',
+                'tabindex' => '0',
+                'aria' => [
+                    'labelledBy' => $tab->getId(),
+                ]
             ]);
         }
         return implode("\n", $html);

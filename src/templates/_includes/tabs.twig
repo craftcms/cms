@@ -8,38 +8,37 @@
         class: (tab.class ?? [])|explodeClass,
 })) %}
 
-{% tag 'nav' with containerAttributes %}
-    <ul class="scrollable">
+{% tag 'div' with containerAttributes %}
+    <div class="scrollable" role="tablist" aria-label="{{ 'Fields'|t('app') }}">
         {% for tabId, tab in tabs %}
-            {% tag 'li' with {
+            {% tag 'a' with {
+                id: "tab-#{tabId}",
+                class: (tab.selected ? ['sel'] : [])|merge(tab.class),
+                tabindex: tab.selected ? '0' : '-1',
+                href: tab.url,
+                role: 'tab',
                 data: {
                     id: tabId,
-                }
+                },
+                aria: {
+                    controls: tabId,
+                    selected: tab.selected ? 'true' : 'false',
+                },
             } %}
-                {% tag 'a' with {
-                    id: "tab-#{tabId}",
-                    class: (tab.selected ? ['sel'] : [])|merge(tab.class),
-                    tabindex: tab.selected ? '0' : '-1',
-                    href: tab.url,
-                    data: {
-                        id: tabId,
-                    },
-                } %}
-                    {{ tab.label }}
-                    {% if 'error' in tab.class %}
-                        {{ tag('span', {
-                            aria: {
-                                label: 'This tab contains errors'|t('app'),
-                            },
-                            data: {
-                                icon: 'alert',
-                            }
-                        }) }}
-                    {% endif %}
-                {% endtag %}
+                {{ tab.label }}
+                {% if 'error' in tab.class %}
+                    {{ tag('span', {
+                        aria: {
+                            label: 'This tab contains errors'|t('app'),
+                        },
+                        data: {
+                            icon: 'alert',
+                        }
+                    }) }}
+                {% endif %}
             {% endtag %}
         {% endfor %}
-    </ul>
+    </div>
     {{ tag('button', {
         type: 'button',
         class: 'btn menubtn hidden',
