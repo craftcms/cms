@@ -702,34 +702,29 @@ class App
             ],
         ];
 
-        // Console requests should always log to file, as to not pollute console output.
-        if (self::isStreamLog() && !$isConsoleRequest) {
+        if (self::isStreamLog()) {
             $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
                 'class' => StreamLogTarget::class,
                 'url' => 'php://stderr',
                 'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
             ]));
 
-            if (YII_DEBUG) {
-                $targets[Dispatcher::TARGET_STDOUT] = array_merge($baseTargetConfig, [
+            // Don't pollute console request output
+            if (!$isConsoleRequest && YII_DEBUG) {
+                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
                     'class' => StreamLogTarget::class,
                     'url' => 'php://stdout',
                     'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
-                ]);
+                ]));
             }
         } else {
-            $fileTargetConfig = array_merge($baseTargetConfig, [
+            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
                 'class' => FileTarget::class,
                 'fileMode' => $generalConfig->defaultFileMode,
                 'dirMode' => $generalConfig->defaultDirMode,
                 'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
-            ]);
-
-            if (!YII_DEBUG) {
-                $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
-            }
-
-            $targets[Dispatcher::TARGET_FILE] = Craft::createObject($fileTargetConfig);
+                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
+            ]));
         }
 
         return $targets;
