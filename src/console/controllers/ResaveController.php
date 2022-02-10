@@ -254,7 +254,7 @@ class ResaveController extends Controller
     /**
      * Re-saves Matrix blocks.
      *
-     * Note that you must supply the --field or --element-id argument for this to work properly.
+     * You must supply the `--field` or `--element-id` argument for this to work properly.
      *
      * @return int
      * @since 3.2.0
