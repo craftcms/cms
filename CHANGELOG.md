@@ -335,6 +335,8 @@
 - The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
 - The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
 - Users are no longer required to have a username or email.
+- Users can now set their Formatting Locale to any known locale; not just the available Language options. ([#10519](https://github.com/craftcms/cms/pull/10519))
+- Users’ Language and Formatting Locale settings now display locale names in the current language and their native languages. ([#10519](https://github.com/craftcms/cms/pull/10519))
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - `credentialed` and `inactive` are now reserved user group handles.
