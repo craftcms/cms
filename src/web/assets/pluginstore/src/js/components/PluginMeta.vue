@@ -53,7 +53,6 @@
           <c-icon
             class="tw-mr-2"
             icon="github"
-            set="solid"
           />
           Repository
 

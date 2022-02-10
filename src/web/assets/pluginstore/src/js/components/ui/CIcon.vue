@@ -14,6 +14,7 @@ import ChevronRightIcon from './icons/ChevronRightIcon'
 import CopyIcon from './icons/CopyIcon'
 import ExclamationCircleIcon from './icons/ExclamationCircleIcon'
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon'
+import GithubIcon from './icons/GithubIcon'
 import InfoCircleIcon from './icons/InfoCircleIcon'
 import LinkIcon from './icons/LinkIcon'
 import PlugIcon from './icons/PlugIcon'
@@ -32,6 +33,7 @@ export default {
     CopyIcon,
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
+    GithubIcon,
     InfoCircleIcon,
     PlugIcon,
     LinkIcon,
