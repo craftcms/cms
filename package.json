@@ -21,7 +21,7 @@
     "d3-format": "^1.4.4",
     "d3-time-format": "^2.2.3",
     "element-resize-detector": "^1.2.2",
-    "event-stream": "3.3.4",
+    "event-stream": "3.3.5",
     "fabric": "^1.7.19",
     "focus-visible": "^5.2.0",
     "graphiql": "^1.4.7",
