@@ -34,13 +34,12 @@ class AssetAltField extends TextareaField
      */
     public function __construct($config = [])
     {
-        // We didn't start removing autofocus from fields() until 3.5.6
         unset(
-            $config['mandatory'],
             $config['attribute'],
-            $config['translatable'],
+            $config['autofocus'],
+            $config['mandatory'],
             $config['maxlength'],
-            $config['autofocus']
+            $config['translatable'],
         );
 
         parent::__construct($config);
@@ -53,11 +52,11 @@ class AssetAltField extends TextareaField
     {
         $fields = parent::fields();
         unset(
-            $fields['mandatory'],
             $fields['attribute'],
-            $fields['translatable'],
+            $fields['autofocus'],
+            $fields['mandatory'],
             $fields['maxlength'],
-            $fields['autofocus']
+            $fields['translatable'],
         );
         return $fields;
     }
