@@ -161,7 +161,7 @@ class Entry extends Mutation
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('section', $section);
 
-        static::prepareResolver($resolver, $entryType->getFields());
+        static::prepareResolver($resolver, $entryType->getCustomFields());
 
         switch ($section->type) {
             case Section::TYPE_SINGLE:

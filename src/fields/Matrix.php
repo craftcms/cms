@@ -347,7 +347,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                     }
                 }
 
-                $blockType->setFields($fields);
                 $fieldLayoutTab->setElements($layoutElements);
                 $this->_blockTypes[] = $blockType;
             }
@@ -941,7 +940,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $blockType->uid = Db::uidById(DbTable::MATRIXBLOCKTYPES, $blockType->id);
             }
 
-            foreach ($blockType->getFields() as $field) {
+            foreach ($blockType->getCustomFields() as $field) {
                 // Hack to allow blank field names
                 if (!$field->name) {
                     $field->name = '__blank__';

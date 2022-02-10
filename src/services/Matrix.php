@@ -158,7 +158,7 @@ class Matrix extends Component
             $blockType->addErrors($blockTypeRecord->getErrors());
         }
 
-        foreach ($blockType->getFields() as $field) {
+        foreach ($blockType->getCustomFields() as $field) {
             // Hack to allow blank field names
             if (!$field->name) {
                 $field->name = '__blank__';
@@ -407,7 +407,7 @@ class Matrix extends Component
                 $fieldsService->oldFieldColumnPrefix = "field_{$blockType->handle}_";
 
                 // Now delete the block type fields
-                foreach ($blockType->getFields() as $field) {
+                foreach ($blockType->getCustomFields() as $field) {
                     $fieldsService->deleteField($field);
                 }
 
