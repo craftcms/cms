@@ -79,7 +79,7 @@ class App
      * @return mixed The value of the constant or environment variable, or null if neither are found
      * @since 4.0.0
      */
-    public static function constant(string $constName, ?string $envName = null, $bool = false): mixed
+    public static function constant(string $constName, ?string $envName = null, bool $bool = false): mixed
     {
         if (defined($constName)) {
             return constant($constName);
