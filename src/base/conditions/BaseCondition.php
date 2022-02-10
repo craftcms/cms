@@ -254,6 +254,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $html = Html::beginTag('div', [
                 'class' => ['condition-main'],
                 'hx' => [
+                    'ext' => 'craft-cp',
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
                     'vals' => [
