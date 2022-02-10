@@ -2,7 +2,7 @@
   <div>
     <ul class="tw-list-reset tw-space-y-2">
       <!-- Buy button -->
-      <li>Buy</li>
+      <plugin-meta-buy-button :plugin="plugin" />
 
       <!-- Documentation Button -->
       <template v-if="plugin.documentationUrl">
@@ -207,9 +207,10 @@
 
 <script>
 import MetaStat from './MetaStat';
+import PluginMetaBuyButton from './PluginMetaBuyButton';
 
 export default {
-  components: {MetaStat},
+  components: {PluginMetaBuyButton, MetaStat},
   props: {
     plugin: {
       type: Object,
