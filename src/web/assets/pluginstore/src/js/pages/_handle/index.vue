@@ -2,7 +2,7 @@
   <div class="plugin-details ps-container">
     <template v-if="!loading && plugin">
       <!-- header -->
-      <div class="plugin-details-header tw-border-b tw-border-solid tw-border-gray-200 tw-tw-flex tw-mb-6 tw-pb-6 tw-items-center">
+      <div class="plugin-details-header tw-border-b tw-border-solid tw-border-gray-200 tw-flex tw-mb-6 tw-pb-6 tw-items-center">
         <div class="plugin-icon">
           <template v-if="plugin.iconUrl">
             <img
