@@ -390,9 +390,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         'post' => UrlHelper::actionUrl('conditions/add-rule'),
                     ],
                 ]) .
-                $this->addRuleLabel .
+                Html::tag('div', Html::encode($this->addRuleLabel), [
+                    'class' => 'label',
+                ]) .
                 Html::tag('div', '', [
-                    'class' => ['spinner', 'htmx-indicator'],
+                    'class' => ['spinner', 'spinner-absolute'],
                 ]) .
                 Html::endTag('button') .
                 Html::endTag('div');

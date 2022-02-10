@@ -62,3 +62,10 @@ htmx.defineExtension('craft-condition', {
         evt.detail.parameters.config = JSON.stringify(config || {});
     },
 });
+
+if (typeof Craft !== 'undefined') {
+    Object.assign(htmx.config, {
+        indicatorClass: 'spinner',
+        requestClass: 'loading',
+    });
+}
