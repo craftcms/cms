@@ -2,6 +2,7 @@
 
 ## Changed
 - `craft\helpers\App::parseBooleanEnv()` now treats `0` and `1` as boolean values. ([#10524](https://github.com/craftcms/cms/issues/10524))
+- Updated GraphiQL to 1.5.16.
 
 ## 3.7.32 - 2022-02-09
 
