@@ -386,7 +386,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     },
 
     get config() {
-        return this.designer.config.tabs.find(c => c.uid === this.uid);
+        return this.designer.config.tabs.find(c => c.uid === this.uid) || {};
     },
 
     set config(config) {
@@ -611,7 +611,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     },
 
     get config() {
-        return this.tab.config.elements.find(c => c.uid === this.uid);
+        return this.tab.config.elements.find(c => c.uid === this.uid) || {};
     },
 
     set config(config) {
