@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\entries;
 
 use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\LevelConditionRule;
 
 /**
  * Entry query condition.
