@@ -579,6 +579,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             this.config = response.data.config;
             this.$editBtn.detach();
             this.$container.html($(response.data.selectorHtml).html());
+            if (response.data.hasConditions) {
+                this.$container.addClass('has-conditions');
+            } else {
+                this.$container.removeClass('has-conditions');
+            }
             this.initUi();
         }).catch(e => {
             Craft.cp.displayError();

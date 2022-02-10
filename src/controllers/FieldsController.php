@@ -416,6 +416,7 @@ JS;
         return $this->asJson([
             'config' => ['type' => get_class($element)] + $element->toArray(),
             'selectorHtml' => $element->selectorHtml(),
+            'hasConditions' => $element->hasConditions(),
         ]);
     }
 
