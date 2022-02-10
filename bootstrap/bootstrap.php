@@ -7,6 +7,7 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\services\Config;
 use yii\base\ErrorException;
@@ -24,8 +25,10 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
 }
 
 $findConfig = function($constName, $argName) {
-    if (defined($constName)) {
-        return constant($constName);
+    $constant = App::constant($constName);
+
+    if ($constant) {
+        return $constant;
     }
 
     if (!empty($_SERVER['argv'])) {
@@ -104,11 +107,13 @@ $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-if (!defined('CRAFT_LICENSE_KEY')) {
+if (!App::constant('CRAFT_LICENSE_KEY')) {
+    $licenseKeyPath = App::constant('CRAFT_LICENSE_KEY_PATH');
+
     // Validate permissions on the license key file path (default config/) and storage/
-    if (defined('CRAFT_LICENSE_KEY_PATH')) {
-        $licensePath = dirname(CRAFT_LICENSE_KEY_PATH);
-        $licenseKeyName = basename(CRAFT_LICENSE_KEY_PATH);
+    if ($licenseKeyPath) {
+        $licensePath = dirname($licenseKeyPath);
+        $licenseKeyName = basename($licenseKeyPath);
     } else {
         $licensePath = $configPath;
         $licenseKeyName = 'license.key';
