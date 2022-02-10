@@ -827,7 +827,7 @@ li.breadcrumb-toggle-wrapper {
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth - 30 - 7} !important;
+      min-width: calc(#{$sidebarWidth} - var(--xl) - var(--s)) !important;
     }
   }
 }
