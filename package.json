@@ -24,7 +24,7 @@
     "event-stream": "3.3.4",
     "fabric": "^1.7.19",
     "focus-visible": "^5.2.0",
-    "graphiql": "^1.4.7",
+    "graphiql": "^1.5.16",
     "graphiql-explorer": "^0.6.3",
     "graphql": "^15.5.0",
     "iframe-resizer": "^4.3.2",
