@@ -233,49 +233,17 @@ Craft.AuthManager = Garnish.Base.extend({
 
         if (!this.loginModal) {
             var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
-                $body = $('<div class="body"><h2>' + Craft.t('app', 'Your session has ended.') + '</h2><p>' + Craft.t('app', 'Enter your password to log back in.') + '</p></div>').appendTo($form),
-                $inputContainer = $('<div class="inputcontainer">').appendTo($body),
-                $inputsFlexContainer = $('<div class="flex"/>').appendTo($inputContainer),
-                $passwordContainer = $('<div class="flex-grow"/>').appendTo($inputsFlexContainer),
-                $buttonContainer = $('<div/>').appendTo($inputsFlexContainer),
-                $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordContainer);
-
-            this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
-            this.$loginBtn = Craft.ui.createSubmitButton({
-                class: 'disabled',
-                label: Craft.t('app', 'Login'),
-                spinner: true,
-            }).appendTo($buttonContainer);
-            this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
+                $body = $('<div class="body"><h2>' + Craft.t('app', 'Your session has ended.') + '</h2><div id="reauthenticate"><div id="spinner-pending" class="spinner big"></div></div></div>').appendTo($form);
 
             this.loginModal = new Garnish.Modal($form, {
                 autoShow: false,
                 closeOtherModals: false,
                 hideOnEsc: false,
                 hideOnShadeClick: false,
-                shadeClass: 'modal-shade dark loginmodalshade',
-                onFadeIn: () => {
-                    if (!Garnish.isMobileBrowser(true)) {
-                        // Auto-focus the password input
-                        setTimeout(() => {
-                            this.$passwordInput.trigger('focus');
-                        }, 100);
-                    }
-                },
-                onFadeOut: () => {
-                    this.$passwordInput.val('');
-                },
+                shadeClass: 'modal-shade dark loginmodalshade'
             });
-
-            new Craft.PasswordInput(this.$passwordInput, {
-                onToggleInput: $newPasswordInput => {
-                    this.$passwordInput = $newPasswordInput;
-                },
-            });
-
-            this.addListener(this.$passwordInput, 'input', 'validatePassword');
-            this.addListener($form, 'submit', 'login');
         }
+
 
         if (quickShow) {
             this.loginModal.quickShow();
@@ -349,6 +317,7 @@ Craft.AuthManager = Garnish.Base.extend({
     },
 
     submitLogin: function() {
+
         var data = {
             loginName: Craft.username,
             password: this.$passwordInput.val()

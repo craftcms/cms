@@ -142,21 +142,27 @@ class AuthenticationController extends Controller
         }
 
         $alternateStep = $request->getBodyParam('alternateStep');
+        $session = Craft::$app->getSession();
 
         if (!empty($alternateStep)) {
             $this->_state->selectAlternateStep($alternateStep);
 
-            return $this->asJson([
-                'html' => $this->_state->getNextStep()->getInputFieldHtml(),
+            // Do this earlier, in case there's some preparing that might generate a message or error.
+            $html = $this->_state->getNextStep()->getInputFieldHtml();
+
+            $output = [
+                'message' => $session->getNotice(),
+                'error' => $session->getError(),
+                'html' => $html,
                 'footHtml' => Craft::$app->getView()->getBodyHtml(),
                 'alternatives' => $this->_state->getAlternativeSteps(),
                 'stepType' => $this->_state->getNextStep()->getStepType(),
-            ]);
+            ];
+
+            return $this->asJson($output);
         }
 
         $step = $this->_state->getNextStep();
-
-        $session = Craft::$app->getSession();
 
         $data = [];
         if ($fields = $step->getFields()) {

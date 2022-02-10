@@ -41,6 +41,8 @@ export class AuthenticationChainHandler
         [key: string]: AuthenticationStep
     } = {};
 
+    get $authenticationStep() { return $('#authentication-step');}
+
     public constructor(loginForm: LoginForm, additionalData?: () => { [key: string]: any })
     {
         this.loginForm = loginForm;
@@ -55,39 +57,13 @@ export class AuthenticationChainHandler
             this.handleFormSubmit(event, additionalSubmittedData);
             event.preventDefault();
         });
-
-        this.prepareForm();
     }
 
-    get $alternatives() { return $('#alternative-types');}
-    get $authenticationStep() { return $('#authentication-step');}
-    get $restartAuthentication() { return $('#restart-authentication');}
-    get $usernameField() { return $('#username-field');}
-    get $recoveryButtons() { return $('#recover-account, #cancel-recover');}
-    get $authenticationGreeting() { return $('#authentication-greeting');}
-    get $recoveryMessage() { return $('#recovery-message');}
-
     /**
-     * Prepare form by cleaning up visibility of some items and attaching relevant event listeners.
-     *
-     * @protected
+     * Return true if currently recovering an account.
      */
-    protected prepareForm()
-    {
-        this.$alternatives.on('click', 'li', (ev) => {
-            this.switchStep($(ev.target).attr('rel')!);
-        });
-
-        if (this.loginForm.canRememberUser) {
-            if (!this.isExistingChain()) {
-                this.loginForm.showRememberMe();
-            } else {
-                this.loginForm.hideRememberMe();
-            }
-        }
-
-        this.$restartAuthentication.on('click', this.restartAuthentication.bind(this));
-        this.$recoveryButtons.on('click', this.toggleRecoverAccountForm.bind(this));
+    public isRecoveringAccount() {
+        return this.recoverAccount;
     }
 
     /**
@@ -96,20 +72,8 @@ export class AuthenticationChainHandler
     public resetAuthenticationControls()
     {
         this.$authenticationStep.empty().attr('rel', '');
-        this.$authenticationGreeting.remove();
-        this.$usernameField.removeClass('hidden');
-        this.$recoveryMessage.addClass('hidden');
-        this.loginForm.showSubmitButton();
-        this.loginForm.showRememberMe();
-        this.hideAlternatives();
-        this.clearErrors();
-        
-        if (this.recoverAccount) {
-            this.$recoveryButtons.toggleClass('hidden');
-            this.recoverAccount = false;
-        }
+        this.recoverAccount = false;
     }
-
 
     /**
      * Register an authentication step
@@ -128,9 +92,11 @@ export class AuthenticationChainHandler
      */
     public restartAuthentication(event?: ClickEvent) {
         this.resetAuthenticationControls();
+        this.loginForm.resetLoginForm();
 
-        // Let the backend know to let it goooooo.
+        // Let the backend know to let it go, turn away and slam the door.
         Craft.postActionRequest(this.startAuthenticationEndpoint, {});
+
         if (event) {
             event.preventDefault();
         }
@@ -139,16 +105,8 @@ export class AuthenticationChainHandler
     /**
      * Toggle the account recovery form
      */
-    public toggleRecoverAccountForm() {
+    public toggleRecoverAccount() {
         this.recoverAccount = !this.recoverAccount;
-
-        this.$recoveryButtons.toggleClass('hidden');
-
-        if (this.recoverAccount) {
-            this.$recoveryMessage.removeClass('hidden');
-        } else {
-            this.$recoveryMessage.addClass('hidden');
-        }
 
         // Presumably, the login name input is shown already.
         if (!this.isExistingChain()) {
@@ -163,15 +121,11 @@ export class AuthenticationChainHandler
         }
 
         if (this.recoverAccount) {
-            this.$usernameField.removeClass('hidden');
             this.$authenticationStep.addClass('hidden');
-            this.$alternatives.addClass('hidden');
             stepType?.cleanup();
         } else {
-            this.$usernameField.addClass('hidden');
             this.$authenticationStep.removeClass('hidden');
             this.$authenticationStep.attr('rel')!;
-            this.$alternatives.removeClass('hidden');
             stepType?.init();
         }
     }
@@ -197,10 +151,12 @@ export class AuthenticationChainHandler
         if (this.loginForm.isDisabled()) {
             return;
         }
+
         this.loginForm.disableForm();
         this.clearErrors();
 
         this.updateCurrentStepType();
+
         Craft.postActionRequest(this.performAuthenticationEndpoint, {
             alternateStep: stepType,
         }, this.processResponse.bind(this));
@@ -237,7 +193,7 @@ export class AuthenticationChainHandler
                 // Handle password reset response early and bail
                 if (response.passwordReset) {
                     if (!response.error) {
-                        this.toggleRecoverAccountForm();
+                        this.loginForm.toggleRecoverAccountForm();
                         this.restartAuthentication();
                     }
                 }
@@ -246,7 +202,7 @@ export class AuthenticationChainHandler
                 if (response.alternatives && Object.keys(response.alternatives).length > 0) {
                     this.showAlternatives(response.alternatives);
                 } else {
-                    this.hideAlternatives();
+                    this.loginForm.hideAlternatives();
                 }
 
                 // Keep track of current step type
@@ -276,7 +232,7 @@ export class AuthenticationChainHandler
                 if (response.loginFormHtml) {
                     this.currentStep?.cleanup();
                     this.loginForm.$loginForm.html(response.loginFormHtml);
-                    this.prepareForm();
+                    this.loginForm.prepareForm();
                     initStepType(response.stepType!);
                 }
 
@@ -297,21 +253,13 @@ export class AuthenticationChainHandler
      */
     public showAlternatives(alternatives: AuthenticationAlternatives)
     {
-        this.$alternatives.removeClass('hidden');
-        const $ul = this.$alternatives.find('ul').empty();
+        let html = '';
 
         for (const [stepType, description] of Object.entries(alternatives)) {
-            $ul.append($(`<li rel="${stepType}">${description}</li>`));
+            html += `<li rel="${stepType}">${description}</li>`;
         }
-    }
 
-    /**
-     * Hide the alternative authentication methods.
-     */
-    public hideAlternatives()
-    {
-        this.$alternatives.addClass('hidden');
-        this.$alternatives.find('ul').empty();
+        this.loginForm.showAlternatives(html);
     }
 
     /**
