@@ -20,18 +20,18 @@ htmx.defineExtension('craft-cp', {
             return;
         }
 
-        const headHtml = evt.detail.elt.querySelectorAll("template.hx-head-html");
-        const bodyHtml = evt.detail.elt.querySelectorAll("template.hx-body-html");
+        const allHeadHtml = evt.detail.elt.querySelectorAll("template.hx-head-html");
+        const allBodyHtml = evt.detail.elt.querySelectorAll("template.hx-body-html");
 
-        for (let i = 0; i < headHtml.length; i++) {
-            const headHtml = headHtml[i].innerHTML;
+        for (let i = 0; i < allHeadHtml.length; i++) {
+            const headHtml = allHeadHtml[i].innerHTML;
             if (headHtml) {
                 Craft.appendHeadHtml(headHtml);
             }
         }
 
-        for (let i = 0; i < bodyHtml.length; i++) {
-            const bodyHtml = bodyHtml[i].innerHTML;
+        for (let i = 0; i < allBodyHtml.length; i++) {
+            const bodyHtml = allBodyHtml[i].innerHTML;
             if (bodyHtml) {
                 Craft.appendBodyHtml(bodyHtml);
             }
@@ -53,8 +53,10 @@ htmx.defineExtension('craft-condition', {
     configureRequest: function(evt) {
         const config = $(evt.detail.target).children('.condition-main').data('condition-config');
         if (config.name) {
+            const vals = evt.detail.elt.getAttribute('hx-vals') || evt.detail.elt.getAttribute('data-hx-vals');
+            const valNames = vals ? Object.keys(JSON.parse(vals)) : [];
             evt.detail.parameters = Object.fromEntries(
-                Object.entries(evt.detail.parameters).filter(([n]) => n.indexOf(config.name) === 0)
+                Object.entries(evt.detail.parameters).filter(([n]) => valNames.includes(n) || n.indexOf(config.name) === 0)
             );
         }
         evt.detail.parameters.config = JSON.stringify(config || {});
