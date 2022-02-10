@@ -29,7 +29,7 @@ declare var Craft: {
     AuthenticationChainHandler: AuthenticationChainHandler,
     cpLoginChain: string,
     PasswordInput: any,
-    appendFootHtml: (html?: string) => void
+    appendBodyHtml: (html?: string) => void
     elevatedSessionManager: ElevatedSessionManagerInterface
 };
 

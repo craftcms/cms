@@ -240,6 +240,6 @@ export function addContainedJsFilesToPage(htmlContent: string) {
         }
         // If that fails, use Craft's thing.
     } else {
-        Craft.appendFootHtml(htmlContent);
+        Craft.appendBodyHtml(htmlContent);
     }
 }
