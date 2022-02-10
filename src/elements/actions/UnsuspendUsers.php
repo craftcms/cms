@@ -31,7 +31,7 @@ class UnsuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         Craft::$app->getView()->registerJsWithVars(function($type) {
             return <<<JS
