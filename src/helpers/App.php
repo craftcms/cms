@@ -73,14 +73,14 @@ class App
     /**
      * Returns the value of a constant, falling back to an environment variable.
      *
-     * @param string $name The name of the constant
-     * @param string|null $envName The name of the environment variable, if different from $name
-     * @return mixed The value of the constant or environment variable
+     * @param string $constName The name of the constant
+     * @param string|null $envName The name of the environment variable, if different from $constName
+     * @return mixed The value of the constant or environment variable, or false if neither are found
      * @since 4.0.0
      */
-    public static function constant(string $name, ?string $envName = null): mixed
+    public static function constant(string $constName, ?string $envName = null): mixed
     {
-        return defined($name) ? constant($name) : self::env($envName ?? $name);
+        return defined($constName) ? constant($constName) : self::env($envName ?? $constName);
     }
 
     /**
