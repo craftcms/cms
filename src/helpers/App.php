@@ -503,7 +503,7 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return static::constant('CRAFT_EPHEMERAL', $bool = true);
+        return static::constant('CRAFT_EPHEMERAL', $bool = true) === true;
     }
 
     /**
@@ -514,7 +514,7 @@ class App
      */
     public static function isStreamLog(): bool
     {
-        return defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true;
+        return static::constant('CRAFT_STREAM_LOG', $bool = true) === true;
     }
 
     // App component configs
