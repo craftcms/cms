@@ -119,6 +119,7 @@
 - Added `craft\elements\conditions\entries\TypeConditionRule`.
 - Added `craft\elements\conditions\HasUrlConditionRule`.
 - Added `craft\elements\conditions\IdConditionRule`.
+- Added `craft\elements\conditions\LevelConditionRule`.
 - Added `craft\elements\conditions\RelatedToConditionRule`.
 - Added `craft\elements\conditions\SlugConditionRule`.
 - Added `craft\elements\conditions\tags\GroupConditionRule`.
