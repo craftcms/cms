@@ -622,7 +622,7 @@ class Locale extends BaseObject
     public function getCurrencySymbol(string $currency): string
     {
         // hat tip: https://stackoverflow.com/a/30026774
-        $formatter = new NumberFormatter("$this->id@currency=$currency", NumberFormatter::CURRENCY);
+        $formatter = new NumberFormatter("$this->id.UTF-8@currency=$currency", NumberFormatter::CURRENCY);
         return $formatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
     }
 
