@@ -7,6 +7,7 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\services\Config;
 use yii\base\ErrorException;
@@ -139,7 +140,7 @@ if (!defined('CRAFT_LICENSE_KEY')) {
     }
 }
 
-if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
+if (!App::isEphemeral()) {
     $ensureFolderIsReadable($storagePath, true);
 
     // Create the storage/runtime/ folder if it doesn't already exist
@@ -154,10 +155,11 @@ if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
 // Log errors to storage/logs/phperrors.log or php://stderr
 if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
     ini_set('log_errors', 1);
-    ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
 
-    if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG) {
+    if (App::isStreamLog()) {
         ini_set('error_log', 'php://stderr');
+    } else {
+        ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
     }
 }
 
