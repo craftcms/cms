@@ -208,6 +208,7 @@
 <script>
 import MetaStat from './MetaStat';
 import PluginMetaBuyButton from './PluginMetaBuyButton';
+import {mapState} from 'vuex';
 
 export default {
   components: {PluginMetaBuyButton, MetaStat},
@@ -218,6 +219,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      categories: state => state.pluginStore.categories,
+    }),
     licenseLabel() {
       switch (this.plugin.license) {
         case 'craft':
@@ -228,6 +232,12 @@ export default {
         default:
           return null
       }
+    },
+
+    pluginCategories() {
+      return this.categories.filter(c => {
+        return this.plugin.categoryIds.find(pc => pc == c.id)
+      })
     },
   }
 }
