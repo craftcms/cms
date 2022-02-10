@@ -40,3 +40,23 @@ htmx.defineExtension('craft-cp', {
         Craft.initUiElements(evt.detail.elt);
     }
 });
+
+htmx.defineExtension('craft-condition', {
+    onEvent: function(name, evt) {
+        switch (name) {
+            case 'htmx:configRequest':
+                this.configureRequest(evt);
+                break;
+        }
+    },
+
+    configureRequest: function(evt) {
+        const config = $(evt.detail.target).children('.condition-main').data('condition-config');
+        if (config.name) {
+            evt.detail.parameters = Object.fromEntries(
+                Object.entries(evt.detail.parameters).filter(([n]) => n.indexOf(config.name) === 0)
+            );
+        }
+        evt.detail.parameters.config = JSON.stringify(config || {});
+    },
+});

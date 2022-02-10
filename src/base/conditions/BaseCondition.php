@@ -254,15 +254,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $html = Html::beginTag('div', [
                 'class' => ['condition-main'],
                 'hx' => [
-                    'ext' => 'craft-cp',
+                    'ext' => 'craft-cp, craft-condition',
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
-                    'vals' => [
-                        'config' => Json::encode(array_merge($this->toArray(), [
-                            'id' => $namespacedId,
-                            'name' => $view->getNamespace(),
-                        ])),
-                    ],
+                ],
+                'data' => [
+                    'condition-config' => Json::encode(array_merge($this->toArray(), [
+                        'id' => $namespacedId,
+                        'name' => $view->getNamespace(),
+                    ])),
                 ],
             ]);
 
