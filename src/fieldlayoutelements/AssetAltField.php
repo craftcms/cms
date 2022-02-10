@@ -52,7 +52,6 @@ class AssetAltField extends TextareaField
     {
         $fields = parent::fields();
         unset(
-            $fields['attribute'],
             $fields['autofocus'],
             $fields['mandatory'],
             $fields['maxlength'],
