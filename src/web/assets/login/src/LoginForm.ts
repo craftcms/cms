@@ -20,7 +20,6 @@ export class LoginForm
     get $loginForm() {return $('#login-form');}
     get $errors() {return $('#login-errors');}
     get $messages() {return $('#login-messages');}
-    get $spinner() {return $('#spinner');}
     get $pendingSpinner() {return $('#spinner-pending');}
     get $submit() {return $('#submit');}
     get $rememberMe() { return $('#remember-me-container');}
@@ -80,7 +79,7 @@ export class LoginForm
     public enableForm(): void
     {
         this.$submit.addClass('active');
-        this.$spinner.addClass('hidden');
+        this.$submit.removeClass('loading');
         this.$loginForm.fadeTo(100, 1);
         this.disabled = false;
     }
@@ -88,8 +87,7 @@ export class LoginForm
     public disableForm(): void
     {
         this.$submit.removeClass('active');
-        this.$spinner.removeClass('hidden');
-        this.$loginForm.fadeTo(100, 0.2);
+        this.$loginForm.fadeTo(100, 0.2, () => this.$submit.addClass('loading'));
         this.disabled = true;
     }
 
