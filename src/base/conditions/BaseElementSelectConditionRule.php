@@ -3,6 +3,7 @@
 namespace craft\base\conditions;
 
 use craft\base\ElementInterface;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
 
 /**
@@ -42,6 +43,16 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      * @return array|null
      */
     protected function sources(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Returns the element condition that filters which elements can be selected.
+     *
+     * @return ElementConditionInterface|null
+     */
+    protected function selectionCondition(): ?ElementConditionInterface
     {
         return null;
     }
@@ -98,6 +109,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             'elementType' => $this->elementType(),
             'sources' => $this->sources(),
             'criteria' => $this->criteria(),
+            'condition' => $this->selectionCondition(),
             'single' => true,
         ]);
     }

@@ -240,7 +240,7 @@ class UtilitiesController extends Controller
             $assetIndexerService->deleteStaleIndexingData();
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
-                Db::delete(Table::ASSETTRANSFORMINDEX, [
+                Db::delete(Table::IMAGETRANSFORMINDEX, [
                     'assetId' => $params['deleteAsset'],
                 ]);
 

@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -17,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use craft\models\Volume;
 use yii\base\InvalidArgumentException;
 use yii\db\Connection;
 use yii\db\Schema;
@@ -24,7 +24,7 @@ use yii\db\Schema;
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
- * @property-write string|string[]|VolumeInterface|null $volume The volume(s) that resulting assets must belong to
+ * @property-write string|string[]|Volume|null $volume The volume(s) that resulting assets must belong to
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
  * @method Asset|array|null nth(int $n, ?Connection $db = null)
@@ -236,7 +236,7 @@ class AssetQuery extends ElementQuery
      * | `'not foo'` | not in a volume with a handle of `foo`.
      * | `['foo', 'bar']` | in a volume with a handle of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not in a volume with a handle of `foo` or `bar`.
-     * | a [[VolumeInterface|volume]] object | in a volume represented by the object.
+     * | a [[Volume]] object | in a volume represented by the object.
      *
      * ---
      *
@@ -254,13 +254,13 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|VolumeInterface|null $value The property value
+     * @param string|string[]|Volume|null $value The property value
      * @return self self reference
      * @uses $volumeId
      */
     public function volume($value): self
     {
-        if ($value instanceof VolumeInterface) {
+        if ($value instanceof Volume) {
             $this->volumeId = [$value->id];
         } else if ($value !== null) {
             $this->volumeId = (new Query())
@@ -775,7 +775,7 @@ class AssetQuery extends ElementQuery
                 $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
             }
 
-            Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);
+            Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
         }
 
         return $elements;

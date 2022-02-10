@@ -6,6 +6,23 @@
 {# Inputs #}
 
 
+{% macro button(config) %}
+    {% include '_includes/forms/button' with config only %}
+{% endmacro %}
+
+
+{% macro submitButton(config) %}
+    {{ _self.button(config|merge({
+        type: 'submit',
+        class: (config.class ?? [])|explodeClass|merge(['submit']),
+        label: config.label ?? 'Submit'|t('app'),
+    })) }}
+{% endmacro %}
+
+
+{# Inputs #}
+
+
 {% macro hidden(config) -%}
     {% include "_includes/forms/hidden" with config only %}
 {%- endmacro %}
@@ -116,6 +133,11 @@
 {% endmacro %}
 
 
+{% macro fs(config) %}
+    {% include "_includes/forms/fs" with config only %}
+{% endmacro %}
+
+
 {% macro booleanMenu(config) %}
     {% include "_includes/forms/booleanMenu" with config only %}
 {% endmacro %}
@@ -123,6 +145,11 @@
 
 {% macro fieldLayoutDesigner(config) %}
     {% include "_includes/forms/fieldLayoutDesigner" with config only %}
+{% endmacro %}
+
+
+{% macro money(config) %}
+    {% include "_includes/forms/money" with config only %}
 {% endmacro %}
 
 
@@ -318,6 +345,17 @@
 {% endmacro %}
 
 
+{% macro fsField(config) %}
+    {% set config = config|merge({id: config.id ?? "fs#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a value of a filesystem’s handle.'|t('app'),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/fs') }}
+{% endmacro %}
+
+
 {% macro booleanMenuField(config) %}
     {% set config = config|merge({id: config.id ?? "booleanmenu#{random()}"}) %}
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
@@ -336,6 +374,12 @@
         label: 'Field Layout'|t('app'),
         errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
     }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
+{% endmacro %}
+
+
+{% macro moneyField(config) %}
+    {% set config = config|merge({id: config.id ?? "money#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/money') }}
 {% endmacro %}
 
 

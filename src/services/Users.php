@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -32,6 +31,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
@@ -43,7 +43,8 @@ use yii\base\InvalidArgumentException;
 
 /**
  * The Users service provides APIs for managing users.
- * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -382,12 +383,7 @@ class Users extends Component
      */
     public function sendActivationEmail(User $user): bool
     {
-        // If the user doesn't have a password yet, use a Password Reset URL
-        if (!$user->password) {
-            $url = $this->getPasswordResetUrl($user);
-        } else {
-            $url = $this->getEmailVerifyUrl($user);
-        }
+        $url = $this->getActivationUrl($user);
 
         return Craft::$app->getMailer()
             ->composeFromKey('account_activation', ['link' => Template::raw($url)])
@@ -432,6 +428,22 @@ class Users extends Component
     }
 
     /**
+     * Sets a new verification code on a user, and returns their activation URL.
+     *
+     * @param User $user
+     * @return string
+     */
+    public function getActivationUrl(User $user): string
+    {
+        // If the user doesn't have a password yet, use a Password Reset URL
+        if (!$user->password) {
+            return $this->getPasswordResetUrl($user);
+        }
+
+        return $this->getEmailVerifyUrl($user);
+    }
+
+    /**
      * Sets a new verification code on a user, and returns their new Email Verification URL.
      *
      * @param User $user The user that should get the new Email Verification URL.
@@ -470,7 +482,7 @@ class Users extends Component
         $userRecord->pending = false;
         $userRecord->password = null;
         $userRecord->verificationCode = null;
-        
+
         if (!$userRecord->save()) {
             return false;
         }
@@ -553,10 +565,10 @@ class Users extends Component
     /**
      * Returns the user photo volume.
      *
-     * @return VolumeInterface
+     * @return Volume
      * @throws VolumeException if no user photo volume is set, or it's set to an invalid volume UID
      */
-    private function _userPhotoVolume(): VolumeInterface
+    private function _userPhotoVolume(): Volume
     {
         $uid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
         if (!$uid) {
@@ -575,12 +587,12 @@ class Users extends Component
      * Returns the folder that a user’s photo should be stored.
      *
      * @param User $user
-     * @param VolumeInterface $volume The user photo volume
+     * @param Volume $volume The user photo volume
      * @return int
      * @throws VolumeException if the user photo volume doesn’t exist
      * @throws InvalidSubpathException if the user photo subpath can’t be resolved
      */
-    private function _userPhotoFolderId(User $user, VolumeInterface $volume): int
+    private function _userPhotoFolderId(User $user, Volume $volume): int
     {
         $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
 
@@ -1362,6 +1374,28 @@ class Users extends Component
             if (!isset($impersonatorPermissions[$permission])) {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns whether the user can suspend the given user
+     *
+     * @param User $suspender
+     * @param User $suspendee
+     * @return bool
+     * @since 3.7.32
+     */
+    public function canSuspend(User $suspender, User $suspendee): bool
+    {
+        if (!$suspender->can('moderateUsers')) {
+            return false;
+        }
+
+        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
+        if (!$suspender->admin && $suspendee->admin) {
+            return false;
         }
 
         return true;

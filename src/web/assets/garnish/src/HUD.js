@@ -163,10 +163,10 @@ export default Base.extend(
             this.showing = true;
             Garnish.HUD.activeHUDs[this._namespace] = this;
 
-            Garnish.shortcutManager.addLayer();
+            Garnish.uiLayerManager.addLayer(this.$hud);
 
             if (this.settings.hideOnEsc) {
-                Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
+                Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
             }
 
             this.onShow();
@@ -453,7 +453,7 @@ export default Base.extend(
 
             this.showing = false;
             delete Garnish.HUD.activeHUDs[this._namespace];
-            Garnish.shortcutManager.removeLayer();
+            Garnish.uiLayerManager.removeLayer();
             this.onHide();
         },
 

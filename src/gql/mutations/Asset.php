@@ -8,7 +8,6 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\VolumeInterface;
 use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\mutations\Asset as AssetMutationArguments;
 use craft\gql\base\ElementMutationResolver;
@@ -17,6 +16,7 @@ use craft\gql\resolvers\mutations\Asset as AssetResolver;
 use craft\gql\types\generators\AssetType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
+use craft\models\Volume;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
@@ -73,11 +73,11 @@ class Asset extends Mutation
     /**
      * Create the per-volume save mutation.
      *
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @return array
      * @throws InvalidConfigException
      */
-    public static function createSaveMutation(VolumeInterface $volume): array
+    public static function createSaveMutation(Volume $volume): array
     {
         $mutationName = AssetElement::gqlMutationNameByContext($volume);
         $mutationArguments = AssetMutationArguments::getArguments();

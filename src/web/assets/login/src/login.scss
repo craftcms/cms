@@ -40,7 +40,7 @@ body {
 }
 
 #login-form .btn {
-  display: block;
+  display: flex;
 }
 
 #loginName {
@@ -67,9 +67,26 @@ body {
   }
 }
 
+#login-form.reset-password {
+
+  #password-field,
+  #rememberMe-field,
+  #forgot-password {
+    display: none;
+  }
+
+  #remember-password {
+    display: block;
+  }
+}
+
 .passwordwrapper {
   margin: 0 -1px -1px;
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+
+  &.focus {
+    z-index: 1;
+  }
 
   #password {
     @include padding(14px, 7px, 14px, 16px);
@@ -104,24 +121,9 @@ body {
 }
 
 #login-form .submit {
-  display: block;
-  padding: 14px 16px;
-  height: auto;
+  display: flex;
+  height: 44px;
   width: 100%;
-}
-
-#spinner {
-  position: absolute;
-  top: 58px;
-  left: 50%;
-  margin-left: -12px;
-}
-
-#spinner-pending {
-  top: 0;
-  margin-left: -24px;
-  left: 50%;
-  position: absolute;
 }
 
 #authentication-step {

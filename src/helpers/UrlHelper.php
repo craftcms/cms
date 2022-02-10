@@ -323,7 +323,7 @@ class UrlHelper
 
         if ($siteId !== null && $siteId != $sites->getCurrentSite()->id) {
             // Get the site
-            $site = $sites->getSiteById($siteId);
+            $site = $sites->getSiteById($siteId, true);
 
             if (!$site) {
                 throw new Exception('Invalid site ID: ' . $siteId);

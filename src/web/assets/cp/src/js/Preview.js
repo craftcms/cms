@@ -4,7 +4,7 @@
  * Preview
  */
 Craft.Preview = Garnish.Base.extend({
-    draftEditor: null,
+    elementEditor: null,
 
     $shade: null,
     $editorContainer: null,
@@ -31,8 +31,6 @@ Craft.Preview = Garnish.Base.extend({
     isVisible: false,
     activeTarget: 0,
 
-    isDeviceUpdating: false,
-    deviceAnimationTimeout: null,
     currentDeviceType: 'desktop',
     deviceOrientation: null,
     deviceWidth: '',
@@ -63,8 +61,8 @@ Craft.Preview = Garnish.Base.extend({
     _editorWidth: null,
     _editorWidthInPx: null,
 
-    init: function(draftEditor) {
-        this.draftEditor = draftEditor;
+    init: function(elementEditor) {
+        this.elementEditor = elementEditor;
 
         this._updateIframeProxy = this.updateIframe.bind(this);
 
@@ -130,25 +128,26 @@ Craft.Preview = Garnish.Base.extend({
             $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
             this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
             this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
+            this.$statusMessage = $('<span/>', {'class': 'visually-hidden', 'aria-live': 'polite'}).appendTo($editorHeader);
 
             if (Craft.Pro) {
                 this.$previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
 
                 // Preview targets
-                if (this.draftEditor.settings.previewTargets.length > 1) {
+                if (this.elementEditor.settings.previewTargets.length > 1) {
                     this.$targetBtn = $('<button/>', {
                         type: 'button',
                         'class': 'btn menubtn',
-                        text: this.draftEditor.settings.previewTargets[0].label,
+                        text: this.elementEditor.settings.previewTargets[0].label,
                     }).appendTo(this.$previewHeader);
                     this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
                     const $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
                     let $li, $a;
-                    for (let i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
+                    for (let i = 0; i < this.elementEditor.settings.previewTargets.length; i++) {
                         $li = $('<li/>').appendTo($ul)
                         $a = $('<a/>', {
                             data: {target: i},
-                            text: this.draftEditor.settings.previewTargets[i].label,
+                            text: this.elementEditor.settings.previewTargets[i].label,
                             'class': i === 0 ? 'sel' : null,
                         }).appendTo($li);
                     }
@@ -242,18 +241,15 @@ Craft.Preview = Garnish.Base.extend({
 
                 // Device type button click handler
                 this.addListener($('.btn', this.$deviceTypeContainer), 'click', 'switchDeviceType');
-
-                // Device mask
-                this.$deviceMask = $('<div/>', {
-                    'class': 'lp-device-mask'
-                });
             }
 
             this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
-
-            if (this.$deviceMask) {
-                this.$iframeContainer.append(this.$deviceMask);
-            }
+            this.$devicePreviewContainer = $('<div/>', {
+                'class': 'lp-device-preview-container',
+            }).appendTo(this.$iframeContainer);
+            this.$deviceMask = $('<div/>', {
+                'class': 'lp-device-mask',
+            }).appendTo(this.$iframeContainer);
 
             this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                 axis: Garnish.X_AXIS,
@@ -264,7 +260,7 @@ Craft.Preview = Garnish.Base.extend({
 
             this.addListener($closeBtn, 'click', 'close');
             this.addListener(this.$statusIcon, 'click', () => {
-                this.draftEditor.showStatusHud(this.$statusIcon);
+                this.elementEditor.showStatusHud(this.$statusIcon);
             });
         }
 
@@ -305,8 +301,8 @@ Craft.Preview = Garnish.Base.extend({
 
         this.updateIframe();
 
-        this.draftEditor.on('update', this._updateIframeProxy);
-        Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
+        this.elementEditor.on('update', this._updateIframeProxy);
+        Garnish.on(Craft.ElementEditorSlideout, 'submit', this._updateIframeProxy);
         Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
@@ -315,12 +311,20 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     _activeTarget: function() {
-        return this.draftEditor.settings.previewTargets[this.activeTarget];
+        return this.elementEditor.settings.previewTargets[this.activeTarget];
+    },
+
+    /**
+     * @returns {boolean}
+     * @private
+     */
+    _autoRefresh: function() {
+        const target = this._activeTarget();
+        return typeof typeof target.refresh === 'undefined' || !!target.refresh;
     },
 
     _updateRefreshBtn: function() {
-        const target = this._activeTarget();
-        if (target.refresh !== 'undefined' && !target.refresh) {
+        if (!this._autoRefresh()) {
             this.$refreshBtn.removeClass('hidden');
         } else {
             this.$refreshBtn.addClass('hidden');
@@ -329,13 +333,13 @@ Craft.Preview = Garnish.Base.extend({
 
     switchTarget: function(i) {
         this.activeTarget = i;
-        this.$targetBtn.text(this.draftEditor.settings.previewTargets[i].label);
+        this.$targetBtn.text(this.elementEditor.settings.previewTargets[i].label);
         this.$targetMenu.find('a.sel').removeClass('sel');
         this.$targetMenu.find('a').eq(i).addClass('sel');
         this.updateIframe(true);
         this._updateRefreshBtn();
         this.trigger('switchTarget', {
-            previewTarget: this.draftEditor.settings.previewTargets[i],
+            previewTarget: this.elementEditor.settings.previewTargets[i],
         });
     },
 
@@ -398,12 +402,12 @@ Craft.Preview = Garnish.Base.extend({
         });
 
         this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', () => {
+            this.$iframeContainer.removeClass('lp-iframe-container--rotating');
             this.$previewContainer.hide();
-            this.resetDevicePreview();
         });
 
-        this.draftEditor.off('update', this._updateIframeProxy);
-        Garnish.off(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
+        this.elementEditor.off('update', this._updateIframeProxy);
+        Garnish.off(Craft.ElementEditorSlideout, 'submit', this._updateIframeProxy);
         Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
@@ -446,7 +450,11 @@ Craft.Preview = Garnish.Base.extend({
         return Craft.previewIframeResizerOptions !== false;
     },
 
-    updateIframe: function(resetScroll, forceRefresh) {
+    /**
+     * @param {boolean} [resetScroll=false]
+     * @param {boolean} [refresh]
+     */
+    updateIframe: function(resetScroll, refresh) {
         if (!this.isActive) {
             return false;
         }
@@ -454,15 +462,15 @@ Craft.Preview = Garnish.Base.extend({
         // Ignore non-boolean resetScroll values
         resetScroll = resetScroll === true;
 
+        // If the draft ID has changed or there's no iframe, we definitely need to refresh
+        if (this.draftId !== (this.draftId = this.elementEditor.settings.draftId) || !this.$iframe) {
+            refresh = true;
+        }
+
         const target = this._activeTarget();
-        const refresh = !!(
-            forceRefresh ||
-            this.draftId !== (this.draftId = this.draftEditor.settings.draftId) ||
-            !this.$iframe ||
-            resetScroll ||
-            typeof target.refresh === 'undefined' ||
-            target.refresh
-        );
+        if (typeof refresh === 'undefined') {
+            refresh = resetScroll || this._autoRefresh();
+        }
 
         this.trigger('beforeUpdateIframe', {
             previewTarget: target,
@@ -476,7 +484,7 @@ Craft.Preview = Garnish.Base.extend({
             return;
         }
 
-        this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(url => {
+        this.elementEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(url => {
             // Maintain the current scroll position?
             let sameHost;
             if (resetScroll) {
@@ -504,19 +512,7 @@ Craft.Preview = Garnish.Base.extend({
             if (this.$iframe) {
                 this.$iframe.replaceWith($iframe);
             } else {
-                $iframe.appendTo(this.$iframeContainer);
-            }
-
-            // If we’re on tablet/phone then wrap the iframe in our own container
-            // so we can keep all the iFrameResizer() stuff working
-            if (this._devicePreviewIsActive()) {
-                if (!this.$devicePreviewContainer) {
-                    this.$devicePreviewContainer = $('<div/>', {
-                        'class': 'lp-device-preview-container'
-                    });
-                    $iframe.wrap('<div class="lp-device-preview-container"></div>');
-                    this.$devicePreviewContainer = this.$iframeContainer.find('.lp-device-preview-container');
-                }
+                $iframe.appendTo(this.$devicePreviewContainer);
             }
 
             // Keep the iframe height consistent with its content
@@ -554,7 +550,7 @@ Craft.Preview = Garnish.Base.extend({
             }
 
             this.trigger('afterUpdateIframe', {
-                previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
+                previewTarget: this.elementEditor.settings.previewTargets[this.activeTarget],
                 $iframe: this.$iframe,
             });
 
@@ -567,11 +563,7 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     switchDeviceType: function(ev) {
-        if (this.isDeviceUpdating) {
-            return false;
-        }
-
-        this.$iframeContainer.removeClass('lp-iframe-container--animating');
+        this.$iframeContainer.removeClass('lp-iframe-container--rotating');
 
         const $btn = $(ev.target);
         const newDeviceType = $btn.data('deviceType');
@@ -595,19 +587,39 @@ Craft.Preview = Garnish.Base.extend({
             .addClass('active')
             .attr('aria-selected', 'true');
 
-        // Update or reset
         if (this.currentDeviceType === 'desktop') {
-            this.resetDevicePreview();
+            // Disable the orientation button
+            this.$orientationBtn
+                .addClass('disabled')
+                .attr('disabled', '')
+                .attr('aria-hidden', '');
+
+            this.$iframeContainer.removeClass('lp-iframe-container--has-device-preview');
         } else {
-            this.$iframeContainer.addClass('lp-iframe-container--updating');
-            this.updateIframe(true, true);
+            // Enable the orientation button
+            this.$orientationBtn
+                .removeClass('disabled')
+                .removeAttr('disabled')
+                .removeAttr('aria-hidden');
+
+            this.$iframeContainer.addClass('lp-iframe-container--has-device-preview');
+        }
+
+        // Add the tablet class if needed
+        if (this.currentDeviceType === 'tablet') {
+            this.$iframeContainer.addClass('lp-iframe-container--tablet');
+        } else {
+            this.$iframeContainer.removeClass('lp-iframe-container--tablet');
+        }
+
+        if (this.currentDeviceType !== 'desktop') {
             this.updateDevicePreview();
         }
     },
 
     switchOrientation: function()
     {
-        if (this.isDeviceUpdating || !this._devicePreviewIsActive()) {
+        if (!this._devicePreviewIsActive()) {
             return false;
         }
 
@@ -622,36 +634,18 @@ Craft.Preview = Garnish.Base.extend({
         Craft.setLocalStorage('LivePreview.orientation', this.deviceOrientation);
 
         // Allow the animation to take place
-        this.$iframeContainer.addClass('lp-iframe-container--animating');
+        this.$iframeContainer.addClass('lp-iframe-container--rotating');
 
         // Update the device preview
         this.updateDevicePreview();
+
+        setTimeout(() => {
+            this.$iframeContainer.removeClass('lp-iframe-container--rotating');
+        }, 300);
     },
 
     updateDevicePreview: function()
     {
-        if (this.isDeviceUpdating) {
-            return false;
-        }
-
-        this.isDeviceUpdating = true;
-
-        // Enable the orientation button
-        this.$orientationBtn
-            .removeClass('disabled')
-            .removeAttr('disabled')
-            .removeAttr('aria-hidden');
-
-        // Trigger the resized css mods
-        this.$iframeContainer.addClass('lp-iframe-container--has-device-preview');
-
-        // Add the tablet class if needed
-        if (this.currentDeviceType === 'tablet') {
-            this.$iframeContainer.addClass('lp-iframe-container--tablet');
-        } else {
-            this.$iframeContainer.removeClass('lp-iframe-container--tablet');
-        }
-
         // Figure out the best zoom
         let hZoom = 1;
         let wZoom = 1;
@@ -693,71 +687,23 @@ Craft.Preview = Garnish.Base.extend({
             transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
         });
 
-        // After the animation duration we can update the iframe sizes and show it
-        if (this.deviceAnimationTimeout) {
-            clearTimeout(this.deviceAnimationTimeout);
+        if (this.deviceOrientation === 'landscape') {
+            this.$devicePreviewContainer.css({
+                width: this.deviceHeight + 'px',
+                height: this.deviceWidth + 'px',
+                transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                marginTop: 0,
+                marginLeft: '-' + (12*zoom) + 'px'
+            });
+        } else {
+            this.$devicePreviewContainer.css({
+                width: this.deviceWidth + 'px',
+                height: this.deviceHeight + 'px',
+                transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                marginTop: '-' + (12*zoom) + 'px',
+                marginLeft: 0
+            });
         }
-        this.deviceAnimationTimeout = setTimeout(() => {
-            // Then make the size change to the preview container
-            if (this.deviceOrientation === 'landscape') {
-                this.$devicePreviewContainer.css({
-                    width: this.deviceHeight + 'px',
-                    height: this.deviceWidth + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
-                    marginTop: 0,
-                    marginLeft: '-' + (12*zoom) + 'px'
-                });
-            } else {
-                this.$devicePreviewContainer.css({
-                    width: this.deviceWidth + 'px',
-                    height: this.deviceHeight + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
-                    marginTop: '-' + (12*zoom) + 'px',
-                    marginLeft: 0
-                });
-            }
-
-            // Remove the animating class and show the iframe
-            this.$iframeContainer.removeClass('lp-iframe-container--animating');
-            this.$iframeContainer.removeClass('lp-iframe-container--updating');
-            this.isDeviceUpdating = false;
-
-        }, 300);
-    },
-
-    resetDevicePreview: function()
-    {
-        if (this.deviceAnimationTimeout) {
-            clearTimeout(this.deviceAnimationTimeout);
-        }
-        this.currentDeviceType = 'desktop';
-        this.$deviceTypeContainer.find('.btn')
-            .removeClass('active')
-            .attr('aria-selected', 'false');
-        this.$deviceTypeContainer.find('.lp-device-type-btn--desktop')
-            .addClass('active')
-            .attr('aria-selected', 'true');
-        this.$orientationBtn
-            .addClass('disabled')
-            .attr('disabled', '')
-            .attr('aria-hidden', '');
-        this.$iframeContainer.removeClass('lp-iframe-container--animating');
-        this.$iframeContainer.removeClass('lp-iframe-container--has-device-preview');
-        this.$iframeContainer.removeClass('lp-iframe-container--tablet');
-
-        // Flat out remove the iframe and let it get regenerated
-        if (this.$devicePreviewContainer) {
-            // If using iFrameResizer then remove the listeners first so we don’t get zombie instances
-            if (this._useIframeResizer()) {
-                this.$iframe[0].iFrameResizer.removeListeners();
-            }
-            this.$devicePreviewContainer.detach();
-            this.$devicePreviewContainer = null;
-            this.$iframe = null;
-            this.updateIframe(true, true);
-        }
-
-        this.isDeviceUpdating = false;
     },
 
     _getClone: function($field) {

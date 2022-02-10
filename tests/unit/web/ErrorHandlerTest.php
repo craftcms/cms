@@ -87,11 +87,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testHandleError()
     {
-        if (PHP_VERSION_ID >= 70100) {
-            self::assertNull($this->errorHandler->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
-        } else {
-            $this->markTestSkipped('Running on PHP 70100. parent::handleError() should be called by default in the craft ErrorHandler.');
-        }
+        self::assertNull($this->errorHandler->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
     }
 
     /**

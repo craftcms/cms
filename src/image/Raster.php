@@ -217,10 +217,8 @@ class Raster extends Image
                 $croppedLayer = $layer->crop($startingPoint, $newSize);
                 $gif->layers()->add($croppedLayer);
 
-                // Let's update dateUpdated in case this is going to take awhile.
-                if ($index = Craft::$app->getAssetTransforms()->getActiveTransformIndex()) {
-                    Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
-                }
+                // Since it might take a while, send a heartbeat back
+                $this->heartbeat();
             }
 
             $this->_image = $gif;
@@ -371,10 +369,8 @@ class Raster extends Image
                 $resizedLayer = $layer->resize($newSize, $this->_getResizeFilter());
                 $gif->layers()->add($resizedLayer);
 
-                // Let's update dateUpdated in case this is going to take awhile.
-                if ($index = Craft::$app->getAssetTransforms()->getActiveTransformIndex()) {
-                    Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
-                }
+                // Since it might take a while, send a heartbeat back
+                $this->heartbeat();
             }
 
             $this->_image = $gif;

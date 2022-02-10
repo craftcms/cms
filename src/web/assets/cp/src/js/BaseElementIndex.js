@@ -58,6 +58,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     $structureSortAttribute: null,
 
     $elements: null,
+    $updateSpinner: null,
     $viewModeBtnContainer: null,
     viewModeBtns: null,
     viewMode: null,
@@ -129,6 +130,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
 
         this.$elements = this.$container.find('.elements:first');
+        this.$updateSpinner = this.$elements.find('.spinner');
+
+        if (!this.$updateSpinner.length) {
+            this.$updateSpinner = $('<div/>', {
+                class: 'update-spinner spinner spinner-absolute',
+            }).appendTo(this.$elements);
+        }
+
         this.$countSpinner = this.$container.find('#count-spinner');
         this.$countContainer = this.$container.find('#count-container');
         this.$exportBtn = this.$container.find('#export-btn');
@@ -661,6 +670,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             context: this.settings.context,
             elementType: this.elementType,
             source: this.instanceState.selectedSource,
+            condition: this.settings.condition,
             criteria: criteria,
             disabledElementIds: this.settings.disabledElementIds,
             viewState: $.extend({}, this.getSelectedSourceState()),
@@ -1315,10 +1325,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         if (this.settings.buttonContainer) {
             return $(this.settings.buttonContainer);
         } else {
-            var $container = $('#action-button');
+            var $container = $('#action-buttons');
 
             if (!$container.length) {
-                $container = $('<div id="action-button"/>').appendTo($('#header'));
+                $container = $('<div id="action-buttons"/>').appendTo($('#header'));
             }
 
             return $container;
@@ -1327,11 +1337,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
     setIndexBusy: function() {
         this.$elements.addClass('busy');
+        this.$updateSpinner.appendTo(this.$elements);
         this.isIndexBusy = true;
     },
 
     setIndexAvailable: function() {
         this.$elements.removeClass('busy');
+        this.$updateSpinner.remove();
         this.isIndexBusy = false;
     },
 
@@ -2017,14 +2029,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             }).appendTo($form);
         }
 
-        $('<button/>', {
-            type: 'submit',
-            'class': 'btn submit fullwidth',
-            text: Craft.t('app', 'Export')
-        }).appendTo($form)
-
-        var $spinner = $('<div/>', {
-            'class': 'spinner hidden'
+        const $submitBtn = Craft.ui.createSubmitButton({
+            class: 'fullwidth',
+            label: Craft.t('app', 'Export'),
+            spinner: true,
         }).appendTo($form);
 
         var hud = new Garnish.HUD(this.$exportBtn, $form);
@@ -2042,7 +2050,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             }
 
             submitting = true;
-            $spinner.removeClass('hidden');
+            $submitBtn.addClass('loading');
 
             var params = this.getViewParams();
             delete params.criteria.offset;
@@ -2066,16 +2074,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             }
 
             Craft.downloadFromUrl('POST', Craft.getActionUrl('element-indexes/export'), params)
-                .then(function() {
-                    submitting = false;
-                    $spinner.addClass('hidden');
-                })
-                .catch(function() {
-                    submitting = false;
-                    $spinner.addClass('hidden');
+                .catch(() => {
                     if (!this._ignoreFailedRequest) {
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                     }
+                })
+                .finally(() => {
+                    submitting = false;
+                    $submitBtn.removeClass('loading');
                 });
         });
     },
@@ -2130,6 +2136,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         context: 'index',
         modal: null,
         storageKey: null,
+        condition: null,
         criteria: null,
         batchSize: 100,
         disabledElementIds: [],
@@ -2204,6 +2211,7 @@ const FilterHud = Garnish.HUD.extend({
             data: {
                 elementType: this.elementIndex.elementType,
                 source: this.sourceKey,
+                condition: this.elementIndex.settings.condition,
                 id: `${this.id}-filters`,
             },
         }).then(response => {

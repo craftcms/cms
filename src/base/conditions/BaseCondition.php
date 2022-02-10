@@ -254,14 +254,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $html = Html::beginTag('div', [
                 'class' => ['condition-main'],
                 'hx' => [
+                    'ext' => 'craft-cp, craft-condition',
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
-                    'vals' => [
-                        'config' => Json::encode(array_merge($this->toArray(), [
-                            'id' => $namespacedId,
-                            'name' => $view->getNamespace(),
-                        ])),
-                    ],
+                ],
+                'data' => [
+                    'condition-config' => Json::encode(array_merge($this->toArray(), [
+                        'id' => $namespacedId,
+                        'name' => $view->getNamespace(),
+                    ])),
                 ],
             ]);
 
@@ -389,9 +390,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         'post' => UrlHelper::actionUrl('conditions/add-rule'),
                     ],
                 ]) .
-                $this->addRuleLabel .
+                Html::tag('div', Html::encode($this->addRuleLabel), [
+                    'class' => 'label',
+                ]) .
                 Html::tag('div', '', [
-                    'class' => ['spinner', 'htmx-indicator'],
+                    'class' => ['spinner', 'spinner-absolute'],
                 ]) .
                 Html::endTag('button') .
                 Html::endTag('div');
@@ -420,8 +423,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     ]);
                 }
             } else {
-                $view->registerJs("htmx.process(htmx.find('#$namespacedId'));");
-                $view->registerJs("htmx.trigger(htmx.find('#$namespacedId'), 'htmx:load');");
+                $view->registerJsWithVars(
+                    fn($containerSelector) => <<<JS
+htmx.process(htmx.find($containerSelector));
+htmx.trigger(htmx.find($containerSelector), 'htmx:load');
+JS,
+                    [sprintf('#%s', $namespacedId)]
+                );
             }
 
             $html .= Html::endTag('div'); //condition-main

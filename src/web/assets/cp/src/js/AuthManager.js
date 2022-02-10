@@ -17,7 +17,6 @@ Craft.AuthManager = Garnish.Base.extend({
 
     $logoutWarningPara: null,
     $passwordInput: null,
-    $passwordSpinner: null,
     $loginBtn: null,
     $loginErrorPara: null,
 
@@ -242,11 +241,10 @@ Craft.AuthManager = Garnish.Base.extend({
                 $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordContainer);
 
             this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
-            this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-            this.$loginBtn = $('<button/>', {
-                type: 'submit',
-                class: 'btn submit disabled',
-                text: Craft.t('app', 'Login'),
+            this.$loginBtn = Craft.ui.createSubmitButton({
+                class: 'disabled',
+                label: Craft.t('app', 'Login'),
+                spinner: true,
             }).appendTo($buttonContainer);
             this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
@@ -336,7 +334,7 @@ Craft.AuthManager = Garnish.Base.extend({
         }
 
         if (this.validatePassword()) {
-            this.$passwordSpinner.removeClass('hidden');
+            this.$loginBtn.addClass('loading');
             this.clearLoginError();
 
             if (typeof Craft.csrfTokenValue !== 'undefined') {
@@ -357,7 +355,7 @@ Craft.AuthManager = Garnish.Base.extend({
         };
 
         Craft.postActionRequest('users/login', data, (response, textStatus) => {
-            this.$passwordSpinner.addClass('hidden');
+            this.$loginBtn.removeClass('loading');
 
             if (textStatus === 'success') {
                 if (response.success) {

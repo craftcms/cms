@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -29,6 +30,7 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
+use craft\services\ElementSources;
 use craft\services\Structures;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -177,7 +179,7 @@ class Category extends Element
     {
         $sources = [];
 
-        if ($context === 'index') {
+        if ($context === ElementSources::CONTEXT_INDEX) {
             $groups = Craft::$app->getCategories()->getEditableGroups();
         } else {
             $groups = Craft::$app->getCategories()->getAllGroups();
@@ -190,7 +192,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission('editCategories:' . $group->uid),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission("viewCategories:$group->uid"),
             ];
         }
 
@@ -369,21 +371,10 @@ class Category extends Element
     public ?int $groupId = null;
 
     /**
-     * @var int|false|null New parent ID
-     */
-    public $newParentId;
-
-    /**
      * @var bool Whether the category was deleted along with its group
      * @see beforeDelete()
      */
     public bool $deletedWithGroup = false;
-
-    /**
-     * @var bool|null
-     * @see _hasNewParent()
-     */
-    private ?bool $_hasNewParent = null;
 
     /**
      * @inheritdoc
@@ -433,6 +424,25 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    protected function previewTargets(): array
+    {
+        $previewTargets = [];
+
+        if ($url = $this->getUrl()) {
+            $previewTargets[] = [
+                'label' => Craft::t('app', 'Primary {type} page', [
+                    'type' => self::lowerDisplayName(),
+                ]),
+                'url' => $url,
+            ];
+        }
+
+        return $previewTargets;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function route()
     {
         // Make sure the category group is set to have URLs for this site
@@ -456,18 +466,84 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function isEditable(): bool
+    public function canView(User $user): bool
     {
-        return Craft::$app->getUser()->checkPermission('editCategories:' . $this->getGroup()->uid);
+        if (parent::canView($user)) {
+            return true;
+        }
+
+        $group = $this->getGroup();
+
+        if ($this->getIsDraft() && $this->getIsDerivative()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("viewPeerCategoryDrafts:$group->uid")
+            );
+        }
+
+        return $user->can("viewCategories:$group->uid");
     }
 
     /**
      * @inheritdoc
      */
-    protected function isDeletable(): bool
+    public function canSave(User $user): bool
+    {
+        if (parent::canSave($user)) {
+            return true;
+        }
+
+        $group = $this->getGroup();
+
+        if ($this->getIsDraft()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("savePeerCategoryDrafts:$group->uid")
+            );
+        }
+
+        return $user->can("saveCategories:$group->uid");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
     {
         $group = $this->getGroup();
-        return Craft::$app->getUser()->checkPermission("editCategories:$group->uid");
+
+        if (parent::canDelete($user)) {
+            return true;
+        }
+
+        if ($this->getIsDraft() && $this->getIsDerivative()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("deletePeerCategoryDrafts:$group->uid")
+            );
+        }
+
+        return $user->can("deleteCategories:$group->uid");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canCreateDrafts(User $user): bool
+    {
+        // Everyone with view permissions can create drafts
+        return true;
     }
 
     /**
@@ -476,15 +552,55 @@ class Category extends Element
     protected function cpEditUrl(): ?string
     {
         $group = $this->getGroup();
-        $path = "categories/$group->handle";
 
-        if ($this->id) {
-            $path .= "/$this->id" . ($this->slug ? "-$this->slug" : '');
-        } else {
-            $path .= '/new';
+        $path = sprintf('categories/%s/%s', $group->handle, $this->getCanonicalId());
+
+        // Ignore homepage/temp slugs
+        if ($this->slug && strpos($this->slug, '__') !== 0) {
+            $path .= "-$this->slug";
         }
 
         return UrlHelper::cpUrl($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPostEditUrl(): ?string
+    {
+        $group = $this->getGroup();
+        return UrlHelper::cpUrl("categories/$group->handle");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCrumbs(): array
+    {
+        $group = $this->getGroup();
+
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Categories'),
+                'url' => UrlHelper::url('categories'),
+            ],
+            [
+                'label' => Craft::t('site', $group->name),
+                'url' => UrlHelper::url('categories/' . $group->handle),
+            ],
+        ];
+
+        $user = Craft::$app->getUser()->getIdentity();
+        foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
+            if ($ancestor->canView($user)) {
+                $crumbs[] = [
+                    'label' => $ancestor->title,
+                    'url' => $ancestor->getCpEditUrl(),
+                ];
+            }
+        }
+
+        return $crumbs;
     }
 
     /**
@@ -498,11 +614,11 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function metaFieldsHtml(): string
+    protected function metaFieldsHtml(bool $static): string
     {
         return implode('', [
-            $this->slugFieldHtml(),
-            parent::metaFieldsHtml(),
+            $this->slugFieldHtml($static),
+            parent::metaFieldsHtml($static),
         ]);
     }
 
@@ -551,12 +667,16 @@ class Category extends Element
         // Set the structure ID for Element::attributes() and afterSave()
         $this->structureId = $this->getGroup()->structureId;
 
-        if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
-                $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
+        // Has the category been assigned a new parent?
+        if (!$this->duplicateOf && $this->hasNewParent()) {
+            if ($parentId = $this->getParentId()) {
+                $parentCategory = Craft::$app->getCategories()->getCategoryById($parentId, $this->siteId, [
+                    'drafts' => null,
+                    'draftOf' => false,
+                ]);
 
                 if (!$parentCategory) {
-                    throw new Exception('Invalid category ID: ' . $this->newParentId);
+                    throw new InvalidConfigException("Invalid category ID: $parentId");
                 }
             } else {
                 $parentCategory = null;
@@ -592,31 +712,57 @@ class Category extends Element
             $record->groupId = (int)$this->groupId;
             $record->save(false);
 
-            // Has the parent changed?
-            if (!$this->duplicateOf && $this->_hasNewParent()) {
-                $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
-                if (!$this->newParentId) {
-                    if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
-                        Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
-                    } else {
-                        Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
-                    }
-                } else {
-                    if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
-                        Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
-                    } else {
-                        Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
-                    }
+            if ($this->getIsCanonical()) {
+                // Has the parent changed?
+                if ($this->hasNewParent()) {
+                    $this->_placeInStructure($isNew, $group);
                 }
-            }
 
-            // Update the category's descendants, who may be using this category's URI in their own URIs
-            if (!$isNew) {
-                Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+                // Update the category's descendants, who may be using this category's URI in their own URIs
+                if (!$isNew) {
+                    Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+                }
             }
         }
 
         parent::afterSave($isNew);
+    }
+
+    private function _placeInStructure(bool $isNew, CategoryGroup $group): void
+    {
+        $parentId = $this->getParentId();
+        $structuresService = Craft::$app->getStructures();
+
+        // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
+        if ($this->isProvisionalDraft) {
+            $canonicalParentId = self::find()
+                ->select(['elements.id'])
+                ->ancestorOf($this->getCanonicalId())
+                ->ancestorDist(1)
+                ->status(null)
+                ->scalar();
+
+            if ($parentId == $canonicalParentId) {
+                $structuresService->remove($this->structureId, $this);
+                return;
+            }
+        }
+
+        $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
+
+        if (!$parentId) {
+            if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
+                $structuresService->prependToRoot($this->structureId, $this, $mode);
+            } else {
+                $structuresService->appendToRoot($this->structureId, $this, $mode);
+            }
+        } else {
+            if ($group->defaultPlacement === CategoryGroup::DEFAULT_PLACEMENT_BEGINNING) {
+                $structuresService->prepend($this->structureId, $this, $this->getParent(), $mode);
+            } else {
+                $structuresService->append($this->structureId, $this, $this->getParent(), $mode);
+            }
+        }
     }
 
     /**
@@ -635,7 +781,7 @@ class Category extends Element
         ];
 
         if ($this->structureId) {
-            // Remember the parent ID, in case the entry needs to be restored later
+            // Remember the parent ID, in case the category needs to be restored later
             $parentId = $this->getAncestors(1)
                 ->status(null)
                 ->select(['elements.id'])
@@ -728,60 +874,5 @@ class Category extends Element
         }
 
         parent::afterMoveInStructure($structureId);
-    }
-
-    /**
-     * Returns whether the category has been assigned a new parent entry.
-     *
-     * @return bool
-     * @see beforeSave()
-     * @see afterSave()
-     */
-    private function _hasNewParent(): bool
-    {
-        if (isset($this->_hasNewParent)) {
-            return $this->_hasNewParent;
-        }
-
-        return $this->_hasNewParent = $this->_checkForNewParent();
-    }
-
-    /**
-     * Checks if an category was submitted with a new parent category selected.
-     *
-     * @return bool
-     */
-    private function _checkForNewParent(): bool
-    {
-        // Is it a brand new category?
-        if (!isset($this->id)) {
-            return true;
-        }
-
-        // Was a new parent ID actually submitted?
-        if (!isset($this->newParentId)) {
-            return false;
-        }
-
-        // Is it set to the top level now, but it hadn't been before?
-        if (!$this->newParentId && $this->level != 1) {
-            return true;
-        }
-
-        // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId && $this->level == 1) {
-            return true;
-        }
-
-        // Is the newParentId set to a different category ID than its previous parent?
-        $oldParentQuery = self::find();
-        $oldParentQuery->ancestorOf($this);
-        $oldParentQuery->ancestorDist(1);
-        $oldParentQuery->siteId($this->siteId);
-        $oldParentQuery->status(null);
-        $oldParentQuery->select('elements.id');
-        $oldParentId = $oldParentQuery->scalar();
-
-        return $this->newParentId != $oldParentId;
     }
 }

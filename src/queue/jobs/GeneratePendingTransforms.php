@@ -8,7 +8,9 @@
 namespace craft\queue\jobs;
 
 use Craft;
+use craft\elements\Asset;
 use craft\i18n\Translation;
+use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
 use Throwable;
 
@@ -25,14 +27,14 @@ class GeneratePendingTransforms extends BaseJob
      */
     public function execute($queue): void
     {
-        // Get all of the pending transform index IDs
-        $indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();
+        $transformer = Craft::createObject(ImageTransformer::class);
 
+        // Get all the pending transform index IDs
+        $indexIds = $transformer->getPendingTransformIndexIds();
         $totalIndexes = count($indexIds);
-        $assetTransformsService = Craft::$app->getAssetTransforms();
 
         foreach ($indexIds as $i => $id) {
-            if ($index = $assetTransformsService->getTransformIndexModelById($id)) {
+            if ($index = $transformer->getTransformIndexModelById($id)) {
                 $this->setProgress($queue, $i / $totalIndexes, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $i + 1,
                     'total' => $totalIndexes,
@@ -40,7 +42,10 @@ class GeneratePendingTransforms extends BaseJob
 
                 // Don't let an exception stop us from processing the rest
                 try {
-                    $assetTransformsService->ensureTransformUrlByIndexModel($index);
+                    $asset = Asset::findOne(['id' => $index->assetId]);
+                    if ($asset) {
+                        $transformer->getTransformUrl($asset, $index->getTransform(), true);
+                    }
                 } catch (Throwable $e) {
                 }
             }

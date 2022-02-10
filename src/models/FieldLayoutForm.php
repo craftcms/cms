@@ -42,7 +42,6 @@ class FieldLayoutForm extends Model
                 'label' => $tab->getName(),
                 'url' => "#$tabId",
                 'class' => $tab->hasErrors ? 'error' : null,
-                'visible' => $tab->visible,
             ];
         }
         return $menu;
@@ -59,12 +58,17 @@ class FieldLayoutForm extends Model
         $html = [];
         foreach ($this->tabs as $i => $tab) {
             $show = $showFirst && $i === 0;
+            $id = $this->_tabId($tab->getId());
             $html[] = Html::tag('div', $tab->getContent(), [
-                'id' => $this->_tabId($tab->getId()),
+                'id' => $id,
                 'class' => array_filter([
                     'flex-fields',
                     !$show ? 'hidden' : null,
                 ]),
+                'data' => [
+                    'id' => $id,
+                    'layout-tab' => $tab->getUid(),
+                ],
             ]);
         }
         return implode("\n", $html);
@@ -92,9 +96,7 @@ class FieldLayoutForm extends Model
         $response = [];
 
         foreach ($this->tabs as $tab) {
-            if ($tab->visible) {
-                $response[$tab->getId()] = array_keys(array_filter($tab->elementHtml));
-            }
+            $response[$tab->getUid()] = array_keys(array_filter($tab->elementHtml));
         }
 
         return $response;

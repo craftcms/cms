@@ -152,13 +152,13 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
         ]);
-        $this->createTable(Table::ASSETTRANSFORMINDEX, [
+        $this->createTable(Table::IMAGETRANSFORMINDEX, [
             'id' => $this->primaryKey(),
             'assetId' => $this->integer()->notNull(),
+            'transformer' => $this->string()->null(),
             'filename' => $this->string(),
             'format' => $this->string(),
-            'location' => $this->string()->notNull(),
-            'volumeId' => $this->integer(),
+            'transformString' => $this->string()->notNull(),
             'fileExists' => $this->boolean()->notNull()->defaultValue(false),
             'inProgress' => $this->boolean()->notNull()->defaultValue(false),
             'error' => $this->boolean()->defaultValue(false)->notNull(),
@@ -167,7 +167,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable(Table::ASSETTRANSFORMS, [
+        $this->createTable(Table::IMAGETRANSFORMS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
@@ -178,7 +178,7 @@ class Install extends Migration
             'format' => $this->string(),
             'quality' => $this->integer(),
             'interlace' => $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->notNull()->defaultValue('none'),
-            'dimensionChangeTime' => $this->dateTime(),
+            'parameterChangeTime' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -764,12 +764,9 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
-            'type' => $this->string()->notNull(),
-            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
-            'url' => $this->string(),
+            'fs' => $this->string()->notNull(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
-            'settings' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -801,10 +798,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETINDEXDATA, ['volumeId'], false);
         $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
-        $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
-        $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['volumeId', 'assetId', 'location'], false);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['name']);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle']);
+        $this->createIndex(null, Table::ASSETS, ['volumeId'], false);  
         $this->createIndex(null, Table::AUTH_WEBAUTHN, ['credentialId']);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['name'], false);
@@ -828,6 +822,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['slug', 'siteId'], false);
@@ -863,6 +858,9 @@ class Install extends Migration
         $this->createIndex(null, Table::GLOBALSETS, ['sortOrder'], false);
         $this->createIndex(null, Table::GQLTOKENS, ['accessToken'], true);
         $this->createIndex(null, Table::GQLTOKENS, ['name'], true);
+        $this->createIndex(null, Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString'], false);
+        $this->createIndex(null, Table::IMAGETRANSFORMS, ['name']);
+        $this->createIndex(null, Table::IMAGETRANSFORMS, ['handle']);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['ownerId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);

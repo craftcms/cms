@@ -1,5 +1,7 @@
 import Garnish from './Garnish.js';
 
+const uiLayerManager = new Garnish.UiLayerManager();
+
 /**
  * @deprecated
  * Assign these here to avoid circular dependencies
@@ -7,7 +9,11 @@ import Garnish from './Garnish.js';
  Object.assign(Garnish, {
   Menu: Garnish.CustomSelect,
   escManager: new Garnish.EscManager(),
-  shortcutManager: new Garnish.ShortcutManager(),
+  uiLayerManager,
+  /**
+   * @deprecated Use uiLayerManager instead
+   */
+  shortcutManager: uiLayerManager,
 });
 
 export default Garnish;

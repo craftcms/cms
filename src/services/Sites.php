@@ -41,7 +41,8 @@ use yii\db\Exception as DbException;
 
 /**
  * Sites service.
- * An instance of the Sites service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
  *
  * @property-read Site[] $allSites all of the sites
  * @property int[] $allSiteIds all of the site IDs
@@ -523,7 +524,7 @@ class Sites extends Component
     public function getEditableSiteIds(): array
     {
         if (!Craft::$app->getIsMultiSite()) {
-            return $this->getAllSiteIds();
+            return $this->getAllSiteIds(true);
         }
 
         if (isset($this->_editableSiteIds)) {

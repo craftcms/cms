@@ -33,8 +33,7 @@
 
     <div class="buttons">
         <div class="btngroup">
-            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
-
+            {{ forms.submitButton({label: 'Save'|t('app'), spinner: true}) }}
             <button type="button" class="btn submit menubtn" aria-label="{{ 'Options'|t('app') }}"></button>
             <div class="menu">
                 <ul>

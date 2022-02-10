@@ -37,7 +37,7 @@ use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
-use craft\volumes\Local;
+use craft\fs\Local;
 use GraphQL\Type\Definition\ObjectType;
 
 class InterfaceAndGeneratorTest extends Unit

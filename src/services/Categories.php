@@ -35,7 +35,8 @@ use yii\base\Exception;
 
 /**
  * Categories service.
- * An instance of the Categories service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->categories`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->categories`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -154,9 +155,14 @@ class Categories extends Component
             return $this->getAllGroups();
         }
 
-        $userSession = Craft::$app->getUser();
-        return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
-            return $userSession->checkPermission('editCategories:' . $group->uid);
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if (!$user) {
+            return [];
+        }
+
+        return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($user) {
+            return $user->can("viewCategories:$group->uid");
         }, true, true, false);
     }
 
@@ -683,32 +689,33 @@ class Categories extends Component
      * Returns a category by its ID.
      *
      * @param int $categoryId
-     * @param int|null $siteId
+     * @param int|int[]|string|null $siteId
+     * @param array $criteria
      * @return Category|null
      */
-    public function getCategoryById(int $categoryId, ?int $siteId = null): ?Category
+    public function getCategoryById(int $categoryId, $siteId = null, array $criteria = []): ?Category
     {
         if (!$categoryId) {
             return null;
         }
 
         // Get the structure ID
-        $structureId = (new Query())
-            ->select(['categorygroups.structureId'])
-            ->from(['categories' => Table::CATEGORIES])
-            ->innerJoin(['categorygroups' => Table::CATEGORYGROUPS], '[[categorygroups.id]] = [[categories.groupId]]')
-            ->where(['categories.id' => $categoryId])
-            ->scalar();
+        if (!isset($criteria['structureId'])) {
+            $criteria['structureId'] = (new Query())
+                ->select(['categorygroups.structureId'])
+                ->from(['categories' => Table::CATEGORIES])
+                ->innerJoin(['categorygroups' => Table::CATEGORYGROUPS], '[[categorygroups.id]] = [[categories.groupId]]')
+                ->where(['categories.id' => $categoryId])
+                ->scalar();
+        }
 
         // All categories are part of a structure
-        if (!$structureId) {
+        if (!$criteria['structureId']) {
             return null;
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, [
-            'structureId' => $structureId,
-        ]);
+        return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, $criteria);
     }
 
     /**

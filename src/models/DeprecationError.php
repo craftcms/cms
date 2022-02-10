@@ -61,15 +61,22 @@ class DeprecationError extends Model
     public ?array $traces = null;
 
     /**
-     * @inheritdoc
+     * Constructor
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (is_string($this->traces)) {
-            $this->traces = Json::decode($this->traces);
+        // Config normalization
+        foreach (['file', 'line', 'message', 'traces'] as $name) {
+            if (($config[$name] ?? null) === '') {
+                unset($config[$name]);
+            }
         }
+
+        if (isset($config['traces']) && is_string($config['traces'])) {
+            $config['traces'] = Json::decode($config['traces']);
+        }
+
+        parent::__construct($config);
     }
 
     /**

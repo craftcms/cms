@@ -26,8 +26,6 @@ use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
-use craft\mutex\MysqlMutex;
-use craft\mutex\PgsqlMutex;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
@@ -384,7 +382,7 @@ class App
      */
     public static function supportsIdn(): bool
     {
-        return function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
+        return defined('INTL_IDNA_VARIANT_UTS46');
     }
 
     /**
@@ -627,29 +625,25 @@ class App
     }
 
     /**
-     * Returns the `mutex` component config.
+     * Returns a file-based mutex driver config.
+     *
+     * ::: tip
+     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that
+     * overriding the `mutex` component may no longer be necessary, as Craft no longer uses a mutex
+     * when Dev Mode is enabled.
+     * :::
      *
      * @return array
-     * @since 3.5.18
+     * @since 3.0.18
      */
-    public static function dbMutexConfig(): array
+    public static function mutexConfig(): array
     {
-        if (!Craft::$app->getIsInstalled()) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            return [
-                'class' => FileMutex::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-            ];
-        }
-
-        $db = Craft::$app->getDb();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         return [
-            'class' => $db->getIsMysql() ? MysqlMutex::class : PgsqlMutex::class,
-            'db' => $db,
-            'namePrefix' => Craft::$app->id,
+            'class' => FileMutex::class,
+            'fileMode' => $generalConfig->defaultFileMode,
+            'dirMode' => $generalConfig->defaultDirMode,
         ];
     }
 
@@ -710,7 +704,7 @@ class App
 
             $targets[Dispatcher::TARGET_FILE] = Craft::createObject($fileTargetConfig);
 
-            if (!Craft::$app->getRequest()->isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+            if (!$isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
                 $targets[Dispatcher::TARGET_STDERR] = Craft::createObject([
                     'class' => StreamLogTarget::class,
                     'url' => 'php://stderr',

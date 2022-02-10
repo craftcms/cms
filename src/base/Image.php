@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -20,6 +21,11 @@ use yii\base\BaseObject;
  */
 abstract class Image extends BaseObject
 {
+    /**
+     * @var ?callable Heartbeat function to call, if needed.
+     */
+    private $_heartBeatCallback = null;
+
     /**
      * Returns the width of the image.
      *
@@ -117,13 +123,36 @@ abstract class Image extends BaseObject
     protected function normalizeDimensions(&$width, &$height): void
     {
         // See if $width is in "XxY" format
-        if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', $width, $matches)) {
+        if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', (string)$width, $matches)) {
             $width = $matches[1] !== 'AUTO' ? (int)$matches[1] : null;
             $height = $matches[2] !== 'AUTO' ? (int)$matches[2] : null;
         }
 
         if (!$height || !$width) {
             [$width, $height] = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
+        }
+    }
+
+    /**
+     * Sets the heartbeat callback.
+     *
+     * @param callable|null $method
+     * @since 4.0.0
+     */
+    public function setHeartbeatCallback(?callable $method = null): void
+    {
+        $this->_heartBeatCallback = $method;
+    }
+
+    /**
+     * Let everyone back home know we're ok.
+     *
+     * @since 4.0.0
+     */
+    public function heartbeat(): void
+    {
+        if (is_callable($this->_heartBeatCallback)) {
+            call_user_func($this->_heartBeatCallback);
         }
     }
 }

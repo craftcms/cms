@@ -44,7 +44,8 @@ use yii\base\Exception;
 
 /**
  * Sections service.
- * An instance of the Sections service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSections()|`Craft::$app->sections`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -264,9 +265,14 @@ class Sections extends Component
             return $this->getAllSections();
         }
 
-        $userSession = Craft::$app->getUser();
-        return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($userSession) {
-            return $userSession->checkPermission('editEntries:' . $section->uid);
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if (!$user) {
+            return [];
+        }
+
+        return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($user) {
+            return $user->can("viewEntries:$section->uid");
         }, true, true, false);
     }
 
@@ -534,7 +540,7 @@ class Sections extends Component
                 // Deal with the section's entry types
                 if (!$isNewSection) {
                     foreach ($this->getEntryTypesBySectionId($section->id) as $entryType) {
-                        if ($entryType->id == $entry->typeId) {
+                        if ($entryType->id === $entry->getTypeId()) {
                             // This is *the* entry's type. Make sure its name & handle match the section's
                             if ($entryType->name !== $section->name || $entryType->handle !== $section->handle) {
                                 $entryType->name = $section->name;
@@ -1498,7 +1504,7 @@ class Sections extends Component
             $entry = new Entry();
             $entry->siteId = $siteIds[0];
             $entry->sectionId = $section->id;
-            $entry->typeId = $entryTypeIds[0];
+            $entry->setTypeId($entryTypeIds[0]);
             $entry->title = $section->name;
         }
 

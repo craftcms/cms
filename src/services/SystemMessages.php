@@ -19,7 +19,8 @@ use yii\db\Expression;
 
 /**
  * System Messages service.
- * An instance of the System Messages service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemMessages()|`Craft::$app->systemMessages`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSystemMessages()|`Craft::$app->systemMessages`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

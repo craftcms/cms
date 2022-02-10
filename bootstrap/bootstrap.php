@@ -151,10 +151,14 @@ if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
     $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
 }
 
-// Log errors to storage/logs/phperrors.log
+// Log errors to storage/logs/phperrors.log or php://stderr
 if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
     ini_set('log_errors', 1);
     ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
+
+    if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG) {
+        ini_set('error_log', 'php://stderr');
+    }
 }
 
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);

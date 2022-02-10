@@ -6,6 +6,7 @@
 {% set elements = elements ?? [] -%}
 {% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
 {% set sources = sources ?? null -%}
+{% set condition = condition ?? null -%}
 {% set criteria = criteria ?? null -%}
 {% set sourceElementId = sourceElementId ?? null -%}
 {% set storageKey = storageKey ?? null -%}
@@ -60,6 +61,7 @@
         name: name|namespaceInputName,
         elementType: elementType,
         sources: sources,
+        condition: condition ? condition.getConfig() : null,
         criteria: criteria,
         allowSelfRelations: allowSelfRelations ?? false,
         sourceElementId: sourceElementId,

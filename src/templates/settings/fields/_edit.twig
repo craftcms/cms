@@ -86,7 +86,8 @@
         id: 'type',
         name: 'type',
         options: fieldTypeOptions,
-        value: className(field),
+        value: field is missing ? field.expectedType : className(field),
+        errors: field.getErrors('type'),
     }) }}
 
     {{ missingFieldPlaceholder|raw }}

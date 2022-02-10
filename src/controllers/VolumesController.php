@@ -9,13 +9,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Field;
-use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use craft\volumes\Local;
-use craft\volumes\MissingVolume;
+use craft\models\Volume;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -60,18 +58,16 @@ class VolumesController extends Controller
      * Edit an asset volume.
      *
      * @param int|null $volumeId The volume’s ID, if editing an existing volume.
-     * @param VolumeInterface|null $volume The volume being edited, if there were any validation errors.
+     * @param Volume|null $volume The volume being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume(?int $volumeId = null, ?VolumeInterface $volume = null): Response
+    public function actionEditVolume(?int $volumeId = null, ?Volume $volume = null): Response
     {
         $this->requireAdmin();
 
         $volumes = Craft::$app->getVolumes();
-
-        $missingVolumePlaceholder = null;
 
         if ($volume === null) {
             if ($volumeId !== null) {
@@ -80,40 +76,10 @@ class VolumesController extends Controller
                 if ($volume === null) {
                     throw new NotFoundHttpException('Volume not found');
                 }
-
-                if ($volume instanceof MissingVolume) {
-                    $missingVolumePlaceholder = $volume->getPlaceholderHtml();
-                    $volume = $volume->createFallback(Local::class);
-                }
             } else {
-                $volume = $volumes->createVolume(Local::class);
+                $volume = Craft::createObject(Volume::class);
             }
         }
-
-        /** @var string[]|VolumeInterface[] $allVolumeTypes */
-        $allVolumeTypes = $volumes->getAllVolumeTypes();
-
-        // Make sure the selected volume class is in there
-        if (!in_array(get_class($volume), $allVolumeTypes, true)) {
-            $allVolumeTypes[] = get_class($volume);
-        }
-
-        $volumeInstances = [];
-        $volumeTypeOptions = [];
-
-        foreach ($allVolumeTypes as $class) {
-            if ($class === get_class($volume) || $class::isSelectable()) {
-                $volumeInstances[$class] = $volumes->createVolume($class);
-
-                $volumeTypeOptions[] = [
-                    'value' => $class,
-                    'label' => $class::displayName(),
-                ];
-            }
-        }
-
-        // Sort them by name
-        ArrayHelper::multisort($volumeTypeOptions, 'label');
 
         $isNewVolume = !$volume->id;
 
@@ -142,10 +108,6 @@ class VolumesController extends Controller
             'volumeId' => $volumeId,
             'volume' => $volume,
             'isNewVolume' => $isNewVolume,
-            'volumeTypes' => $allVolumeTypes,
-            'volumeTypeOptions' => $volumeTypeOptions,
-            'missingVolumePlaceholder' => $missingVolumePlaceholder,
-            'volumeInstances' => $volumeInstances,
             'title' => $title,
             'crumbs' => $crumbs,
             'typeName' => Asset::displayName(),
@@ -164,7 +126,6 @@ class VolumesController extends Controller
         $this->requirePostRequest();
 
         $volumesService = Craft::$app->getVolumes();
-        $type = $this->request->getBodyParam('type');
         $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
         if ($volumeId) {
@@ -174,18 +135,15 @@ class VolumesController extends Controller
             }
         }
 
-        $volume = $volumesService->createVolume([
+        $volume = new Volume([
             'id' => $volumeId,
             'uid' => $oldVolume->uid ?? null,
             'sortOrder' => $oldVolume->sortOrder ?? null,
-            'type' => $type,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
-            'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
-            'url' => $this->request->getBodyParam('url'),
+            'fsHandle' => $this->request->getBodyParam('fsHandle'),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
-            'settings' => $this->request->getBodyParam('types.' . $type),
         ]);
 
         // Set the field layout

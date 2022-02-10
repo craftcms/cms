@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Html;
 
 /**
  * MultiSelect represents a Multi-select field.
@@ -58,7 +57,7 @@ class MultiSelect extends BaseOptionsField
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
-            'id' => Html::id($this->handle),
+            'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $value,

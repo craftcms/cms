@@ -59,6 +59,9 @@ body,
 
   .topBarWrap {
     .topBar {
+      body.rtl & {
+        direction: rtl;
+      }
       padding: 14px 24px;
 
       .title {
@@ -143,7 +146,7 @@ body,
       }
 
       svg {
-        margin-left: 5px;
+        @include margin-left(5px);
       }
     }
 

@@ -14,6 +14,7 @@ use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
+use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -37,6 +38,13 @@ class FileHelper extends \yii\helpers\FileHelper
      * @see useFileLocks()
      */
     private static bool $_useFileLocks;
+
+    /**
+     * A list of files to be deleted once the request ends.
+     *
+     * @var array
+     */
+    private static array $_filesToBeDeleted = [];
 
     /**
      * @inheritdoc
@@ -725,4 +733,34 @@ class FileHelper extends \yii\helpers\FileHelper
 
         return $extension;
     }
+
+    /**
+     * Deletes a file after the request ends.
+     *
+     * @param string $filename
+     * @since 4.0.0
+     */
+    public static function deleteFileAfterRequest(string $filename): void
+    {
+        self::$_filesToBeDeleted[] = $filename;
+
+        if (count(self::$_filesToBeDeleted) === 1) {
+            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [static::class, 'deleteQueuedFiles']);
+        }
+    }
+
+    /**
+     * Delete all files queued up for deletion.
+     *
+     * @since 4.0.0
+     */
+    public static function deleteQueuedFiles(): void
+    {
+        foreach (array_unique(self::$_filesToBeDeleted) as $source) {
+            if (file_exists($source)) {
+                self::unlink($source);
+            }
+        }
+    }
+
 }

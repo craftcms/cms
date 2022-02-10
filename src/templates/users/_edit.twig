@@ -160,10 +160,10 @@
 
         {{ fieldsHtml|raw }}
 
-        {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
+        {% if showPermissionsTab %}
             <div id="perms" class="flex-fields hidden">
 
-                {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
+                {% if canAssignUserGroups %}
                     <fieldset>
                         <h2>{{ "User Groups"|t('app') }}</h2>
 
@@ -197,7 +197,7 @@
                 {% if currentUser.can('assignUserPermissions') %}
                     <h2>{{ "Permissions"|t('app') }}</h2>
 
-                    {% if currentUser.admin and CraftEdition == CraftPro %}
+                    {% if currentUser.admin %}
                         {{ forms.checkboxField({
                             label: raw("<b>#{'Admin'|t('app')}</b>"),
                             name: 'admin',
@@ -212,7 +212,8 @@
 
                     <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
                         {% include "_includes/permissions" with {
-                            userOrGroup: (user.admin ? null : user),
+                            subject: user.admin ? null : user,
+                            permissions: craft.app.userPermissions.getAssignablePermissions(user),
                             groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : []
                         } only %}
                     </div>
@@ -237,7 +238,7 @@
                     name: 'preferredLocale',
                     label: "Formatting Locale"|t('app'),
                     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-                    options: localeOptions|unshift({label: 'Same as language'|t('app'), value: ''}),
+                    options: (localeOptions ?? [])|unshift({label: 'Same as language'|t('app'), value: ''}),
                     value: userLocale,
                 }) }}
 
@@ -345,7 +346,20 @@
 
                         {% if actions|length %}
                             <div>
-                                <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
+                                {{ forms.button({
+                                    class: 'menubtn',
+                                    attributes: {
+                                        id: 'action-menubtn',
+                                        title: 'Actions'|t('app'),
+                                        aria: {
+                                            label: 'Actions'|t('app'),
+                                        },
+                                        data: {
+                                            icon: 'settings',
+                                        },
+                                    },
+                                    spinner: true,
+                                }) }}
                                 <div class="menu">
                                     {% for actionList in actions %}
                                         {% if not loop.first %}<hr>{% endif %}
@@ -369,7 +383,6 @@
                                         </ul>
                                     {% endfor %}
                                 </div>
-                                <div id="action-spinner" class="spinner hidden"></div>
                             </div>
                         {% endif %}
                     </div>

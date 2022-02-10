@@ -88,7 +88,7 @@ class FieldLayout extends Model
      * );
      * ```
      *
-     * @see getAvailableNativeFields()
+     * @see getAvailableUiElements()
      * @since 3.5.0
      */
     public const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
@@ -465,7 +465,7 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the field layout config for this field layout.
+     * Returns the field layout’s config.
      *
      * @return array|null
      * @since 3.1.0
@@ -636,19 +636,18 @@ class FieldLayout extends Model
 
         foreach ($tabs as $tab) {
             $elementHtml = [];
-            $tabHtmlId = $tab->getHtmlId();
             $showTab = $tab->showInForm($element);
             $hasVisibleFields = false;
 
             foreach ($tab->getElements() as $layoutElement) {
                 if ($showTab && $layoutElement->showInForm($element)) {
                     // If it was already included and we just need the missing elements, only keep track that it’s still included
-                    if (isset($visibleElements[$tabHtmlId]) && in_array($layoutElement->uid, $visibleElements[$tabHtmlId])) {
+                    if (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])) {
                         $elementHtml[$layoutElement->uid] = true;
                         $hasVisibleFields = true;
                     } else {
                         $html = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
-                            return $layoutElement->formHtml($element, $static);
+                            return $layoutElement->formHtml($element, $static) ?? '';
                         }, $namespace);
                         if ($html) {
                             $elementHtml[$layoutElement->uid] = Html::modifyTagAttributes($html, [
@@ -666,12 +665,13 @@ class FieldLayout extends Model
                 }
             }
 
-            $form->tabs[] = new FieldLayoutFormTab([
-                'layoutTab' => $tab,
-                'hasErrors' => $element && $tab->elementHasErrors($element),
-                'elementHtml' => $elementHtml,
-                'visible' => $hasVisibleFields,
-            ]);
+            if ($hasVisibleFields) {
+                $form->tabs[] = new FieldLayoutFormTab([
+                    'layoutTab' => $tab,
+                    'hasErrors' => $element && $tab->elementHasErrors($element),
+                    'elementHtml' => $elementHtml,
+                ]);
+            }
         }
 
         if ($changeDeltaRegistration) {
@@ -680,34 +680,5 @@ class FieldLayout extends Model
         }
 
         return $form;
-    }
-
-    /**
-     * Returns the form HTML for any layout elements that aren’t currently shown in a form but should be,
-     * as well as an indication of whether already-visible layout elements should or shouldn’t continue to
-     * be shown.
-     *
-     * The `$config` array can contain the following keys:
-     *
-     * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
-     * - `visibleElements` – Lists of already-visible layout elements from [[FieldLayoutForm::getVisibleElements()]]
-     * - `namespace` – Namespace that should be applied to the tab contents
-     *
-     * @param ElementInterface $element The element the form is being rendered for
-     * @param array $config The [[FieldLayoutForm]] config
-     * @return array
-     * @since 4.0.0
-     */
-    public function renderMissingElements(ElementInterface $element, array $visibleElements, array $config = []): array
-    {
-        $config['registerDeltas'] = false;
-        $config['visibleElements'] = $visibleElements;
-        $form = $this->createForm($element, false, $config);
-        $tabHtmlIds = array_map(fn(FieldLayoutFormTab $tab) => $tab->getId(), $form->tabs);
-        $tabInfo = array_map(fn(FieldLayoutFormTab $tab) => [
-            'visible' => $tab->visible,
-            'elementHtml' => $tab->elementHtml,
-        ], $form->tabs);
-        return array_combine($tabHtmlIds, $tabInfo);
     }
 }

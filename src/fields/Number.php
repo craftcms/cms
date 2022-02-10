@@ -15,7 +15,6 @@ use craft\base\SortableFieldInterface;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\helpers\Number as NumberHelper;
 use craft\i18n\Locale;
@@ -251,7 +250,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             }
         }
 
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
         $view = Craft::$app->getView();
         $namespacedId = $view->namespaceInputId($id);
 

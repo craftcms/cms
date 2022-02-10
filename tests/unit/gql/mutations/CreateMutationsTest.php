@@ -26,7 +26,8 @@ use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\TagGroup;
-use craft\volumes\Local;
+use craft\fs\Local;
+use craft\models\Volume;
 
 class CreateMutationsTest extends Unit
 {
@@ -40,7 +41,7 @@ class CreateMutationsTest extends Unit
         // Mock all the things
         $this->tester->mockCraftMethods('volumes', [
             'getAllVolumes' => [
-                new Local(['uid' => 'uid', 'handle' => 'localVolume'])
+                new Volume(['uid' => 'uid', 'handle' => 'localVolume'])
             ]
         ]);
 
@@ -111,7 +112,7 @@ class CreateMutationsTest extends Unit
      */
    public function testCreateAssetSaveMutation()
    {
-       $volume = $this->make(Local::class, [
+       $volume = $this->make(Volume::class, [
                '__call' => function($name, $args) {
                    return [
                        new Number(['handle' => 'someNumberField']),
@@ -324,21 +325,21 @@ class CreateMutationsTest extends Unit
             ]
         );
 
-        list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($single, true);
+        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($single, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
         self::assertArrayHasKey('someTextField', $saveMutation['args']);
         self::assertArrayNotHasKey('id', $saveMutation['args']);
         self::assertArrayNotHasKey('authorId', $draftMutation['args']);
 
-        list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($channel, true);
+        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($channel, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
         self::assertArrayHasKey('someTextField', $draftMutation['args']);
         self::assertArrayHasKey('uid', $saveMutation['args']);
         self::assertArrayHasKey('authorId', $draftMutation['args']);
 
-        list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($structure, true);
+        [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($structure, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
         self::assertStringContainsString('draft', $draftMutation['description']);

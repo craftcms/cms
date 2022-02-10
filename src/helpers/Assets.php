@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,14 +9,15 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\LocalVolumeInterface;
-use craft\base\VolumeInterface;
+use craft\base\FsInterface;
+use craft\base\LocalFsInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
-use craft\errors\VolumeException;
+use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
-use craft\models\AssetTransformIndex;
+use craft\helpers\ImageTransforms as TransformHelper;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
 use yii\base\Event;
@@ -78,17 +80,18 @@ class Assets
     /**
      * Generate a URL for a given Assets file in a Source Type.
      *
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
-     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
+     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
+     * @throws \yii\base\InvalidConfigException
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $asset, ?string $uri = null, ?AssetTransformIndex $transformIndex = null): string
+    public static function generateUrl(Volume $volume, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $baseUrl = $volume->getRootUrl();
+        $baseUrl = $volume->getFs()->getRootUrl();
         $folderPath = $asset->folderPath;
-        $appendix = static::urlAppendix($volume, $asset, $transformIndex);
+        $appendix = static::urlAppendix($volume, $asset, $dateUpdated);
 
         return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->getFilename()) . $appendix);
     }
@@ -96,19 +99,19 @@ class Assets
     /**
      * Get appendix for a URL based on its Source caching settings.
      *
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @param Asset $asset
-     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
+     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $asset, ?AssetTransformIndex $transformIndex = null): string
+    public static function urlAppendix(Volume $volume, Asset $asset, ?DateTime $dateUpdated = null): string
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return '';
         }
 
         /** @var DateTime $dateModified */
-        $dateModified = max($asset->dateModified, $transformIndex->dateUpdated ?? null);
+        $dateModified = max($asset->dateModified, $dateUpdated ?? null);
         $v = $dateModified->getTimestamp();
 
         if ($asset->getHasFocalPoint()) {
@@ -364,13 +367,13 @@ class Assets
      */
     public static function parseFileLocation(string $location): array
     {
-        if (!preg_match('/^\{folder:(\d+)\}(.+)$/', $location, $matches)) {
+        if (!preg_match('/^{folder:(\d+)}(.+)$/', $location, $matches)) {
             throw new Exception('Invalid file location format: ' . $location);
         }
 
         [, $folderId, $filename] = $matches;
 
-        return [$folderId, $filename];
+        return [(int)$folderId, $filename];
     }
 
     /**
@@ -685,11 +688,11 @@ class Assets
         // No existing resources we could use.
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = Craft::$app->getAssetTransforms()->getCachedCloudImageSize();
+        $maxCachedSize = Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
 
-        if (!$volume instanceof LocalVolumeInterface && $maxCachedSize > $size) {
+        if (!$volume->getFs() instanceof LocalFsInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
-            $localSource = $asset->getTransformSource();
+            $localSource = TransformHelper::getLocalImageSource($asset);
             Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
         } else {
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
@@ -782,18 +785,18 @@ class Assets
     }
 
     /**
-     * Save a file from a volume locally.
+     * Save a file from a filesystem locally.
      *
-     * @param VolumeInterface $volume
+     * @param FsInterface $fs
      * @param string $uriPath
      * @param string $localPath
      * @return int
-     * @throws VolumeException if stream cannot be created.
+     * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(VolumeInterface $volume, string $uriPath, string $localPath): int
+    public static function downloadFile(FsInterface $fs, string $uriPath, string $localPath): int
     {
-        $stream = $volume->getFileStream($uriPath);
+        $stream = $fs->getFileStream($uriPath);
         $outputStream = fopen($localPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);

@@ -18,8 +18,9 @@ use craft\models\FieldLayout;
 use yii\base\Component;
 
 /**
- * The ElementSources service provides APIs for managing element sources.
- * An instance of ElementSources service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElementSources()|`Craft::$app->elementSources`]].
+ * The Element Sources service provides APIs for managing element indexes.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementSources()|`Craft::$app->elementSources`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -40,6 +41,7 @@ class ElementSources extends Component
     const TYPE_NATIVE = 'native';
     const TYPE_CUSTOM = 'custom';
 
+    const CONTEXT_FIELD = 'field';
     const CONTEXT_INDEX = 'index';
     const CONTEXT_MODAL = 'modal';
     const CONTEXT_SETTINGS = 'settings';

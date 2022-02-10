@@ -324,9 +324,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
     },
 
     createElementEditor: function($element) {
-        Craft.createElementEditor($element.data('type'), $element, {
-            elementIndex: this.elementIndex
-        });
+        Craft.createElementEditor($element.data('type'), $element);
     },
 
     disable: function() {

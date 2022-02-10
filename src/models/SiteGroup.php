@@ -125,7 +125,7 @@ class SiteGroup extends Model
     }
 
     /**
-     * Returns the field layout config for this site group.
+     * Returns the site group’s config.
      *
      * @return array
      * @since 3.5.0

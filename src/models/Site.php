@@ -262,7 +262,7 @@ class Site extends Model
     }
 
     /**
-     * Returns the field layout config for this site.
+     * Returns the site’s config.
      *
      * @return array
      * @since 3.5.0

@@ -239,7 +239,7 @@ class Cp
      *
      * @param ElementInterface $element The element to be rendered
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
-     * @param string $size The size of the element (`small` or `large`)
+     * @param string $thumbSize The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
@@ -252,7 +252,7 @@ class Cp
     public static function elementHtml(
         ElementInterface $element,
         string $context = 'index',
-        string $size = self::ELEMENT_SIZE_SMALL,
+        string $thumbSize = self::ELEMENT_SIZE_SMALL,
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
@@ -267,27 +267,27 @@ class Cp
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
-            $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
-            $thumbUrl = $element->getThumbUrl($thumbSize);
+            $thumbSizePx = $thumbSize === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+            $thumbUrl = $element->getThumbUrl($thumbSizePx);
         } else {
-            $thumbSize = $thumbUrl = null;
+            $thumbSizePx = $thumbUrl = null;
         }
 
         if ($thumbUrl !== null) {
-            $imageSize2x = $thumbSize * 2;
+            $imageSize2x = $thumbSizePx * 2;
             $thumbUrl2x = $element->getThumbUrl($imageSize2x);
 
             $srcsets = [
-                "$thumbUrl {$thumbSize}w",
+                "$thumbUrl {$thumbSizePx}w",
                 "$thumbUrl2x {$imageSize2x}w",
             ];
-            $sizesHtml = "{$thumbSize}px";
+            $sizesHtml = "{$thumbSizePx}px";
             $srcsetHtml = implode(', ', $srcsets);
             $imgHtml = Html::tag('div', '', [
                 'class' => array_filter([
                     'elementthumb',
                     $element->getHasCheckeredThumb() ? 'checkered' : null,
-                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                    $thumbSize === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
                     'sizes' => $sizesHtml,
@@ -302,17 +302,19 @@ class Cp
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => ['element', $size],
+                'class' => ['element', $thumbSize],
                 'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
-                'data' => [
+                'data' => array_filter([
                     'type' => get_class($element),
                     'id' => $element->id,
+                    'draft-id' => $element->draftId,
+                    'revision-id' => $element->revisionId,
                     'site-id' => $element->siteId,
                     'status' => $element->getStatus(),
                     'label' => (string)$element,
                     'url' => $element->getUrl(),
                     'level' => $element->level,
-                ],
+                ]),
             ]
         );
 
@@ -332,11 +334,13 @@ class Cp
             $attributes['class'][] = 'hasthumb';
         }
 
-        if (ElementHelper::isElementEditable($element)) {
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($user && $element->canView($user)) {
             $attributes['data']['editable'] = true;
         }
 
-        if ($context === 'index' && $element->getIsDeletable()) {
+        if ($user && $context === 'index' && $element->canDelete($user)) {
             $attributes['data']['deletable'] = true;
         }
 
@@ -470,22 +474,26 @@ class Cp
      */
     public static function fieldHtml(string $input, array $config = []): string
     {
+        $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
         $instructionsId = $config['instructionsId'] ?? "$id-instructions";
         $tipId = $config['tipId'] ?? "$id-tip";
         $warningId = $config['warningId'] ?? "$id-warning";
         $errorsId = $config['errorsId'] ?? "$id-errors";
+        $statusId = $config['statusId'] ?? "$id-status";
 
         $instructions = $config['instructions'] ?? null;
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
+        $status = $config['status'] ?? null;
 
         if (StringHelper::startsWith($input, 'template:')) {
             // Set a describedBy value in case the input template supports it
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
                     $errors ? $errorsId : null,
+                    $status ? $statusId : null,
                     $instructions ? $instructionsId : null,
                     $tip ? $tipId : null,
                     $warning ? $warningId : null,
@@ -499,7 +507,6 @@ class Cp
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
         $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
-        $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
         if ($label === '__blank__') {
@@ -562,22 +569,30 @@ class Cp
                 [
                     'class' => $fieldClass,
                     'id' => $fieldId,
+                    'data' => [
+                        'attribute' => $attribute,
+                    ],
                 ],
                 $config['fieldAttributes'] ?? []
             )) .
             (($label && $fieldset)
                 ? Html::tag('legend', $labelHtml, [
                     'class' => ['visually-hidden'],
+                    'data' => [
+                        'label' => $label,
+                    ],
                 ])
                 : '') .
             ($status
-                ? Html::tag('div', '', [
+                ? Html::beginTag('div', [
+                    'id' => $statusId,
                     'class' => ['status-badge', $status[0]],
                     'title' => $status[1],
                 ]) .
                 Html::tag('span', $status[1], [
                     'class' => 'visually-hidden',
-                ])
+                ]) .
+                Html::endTag('div')
                 : '') .
             (($label || $showAttribute)
                 ? (
@@ -609,7 +624,7 @@ class Cp
                             'class' => ['flex-grow'],
                         ]) . static::renderTemplate('_includes/forms/copytextbtn', [
                             'id' => "$id-attribute",
-                            'class' => ['code', 'small', 'light'],
+                            'class' => ['code', 'small', 'light', 'copytextbtn-expand-l'],
                             'value' => $config['attribute'],
                         ])
                         : '') .
@@ -632,19 +647,10 @@ class Cp
             self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
             self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
             ($errors
-                ? (
-                    Html::beginTag('div', [
-                        'id' => $errorsId,
-                        'class' => 'error-container',
-                    ]) .
-                    Html::tag('p', Craft::t('app', 'Errors:'), [
-                        'class' => 'visually-hidden',
-                    ]) .
-                    static::renderTemplate('_includes/forms/errorList', [
-                        'errors' => $errors,
-                    ]) .
-                    Html::endTag('div')
-                )
+                ? static::renderTemplate('_includes/forms/errorList', [
+                    'id' => $errorsId,
+                    'errors' => $errors,
+                ])
                 : '') .
             Html::endTag($containerTag);
     }
@@ -667,7 +673,7 @@ class Cp
         return
             Html::beginTag('p', [
                 'id' => $id,
-                'class' => $class,
+                'class' => [$class, 'has-icon'],
             ]) .
             Html::tag('span', '', [
                 'class' => 'icon',
@@ -678,7 +684,7 @@ class Cp
             Html::tag('span', "$label ", [
                 'class' => 'visually-hidden',
             ]) .
-            preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message))) .
+            Html::tag('span', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message)))) .
             Html::endTag('p');
     }
 
@@ -863,6 +869,19 @@ class Cp
     {
         $config['id'] = $config['id'] ?? 'text' . mt_rand();
         return static::fieldHtml('template:_includes/forms/text', $config);
+    }
+
+    /**
+     * Renders a textarea input’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function textareaHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/textarea', $config);
     }
 
     /**
@@ -1309,11 +1328,13 @@ JS;
                 $value = $value();
             }
             if ($value !== false) {
-                $defs[] = Html::tag('div',
-                    Html::tag('dt', Html::encode($label), ['class' => 'heading']) . "\n" .
-                    Html::tag('dd', $value, ['class' => 'value']), [
+                $defs[] =
+                    Html::beginTag('div', [
                         'class' => 'data',
-                    ]);
+                    ]) .
+                    Html::tag('dt', Html::encode($label), ['class' => 'heading']) . "\n" .
+                    Html::tag('dd', $value, ['class' => 'value']) . "\n" .
+                    Html::endTag('div');
             }
         }
 

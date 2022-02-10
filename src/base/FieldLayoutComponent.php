@@ -154,7 +154,7 @@ abstract class FieldLayoutComponent extends Model
     private function _normalizeCondition($condition): ?ConditionInterface
     {
         if ($condition !== null) {
-            if (!$condition instanceof ConditionInterface && $condition !== null) {
+            if (!$condition instanceof ConditionInterface) {
                 $condition = Craft::$app->getConditions()->createCondition($condition);
             }
 

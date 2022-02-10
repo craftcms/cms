@@ -19,7 +19,33 @@
                 hint: o.value,
             }
         },
-    }, recursive=true))|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
+    }, recursive=true)) %}
+{% endif %}
+
+{% if addOptionFn is defined and addOptionLabel is defined %}
+    {% if options is empty %}
+        {% set selectizeOptions = selectizeOptions|merge({
+            allowEmptyOption: true,
+        }) %}
+        {% set options = [
+            {value: '', label: ''},
+        ] %}
+    {% endif %}
+    {% set options = options|merge([
+        {
+            label: addOptionLabel ,
+            value: '__add__',
+            data: {
+                data: {
+                    addOption: true,
+                },
+            },
+        },
+    ]) %}
+{% endif %}
+
+{% if includeEnvVars ?? false %}
+    {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
 {% endif %}
 
 {% include '_includes/forms/select' with {
@@ -29,7 +55,10 @@
 {% js %}
 (() => {
     const label = (data, showHint) => {
-        let label = Craft.escapeHtml(data.text);
+        let label = '';
+        if (data.addOption) {
+            label += '<span class="icon add"></span> ';
+        }
         const status = (() => {
             if (typeof data.status !== 'undefined') {
                 return data.status;
@@ -40,23 +69,48 @@
             return null;
         })();
         if (status) {
-            label = `<span class="status ${status}"></span>${label}`;
+            label += `<span class="status ${status}"></span>`;
         }
+        label += `<span>${Craft.escapeHtml(data.text)}</span>`;
         if (showHint && typeof data.hint === 'string' && data.hint !== '') {
-            label += ` <span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
+            label += `<span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
         }
-        return label;
+        return `<div class="flex flex-nowrap">${label}</div>`;
     };
 
     const $select = $("#{{ id|namespaceInputId|e('js') }}");
 
-    const updateBooleanValue = () => {
-        const boolean = $select.data('selectize').$wrapper.find('.item').data('boolean');
+    const onChange = () => {
+        const selectize = $select.data('selectize');
+        const $item = selectize.$wrapper.find('.item');
+
+        const boolean = $item.data('boolean');
         if (typeof boolean !== 'undefined') {
             $select.data('boolean', !!boolean);
         } else {
             $select.removeData('boolean');
         }
+
+        {% if addOptionFn is defined and addOptionLabel is defined %}
+        if ($item.data('add-option')) {
+            selectize.setValue('', true);
+            ({{ addOptionFn|raw }})(item => {
+                selectize.addOption(item);
+
+                // Remove the “Create” option and re-place it at the end
+                selectize.removeOption('__add__', true);
+                selectize.addOption({
+                    text: {{ addOptionLabel|json_encode|raw }} ,
+                    value: '__add__',
+                    addOption: true,
+                    hint: null,
+                });
+
+                selectize.refreshOptions(false);
+                selectize.setValue(item.value);
+            }, selectize);
+        }
+        {% endif %}
     };
 
     $select.selectize($.extend({
@@ -73,12 +127,15 @@
                 if (typeof data.boolean !== 'undefined') {
                     attrs.push(`data-boolean="${data.boolean ? '1' : ''}"`);
                 }
+                if (typeof data.addOption !== 'undefined') {
+                    attrs.push('data-add-option="1"');
+                }
                 return `<div ${attrs.join(' ')}>${label(data, false)}</div>`;
             },
         },
-        onChange: updateBooleanValue,
+        onChange: onChange,
     }, {{ selectizeOptions|json_encode|raw }}));
 
-    updateBooleanValue();
+    onChange();
 })()
 {% endjs %}

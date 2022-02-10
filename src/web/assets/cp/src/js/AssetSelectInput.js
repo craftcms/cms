@@ -84,18 +84,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     },
 
     /**
-     * Create the element editor
-     */
-    createElementEditor: function($element) {
-        return this.base($element, {
-            params: {
-                defaultFieldLayoutId: this.settings.defaultFieldLayoutId
-            },
-            input: this
-        });
-    },
-
-    /**
      * Attach the uploader with drag event handler
      */
     _attachUploader: function() {
@@ -123,6 +111,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 class: 'btn dashed',
                 'data-icon': 'upload',
                 'aria-label': this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
+                'aria-describedby': this.settings.describedBy,
                 text: this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
             }).insertAfter(this.$addElementBtn);
             options.fileInput = $('<input/>', {
@@ -167,7 +156,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         var parameters = {
             elementId: replaceWithId,
             siteId: this.settings.criteria.siteId,
-            size: this.settings.viewMode
+            thumbSize: this.settings.viewMode
         };
 
         Craft.postActionRequest('elements/get-element-html', parameters, data => {
@@ -186,7 +175,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         var parameters = {
             elementId: elementId,
             siteId: this.settings.criteria.siteId,
-            size: this.settings.viewMode
+            thumbSize: this.settings.viewMode
         };
 
         Craft.postActionRequest('elements/get-element-html', parameters, data => {
@@ -262,7 +251,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             var parameters = {
                 elementId: data.result.assetId,
                 siteId: this.settings.criteria.siteId,
-                size: this.settings.viewMode
+                thumbSize: this.settings.viewMode
             };
 
             Craft.postActionRequest('elements/get-element-html', parameters, data => {
@@ -278,10 +267,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 if (this.uploader.isLastUpload()) {
                     this.progressBar.hideProgressBar();
                     this.$container.removeClass('uploading');
-
-                    if (window.draftEditor) {
-                        window.draftEditor.checkForm();
-                    }
+                    this.$container.trigger('change');
                 }
             });
 

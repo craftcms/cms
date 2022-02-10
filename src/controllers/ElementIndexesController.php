@@ -39,14 +39,14 @@ use yii\web\Response;
 class ElementIndexesController extends BaseElementsController
 {
     /**
-     * @var string|null
+     * @var string
      */
-    protected ?string $elementType = null;
+    protected string $elementType;
 
     /**
-     * @var string|null
+     * @var string
      */
-    protected ?string $context = null;
+    protected string $context;
 
     /**
      * @var string|null
@@ -57,6 +57,12 @@ class ElementIndexesController extends BaseElementsController
      * @var array|null
      */
     protected ?array $source = null;
+
+    /**
+     * @var ElementConditionInterface|null
+     * @since 4.0.0
+     */
+    protected ?ElementConditionInterface $condition = null;
 
     /**
      * @var array|null
@@ -95,6 +101,7 @@ class ElementIndexesController extends BaseElementsController
         $this->context = $this->context();
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
+        $this->condition = $this->condition();
 
         if ($action->id !== 'filter-hud') {
             $this->viewState = $this->viewState();
@@ -316,8 +323,12 @@ class ElementIndexesController extends BaseElementsController
         $export = $exporter->export($this->elementQuery);
 
         if ($exporter::isFormattable()) {
-            if (!is_array($export)) {
-                throw new InvalidValueException(get_class($exporter) . '::export() must return an array since isFormattable() returns true.');
+            // Handle being passed in a generator function or other callable
+            if (is_callable($export)) {
+                $export = $export();
+            }
+            if (!is_iterable($export)) {
+                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
             }
 
             $this->response->data = $export;
@@ -393,12 +404,11 @@ class ElementIndexesController extends BaseElementsController
         $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
         // Filter out any condition rules that touch the same query params as the source criteria
-        $source = $this->source();
-        if ($source['type'] === ElementSources::TYPE_NATIVE) {
-            $condition->queryParams = array_keys($source['criteria'] ?? []);
+        if ($this->source['type'] === ElementSources::TYPE_NATIVE) {
+            $condition->queryParams = array_keys($this->source['criteria'] ?? []);
         } else {
             /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Craft::$app->getConditions()->createCondition($source['condition']);
+            $sourceCondition = Craft::$app->getConditions()->createCondition($this->source['condition']);
             $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
@@ -408,6 +418,16 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
+        if ($this->condition) {
+            foreach ($this->condition->getConditionRules() as $rule) {
+                /** @var ElementConditionRuleInterface $rule */
+                foreach ($rule->getExclusiveQueryParams() as $param) {
+                    $condition->queryParams[] = $param;
+                }
+            }
+        }
+
+        $condition->queryParams[] = 'site';
         $condition->queryParams[] = 'status';
 
         $html = $condition->getBuilderHtml();
@@ -453,6 +473,20 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
+     * Returns the condition that should be applied to the element query.
+     *
+     * @return ElementConditionInterface|null
+     * @return 4.0.0
+     */
+    protected function condition(): ?ElementConditionInterface
+    {
+        if ($conditionConfig = $this->request->getBodyParam('condition')) {
+            return Craft::$app->getConditions()->createCondition($conditionConfig);
+        }
+        return null;
+    }
+
+    /**
      * Returns the current view state.
      *
      * @return array
@@ -478,6 +512,7 @@ class ElementIndexesController extends BaseElementsController
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
+        $conditionsService = Craft::$app->getConditions();
 
         // Does the source specify any criteria attributes?
         switch ($this->source['type']) {
@@ -487,9 +522,14 @@ class ElementIndexesController extends BaseElementsController
                 }
                 break;
             case ElementSources::TYPE_CUSTOM:
-                /** @var ElementConditionInterface $condition */
-                $condition = Craft::$app->getConditions()->createCondition($this->source['condition']);
-                $condition->modifyQuery($query);
+                /** @var ElementConditionInterface $sourceCondition */
+                $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+                $sourceCondition->modifyQuery($query);
+        }
+
+        // Was a condition provided?
+        if (isset($this->condition)) {
+            $this->condition->modifyQuery($query);
         }
 
         // Override with the request's params
@@ -511,12 +551,12 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Override with the custom filters
-        $conditionStr = $this->request->getBodyParam('filters');
-        if ($conditionStr) {
-            parse_str($conditionStr, $conditionConfig);
+        $filterConditionStr = $this->request->getBodyParam('filters');
+        if ($filterConditionStr) {
+            parse_str($filterConditionStr, $filterConditionConfig);
             /** @var ElementConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig['condition']);
-            $condition->modifyQuery($query);
+            $filterCondition = $conditionsService->createCondition($filterConditionConfig['condition']);
+            $filterCondition->modifyQuery($query);
         }
 
         // Exclude descendants of the collapsed element IDs

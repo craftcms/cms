@@ -89,7 +89,9 @@ class GlobalsController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Global set saved.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+            'type' => GlobalSet::displayName(),
+        ]));
         return $this->redirectToPostedUrl($globalSet);
     }
 
@@ -226,7 +228,9 @@ class GlobalsController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Global set saved.'));
+        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+            'type' => GlobalSet::displayName(),
+        ]));
         return $this->redirectToPostedUrl();
     }
 }

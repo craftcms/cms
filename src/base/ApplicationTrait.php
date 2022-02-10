@@ -47,7 +47,6 @@ use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
-use craft\services\AssetTransforms;
 use craft\services\Authentication;
 use craft\services\Categories;
 use craft\services\Composer;
@@ -61,10 +60,12 @@ use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\services\Entries;
 use craft\services\Fields;
+use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Images;
+use craft\services\ImageTransforms;
 use craft\services\Matrix;
 use craft\services\Path;
 use craft\services\Plugins;
@@ -117,7 +118,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
- * @property-read AssetTransforms $assetTransforms The asset transforms service
  * @property-read Assets $assets The assets service
  * @property-read Authentication $authentication The assets service
  * @property-read Categories $categories The categories service
@@ -134,11 +134,13 @@ use yii\web\ServerErrorHttpException;
  * @property-read Entries $entries The entries service
  * @property-read Fields $fields The fields service
  * @property-read Formatter $formatter The formatter component
+ * @property-read Fs $fs The filesystems service
  * @property-read Gc $gc The garbage collection service
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
  * @property-read Images $images The images service
+ * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
  * @property-read Mailer $mailer The mailer component
@@ -363,7 +365,7 @@ trait ApplicationTrait
 
             $info = $this->getInfo(true);
             return $this->_isInstalled = !empty($info->id);
-        } catch (DbException|ServerErrorHttpException $e) {
+        } catch (DbException | ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
             if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
                 throw $e;
@@ -675,7 +677,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException|DbConnectException $e) {
+        } catch (DbException | DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -812,7 +814,7 @@ trait ApplicationTrait
     {
         try {
             $this->getDb()->open();
-        } catch (DbConnectException|InvalidConfigException $e) {
+        } catch (DbConnectException | InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -883,14 +885,14 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the asset transforms service.
+     * Returns the image transforms service.
      *
-     * @return AssetTransforms The asset transforms service
+     * @return ImageTransforms The asset transforms service
      */
-    public function getAssetTransforms(): AssetTransforms
+    public function getImageTransforms(): ImageTransforms
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('assetTransforms');
+        return $this->get('imageTransforms');
     }
 
     /**
@@ -1047,6 +1049,18 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('fields');
+    }
+
+    /**
+     * Returns the filesystems service.
+     *
+     * @return Fs The filesystems service
+     * @since 4.0.0
+     */
+    public function getFs(): Fs
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('fs');
     }
 
     /**
@@ -1557,9 +1571,9 @@ trait ApplicationTrait
             ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
             ->onRemove(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleDeletedVolume'))
             // Transforms
-            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
-            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleChangedTransform'))
-            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('assetTransforms', 'handleDeletedTransform'))
+            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleChangedTransform'))
+            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleChangedTransform'))
+            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleDeletedTransform'))
             // Site groups
             ->onAdd(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
             ->onUpdate(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))

@@ -2,6 +2,39 @@
 /** global: Garnish */
 Craft.ui =
     {
+        createButton: function(config) {
+            const $btn = $('<button/>', {
+                type: config.type || 'button',
+                class: 'btn'
+            });
+            if (config.id) {
+                $btn.attr('id', id);
+            }
+            if (config.class) {
+                $btn.addClass(config.class);
+            }
+            if (config.html) {
+                $btn.html(html);
+            } else if (config.label) {
+                $btn.append($('<div class="label"/>').text(config.label));
+            } else {
+                $btn.addClass('btn-empty');
+            }
+            if (config.spinner) {
+                $btn.append($('<div class="spinner spinner-absolute"/>'));
+            }
+            return $btn;
+        },
+
+        createSubmitButton: function(config) {
+            const $btn = this.createButton(Object.assign({}, config, {
+                type: 'submit',
+                label: config.label || Craft.t('app', 'Submit'),
+            }));
+            $btn.addClass('submit');
+            return $btn;
+        },
+
         createTextInput: function(config) {
             config = $.extend({
                 autocomplete: false,
@@ -98,6 +131,46 @@ Craft.ui =
             });
 
             return $container;
+        },
+
+        createCopyTextBtn: function(config) {
+            let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
+            let value = config.value;
+
+            let $btn = $('<div/>', {
+                id,
+                'class': 'copytextbtn',
+                'role': 'button',
+                'title': Craft.t('app', 'Copy to clipboard'),
+                'aria-label': Craft.t('app', 'Copy to clipboard'),
+                'tabindex': '0',
+            });
+
+            if (config.class) {
+                $btn.addClass(config.class);
+            }
+
+            let $input = $('<input/>', {
+                value,
+                readonly: true,
+                size: value.length,
+                tabindex: '-1',
+            }).appendTo($btn);
+
+            let $icon = $('<span/>', {
+                'data-icon': 'clipboard',
+                'aria-hidden': 'true',
+            }).appendTo($btn);
+
+            $btn.on('click', () => {
+                $input[0].select();
+                document.execCommand('copy');
+                Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+                $btn.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
+            });
+
+            return $btn;
         },
 
         createCopyTextField: function(config) {
@@ -502,22 +575,24 @@ Craft.ui =
         },
 
         createDateInput: function(config) {
-            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000)) + '-date';
-            var name = config.name || null;
-            var inputName = name ? name + '[date]' : null;
-            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
-            var formattedValue = value ? Craft.formatDate(value) : null;
-            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-            var disabled = config.disabled || false;
+            const isMobile = Garnish.isMobileBrowser();
+            const id = (config.id || 'date' + Math.floor(Math.random() * 1000000000)) + '-date';
+            const name = config.name || null;
+            const inputName = name ? name + '[date]' : null;
+            const value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            const disabled = config.disabled || false;
 
-            var $container = $('<div/>', {
+            const $container = $('<div/>', {
                 'class': 'datewrapper'
             });
 
-            var $input = this.createTextInput({
+            const $input = this.createTextInput({
                 id: id,
+                type: isMobile ? 'date' : 'text',
+                class: isMobile && !value ? 'empty-value' : false,
                 name: inputName,
-                value: formattedValue,
+                value: value ? (isMobile ? value.toISOString().split('T')[0] : Craft.formatDate(value)) : '',
                 placeholder: ' ',
                 autocomplete: false,
                 autofocus: autofocus,
@@ -534,11 +609,19 @@ Craft.ui =
                 }).appendTo($container);
             }
 
-            $input.datepicker($.extend({
-                defaultDate: value || new Date()
-            }, Craft.datepickerOptions));
+            if (isMobile) {
+                $input.datetimeinput();
+            } else {
+                $input.datepicker($.extend({
+                    defaultDate: value || new Date(),
+                }, Craft.datepickerOptions));
+            }
 
-            return $container;
+            if (config.hasOuterContainer) {
+                return $container;
+            }
+
+            return $('<div class="datetimewrapper"/>').append($container).datetime();
         },
 
         createDateField: function(config) {
@@ -783,19 +866,22 @@ Craft.ui =
         },
 
         createTimeInput: function(config) {
-            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000)) + '-time';
-            var name = config.name || null;
-            var inputName = name ? name + '[time]' : null;
-            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
-            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-            var disabled = config.disabled || false;
+            const isMobile = Garnish.isMobileBrowser();
+            const id = (config.id || 'time' + Math.floor(Math.random() * 1000000000)) + '-time';
+            const name = config.name || null;
+            const inputName = name ? name + '[time]' : null;
+            const value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            const disabled = config.disabled || false;
 
-            var $container = $('<div/>', {
+            const $container = $('<div/>', {
                 'class': 'timewrapper'
             });
 
-            var $input = this.createTextInput({
+            const $input = this.createTextInput({
                 id: id,
+                type: isMobile ? 'time' : 'text',
+                class: isMobile && !value ? 'empty-value' : false,
                 name: inputName,
                 placeholder: ' ',
                 autocomplete: false,
@@ -813,12 +899,23 @@ Craft.ui =
                 }).appendTo($container);
             }
 
-            $input.timepicker(Craft.timepickerOptions);
-            if (value) {
-                $input.timepicker('setTime', value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds());
+            if (isMobile) {
+                if (value) {
+                    $input.val(value.toISOString().split('T')[1]);
+                }
+                $input.datetimeinput();
+            } else {
+                $input.timepicker(Craft.timepickerOptions);
+                if (value) {
+                    $input.timepicker('setTime', value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds());
+                }
             }
 
-            return $container;
+            if (config.hasOuterContainer) {
+                return $container;
+            }
+
+            return $('<div class="datetimewrapper"/>').append($container).datetime();
         },
 
         createTimeField: function(config) {
@@ -839,6 +936,10 @@ Craft.ui =
 
             if (config.first) {
                 $field.addClass('first');
+            }
+
+            if (config.fieldClass) {
+                $field.addClass(config.fieldClass);
             }
 
             if (label) {

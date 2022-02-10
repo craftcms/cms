@@ -7,8 +7,8 @@
 
 namespace craft\errors;
 
-use craft\base\VolumeInterface;
 use craft\models\AssetIndexData;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use Throwable;
 use yii\base\Exception;
@@ -27,9 +27,9 @@ class MissingAssetException extends Exception
     public AssetIndexData $indexEntry;
 
     /**
-     * @var VolumeInterface
+     * @var Volume
      */
-    public VolumeInterface $volume;
+    public Volume $volume;
 
     /**
      * @var VolumeFolder
@@ -52,7 +52,7 @@ class MissingAssetException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(AssetIndexData $indexEntry, VolumeInterface $volume, VolumeFolder $folder, string $filename, string $message = '', int $code = 0, ?Throwable $previous = null)
+    public function __construct(AssetIndexData $indexEntry, Volume $volume, VolumeFolder $folder, string $filename, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
         $this->indexEntry = $indexEntry;
         $this->volume = $volume;

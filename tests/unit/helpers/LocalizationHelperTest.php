@@ -33,14 +33,9 @@ class LocalizationHelperTest extends Unit
      *
      * @param string $expected
      * @param string $language
-     * @param bool $skipIfNoIntl
      */
-    public function testNormalizeLanguage(string $expected, string $language, bool $skipIfNoIntl)
+    public function testNormalizeLanguage(string $expected, string $language)
     {
-        if ($skipIfNoIntl && !Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $this->markTestSkipped('Need the Intl extension to test this function.');
-        }
-
         self::assertSame($expected, Localization::normalizeLanguage($language));
     }
 
@@ -70,28 +65,17 @@ class LocalizationHelperTest extends Unit
     }
 
     /**
-     * @dataProvider localeDataDataProvider
-     *
-     * @param array|null $expected
-     * @param string $localeId
-     */
-    public function testLocaleData(?array $expected, string $localeId)
-    {
-        self::assertSame($expected, Localization::localeData($localeId));
-    }
-
-    /**
      * @return array
      */
     public function normalizeLanguageDataProvider(): array
     {
         return [
-            ['nl', 'nl', false],
-            ['en-US', 'en-US', false],
-            ['af', 'af', true],
-            ['af-NA', 'af-NA', true],
-            ['en-AG', 'en-ag', true],
-            ['en-AG', 'EN-AG', true],
+            ['nl', 'nl'],
+            ['en-US', 'en-US'],
+            ['af', 'af'],
+            ['af-NA', 'af-NA'],
+            ['en-AG', 'en-ag'],
+            ['en-AG', 'EN-AG'],
         ];
     }
 
@@ -105,29 +89,6 @@ class LocalizationHelperTest extends Unit
             ['20 0000 0000', '20 0000 0000', null],
             ['20.0000.0000', '20.0000.0000', null],
             [2000000000, 2000000000, null],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function localeDataDataProvider(): array
-    {
-        $dir = dirname(__DIR__, 3) . '/src/config/locales/nl.php';
-        $nlTranslation = require $dir;
-
-        return [
-            [
-                [
-                    'english' => 'language',
-                    'spanish' => 'language',
-                    'french' => [
-                        'language', 'france'
-                    ]
-                ], 'a-locale-id'
-            ],
-            [['language2'], '/sub/another-locale-id'],
-            [ArrayHelper::merge($nlTranslation, ['dutch' => 'a language']), 'nl']
         ];
     }
 }

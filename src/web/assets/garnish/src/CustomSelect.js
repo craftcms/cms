@@ -53,9 +53,7 @@ export default Base.extend(
       // Deprecated
       if (this.settings.attachToElement) {
         this.settings.anchor = this.settings.attachToElement;
-        Garnish.log(
-          "The 'attachToElement' setting is deprecated. Use 'anchor' instead."
-        );
+        console.warn("The 'attachToElement' setting is deprecated. Use 'anchor' instead.");
       }
 
       if (this.settings.anchor) {
@@ -197,8 +195,8 @@ export default Base.extend(
 
       this.$menuList.attr('aria-hidden', 'false');
 
-      Garnish.shortcutManager
-        .addLayer()
+      Garnish.uiLayerManager
+        .addLayer(this.$container)
         .registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
 
       this.addListener(
@@ -226,7 +224,7 @@ export default Base.extend(
         }.bind(this)
       );
 
-      Garnish.shortcutManager.removeLayer();
+      Garnish.uiLayerManager.removeLayer();
       this.removeListener(Garnish.$scrollContainer, 'scroll');
       this.visible = false;
       this.trigger('hide');

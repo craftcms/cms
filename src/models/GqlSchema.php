@@ -138,7 +138,7 @@ class GqlSchema extends Model
     }
 
     /**
-     * Returns the field layout config for this schema.
+     * Returns the schema’s config.
      *
      * @return array
      * @since 3.5.0

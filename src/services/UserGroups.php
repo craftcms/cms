@@ -23,7 +23,8 @@ use yii\base\Component;
 
 /**
  * User Groups service.
- * An instance of the User Groups service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserGroups()|`Craft::$app->userGroups`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserGroups()|`Craft::$app->userGroups`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -63,6 +64,10 @@ class UserGroups extends Component
      */
     public function getAllGroups(): array
     {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
+        }
+
         $results = $this->_createUserGroupsQuery()
             ->orderBy(['name' => SORT_ASC])
             ->all();
@@ -96,10 +101,7 @@ class UserGroups extends Component
 
         foreach ($this->getAllGroups() as $group) {
             if (
-                ($currentUser !== null && (
-                        $currentUser->isInGroup($group) ||
-                        $currentUser->can('assignUserGroup:' . $group->uid)
-                    )) ||
+                ($currentUser !== null && $currentUser->can("assignUserGroup:$group->uid")) ||
                 ($user !== null && $user->isInGroup($group))
             ) {
                 $assignableGroups[] = $group;

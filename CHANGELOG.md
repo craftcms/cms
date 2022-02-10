@@ -3,12 +3,18 @@
 ## Unreleased
 
 ### Added
+- Entries’, categories’, and assets’ edit pages, and all element types via slideouts, now use a unified editing experience. ([#10467](https://github.com/craftcms/cms/pull/10467))
+- Categories now support drafts. ([#10467](https://github.com/craftcms/cms/pull/10467))
+- Element slideouts now support provisional drafts and autosaving, for element types that support them. ([#10467](https://github.com/craftcms/cms/pull/10467))
 - Element indexes can now be filtered by element attributes and custom field values. ([#9192](https://github.com/craftcms/cms/discussions/9192), [#9450](https://github.com/craftcms/cms/discussions/9450), [#9462](https://github.com/craftcms/cms/discussions/9462), [#9483](https://github.com/craftcms/cms/discussions/9483))
 - Admins can now create custom element sources from the Customize Sources modal. ([#8423](https://github.com/craftcms/cms/discussions/8423))
 - Field layout tabs, fields, and UI elements can now be conditionally shown based on properties of the current user and/or element being edited. ([#8099](https://github.com/craftcms/cms/discussions/8099), [#8154](https://github.com/craftcms/cms/discussions/8154))
+- Assets, Entries, and Users fields have new condition settings that can be used to further limit which elements should be relatable, beyond the existing field settings. ([#10393](https://github.com/craftcms/cms/pull/10393))
+- Assets, Entries, and Users fields have new “Min Relations” settings, and their former “Limit” settings have been renamed to “Max Relations”. ([#8621](https://github.com/craftcms/cms/discussions/8621))
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
+- Added the Money field type.
 - Craft now provides a native “Alternative Text” (`alt`) field for assets. ([#10302](https://github.com/craftcms/cms/discussions/10302))
 - Asset thumbnails in the control panel now have `alt` attributes, for assets with a filled-in Alternative Text value.
 - Added the `index-assets/cleanup` command.
@@ -16,12 +22,16 @@
 - Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
+- Added the `|money` Twig filter.
 - Added the `assetUploaders` user query param.
 - Added the `authors` user query param.
 - Added the `hasAlt` asset query param.
+- Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
+- Added `craft\base\ApplicationTrait::getFs()`.
+- Added `craft\base\ApplicationTrait::getImageTransforms()`.
 - Added `craft\base\conditions\BaseCondition`.
 - Added `craft\base\conditions\BaseConditionRule`.
 - Added `craft\base\conditions\BaseDateRangeConditionRule`.
@@ -33,26 +43,55 @@
 - Added `craft\base\conditions\BaseTextConditionRule`.
 - Added `craft\base\conditions\ConditionInterface`.
 - Added `craft\base\conditions\ConditionRuleInterface`.
+- Added `craft\base\Element::EVENT_AUTHORIZE_CREATE_DRAFTS`.
+- Added `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE`.
+- Added `craft\base\Element::EVENT_AUTHORIZE_DELETE`.
+- Added `craft\base\Element::EVENT_AUTHORIZE_DUPLICATE`.
+- Added `craft\base\Element::EVENT_AUTHORIZE_SAVE`.
+- Added `craft\base\Element::EVENT_AUTHORIZE_VIEW`.
+- Added `craft\base\Element::EVENT_DEFINE_ADDL_BUTTONS`. ([#10420](https://github.com/craftcms/cms/discussions/10420))
+- Added `craft\base\Element::getParentId()`.
+- Added `craft\base\Element::hasNewParent()`.
+- Added `craft\base\Element::setParentId()`.
+- Added `craft\base\ElementInterface::canCreateDrafts()`.
+- Added `craft\base\ElementInterface::canDelete()`.
+- Added `craft\base\ElementInterface::canDeleteForSite()`.
+- Added `craft\base\ElementInterface::canDuplicate()`.
+- Added `craft\base\ElementInterface::canSave()`.
+- Added `craft\base\ElementInterface::canView()`.
+- Added `craft\base\ElementInterface::createAnother()`.
 - Added `craft\base\ElementInterface::createCondition()`.
+- Added `craft\base\ElementInterface::getAddlButtons()`.
+- Added `craft\base\ElementInterface::getCrumbs()`.
+- Added `craft\base\ElementInterface::getPostEditUrl()`.
 - Added `craft\base\ElementInterface::getThumbAlt()`.
+- Added `craft\base\ElementInterface::hasRevisions()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
 - Added `craft\base\FieldLayoutComponent`.
-- Added `craft\base\Volume::CONFIG_MIMETYPE`.
-- Added `craft\base\Volume::CONFIG_VISIBILITY`.
-- Added `craft\base\Volume::VISIBILITY_DEFAULT`.
-- Added `craft\base\Volume::VISIBILITY_HIDDEN`.
-- Added `craft\base\Volume::VISIBILITY_PUBLIC`.
+- Added `craft\base\Fs`.
+- Added `craft\base\FsInterface`.
+- Added `craft\base\FsTrait`.
+- Added `craft\base\Image::heartbeat()`.
+- Added `craft\base\Image::setHeartbeatCallback()`.
+- Added `craft\base\imagetransforms\EagerImageTransformerInterface`.
+- Added `craft\base\imagetransforms\ImageTransformerInterface`.
+- Added `craft\base\LocalFsInterface`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
 - Added `craft\controllers\AssetIndexesController`.
 - Added `craft\controllers\ConditionsController`.
+- Added `craft\controllers\ElementIndexesController::$condition`.
+- Added `craft\controllers\FsController`.
+- Added `craft\controllers\ImageTransformsController`.
 - Added `craft\db\Migration::dropAllForeignKeysToTable()`.
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
-- Added `craft\db\Migration::dropIndexIfExists()`.
 - Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
+- Added `craft\db\Table::IMAGETRANSFORMINDEX`.
+- Added `craft\db\Table::IMAGETRANSFORMS`.
 - Added `craft\elements\Asset::$alt`.
+- Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\conditions\assets\AssetCondition`.
 - Added `craft\elements\conditions\assets\DateModifiedConditionRule`.
@@ -95,10 +134,22 @@
 - Added `craft\elements\conditions\users\UserCondition`.
 - Added `craft\elements\conditions\users\UsernameConditionRule`.
 - Added `craft\elements\User::$active`.
+- Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
+- Added `craft\errors\FsException`.
+- Added `craft\errors\FsObjectExistsException`.
+- Added `craft\errors\FsObjectNotFoundException`.
+- Added `craft\errors\ImageTransformException`.
+- Added `craft\errors\InvalidFsException`.
 - Added `craft\errors\MissingVolumeFolderException`.
+- Added `craft\events\AuthorizationCheckEvent`.
+- Added `craft\events\CreateElementCheckEvent`.
+- Added `craft\events\DefineHtmlEvent::$static`.
+- Added `craft\events\ImageTransformEvent`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
+- Added `craft\events\RegisterImageTransformersEvent`.
+- Added `craft\events\TransformImageEvent`.
 - Added `craft\fieldlayoutelements\AssetAltField`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextareaField`.
@@ -108,6 +159,10 @@
 - Added `craft\fields\Assets::$restrictedLocationSource`, which replaces `$singleUploadLocationSource`.
 - Added `craft\fields\Assets::$restrictedLocationSubpath`, which replaces `$singleUploadLocationSubpath`.
 - Added `craft\fields\Assets::$restrictLocation`, which replaces `$useSingleFolder`.
+- Added `craft\fields\Money`.
+- Added `craft\fields\BaseRelationField::createSelectionCondition()`.
+- Added `craft\fields\BaseRelationField::getSelectionCondition()`.
+- Added `craft\fields\BaseRelationField::setSelectionCondition()`.
 - Added `craft\fields\conditions\DateFieldConditionRule`.
 - Added `craft\fields\conditions\FieldConditionRuleInterface`.
 - Added `craft\fields\conditions\FieldConditionRuleTrait`.
@@ -116,6 +171,9 @@
 - Added `craft\fields\conditions\OptionsFieldConditionRule`.
 - Added `craft\fields\conditions\RelationalFieldConditionRule`.
 - Added `craft\fields\conditions\TextFieldConditionRule`.
+- Added `craft\fs\Local`.
+- Added `craft\fs\MissingFs`.
+- Added `craft\fs\Temp`.
 - Added `craft\gql\base\SingularTypeInterface`.
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
 - Added `craft\helpers\Assets::downloadFile()`.
@@ -127,6 +185,7 @@
 - Added `craft\helpers\Cp::multiSelectFieldHtml()`.
 - Added `craft\helpers\Cp::multiSelectHtml()`.
 - Added `craft\helpers\Cp::requestedSite()`.
+- Added `craft\helpers\Cp::textareaHtml()`.
 - Added `craft\helpers\Cp::textHtml()`.
 - Added `craft\helpers\Cp::timeFieldHtml()`.
 - Added `craft\helpers\Cp::timeHtml()`.
@@ -135,28 +194,39 @@
 - Added `craft\helpers\Db::dropIndexIfExists()`.
 - Added `craft\helpers\Db::findForeignKey()`.
 - Added `craft\helpers\Db::findIndex()`.
+- Added `craft\helpers\Db::parseMoneyParam()`.
 - Added `craft\helpers\Db::parseNumericParam()`.
+- Added `craft\helpers\Db::prepareMoneyForDb()`.
 - Added `craft\helpers\Db::renameTable()`.
+- Added `craft\helpers\FileHelper::deleteFileAfterRequest()`.
+- Added `craft\helpers\FileHelper::deleteQueuedFiles()`.
 - Added `craft\helpers\Gql::getSchemaContainedEntryTypes)()`.
 - Added `craft\helpers\Html::hiddenLabel()`.
+- Added `craft\helpers\ImageTransforms`.
+- Added `craft\helpers\Money`.
 - Added `craft\helpers\Number::isInt()`.
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\helpers\ProjectConfig::encodeValueAsString()`.
 - Added `craft\helpers\ProjectConfig::ensureAllSectionsProcessed()`.
 - Added `craft\i18n\Translation`.
+- Added `craft\imagetransforms\ImageTransformer`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS`, which replaces `EVENT_DEFINE_STANDARD_FIELDS`.
 - Added `craft\models\FieldLayout::getAvailableNativeFields()`.
 - Added `craft\models\FieldLayout::getVisibleFields()`.
-- Added `craft\models\FieldLayout::renderMissingElements()`.
 - Added `craft\models\FieldLayoutElement::$uid`.
 - Added `craft\models\FieldLayoutElement::getLayout()` and `setLayout()`.
 - Added `craft\models\FieldLayoutForm::getVisibleElements()`.
+- Added `craft\models\FieldLayoutFormTab::getUid()`.
 - Added `craft\models\FieldLayoutTab::getElements()` and `setElements()`.
+- Added `craft\models\FsListing`.
+- Added `craft\models\ImageTransform`.
+- Added `craft\models\ImageTransformIndex`.
 - Added `craft\models\ProjectConfigData`.
 - Added `craft\models\ReadOnlyProjectConfigData`.
-- Added `craft\models\VolumeListing`.
+- Added `craft\models\Volume`.
 - Added `craft\records\AssetIndexingSession`.
+- Added `craft\records\ImageTransform`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
 - Added `craft\services\AssetIndexer::getExistingIndexingSessions()`.
 - Added `craft\services\AssetIndexer::getIndexingSessionById()`.
@@ -175,7 +245,9 @@
 - Added `craft\services\Config::getCustom()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
 - Added `craft\services\Fields::createLayout()`.
+- Added `craft\services\Fs`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
+- Added `craft\services\ImageTransforms`.
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
@@ -186,6 +258,7 @@
 - Added `craft\services\ProjectConfig::PATH_ENTRY_TYPES`.
 - Added `craft\services\ProjectConfig::PATH_FIELD_GROUPS`.
 - Added `craft\services\ProjectConfig::PATH_FIELDS`.
+- Added `craft\services\ProjectConfig::PATH_FS`.
 - Added `craft\services\ProjectConfig::PATH_GLOBAL_SETS`.
 - Added `craft\services\ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN`.
 - Added `craft\services\ProjectConfig::PATH_GRAPHQL_SCHEMAS`.
@@ -213,25 +286,64 @@
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
 - Added `craft\services\Users::removeCredentials()`.
+- Added `craft\services\Volumes::getTemporaryVolume()`.
+- Added `craft\validators\MoneyValidator`.
 - Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
 - Added `craft\web\assets\htmx\HtmxAsset`.
+- Added `craft\web\assets\money\MoneyAsset`.
+- Added `craft\web\Controller::asCpScreen()`.
+- Added `craft\web\Controller::asFailure()`.
+- Added `craft\web\Controller::asSuccess()`.
+- Added `craft\web\Controller::CpScreenResponseBehavior()`.
+- Added `craft\web\Controller::CpScreenResponseFormatter()`.
+- Added `craft\web\Controller::TemplateResponseBehavior()`.
+- Added `craft\web\Controller::TemplateResponseFormatter()`.
+- Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
-- Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
+- Added `craft\web\twig\variables\Cp::getFsOptions()`.
 - Added the `assets/update-focal-point` action.
-- Added the `Craft.appendBodyHtml()` JavaScript function, which replaces the now-deprecated `appendFootHtml()` function.
-- Added the `Craft.getPageUrl()` JavaScript function.
+- Added the `categories/create` action.
+- Added the `elements/apply-draft` action.
+- Added the `elements/create` action.
+- Added the `elements/create` action.
+- Added the `elements/delete-draft` action.
+- Added the `elements/delete-for-site` action.
+- Added the `elements/delete` action.
+- Added the `elements/duplicate` action.
+- Added the `elements/edit` action.
+- Added the `elements/redirect` action.
+- Added the `elements/revert` action.
+- Added the `elements/save-draft` action.
+- Added the `elements/save` action.
+- Added the `Craft.appendBodyHtml()` JavaScript method, which replaces the now-deprecated `appendFootHtml()` method.
+- Added the `Craft.CpScreenSlideout` JavaScript class, which can be used to create slideouts from actions that return `$this->asCpScreen()`.
+- Added the `Craft.ElementEditor` JavaScript class.
+- Added the `Craft.ElementEditorSlideout` JavaScript class.
+- Added the `Craft.getPageUrl()` JavaScript method.
+- Added the `Craft.namespaceId()` JavaScript method.
+- Added the `Craft.namespaceInputName()` JavaScript method.
+- Added the `Craft.Queue` JavaScript class.
+- Added the `Craft.ui.createButton()` JavaScript method.
+- Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
+- Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
+- Added the Money package.
 
 ### Changed
-- Craft now requires PHP 7.4 or later.
+- Craft now requires PHP 8.0 or later.
+- Craft now requires MySQL 5.7.8 / MariaDB 10.2.7 / PostgreSQL 10.0 or later.
+- Craft now requires the [Intl](https://php.net/manual/en/book.intl.php) PHP extension.
 - The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
 - The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
 - Users are no longer required to have a username or email.
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
+- `credentialed` and `inactive` are now reserved user group handles.
 - Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
 - When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - `alt` is now a reserved field handle for volume field layouts.
+- Filesystem operations have been decoupled from volumes.
+- Images that are not web-safe now are always converted to JPEGs when transforming, if no format was specified.
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
@@ -239,11 +351,33 @@
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Database backups are now named after the Craft version in the database, rather than the Composer-installed version. ([#9733](https://github.com/craftcms/cms/discussions/9733))
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
+- Improved the look of loading spinners in the control panel. ([#9109](https://github.com/craftcms/cms/discussions/9109))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
+- Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
+- Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - GraphQL field types that can’t be null now specify so in their type declaration.
+- The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
 - Editable tables now support `allowAdd`, `allowDelete`, and `allowReorder` settings, replacing `staticRows`. ([#10163](https://github.com/craftcms/cms/pull/10163))
+- The `limitField` macro in the `_components/fieldtypes/elementfieldsettings` control panel template has been renamed to `limitFields`.
+- `createFoldersInVolume:<uid>` user permissions have been renamed to `createFolders:<uid>`.
+- `deleteFilesAndFoldersInVolume:<uid>` user permissions have been renamed to `deleteAssets:<uid>`.
+- `deletePeerFilesInVolume:<uid>` user permissions have been renamed to `deletePeerAssets:<uid>`.
+- `editCategories:<uid>` user permissions have been split into `viewCategories:<uid>`, `saveCategories:<uid>`, `deleteCategories:<uid>`, `viewPeerCategoryDrafts:<uid>`, `savePeerCategoryDrafts:<uid>`, and `deletePeerCategoryDrafts:<uid>`.
+- `editEntries:<uid>` user permissions have been renamed to `viewEntries:<uid>`.
+- `editImagesInVolume:<uid>` user permissions have been renamed to `editImages:<uid>`.
+- `editPeerEntries:<uid>` user permissions have been renamed to `viewPeerEntries:<uid>`.
+- `editPeerEntryDrafts:<uid>` user permissions have been split into `viewPeerEntryDrafts:<uid>` and `savePeerEntryDrafts:<uid>`.
+- `editPeerFilesInVolume:<uid>` user permissions have been renamed to `savePeerAssets:<uid>`.
+- `editPeerImagesInVolume:<uid>` user permissions have been renamed to `editPeerImages:<uid>`.
+- `publishEntries:<uid>` user permissions have been renamed to `saveEntries:<uid>`, and no longer differentiate between enabled and disabled entries. (Users with `viewEntries:<uid>` permissions will still be able to create drafts.)
+- `publishPeerEntries:<uid>` user permissions have been renamed to `savePeerEntries:<uid>`, and no longer differentiate between enabled and disabled entries. (Users with `viewPeerEntries:<uid>` permissions will still be able to create drafts.)
+- `replaceFilesInVolume:<uid>` user permissions have been renamed to `replaceFiles:<uid>`.
+- `replacePeerFilesInVolume:<uid>` user permissions have been renamed to `replacePeerFiles:<uid>`.
+- `saveAssetInVolume:<uid>` user permissions have been renamed to `saveAssets:<uid>`.
+- `viewPeerFilesInVolume:<uid>` user permissions have been renamed to `viewPeerAssets:<uid>`.
+- `viewVolume:<uid>` user permissions have been renamed to `viewAssets:<uid>`.
 - Elements’ `searchScore` GraphQL fields are now returned as integers.
 - Plugins’ `$changelogUrl` properties must now have a `?string` type declaration.
 - Plugins’ `$description` properties must now have a `?string` type declaration.
@@ -323,7 +457,6 @@
 - Plugins’ `settingsHtml()` methods must now have a `?string` return type declaration.
 - Queue jobs’ `defaultDescription()` methods must now have a `?string` return type declaration.
 - Utilities’ `iconPath()` methods must now have a `?string` return type declaration.
-- Volumes’ `getRootUrl()` methods must now have a `?string` return type declaration, and `null` should be returned rather than `false` if the volume doesn’t have a root URL.
 - Widgets’ `getBodyHtml()` methods must now have a `?string` return type declaration, and `null` should be returned rather that `false` if the widget should not be visible.
 - Widgets’ `getSubtitle()` methods must now have a `?string` return type declaration.
 - Widgets’ `getTitle()` methods can now have a `?string` return type declaration.
@@ -335,32 +468,42 @@
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
 - `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
 - `craft\base\Element::getFieldValue()` now returns eager-loaded element values for the field, when they exist. ([#10047](https://github.com/craftcms/cms/issues/10047))
+- `craft\base\Element::metaFieldsHtml()` now has a `static` argument.
+- `craft\base\Element::slugFieldHtml()` now has a `static` argument.
 - `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
+- `craft\base\ElementInterface::getSidebarHtml()` now has a `static` argument.
 - `craft\base\MemoizableArray` no longer extends `ArrayObject`, and now implements `IteratorAggregate` and `Countable` directly.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\db\Command::upsert()` no longer merges the `$updateColumns` array into `$insertColumns`. The full array of `INSERT` column values should be passed to `$insertColumns` now.
 - `craft\db\Command` methods with `$includeAuditColumns` arguments now ensure the table actually has audit columns before modifying the query.
 - `craft\elements\Asset::getImg()` now sets the `alt` attribute to the native Alternative Text field value, if set.
+- `craft\elements\Asset::getVolume()` now returns an instance of `craft\models\Volume`.
 - `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
+- `craft\fields\BaseRelationField::$limit` has been renamed to `$maxRelations`.
 - `craft\fields\BaseRelationField::elementType()` is now public.
 - `craft\fields\BaseRelationField::inputSelectionCriteria()` has been renamed to `getInputSelectionCriteria()`, and is now public.
 - `craft\fields\BaseRelationField::inputSources()` has been renamed to `getInputSources()`, and is now public.
 - `craft\gql\directives\FormatDateTime::defaultTimezone()` has been renamed to `defaultTimeZone()`.
 - `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS` is now triggered when actually resolving fields for a GraphQL type, rather than when the type is first created. ([#9626](https://github.com/craftcms/cms/issues/9626))
+- `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
+- `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
 - `craft\helpers\Db::prepareValueForDb()` now has a `$columnType` argument.
 - `craft\helpers\Db::truncateTable()` now returns `void` rather than `int`.
 - `craft\helpers\Gql::getUnionType()` no longer requires a resolver function to be passed, if the union contains only element GraphQL types.
+- `craft\helpers\Html::beginForm()` not sets `accept-charset="UTF-8"` by default.
 - `craft\helpers\Html` now supports defining `hx-*` and `data-hx-*` attributes via a `hx` and `data-hx` keys, similar to `aria` and `data`.
+- `craft\helpers\i18n\Formatter::asPercent()` now chooses a default `$decimals` value based on the value given, if `null`.
+- `craft\helpers\i18n\Formatter::asPercent()` now treats all empty values as `0`.
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
-- `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\VolumeListing` objects.
+- `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
@@ -372,16 +515,16 @@
 - `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
 - `craft\test\fixtures\elements\BaseElementFixture` now validates elements with the `live` scenario if they are enabled, canonical, and not a provisional draft.
 - `craft\web\Request::getBodyParam()` now accepts nested param names in the `foo[bar][baz]` format.
-- The `Craft.getUrl()` function now removes duplicate query string params when passing in a param that’s already included in the base URL.
+- `craft\web\Request::getBodyParams()` and `getBodyParam()` now check for an `X-Craft-Namespace` header. If present, only params that begin with its value will be returned, excluding the namespace.
+- `craft\web\View::setNamespace()`’ `$namespace` argument no longer has a default value of `null`.
+- The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - Local volumes no longer use Flysystem.
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
 
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
-- Deprecated `craft\base\VolumeInterface::createFileByStream()`.
-- Deprecated `craft\base\VolumeInterface::saveFileLocally()`.
-- Deprecated `craft\base\VolumeInterface::updateFileByStream()`.
+- Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
 - Deprecated `craft\fieldlayoutelements\StandardField`. `craft\fieldlayoutelements\BaseNativeField` should be used instead.
 - Deprecated `craft\fieldlayoutelements\StandardTextField`. `craft\fieldlayoutelements\TextField` should be used instead.
 - Deprecated `craft\gql\TypeManager::flush()`. `craft\services\Gql::flushCaches()` should be used instead.
@@ -389,12 +532,16 @@
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
+- Deprecated `craft\i18n\I18N::getIsIntlLoaded()`.
 - Deprecated `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`. `EVENT_DEFINE_NATIVE_FIELDS` should be used instead.
 - Deprecated `craft\services\ProjectConfig::applyYamlChanges()`. `applyExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::regenerateYamlFromConfig()`. `regenerateExternalConfig()` should be used instead.
-- Deprecated the `Craft.appendFootHtml()` JavaScript function. `appendBodyHtml()` should be used instead.
+- Deprecated the `assets/save-asset` action. `elements/save` should be used instead.
+- Deprecated the `categories/save-category` action. `elements/save` should be used instead.
+- Deprecated the `entries/save-entry` action. `elements/save` should be used instead.
+- Deprecated the `Craft.appendFootHtml()` JavaScript method. `appendBodyHtml()` should be used instead.
 
 ### Removed
 - Removed the `--type` option from `migrate/*` commands. `--track` or `--plugin` can be used instead.
@@ -402,11 +549,11 @@
 - Removed support for setting custom config settings from `config/general.php`. `config/custom.php` should be used instead. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Removed the `customAsciiCharMappings` config setting.
 - Removed the `siteName` config setting. Environment-specific site names can be defined via environment variables.
-- Removed the `sitUrl` config setting. Environment-specific site URLs can be defined via environment variables.
+- Removed the `siteUrl` config setting. Environment-specific site URLs can be defined via environment variables.
 - Removed the `suppressTemplateErrors` config setting.
 - Removed the `useCompressedJs` config setting.
 - Removed the `useProjectConfigFile` config setting. Override `craft\services\ProjectConfig::$writeYamlAutomatically` to opt into [manual YAML file generation](https://craftcms.com/docs/4.x/project-config.html#manual-yaml-file-generation).
-- Removed support for `config/volumes.php`. Environment-specific volume settings can be defined via environment variables or dependency injection.
+- Removed support for `config/volumes.php`. Volumes can now specify per-environment filesystems.
 - Removed support for the `CRAFT_SITE_URL` PHP constant. Environment-specific site URLs can be defined via environment variables.
 - Removed the `enabledForSite` GraphQL argument. `status` should be used instead.
 - Removed the `{% includeCss %}` Twig tag. The `{% css %}` tag can be used instead.
@@ -449,27 +596,38 @@
 - Removed Matrix block queries’ `ownerLocale` param. The `site` or `siteId` param can be used instead.
 - Removed Matrix block queries’ `ownerSite` param. The `site` param can be used instead.
 - Removed Matrix block queries’ `ownerSiteId` param. The `siteId` param can be used instead.
+- Removed the `assignUserGroups` user permission, which authorized users to assign other users to their own groups. Authorization must now be explicitly granted for each group. ([#10422](https://github.com/craftcms/cms/issues/10422))
+- Removed the `customizeSources` user permission. Only admins can customize element sources now, and only from an environment that allows admin changes.
+- Removed the `publishPeerEntryDrafts:<uid>` permissions, as they were pointless. (If a user is authorized to save an entry and view other users’ drafts of it, there’s nothing stopping them from making the same changes themselves.)
 - Removed support for the `staticRows` editable table setting. `allowAdd`, `allowDelete`, and `allowReorder` can be used instead.
 - Removed support for the `CRAFT_LOCALE` PHP constant. `CRAFT_SITE` can be used instead.
 - Removed `Craft::Client`. `Pro` can be used instead.
 - Removed `Craft::Personal`. `Solo` can be used instead.
+- Removed `craft\base\ApplicationTrait::getAssetTransforms()`.
 - Removed `craft\base\ApplicationTrait::getElementIndexes()`. `getElementSources()` can be used instead.
 - Removed `craft\base\ApplicationTrait::getEntryRevisions()`.
 - Removed `craft\base\ApplicationTrait::getFeed()`.
 - Removed `craft\base\ApplicationTrait::getIsSystemOn()`. `getIsLive()` can be used instead.
 - Removed `craft\base\Element::ATTR_STATUS_CONFLICTED`.
+- Removed `craft\base\Element::EVENT_DEFINE_IS_DELETABLE`. `EVENT_AUTHORIZE_DELETE` can be used instead.
+- Removed `craft\base\Element::EVENT_DEFINE_IS_EDITABLE`. `EVENT_AUTHORIZE_VIEW` and `EVENT_AUTHORIZE_SAVE` can be used instead.
 - Removed `craft\base\Element::getFieldStatus()`. Fields’ `getStatus()` methods can be used instead.
 - Removed `craft\base\Element::getHasFreshContent()`. `getIsFresh()` should be used instead.
 - Removed `craft\base\Element::getIsProvisionalDraft()`. `$isProvisionalDraft` can be used instead.
 - Removed `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` can be used instead.
+- Removed `craft\base\Element::isDeletable()`. `canDelete()` can be used instead.
+- Removed `craft\base\Element::isEditable()`. `canView()` and `canSave()` can be used instead.
+- Removed `craft\base\ElementInterface::getEditorHtml()`. Element edit forms are now exclusively driven by their field layout.
+- Removed `craft\base\ElementInterface::getIsDeletable()`. `canDelete()` can be used instead.
+- Removed `craft\base\ElementInterface::getIsEditable()`. `canView()` and `canSave()` can be used instead.
 - Removed `craft\base\Field::isEmpty()`. `isValueEmpty()` can be used instead.
 - Removed `craft\base\FieldLayoutElementInterface`.
 - Removed `craft\base\FlysystemVolume`.
+- Removed `craft\base\LocalVolumeInterface`.
 - Removed `craft\base\Model::getError()`. `getFirstError()` can be used instead.
-- Removed `craft\base\VolumeInterface::createDir()`. `createDirectory()` can be used instead.
-- Removed `craft\base\VolumeInterface::deleteDir()`. `deleteDirectory()` can be used instead.
-- Removed `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` can be used instead.
-- Removed `craft\base\VolumeInterface::renameDir()`. `renameDirectory()` can be used instead.
+- Removed `craft\base\Volume`.
+- Removed `craft\base\VolumeInterface`.
+- Removed `craft\base\VolumeTrait`.
 - Removed `craft\base\Widget::iconPath()`. `icon()` can be used instead.
 - Removed `craft\behaviors\DraftBehavior::getDateLastMerged()`. Elements’ `$dateLastMerged` properties can be used instead.
 - Removed `craft\behaviors\DraftBehavior::getMergingChanges()`. Elements’ `$mergingCanonicalChanges` properties can be used instead.
@@ -481,6 +639,7 @@
 - Removed `craft\behaviors\DraftBehavior::isFieldOutdated()`. Elements’ `isFieldOutdated()` methods can be used instead.
 - Removed `craft\config\DbConfig::updateDsn()`.
 - Removed `craft\console\Request::getIsSingleActionRequest()`.
+- Removed `craft\controllers\AssetTransformsController`.
 - Removed `craft\controllers\BaseUpdaterController::ACTION_COMPOSER_OPTIMIZE`.
 - Removed `craft\controllers\BaseUpdaterController::actionComposerOptimize()`.
 - Removed `craft\controllers\Drafts`.
@@ -490,17 +649,31 @@
 - Removed `craft\db\Connection::createFromConfig()`. `craft\helpers\App::dbConfig()` can be used instead.
 - Removed `craft\db\Connection::getVersion()`. DB schemas’ `getServerVersion()` methods can be used instead.
 - Removed `craft\db\Connection::trimObjectName()`.
+- Removed `craft\db\Table::ASSETTRANSFORMINDEX`.
+- Removed `craft\db\Table::ASSETTRANSFORMS`.
 - Removed `craft\elements\actions\DeepDuplicate`. `craft\elements\actions\Duplicate` can be used instead.
 - Removed `craft\elements\actions\SetStatus::$allowDisabledForSite`.
 - Removed `craft\elements\actions\SetStatus::DISABLED_FOR_SITE`.
 - Removed `craft\elements\actions\SetStatus::DISABLED_GLOBALLY`.
-- Removed `craft\elements\Asset::getHasUrls()`. Volumes’ `$hasUrls` properties can be used instead.
+- Removed `craft\elements\Asset::getHasUrls()`. Filesystems’ `$hasUrls` properties can be used instead.
 - Removed `craft\elements\Asset::getSupportsPreview()`.
+- Removed `craft\elements\Asset::getTransformSource()`.
 - Removed `craft\elements\Asset::getUri()`. `getPath()` can be used instead.
+- Removed `craft\elements\Asset::setTransformSource()`.
+- Removed `craft\elements\Category::$newParentId`. `getParentId()` and `setParentId()` can be used instead.
+- Removed `craft\elements\Entry::$newParentId`. `getParentId()` and `setParentId()` can be used instead.
 - Removed `craft\elements\MatrixBlock::$ownerSiteId`. `$siteId` can be used instead.
 - Removed `craft\elements\User::getPhotoUrl()`. `getPhoto()->getUrl()` can be used instead.
 - Removed `craft\elements\User::mergePreferences()`.
+- Removed `craft\errors\AssetTransformException`.
 - Removed `craft\errors\FieldNotFoundException`.
+- Removed `craft\errors\InvalidVolumeException`.
+- Removed `craft\errors\MissingVolumeFolderException`.
+- Removed `craft\errors\VolumeException`.
+- Removed `craft\errors\VolumeObjectExistsException`.
+- Removed `craft\errors\VolumeObjectNotFoundException`.
+- Removed `craft\events\AssetTransformEvent`.
+- Removed `craft\events\AssetTransformImageEvent`.
 - Removed `craft\events\DefineComponentsEvent`.
 - Removed `craft\events\ExecuteGqlQueryEvent::$accessToken`. `$schemaId` can be used instead.
 - Removed `craft\events\GetAssetThumbUrlEvent::$size`. `$width` and `$height` can be used instead.
@@ -521,11 +694,12 @@
 - Removed `craft\gql\base\Resolver::extractEagerLoadCondition()`.
 - Removed `craft\gql\base\Resolver::getArrayableArguments()`.
 - Removed `craft\gql\base\Resolver::prepareArguments()`.
-- Removed `craft\helpers\App::mutexConfig()`. `dbMutexConfig()` can be used instead.
+- Removed `craft\helpers\App::dbMutexConfig()`.
 - Removed `craft\helpers\ArrayHelper::filterByValue()`. `where()` can be used instead.
 - Removed `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` can be used instead.
 - Removed `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` can be used instead.
 - Removed `craft\helpers\FileHelper::removeFile()`. `unlink()` can be used instead.
+- Removed `craft\helpers\Localization::localeData()`.
 - Removed `craft\helpers\MailerHelper::createMailer()`. `craft\helpers\mailerConfig()` can be used instead.
 - Removed `craft\helpers\Stringy`.
 - Removed `craft\helpers\UrlHelper::baseRequestUrl()`. `Craft::getAlias('@web')` can be used instead.
@@ -534,6 +708,9 @@
 - Removed `craft\i18n\Locale::getId()`. `$id` can be used instead.
 - Removed `craft\i18n\Locale::getName()`. `getDisplayName()` can be used instead.
 - Removed `craft\i18n\Locale::getNativeName()`. `getDisplayName()` can be used instead.
+- Removed `craft\i18n\Locale::setDateTimeFormats()`.
+- Removed `craft\models\AssetTransform`.
+- Removed `craft\models\AssetTransformIndex`.
 - Removed `craft\models\BaseEntryRevisionModel`.
 - Removed `craft\models\EntryDraft`.
 - Removed `craft\models\EntryVersion`.
@@ -548,8 +725,15 @@
 - Removed `craft\models\Site::$originalName`.
 - Removed `craft\models\Site::overrideBaseUrl()`.
 - Removed `craft\models\Site::overrideName()`.
+- Removed `craft\models\VolumeListing`.
+- Removed `craft\mutex\DbMutexTrait`.
+- Removed `craft\mutex\FileMutex`.
+- Removed `craft\mutex\MysqlMutex`.
+- Removed `craft\mutex\PgsqlMutex`.
+- Removed `craft\mutex\PrefixedMutexTrait`.
 - Removed `craft\queue\jobs\ApplyMatrixPropagationMethod`. `ApplyNewPropagationMethod` can be used instead.
 - Removed `craft\queue\jobs\DeleteStaleTemplateCaches`.
+- Removed `craft\records\AssetTransform`.
 - Removed `craft\records\MatrixBlockType::$validateUniques`.
 - Removed `craft\services\AssetIndexer::deleteStaleIndexingData()`.
 - Removed `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`.
@@ -560,6 +744,7 @@
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
 - Removed `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`. `getUserTemporaryUploadFolder()` can be used instead.
 - Removed `craft\services\AssetTransforms::CONFIG_TRANSFORM_KEY`. `craft\services\ProjectConfig::PATH_IMAGE_TRANSFORMS` can be used instead.
+- Removed `craft\services\AssetTransforms`.
 - Removed `craft\services\Categories::CONFIG_CATEGORYROUP_KEY`. `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS` can be used instead.
 - Removed `craft\services\Composer::$disablePackagist`.
 - Removed `craft\services\Composer::optimize()`.
@@ -625,9 +810,15 @@
 - Removed `craft\services\Users::CONFIG_USERLAYOUT_KEY`. `craft\services\ProjectConfig::PATH_USER_FIELD_LAYOUTS` can be used instead.
 - Removed `craft\services\Users::CONFIG_USERS_KEY`. `craft\services\ProjectConfig::PATH_USERS` can be used instead.
 - Removed `craft\services\Volumes::CONFIG_VOLUME_KEY`. `craft\services\ProjectConfig::PATH_VOLUMES` can be used instead.
+- Removed `craft\services\Volumes::createVolume()`.
+- Removed `craft\services\Volumes::EVENT_REGISTER_VOLUME_TYPES`.
+- Removed `craft\services\Volumes::getAllVolumeTypes()`.
 - Removed `craft\services\Volumes::getVolumeOverrides()`.
 - Removed `craft\test\Fixture`. `craft\test\ActiveFixture` can be used instead.
 - Removed `craft\validators\StringValidator::$trim`. The `trim` validator can be used instead.
+- Removed `craft\volumes\Local`.
+- Removed `craft\volumes\MissingVolume`.
+- Removed `craft\volumes\Temp`.
 - Removed `craft\web\AssetBundle::useCompressedJs()`.
 - Removed `craft\web\AssetManager::getPublishedPath()`.
 - Removed `craft\web\assets\graphiql\VendorAsset`. `craft\web\assets\graphiql\GraphiqlAsset` can be used instead.
@@ -656,9 +847,35 @@
 - Removed `craft\web\View::getInitialDeltaValue()`. `getInitialDeltaValues()` can be used instead.
 - Removed `craft\web\View::registerHiResCss()`.
 - Removed `craft\web\View::renderTemplateMacro()`.
+- Removed the `assets/edit-asset` action.
 - Removed the `assets/generate-thumb` action. `assets/thumb` can be used instead.
+- Removed the `categories/delete-category` action. `elements/delete` can be used instead.
+- Removed the `categories/edit-category` action.
+- Removed the `categories/preview-category` action.
+- Removed the `categories/share-category` action.
+- Removed the `categories/view-shared-category` action.
 - Removed the `dashboard/get-feed-items` action.
+- Removed the `edit/by-id` action. `elements/edit` can be used instead.
+- Removed the `edit/by-uid` action. `elements/edit` can be used instead.
+- Removed the `elements/get-editor-html` action.
+- Removed the `elements/save-element` action. `elements/save` can be used instead.
+- Removed the `entries/delete-entry` action. `elements/delete` can be used instead.
+- Removed the `entries/delete-for-site` action. `elements/delete-for-site` can be used instead.
+- Removed the `entries/duplicate-entry` action. `elements/duplicate` can be used instead.
+- Removed the `entries/switch-entry-type` action.
+- Removed the `entry-revisions/create-draft` action. `elements/create` can be used instead.
+- Removed the `entry-revisions/delete-draft` action. `elements/delete-draft` can be used instead.
+- Removed the `entry-revisions/publish-draft` action. `elements/apply-draft` can be used instead.
+- Removed the `entry-revisions/revert-entry-to-version` action. `elements/revert` can be used instead.
+- Removed the `entry-revisions/save-draft` action. `elements/save-draft` can be used instead.
 - Removed the `users/get-remaining-session-time` action. `users/session-info` can be used instead.
+- Removed the `_layouts/element` control panel template.
+- Removed the `assets/_edit` control panel template.
+- Removed the `categories/_edit` control panel template.
+- Removed the `entries/_edit` control panel template.
+- Removed the `Craft.AssetEditor` JavaScript class.
+- Removed the `Craft.BaseElementEditor` JavaScript class.
+- Removed the `Craft.DraftEditor` JavaScript class.
 - Removed the Flysystem package. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
 - Removed the laminas-feed package.
 

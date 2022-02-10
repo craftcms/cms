@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\BlockElementInterface;
+use craft\base\conditions\ConditionInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -17,6 +18,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
@@ -28,7 +30,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
@@ -139,9 +140,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public ?string $viewMode = null;
 
     /**
-     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     * @var int|null The maximum number of relations this field can have  (used if [[allowLimit]] is set to true).
+     * @since 4.0.0
      */
-    public ?int $limit = null;
+    public ?int $minRelations = null;
+
+    /**
+     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
+     * @since 4.0.0
+     */
+    public ?int $maxRelations = null;
 
     /**
      * @var string|null The label that should be used on the selection input
@@ -164,7 +172,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public bool $allowMultipleSources = true;
 
     /**
-     * @var bool Whether to allow the Limit setting
+     * @var bool Whether to show the Min Relations and Max Relations settings.
      */
     public bool $allowLimit = true;
 
@@ -200,17 +208,31 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected bool $sortable = true;
 
     /**
+     * @var ElementConditionInterface|array|null
+     * @see getSelectionCondition()
+     * @see setSelectionCondition()
+     */
+    private $_selectionCondition = null;
+
+    /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
     {
+        // limit => maxRelations
+        if (array_key_exists('limit', $config)) {
+            $config['maxRelations'] = ArrayHelper::remove($config, 'limit');
+        }
+
         // Config normalization
         $nullables = [
+            'maxRelations',
+            'minRelations',
+            'selectionLabel',
+            'selectionLabel',
             'source',
             'targetSiteId',
             'viewMode',
-            'limit',
-            'selectionLabel',
         ];
         foreach ($nullables as $name) {
             if (($config[$name] ?? null) === '') {
@@ -246,7 +268,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['limit'], 'number', 'integerOnly' => true];
+        $rules[] = [['minRelations', 'maxRelations'], 'number', 'integerOnly' => true];
         return $rules;
     }
 
@@ -256,18 +278,33 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes[] = 'sources';
-        $attributes[] = 'source';
-        $attributes[] = 'targetSiteId';
-        $attributes[] = 'viewMode';
-        $attributes[] = 'limit';
+        $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'localizeRelations';
+        $attributes[] = 'maxRelations';
+        $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
         $attributes[] = 'showSiteMenu';
-        $attributes[] = 'localizeRelations';
+        $attributes[] = 'source';
+        $attributes[] = 'sources';
+        $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
-        $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'viewMode';
 
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+
+        if ($selectionCondition = $this->getSelectionCondition()) {
+            $settings['selectionCondition'] = $selectionCondition->getConfig();
+        }
+
+        return $settings;
     }
 
     /**
@@ -287,7 +324,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $rules = [
             [
                 ArrayValidator::class,
-                'max' => $this->allowLimit && $this->limit ? $this->limit : null,
+                'min' => $this->allowLimit ? $this->minRelations : null,
+                'max' => $this->allowLimit ? $this->maxRelations : null,
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
             ],
         ];
@@ -426,7 +465,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
 
             if (!$this->allowMultipleSources && $this->source) {
-                $source = ElementHelper::findSource($class, $this->source);
+                $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
@@ -437,8 +476,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query->id(false);
         }
 
-        if ($this->allowLimit && $this->limit) {
-            $query->limit($this->limit);
+        if ($this->allowLimit && $this->maxRelations) {
+            $query->limit($this->maxRelations);
         }
 
         return $query;
@@ -607,7 +646,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         $view = Craft::$app->getView();
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
         $html = "<div id='$id' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
@@ -906,10 +945,28 @@ JS;
         /** @var ElementInterface|string $elementType */
         $elementType = $this->elementType();
 
+        $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
+        if ($selectionCondition) {
+            $selectionCondition->mainTag = 'div';
+            $selectionCondition->id = 'selection-condition';
+            $selectionCondition->name = 'selectionCondition';
+            $selectionCondition->forProjectConfig = true;
+
+            $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
+                'label' => Craft::t('app', 'Selectable {type} Condition', [
+                    'type' => $elementType::pluralDisplayName(),
+                ]),
+                'instructions' => Craft::t('app', 'Only allow {type} to be selected if they match the following rules:', [
+                    'type' => $elementType::pluralLowerDisplayName(),
+                ]),
+            ]);
+        }
+
         return [
             'field' => $this,
             'elementType' => $elementType::lowerDisplayName(),
             'pluralElementType' => $elementType::pluralLowerDisplayName(),
+            'selectionCondition' => $selectionConditionHtml ?? null,
         ];
     }
 
@@ -963,19 +1020,20 @@ JS;
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => static::elementType(),
-            'id' => Html::id($this->handle),
+            'id' => $this->getInputId(),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'elements' => $value,
             'sources' => $this->getInputSources($element),
+            'condition' => $this->getSelectionCondition(),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => $this->allowSelfRelations,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
-            'limit' => $this->allowLimit ? $this->limit : null,
+            'limit' => $this->allowLimit ? $this->maxRelations : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable,
@@ -1014,6 +1072,51 @@ JS;
         $event = new ElementCriteriaEvent();
         $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
         return $event->criteria;
+    }
+
+    /**
+     * Returns the element condition that should be used to determine which elements are selectable by the field.
+     *
+     * @return ElementConditionInterface|null
+     * @since 4.0.0
+     */
+    public function getSelectionCondition(): ?ElementConditionInterface
+    {
+        if ($this->_selectionCondition !== null && !$this->_selectionCondition instanceof ConditionInterface) {
+            $this->_selectionCondition = Craft::$app->getConditions()->createCondition($this->_selectionCondition);
+        }
+
+        return $this->_selectionCondition;
+    }
+
+    /**
+     * Sets the element condition that should be used to determine which elements are selectable by the field.
+     *
+     * @param ElementConditionInterface|string|array{class: string}|null $condition
+     * @since 4.0.0
+     */
+    public function setSelectionCondition($condition): void
+    {
+        if ($condition instanceof ConditionInterface && !$condition->getConditionRules()) {
+            $condition = null;
+        }
+
+        // Don't instantiate it unless we actually end up needing it.
+        // Avoids an infinite recursion bug (ElementCondition::conditionRuleTypes() => getAllFields() => setSelectionCondition() => ...)
+        $this->_selectionCondition = $condition;
+    }
+
+    /**
+     * Creates an element condition that should be used to determine which elements are selectable by the field.
+     *
+     * The condition’s `queryParams` property should be set to any element query params that are already covered by other field settings.
+     *
+     * @return ElementConditionInterface|null
+     * @since 4.0.0
+     */
+    protected function createSelectionCondition(): ?ElementConditionInterface
+    {
+        return null;
     }
 
     /**

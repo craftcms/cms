@@ -28,15 +28,16 @@ import './deprecator.scss';
         },
 
         viewLogTraces: function(ev) {
+            const $spinner = $('<div class="spinner spinner-absolute"/>');
             if (!this.tracesModal) {
-                var $container = $('<div id="traces" class="modal loading"/>').appendTo(Garnish.$bod);
+                var $container = $('<div id="traces" class="modal"/>').append($spinner).appendTo(Garnish.$bod);
                 this.$tracesModalBody = $('<div class="body" tabindex="0"/>').appendTo($container);
 
                 this.tracesModal = new Garnish.Modal($container, {
                     resizable: true
                 });
             } else {
-                this.tracesModal.$container.addClass('loading');
+                this.tracesModal.$container.append($spinner);
                 this.$tracesModalBody.empty();
                 this.tracesModal.show();
             }
@@ -46,7 +47,7 @@ import './deprecator.scss';
             };
 
             Craft.postActionRequest('utilities/get-deprecation-error-traces-modal', data, (response, textStatus) => {
-                this.tracesModal.$container.removeClass('loading');
+                this.tracesModal.$container.find('.spinner').remove();
 
                 if (textStatus === 'success') {
                     this.$tracesModalBody.html(response.html);

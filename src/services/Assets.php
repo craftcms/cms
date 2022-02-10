@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -13,8 +14,6 @@ use craft\assetpreviews\Pdf;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
-use craft\base\LocalVolumeInterface;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -22,32 +21,33 @@ use craft\elements\db\AssetQuery;
 use craft\elements\User;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
-use craft\errors\AssetTransformException;
+use craft\errors\FsException;
+use craft\errors\FsObjectExistsException;
+use craft\errors\FsObjectNotFoundException;
 use craft\errors\ImageException;
+use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectExistsException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
+use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
-use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
-use craft\models\AssetTransform;
 use craft\models\FolderCriteria;
+use craft\models\ImageTransform;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\volumes\Temp;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -56,12 +56,12 @@ use yii\base\NotSupportedException;
 
 /**
  * Assets service.
- * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
  *
  * @property-read VolumeFolder $currentUserTemporaryUploadFolder
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
  */
 class Assets extends Component
 {
@@ -215,8 +215,8 @@ class Assets extends Component
      * Save an Asset folder.
      *
      * @param VolumeFolder $folder
-     * @throws VolumeObjectExistsException if a folder already exists with such a name
-     * @throws VolumeException if unable to create the directory on volume
+     * @throws FsObjectExistsException if a folder already exists with such a name
+     * @throws FsException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
      */
     public function createFolder(VolumeFolder $folder): void
@@ -233,7 +233,7 @@ class Assets extends Component
         ]);
 
         if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
-            throw new VolumeObjectExistsException(Craft::t('app',
+            throw new FsObjectExistsException(Craft::t('app',
                 'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]));
         }
@@ -241,7 +241,7 @@ class Assets extends Component
         $volume = $parent->getVolume();
         $path = rtrim($folder->path, '/');
 
-        $volume->createDirectory($path);
+        $volume->getFs()->createDirectory($path);
 
         $this->storeFolderRecord($folder);
     }
@@ -253,8 +253,8 @@ class Assets extends Component
      * @param string $newName
      * @return string The new folder name after cleaning it.
      * @throws AssetOperationException If the folder to be renamed can't be found or trying to rename the top folder.
-     * @throws VolumeObjectExistsException
-     * @throws VolumeObjectNotFoundException
+     * @throws FsObjectExistsException
+     * @throws FsObjectNotFoundException
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -277,7 +277,7 @@ class Assets extends Component
         ]);
 
         if ($conflictingFolder) {
-            throw new VolumeObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
+            throw new FsObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
                 'folderName' => $folder->name,
             ]));
         }
@@ -287,7 +287,7 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
+        $volume->getFs()->renameDirectory(rtrim($folder->path, '/'), $newName);
         $descendantFolders = $this->getAllDescendantFolders($folder);
 
         foreach ($descendantFolders as $descendantFolder) {
@@ -321,7 +321,7 @@ class Assets extends Component
             if ($folder && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
-                    $volume->deleteDirectory($folder->path);
+                    $volume->getFs()->deleteDirectory($folder->path);
                 } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
                     // Carry on.
@@ -585,14 +585,12 @@ class Assets extends Component
      * Returns the URL for an asset, possibly with a given transform applied.
      *
      * @param Asset $asset
-     * @param AssetTransform|string|array|null $transform
-     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
-     * up to the `generateTransformsBeforePageLoad` config setting.
+     * @param ImageTransform|string|array|null $transform
      * @return string|null
      * @throws VolumeException
-     * @throws AssetTransformException
+     * @throws ImageTransformException
      */
-    public function getAssetUrl(Asset $asset, $transform = null, ?bool $generateNow = null): ?string
+    public function getAssetUrl(Asset $asset, $transform = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new DefineAssetUrlEvent([
@@ -612,44 +610,7 @@ class Assets extends Component
             return AssetsHelper::generateUrl($volume, $asset);
         }
 
-        // Get the transform index model
-        $assetTransforms = Craft::$app->getAssetTransforms();
-        $index = $assetTransforms->getTransformIndex($asset, $transform);
-
-        // Does the file actually exist?
-        if ($index->fileExists) {
-            // For local volumes, really make sure
-            $volume = $asset->getVolume();
-            $transformPath = $asset->folderPath . $assetTransforms->getTransformSubpath($asset, $index);
-
-            if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
-                $index->fileExists = false;
-            } else {
-                return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
-            }
-        }
-
-        if ($generateNow === null) {
-            $generateNow = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        }
-
-        if ($generateNow) {
-            try {
-                return $assetTransforms->ensureTransformUrlByIndexModel($index);
-            } catch (\Exception $exception) {
-                Craft::$app->getErrorHandler()->logException($exception);
-                return null;
-            }
-        }
-
-        // Queue up a new Generate Pending Transforms job
-        if (!$this->_queuedGeneratePendingTransformsJob) {
-            Queue::push(new GeneratePendingTransforms(), 2048);
-            $this->_queuedGeneratePendingTransformsJob = true;
-        }
-
-        // Return the temporary transform URL
-        return UrlHelper::actionUrl('assets/generate-transform', ['transformId' => $index->id], null, false);
+        return $asset->getUrl($transform);
     }
 
     /**
@@ -703,7 +664,7 @@ class Assets extends Component
      * @throws InvalidConfigException
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @throws VolumeException
-     * @throws VolumeObjectNotFoundException
+     * @throws FsObjectNotFoundException
      * @see getThumbUrl()
      */
     public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true)
@@ -757,9 +718,8 @@ class Assets extends Component
 
             // Generate it
             FileHelper::createDirectory($dir);
-            $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
+            $imageSource = ImageTransforms::getLocalImageSource($asset);
 
-            // hail Mary
             try {
                 $image = Craft::$app->getImages()->loadImage($imageSource, $rasterize, max($width, $height));
 
@@ -861,7 +821,7 @@ class Assets extends Component
 
         // Check whether a filename we'd want to use does not exist
         $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
+            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->getFs()->fileExists($folder->path . $filenameToTest);
         };
 
         if ($canUse($originalFilename)) {
@@ -906,12 +866,12 @@ class Assets extends Component
      * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return VolumeFolder
      * @throws VolumeException if something went catastrophically wrong creating the folder.
      */
-    public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): VolumeFolder
+    public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): VolumeFolder
     {
         $parentFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderModel = $parentFolder;

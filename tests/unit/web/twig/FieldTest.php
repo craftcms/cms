@@ -52,12 +52,12 @@ class FieldTest extends Unit
 TWIG;
 
         $html = $this->view->renderString($template, [], View::TEMPLATE_MODE_CP);
-        $this->assertStringContainsString('<div id="foo-field" class="field" data-foo="test">', $html);
+        $this->assertStringContainsString('<div id="foo-field" class="field" data-attribute="foo" data-foo="test">', $html);
         $this->assertStringContainsString('TEST HEADING', $html);
         $this->assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
         $this->assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
-        $this->assertStringContainsString('<p id="foo-tip" class="notice"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span>TEST TIP</p>', $html);
-        $this->assertStringContainsString('<p id="foo-warning" class="warning"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span>TEST WARNING</p>', $html);
+        $this->assertStringContainsString('<p id="foo-tip" class="notice has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><span>TEST TIP</span></p>', $html);
+        $this->assertStringContainsString('<p id="foo-warning" class="warning has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><span>TEST WARNING</span></p>', $html);
         $this->assertStringContainsString('<input name="foo">', $html);
     }
 

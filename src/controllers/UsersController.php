@@ -721,14 +721,14 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $edition = Craft::$app->getEdition();
-        $userSession = Craft::$app->getUser();
+        $currentUser = Craft::$app->getUser()->getIdentity();
 
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
-                    ->id($userId === 'current' ? $userSession->getId() : $userId)
+                    ->id($userId === 'current' ? $currentUser->id : $userId)
                     ->status(null)
                     ->one();
             } else if ($edition === Craft::Pro) {
@@ -756,7 +756,6 @@ class UsersController extends Controller
             }
         }
 
-        $currentUser = $userSession->getIdentity();
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
 
@@ -788,7 +787,7 @@ class UsersController extends Controller
                             if (!$user->password) {
                                 $statusActions[] = [
                                     'id' => 'copy-passwordreset-url',
-                                    'label' => Craft::t('app', 'Copy activation URL'),
+                                    'label' => Craft::t('app', 'Copy activation URL…'),
                                 ];
                             }
                             $statusActions[] = [
@@ -800,7 +799,7 @@ class UsersController extends Controller
                     break;
                 case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
-                    if ($canModerateUsers) {
+                    if (Craft::$app->getUsers()->canSuspend($currentUser, $user)) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend'),
@@ -836,7 +835,7 @@ class UsersController extends Controller
                         if ($canAdministrateUsers) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
-                                'label' => Craft::t('app', 'Copy password reset URL'),
+                                'label' => Craft::t('app', 'Copy password reset URL…'),
                             ];
                         }
                     }
@@ -853,11 +852,11 @@ class UsersController extends Controller
                     ];
                     $sessionActions[] = [
                         'id' => 'copy-impersonation-url',
-                        'label' => Craft::t('app', 'Copy impersonation URL'),
+                        'label' => Craft::t('app', 'Copy impersonation URL…'),
                     ];
                 }
 
-                if ($canModerateUsers && $user->active && !$user->suspended) {
+                if (Craft::$app->getUsers()->canSuspend($currentUser, $user) && $user->active && !$user->suspended) {
                     $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend'),
@@ -875,7 +874,7 @@ class UsersController extends Controller
                     ];
                 }
 
-                if ($isCurrentUser || $userSession->checkPermission('deleteUsers')) {
+                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
                     $destructiveActions[] = [
                         'id' => 'delete-btn',
                         'label' => Craft::t('app', 'Delete…'),
@@ -942,13 +941,13 @@ class UsersController extends Controller
         $tabs += $form->getTabMenu();
 
         // Show the permission tab for the users that can change them on Craft Pro editions
-        if (
+        $canAssignUserGroups = $currentUser->canAssignUserGroups();
+        $showPermissionsTab = (
             $edition === Craft::Pro &&
-            (
-                $userSession->checkPermission('assignUserPermissions') ||
-                $userSession->checkPermission('assignUserGroups')
-            )
-        ) {
+            ($currentUser->can('assignUserPermissions') || $canAssignUserGroups)
+        );
+
+        if ($showPermissionsTab) {
             $tabs['perms'] = [
                 'label' => Craft::t('app', 'Permissions'),
                 'url' => '#perms',
@@ -1049,12 +1048,17 @@ class UsersController extends Controller
 
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
-        $userIdJs = Json::encode($user->id);
-        $isCurrentJs = ($isCurrentUser ? 'true' : 'false');
-        $settingsJs = Json::encode([
-            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
-        ]);
-        $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
+        $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
+
+        $this->getView()->registerJsWithVars(
+            fn($userId, $isCurrent, $deleteModalRedirect) => <<<JS
+new Craft.AccountSettingsForm($userId, $isCurrent, {
+    deleteModalRedirect: $deleteModalRedirect,
+})
+JS,
+            [$user->id, $isCurrentUser, $deleteModalRedirect],
+            View::POS_END
+        );
 
         return $this->renderTemplate('users/_edit', compact(
             'user',
@@ -1069,6 +1073,8 @@ class UsersController extends Controller
             'tabs',
             'selectedTab',
             'showPhotoField',
+            'showPermissionsTab',
+            'canAssignUserGroups',
             'fieldsHtml',
             'configurableStepTypes'
         ));
@@ -1435,7 +1441,9 @@ class UsersController extends Controller
             }
             $this->setSuccessFlash($default);
         } else {
-            $this->setSuccessFlash(Craft::t('app', 'User saved.'));
+            $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+                'type' => User::displayName(),
+            ]));
         }
 
         // Is this public registration, and is the user going to be activated automatically?
@@ -1624,14 +1632,10 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can suspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->suspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
@@ -1793,13 +1797,10 @@ class UsersController extends Controller
         }
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can unsuspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->unsuspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }
@@ -2132,11 +2133,6 @@ class UsersController extends Controller
      */
     private function _saveUserGroups(User $user, User $currentUser): void
     {
-        if (!$currentUser->can('assignUserGroups')) {
-            return;
-        }
-
-        // Save any user groups
         $groupIds = $this->request->getBodyParam('groups');
 
         if ($groupIds === null) {
@@ -2162,10 +2158,7 @@ class UsersController extends Controller
                 $hasNewGroups = true;
 
                 // Make sure the current user is in the group or has permission to assign it
-                if (
-                    !$currentUser->isInGroup($groupId) &&
-                    !$currentUser->can("assignUserGroup:$group->uid")
-                ) {
+                if (!$currentUser->can("assignUserGroup:$group->uid")) {
                     throw new ForbiddenHttpException("Your account doesn't have permission to assign user group “{$group->name}” to a user.");
                 }
             }

@@ -87,6 +87,18 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function beginForm($action = '', $method = 'post', $options = []): string
+    {
+        if (!isset($options['accept-charset'])) {
+            $options['accept-charset'] = 'UTF-8';
+        }
+
+        return parent::beginForm($action, $method, $options);
+    }
+
+    /**
      * Generates a hidden `action` input tag.
      *
      * @param string $route The action route
@@ -569,7 +581,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an input name.
      *
      * @param string $inputName The input name
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The namespaced input name
      * @since 3.5.0
      */
@@ -586,7 +598,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an ID.
      *
      * @param string $id The ID
-     * @param string|null $namespace The namespace
+     * @param string $namespace The namespace
      * @return string The namespaced ID
      * @since 3.5.0
      */
@@ -657,13 +669,13 @@ class Html extends \yii\helpers\Html
      */
     private static function _namespaceInputs(string &$html, string $namespace): void
     {
-        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
+        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}' . $namespace . '[$3]$4$2', $html);
     }
 
     /**
      * Prepends a namespace to `id` attributes, and any of the following things that reference those IDs:
      *
-     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
+     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `aria-controls`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
      * - ID selectors within `<style>` tags
      *
      * For example, this:
@@ -715,10 +727,10 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
                 $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
-                    if ($match[2] === 'data-target-prefix' || isset($ids[$id])) {
+                    if (in_array($match[2], ['href', 'data-target-prefix']) || isset($ids[$id])) {
                         return sprintf('%s-%s', $namespace, $id);
                     }
                     return $id;

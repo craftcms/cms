@@ -19,31 +19,36 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
     $primaryButtons: null,
     $secondaryButtons: null,
     $cancelBtn: null,
-    $footerSpinner: null,
 
     init: function(elementType, settings) {
         this.elementType = elementType;
         this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
+        var $headingId = 'elementSelectorModalHeading-' + Date.now();
 
         // Build the modal
-        var $container = $('<div class="modal elementselectormodal"></div>').appendTo(Garnish.$bod),
+        var $container = $('<div class="modal elementselectormodal" aria-labelledby="' + $headingId + '"></div>').appendTo(Garnish.$bod),
+            $heading = $('<h2 id="' + $headingId + '" class="visually-hidden">' + this.settings.modalTitle + '</h2>').appendTo($container),
             $body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
             $footer = $('<div class="footer"/>').appendTo($container);
 
+        if (this.settings.fullscreen) {
+            $container.addClass('fullscreen');
+            this.settings.minGutter = 0;
+        }
+
         this.base($container, this.settings);
 
-        this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
-        this.$primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
         this.$secondaryButtons = $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
+        this.$primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
         this.$cancelBtn = $('<button/>', {
             type: 'button',
             class: 'btn',
             text: Craft.t('app', 'Cancel'),
         }).appendTo(this.$primaryButtons);
-        this.$selectBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn disabled submit',
-            text: Craft.t('app', 'Select'),
+        this.$selectBtn = Craft.ui.createSubmitButton({
+            class: 'disabled',
+            label: Craft.t('app', 'Select'),
+            spinner: true,
         }).appendTo(this.$primaryButtons);
 
         this.$body = $body;
@@ -96,11 +101,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
     },
 
     showFooterSpinner: function() {
-        this.$footerSpinner.removeClass('hidden');
+        this.$selectBtn.addClass('loading');
     },
 
     hideFooterSpinner: function() {
-        this.$footerSpinner.addClass('hidden');
+        this.$selectBtn.removeClass('loading');
     },
 
     cancel: function() {
@@ -179,7 +184,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.postActionRequest('elements/get-modal-body', data, (response, textStatus) => {
+        Craft.postActionRequest('element-selector-modals/body', data, (response, textStatus) => {
             if (textStatus === 'success') {
                 this.$body.html(response.html);
 
@@ -192,6 +197,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                     context: 'modal',
                     modal: this,
                     storageKey: this.settings.storageKey,
+                    condition: this.settings.condition,
                     criteria: this.settings.criteria,
                     disabledElementIds: this.settings.disabledElementIds,
                     selectable: true,
@@ -216,15 +222,18 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
     }
 }, {
     defaults: {
+        fullscreen: false,
         resizable: true,
         storageKey: null,
         sources: null,
+        condition: null,
         criteria: null,
         multiSelect: false,
         showSiteMenu: null,
         disabledElementIds: [],
         disableElementsOnSelect: false,
         hideOnSelect: true,
+        modalTitle: Craft.t('app', 'Select element'),
         onCancel: $.noop,
         onSelect: $.noop,
         hideSidebar: false,

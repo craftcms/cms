@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
+use craft\services\ElementSources;
 use yii\base\Exception;
 
 /**
@@ -299,6 +300,10 @@ class ElementHelper
                 $site['siteId'] = (int)$site['siteId'];
             }
 
+            if (!isset($siteUidMap[$site['siteId']])) {
+                continue;
+            }
+
             $site['siteUid'] = $siteUidMap[$site['siteId']];
 
             $site += [
@@ -340,15 +345,17 @@ class ElementHelper
      */
     public static function isElementEditable(ElementInterface $element): bool
     {
-        if ($element->getIsEditable()) {
-            if (Craft::$app->getIsMultiSite()) {
-                foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
-                        return true;
-                    }
-                }
-            } else {
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($element->canView($user)) {
+            if (!Craft::$app->getIsMultiSite()) {
                 return true;
+            }
+
+            foreach (static::supportedSitesForElement($element) as $siteInfo) {
+                if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
+                    return true;
+                }
             }
         }
 
@@ -364,11 +371,12 @@ class ElementHelper
     public static function editableSiteIdsForElement(ElementInterface $element): array
     {
         $siteIds = [];
+        $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->getIsEditable()) {
+        if ($element->canView($user)) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
+                    if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }
@@ -543,10 +551,10 @@ class ElementHelper
      *
      * @param string $elementType The element type class
      * @param string $sourceKey The source key/path
-     * @param string|null $context The context
+     * @param string $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, ?string $context = null): ?array
+    public static function findSource(string $elementType, string $sourceKey, string $context = ElementSources::CONTEXT_INDEX): ?array
     {
         $path = explode('/', $sourceKey);
         $sources = Craft::$app->getElementSources()->getSources($elementType, $context);

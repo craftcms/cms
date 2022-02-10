@@ -34,6 +34,7 @@ use craft\fields\Entries as EntriesField;
 use craft\fields\Lightswitch;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
+use craft\fields\Money;
 use craft\fields\MultiSelect;
 use craft\fields\Number;
 use craft\fields\PlainText;
@@ -69,7 +70,8 @@ use yii\web\BadRequestHttpException;
 
 /**
  * Fields service.
- * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -458,6 +460,7 @@ class Fields extends Component
             EntriesField::class,
             Lightswitch::class,
             MatrixField::class,
+            Money::class,
             MultiSelect::class,
             Number::class,
             PlainText::class,
@@ -741,7 +744,7 @@ class Fields extends Component
     }
 
     /**
-     * Returns the field layout config for the given field.
+     * Returns the config for the given field.
      *
      * @param FieldInterface $field
      * @return array
@@ -789,6 +792,12 @@ class Fields extends Component
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
+        if ($field instanceof MissingField) {
+            $error = $field->errorMessage ?? "Unable to find component class '$field->expectedType'.";
+            $field->addError('type', $error);
+            return false;
+        }
+
         $isNewField = $field->getIsNew();
 
         // Fire a 'beforeSaveField' event

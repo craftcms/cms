@@ -16,7 +16,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     $footerBtnContainer: null,
     $saveBtn: null,
     $cancelBtn: null,
-    $saveSpinner: null,
     $loadingSpinner: null,
 
     sourceSort: null,
@@ -54,12 +53,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             class: 'btn',
             text: Craft.t('app', 'Cancel'),
         }).appendTo(this.$footerBtnContainer);
-        this.$saveBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn submit disabled',
-            text: Craft.t('app', 'Save'),
+        this.$saveBtn = Craft.ui.createSubmitButton({
+            class: 'disabled',
+            label: Craft.t('app', 'Save'),
+            spinner: true,
         }).appendTo(this.$footerBtnContainer);
-        this.$saveSpinner = $('<div class="spinner hidden"/>').appendTo(this.$footerBtnContainer);
 
         this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
 
@@ -213,11 +211,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             ev.preventDefault();
         }
 
-        if (this.$saveBtn.hasClass('disabled') || !this.$saveSpinner.hasClass('hidden')) {
+        if (this.$saveBtn.hasClass('disabled') || this.$saveBtn.hasClass('loading')) {
             return;
         }
 
-        this.$saveSpinner.removeClass('hidden');
+        this.$saveBtn.addClass('loading');
 
         Craft.sendActionRequest('POST', 'element-index-settings/save-customize-sources-modal-settings', {
             data: this.$container.serialize() + '&elementType=' + this.elementIndex.elementType,
@@ -276,7 +274,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         }).catch(() => {
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
         }).finally(() => {
-            this.$saveSpinner.addClass('hidden');
+            this.$saveBtn.removeClass('loading');
         });
     },
 

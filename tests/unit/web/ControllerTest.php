@@ -12,6 +12,7 @@ use Craft;
 use craft\test\mockclasses\controllers\TestController;
 use craft\test\TestSetup;
 use craft\web\Response;
+use craft\web\TemplateResponseFormatter;
 use craft\web\View;
 use UnitTester;
 use yii\base\Action;
@@ -63,10 +64,11 @@ class ControllerTest extends Unit
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
 
         $response = $this->controller->renderTemplate('template');
+        (new TemplateResponseFormatter())->format($response);
 
         // Again. If this is all good. We can expect Yii to do its thing.
-        self::assertSame('Im a template!', $response->data);
-        self::assertSame(Response::FORMAT_RAW, $response->format);
+        self::assertSame('Im a template!', $response->content);
+        self::assertSame(TemplateResponseFormatter::FORMAT, $response->format);
         self::assertSame('text/html; charset=UTF-8', $response->getHeaders()->get('content-type'));
     }
 
@@ -82,10 +84,11 @@ class ControllerTest extends Unit
         Craft::$app->getResponse()->getHeaders()->set('content-type', 'HEADERS');
 
         $response = $this->controller->renderTemplate('template');
+        (new TemplateResponseFormatter())->format($response);
 
         // Again. If this is all good. We can expect Yii to do its thing.
-        self::assertSame('Im a template!', $response->data);
-        self::assertSame(Response::FORMAT_RAW, $response->format);
+        self::assertSame('Im a template!', $response->content);
+        self::assertSame(TemplateResponseFormatter::FORMAT, $response->format);
         self::assertSame('HEADERS', $response->getHeaders()->get('content-type'));
     }
 

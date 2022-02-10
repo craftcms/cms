@@ -34,6 +34,7 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $this->requireAcceptsJson();
+        $this->requireAdmin();
 
         return true;
     }
@@ -45,8 +46,6 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        $this->requirePermission('customizeSources');
-
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
         $conditionsService = Craft::$app->getConditions();
@@ -78,7 +77,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";
                     $condition->forProjectConfig = true;
-                    $condition->queryParams = ['status'];
+                    $condition->queryParams = ['site', 'status'];
                     $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
                     $view->startJsBuffer();
@@ -106,7 +105,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $condition->name = 'sources[__SOURCE_KEY__][condition]';
         $condition->mainTag = 'div';
         $condition->forProjectConfig = true;
-        $condition->queryParams = ['status'];
+        $condition->queryParams = ['site', 'status'];
         $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
         $view->startJsBuffer();
@@ -139,8 +138,6 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
-        $this->requirePermission('customizeSources');
-
         $elementType = $this->elementType();
 
         // Get the old source configs

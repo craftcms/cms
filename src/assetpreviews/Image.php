@@ -3,7 +3,6 @@
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
- * @since 3.4.0
  */
 
 namespace craft\assetpreviews;
@@ -27,7 +26,7 @@ class Image extends AssetPreviewHandler
     {
         $volume = $this->asset->getVolume();
 
-        if ($volume->hasUrls) {
+        if ($volume->getFs()->hasUrls) {
             $url = $this->asset->getUrl();
         } else {
             $url = UrlHelper::actionUrl('assets/thumb', [

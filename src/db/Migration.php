@@ -322,7 +322,7 @@ abstract class Migration extends \yii\db\Migration
      * @param string|string[] $columns The column(s) that are included in the index. If there are multiple
      * columns, separate them by commas or use an array.
      * @param bool $unique Whether the index has a UNIQUE constraint.
-     * @since 4.0.0
+     * @since 3.7.32
      */
     public function dropIndexIfExists(string $table, $columns, bool $unique = false): void
     {
@@ -394,11 +394,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addPrimaryKey($name, $table, $columns): void
     {
-        if ($name === null) {
-            $name = $this->db->getPrimaryKeyName();
-        }
-
-        parent::addPrimaryKey($name, $table, $columns);
+        parent::addPrimaryKey($name ?? $this->db->getPrimaryKeyName(), $table, $columns);
     }
 
     /**
@@ -413,11 +409,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null): void
     {
-        if ($name === null) {
-            $name = $this->db->getForeignKeyName();
-        }
-
-        parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+        parent::addForeignKey($name ?? $this->db->getForeignKeyName(), $table, $columns, $refTable, $refColumns, $delete, $update);
     }
 
     /**
@@ -431,11 +423,23 @@ abstract class Migration extends \yii\db\Migration
      */
     public function createIndex($name, $table, $columns, $unique = false): void
     {
-        if ($name === null) {
-            $name = $this->db->getIndexName();
-        }
+        parent::createIndex($name ?? $this->db->getIndexName(), $table, $columns, $unique);
+    }
 
-        parent::createIndex($name, $table, $columns, $unique);
+    /**
+     * Creates a new index if a similar one doesn’t already exist.
+     *
+     * @param string $table the table that the new index will be created for. The table name will be properly quoted by the method.
+     * @param string|array $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
+     * by commas or use an array.
+     * @param bool $unique whether to add UNIQUE constraint on the created index.
+     * @since 3.7.32
+     */
+    public function createIndexIfMissing(string $table, $columns, bool $unique = false): void
+    {
+        if (Db::findIndex($table, $columns, $unique, $this->db) === null) {
+            $this->createIndex(null, $table, $columns, $unique);
+        }
     }
 
     /**

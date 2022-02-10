@@ -64,13 +64,16 @@
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 
+{% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
+{% set contextMenu = (contextMenu ?? block('contextMenu') ?? '')|trim %}
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
 {% set actionButton = (block('actionButton') ?? '')|trim %}
+{% set addlButtons = addlButtons ?? null %}
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
-{% set tabs = tabs is defined and tabs|length != 1 ? tabs : null %}
+{% set tabs = (tabs ?? [])|length > 1 ? tabs : null %}
 
 {% set mainContentClasses = [
     sidebar ? 'has-sidebar',
@@ -101,6 +104,9 @@
         actions: formActions ?? false,
         'confirm-unload': true,
         delta: view.getIsDeltaRegistrationActive(),
+        'delta-names': view.getDeltaNames(),
+        'initial-delta-values': view.getInitialDeltaValues(),
+        'modified-delta-names': craft.app.request.getBodyParam('modifiedDeltaNames') ?? [],
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 
@@ -186,21 +192,22 @@
                         <div id="header-container">
                             <header id="header">
                                 {% block header %}
-                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
+                                    <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
                                         {% block pageTitle %}
                                             {% if title is defined and title|length %}
-                                                <h1 title="{{ title }}">{{ title }}</h1>
+                                                <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
                                             {% endif %}
                                         {% endblock %}
-                                        {% block contextMenu %}{% endblock %}
+                                        {{ contextMenu|raw }}
                                     </div>
                                     {% if toolbar %}
-                                        <div id="toolbar" class="flex flex-nowrap">
+                                        <div id="toolbar" class="flex">
                                             {{ toolbar|raw }}
                                         </div>
                                     {% endif %}
-                                    {% if actionButton %}
-                                        <div id="action-button" class="flex">
+                                    {% if actionButton or addlButtons %}
+                                        <div id="action-buttons" class="flex">
+                                            {{ addlButtons|raw }}
                                             {{ actionButton|raw }}
                                         </div>
                                     {% endif %}
@@ -226,20 +233,24 @@
                         <div id="content-container">
                             {% block main %}
                                 <div id="content" class="content-pane">
-                                    {% block tabs %}
-                                        {% if tabs %}
-                                            <header id="content-header" class="pane-header">
+                                    {% if contentNotice or tabs %}
+                                        <header id="content-header" class="pane-header">
+                                            {{ contentNotice ? tag('div', {
+                                                id: 'content-notice',
+                                                html: contentNotice,
+                                            }) }}
+                                            {% if tabs %}
                                                 {% include "_includes/tabs" with {
                                                     containerAttributes: {
                                                         id: 'tabs',
                                                     },
                                                 } %}
-                                            </header>
-                                        {% endif %}
-                                    {% endblock %}
+                                            {% endif %}
+                                        </header>
+                                    {% endif %}
 
                                     {% block content %}
-                                        {{ content is defined ? content }}
+                                        {{ content is defined ? content|raw }}
                                     {% endblock %}
 
                                     {# footer #}
@@ -255,7 +266,9 @@
                         {% if details is not empty %}
                             <div id="details-container">
                                 <div id="details">
-                                    {{ details|raw }}
+                                    <div class="details">
+                                        {{ details|raw }}
+                                    </div>
                                 </div>
                             </div>
                         {% endif %}
@@ -298,7 +311,7 @@
     {% if fullPageForm %}
         <div class="btngroup">
             {% block submitButton %}
-                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+                <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
             {% endblock %}
             {% if formActions ?? false %}
                 <button type="button" class="btn submit menubtn"></button>

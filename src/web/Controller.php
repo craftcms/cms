@@ -8,12 +8,10 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
-use craft\web\assets\iframeresizer\ContentWindowAsset;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\JsonResponseFormatter;
@@ -177,44 +175,99 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Renders a template.
+     * Sends a rendered template response.
      *
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @param string|null $templateMode The template mode to use
-     * @return YiiResponse
+     * @return YiiResponse|TemplateResponseBehavior
      * @throws InvalidArgumentException if the view file does not exist.
      */
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): YiiResponse
     {
-        $view = $this->getView();
-
-        // If this is a preview request, register the iframe resizer script
-        if ($this->request->getIsPreview()) {
-            $view->registerAssetBundle(ContentWindowAsset::class);
-        }
-
-        // Prevent a response formatter from overriding the content-type header
-        $this->response->format = YiiResponse::FORMAT_RAW;
-
-        // Render and return the template
-        $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
-
-        $headers = $this->response->getHeaders();
-
-        if (Craft::$app->getConfig()->getGeneral()->sendContentLengthHeader) {
-            $headers->setDefault('content-length', strlen($this->response->data));
-        }
-
-        // Set the MIME type for the request based on the matched template's file extension (unless the
-        // Content-Type header was already set, perhaps by the template via the {% header %} tag)
-        if (!$headers->has('content-type')) {
-            $templateFile = StringHelper::removeRight(strtolower($view->resolveTemplate($template)), '.twig');
-            $mimeType = FileHelper::getMimeTypeByExtension($templateFile) ?? 'text/html';
-            $headers->set('content-type', $mimeType . '; charset=' . $this->response->charset);
-        }
-
+        $this->response->attachBehavior(TemplateResponseBehavior::NAME, [
+            'class' => TemplateResponseBehavior::class,
+            'template' => $template,
+            'variables' => $variables,
+            'templateMode' => $templateMode,
+        ]);
+        $this->response->formatters[TemplateResponseFormatter::FORMAT] = TemplateResponseFormatter::class;
+        $this->response->format = TemplateResponseFormatter::FORMAT;
         return $this->response;
+    }
+
+    /**
+     * Sends a control panel screen response.
+     *
+     * @return Response|CpScreenResponseBehavior
+     * @since 4.0.0
+     */
+    public function asCpScreen(): Response
+    {
+        $this->response->attachBehavior(CpScreenResponseBehavior::NAME, CpScreenResponseBehavior::class);
+        $this->response->formatters[CpScreenResponseFormatter::FORMAT] = CpScreenResponseFormatter::class;
+        $this->response->format = CpScreenResponseFormatter::FORMAT;
+        return $this->response;
+    }
+
+    /**
+     * Sends a failure response.
+     *
+     * @param string $message
+     * @param Model|null $model The model that was being operated on
+     * @param string|null $modelName The route param name that the model should be set to
+     * @return YiiResponse|null
+     * @since 4.0.0
+     */
+    public function asFailure(string $message, ?Model $model = null, ?string $modelName = null): ?YiiResponse
+    {
+        if ($this->request->getAcceptsJson()) {
+            $this->response->setStatusCode(400);
+            return $this->asJson(array_filter([
+                'message' => $message,
+                'errors' => $model ? $model->getErrors() : null,
+            ]));
+        }
+
+        $this->setFailFlash($message);
+
+        // Send the filesystem back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            $modelName => $model,
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Sends a success response.
+     *
+     * @param string $message
+     * @param Model|null $model The model that was being operated on
+     * @param string|null $modelName The route param name that the model should be set to
+     * @param array $data Additional data to include in the JSON response
+     * @param string|null $defaultRedirect The default URL to redirect the request, if no `redirect` param is present
+     * @return YiiResponse|null
+     * @since 4.0.0
+     */
+    public function asSuccess(
+        string $message,
+        ?Model $model = null,
+        ?string $modelName = null,
+        array $data = [],
+        ?string $defaultRedirect = null
+    ): YiiResponse
+    {
+        if ($this->request->getAcceptsJson()) {
+            return $this->asJson($data + array_filter([
+                'message' => $message,
+                'modelName' => $modelName,
+                ($modelName ?? 'model') => $model ? $model->toArray() : null,
+            ]));
+        }
+
+        $this->setSuccessFlash($message);
+        return $this->redirectToPostedUrl($model, $defaultRedirect);
     }
 
     /**
@@ -277,7 +330,7 @@ abstract class Controller extends \yii\web\Controller
     public function requirePermission(string $permissionName): void
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
         }
     }
 
@@ -489,7 +542,6 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirect($url, $statusCode = 302): YiiResponse
     {
-
         if ($url !== null) {
             return $this->response->redirect($url, $statusCode);
         }

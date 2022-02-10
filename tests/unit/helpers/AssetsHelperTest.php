@@ -258,8 +258,8 @@ class AssetsHelperTest extends Unit
     public function parseFileLocationDataProvider(): array
     {
         return [
-            [['2', '.'], '{folder:2}.'],
-            [['2', '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
+            [[2, '.'], '{folder:2}.'],
+            [[2, '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
         ];
     }
 

@@ -28,7 +28,8 @@ use yii\di\Instance;
 
 /**
  * Drafts service.
- * An instance of the Drafts service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->drafts`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->drafts`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0

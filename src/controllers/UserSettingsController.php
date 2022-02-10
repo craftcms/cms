@@ -89,6 +89,14 @@ class UserSettingsController extends Controller
             }
         }
 
+        // assignNewUserGroup => assignUserGroup:<uid>
+        if (!$groupId) {
+            $assignNewGroupKey = array_search('assignNewUserGroup', $permissions);
+            if ($assignNewGroupKey !== false) {
+                $permissions[$assignNewGroupKey] = "assignUserGroup:$group->uid";
+            }
+        }
+
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
         $this->setSuccessFlash(Craft::t('app', 'Group saved.'));

@@ -7,22 +7,22 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
 
-{% macro permissionList(context, permissions, id, disabled) %}
+{% macro permissionList(subject, groupPermissions, permissions, id, disabled) %}
     {% from "_includes/forms" import checkbox %}
     {% from _self import permissionList %}
 
     <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
         {% for permissionName, props in permissions %}
-            {% set isInGroupPermissions = (context.groupPermissions is defined and permissionName|lower in context.groupPermissions) %}
+            {% set isInGroupPermissions = permissionName|lower in groupPermissions %}
 
             {% if (isInGroupPermissions) %}
                 {% set checked = true %}
             {% else %}
-                {% if context.userOrGroup is not empty %}
+                {% if subject %}
                     {% if craft.app.request.isPost %}
                         {% set checked = permissionName in craft.app.request.getBodyParam('permissions', []) %}
                     {% else %}
-                        {% set checked = context.userOrGroup.can(permissionName) %}
+                        {% set checked = subject.can(permissionName) %}
                     {% endif %}
                 {% else %}
                     {% set checked = false %}
@@ -48,7 +48,7 @@
                 {% endif %}
 
                 {% if props.nested ?? false %}
-                    {{ permissionList(context, props.nested, permissionName~'-nested', not checked) }}
+                    {{ permissionList(subject, groupPermissions, props.nested, permissionName~'-nested', not checked) }}
                 {% endif %}
             </li>
         {% endfor %}
@@ -57,11 +57,25 @@
 
 {% from _self import permissionList %}
 
-{% set user = userOrGroup and className(userOrGroup) == 'craft\elements\User' ? userOrGroup : null %}
-{% for group in craft.app.userPermissions.getAssignablePermissions(user) %}
+{% for group in permissions %}
+    {# Include a placeholder for the user group being created? #}
+    {% if includeGroupPlaceholder ?? false and group.permissions.editUsers is defined %}
+        {% set group = group|merge({
+            permissions: {
+                editUsers: {
+                    nested: {
+                        assignNewUserGroup: {
+                            label: 'Assign users to this group'|t('app'),
+                        },
+                    },
+                },
+            },
+        }, recursive=true) %}
+    {% endif %}
+
     <div class="user-permissions">
         <h3>{{ group.heading }}</h3>
         <div class="select-all"></div>
-        {{ permissionList(_context, group.permissions) }}
+        {{ permissionList(subject, groupPermissions ?? [], group.permissions) }}
     </div>
 {% endfor %}

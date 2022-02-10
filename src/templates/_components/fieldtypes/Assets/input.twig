@@ -1,12 +1,13 @@
-{% if name is defined and name %}
+{% if name ?? false %}
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
-{% set elements = (elements is defined ? elements : []) -%}
-{% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
-{% set sources = (sources is defined and sources ? sources : null) -%}
-{% set criteria = (criteria is defined and criteria ? criteria : null) -%}
-{% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
+{% set elements = elements ?? [] -%}
+{% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
+{% set sources = sources ?? null -%}
+{% set condition = condition ?? null -%}
+{% set criteria = criteria ?? null -%}
+{% set storageKey = storageKey ?? null -%}
 
 <div id="{{ id }}" class="elementselect">
     <div class="elements">
@@ -40,6 +41,7 @@
     name: name|namespaceInputName,
     elementType: elementType,
     sources: sources,
+    condition: condition ? condition.getConfig() : null,
     criteria: criteria,
     sourceElementId: sourceElementId,
     viewMode: viewMode,
@@ -52,7 +54,8 @@
     modalSettings: {
         hideSidebar: hideSidebar,
         defaultSource: defaultUploadLocation
-    }
+    },
+    describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
 } %}
 
 {% js %}

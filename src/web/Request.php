@@ -123,26 +123,31 @@ class Request extends \yii\web\Request
 
     /**
      * @var bool
+     * @see checkIfActionRequest()
      */
     private bool $_isActionRequest = false;
 
     /**
      * @var bool
+     * @see checkIfActionRequest()
      */
     private bool $_isSingleActionRequest = false;
 
     /**
      * @var bool
+     * @see checkIfActionRequest()
      */
     private bool $_isLoginRequest = false;
 
     /**
      * @var bool
+     * @see checkIfActionRequest()
      */
     private bool $_checkedRequestType = false;
 
     /**
      * @var string[]|null
+     * @see checkIfActionRequest()
      */
     private ?array $_actionSegments = null;
 
@@ -185,7 +190,7 @@ class Request extends \yii\web\Request
     /**
      * @var bool
      */
-    private bool $_encodedBodyParams = false;
+    private bool $_setBodyParams = false;
 
     /**
      * @var bool|null Whether the request initially had a token
@@ -834,9 +839,17 @@ class Request extends \yii\web\Request
      */
     public function getBodyParams(): array
     {
-        if ($this->_encodedBodyParams === false) {
-            $this->setBodyParams($this->_utf8AllTheThings(parent::getBodyParams()));
-            $this->_encodedBodyParams = true;
+        if ($this->_setBodyParams === false) {
+            $params = parent::getBodyParams();
+
+            // Was a namespace passed?
+            $namespace = $this->getHeaders()->get('X-Craft-Namespace');
+            if ($namespace) {
+                $params = $params[$namespace] ?? [];
+            }
+
+            $this->setBodyParams($this->_utf8AllTheThings($params));
+            $this->_setBodyParams = true;
         }
 
         return parent::getBodyParams();
@@ -1612,89 +1625,82 @@ class Request extends \yii\web\Request
 
         // If there's a token on the request, then that should take precedence over everything else
         if (!$checkToken || $this->getToken() === null) {
-            $firstSegment = $this->getSegment(1);
+            $this->_isActionRequest = $this->_checkIfActionRequestInternal($checkSpecialPaths);
+        }
 
-            // Is this an action request?
-            $loginPath = $logoutPath = $setPasswordPath = $verifyEmailPath = $updatePath = null;
+        $this->_checkedRequestType = true;
+    }
 
-            if ($checkSpecialPaths) {
-                if ($this->_isCpRequest) {
-                    $loginPath = self::CP_PATH_LOGIN;
-                    $logoutPath = self::CP_PATH_LOGOUT;
-                    $setPasswordPath = self::CP_PATH_SET_PASSWORD;
-                    $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
-                    $updatePath = self::CP_PATH_UPDATE;
-                } else if (!$this->generalConfig->headlessMode) {
-                    if (is_string($loginPath = $this->generalConfig->getLoginPath())) {
-                        $loginPath = trim($loginPath, '/');
-                    }
-                    if (is_string($logoutPath = $this->generalConfig->getLogoutPath())) {
-                        $logoutPath = trim($logoutPath, '/');
-                    }
-                    $setPasswordPath = trim($this->generalConfig->getSetPasswordPath(), '/');
-                    $verifyEmailPath = trim($this->generalConfig->getVerifyEmailPath(), '/');
-                } else {
-                    $checkSpecialPaths = false;
-                }
-            }
+    private function _checkIfActionRequestInternal(bool $checkSpecialPaths): bool
+    {
+        // Action param?
+        if ($this->getNormalizedContentType() !== 'application/json') {
+            $actionParam = $this->getParam('action');
+        } else {
+            $actionParam = $this->getQueryParam('action');
+        }
 
-            $hasTriggerMatch = ($firstSegment === $this->generalConfig->actionTrigger && count($this->getSegments()) > 1);
-            if ($this->getNormalizedContentType() !== 'application/json') {
-                $actionParam = $this->getParam('action');
-            } else {
-                $actionParam = $this->getQueryParam('action');
-            }
-            $hasActionParam = $actionParam !== null;
-            if ($hasActionParam && !is_string($actionParam)) {
+        if ($actionParam !== null) {
+            if (!is_string($actionParam)) {
                 throw new BadRequestHttpException('Invalid action param');
             }
-            $hasSpecialPath = $checkSpecialPaths && in_array($this->_path, [
-                    $loginPath,
-                    $logoutPath,
-                    $setPasswordPath,
-                    $verifyEmailPath,
-                    $updatePath,
-                ], true);
 
-            if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
-                $this->_isActionRequest = true;
+            $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
+            $this->_isSingleActionRequest = empty($this->_path);
+            return true;
+        }
 
-                // Important we check in this specific order:
-                // 1) /actions/some/action
-                // 2) any/uri?action=some/action
-                // 3) special/uri
+        // Trigger match?
+        if (
+            $this->getSegment(1) === $this->generalConfig->actionTrigger &&
+            count($this->getSegments()) > 1
+        ) {
+            $this->_actionSegments = array_slice($this->getSegments(), 1);
+            $this->_isSingleActionRequest = true;
+            return true;
+        }
 
-                if ($hasTriggerMatch) {
-                    $this->_actionSegments = array_slice($this->getSegments(), 1);
+        // Special path?
+        if (
+            $checkSpecialPaths &&
+            ($this->_isCpRequest || !$this->generalConfig->headlessMode)
+        ) {
+            $specialPaths = [
+                [
+                    $this->_isCpRequest ? self::CP_PATH_LOGIN : $this->generalConfig->getLoginPath(),
+                    function() {
+                        $this->_isLoginRequest = true;
+                        return ['users', 'login'];
+                    },
+                ],
+                [
+                    $this->_isCpRequest ? self::CP_PATH_LOGOUT : $this->generalConfig->getLogoutPath(),
+                    fn() => ['users', 'logout'],
+                ],
+                [
+                    $this->_isCpRequest ? self::CP_PATH_SET_PASSWORD : $this->generalConfig->getSetPasswordPath(),
+                    fn() => ['users', 'set-password'],
+                ],
+                [
+                    $this->_isCpRequest ? self::CP_PATH_VERIFY_EMAIL : $this->generalConfig->getVerifyEmailPath(),
+                    fn() => ['users', 'verify-email'],
+                ],
+                [
+                    $this->_isCpRequest ? self::CP_PATH_UPDATE : null,
+                    fn() => ['updater', 'index'],
+                ],
+            ];
+
+            foreach ($specialPaths as [$path, $actionSegments]) {
+                if ($path === $this->_path) {
+                    $this->_actionSegments = $actionSegments();
                     $this->_isSingleActionRequest = true;
-                } else if ($hasActionParam) {
-                    $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-                    $this->_isSingleActionRequest = empty($this->_path);
-                } else {
-                    switch ($this->_path) {
-                        case $loginPath:
-                            $this->_actionSegments = ['users', 'login'];
-                            $this->_isLoginRequest = true;
-                            break;
-                        case $logoutPath:
-                            $this->_actionSegments = ['users', 'logout'];
-                            break;
-                        case $setPasswordPath:
-                            $this->_actionSegments = ['users', 'set-password'];
-                            break;
-                        case $verifyEmailPath:
-                            $this->_actionSegments = ['users', 'verify-email'];
-                            break;
-                        case $updatePath:
-                            $this->_actionSegments = ['updater', 'index'];
-                            break;
-                    }
-                    $this->_isSingleActionRequest = true;
+                    return true;
                 }
             }
         }
 
-        $this->_checkedRequestType = true;
+        return false;
     }
 
     /**

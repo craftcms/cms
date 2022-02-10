@@ -10,7 +10,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     modal: null,
     elementEditor: null,
 
+    fieldLabel: null,
+
     $container: null,
+    $form: null,
     $elementsContainer: null,
     $elements: null,
     $addElementBtn: null,
@@ -52,6 +55,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
 
         this.$container = this.getContainer();
+        this.$form = this.$container.closest('form');
+        this.fieldLabel = this.getFieldLabel();
 
         // Store a reference to this class
         this.$container.data('elementSelect', this);
@@ -87,6 +92,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
     getContainer: function() {
         return $('#' + this.settings.id);
+    },
+
+    getFieldLabel: function() {
+        if (!this.$container) return;
+
+        const $fieldset = this.$container.closest('fieldset');
+        return $fieldset.find('legend').first().data('label');
     },
 
     getElementsContainer: function() {
@@ -162,6 +174,28 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         if ($btn) {
             $btn.removeClass('hidden');
         }
+    },
+
+    focusNextLogicalElement: function() {
+        if (this.canAddMoreElements()) {
+            // If can add more elements, focus ADD button
+            let $btn = this.$addElementBtn;
+
+            if ($btn) {
+                $btn.get(0).focus();
+            }
+        } else {
+            // If can't add more elements, focus on the final remove
+            this.focusLastRemoveBtn();
+        }
+    },
+
+    focusLastRemoveBtn: function() {
+        const $removeBtns = this.$container.find('.delete');
+
+        if (!$removeBtns.length) return;
+
+        $removeBtns.last()[0].focus();
     },
 
     resetElements: function() {
@@ -271,16 +305,16 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
 
         // Pause the draft editor
-        if (window.draftEditor) {
-            window.draftEditor.pause();
+        if (this.$form.data('elementEditor')) {
+            this.$form.data('elementEditor').pause();
         }
 
         $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, () => {
             callback();
 
             // Resume the draft editor
-            if (window.draftEditor) {
-                window.draftEditor.resume();
+            if (this.$form.data('elementEditor')) {
+                this.$form.data('elementEditor').resume();
             }
         });
     },
@@ -307,11 +341,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
             closeOtherModals: false,
             storageKey: this.modalStorageKey,
             sources: this.settings.sources,
+            condition: this.settings.condition,
             criteria: this.settings.criteria,
             multiSelect: (this.settings.limit != 1),
             showSiteMenu: this.settings.showSiteMenu,
             disabledElementIds: this.getDisabledElementIds(),
-            onSelect: this.onModalSelect.bind(this)
+            onSelect: this.onModalSelect.bind(this),
+            onHide: this.onModalHide.bind(this),
+            triggerElement: this.$addElementBtn,
+            modalTitle: Craft.t('app', 'Select {element}', {
+                'element': this.fieldLabel,
+            }),
         }, this.settings.modalSettings);
     },
 
@@ -351,6 +391,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
         this.selectElements(elements);
         this.updateDisabledElementsInModal();
+    },
+
+    onModalHide: function() {
+        // If can add more elements, do default behavior of focus on "Add" button
+        if (this.canAddMoreElements()) return;
+
+        setTimeout(() => {
+            this.focusNextLogicalElement();
+        }, 200);
     },
 
     selectElements: function(elements) {
@@ -431,10 +480,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     onSelectElements: function(elements) {
         this.trigger('selectElements', {elements});
         this.settings.onSelectElements(elements);
-
-        if (window.draftEditor) {
-            window.draftEditor.checkForm();
-        }
+        this.$container.trigger('change');
     },
 
     onAddElements: function () {
@@ -445,6 +491,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     onRemoveElements: function() {
         this.trigger('removeElements');
         this.settings.onRemoveElements();
+        this.focusNextLogicalElement();
     }
 }, {
     ADD_FX_DURATION: 200,
@@ -456,6 +503,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         fieldId: null,
         elementType: null,
         sources: null,
+        condition: null,
         criteria: {},
         allowSelfRelations: false,
         sourceElementId: null,

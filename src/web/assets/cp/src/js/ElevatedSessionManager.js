@@ -8,7 +8,6 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
 
     passwordModal: null,
     $passwordInput: null,
-    $passwordSpinner: null,
     $submitBtn: null,
     $errorPara: null,
 
@@ -56,11 +55,10 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
                 $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordContainer);
 
             this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '" autocomplete="current-password"/>').appendTo($passwordWrapper);
-            this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-            this.$submitBtn = $('<button/>', {
-                type: 'submit',
-                class: 'btn submit disabled',
-                text: Craft.t('app', 'Submit'),
+            this.$submitBtn = Craft.ui.createSubmitButton({
+                class: 'disabled',
+                label: Craft.t('app', 'Submit'),
+                spinner: true,
             }).appendTo($buttonContainer);
             this.$errorPara = $('<p class="error"/>').appendTo($body);
 
@@ -115,7 +113,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
             return;
         }
 
-        this.$passwordSpinner.removeClass('hidden');
+        this.$submitBtn.addClass('loading');
         this.clearLoginError();
 
         var data = {
@@ -123,7 +121,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
         };
 
         Craft.postActionRequest('users/start-elevated-session', data, (response, textStatus) => {
-            this.$passwordSpinner.addClass('hidden');
+            this.$submitBtn.removeClass('loading');
 
             if (textStatus === 'success') {
                 if (response.success) {
