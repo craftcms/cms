@@ -1035,7 +1035,7 @@ Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.exten
         } else if (!this.draggingLibraryElement) {
             let $libraryElement = this.draggingField
                 ? this.designer.$fields.filter(`[data-attribute="${this.$draggee.data('attribute')}"]:first`)
-                : this.designer.$uiLibraryElements.filter(`[data-type="${this.$draggee.data('type').replace(/\\/g, '\\\\')}"]:first`);
+                : this.designer.$uiLibraryElements.filter(`[data-type="${this.$draggee.data('config').type.replace(/\\/g, '-')}"]:first`);
 
             if (this.draggingField) {
                 // show the field in the library
