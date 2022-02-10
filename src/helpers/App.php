@@ -75,12 +75,23 @@ class App
      *
      * @param string $constName The name of the constant
      * @param string|null $envName The name of the environment variable, if different from $constName
-     * @return mixed The value of the constant or environment variable, or false if neither are found
+     * @param bool $bool Whether to parse the value as a boolean
+     * @return mixed The value of the constant or environment variable, or null if neither are found
      * @since 4.0.0
      */
-    public static function constant(string $constName, ?string $envName = null): mixed
+    public static function constant(string $constName, ?string $envName = null, $bool = false): mixed
     {
-        return defined($constName) ? constant($constName) : self::env($envName ?? $constName);
+        if (defined($constName)) {
+            return constant($constName);
+        }
+
+        $envVal = static::env($envName ?? $constName);
+
+        if ($envVal === false) {
+            return null;
+        }
+
+        return $bool ? filter_var($envVal, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) : $envVal;
     }
 
     /**
@@ -492,7 +503,7 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true;
+        return static::constant('CRAFT_EPHEMERAL', $bool = true);
     }
 
     // App component configs
@@ -850,7 +861,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
-            'isCpRequest' => defined('CRAFT_CP') ? (bool)CRAFT_CP : null,
+            'isCpRequest' => App::constant('CRAFT_CP', $bool = true),
         ];
 
         if ($generalConfig->trustedHosts !== null) {

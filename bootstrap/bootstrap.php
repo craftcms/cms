@@ -157,7 +157,7 @@ if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
+if (!App::constant('CRAFT_LOG_PHP_ERRORS', $bool = true)) {
     ini_set('log_errors', 1);
     ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
 
