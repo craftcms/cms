@@ -19,6 +19,7 @@ import InfoCircleIcon from './icons/InfoCircleIcon'
 import LinkIcon from './icons/LinkIcon'
 import PlugIcon from './icons/PlugIcon'
 import SearchIcon from './icons/SearchIcon'
+import StarIcon from './icons/StarIcon'
 
 export default {
   props: {
@@ -38,6 +39,7 @@ export default {
     PlugIcon,
     LinkIcon,
     SearchIcon,
+    StarIcon,
   },
   computed: {
     computedComponent() {

@@ -5,6 +5,12 @@
     <category-selector></category-selector>
 
     <ul class="categories">
+      <li>
+        <router-link to="/">
+          <c-icon icon="star" />
+          {{ "Discover"|t('app') }}
+        </router-link>
+      </li>
       <li v-if="CraftEdition < CraftPro || licensedEdition < CraftPro">
         <router-link to="/upgrade-craft">
           <img

@@ -21,8 +21,9 @@ ul.categories {
     a {
       @apply tw-block tw-relative tw-px-6 tw-py-2 tw-text-gray-900;
 
+      svg,
       img {
-        @apply tw-align-middle tw-mr-2;
+        @apply tw-align-middle tw-mr-2 tw-text-blue-600;
         width: 24px;
       }
 
@@ -35,7 +36,7 @@ ul.categories {
         }
       }
 
-      &.router-link-active {
+      &.router-link-exact-active {
         background-color: $grey200;
       }
     }
