@@ -65,9 +65,22 @@ class App
      * @return string|array|false The environment variable value
      * @since 3.4.18
      */
-    public static function env(string $name)
+    public static function env(string $name): array|string|false
     {
         return $_SERVER[$name] ?? getenv($name);
+    }
+
+    /**
+     * Returns the value of a constant, falling back to an environment variable.
+     *
+     * @param string $name The name of the constant
+     * @param string|null $envName The name of the environment variable, if different from $name
+     * @return mixed The value of the constant or environment variable
+     * @since 4.0.0
+     */
+    public static function constant(string $name, ?string $envName = null): mixed
+    {
+        return defined($name) ? constant($name) : self::env($envName ?? $name);
     }
 
     /**
