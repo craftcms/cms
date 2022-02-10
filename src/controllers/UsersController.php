@@ -967,41 +967,59 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if ($isCurrentUser) {
-            /** @var Locale[] $appLocales */
-            $appLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
-            ArrayHelper::multisort($appLocales, 'displayName');
-            $localeOptions = [];
-            foreach ($appLocales as $locale) {
-                $localeOptions[] = [
-                    'label' => $locale->getDisplayName(),
-                    'value' => $locale->id,
-                ];
-            }
+            $i18n = Craft::$app->getI18n();
+
+            // Language
+            $appLocales = $i18n->getAppLocales();
+            ArrayHelper::multisort($appLocales, fn(Locale $locale) => $locale->getDisplayName());
+            $languageId = Craft::$app->getLocale()->getLanguageID();
+
+            $languageOptions = array_map(fn(Locale $locale) => [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
+            ], $appLocales);
 
             $userLanguage = $user->getPreferredLanguage();
-            if ($userLanguage !== null && !isset($appLocales[$userLanguage])) {
-                $userLanguage = null;
+
+            if (
+                !$userLanguage ||
+                !ArrayHelper::contains($appLocales, fn(Locale $locale) => $locale->id === $userLanguage)
+            ) {
+                $userLanguage = Craft::$app->language;
             }
+
+            // Formatting Locale
+            $allLocales = $i18n->getAllLocales();
+            ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+
+            $localeOptions = [
+                ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
+            ];
+            array_push($localeOptions, ...array_map(fn(Locale $locale) => [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
+            ], $allLocales));
 
             $userLocale = $user->getPreferredLocale();
-            if ($userLocale !== null && !isset($appLocales[$userLocale])) {
-                $userLocale = null;
-            }
 
-            if ($userLanguage === null) {
-                $userLanguage = Craft::$app->language;
-
-                // Only set the locale to the defaultCpLocale by default if the language isn't set either.
-                // Otherwise `null` means "Same as language"
-                if ($userLocale === null) {
-                    $generalConfig = Craft::$app->getConfig()->getGeneral();
-                    if ($generalConfig->defaultCpLocale) {
-                        $userLocale = $generalConfig->defaultCpLocale;
-                    }
-                }
+            if (
+                !$userLocale ||
+                !ArrayHelper::contains($allLocales, fn(Locale $locale) => $locale->id === $userLocale)
+            ) {
+                $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
             }
         } else {
-            $localeOptions = $userLanguage = $userLocale = null;
+            $languageOptions = $localeOptions = $userLanguage = $userLocale = null;
         }
 
         // Determine whether user photo uploading should be possible
@@ -1033,6 +1051,7 @@ JS,
             'isNewUser',
             'statusLabel',
             'actions',
+            'languageOptions',
             'localeOptions',
             'userLanguage',
             'userLocale',
