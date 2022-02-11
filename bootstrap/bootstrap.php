@@ -157,7 +157,7 @@ if (!App::isEphemeral()) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (!filter_var(App::env('CRAFT_LOG_PHP_ERRORS'), FILTER_VALIDATE_BOOL)) {
+if (!App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS')) {
     ini_set('log_errors', 1);
 
     if (App::isStreamLog()) {
