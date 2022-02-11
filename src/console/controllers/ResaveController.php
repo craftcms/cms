@@ -129,18 +129,18 @@ class ResaveController extends Controller
      * @var string|null The value that should be set on the --set attribute.
      *
      * The following value types are supported:
-     * - An attribute name: --to myCustomField
-     * - An object template: --to "={myCustomField|lower}"
-     * - A raw value: --to "=foo bar"
-     * - A PHP arrow function: --to "fn(\$element) => \$element->callSomething()"
-     * - An empty value: --to :empty:
+     * - An attribute name: `--to myCustomField`
+     * - An object template: `--to "={myCustomField|lower}"`
+     * - A raw value: `--to "=foo bar"`
+     * - A PHP arrow function: `--to "fn(\$element) => \$element->callSomething()"`
+     * - An empty value: `--to :empty:`
      *
      * @since 3.7.29
      */
     public $to;
 
     /**
-     * @var bool Whether the --set attribute should only be set if it doesn’t have a value.
+     * @var bool Whether the `--set` attribute should only be set if it doesn’t have a value.
      * @since 3.7.29
      */
     public $ifEmpty = false;
@@ -254,7 +254,7 @@ class ResaveController extends Controller
     /**
      * Re-saves Matrix blocks.
      *
-     * Note that you must supply the --field or --element-id argument for this to work properly.
+     * You must supply the `--field` or `--element-id` argument for this to work properly.
      *
      * @return int
      * @since 3.2.0

@@ -787,7 +787,7 @@ td.right {
   &.has-icon {
     display: flex;
     flex-wrap: nowrap;
-    align-items: start;
+    align-items: flex-start;
 
     .icon {
       flex-shrink: 1;
