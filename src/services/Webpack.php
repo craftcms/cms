@@ -27,27 +27,27 @@ class Webpack extends Component
     /**
      * @var array Dev servers public addresses
      */
-    private $_devServers = [];
+    private array $_devServers = [];
 
     /**
      * @var array Dev servers running statuses
      */
-    private $_isDevServerRunning = [];
+    private array $_isDevServerRunning = [];
 
     /**
      * @var array
      */
-    private $_envFileVariables = [];
+    private array $_envFileVariables = [];
 
     /**
      * @var array
      */
-    private $_serverResponse = [];
+    private array $_serverResponse = [];
 
     /**
      * @var boolean[]
      */
-    private $_checkedEnvDirs = [];
+    private array $_checkedEnvDirs = [];
 
     /**
      * Returns the environment file.
