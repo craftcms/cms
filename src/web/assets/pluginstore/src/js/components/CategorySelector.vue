@@ -17,6 +17,15 @@
 
       <div class="category-selector-body">
         <ul class="nav-items">
+          <li>
+            <router-link
+              to="/"
+              @click.native="showCategorySelector = false"
+            >
+              <c-icon icon="star" />
+              {{ "Discover"|t('app') }}
+            </router-link>
+          </li>
           <li v-if="CraftEdition < CraftPro || licensedEdition < CraftPro">
             <router-link
               to="/upgrade-craft"
