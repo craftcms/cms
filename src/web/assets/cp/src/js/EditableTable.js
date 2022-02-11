@@ -162,7 +162,6 @@ Craft.EditableTable = Garnish.Base.extend({
         row.destroy();
     },
     canAddRow: function() {
-
         if (!this.settings.allowAdd) {
             return false;
         }
