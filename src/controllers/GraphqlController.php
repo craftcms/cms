@@ -217,7 +217,7 @@ class GraphqlController extends Controller
         }
 
         // Was a specific token passed?
-        foreach ($requestHeaders->get('authorization', [], false) as $authHeader) {
+        foreach ($requestHeaders->get(Craft::$app->getConfig()->getGeneral()->graphqlAuthorizationHeaderName, [], false) as $authHeader) {
             $authValues = array_map('trim', explode(',', $authHeader));
             foreach ($authValues as $authValue) {
                 if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {

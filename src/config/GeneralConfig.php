@@ -676,6 +676,15 @@ class GeneralConfig extends BaseObject
     public $enableGraphqlCaching = true;
 
     /**
+     * @var string Name of GraphQL's authorization header
+     *
+     * If the default `authorization` header cant't be used, a custom header name can be set.
+     *
+     * @group GraphQL
+     */
+    public $graphqlAuthorizationHeaderName = 'authorization';    
+
+    /**
      * @var bool Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
      * @since 3.7.0
      * @group GraphQL
