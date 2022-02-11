@@ -16,7 +16,7 @@
       </div>
 
       <div class="category-selector-body">
-        <ul class="categories">
+        <ul class="nav-items">
           <li v-if="CraftEdition < CraftPro || licensedEdition < CraftPro">
             <router-link to="/upgrade-craft">
               <img
