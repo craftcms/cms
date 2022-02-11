@@ -4,9 +4,9 @@
 {% set value = value ?? null -%}
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
-{% set formatLabelId = "time-format-#{id}" %}
-{% set labelledBy = labelledBy ?? null %}
 {% set labelId = labelId ?? null %}
+{% set labelledBy = labelledBy ?? null %}
+{% set formatLabelId = "#{id}-format" %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
 

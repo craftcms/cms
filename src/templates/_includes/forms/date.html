@@ -4,6 +4,9 @@
 {% set value = (value ?? false) ? date(value, false) : null -%}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set describedBy = describedBy ?? null %}
+{% set labelId = labelId ?? null %}
+{% set labelledBy = labelledBy ?? null %}
+{% set formatLabelId = "#{id}-format" %}
 
 {% set containerAttributes = {
     class: ['datewrapper']|merge((class ?? [])|explodeClass),
@@ -16,6 +19,7 @@
 {% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
 
 {% tag 'div' with containerAttributes %}
+    <span id="{{ formatLabelId }}" class="visually-hidden"><!--TODO Add human readable format based on locale-->MM/DD/YYYY</span>
     {%- include "_includes/forms/text" with {
         type: isMobile ? 'date' : 'text',
         class: isMobile and not value ? 'empty-value' : false,
@@ -24,6 +28,7 @@
         size: 10,
         placeholder: ' ',
         value: value ? value|date(isMobile ? 'Y-m-d' : 'short') : '',
+        labelledBy: [labelId, labelledBy, formatLabelId]|filter|join(' '),
     } -%}
     <div data-icon="date"></div>
     {%- if name -%}

@@ -245,9 +245,11 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
+        $id = $this->getInputId();
         $variables = [
-            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-date"
+            'id' => $id,
             'describedBy' => $this->describedBy,
+            'labelId' => "$id-label",
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement,
