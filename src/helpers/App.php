@@ -106,7 +106,11 @@ class App
         }
 
         if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $str = static::env($matches[1]);
+            $value = static::env($matches[1]);
+
+            if ($value !== null) {
+                $str = $value;
+            }
 
             if (is_string($str)) {
                 switch (strtolower($str)) {
@@ -149,13 +153,7 @@ class App
             return null;
         }
 
-        $parsedValue = static::parseEnv($value);
-
-        if ($parsedValue === null) {
-            return null;
-        }
-
-        return filter_var($parsedValue, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
