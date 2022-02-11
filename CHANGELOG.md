@@ -1,6 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
-## Changed
+## Unreleased
+
+### Added
+- Added `Garnish.prefersReducedMotion()`.
+
+### Changed
+- Lightswitch inputs are no longer animated for browsers that have requested reduced motion. ([#10532](https://github.com/craftcms/cms/pull/10532))
 - `craft\helpers\App::parseBooleanEnv()` now treats `0` and `1` as boolean values. ([#10524](https://github.com/craftcms/cms/issues/10524))
 - Updated GraphiQL to 1.5.16.
 
