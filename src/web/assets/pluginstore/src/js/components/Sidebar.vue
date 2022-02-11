@@ -27,6 +27,35 @@
         </router-link>
       </li>
     </ul>
+
+    <div class="tw-border-t tw-border-gray-200 tw-border-solid tw-mt-8 tw-py-8">
+      <ul class="nav-items">
+        <li>
+          <a
+            href="https://craftcms.com/"
+            title="Craft CMS"
+          >
+            <c-icon
+              icon="world"
+              class="tw-w-6 tw-h-6"
+            />
+            craftcms.com
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://id.craftcms.com/"
+            title="Craft ID"
+          >
+            <c-icon
+              icon="world"
+              class="tw-w-6 tw-h-6"
+            />
+            Craft ID
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 

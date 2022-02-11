@@ -20,6 +20,7 @@ import LinkIcon from './icons/LinkIcon'
 import PlugIcon from './icons/PlugIcon'
 import SearchIcon from './icons/SearchIcon'
 import StarIcon from './icons/StarIcon'
+import WorldIcon from './icons/WorldIcon'
 
 export default {
   props: {
@@ -40,6 +41,7 @@ export default {
     LinkIcon,
     SearchIcon,
     StarIcon,
+    WorldIcon,
   },
   computed: {
     computedComponent() {

@@ -19,12 +19,11 @@ ul.nav-items {
     }
 
     a {
-      @apply tw-block tw-relative tw-px-6 tw-py-2 tw-text-gray-900;
+      @apply tw-relative tw-px-6 tw-py-2 tw-text-gray-900 tw-flex tw-items-center;
 
       svg,
       img {
-        @apply tw-align-middle tw-mr-2 tw-text-blue-600;
-        width: 24px;
+        @apply tw-align-middle tw-mr-3 tw-text-blue-600 tw-w-6 tw-h-6;
       }
 
       &:hover {
