@@ -1,5 +1,6 @@
 <?php
 
+use craft\helpers\App;
 use craft\test\Craft;
 
 /**
@@ -14,5 +15,5 @@ return [
     'cpTrigger' => 'adminustriggerus',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
-    'securityKey' => getenv('SECURITY_KEY'),
+    'securityKey' => App::env('SECURITY_KEY'),
 ];

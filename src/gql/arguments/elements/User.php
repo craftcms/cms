@@ -73,7 +73,7 @@ class User extends ElementArguments
     {
         $contentArguments = [];
 
-        $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();
+        $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getCustomFields();
 
         foreach ($contentFields as $contentField) {
             if (!$contentField instanceof GqlInlineFragmentFieldInterface) {

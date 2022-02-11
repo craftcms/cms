@@ -43,11 +43,6 @@ class FieldLayoutBehavior extends Behavior
     private ?FieldLayout $_fieldLayout = null;
 
     /**
-     * @var FieldInterface[]|null The fields associated with the owner's field layout
-     */
-    private ?array $_fields = null;
-
-    /**
      * @inheritdoc
      * @throws InvalidConfigException if the behavior was not configured properly
      */
@@ -139,32 +134,26 @@ class FieldLayoutBehavior extends Behavior
     }
 
     /**
-     * Returns the fields associated with the owner's field layout.
+     * Returns the custom fields associated with the owner's field layout.
      *
      * @return FieldInterface[]
+     * @since 4.0.0
      */
-    public function getFields(): array
+    public function getCustomFields(): array
     {
-        if (isset($this->_fields)) {
-            return $this->_fields;
-        }
-
-        try {
-            $id = $this->getFieldLayoutId();
-        } catch (InvalidConfigException $e) {
-            return [];
-        }
-
-        return $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($id);
+        /** @var FieldLayout|null $fieldLayout */
+        $fieldLayout = $this->owner->getFieldLayout();
+        return $fieldLayout ? $fieldLayout->getCustomFields() : [];
     }
 
     /**
-     * Sets the fields associated with the owner's field layout
+     * Returns the custom fields associated with the owner's field layout.
      *
-     * @param FieldInterface[] $fields
+     * @return FieldInterface[]
+     * @deprecated in 4.0.0. [[FieldLayout::getCustomFields()]] should be used instead.
      */
-    public function setFields(array $fields): void
+    public function getFields(): array
     {
-        $this->_fields = $fields;
+        return $this->getCustomFields();
     }
 }

@@ -173,7 +173,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
         }
 
         $fieldsService = Craft::$app->getFields();
-        foreach ($this->getFields() as $field) {
+        foreach ($this->getCustomFields() as $field) {
             $config['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
         }
 
