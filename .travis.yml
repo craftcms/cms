@@ -30,9 +30,9 @@ jobs:
     env: DB=mysql
   - php: 7.3
     env: DB=pgsql
-  - php: 7.2.5
+  - php: 7.2.19
     env: DB=mysql
-  - php: 7.2.5
+  - php: 7.2.19
     env: DB=pgsql
 cache:
   directories:
