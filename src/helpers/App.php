@@ -846,7 +846,6 @@ class App
     public static function webRequestConfig(): array
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $isCpRequest = static::parseBooleanEnv('$CRAFT_CP');
 
         $config = [
             'class' => WebRequest::class,
@@ -858,7 +857,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
-            'isCpRequest' => $isCpRequest,
+            'isCpRequest' => static::parseBooleanEnv('$CRAFT_CP'),
         ];
 
         if ($generalConfig->trustedHosts !== null) {
