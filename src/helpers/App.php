@@ -62,8 +62,7 @@ class App
      * Returns an environment variable, falling back to a PHP constant of the same name.
      *
      * @param string $name The environment variable name
-     * @param bool $bool The environment variable name
-     * @return mixed The environment variable or constant value
+     * @return mixed The environment variable, PHP constant, or `null` if neither are found
      * @since 3.4.18
      */
     public static function env(string $name): mixed
