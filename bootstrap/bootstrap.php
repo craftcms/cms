@@ -25,10 +25,10 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
 }
 
 $findConfig = function($constName, $argName) {
-    $constant = App::constant($constName);
+    $value = App::env($constName);
 
-    if ($constant) {
-        return $constant;
+    if ($value) {
+        return $value;
     }
 
     if (!empty($_SERVER['argv'])) {
@@ -107,8 +107,8 @@ $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-if (!App::constant('CRAFT_LICENSE_KEY')) {
-    $licenseKeyPath = App::constant('CRAFT_LICENSE_KEY_PATH');
+if (!App::env('CRAFT_LICENSE_KEY')) {
+    $licenseKeyPath = App::env('CRAFT_LICENSE_KEY_PATH');
 
     // Validate permissions on the license key file path (default config/) and storage/
     if ($licenseKeyPath) {
@@ -157,7 +157,7 @@ if (!App::isEphemeral()) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (!App::constant('CRAFT_LOG_PHP_ERRORS', $bool = true)) {
+if (!filter_var(App::env('CRAFT_LOG_PHP_ERRORS'), FILTER_VALIDATE_BOOL)) {
     ini_set('log_errors', 1);
 
     if (App::isStreamLog()) {

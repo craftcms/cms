@@ -177,7 +177,7 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => craft\helpers\App::constant('CRAFT_SITE'),
+            'currentSite' => craft\helpers\App::env('CRAFT_SITE'),
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

@@ -59,39 +59,26 @@ class App
     private static bool $_iconv;
 
     /**
-     * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.
+     * Returns an environment variable, falling back to a PHP constant of the same name.
      *
      * @param string $name The environment variable name
-     * @return string|array|false The environment variable value
+     * @param bool $bool The environment variable name
+     * @return mixed The environment variable or constant value
      * @since 3.4.18
      */
-    public static function env(string $name): array|string|false
+    public static function env(string $name): mixed
     {
-        return $_SERVER[$name] ?? getenv($name);
-    }
+        $envVal = $_SERVER[$name] ?? getenv($name);
 
-    /**
-     * Returns the value of a constant, falling back to an environment variable.
-     *
-     * @param string $constName The name of the constant
-     * @param string|null $envName The name of the environment variable, if different from $constName
-     * @param bool $bool Whether to parse the value as a boolean
-     * @return mixed The value of the constant or environment variable, or null if neither are found
-     * @since 4.0.0
-     */
-    public static function constant(string $constName, ?string $envName = null, bool $bool = false): mixed
-    {
-        if (defined($constName)) {
-            return constant($constName);
+        if ($envVal !== false) {
+            return $envVal;
         }
 
-        $envVal = static::env($envName ?? $constName);
-
-        if ($envVal === false) {
-            return null;
+        if (defined($name)) {
+            return constant($name);
         }
 
-        return $bool ? filter_var($envVal, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) : $envVal;
+        return null;
     }
 
     /**
@@ -503,7 +490,7 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return static::constant('CRAFT_EPHEMERAL', $bool = true) === true;
+        return filter_var(static::env('CRAFT_EPHEMERAL'), FILTER_VALIDATE_BOOL);
     }
 
     /**
@@ -514,7 +501,7 @@ class App
      */
     public static function isStreamLog(): bool
     {
-        return static::constant('CRAFT_STREAM_LOG', $bool = true) === true;
+        return filter_var(static::env('CRAFT_STREAM_LOG'), FILTER_VALIDATE_BOOL);
     }
 
     // App component configs
@@ -854,6 +841,11 @@ class App
     public static function webRequestConfig(): array
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $isCpRequest = App::env('CRAFT_CP');
+
+        if ($isCpRequest !== null) {
+            $isCpRequest = filter_var($isCpRequest, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        }
 
         $config = [
             'class' => WebRequest::class,
@@ -865,7 +857,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
-            'isCpRequest' => App::constant('CRAFT_CP', $bool = true),
+            'isCpRequest' => $isCpRequest,
         ];
 
         if ($generalConfig->trustedHosts !== null) {
