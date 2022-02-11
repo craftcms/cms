@@ -3188,6 +3188,10 @@ table.editable {
     border-top-width: 0;
     border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
   }
+
+  &.addable{
+    border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+  }
 }
 
 .border-box,

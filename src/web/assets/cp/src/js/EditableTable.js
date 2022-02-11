@@ -97,10 +97,12 @@ Craft.EditableTable = Garnish.Base.extend({
     },
     updateAddRowButton: function() {
         if (!this.canAddRow()) {
+            this.$table.removeClass('addable');
             this.$addRowBtn.css('opacity', '0.2');
             this.$addRowBtn.css('pointer-events', 'none');
             this.$addRowBtn.attr('aria-disabled', 'true');
         } else {
+            this.$table.addClass('addable');
             this.$addRowBtn.css('opacity', '1');
             this.$addRowBtn.css('pointer-events', 'auto');
             this.$addRowBtn.attr('aria-disabled', 'false');
@@ -160,6 +162,7 @@ Craft.EditableTable = Garnish.Base.extend({
         row.destroy();
     },
     canAddRow: function() {
+
         if (!this.settings.allowAdd) {
             return false;
         }
