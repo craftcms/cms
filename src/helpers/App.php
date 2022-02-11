@@ -68,23 +68,18 @@ class App
     public static function env(string $name): mixed
     {
         if (isset($_SERVER[$name])) {
-            $value = $_SERVER[$name];
-        } else if (($env = getenv($name)) !== false) {
-            $value = $env;
-        } else if (defined($name)) {
-            $value = constant($name);
-        } else {
-            return null;
+            return static::normalizeValue($_SERVER[$name]);
         }
 
-        if (is_string($value)) {
-            switch (strtolower($value)) {
-                case 'true': return true;
-                case 'false': return false;
-            }
+        if (($env = getenv($name)) !== false) {
+            return static::normalizeValue($env);
         }
 
-        return $value;
+        if (defined($name)) {
+            return static::normalizeValue(constant($name));
+        }
+
+        return null;
     }
 
     /**
@@ -159,6 +154,75 @@ class App
         }
 
         return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+    }
+
+    /**
+     * Returns a CLI command option from `argv`, or `null` if it wasn’t passed.
+     *
+     * Supported option syntaxes are:
+     *
+     * - `name=value`
+     * - `name value`
+     * - `name` (implies `true`)
+     *
+     * `name` must begin with `--` or `-`. Other values will be rejected.
+     *
+     * If the value is numeric, a float or int will be returned.
+     *
+     * If the value is `true` or `false`, a boolean will be returned.
+     *
+     * If the option has no value (either because the following item begins with `-` or it’s the last item),
+     * `true` will be returned.
+     *
+     * @param string $name The option name, beginning with `--` or `-`
+     * @param bool $unset Whether the option should be removed from `argv` if found
+     * @return string|float|int|true|null
+     * @since 4.0.0
+     */
+    public static function cliOption(string $name, bool $unset = false): string|float|int|bool|null
+    {
+        if (!preg_match('/^--?[\w-]+$/', $name)) {
+            throw new InvalidArgumentException("Invalid CLI option name: $name");
+        }
+
+        if (empty($_SERVER['argv'])) {
+            return null;
+        }
+
+        // We shouldn’t count on array being perfectly indexed
+        $keys = array_keys($_SERVER['argv']);
+        $nameLen = strlen($name);
+
+        foreach ($keys as $i => $key) {
+            $item = $_SERVER['argv'][$key];
+            $nextKey = $keys[$i + 1] ?? null;
+
+            if ($item === $name) {
+                $nextItem = $nextKey !== null ? ($_SERVER['argv'][$nextKey] ?? null) : null;
+                if ($nextItem !== null && $nextItem[0] !== '-') {
+                    $value = $nextItem;
+                    $unsetNext = true;
+                } else {
+                    $value = true;
+                }
+            } else if (str_starts_with($item, "$name=")) {
+                $value = substr($item, $nameLen + 1);
+            } else {
+                continue;
+            }
+
+            if ($unset) {
+                unset($_SERVER['argv'][$key]);
+                if (isset($unsetNext)) {
+                    unset($_SERVER['argv'][$nextKey]);
+                }
+                $_SERVER['argv'] = array_values($_SERVER['argv']);
+            }
+
+            return static::normalizeValue($value);
+        }
+
+        return null;
     }
 
     /**
@@ -275,6 +339,28 @@ class App
     {
         $version = phpversion($name);
         return static::normalizeVersion($version);
+    }
+
+    /**
+     * Normalizes an environment variable/constant name/CLI command option.
+     *
+     * It converts the following:
+     *
+     * - `'true'` → `true`
+     * - `'false'` → `false`
+     * - Numeric string → integer or float
+     *
+     * @param mixed $value
+     * @return mixed
+     * @since 4.0.0
+     */
+    public static function normalizeValue(mixed $value): mixed
+    {
+        return match (strtolower($value)) {
+            'true' => true,
+            'false' => false,
+            default => is_numeric($value) ? Number::toIntOrFloat($value) : $value,
+        };
     }
 
     /**

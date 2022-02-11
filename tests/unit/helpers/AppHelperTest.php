@@ -83,6 +83,46 @@ class AppHelperTest extends TestCase
     /**
      *
      */
+    public function testCliOption()
+    {
+        $argv = $_SERVER['argv'] ?? null;
+        $_SERVER['argv'] = [
+            'backup',
+            'some/path',
+            '--file-path=foo.sql',
+            '-f',
+            'bar.sql',
+            '--zip',
+            '--falsy=false',
+            '--empty=',
+        ];
+        $length = count($_SERVER['argv']);
+
+        self::assertSame('foo.sql', App::cliOption('--file-path'));
+        self::assertSame('bar.sql', App::cliOption('-f', true));
+        self::assertSame(true, App::cliOption('--zip'));
+        self::assertSame(false, App::cliOption('--falsy'));
+        self::assertSame('', App::cliOption('--empty'));
+        self::assertSame(null, App::cliOption('--nully'));
+
+        // `-f` and `bar.sql` should have been removed
+        self::assertSame($length - 2, count($_SERVER['argv']));
+
+        if ($argv !== null) {
+            $_SERVER['argv'] = $argv;
+        } else {
+            unset($_SERVER['argv']);
+        }
+
+        self::expectException(InvalidArgumentException::class);
+        App::cliOption('no-dash');
+
+
+    }
+
+    /**
+     *
+     */
     public function testEditions()
     {
         self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
@@ -145,6 +185,14 @@ class AppHelperTest extends TestCase
     public function testIsValidEdition(bool $expected, $edition)
     {
         self::assertSame($expected, App::isValidEdition($edition));
+    }
+
+    /**
+     * @dataProvider normalizeValueDataProvider
+     */
+    public function testNormalizeValue(mixed $expected, mixed $value)
+    {
+        self::assertSame($expected, App::normalizeValue($value));
     }
 
     /**
@@ -399,6 +447,25 @@ class AppHelperTest extends TestCase
             ['app helper test', self::class],
             ['std class', stdClass::class],
             ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function normalizeValueDataProvider(): array
+    {
+        return [
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [123, '123'],
+            [123, '123 '],
+            [123, ' 123'],
+            [123.4, '123.4'],
+            ['foo', 'foo'],
+            [null, null],
         ];
     }
 
