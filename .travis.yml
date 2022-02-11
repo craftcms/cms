@@ -58,8 +58,6 @@ before_script:
 - psql -U postgres -c 'CREATE DATABASE "craft_test";';
 - cp tests/.env.example.$DB tests/.env
 - |
-  pear config-set preferred_state beta
-  pecl channel-update pecl.php.net
   yes | pecl install imagick
 - |
   if [[ $DB == "pgsql" ]]; then
