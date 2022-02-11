@@ -120,7 +120,7 @@ export default {
     @apply tw-overflow-auto tw-h-full;
     box-sizing: border-box;
 
-    ul.categories {
+    ul.nav-items {
       li {
         &:first-child a {
           border-top: 0;

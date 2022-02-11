@@ -4,7 +4,7 @@
 
     <category-selector></category-selector>
 
-    <ul class="categories">
+    <ul class="nav-items">
       <li>
         <router-link to="/">
           <c-icon icon="star" />
@@ -57,12 +57,12 @@ export default {
   scoped>
 @import "../../sass/variables";
 
-ul.categories {
+ul.nav-items {
   @apply tw-hidden;
 }
 
 @media only screen and (min-width: 975px) {
-  ul.categories {
+  ul.nav-items {
     @apply tw-block;
   }
 }
