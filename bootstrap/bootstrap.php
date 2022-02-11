@@ -152,8 +152,10 @@ if (!App::isEphemeral()) {
     $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
 
     // Create the storage/logs/ folder if it doesn't already exist
-    $createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
-    $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
+    if (!App::isStreamLog()) {
+        $createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
+        $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
+    }
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
