@@ -33,6 +33,43 @@ class AppHelperTest extends TestCase
     protected $tester;
 
     /**
+     *
+     */
+    public function testEnv()
+    {
+        $_SERVER['TEST_SERVER_ENV'] = 'server';
+        self::assertSame('server', App::env('TEST_SERVER_ENV'));
+        unset($_SERVER['TEST_SERVER_ENV']);
+
+        putenv('TEST_GETENV_ENV=getenv');
+        self::assertSame('getenv', App::env('TEST_GETENV_ENV'));
+        putenv('TEST_GETENV_ENV');
+
+        putenv('TEST_GETENV_TRUE_ENV=true');
+        self::assertSame(true, App::env('TEST_GETENV_TRUE_ENV'));
+        putenv('TEST_GETENV_TRUE_ENV');
+
+        putenv('TEST_GETENV_FALSE_ENV=false');
+        self::assertSame(false, App::env('TEST_GETENV_FALSE_ENV'));
+        putenv('TEST_GETENV_FALSE_ENV');
+
+        self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
+        self::assertSame(null, App::env('TEST_NONEXISTENT_ENV'));
+    }
+
+    /**
+     *
+     */
+    public function testParseEnv()
+    {
+        self::assertSame(null, App::parseEnv(null));
+        self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
+        self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
+        self::assertSame('$TEST_MISSING', App::parseEnv('$TEST_MISSING'));
+        self::assertSame(Craft::getAlias('@vendor/foo'), App::parseEnv('@vendor/foo'));
+    }
+
+    /**
      * @dataProvider parseBooleanEnvDataProvider
      *
      * @param bool|null $expected

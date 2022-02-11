@@ -67,17 +67,24 @@ class App
      */
     public static function env(string $name): mixed
     {
-        $envVal = $_SERVER[$name] ?? getenv($name);
-
-        if ($envVal !== false) {
-            return $envVal;
+        if (isset($_SERVER[$name])) {
+            $value = $_SERVER[$name];
+        } else if (($env = getenv($name)) !== false) {
+            $value = $env;
+        } else if (defined($name)) {
+            $value = constant($name);
+        } else {
+            return null;
         }
 
-        if (defined($name)) {
-            return constant($name);
+        if (is_string($value)) {
+            switch (strtolower($value)) {
+                case 'true': return true;
+                case 'false': return false;
+            }
         }
 
-        return null;
+        return $value;
     }
 
     /**
@@ -94,39 +101,33 @@ class App
      * $value2 = App::parseEnv('@webroot');
      * ```
      *
-     * @param string|null $str
+     * @param string|null $value
      * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      * @since 3.7.29
      */
-    public static function parseEnv(string $str = null)
+    public static function parseEnv(?string $value)
     {
-        if ($str === null) {
+        if ($value === null) {
             return null;
         }
 
-        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $value = static::env($matches[1]);
+        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
+            $env = static::env($matches[1]);
 
-            if ($value !== null) {
-                $str = $value;
+            if ($env === null) {
+                // starts with $ but not an environment variable/constant, so just give up, it's hopeless!
+                return $value;
             }
 
-            if (is_string($str)) {
-                switch (strtolower($str)) {
-                    case 'true':
-                        return true;
-                    case 'false':
-                        return false;
-                }
-            }
+            $value = $env;
         }
 
-        if (StringHelper::startsWith($str, '@')) {
-            $str = Craft::getAlias($str, false) ?: $str;
+        if (is_string($value) && StringHelper::startsWith($value, '@')) {
+            $value = Craft::getAlias($value, false) ?: $value;
         }
 
-        return $str;
+        return $value;
     }
 
     /**
