@@ -530,4 +530,12 @@ class Address extends Element implements AddressInterface
 
         parent::afterSave($isNew);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): ?FieldLayout
+    {
+        return Craft::$app->getFields()->getLayoutByType(self::class);
+    }
 }

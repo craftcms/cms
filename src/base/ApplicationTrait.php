@@ -15,6 +15,7 @@ use craft\db\MigrationManager;
 use craft\db\mysql\Schema;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -26,6 +27,7 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
+use craft\fieldlayoutelements\AddressField;
 use craft\fieldlayoutelements\AssetAltField;
 use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\EntryTitleField;
@@ -1544,6 +1546,9 @@ trait ApplicationTrait
             $fieldLayout = $event->sender;
 
             switch ($fieldLayout->type) {
+                case Address::class:
+                    $event->fields[] = AddressField::class;
+                    break;
                 case Category::class:
                 case Tag::class:
                     $event->fields[] = TitleField::class;

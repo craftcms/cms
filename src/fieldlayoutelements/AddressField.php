@@ -64,7 +64,6 @@ class AddressField extends BaseField
         return Craft::t('commerce', 'Address');
     }
 
-
     /**
      * @inheritdoc
      */
@@ -79,7 +78,7 @@ class AddressField extends BaseField
     protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressField can only be used in product field layouts.');
+            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
         }
 
         return 'TODO';

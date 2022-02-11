@@ -13,7 +13,7 @@
         {{ forms.fieldLayoutDesignerField({
             first: true,
             customizableTabs: false,
-            fieldLayout: fieldLayout ?? craft.app.addresses.getFieldLayout()
+            fieldLayout: fieldLayout ?? craft.app.fields.getLayoutByType('craft\\elements\\Address'),
         }) }}
 
         <div class="buttons">

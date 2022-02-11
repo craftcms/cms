@@ -431,28 +431,28 @@ class Addresses extends Component
         }
     }
 
-    /**
-     * @return FieldLayout|null
-     */
-    public function getFieldLayout(): ?FieldLayout
-    {
-        $fieldLayout = Craft::$app->fields->getLayoutByType(Address::class);
-        if (!$fieldLayout->isFieldIncluded('address')) {
-            $layoutTabs = $fieldLayout->getTabs();
-            $contentTab = new FieldLayoutTab([
-                'name' => Craft::t('app', 'Content'),
-                'layout' => $fieldLayout
-            ]);
-            $element = [
-                'type' => AddressField::class,
-                'layout' => $fieldLayout
-            ];
-            $contentTab->setElements([$element]);
-            $layoutTabs[] = $contentTab;
-            $fieldLayout->setTabs($layoutTabs);
-        }
-        return $fieldLayout;
-    }
+//    /**
+//     * @return FieldLayout|null
+//     */
+//    public function getFieldLayout(): ?FieldLayout
+//    {
+//        $fieldLayout = Craft::$app->fields->getLayoutByType(Address::class);
+//        if (!$fieldLayout->isFieldIncluded('address')) {
+//            $layoutTabs = $fieldLayout->getTabs();
+//            $contentTab = new FieldLayoutTab([
+//                'name' => Craft::t('app', 'Content'),
+//                'layout' => $fieldLayout
+//            ]);
+//            $element = [
+//                'type' => AddressField::class,
+//                'layout' => $fieldLayout
+//            ];
+//            $contentTab->setElements([$element]);
+//            $layoutTabs[] = $contentTab;
+//            $fieldLayout->setTabs($layoutTabs);
+//        }
+//        return $fieldLayout;
+//    }
 
     /**
      * Save the address field layout
