@@ -106,15 +106,15 @@ class App
         }
 
         if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $value = App::env($matches[1]);
-            if ($value !== false) {
-                switch (strtolower($value)) {
+            $str = static::env($matches[1]);
+
+            if (is_string($str)) {
+                switch (strtolower($str)) {
                     case 'true':
                         return true;
                     case 'false':
                         return false;
                 }
-                $str = $value;
             }
         }
 
@@ -149,7 +149,13 @@ class App
             return null;
         }
 
-        return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        $parsedValue = static::parseEnv($value);
+
+        if ($parsedValue === null) {
+            return null;
+        }
+
+        return filter_var($parsedValue, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -489,7 +495,7 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return filter_var(static::env('CRAFT_EPHEMERAL'), FILTER_VALIDATE_BOOL);
+        return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
     }
 
     /**
@@ -500,7 +506,7 @@ class App
      */
     public static function isStreamLog(): bool
     {
-        return filter_var(static::env('CRAFT_STREAM_LOG'), FILTER_VALIDATE_BOOL);
+        return self::parseBooleanEnv('$CRAFT_STREAM_LOG') === true;
     }
 
     // App component configs
@@ -840,11 +846,7 @@ class App
     public static function webRequestConfig(): array
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $isCpRequest = App::env('CRAFT_CP');
-
-        if ($isCpRequest !== null) {
-            $isCpRequest = filter_var($isCpRequest, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-        }
+        $isCpRequest = static::parseBooleanEnv('$CRAFT_CP');
 
         $config = [
             'class' => WebRequest::class,
