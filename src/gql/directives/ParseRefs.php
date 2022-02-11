@@ -36,7 +36,7 @@ class ParseRefs extends Directive
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
-            'description' => 'Parse the element references on the field.',
+            'description' => 'Parses the element references on the field.',
             'args' => [],
         ]));
 
