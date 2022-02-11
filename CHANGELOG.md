@@ -178,6 +178,9 @@
 - Added `craft\fs\Temp`.
 - Added `craft\gql\base\SingularTypeInterface`.
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
+- Added `craft\helpers\App::cliOption()`.
+- Added `craft\helpers\App::isStreamLog()`.
+- Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
 - Added `craft\helpers\Cp::dateHtml()`.
@@ -356,6 +359,7 @@
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
+- Path options passed to console commands (e.g. `--basePath`) now take precedence over their enivronment variable/PHP constant counterparts.
 - Database backups are now named after the Craft version in the database, rather than the Composer-installed version. ([#9733](https://github.com/craftcms/cms/discussions/9733))
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
 - Improved the look of loading spinners in the control panel. ([#9109](https://github.com/craftcms/cms/discussions/9109))
@@ -495,6 +499,10 @@
 - `craft\fields\BaseRelationField::inputSources()` has been renamed to `getInputSources()`, and is now public.
 - `craft\gql\directives\FormatDateTime::defaultTimezone()` has been renamed to `defaultTimeZone()`.
 - `craft\gql\TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS` is now triggered when actually resolving fields for a GraphQL type, rather than when the type is first created. ([#9626](https://github.com/craftcms/cms/issues/9626))
+- `craft\helpers\App::env()` now checks for a PHP constant as well, if the environment variable didn’t exist.
+- `craft\helpers\App::env()` now returns a boolean if the original value was `'true'` or `'false'`.
+- `craft\helpers\App::env()` now returns an integer or float if the original value was numeric.
+- `craft\helpers\App::env()` now returns `null` if a value couldn’t be found, rather than `false`.
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
