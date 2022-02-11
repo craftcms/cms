@@ -1356,7 +1356,7 @@ ul.icons {
     }
   }
 
-  &:not(.disabled):not(.loading) {
+  &:not(.disabled):not(.loading):not(.dashed) {
     &:focus,
     &.focus,
     &:hover {
@@ -1839,7 +1839,7 @@ div.btn.submit input {
 /* dashed buttons */
 .btn.dashed {
   border: 1px dashed $mediumHairlineColor;
-  background-color: transparent !important;
+  background-color: transparent;
 
   .btngroup &:not(:last-child) {
     @include border-right(1px solid transparent);
@@ -1847,13 +1847,14 @@ div.btn.submit input {
   }
 
   &:focus {
-    background-color: transparentize($grey200, 0.9) !important;
+    background-color: transparentize($grey200, 0.9);
+    border-color: transparent;
   }
 
   &:not(.disabled) {
     &:active,
     &.active {
-      background-color: transparentize($grey200, 0.75) !important;
+      background-color: transparentize($grey200, 0.75);
     }
   }
 }
@@ -3174,14 +3175,6 @@ table.editable {
   & + .btn.add {
     display: block;
     width: 100%;
-    border: 1px dashed $mediumHairlineColor;
-    background-color: transparent;
-    box-shadow: none;
-
-    &:focus {
-      border-style: solid;
-      border-color: $blue600;
-    }
   }
 
   &:not(.hidden) + .btn.add {
