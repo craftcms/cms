@@ -100,6 +100,7 @@ $sidebarLinkSecondaryColor: $grey200;
   body:not(.reduce-focus-visibility) & :focus,
   body.reduce-focus-visibility & .focus-visible {
     --focus-hsl: var(--light-focus-hsl);
+    --focus-ring: 0 0 0 1px hsl(var(--focus-hsl)), 0 0 0 3px hsla(var(--focus-hsl), 0.7);
   }
 
   a {
