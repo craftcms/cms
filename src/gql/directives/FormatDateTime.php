@@ -48,7 +48,7 @@ class FormatDateTime extends Directive
                     'name' => 'format',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FORMAT,
-                    'description' => 'This specifies the format to use. This can be `short`, `medium`, `long`, `full`, an [ICU date format](http://userguide.icu-project.org/formatparse/datetime), or a [PHP date format](https://www.php.net/manual/en/function.date.php). It defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).',
+                    'description' => 'The format to use. Can be `short`, `medium`, `long`, `full`, an [ICU date format](http://userguide.icu-project.org/formatparse/datetime), or a [PHP date format](https://www.php.net/manual/en/function.date.php). Defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).',
                 ]),
                 new FieldArgument([
                     'name' => 'timezone',
@@ -62,7 +62,7 @@ class FormatDateTime extends Directive
                     'description' => 'The locale to use when formatting the date. (E.g., en-US)',
                 ]),
             ],
-            'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.',
+            'description' => 'Formats a date in the desired format. Can be applied to all fields, only changes output of DateTime fields.',
         ]));
 
         return $type;
