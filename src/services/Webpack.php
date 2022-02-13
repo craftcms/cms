@@ -45,6 +45,11 @@ class Webpack extends Component
     private $_serverResponse = [];
 
     /**
+     * @var boolean[]
+     */
+    private $_checkedEnvDirs = [];
+
+    /**
      * Returns the environment file.
      *
      * @param string $class
@@ -53,16 +58,23 @@ class Webpack extends Component
      */
     private function _getEnvFilePath(string $class): ?string
     {
-        $assetPath = $this->_getDirectory($class) . DIRECTORY_SEPARATOR . '.env';
-        $rootPath = FileHelper::normalizePath(Craft::getAlias('@craft') . DIRECTORY_SEPARATOR . '..');
-        $rootPath .= DIRECTORY_SEPARATOR . '.env';
+        $assetDir = $this->_getDirectory($class);
 
-        if (file_exists($assetPath)) {
-            return $assetPath;
-        }
+        // Search up the directory tree for the .env file in $assetPath
+        while ($assetDir) {
+            $assetPath = $assetDir . DIRECTORY_SEPARATOR . '.env';
+            if ((isset($this->_checkedEnvDirs[$assetDir]) && $this->_checkedEnvDirs[$assetDir]) || (!isset($this->_checkedEnvDirs[$assetDir]) && file_exists($assetPath))) {
+                $this->_checkedEnvDirs[$assetDir] = true;
+                return $assetPath;
+            }
 
-        if (file_exists($rootPath)) {
-            return $rootPath;
+            $this->_checkedEnvDirs[$assetDir] = false;
+
+            if ($assetDir === DIRECTORY_SEPARATOR || $assetDir === dirname($assetDir)) {
+                break;
+            }
+
+            $assetDir = dirname($assetDir);
         }
 
         return null;

@@ -63,8 +63,7 @@
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)}, #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
-  --focus-hsl: var(--dark-focus-hsl); // use the dark color by default
-  --focus-ring: 0 0 0 1px hsl(var(--focus-hsl)), 0 0 0 3px hsla(var(--focus-hsl), 0.7);
+  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)), 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
 }
 
 body,
@@ -787,7 +786,7 @@ td.right {
   &.has-icon {
     display: flex;
     flex-wrap: nowrap;
-    align-items: start;
+    align-items: flex-start;
 
     .icon {
       flex-shrink: 1;
@@ -4617,7 +4616,7 @@ ul.tree,
 
   body:not(.reduce-focus-visibility) &:focus,
   body.reduce-focus-visibility &.focus-visible {
-    box-shadow: inset 0 0 0 3px hsla(var(--focus-hsl), 0.7);
+    box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   }
 }
 

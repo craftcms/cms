@@ -162,7 +162,7 @@ body,
         max-width: unset;
 
         &:hover {
-          @include menu-option-active-styles;
+          @include disclosure-link-hover-styles;
         }
 
         &.selected-schema {
