@@ -13,6 +13,9 @@
 - Updated GraphiQL to 1.5.16.
 - Updated Yii to 2.0.45.
 
+## Fixed
+- Fixed a bug where tables in the control panel would display the wrong handle following a delete action. ([#10538](https://github.com/craftcms/cms/issues/10538))
+
 ## 3.7.32 - 2022-02-09
 
 ### Added
