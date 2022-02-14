@@ -29,7 +29,7 @@
 
       .cs-screen-home {
         .cs-opt {
-          --focus-ring: inset 0 0 0 1px hsl(var(--focus-hsl)), inset 0 0 0 3px hsla(var(--focus-hsl), 0.7);
+          --focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)), inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
           display: block;
           padding: 24px;
           text-align: center;
