@@ -343,7 +343,7 @@ class ElementRelationParamParser extends BaseObject
                         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($fieldModel->id);
 
                         foreach ($blockTypes as $blockType) {
-                            foreach ($blockType->getFields() as $blockTypeField) {
+                            foreach ($blockType->getCustomFields() as $blockTypeField) {
                                 if ($blockTypeField->handle == $fieldHandleParts[1]) {
                                     $blockTypeFieldIds[] = $blockTypeField->id;
                                     break;

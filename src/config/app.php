@@ -183,7 +183,7 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : null,
+            'currentSite' => craft\helpers\App::env('CRAFT_SITE'),
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

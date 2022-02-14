@@ -772,7 +772,7 @@ class UsersController extends Controller
                     break;
                 case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
-                    if ($canModerateUsers) {
+                    if (Craft::$app->getUsers()->canSuspend($currentUser, $user)) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend'),
@@ -829,7 +829,7 @@ class UsersController extends Controller
                     ];
                 }
 
-                if ($canModerateUsers && $user->active && !$user->suspended) {
+                if (Craft::$app->getUsers()->canSuspend($currentUser, $user) && $user->active && !$user->suspended) {
                     $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend'),
@@ -987,41 +987,59 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if ($isCurrentUser) {
-            /** @var Locale[] $allLocales */
-            $allLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
-            ArrayHelper::multisort($allLocales, 'displayName');
-            $localeOptions = [];
-            foreach ($allLocales as $locale) {
-                $localeOptions[] = [
-                    'label' => $locale->getDisplayName(),
-                    'value' => $locale->id,
-                ];
-            }
+            $i18n = Craft::$app->getI18n();
+
+            // Language
+            $appLocales = $i18n->getAppLocales();
+            ArrayHelper::multisort($appLocales, fn(Locale $locale) => $locale->getDisplayName());
+            $languageId = Craft::$app->getLocale()->getLanguageID();
+
+            $languageOptions = array_map(fn(Locale $locale) => [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
+            ], $appLocales);
 
             $userLanguage = $user->getPreferredLanguage();
-            if ($userLanguage !== null && !isset($allLocales[$userLanguage])) {
-                $userLanguage = null;
+
+            if (
+                !$userLanguage ||
+                !ArrayHelper::contains($appLocales, fn(Locale $locale) => $locale->id === $userLanguage)
+            ) {
+                $userLanguage = Craft::$app->language;
             }
+
+            // Formatting Locale
+            $allLocales = $i18n->getAllLocales();
+            ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+
+            $localeOptions = [
+                ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
+            ];
+            array_push($localeOptions, ...array_map(fn(Locale $locale) => [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
+            ], $allLocales));
 
             $userLocale = $user->getPreferredLocale();
-            if ($userLocale !== null && !isset($allLocales[$userLocale])) {
-                $userLocale = null;
-            }
 
-            if ($userLanguage === null) {
-                $userLanguage = Craft::$app->language;
-
-                // Only set the locale to the defaultCpLocale by default if the language isn't set either.
-                // Otherwise `null` means "Same as language"
-                if ($userLocale === null) {
-                    $generalConfig = Craft::$app->getConfig()->getGeneral();
-                    if ($generalConfig->defaultCpLocale) {
-                        $userLocale = $generalConfig->defaultCpLocale;
-                    }
-                }
+            if (
+                !$userLocale ||
+                !ArrayHelper::contains($allLocales, fn(Locale $locale) => $locale->id === $userLocale)
+            ) {
+                $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
             }
         } else {
-            $localeOptions = $userLanguage = $userLocale = null;
+            $languageOptions = $localeOptions = $userLanguage = $userLocale = null;
         }
 
         // Determine whether user photo uploading should be possible
@@ -1053,6 +1071,7 @@ JS,
             'isNewUser',
             'statusLabel',
             'actions',
+            'languageOptions',
             'localeOptions',
             'userLanguage',
             'userLocale',
@@ -1620,14 +1639,10 @@ JS,
             $this->_noUserExists();
         }
 
-        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can suspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->suspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
@@ -1789,13 +1804,10 @@ JS,
         }
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can unsuspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->unsuspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }

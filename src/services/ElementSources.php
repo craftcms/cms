@@ -284,7 +284,7 @@ class ElementSources extends Component
         $processedFieldIds = [];
 
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
                 if (
                     $field instanceof PreviewableFieldInterface &&
                     !isset($processedFieldIds[$field->id])

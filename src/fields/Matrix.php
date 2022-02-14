@@ -31,7 +31,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
-use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -348,7 +347,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                     }
                 }
 
-                $blockType->setFields($fields);
                 $fieldLayoutTab->setElements($layoutElements);
                 $this->_blockTypes[] = $blockType;
             }
@@ -663,7 +661,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         $view = Craft::$app->getView();
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
 
         // Let plugins/modules override which block types should be available for this field
         $event = new BlockTypesEvent([
@@ -942,7 +940,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $blockType->uid = Db::uidById(DbTable::MATRIXBLOCKTYPES, $blockType->id);
             }
 
-            foreach ($blockType->getFields() as $field) {
+            foreach ($blockType->getCustomFields() as $field) {
                 // Hack to allow blank field names
                 if (!$field->name) {
                     $field->name = '__blank__';

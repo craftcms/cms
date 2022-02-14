@@ -233,7 +233,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate an activation URL for a pending user.
+     * Generates an activation URL for a pending user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -261,7 +261,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate a password reset URL for a user.
+     * Generates a password reset URL for a user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -385,7 +385,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate a URL to impersonate a user.
+     * Generates a URL to impersonate a user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int

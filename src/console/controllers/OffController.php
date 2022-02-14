@@ -53,8 +53,8 @@ class OffController extends BaseSystemStatusController
     }
 
     /**
-     * Disables `system.live` project config value—bypassing any `allowAdminChanges` config setting restrictions—
-     * meant for temporary use during the deployment process.
+     * Disables `system.live` project config value—bypassing any `allowAdminChanges` config setting
+     * restrictions—meant for temporary use during the deployment process.
      *
      * @return int
      */

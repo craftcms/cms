@@ -2131,7 +2131,12 @@ abstract class Element extends Component implements ElementInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'contentId', 'parentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-        $rules[] = [['siteId'], SiteIdValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+        $rules[] = [
+            ['siteId'],
+            SiteIdValidator::class,
+            'allowDisabled' => $this->propagating ?: null,
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+        ];
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         $rules[] = [['isFresh'], BooleanValidator::class];
 
@@ -2168,7 +2173,7 @@ abstract class Element extends Component implements ElementInterface
         ) {
             $scenario = $this->getScenario();
 
-            foreach ($fieldLayout->getVisibleFields($this) as $field) {
+            foreach ($fieldLayout->getVisibleCustomFields($this) as $field) {
                 $attribute = "field:$field->handle";
                 $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
@@ -4668,7 +4673,7 @@ JS,
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayout) {
-            return $visibleOnly ? $fieldLayout->getVisibleFields($this) : $fieldLayout->getFields();
+            return $visibleOnly ? $fieldLayout->getVisibleCustomFields($this) : $fieldLayout->getCustomFields();
         }
 
         return [];

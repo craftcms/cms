@@ -240,7 +240,7 @@ class InstallController extends Controller
             $this->_populateDbConfig($dbConfig, 'db-');
 
             // If there's a DB_DSN environment variable, go with that
-            if (App::env('DB_DSN') !== false) {
+            if (App::env('DB_DSN') !== null) {
                 $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
             } else {
                 $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
@@ -339,7 +339,7 @@ class InstallController extends Controller
         ];
 
         // If there's a DB_DSN environment variable, go with that
-        if (App::env('DB_DSN') !== false) {
+        if (App::env('DB_DSN') !== null) {
             $vars['dsn'] = 'DB_DSN';
         } else {
             $vars['driver'] = 'DB_DRIVER';

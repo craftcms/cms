@@ -1,10 +1,12 @@
 language: php
-dist: xenial
+dist: bionic
 group: edge
 os: linux
 env:
   global:
-  - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest" PHP_8=false
+  - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
+  - PGPORT=5432
+  - PGUSER=postgres
 branches:
   only:
   - develop
@@ -16,19 +18,19 @@ jobs:
   fast_finish: true
   include:
   - php: 8.0
-    env: DB=mysql PHP_8=true
+    env: DB=mysql
   - php: 8.0
-    env: DB=pgsql PHP_8=true
-  - php: 7.4
-    env: DB=mysql TASK_TESTS_COVERAGE=1 XDEBUG_MODE=coverage
-  - php: 7.4
     env: DB=pgsql
 cache:
   directories:
   - "$HOME/.composer/cache"
   - "$HOME/.npm"
 addons:
-  postgresql: "9.6"
+  postgresql: "10"
+  apt:
+    packages:
+      - postgresql-10
+      - postgresql-client-10
 install:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
@@ -56,11 +58,7 @@ before_script:
 - psql -U postgres -c 'CREATE DATABASE "craft_test";';
 - cp tests/.env.example.$DB tests/.env
 - |
-  if [[ $PHP_8 == "false" ]]; then
-    pear config-set preferred_state beta
-    pecl channel-update pecl.php.net
-    yes | pecl install imagick
-  fi
+  yes | pecl install imagick
 - |
   if [[ $DB == "pgsql" ]]; then
     sed -i 's/DB_USER=root/DB_USER=postgres/' tests/.env

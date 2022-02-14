@@ -9,6 +9,7 @@ namespace craftunit\gql\mutations;
 
 use Codeception\Test\Unit;
 use craft\base\Field;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\Checkboxes;
 use craft\fields\Dropdown;
 use craft\fields\Matrix as MatrixField;
@@ -18,6 +19,8 @@ use craft\fields\RadioButtons;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\File;
 use craft\gql\types\input\Matrix;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\ListOfType;
@@ -103,15 +106,20 @@ class InputTypeTest extends Unit
                 'handle' => 'blockType' . ($j + 1)
             ]);
 
-            $fields = [];
+            $layoutElements = [];
 
             for ($k = 0; $k < 3; $k++) {
-                $fields[] = new PlainText([
-                    'handle' => 'nestedField' . $k
-                ]);
+                $layoutElements[] = new CustomField(new PlainText([
+                    'handle' => "nestedField$k"
+                ]));
             }
 
-            $blockType->setFields($fields);
+            $fieldLayout = new FieldLayout();
+            $tab = new FieldLayoutTab();
+            $fieldLayout->setTabs([$tab]);
+            $tab->setElements($layoutElements);
+            $blockType->setFieldLayout($fieldLayout);
+
             $blockTypes[] = $blockType;
         }
 
