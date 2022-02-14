@@ -76,7 +76,7 @@ class GraphqlController extends Controller
         // Add CORS headers
         $headers = $this->response->getHeaders();
         $headers->setDefault('Access-Control-Allow-Credentials', 'true');
-        $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Token');
+        $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Token');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
@@ -217,7 +217,8 @@ class GraphqlController extends Controller
         }
 
         // Was a specific token passed?
-        foreach ($requestHeaders->get('authorization', [], false) as $authHeader) {
+        $authHeaders = $requestHeaders->get('X-Craft-Authorization', null, false) ?? $requestHeaders->get('Authorization', null, false) ?? [];
+        foreach ($authHeaders as $authHeader) {
             $authValues = array_map('trim', explode(',', $authHeader));
             foreach ($authValues as $authValue) {
                 if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
