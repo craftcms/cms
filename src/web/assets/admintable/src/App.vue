@@ -86,6 +86,7 @@
 
                       <template slot="handle" slot-scope="props">
                         <admin-table-copy-text-button
+                            :key="props.rowData.id"
                             :value="props.rowData.handle"
                         ></admin-table-copy-text-button>
                       </template>

@@ -8,9 +8,14 @@
 ### Changed
 - Lightswitch inputs are no longer animated for browsers that have requested reduced motion. ([#10532](https://github.com/craftcms/cms/pull/10532))
 - Reverted the 3.7.32 change to plugin settings. ([#10533](https://github.com/craftcms/cms/issues/10533))
+- Improved accessibility for the Craft Support widget. ([#7290](https://github.com/craftcms/cms/issues/7290))
+- The `graphql/api` controller action now supports passing the GraphQL bearer token via an `X-Craft-Authorization` header, in addition to `Authorization`. ([#10539](https://github.com/craftcms/cms/discussions/10539))
 - `craft\helpers\App::parseBooleanEnv()` now treats `0` and `1` as boolean values. ([#10524](https://github.com/craftcms/cms/issues/10524))
 - Updated GraphiQL to 1.5.16.
 - Updated Yii to 2.0.45.
+
+## Fixed
+- Fixed a bug where admin tables would display the wrong handle values after an item was deleted. ([#10538](https://github.com/craftcms/cms/issues/10538))
 
 ## 3.7.32 - 2022-02-09
 
