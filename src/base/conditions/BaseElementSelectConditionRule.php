@@ -2,6 +2,7 @@
 
 namespace craft\base\conditions;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
@@ -102,7 +103,22 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
+        if ($this->getCondition()->forProjectConfig) {
+            return Cp::autosuggestFieldHtml([
+                'suggestEnvVars' => true,
+                'required' => true,
+                'id' => 'elementId',
+                'name' => 'elementId',
+                'value' => $this->getElementId(),
+                'fieldClass' => 'fullwidth',
+                'placeholder' => Craft::t('app', '{type} ID', [
+                    'type' => $this->elementType()::displayName(),
+                ]),
+            ]);
+        }
+
         $element = $this->_element();
+
         return Cp::elementSelectHtml([
             'name' => 'elementId',
             'elements' => $element ? [$element] : [],

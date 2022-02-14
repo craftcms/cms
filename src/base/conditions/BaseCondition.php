@@ -348,7 +348,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
                     return Html::tag('fieldset', $ruleHtml, [
                         'id' => 'condition-rule',
-                        'class' => ['condition-rule', 'flex', 'draggable'],
+                        'class' => ['condition-rule', 'flex', 'flex-start','draggable'],
                     ]);
                 }, 'conditionRules[' . $ruleCount . ']');
             }
