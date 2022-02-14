@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added support for PHP 8.1.
 - Added `Garnish.prefersReducedMotion()`.
 
 ### Changed
