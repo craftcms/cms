@@ -28,11 +28,6 @@ $findConfig = function($cliName, $envName) {
     return App::cliOption($cliName, true) ?? App::env($envName);
 };
 
-$findConfigPath = function($cliName, $envName) use ($findConfig) {
-    $path = $findConfig($cliName, $envName);
-    return $path ? realpath($path) : null;
-};
-
 $createFolder = function($path) {
     // Code borrowed from Io...
     if (!is_dir($path)) {
@@ -48,6 +43,17 @@ $createFolder = function($path) {
         chmod($path, 0755);
         umask($oldumask);
     }
+};
+
+$findConfigPath = function($cliName, $envName) use ($findConfig, $createFolder) {
+    $path = $findConfig($cliName, $envName);
+
+    if ($path) {
+        $createFolder($path);
+        return realpath($path);
+    }
+
+    return null;
 };
 
 $ensureFolderIsReadable = function($path, $writableToo = false) {
