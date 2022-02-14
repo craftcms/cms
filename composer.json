@@ -96,8 +96,8 @@
       "php":  "7.2.5"
     },
     "allow-plugins": {
-      "yiisoft/yii2-composer": false,
-      "craftcms/plugin-installer": false
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
     }
   }
 }
