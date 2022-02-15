@@ -19,6 +19,9 @@
 ## Fixed
 - Fixed a bug where admin tables would display the wrong handle values after an item was deleted. ([#10538](https://github.com/craftcms/cms/issues/10538))
 
+### Security
+- Fixed a potential CSRF security issue.
+
 ## 3.7.32 - 2022-02-09
 
 ### Added

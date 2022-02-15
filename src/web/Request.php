@@ -1359,12 +1359,8 @@ class Request extends \yii\web\Request
 
         // Authenticated users
         if (Craft::$app->get('user', false) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
-            // We mix the password into the token so that it will become invalid when the user changes their password.
-            // The salt on the blowfish hash will be different even if they change their password to the same thing.
-            // Normally using the session ID would be a better choice, but PHP's bananas session handling makes that difficult.
-            $passwordHash = $currentUser->password;
             $userId = $currentUser->id;
-            $hashable = implode('|', [$nonce, $userId, $passwordHash]);
+            $hashable = implode('|', [$nonce, $userId]);
             $token = $nonce . '|' . Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
         } else {
             // Unauthenticated users.
@@ -1412,9 +1408,8 @@ class Request extends \yii\web\Request
         [$nonce,] = $splitToken;
 
         // Check that this token is for the current user
-        $passwordHash = $currentUser->password;
         $userId = $currentUser->id;
-        $hashable = implode('|', [$nonce, $userId, $passwordHash]);
+        $hashable = implode('|', [$nonce, $userId]);
         $expectedToken = $nonce . '|' . Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
 
         return Craft::$app->getSecurity()->compareString($expectedToken, $token);
