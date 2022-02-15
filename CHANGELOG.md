@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Craft now HTML encodes the user’s name in the default system emails.
+
 ### Fixed
 - Fixed a bug where Date fields that were configured to show the time input weren’t displaying properly.
 
