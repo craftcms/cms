@@ -736,6 +736,7 @@ class Sections extends Component
                         'criteria' => [
                             'sectionId' => $sectionRecord->id,
                             'siteId' => array_values($siteIdMap),
+                            'preferSites' => [Craft::$app->getSites()->getPrimarySite()->id],
                             'unique' => true,
                             'status' => null,
                         ],
