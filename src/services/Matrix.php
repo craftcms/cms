@@ -30,6 +30,7 @@ use craft\web\View;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * The Matrix service provides APIs for managing Matrix fields.
@@ -681,16 +682,27 @@ class Matrix extends Component
             foreach ($blocks as $block) {
                 $sortOrder++;
                 if ($saveAll || !$block->id || $block->dirty) {
-                    $block->ownerId = $owner->id;
+                    $block->primaryOwnerId = $owner->id;
                     $block->sortOrder = $sortOrder;
                     $elementsService->saveElement($block, false);
+
+                    // If this is a draft, we can shed the draft data now
+                    if ($block->getIsDraft()) {
+                        $canonicalBlockId = $block->getCanonicalId();
+                        Craft::$app->getDrafts()->removeDraftData($block);
+                        Db::delete(Table::MATRIXBLOCKS_OWNERS, [
+                            'blockId' => $canonicalBlockId,
+                            'ownerId' => $owner->id,
+                        ]);
+                    }
                 } else if ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
-                    Db::update(Table::MATRIXBLOCKS, [
+                    Db::update(Table::MATRIXBLOCKS_OWNERS, [
                         'sortOrder' => $sortOrder,
                     ], [
-                        'id' => $block->id,
+                        'blockId' => $block->id,
+                        'ownerId' => $owner->id,
                     ], [], false);
                 }
 
@@ -822,7 +834,7 @@ class Matrix extends Component
                 $newAttributes = [
                     // Only set the canonicalId if the target owner element is a derivative
                     'canonicalId' => $target->getIsDerivative() ? $block->id : null,
-                    'ownerId' => $target->id,
+                    'primaryOwnerId' => $target->id,
                     'owner' => $target,
                     'siteId' => $target->siteId,
                     'propagating' => false,
@@ -834,16 +846,18 @@ class Matrix extends Component
                         !empty($target->newSiteIds) ||
                         $source->isFieldModified($field->handle, true)
                     ) {
-                        /** @var MatrixBlock $newBlock */
-                        $newBlock = $elementsService->updateCanonicalElement($block, $newAttributes);
-                        $newBlockId = $newBlock->id;
+                        $newBlockId = $elementsService->updateCanonicalElement($block, $newAttributes)->id;
                     } else {
                         $newBlockId = $block->getCanonicalId();
                     }
                 } else {
-                    /** @var MatrixBlock $newBlock */
-                    $newBlock = $elementsService->duplicateElement($block, $newAttributes);
-                    $newBlockId = $newBlock->id;
+                    // If the block’s primary owner is equal to the target element ID, no need to do anything
+                    if ($block->primaryOwnerId !== $target->id) {
+                        /** @var MatrixBlock $newBlock */
+                        $newBlockId = $elementsService->duplicateElement($block, $newAttributes)->id;
+                    } else {
+                        $newBlockId = $block->id;
+                    }
                 }
 
                 $newBlockIds[] = $newBlockId;
@@ -911,6 +925,36 @@ class Matrix extends Component
     }
 
     /**
+     * Duplicates block ownership relations for a new draft element.
+     *
+     * @param MatrixField $field The Matrix field
+     * @param ElementInterface $canonical The canonical element
+     * @param ElementInterface $draft The draft element
+     * @since 4.0.0
+     */
+    public function duplicateOwnership(MatrixField $field, ElementInterface $canonical, ElementInterface $draft): void
+    {
+        if (!$canonical->getIsCanonical()) {
+            throw new InvalidArgumentException('The source element must be canonical.');
+        }
+
+        if (!$draft->getIsDraft()) {
+            throw new InvalidArgumentException('The target element must be a draft.');
+        }
+
+        $blocksTable = Table::MATRIXBLOCKS;
+        $ownersTable = Table::MATRIXBLOCKS_OWNERS;
+
+        Craft::$app->getDb()->createCommand(<<<SQL
+INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]]) 
+SELECT [[o.blockId]], '$draft->id', [[o.sortOrder]] 
+FROM $ownersTable AS [[o]]
+INNER JOIN $blocksTable AS [[b]] ON [[b.id]] = [[o.blockId]] AND [[b.primaryOwnerId]] = '$canonical->id' AND [[b.fieldId]] = '$field->id'
+WHERE [[o.ownerId]] = '$canonical->id'
+SQL)->execute();
+    }
+
+    /**
      * Merges recent canonical Matrix block changes into the given Matrix field’s blocks.
      *
      * @param MatrixField $field The Matrix field
@@ -951,7 +995,7 @@ class Matrix extends Component
             // Get all the canonical owner’s blocks, including soft-deleted ones
             $canonicalBlocks = MatrixBlock::find()
                 ->fieldId($field->id)
-                ->ownerId($canonicalOwner->id)
+                ->primaryOwnerId($canonicalOwner->id)
                 ->siteId($canonicalOwner->siteId)
                 ->status(null)
                 ->trashed(null)
@@ -961,7 +1005,7 @@ class Matrix extends Component
             // Get all the derivative owner’s blocks, so we can compare
             $derivativeBlocks = MatrixBlock::find()
                 ->fieldId($field->id)
-                ->ownerId($owner->id)
+                ->primaryOwnerId($owner->id)
                 ->siteId($canonicalOwner->siteId)
                 ->status(null)
                 ->trashed(null)
@@ -987,7 +1031,7 @@ class Matrix extends Component
                     // This is a new block, so duplicate it into the derivative owner
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
-                        'ownerId' => $owner->id,
+                        'primaryOwnerId' => $owner->id,
                         'owner' => $localizedOwners[$canonicalBlock->siteId],
                         'siteId' => $canonicalBlock->siteId,
                         'propagating' => false,
@@ -1142,7 +1186,7 @@ class Matrix extends Component
     {
         $deleteBlocks = MatrixBlock::find()
             ->status(null)
-            ->ownerId($owner->id)
+            ->primaryOwnerId($owner->id)
             ->fieldId($field->id)
             ->siteId($owner->siteId)
             ->andWhere(['not', ['elements.id' => $except]])
