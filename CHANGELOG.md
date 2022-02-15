@@ -4,6 +4,7 @@
 
 ### Added
 - Added support for PHP 8.1.
+- Added the `users/logout-all` console command.
 - Added `Garnish.prefersReducedMotion()`.
 
 ### Changed
