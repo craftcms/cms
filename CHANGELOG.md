@@ -1,6 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.33 - 2022-02-15
+
+> {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.
 
 ### Added
 - Added support for PHP 8.1.
