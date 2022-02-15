@@ -24,7 +24,6 @@ use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
-use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
@@ -958,11 +957,11 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if ($isCurrentUser) {
-            /** @var Locale[] $allLocales */
-            $allLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
-            ArrayHelper::multisort($allLocales, 'displayName');
+            /** @var Locale[] $appLocales */
+            $appLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
+            ArrayHelper::multisort($appLocales, 'displayName');
             $localeOptions = [];
-            foreach ($allLocales as $locale) {
+            foreach ($appLocales as $locale) {
                 $localeOptions[] = [
                     'label' => $locale->getDisplayName(),
                     'value' => $locale->id,
@@ -970,12 +969,12 @@ class UsersController extends Controller
             }
 
             $userLanguage = $user->getPreferredLanguage();
-            if ($userLanguage !== null && !isset($allLocales[$userLanguage])) {
+            if ($userLanguage !== null && !isset($appLocales[$userLanguage])) {
                 $userLanguage = null;
             }
 
             $userLocale = $user->getPreferredLocale();
-            if ($userLocale !== null && !isset($allLocales[$userLocale])) {
+            if ($userLocale !== null && !isset($appLocales[$userLocale])) {
                 $userLocale = null;
             }
 

@@ -9,9 +9,11 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use DateTime;
 use yii\base\InvalidArgumentException;
@@ -232,7 +234,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate an activation URL for a pending user.
+     * Generates an activation URL for a pending user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -260,7 +262,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate a password reset URL for a user.
+     * Generates a password reset URL for a user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -384,7 +386,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate a URL to impersonate a user.
+     * Generates a URL to impersonate a user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -418,6 +420,20 @@ class UsersController extends Controller
         $this->stdout($url . PHP_EOL, Console::FG_CYAN);
         $this->stdout('(Expires in one hour.)' . PHP_EOL, Console::FG_GREY);
 
+        return ExitCode::OK;
+    }
+
+    /**
+     * Logs all users out of the system.
+     *
+     * @return int
+     * @since 3.7.33
+     */
+    public function actionLogoutAll(): int
+    {
+        $this->stdout('Logging all users out ... ');
+        Db::truncateTable(Table::SESSIONS);
+        $this->stdout("done\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 

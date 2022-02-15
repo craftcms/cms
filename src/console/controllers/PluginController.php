@@ -14,7 +14,7 @@ use craft\helpers\Console;
 use yii\console\ExitCode;
 
 /**
- * Manage plugins.
+ * Manages plugins.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

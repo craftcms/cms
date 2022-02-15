@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.7.32",
+  "version": "3.7.33",
   "keywords": [
     "cms",
     "craftcms",
@@ -39,7 +39,7 @@
     "craftcms/server-check": "~1.2.0",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "elvanto/litemoji": "^3.0.1",
-    "enshrined/svg-sanitize": "~0.14.0",
+    "enshrined/svg-sanitize": "~0.15.2",
     "guzzlehttp/guzzle": "^6.5.5|^7.2.0",
     "laminas/laminas-feed": "~2.12.3|^2.13.1",
     "league/flysystem": "^1.1.4",
@@ -51,8 +51,8 @@
     "true/punycode": "^2.1.1",
     "twig/twig": "~2.14.3",
     "voku/stringy": "^6.4.0",
-    "webonyx/graphql-php": "~14.4.1",
-    "yiisoft/yii2": "~2.0.44.0",
+    "webonyx/graphql-php": "~14.11.5",
+    "yiisoft/yii2": "~2.0.45.0",
     "yiisoft/yii2-debug": "^2.1.16",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-swiftmailer": "^2.1.2"
@@ -94,6 +94,10 @@
     "sort-packages": true,
     "platform": {
       "php":  "7.2.5"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
     }
   }
 }

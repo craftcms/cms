@@ -33,6 +33,17 @@ class AppHelperTest extends TestCase
     protected $tester;
 
     /**
+     * @dataProvider parseBooleanEnvDataProvider
+     *
+     * @param bool|null $expected
+     * @param mixed $value
+     */
+    public function testParseBooleanEnv(?bool $expected, $value)
+    {
+        self::assertSame($expected, App::parseBooleanEnv($value));
+    }
+
+    /**
      *
      */
     public function testEditions()
@@ -233,6 +244,30 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
+    public function parseBooleanEnvDataProvider(): array
+    {
+        return [
+            [true, true],
+            [false, false],
+            [true, 'yes'],
+            [false, 'no'],
+            [true, 'on'],
+            [false, 'off'],
+            [true, '1'],
+            [false, '0'],
+            [true, 'true'],
+            [false, 'false'],
+            [false, ''],
+            [null, 'whatever'],
+            [true, 1],
+            [false, 0],
+            [null, 2],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function editionHandleDataProvider(): array
     {
         return [
@@ -326,7 +361,7 @@ class AppHelperTest extends TestCase
             ['entries', Entries::class],
             ['app helper test', self::class],
             ['std class', stdClass::class],
-            ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
         ];
     }
 

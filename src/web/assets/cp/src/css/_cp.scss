@@ -68,12 +68,14 @@ body {
   min-height: 100vh;
   @include left(0);
 
-  body.ltr & {
-    transition: left 250ms ease-out;
-  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    body.ltr & {
+      transition: left 250ms ease-out;
+    }
 
-  body.rtl & {
-    transition: right 250ms ease-out;
+    body.rtl & {
+      transition: right 250ms ease-out;
+    }
   }
 }
 
@@ -94,11 +96,7 @@ $sidebarLinkSecondaryColor: $grey200;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
   background-color: $grey800;
-
-  body:not(.reduce-focus-visibility) & :focus,
-  body.reduce-focus-visibility & .focus-visible {
-    --focus-hsl: var(--light-focus-hsl);
-  }
+  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)), 0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 
   a {
     color: $sidebarLinkStaticColor;

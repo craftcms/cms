@@ -545,9 +545,9 @@ class Craft extends Yii2
             throw new InvalidArgumentException('Not a job');
         }
 
-        Craft::$app->getQueue()->push($job);
+        \Craft::$app->getQueue()->push($job);
 
-        Craft::$app->getQueue()->run();
+        \Craft::$app->getQueue()->run();
     }
 
     /**
