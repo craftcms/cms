@@ -11,6 +11,7 @@ import BookIcon from './icons/BookIcon'
 import CheckIcon from './icons/CheckIcon'
 import ChevronLeftIcon from './icons/ChevronLeftIcon'
 import ChevronRightIcon from './icons/ChevronRightIcon'
+import ClipboardCopyIcon from './icons/ClipboardCopyIcon'
 import CopyIcon from './icons/CopyIcon'
 import ExclamationCircleIcon from './icons/ExclamationCircleIcon'
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon'
@@ -32,6 +33,7 @@ export default {
     CheckIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
+    ClipboardCopyIcon,
     CopyIcon,
     ExclamationCircleIcon,
     ExclamationTriangleIcon,

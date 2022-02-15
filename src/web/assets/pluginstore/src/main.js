@@ -17,6 +17,7 @@ import CBtn from './js/components/ui/CBtn'
 import CDropdown from './js/components/ui/CDropdown'
 import CIcon from './js/components/ui/CIcon'
 import CSpinner from './js/components/ui/CSpinner'
+import CTextbox from './js/components/ui/CTextbox'
 
 Vue.filter('currency', currency)
 Vue.filter('escapeHtml', escapeHtml)
@@ -28,6 +29,7 @@ Vue.component('c-btn', CBtn)
 Vue.component('c-dropdown', CDropdown)
 Vue.component('c-icon', CIcon)
 Vue.component('c-spinner', CSpinner)
+Vue.component('c-textbox', CTextbox)
 
 Garnish.$doc.ready(function() {
   Craft.initUiElements()

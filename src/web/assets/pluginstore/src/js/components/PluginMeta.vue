@@ -81,6 +81,9 @@
         <template #title>
           Install with Composer
         </template>
+        <template #content>
+          <composer-install :plugin="plugin" />
+        </template>
       </meta-stat>
 
       <!-- Daily Active Installs -->
@@ -208,9 +211,10 @@
 import MetaStat from './MetaStat';
 import PluginMetaBuyButton from './PluginMetaBuyButton';
 import {mapState} from 'vuex';
+import ComposerInstall from './ComposerInstall';
 
 export default {
-  components: {PluginMetaBuyButton, MetaStat},
+  components: {ComposerInstall, PluginMetaBuyButton, MetaStat},
   props: {
     plugin: {
       type: Object,
