@@ -89,13 +89,13 @@ class MailerHelper
      * Normalizes To/From/CC/BCC values into an array of email addresses, or email/name pairs.
      *
      * @param string|array|User|User[]|null $emails
-     * @return array|null
+     * @return array
      * @since 3.5.0
      */
-    public static function normalizeEmails($emails): ?array
+    public static function normalizeEmails($emails): array
     {
         if (empty($emails)) {
-            return null;
+            return [];
         }
 
         if (!is_array($emails)) {
