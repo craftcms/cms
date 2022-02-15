@@ -9,7 +9,7 @@ namespace craft\mail;
 
 use craft\elements\User;
 use craft\helpers\MailerHelper;
-use Swift_TransportException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 /**
  * Represents an email message.
@@ -17,7 +17,7 @@ use Swift_TransportException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Message extends \yii\swiftmailer\Message
+class Message extends \yii\symfonymailer\Message
 {
     /**
      * @var string|null The key of the message that should be loaded
@@ -35,9 +35,9 @@ class Message extends \yii\swiftmailer\Message
     public ?string $language = null;
 
     /**
-     * @var Swift_TransportException|null The caught error object, if the message failed to send
+     * @var TransportExceptionInterface|null The caught error object, if the message failed to send
      */
-    public ?Swift_TransportException $error = null;
+    public ?TransportExceptionInterface $error = null;
 
     /**
      * Sets the message sender.
