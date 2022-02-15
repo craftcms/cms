@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Date fields that were configured to show the time input weren’t displaying properly.
+
 ## 3.7.33 - 2022-02-15
 
 > {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.

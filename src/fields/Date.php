@@ -251,6 +251,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement,
+            'hasOuterContainer' => true,
         ];
 
         $input = '';
