@@ -65,8 +65,8 @@
               <hr>
             </template>
 
-            <div class="lg:tw-flex">
-              <div class="lg:tw-flex-1 lg:tw-pr-8 lg:tw-mr-4">
+            <div class="xl:tw-flex">
+              <div class="xl:tw-flex-1 xl:tw-pr-8 xl:tw-mr-4">
                 <div
                   v-if="longDescription"
                   v-html="longDescription"
@@ -77,8 +77,8 @@
                   class="readable"></div>
                 <p v-else>No description.</p>
               </div>
-              <div class="lg:tw-ml-4 lg:tw-w-60 tw-mt-8 lg:tw-mt-0">
-                <plugin-meta :plugin="plugin"></plugin-meta>
+              <div class="xl:tw-ml-4 xl:tw-w-60 tw-mt-8 xl:tw-mt-0">
+                <plugin-meta :plugin="plugin" />
               </div>
             </div>
 
