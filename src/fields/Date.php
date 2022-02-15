@@ -329,6 +329,14 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return $this->showTime;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if ($value instanceof DateTime) {
