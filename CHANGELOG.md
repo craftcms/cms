@@ -19,6 +19,7 @@
 ## Fixed
 - Fixed a bug where admin tables would display the wrong handle values after an item was deleted. ([#10538](https://github.com/craftcms/cms/issues/10538))
 - Fixed a bug where entries and Matrix blocks weren’t necessarily getting propagated from the primary site, when they were activated for a new site via a setting change. ([#10561](https://github.com/craftcms/cms/issues/10561))
+- Fixed an error that occurred when testing queue jobs. ([#10569](https://github.com/craftcms/cms/pull/10569))
 
 ### Security
 - Fixed a potential CSRF security issue.
