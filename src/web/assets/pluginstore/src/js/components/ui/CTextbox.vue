@@ -1,6 +1,6 @@
 <template>
   <input
-    class="tw-rounded-md tw-bg-gray-50 tw-border tw-border-solid tw-px-3 tw-py-2 tw-border-gray-300"
+    class="tw-rounded-md tw-bg-gray-50 tw-border tw-border-solid tw-px-3 tw-py-2 tw-border-gray-300 tw-text-sm"
     :type="computedType"
     :value="value"
     @blur="$emit('blur', $event)"
