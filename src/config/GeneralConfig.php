@@ -1049,7 +1049,7 @@ class GeneralConfig extends BaseObject
      * @since 3.6.14
      * @group System
      */
-    public $permissionsPolicyHeader = null;
+
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
