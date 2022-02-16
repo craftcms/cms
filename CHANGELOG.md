@@ -80,6 +80,7 @@
 - Added `craft\behaviors\FieldLayoutBehavior::getCustomFields()`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
+- Added `craft\controllers\AddressesController`.
 - Added `craft\controllers\AssetIndexesController`.
 - Added `craft\controllers\ConditionsController`.
 - Added `craft\controllers\ElementIndexesController::$condition`.
@@ -89,13 +90,18 @@
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
+- Added `craft\db\Table::ADDRESSES`.
+- Added `craft\db\Table::ADDRESSES_USERS`.
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
 - Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
+- Added `craft\elements\Address`.
 - Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
+- Added `craft\elements\conditions\addresses\AddressCondition`.
+- Added `craft\elements\conditions\addresses\CountryConditionRule`.
 - Added `craft\elements\conditions\assets\AssetCondition`.
 - Added `craft\elements\conditions\assets\DateModifiedConditionRule`.
 - Added `craft\elements\conditions\assets\FilenameConditionRule`.
@@ -137,6 +143,7 @@
 - Added `craft\elements\conditions\users\LastNameConditionRule`.
 - Added `craft\elements\conditions\users\UserCondition`.
 - Added `craft\elements\conditions\users\UsernameConditionRule`.
+- Added `craft\elements\db\AddressQuery`.
 - Added `craft\elements\MatrixBlock::$primaryOwnerId`.
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::canAssignUserGroups()`.
@@ -148,6 +155,7 @@
 - Added `craft\errors\ImageTransformException`.
 - Added `craft\errors\InvalidFsException`.
 - Added `craft\errors\MissingVolumeFolderException`.
+- Added `craft\events\AddressEvent`.
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
 - Added `craft\events\DefineHtmlEvent::$static`.
@@ -155,6 +163,8 @@
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\events\RegisterImageTransformersEvent`.
 - Added `craft\events\TransformImageEvent`.
+- Added `craft\fieldlayoutelements\AddressField`.
+- Added `craft\fieldlayoutelements\AddressLatitudeLongitudeField`.
 - Added `craft\fieldlayoutelements\AssetAltField`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextareaField`.
@@ -181,6 +191,7 @@
 - Added `craft\fs\Temp`.
 - Added `craft\gql\base\SingularTypeInterface`.
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
+- Added `craft\helpers\Address`.
 - Added `craft\helpers\App::cliOption()`.
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
@@ -238,8 +249,11 @@
 - Added `craft\models\ProjectConfigData`.
 - Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\Volume`.
+- Added `craft\records\Address`.
+- Added `craft\records\Address_User`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\records\ImageTransform`.
+- Added `craft\services\Addresses`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
 - Added `craft\services\AssetIndexer::getExistingIndexingSessions()`.
 - Added `craft\services\AssetIndexer::getIndexingSessionById()`.
@@ -295,6 +309,7 @@
 - Added `craft\services\ProjectConfig::PATH_VOLUMES`.
 - Added `craft\services\ProjectConfig::regenerateExternalConfig()`.
 - Added `craft\services\ProjectConfig::rememberAppliedChanges()`.
+- Added `craft\services\UserAddresses`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
@@ -302,6 +317,8 @@
 - Added `craft\services\Users::removeCredentials()`.
 - Added `craft\services\Volumes::getTemporaryVolume()`.
 - Added `craft\validators\MoneyValidator`.
+- Added `craft\validators\RequiredFieldAddressValidator`.
+- Added `craft\web\assets\addresses\AddressesAsset`.
 - Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
 - Added `craft\web\assets\htmx\HtmxAsset`.
 - Added `craft\web\assets\money\MoneyAsset`.
@@ -342,6 +359,7 @@
 - Added the `htmx.org` JavaScript library.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the Money package.
+- Added the Addressing package.
 
 ### Changed
 - Craft now requires PHP 8.0 or later.
