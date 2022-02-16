@@ -955,6 +955,39 @@ SQL)->execute();
     }
 
     /**
+     * Creates revisions for all the blocks that belong to the given canonical element, and assigns those
+     * revisions to the given owner revision.
+     *
+     * @param MatrixField $field The Matrix field
+     * @param ElementInterface $canonical The canonical element
+     * @param ElementInterface $revision The revision element
+     * @since 4.0.0
+     */
+    public function createRevisionBlocks(MatrixField $field, ElementInterface $canonical, ElementInterface $revision): void
+    {
+        $blocks = MatrixBlock::find()
+            ->ownerId($canonical->id)
+            ->fieldId($field->id)
+            ->siteId('*')
+            ->unique()
+            ->status(null)
+            ->all();
+
+        $revisionsService = Craft::$app->getRevisions();
+        $ownershipData = [];
+
+        foreach ($blocks as $block) {
+            $blockRevisionId = $revisionsService->createRevision($block, null, null, [
+                'primaryOwnerId' => $revision->id,
+                'saveOwnership' => false,
+            ]);
+            $ownershipData[] = [$blockRevisionId, $revision->id, $block->sortOrder];
+        }
+
+        Db::batchInsert(Table::MATRIXBLOCKS_OWNERS, ['blockId', 'ownerId', 'sortOrder'], $ownershipData);
+    }
+
+    /**
      * Merges recent canonical Matrix block changes into the given Matrix field’s blocks.
      *
      * @param MatrixField $field The Matrix field

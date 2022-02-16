@@ -525,6 +525,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             if ($query->id === false) {
                 $query->id = null;
             }
+
+            // If the owner is a revision, allow revision blocks to be returned as well
+            if ($element->getIsRevision()) {
+                $query
+                    ->revisions(null)
+                    ->trashed(null);
+            }
         } else {
             $query->id = false;
         }
@@ -1023,6 +1030,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // If this is a draft, just duplicate the relations
             if ($element->getIsDraft()) {
                 $matrixService->duplicateOwnership($this, $element->duplicateOf, $element);
+            } else if ($element->getIsRevision()) {
+                $matrixService->createRevisionBlocks($this, $element->duplicateOf, $element);
             } else {
                 $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true, !$isNew);
             }
