@@ -793,13 +793,16 @@ class Fields extends Component
 
         $this->prepFieldForSave($field);
         $configData = $this->createFieldConfig($field);
+        $appliedConfig = false;
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
             $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
-            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
-        } else {
-            // Otherwise just save it to the DB
+            $appliedConfig = Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
+        }
+
+        if (!$appliedConfig) {
+            // If it's not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 

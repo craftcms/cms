@@ -1318,15 +1318,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->query->withQueries = $this->withQueries;
         $this->subQuery = new Query();
 
-        // Give other classes a chance to make changes up front
-        if (!$this->beforePrepare()) {
-            throw new QueryAbortedException();
-        }
-
         $this->query
             ->from(['subquery' => $this->subQuery])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
+
+        // Give other classes a chance to make changes up front
+        if (!$this->beforePrepare()) {
+            throw new QueryAbortedException();
+        }
 
         $this->subQuery
             ->addSelect([
