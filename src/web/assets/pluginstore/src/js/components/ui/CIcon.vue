@@ -15,6 +15,7 @@ import ClipboardCopyIcon from './icons/ClipboardCopyIcon'
 import CopyIcon from './icons/CopyIcon'
 import ExclamationCircleIcon from './icons/ExclamationCircleIcon'
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon'
+import FlagIcon from './icons/FlagIcon'
 import GithubIcon from './icons/GithubIcon'
 import InfoCircleIcon from './icons/InfoCircleIcon'
 import LinkIcon from './icons/LinkIcon'
@@ -37,6 +38,7 @@ export default {
     CopyIcon,
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
+    FlagIcon,
     GithubIcon,
     InfoCircleIcon,
     PlugIcon,

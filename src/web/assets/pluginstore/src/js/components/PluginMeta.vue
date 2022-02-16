@@ -14,28 +14,26 @@
             :href="plugin.documentationUrl"
             :title="plugin.name + ' Documentation'"
           >
-            <div>
-              <c-icon
-                class="tw-mr-2"
-                icon="book"
-              />
-              Documentation
+            <c-icon
+              class="tw-mr-2"
+              icon="book"
+            />
+            Documentation
 
-              <svg
-                class="tw-inline-block tw-w-3 tw-text-grey tw-ml-1"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-            </div>
+            <svg
+              class="tw-inline-block tw-w-3 tw-text-grey tw-ml-1"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
           </c-btn>
         </li>
       </template>
@@ -44,7 +42,6 @@
       <li>
         <c-btn
           block
-          class="tw-flex tw-items-center"
           rel="noopener"
           target="_blank"
           :href="plugin.repository"
@@ -195,7 +192,7 @@
             :href="'mailto:issues@craftcms.com?subject=' + encodeURIComponent('Issue with ' + plugin.name) + '&body=' + encodeURIComponent('I would like to report the following issue with '+plugin.name+' (https://plugins.craftcms.com/' + plugin.handle + '):\n\n')"
           >
             <c-icon
-              class="mr-1"
+              class="tw-mr-1.5"
               icon="flag"
               set="solid"
             />

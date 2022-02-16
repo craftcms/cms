@@ -18,44 +18,41 @@
 
                 // Base
                 'tw-inline-block tw-px-4 tw-py-2 tw-rounded-md': true,
-                'tw-text-sm tw-leading-5 tw-no-underline': true,
+                'tw-text-sm tw-leading-5 tw-no-underline hover:tw-no-underline': true,
                 'tw-border tw-border-solid': true,
                 'disabled:tw-opacity-50 disabled:tw-cursor-default': true,
 
                 // Variants
-                'tw-text-interactive-inverse': (kind === 'primary' || kind === 'danger') && !outline,
-                'hover:tw-text-interactive-inverse': (kind === 'primary' || kind === 'danger') && !outline,
-                'active:tw-text-interactive-inverse': (kind === 'primary' || kind === 'danger') && !outline,
+                'tw-text-white': (kind === 'primary' || kind === 'danger') && !outline,
+                'hover:tw-text-white': (kind === 'primary' || kind === 'danger') && !outline,
+                'active:tw-text-white': (kind === 'primary' || kind === 'danger') && !outline,
 
                 // Default
-                'tw-text-interactive': kind === 'default',
+                'tw-text-black': kind === 'default',
 
                 // Primary
-                'tw-border-interactive-primary': kind === 'primary',
-                'tw-bg-interactive-primary': kind === 'primary' && !outline,
-                'hover:tw-bg-interactive-primary-hover hover:tw-border-interactive-primary-hover': kind === 'primary' && !outline,
-                'active:tw-bg-interactive-primary-active active:tw-border-interactive-primary-active': kind === 'primary' && !outline,
-                'disabled:tw-bg-interactive-primary disabled:tw-border-interactive-primary': kind === 'primary' && !outline,
-                'tw-text-interactive-primary': kind === 'primary' && outline,
-                'hover:tw-bg-interactive-primary': kind === 'primary' && outline,
-                'active:tw-bg-interactive-primary-active': kind === 'primary' && outline,
+                'tw-border-blue-600': kind === 'primary',
+                'tw-bg-blue-600': kind === 'primary' && !outline,
+                'hover:tw-bg-blue-700 hover:tw-border-blue-700 active:hover:tw-bg-blue-600 active:hover:tw-border-blue-600': kind === 'primary' && !outline,
+                'active:tw-bg-blue-800 active:tw-border-blue-800': kind === 'primary' && !outline,
+                'disabled:tw-bg-blue-600 disabled:tw-border-blue-600': kind === 'primary' && !outline,
+                'tw-text-blue-600': kind === 'primary' && outline,
+                'hover:tw-bg-blue-600': kind === 'primary' && outline,
+                'active:tw-bg-blue-800': kind === 'primary' && outline,
 
                 // Secondary
-                'tw-border-interactive-secondary tw-text-interactive': kind === 'secondary',
-                'hover:tw-cursor-pointer hover:tw-bg-interactive-secondary-hover hover:tw-border-interactive-secondary-hover hover:tw-no-underline': kind === 'secondary',
-                'active:tw-cursor-pointer active:tw-bg-interactive-secondary-active active:tw-border-interactive-secondary-active': kind === 'secondary',
-                'tw-bg-interactive-secondary': kind === 'secondary' && !outline,
-                'tw-text-interactive': kind === 'secondary' && !outline,
+                'tw-border-gray-200 tw-text-blue-600': kind === 'secondary',
+                'hover:tw-cursor-pointer hover:tw-bg-gray-50 hover:tw-border-gray-200': kind === 'secondary',
+                'active:tw-cursor-pointer active:tw-bg-gray-100 active:tw-border-gray-300': kind === 'secondary',
+                'tw-bg-white': kind === 'secondary' && !outline,
+                'tw-text-blue-600': kind === 'secondary' && !outline,
+                'tw-shadow-gray-600/7': kind === 'secondary' && !outline,
 
                 // Danger
-                'tw-border-interactive-danger': kind === 'danger',
-                'tw-bg-interactive-danger': kind === 'danger' && !outline,
-                'hover:tw-bg-interactive-danger-hover hover:tw-border-interactive-danger-hover': kind === 'danger' && !outline,
-                'active:tw-bg-interactive-danger-active active:tw-border-interactive-danger-active': kind === 'danger' && !outline,
-                'disabled:tw-bg-interactive-danger disabled:tw-border-interactive-danger': kind === 'danger' && !outline,
-                'tw-text-interactive-danger': kind === 'danger' && outline,
-                'hover:tw-bg-interactive-danger': kind === 'danger' && outline,
-                'active:tw-bg-interactive-danger-active': kind === 'danger' && outline
+                'tw-text-red-600 tw-bg-white tw-border-gray-200': kind === 'danger',
+                'focus:tw-border-red-400 focus:tw-ring-red-500/30': kind === 'danger',
+                'hover:tw-bg-red-500 hover:tw-text-white hover:tw-border-red-600': kind === 'danger',
+                'active:tw-bg-red-600': kind === 'danger',
             }]"
     v-bind="additionalAttributes"
     @click="$emit('click')"
@@ -214,7 +211,7 @@ button.c-btn {
   }
 
   &.block {
-    @apply tw-w-full tw-my-2;
+    @apply tw-w-full;
   }
 
   &.small {
@@ -255,12 +252,12 @@ button.c-btn {
 
   &:not(.c-btn-icon) {
     .c-icon {
-      /*@include mr(1);*/
+      @include margin-right(1rem);
     }
   }
 
   .c-btn-content {
-    @apply tw-inline-block;
+    @apply tw-flex tw-items-center tw-justify-center;
   }
 }
 </style>
