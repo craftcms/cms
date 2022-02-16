@@ -7,10 +7,7 @@
 
 namespace craft\elements\db;
 
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Address;
-use craft\helpers\Db;
 use craft\models\Address;
 use yii\db\Connection;
 
@@ -84,10 +81,10 @@ class AddressQuery extends ElementQuery
     public function countryCode($value): self
     {
         $this->countryCode = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -114,6 +111,10 @@ class AddressQuery extends ElementQuery
             'addresses.latitude',
             'addresses.longitude'
         ]);
+
+        if ($this->countryCode) {
+            $this->subQuery->andWhere(['addresses.countryCode' => $this->countryCode]);
+        }
 
         return parent::beforePrepare();
     }
