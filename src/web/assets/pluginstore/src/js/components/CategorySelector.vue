@@ -9,10 +9,18 @@
     <div
       class="category-selector"
       :class="{ hidden: !showCategorySelector }">
-      <div class="category-selector-header">
-        <a
-          href="#"
-          @click.prevent="showCategorySelector = false">Hide categories</a>
+      <div
+        class="category-selector-header"
+        :class="{
+          'tw-px-4 tw-py-2 tw-bg-gray-100 tw-border-b tw-border-solid tw-border-gray-200 tw-flex tw-items-center': true,
+        }"
+      >
+        <button
+          class="tw-px-1.5 tw-py-1 tw-flex tw-items-center tw-rounded tw-text-gray-500 hover:tw-text-blue-600"
+          @click="showCategorySelector = false"
+        >
+          <c-icon class="tw-w-6 tw-h-6" icon="x" />
+        </button>
       </div>
 
       <div class="category-selector-body">
@@ -86,6 +94,7 @@ export default {
   height: 100vh;
   box-sizing: border-box;
 
+  /*
   .category-selector-header {
     a {
       @apply tw-block tw-text-black;
@@ -98,6 +107,7 @@ export default {
       }
     }
   }
+  */
 
   .category-selector-body {
     @apply tw-overflow-auto tw-h-full tw-p-6;

@@ -1,6 +1,6 @@
 <template>
   <component
-    class="tw-w-4 tw-h-4 align-middle"
+    class="align-middle"
     :is="computedComponent"></component>
 </template>
 
@@ -23,6 +23,7 @@ import PlugIcon from './icons/PlugIcon'
 import SearchIcon from './icons/SearchIcon'
 import StarIcon from './icons/StarIcon'
 import WorldIcon from './icons/WorldIcon'
+import XIcon from './icons/XIcon'
 
 export default {
   props: {
@@ -46,6 +47,7 @@ export default {
     SearchIcon,
     StarIcon,
     WorldIcon,
+    XIcon,
   },
   computed: {
     computedComponent() {
