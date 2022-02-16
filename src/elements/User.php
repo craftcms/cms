@@ -996,9 +996,12 @@ class User extends Element implements IdentityInterface
     {
         foreach ($addresses as $i => $address) {
             if (!$address instanceof Address) {
-                $address = new Address($address);
+                $address = Address::create($address);
             }
-            $addresses[$i] = $address;
+            // Don't allow empty addresses to be submitted.
+            if (!$address->getIsEmpty()) {
+                $addresses[$i] = $address;
+            }
         }
 
         $this->_addresses = $addresses;

@@ -31,6 +31,7 @@ use craft\helpers\StringHelper;
 use \craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\web\assets\addresses\AddressesAsset;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -124,9 +125,7 @@ class Addresses extends Component
      */
     public function getAddressById(int $id): ?Address
     {
-        $result = $this->createAddressQuery()->where(['id' => $id])->one();
-
-        return $this->createAddress($result);
+        return Address::findOne($id);
     }
 
     /**
@@ -224,51 +223,6 @@ class Addresses extends Component
         }
 
         return true;
-    }
-
-    /**
-     * Creates an address with a given config.
-     *
-     * @param array $config
-     * @return Address
-     */
-    public function createAddress(array $config)
-    {
-        $config = array_filter($config);
-
-        // JSON-decode the meta now
-        if (isset($config['metadata']) && is_string($config['metadata'])) {
-            $config['metadata'] = Json::decodeIfJson($config['metadata']);
-        }
-
-        return new Address($config);
-    }
-
-    /**
-     * @return Query
-     */
-    public function createAddressQuery(): Query
-    {
-        return (new Query())
-            ->select([
-                    'id',
-                    'label',
-                    'countryCode',
-                    'administrativeArea',
-                    'locality',
-                    'dependentLocality',
-                    'postalCode',
-                    'sortingCode',
-                    'addressLine1',
-                    'addressLine2',
-                    'organization',
-                    'givenName',
-                    'additionalName',
-                    'familyName',
-                    'metadata'
-                ]
-            )
-            ->from([Table::ADDRESSES]);
     }
 
     /**
@@ -473,7 +427,7 @@ class Addresses extends Component
         $uid = StringHelper::UUID();
 
         $projectConfig->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], "Save the address field layout");
-         return true;
+        return true;
     }
 
     /**

@@ -160,6 +160,31 @@ class Address extends Element implements AddressInterface
     }
 
     /**
+     * @param $config
+     * @return Address
+     */
+    public static function create($config): Address
+    {
+        $config = array_filter($config);
+
+        // JSON-decode the meta now
+        if (isset($config['metadata']) && is_string($config['metadata'])) {
+            $config['metadata'] = Json::decodeIfJson($config['metadata']);
+        }
+
+        // Support fields
+        $fields = [];
+        if (isset($config['fields'])) {
+            $fields = $config['fields'];
+            unset($config['fields']);
+        }
+
+        $address = new static($config);
+        $address->setFieldValues($fields);
+        return $address;
+    }
+
+    /**
      * @inheritdoc
      * @return AddressQuery The newly created [[AddressQuery]] instance.
      */
@@ -212,7 +237,7 @@ class Address extends Element implements AddressInterface
      */
     public function safeAttributes()
     {
-        return $this->getAttributes();
+        return self::_attributes();
     }
 
     /**
@@ -240,9 +265,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $administrativeArea
+     * @param string|null $administrativeArea
      */
-    public function setAdministrativeArea(string $administrativeArea): void
+    public function setAdministrativeArea(?string $administrativeArea): void
     {
         $this->_administrativeArea = $administrativeArea;
     }
@@ -256,9 +281,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $locality
+     * @param string|null $locality
      */
-    public function setLocality(string $locality): void
+    public function setLocality(?string $locality): void
     {
         $this->_locality = $locality;
     }
@@ -272,9 +297,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $dependentLocality
+     * @param string|null $dependentLocality
      */
-    public function setDependentLocality(string $dependentLocality): void
+    public function setDependentLocality(?string $dependentLocality): void
     {
         $this->_dependentLocality = $dependentLocality;
     }
@@ -288,9 +313,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $postalCode
+     * @param string|null $postalCode
      */
-    public function setPostalCode(string $postalCode): void
+    public function setPostalCode(?string $postalCode): void
     {
         $this->_postalCode = $postalCode;
     }
@@ -304,9 +329,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $sortingCode
+     * @param string|null $sortingCode
      */
-    public function setSortingCode(string $sortingCode): void
+    public function setSortingCode(?string $sortingCode): void
     {
         $this->_sortingCode = $sortingCode;
     }
@@ -320,9 +345,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $addressLine1
+     * @param string|null $addressLine1
      */
-    public function setAddressLine1(string $addressLine1): void
+    public function setAddressLine1(?string $addressLine1): void
     {
         $this->_addressLine1 = $addressLine1;
     }
@@ -336,9 +361,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $addressLine2
+     * @param string|null $addressLine2
      */
-    public function setAddressLine2(string $addressLine2): void
+    public function setAddressLine2(?string $addressLine2): void
     {
         $this->_addressLine2 = $addressLine2;
     }
@@ -352,9 +377,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $organization
+     * @param string|null $organization
      */
-    public function setOrganization(string $organization): void
+    public function setOrganization(?string $organization): void
     {
         $this->_organization = $organization;
     }
@@ -368,9 +393,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $givenName
+     * @param string|null $givenName
      */
-    public function setGivenName(string $givenName): void
+    public function setGivenName(?string $givenName): void
     {
         $this->_givenName = $givenName;
     }
@@ -384,9 +409,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $additionalName
+     * @param string|null $additionalName
      */
-    public function setAdditionalName(string $additionalName): void
+    public function setAdditionalName(?string $additionalName): void
     {
         $this->_additionalName = $additionalName;
     }
@@ -400,9 +425,9 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @param string $familyName
+     * @param string|null $familyName
      */
-    public function setFamilyName(string $familyName): void
+    public function setFamilyName(?string $familyName): void
     {
         $this->_familyName = $familyName;
     }
@@ -450,7 +475,7 @@ class Address extends Element implements AddressInterface
     /**
      * @param string|array Metadata
      */
-    public function setMetadata(array $metadata): void
+    public function setMetadata(mixed $metadata = []): void
     {
         $this->_metadata = Json::decodeIfJson($metadata);
     }

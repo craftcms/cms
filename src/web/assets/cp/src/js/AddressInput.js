@@ -29,7 +29,7 @@ Craft.AddressInput = Garnish.Base.extend({
         var self = this;
         this.id = id;
         this.baseName = baseName;
-        console.log(baseName);
+
         this.setSettings(settings, Craft.AddressInput.defaults);
 
         this.$addressCard = $('#' + id);
@@ -42,8 +42,6 @@ Craft.AddressInput = Garnish.Base.extend({
             this.$addressCard.addClass('static');
         }
 
-        // this.initialData = this._getData(this.$addressCardFieldsContent);;
-
         // address editor body
         this.$body = $('<div/>', {class: 'so-body'});
 
@@ -53,11 +51,7 @@ Craft.AddressInput = Garnish.Base.extend({
         // Footer
         this.$footer = $('<div/>', {class: 'so-footer'});
         const $spacer = $('<div/>', {class: 'so-spacer'}).appendTo(this.$footer);
-        this.$cancelBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn',
-            text: Craft.t('app', 'Cancel'),
-        }).appendTo(this.$footer);
+
         this.$doneBtn = $('<button/>', {
             type: 'submit',
             class: 'btn submit',
@@ -82,42 +76,35 @@ Craft.AddressInput = Garnish.Base.extend({
                 }
             });
 
-            this.slideout.$container.data('addressEditor', this);
-
             this.$addressCardFieldsContent.on('change', 'select', function(ev) {
-                console.log('TODO: handle country and state to refresh the form');
+                self.refreshStandardFields();
             });
 
             // Edit
-            this.$addressCardBody.hover(function() {
+            this.$addressCard.hover(function() {
                 $(this).css('cursor', 'pointer');
             });
-            this.addListener(this.$addressCardBody, 'click', (ev) => {
-                console.log('TODO: handle edit');
-                ev.preventDefault();
-                this.openSlideout();
-            });
-            this.$addressCardHeader.find('[data-action=\'edit\']').on('click', (ev) => {
+            this.$addressCard.on( 'click', (ev) => {
                 ev.preventDefault();
                 this.openSlideout();
             });
 
+            this.$addressCardHeader.on( 'click', (ev) => {
+                ev.stopPropagation();
+            });
+
             // Remove
-            this.$addressCardHeader.find('[data-action=\'remove\']').on('click', (ev) => {
+            this.$addressCard.find('[data-action=\'remove\']').on( 'click', (ev) => {
                 ev.preventDefault();
                 this.$addressCard.remove();
             });
 
             Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, () => {
-                this.maybeCloseSlideout();
-            });
-            this.addListener(this.$cancelBtn, 'click', () => {
-                this.maybeCloseSlideout();
+                this.done();
             });
             this.addListener(this.slideout.$shade, 'click', () => {
-                this.maybeCloseSlideout();
+                this.done();
             });
-
             this.addListener(this.slideout.$container, 'submit', ev => {
                 ev.preventDefault();
                 this.done();
@@ -125,6 +112,25 @@ Craft.AddressInput = Garnish.Base.extend({
         }
 
         this.initialized = true;
+    },
+    refreshStandardFields(){
+        this.$saveSpinner.removeClass('hidden');
+        var data = new FormData(this.slideout.$container[0]);
+        data.append('name', this.baseName);
+        // for(let [name, value] of data) {
+        //     console.log(`${name} = ${value}`);
+        // }
+        this.sendActionRequest(data).then(response => {
+            this.$addressCardFieldsContent.find('.address-standard-fields').html(response.data.fieldHtml);
+            Garnish.requestAnimationFrame(() => {
+                Craft.appendHeadHtml(response.data.headHtml);
+                Craft.appendBodyHtml(response.data.bodyHtml);
+                Craft.initUiElements(this.slideout.$container);
+            });
+            this.$saveSpinner.addClass('hidden');
+        }).catch(e => {
+            console.log(e);
+        });
     },
     openSlideout: function() {
         this.$addressCardFieldsContent.appendTo(this.$slideoutFieldsContainer);
@@ -142,48 +148,22 @@ Craft.AddressInput = Garnish.Base.extend({
 
         return data;
     },
-    maybeCloseSlideout: function() {
-        if (!this.slideout.isOpen) {
-            return;
-        }
-
-        if (!this.isDirty() || confirm('Are you sure you want to close the editor? Any changes will be lost.')) {
-            this.closeSlideout();
-        }
-    },
     done: function() {
         this.$saveSpinner.removeClass('hidden');
-
-        var data = this._getData(this.slideout.$container[0]);
-
-        this.sendActionRequest(data).then(response => {
-            var $cardBody = $(response.data.fieldHtml).find('.address-card-body');
-            this.$addressCardBody.html($cardBody.html());
-
-            Garnish.requestAnimationFrame(() => {
-                Craft.appendHeadHtml(response.data.headHtml);
-                Craft.appendFootHtml(response.data.footHtml);
-                Craft.initUiElements(this.slideout.$container);
-            });
-            this.$saveSpinner.addClass('hidden');
-            this.closeSlideout();
-
-        }).catch(e => {
-            console.log(e);
-        });
+        this.closeSlideout();
     },
     closeSlideout: function() {
         this.$addressCardFieldsContent.appendTo(this.$addressCardFields);
         this.slideout.close();
     },
     sendActionRequest: function(data) {
-        return Craft.sendActionRequest('POST', this.settings.getInputHtmlUrl, {
+        return Craft.sendActionRequest('POST', this.settings.action, {
             data: data
         });
     },
 }, {
     defaults: {
         static: false,
-        getInputHtmlUrl: Craft.getActionUrl('addresses/get-input-html')
+        action: 'users/render-address',
     }
 });

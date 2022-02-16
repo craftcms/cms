@@ -4,7 +4,7 @@
 {%- set initJs = not static and (initJs ?? true) -%}
 {%- set availableCountries = availableCountries ?? craft.app.addresses.countryRepository.getList(craft.app.language) %}
 {%- set defaultCountryCode = defaultCountryCode ?? availableCountries|keys|first -%}
-{%- set address = address ?? create('craft\\models\\Address') %}
+{%- set address = address ?? create('craft\\elements\\Address') %}
 {%- set addressFormat = craft.app.addresses.addressFormatRepository.get(address.countryCode ?? defaultCountryCode) %}
 {%- set id = id ?? "address#{random()}" %}
 {%- set containerClasses = ['address-card'] -%}
@@ -26,9 +26,9 @@
 {% tag 'div' with containerAttributes %}
     <div class="address-card-header">
         {% if address.label %}
-        <div class="address-card-label">
-            {{ address.label }}
-        </div>
+            <div class="address-card-label">
+                {{ address.label }}
+            </div>
         {% endif %}
         <div class="address-card-header-actions">
             <button type="button" class="btn menubtn" data-icon="settings"
@@ -36,16 +36,9 @@
             <div class="menu">
                 <ul>
                     <li>
-                        <a href="#" data-action="edit" title="{{ 'Edit'|t('app') }}" aria-label="{{ 'Edit'|t('app') }}"
-                           role="button">Edit</a>
+                        <a href="#" data-action="remove" class="error" title="{{ 'Remove'|t('app') }}"
+                           aria-label="{{ 'Remove'|t('app') }}" role="button">{{ 'Remove…'|t('app') }}</a>
                     </li>
-
-                    {% if not address.getIsEmpty() %}
-                        <li>
-                            <a href="#" data-action="remove" class="error" title="{{ 'Remove'|t('app') }}"
-                               aria-label="{{ 'Remove'|t('app') }}" role="button">{{ 'Remove…'|t('app') }}</a>
-                        </li>
-                    {% endif %}
                 </ul>
             </div>
 
@@ -57,21 +50,16 @@
         {% endif %}
     </div>
     <div class="address-card-fields hidden">
-
-
         <div class="address-card-fields-content">
-
-            {% namespace name %}
-                {% set form = address.getFieldLayout().createForm(address) %}
+            {% set form = address.getFieldLayout().createForm(address) %}
             {{ form.render()|raw }}
-            {% endnamespace %}
         </div>
     </div>
 {% endtag %}
 
 {% if initJs %}
     {% set jsId = id|namespaceInputId|e('js') %}
-    {% set jsName = name|namespaceInputName|e('js') %}
+    {% set jsName = name|e('js') %}
     {% js %}
     new Craft.AddressInput("{{ jsId }}", "{{ jsName }}", {
         static: {{ static ? 'true' : 'false'}},

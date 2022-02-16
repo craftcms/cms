@@ -81,6 +81,9 @@ class AddressField extends BaseField
             throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
         }
 
-        return 'TODO';
+        return Craft::$app->getView()->renderTemplate('_includes/forms/address-standard', [
+            'address' => $element,
+            'static' => $static,
+        ]);
     }
 }

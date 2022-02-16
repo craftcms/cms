@@ -10,9 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\User;
-use craft\helpers\ArrayHelper;
-use craft\models\Address;
+use craft\elements\Address;
 use yii\base\Component;
 
 /**
@@ -42,13 +40,9 @@ class UserAddresses extends Component
         $addresses = [];
 
         if (!empty($results)) {
-            $addressResults = Craft::$app->getAddresses()->createAddressQuery()
-                ->where(['id' => $results])
+            $addresses = Address::find()
+                ->id($results)
                 ->all();
-
-            foreach ($addressResults as $result) {
-                $addresses[] = Craft::$app->getAddresses()->createAddress($result);
-            }
         }
 
         return $addresses;

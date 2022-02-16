@@ -451,7 +451,6 @@ class Fields extends Component
     public function getAllFieldTypes(): array
     {
         $fieldTypes = [
-            Address::class,
             AssetsField::class,
             CategoriesField::class,
             Checkboxes::class,
