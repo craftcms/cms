@@ -6,7 +6,7 @@
         class="plugin-details-header tw-mt-0"
       >
         <template v-if="plugin">
-          <div class="ps-container">
+          <div class="ps-container tw-pb-0">
             <div class="description tw-flex">
               <div class="icon tw-w-24">
                 <img

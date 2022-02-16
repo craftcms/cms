@@ -1,19 +1,33 @@
 <template>
-  <div class="screenshots">
+  <div class="tw-overflow-x-auto tw-w-full tw-flex tw-gap-6 tw-snap-x tw-snap-mandatory tw-pb-8">
     <a
-      class="screenshot"
-      v-for="(image, key) in images"
-      @click="zoomImage(key)"
-      :key="key">
-      <img :src="image" />
+      v-for="(image, key) in thumbnails"
+      :key="key"
+      class="tw-shrink-0 tw-snap-start tw-w-64 tw-overflow-hidden"
+      @click.prevent="zoomImage(key)"
+    >
+      <img
+        :alt="'Plugin screenshot thumbnail ' + (key + 1) + '/' + thumbnails.length"
+        class="tw-rounded-md tw-object-cover tw-aspect-[4/3]"
+        :src="image"
+      >
     </a>
   </div>
 </template>
 
-
 <script>
 export default {
-  props: ['images'],
+  props: {
+    thumbnails: {
+      type: Array,
+      required: true,
+    },
+    images: {
+      type: Array,
+      required: true,
+    },
+  },
+
 
   methods: {
     zoomImage(key) {
@@ -25,34 +39,3 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.screenshots {
-  @apply tw-overflow-auto tw-flex tw--mx-4;
-  -webkit-overflow-scrolling: touch;
-
-  .screenshot {
-    @apply tw-px-4 tw-shrink-0 tw-grow-0;
-    flex-basis: 90%;
-
-    img {
-      @apply tw-rounded;
-    }
-  }
-}
-
-@media (min-width: 672px) {
-  .screenshots {
-    .screenshot {
-      flex-basis: 45%;
-    }
-  }
-}
-
-@media only screen and (min-width: 1400px) {
-  .screenshots {
-    .screenshot {
-      flex-basis: 31%;
-    }
-  }
-}
-</style>

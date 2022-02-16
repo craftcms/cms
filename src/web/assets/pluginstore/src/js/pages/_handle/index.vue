@@ -59,10 +59,14 @@
               </div>
             </template>
 
-            <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
-              <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
-
-              <hr>
+            <!-- Screenshots -->
+            <template v-if="plugin.thumbnailUrls.length">
+              <div class="tw-border-b tw-border-solid tw-border-gray-200 tw-mb-8">
+                <plugin-screenshots
+                  :thumbnails="plugin.thumbnailUrls"
+                  :images="plugin.screenshotUrls"
+                />
+              </div>
             </template>
 
             <div class="xl:tw-flex">
