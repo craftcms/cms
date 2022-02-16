@@ -1288,7 +1288,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockTypes[$blockData['type']]->id;
-                $block->primaryOwnerId = $element->id;
+                $block->primaryOwnerId = $block->ownerId = $element->id;
                 $block->siteId = $element->siteId;
 
                 // Preserve the collapsed state, which the browser can't remember on its own for new blocks
