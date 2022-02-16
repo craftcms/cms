@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\config\GeneralConfig;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -24,6 +25,7 @@ use craft\records\Volume;
 use craft\records\VolumeFolder;
 use DateTime;
 use yii\base\Component;
+use yii\di\Instance;
 
 /**
  * Garbage Collection service.
@@ -54,6 +56,27 @@ class Gc extends Component
      * for hard-deletion per the <config3:softDeleteDuration> config setting.
      */
     public bool $deleteAllTrashed = false;
+
+    /**
+     * @var Connection|array|string The database connection to use
+     * @since 4.0.0
+     */
+    public $db = 'db';
+
+    /**
+     * @var GeneralConfig
+     */
+    private GeneralConfig $_generalConfig;
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        $this->db = Instance::ensure($this->db, Connection::class);
+        $this->_generalConfig = Craft::$app->getConfig()->getGeneral();
+        parent::init();
+    }
 
     /**
      * Possibly runs garbage collection.
@@ -118,12 +141,11 @@ class Gc extends Component
      */
     public function hardDeleteVolumes(): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
+        if (!$this->_shouldHardDelete()) {
             return;
         }
 
-        $condition = $this->getHardDeleteConditions($generalConfig);
+        $condition = $this->_hardDeleteCondition();
 
         $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
         $volumeIds = [];
@@ -151,12 +173,11 @@ class Gc extends Component
      */
     public function hardDelete($tables): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (!$generalConfig->softDeleteDuration && !$this->deleteAllTrashed) {
+        if (!$this->_shouldHardDelete()) {
             return;
         }
 
-        $condition = $this->getHardDeleteConditions($generalConfig);
+        $condition = $this->_hardDeleteCondition();
 
         if (!is_array($tables)) {
             $tables = [$tables];
@@ -177,10 +198,9 @@ class Gc extends Component
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
-        $db = Craft::$app->getDb();
         $elementsTable = Table::ELEMENTS;
 
-        if ($db->getIsMysql()) {
+        if ($this->db->getIsMysql()) {
             $sql = <<<SQL
 DELETE [[e]].* FROM $elementsTable [[e]]
 LEFT JOIN $table [[t]] ON [[t.$fk]] = [[e.id]]
@@ -200,7 +220,17 @@ WHERE
 SQL;
         }
 
-        $db->createCommand($sql, ['type' => $elementType])->execute();
+        $this->db->createCommand($sql, ['type' => $elementType])->execute();
+    }
+
+    /**
+     * Returns whether we should be hard-deleting soft-deleted objects.
+     *
+     * @return bool
+     */
+    private function _shouldHardDelete(): bool
+    {
+        return $this->_generalConfig->softDeleteDuration || $this->deleteAllTrashed;
     }
 
     /**
@@ -208,13 +238,11 @@ SQL;
      */
     private function _deleteStaleSessions(): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        if ($generalConfig->purgeStaleUserSessionDuration === 0) {
+        if ($this->_generalConfig->purgeStaleUserSessionDuration === 0) {
             return;
         }
 
-        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeStaleUserSessionDuration);
+        $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
@@ -237,11 +265,10 @@ SQL;
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {
-        $db = Craft::$app->getDb();
         $elementsTable = Table::ELEMENTS;
 
         foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
-            if ($db->getIsMysql()) {
+            if ($this->db->getIsMysql()) {
                 $sql = <<<SQL
 DELETE [[t]].* FROM $table [[t]]
 LEFT JOIN $elementsTable [[e]] ON [[e.$fk]] = [[t.id]]
@@ -258,21 +285,20 @@ WHERE
 SQL;
             }
 
-            $db->createCommand($sql)->execute();
+            $this->db->createCommand($sql)->execute();
         }
     }
 
     /**
-     * @param GeneralConfig $generalConfig
      * @return array
      */
-    protected function getHardDeleteConditions(GeneralConfig $generalConfig): array
+    private function _hardDeleteCondition(): array
     {
         $condition = ['not', ['dateDeleted' => null]];
 
         if (!$this->deleteAllTrashed) {
             $expire = DateTimeHelper::currentUTCDateTime();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->softDeleteDuration);
+            $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->softDeleteDuration);
             $pastTime = $expire->sub($interval);
             $condition = [
                 'and',
