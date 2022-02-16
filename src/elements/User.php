@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\commerce\elements\Variant;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -38,7 +37,6 @@ use craft\models\FieldLayout;
 use craft\models\UserGroup;
 use craft\records\Address_User;
 use craft\records\User as UserRecord;
-use craft\records\Address as AddressRecord;
 use craft\services\Addresses;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
@@ -1955,23 +1953,44 @@ class User extends Element implements IdentityInterface
      */
     public function _saveAddresses(): void
     {
-        $addresses = $this->getAddresses();
-
-        Address_User::deleteAll([
-            'userId' => $this->id,
-        ]);
-
         $updatedAddresses = [];
-        foreach ($addresses as $address) {
+        $newAddressIds = [];
+        foreach ($this->getAddresses() as $address) {
             // Validation of the addresses is done in the User element
+            $isNew = !$address->id;
             Craft::$app->getElements()->saveElement($address, false);
             $updatedAddresses[] = $address;
-            (new Address_User([
-                'addressId' => $address->id,
-                'userId' => $this->id,
-            ]))->save();
+            if ($isNew) {
+                $newAddressIds[] = $address->id;
+            }
         }
 
+        // IDs of all new addresses
+        $updatedAddressIds = collect($updatedAddresses)->pluck('id')->toArray();
+
+        $deletableIds = Address_User::find()->select(['addressId'])
+            ->where(['userId' => $this->id])
+            ->andWhere(['not', ['addressId' => $updatedAddressIds]])
+            ->column();
+
+
+        $idd = [47, 28, 39, 29, 40, 30, 41, 31, 32, 42, 43, 44, 45, 17, 18, 33, 48, 46, 35, 52, 36, 37, 38];
+        foreach ($idd as $deletableId) {
+            Craft::$app->getElements()->deleteElementById($deletableId);
+        }
+        foreach ($deletableIds as $deletableId) {
+            Craft::$app->getElements()->deleteElementById($deletableId);
+        }
+
+        // Delete any old user addresses
+        $userRelations = [];
+        foreach ($updatedAddressIds as $id) {
+            if (in_array($id, $newAddressIds, false)) {
+                $userRelations[] = [$this->id, $id];
+            }
+        }
+        Db::batchInsert(Table::ADDRESSES_USERS, ['userId', 'addressId'], $userRelations);
+        
         $this->setAddresses($updatedAddresses);
     }
 }

@@ -8,6 +8,7 @@ use craft\base\Element;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use yii\base\Exception;
@@ -221,6 +222,7 @@ class Address extends Element implements AddressInterface
         }
 
         $address = new static($config);
+        $address->uid = $address->uid ?: StringHelper::UUID();
         $address->setFieldValues($fields);
         return $address;
     }
