@@ -463,7 +463,7 @@ class Install extends Migration
             'blockId' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
-            'PRIMARY KEY([[blockId]], [[elementId]])',
+            'PRIMARY KEY([[blockId]], [[ownerId]])',
         ]);
         $this->createTable(Table::MATRIXBLOCKTYPES, [
             'id' => $this->primaryKey(),
