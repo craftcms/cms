@@ -252,6 +252,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement,
             'isDateTime' => $this->showTime,
+            'hasOuterContainer' => true,
         ];
 
         $input = '';
