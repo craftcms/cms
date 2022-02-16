@@ -74,7 +74,7 @@ class Assets
     }
 
     /**
-     * Generate a URL for a given Assets file in a Source Type.
+     * Generates a URL for a given Assets file in a Source Type.
      *
      * @param VolumeInterface $volume
      * @param Asset $asset

@@ -158,7 +158,7 @@ class DbConfig extends BaseObject
     public $url;
 
     /**
-     * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+     * @var string The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
      */
     public $driver;
 

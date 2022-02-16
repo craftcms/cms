@@ -1233,6 +1233,28 @@ class Users extends Component
     }
 
     /**
+     * Returns whether the user can suspend the given user
+     *
+     * @param User $suspender
+     * @param User $suspendee
+     * @return bool
+     * @since 3.7.32
+     */
+    public function canSuspend(User $suspender, User $suspendee): bool
+    {
+        if (!$suspender->can('moderateUsers')) {
+            return false;
+        }
+
+        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
+        if (!$suspender->admin && $suspendee->admin) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Prune a deleted field from user group layout.
      *
      * @param FieldEvent $event

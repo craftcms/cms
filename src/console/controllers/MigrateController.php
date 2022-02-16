@@ -408,17 +408,16 @@ class MigrateController extends BaseMigrateController
     }
 
     /**
-     * Upgrades the application by applying new migrations.
+     * Upgrades Craft by applying new migrations.
      *
-     * For example,
-     *
+     * Example:
      * ```
-     * craft migrate     # apply all new migrations
-     * craft migrate 3   # apply the first 3 new migrations
+     * php craft migrate     # apply all new migrations
+     * php craft migrate 3   # apply the first 3 new migrations
      * ```
      *
-     * @param int $limit the number of new migrations to be applied. If 0, it means
-     * applying all available new migrations.
+     * @param int $limit The number of new migrations to be applied. If `0`, every new migration
+     * will be applied.
      *
      * @return int the status of the action execution. 0 means normal, other values mean abnormal.
      */

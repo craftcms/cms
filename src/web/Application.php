@@ -15,6 +15,7 @@ use craft\debug\DeprecatedPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -91,7 +92,7 @@ class Application extends \yii\web\Application
 
         parent::init();
 
-        if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL !== true) {
+        if (!App::isEphemeral()) {
             $this->ensureResourcePathExists();
         }
 

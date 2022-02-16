@@ -24,7 +24,6 @@ use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
-use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
@@ -774,8 +773,7 @@ class UsersController extends Controller
                     }
                     break;
                 case User::STATUS_SUSPENDED:
-                    $statusLabel = Craft::t('app', 'Suspended');
-                    if ($userSession->checkPermission('moderateUsers')) {
+                    if (Craft::$app->getUsers()->canSuspend($currentUser, $user)) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend'),
@@ -830,7 +828,7 @@ class UsersController extends Controller
                     ];
                 }
 
-                if ($userSession->checkPermission('moderateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
+                if (Craft::$app->getUsers()->canSuspend($currentUser, $user) && $user->getStatus() != User::STATUS_SUSPENDED) {
                     $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend'),
@@ -959,11 +957,11 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if ($isCurrentUser) {
-            /** @var Locale[] $allLocales */
-            $allLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
-            ArrayHelper::multisort($allLocales, 'displayName');
+            /** @var Locale[] $appLocales */
+            $appLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
+            ArrayHelper::multisort($appLocales, 'displayName');
             $localeOptions = [];
-            foreach ($allLocales as $locale) {
+            foreach ($appLocales as $locale) {
                 $localeOptions[] = [
                     'label' => $locale->getDisplayName(),
                     'value' => $locale->id,
@@ -971,12 +969,12 @@ class UsersController extends Controller
             }
 
             $userLanguage = $user->getPreferredLanguage();
-            if ($userLanguage !== null && !isset($allLocales[$userLanguage])) {
+            if ($userLanguage !== null && !isset($appLocales[$userLanguage])) {
                 $userLanguage = null;
             }
 
             $userLocale = $user->getPreferredLocale();
-            if ($userLocale !== null && !isset($allLocales[$userLocale])) {
+            if ($userLocale !== null && !isset($appLocales[$userLocale])) {
                 $userLocale = null;
             }
 
@@ -1008,12 +1006,15 @@ class UsersController extends Controller
 
         $this->getView()->registerAssetBundle(EditUserAsset::class);
 
-        $userIdJs = Json::encode($user->id);
-        $isCurrentJs = ($isCurrentUser ? 'true' : 'false');
-        $settingsJs = Json::encode([
-            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
-        ]);
-        $this->getView()->registerJs('new Craft.AccountSettingsForm(' . $userIdJs . ', ' . $isCurrentJs . ', ' . $settingsJs . ');', View::POS_END);
+        $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
+
+        $this->getView()->registerJsWithVars(function($userId, $isCurrent, $deleteModalRedirect) {
+            return <<<JS
+new Craft.AccountSettingsForm($userId, $isCurrent, {
+    deleteModalRedirect: $deleteModalRedirect,
+})
+JS;
+        }, [$user->id, $isCurrentUser, $deleteModalRedirect], View::POS_END);
 
         return $this->renderTemplate('users/_edit', compact(
             'user',
@@ -1576,14 +1577,10 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can suspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->suspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
@@ -1709,13 +1706,10 @@ class UsersController extends Controller
         }
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
+        $usersService = Craft::$app->getUsers();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($user->admin && !$currentUser->admin) {
-            throw new ForbiddenHttpException('Only admins can unsuspend other admins');
-        }
-
-        if (!Craft::$app->getUsers()->unsuspendUser($user)) {
+        if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }

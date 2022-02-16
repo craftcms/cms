@@ -564,6 +564,7 @@ Craft.CP = Garnish.Base.extend({
     breadcrumbItemsWrap: function() {
         if (!this.$breadcrumbItems[0]) return;
 
+        this.$breadcrumbList.css(Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left', '');
         const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
         let totalItemWidth = 0;
         
@@ -575,7 +576,18 @@ Craft.CP = Garnish.Base.extend({
 
         this.breadcrumbListWidth = listWidth;
 
-        return totalItemWidth > listWidth;
+        if (totalItemWidth <= listWidth) {
+            return false;
+        }
+
+        // If it's less than a pixel off, it's probably just a rounding error.
+        // Give the container an extra pixel to be safe, though
+        if (totalItemWidth < listWidth + 1) {
+            this.$breadcrumbList.css(Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left', '-1px');
+            return false;
+        }
+
+        return true;
     },
 
     handleBreadcrumbVisibility: function() {

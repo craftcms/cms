@@ -1,3 +1,5 @@
+/*! ../cancel/Cancel */
+
 /*! ../cancel/isCancel */
 
 /*! ../core/buildFullPath */
@@ -5,6 +7,8 @@
 /*! ../core/createError */
 
 /*! ../defaults */
+
+/*! ../env/data */
 
 /*! ../helpers/buildURL */
 
@@ -15,8 +19,6 @@
 /*! ../helpers/validator */
 
 /*! ../utils */
-
-/*! ./../../package.json */
 
 /*! ./../core/settle */
 
@@ -58,6 +60,8 @@
 
 /*! ./enhanceError */
 
+/*! ./env/data */
+
 /*! ./helpers/bind */
 
 /*! ./helpers/isAxiosError */
@@ -74,8 +78,6 @@
 
 /*! ./utils */
 
-/*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, browser, jsdelivr, unpkg, typings, dependencies, bundlesize, default */
-
 /*! no static exports found */
 
 /*!******************!*\
@@ -90,12 +92,12 @@
   !*** ./lib/utils.js ***!
   \**********************/
 
-/*!**********************!*\
-  !*** ./package.json ***!
-  \**********************/
-
 /*!*************************!*\
   !*** ./lib/defaults.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./lib/env/data.js ***!
   \*************************/
 
 /*!***************************!*\

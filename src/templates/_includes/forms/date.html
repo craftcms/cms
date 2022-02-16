@@ -1,7 +1,9 @@
+{% set hasOuterContainer = hasOuterContainer ?? false %}
 {% set id = (id ?? "date#{random()}") ~ '-date' -%}
 {% set name = name ?? null -%}
 {% set value = (value ?? false) ? date(value, false) : null -%}
 {% set isMobile = craft.app.request.isMobileBrowser %}
+{% set describedBy = describedBy ?? null %}
 
 {% set containerAttributes = {
     class: ['datewrapper']|merge((class ?? [])|explodeClass),
@@ -11,10 +13,12 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
+
 {% tag 'div' with containerAttributes %}
     {%- include "_includes/forms/text" with {
         type: isMobile ? 'date' : 'text',
-        class: isMobile and value ? 'has-value' : false,
+        class: isMobile and not value ? 'empty-value' : false,
         name: name ? "#{name}[date]" : null,
         autocomplete: false,
         size: 10,
@@ -26,6 +30,8 @@
         {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
     {%- endif -%}
 {% endtag %}
+
+{% if not hasOuterContainer %}</div>{% endif %}
 
 {%- if not isMobile -%}
     {%- js -%}

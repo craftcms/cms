@@ -136,6 +136,10 @@ class App
             return $value;
         }
 
+        if ($value === 0 || $value === 1) {
+            return (bool)$value;
+        }
+
         if (!is_string($value)) {
             return null;
         }

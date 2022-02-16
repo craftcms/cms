@@ -2,19 +2,91 @@
 
 ## Unreleased
 
+### Changed
+- Craft now HTML encodes the user’s name in the default system emails.
+
+### Fixed
+- Fixed a bug where Date fields that were configured to show the time input weren’t displaying properly.
+
+## 3.7.33 - 2022-02-15
+
+> {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.
+
+### Added
+- Added support for PHP 8.1.
+- Added the `users/logout-all` console command.
+- Added `Garnish.prefersReducedMotion()`.
+
+### Changed
+- Lightswitch inputs are no longer animated for browsers that have requested reduced motion. ([#10532](https://github.com/craftcms/cms/pull/10532))
+- Reverted the 3.7.32 change to plugin settings. ([#10533](https://github.com/craftcms/cms/issues/10533))
+- Improved accessibility for the Craft Support widget. ([#7290](https://github.com/craftcms/cms/issues/7290))
+- The `graphql/api` controller action now supports passing the GraphQL bearer token via an `X-Craft-Authorization` header, in addition to `Authorization`. ([#10539](https://github.com/craftcms/cms/discussions/10539))
+- `craft\helpers\App::parseBooleanEnv()` now treats `0` and `1` as boolean values. ([#10524](https://github.com/craftcms/cms/issues/10524))
+- Updated GraphiQL to 1.5.16.
+- Updated Yii to 2.0.45.
+- Updated svg-sanitizer to 0.15.
+
+## Fixed
+- Fixed a bug where admin tables would display the wrong handle values after an item was deleted. ([#10538](https://github.com/craftcms/cms/issues/10538))
+- Fixed a bug where entries and Matrix blocks weren’t necessarily getting propagated from the primary site, when they were activated for a new site via a setting change. ([#10561](https://github.com/craftcms/cms/issues/10561))
+- Fixed an error that occurred when testing queue jobs. ([#10569](https://github.com/craftcms/cms/pull/10569))
+- Fixed a bug where some GraphQL API query arguments would break element queries. ([#10580](https://github.com/craftcms/cms/issues/10580))
+
+### Security
+- Fixed a potential CSRF security issue.
+
+## 3.7.32 - 2022-02-09
+
+### Added
+- Added `craft\base\FieldInterface::getInputId()`.
+- Added `craft\db\Migration::createIndexIfMissing()`.
+- Added `craft\db\Migration::dropIndexIfExists()`.
+- Added `craft\services\Users::canSuspend()`.
+- Added `craft\validators\SiteIdValidator::$allowDisabled`.
+
+### Changed
+- Improved element query performance. ([#10418](https://github.com/craftcms/cms/discussions/10418))
+- Improved asset transform eager-loading performance. ([#10427](https://github.com/craftcms/cms/discussions/10427))
+- The “Suspend” and “Unsuspend” user actions are now smarter about when they should be available, based on the selected users.
+- Plugin settings forms now display the values stored in the project config, even if they’ve been overridden by the plugin’s config file.
+- Improved the styling of field tips and warnings.
+- The Edit Field page will now instantiate a new field instance of the expected field type, if it had been previously saved while the field type was missing. ([#10437](https://github.com/craftcms/cms/issues/10437))
+
+### Fixed
+- Fixed a bug where Date and Time fields’ labels weren’t referencing the correct input IDs.
+- Fixed a bug where the last control panel breadcrumb could be collapsed under a “More…” menu when there was enough room to display it. ([#10495](https://github.com/craftcms/cms/issues/10495))
+- Fixed a bug where it was possible for non-admins to suspend/unsuspend admins from the Users index page. ([#10422](https://github.com/craftcms/cms/issues/10422))
+- Fixed a bug where the `project-config/apply` command output could get mangled. ([#9900](https://github.com/craftcms/cms/issues/9900))
+- Fixed an error that could occur when saving an entry programmatically on a front-end request, if any sites were disabled. ([#10499](https://github.com/craftcms/cms/issues/10499))
+- Fixed a bug where Date and Time inputs weren’t clearable on mobile. ([#10500](https://github.com/craftcms/cms/issues/10500))
+- Fixed a bug where Date and Time fields created by JavaScript weren’t getting native `date` and `time` inputs on mobile.
+- Fixed a JavaScript error on the Edit User page. ([#10509](https://github.com/craftcms/cms/issues/10509))
+- Fixed a bug where it was possible to save a custom field whose type was missing. ([#10437](https://github.com/craftcms/cms/issues/10437))
+
+### Security
+- Fixed a GraphQL API vulnerability.
+
+## 3.7.31 - 2022-02-08
+
 ### Added
 - Added the `clear-deprecations` command. ([#10430](https://github.com/craftcms/cms/discussions/10430))
 - Added the `plugin/list` command. ([#10470](https://github.com/craftcms/cms/pull/10470))
 - Added the `users/activation-url` and `users/password-reset-url` commands. ([#10482](https://github.com/craftcms/cms/pull/10482))
+- Added the `revisionId` field to drafts when queried via GraphQL. ([#10462](https://github.com/craftcms/cms/pull/10462))
+- Added `craft\web\View::registerJsWithVars()`.
 
 ### Changed
 - Improved focus styles in the control panel. ([#10398](https://github.com/craftcms/cms/pull/10398))
 - Improved Matrix field accessibility for screen readers. ([#10480](https://github.com/craftcms/cms/pull/10480))
+- Improved Table field accessibility for screen readers. ([#10502](https://github.com/craftcms/cms/pull/10502))
+- Handles within admin tables are now displayed as copy-buttons. ([#10475](https://github.com/craftcms/cms/discussions/10475))
 - Craft no longer sends a `Permissions-Policy: interest-cohort=()` header by default, as Google has [abandoned](https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/) its FLoC proposal.
 - Craft no longer attempts to create the `cpresources` folder when `CRAFT_EPHEMERAL` is set to `true`. ([#10412](https://github.com/craftcms/cms/issues/10412))
 - Video assets’ focal points are no longer suppressed, if they were set by a plugin or module. ([#10415](https://github.com/craftcms/cms/discussions/10415))
 - Plugins are now consistently loaded in the same order across all environments. ([#10441](https://github.com/craftcms/cms/issues/10441))
 - Element exporters’ `export()` methods can now return an array or generator function, even if `isFormattable()` returns `true`. ([#10484](https://github.com/craftcms/cms/pull/10484))
+- `Craft.BaseElementSelectorModal` now supports a `fullscreen` setting.
 
 ### Fixed
 - Fixed a bug where Craft would not display an appropriate error message if a Local volume was pointing to a broken symlink. ([#10396](https://github.com/craftcms/cms/issues/10396)
@@ -28,6 +100,7 @@
 - Fixed a JavaScript error. ([#10428](https://github.com/craftcms/cms/issues/10428))
 - Fixed a bug where Dashboard widget flip animations weren’t always working in Firefox.
 - Fixed an error that could occur if an element’s `getSupportedSites()` method returned info for a site that didn’t exist or was soft-deleted.
+- Fixed GraphiQL layout issues for users with a RTL language set. ([#10465](https://github.com/craftcms/cms/pull/10465))
 
 ## 3.7.30.1 - 2022-01-21
 

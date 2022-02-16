@@ -2082,7 +2082,9 @@ class Asset extends Element
      */
     protected function htmlAttributes(string $context): array
     {
-        $attributes = [];
+        $attributes = [
+            'data-kind' => $this->kind,
+        ];
 
         if ($this->kind === self::KIND_IMAGE) {
             $attributes['data-image-width'] = $this->getWidth();

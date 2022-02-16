@@ -63,8 +63,7 @@
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)}, #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
-  --focus-hsl: var(--dark-focus-hsl); // use the dark color by default
-  --focus-ring: 0 0 0 1px hsl(var(--focus-hsl)), 0 0 0 3px hsla(var(--focus-hsl), 0.7);
+  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)), 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
 }
 
 body,
@@ -773,39 +772,50 @@ td.right {
   color: $successColor !important;
 }
 
+.notice,
+.warning {
+  &.with-icon,
+  .icon {
+    &:before {
+      @include margin(-2px, 2px, 0, 0);
+      @include icon;
+      width: 1em;
+    }
+  }
+
+  &.has-icon {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+
+    .icon {
+      flex-shrink: 1;
+    }
+  }
+}
+
 .notice {
   color: $noticeColor !important;
   a {
     text-decoration: underline;
   }
+
+  &.with-icon,
+  .icon {
+    &:before {
+      content: "lightbulb";
+    }
+  }
 }
 
 .warning {
   color: $warningColor !important;
-}
 
-.notice .icon,
-.warning .icon,
-.with-icon.notice,
-.with-icon.warning {
-  &:before {
-    @include margin(-2px, 2px, 0, 0);
-    @include icon;
-    width: 1em;
-  }
-}
-
-.notice .icon,
-.with-icon.notice {
-  &:before {
-    content: "lightbulb";
-  }
-}
-
-.warning .icon,
-.with-icon.warning {
-  &:before {
-    content: "alert";
+  &.with-icon,
+  .icon {
+    &:before {
+      content: "alert";
+    }
   }
 }
 
@@ -1479,7 +1489,7 @@ ul.icons {
 }
 
 .copytextbtn {
-  display: flex;
+  display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
   border: 1px solid $hairlineColor;
@@ -1517,8 +1527,6 @@ ul.icons {
 
   &:hover,
   &:focus {
-    // Prevent the button from jumping if the added width would otherwise bump it down to the next line
-    @include margin-left(-16px);
     border-color: $mediumHairlineColor;
 
     span {
@@ -1534,6 +1542,21 @@ ul.icons {
       font-size: 11px !important;
       height: 20px;
     }
+  }
+}
+
+// Prevent the button from jumping if the added width would otherwise bump it down to the next line
+.copytextbtn-expand-r {
+  &:hover,
+  &:focus {
+    @include margin-right(-16px);
+  }
+}
+
+.copytextbtn-expand-l {
+  &:hover,
+  &:focus {
+    @include margin-left(-16px);
   }
 }
 
@@ -4014,17 +4037,26 @@ ul.tree,
 
 .modal {
   position: fixed;
-  width: 66%;
-  height: 66%;
-  min-width: 600px;
-  min-height: 400px;
   overflow: hidden;
+
+  &:not(.fitted):not(.fullscreen) {
+    width: 66%;
+    height: 66%;
+    min-width: 600px;
+    min-height: 400px;
+  }
 
   &.fitted {
     width: auto;
     height: auto;
     min-width: 0;
     min-height: 0;
+  }
+
+  &.fullscreen {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
   }
 
   &.alert .body {
@@ -4322,6 +4354,8 @@ ul.tree,
     left: 0;
     width: 100%;
     margin: 0;
+    height: 62px;
+    box-sizing: border-box;
 
     .spinner {
       @include floatright;
@@ -4582,7 +4616,7 @@ ul.tree,
 
   body:not(.reduce-focus-visibility) &:focus,
   body.reduce-focus-visibility &.focus-visible {
-    box-shadow: inset 0 0 0 3px hsla(var(--focus-hsl), 0.7);
+    box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   }
 }
 
@@ -5209,6 +5243,11 @@ body.reduce-focus-visibility {
 
 .text {
   background-color: $white;
+
+  &:not(.small) {
+    box-sizing: border-box;
+    min-height: 34px;
+  }
 
   &.small {
     padding: 3px;

@@ -14,7 +14,6 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\validators\TimeValidator;
 use DateTime;
@@ -128,10 +127,18 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
+    public function getInputId(): string
+    {
+        return sprintf('%s-time', parent::getInputId());
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/time', [
-            'id' => Html::id($this->handle),
+            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,

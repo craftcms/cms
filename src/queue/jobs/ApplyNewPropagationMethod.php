@@ -49,6 +49,7 @@ class ApplyNewPropagationMethod extends BaseJob
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->site('*')
+            ->preferSites([Craft::$app->getSites()->getPrimarySite()->id])
             ->unique()
             ->anyStatus()
             ->drafts(null)
