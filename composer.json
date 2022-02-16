@@ -25,6 +25,7 @@
   },
   "require": {
     "php": "^8.0.2",
+    "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-intl": "*",

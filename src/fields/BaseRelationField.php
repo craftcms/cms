@@ -1201,8 +1201,7 @@ JS;
      */
     private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
-        $clone = clone $query;
-        $clone
+        $clone = (clone $query)
             ->drafts(null)
             ->status(null)
             ->site('*')
