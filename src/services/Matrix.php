@@ -1184,18 +1184,31 @@ SQL)->execute();
      */
     private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except): void
     {
-        $deleteBlocks = MatrixBlock::find()
+        $blocks = MatrixBlock::find()
             ->status(null)
-            ->primaryOwnerId($owner->id)
+            ->ownerId($owner->id)
             ->fieldId($field->id)
             ->siteId($owner->siteId)
             ->andWhere(['not', ['elements.id' => $except]])
             ->all();
 
         $elementsService = Craft::$app->getElements();
+        $deleteOwnership = [];
 
-        foreach ($deleteBlocks as $deleteBlock) {
-            $elementsService->deleteElement($deleteBlock);
+        foreach ($blocks as $block) {
+            if ($block->primaryOwnerId === $owner->id) {
+                $elementsService->deleteElement($block);
+            } else {
+                // Just delete the ownership relation
+                $deleteOwnership[] = $block->id;
+            }
+        }
+
+        if ($deleteOwnership) {
+            Db::delete(Table::MATRIXBLOCKS_OWNERS, [
+                'blockId' => $deleteOwnership,
+                'ownerId' => $owner->id,
+            ]);
         }
     }
 }
