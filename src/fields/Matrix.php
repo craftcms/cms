@@ -1024,7 +1024,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             if ($element->getIsDraft()) {
                 $matrixService->duplicateOwnership($this, $element->duplicateOf, $element);
             } else {
-                $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true);
+                $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true, !$isNew);
             }
             $resetValue = true;
         } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {

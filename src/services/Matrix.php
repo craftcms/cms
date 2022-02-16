@@ -811,10 +811,11 @@ class Matrix extends Component
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
+     * @param bool $deleteOtherBlocks Whether to delete any blocks that belong to the element, which weren’t included in the duplication
      * @throws Throwable if reasons
      * @since 3.2.0
      */
-    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false): void
+    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false, bool $deleteOtherBlocks = true): void
     {
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
@@ -860,8 +861,10 @@ class Matrix extends Component
                 $newBlockIds[] = $newBlockId;
             }
 
-            // Delete any blocks that shouldn't be there anymore
-            $this->_deleteOtherBlocks($field, $target, $newBlockIds);
+            if ($deleteOtherBlocks) {
+                // Delete any blocks that shouldn't be there anymore
+                $this->_deleteOtherBlocks($field, $target, $newBlockIds);
+            }
 
             $transaction->commit();
         } catch (Throwable $e) {
