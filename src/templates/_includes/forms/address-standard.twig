@@ -32,7 +32,7 @@
     value: address.countryCode ?? defaultCountryCode,
 }) }}
 
-<div class="flex field">
+<div class="">
     {{ forms.textField({
         label: "Given Name"|t('app'),
         id: 'givenName',
@@ -40,6 +40,7 @@
         value: address.givenName,
         required: 'givenName' in addressFormat.getRequiredFields(),
         errors: address.getErrors('givenName'),
+        class:'width-25'
     }) }}
 
     {{ forms.textField({
@@ -49,7 +50,7 @@
         value: address.familyName,
         required: 'familyName' in addressFormat.getRequiredFields(),
         errors: address.getErrors('familyName'),
-        autofocus: true,
+        class:'width-25'
     }) }}
 
     {{ forms.textField({

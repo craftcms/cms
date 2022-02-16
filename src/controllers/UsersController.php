@@ -26,6 +26,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Session;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
@@ -1888,10 +1889,11 @@ JS,
             $address->setFieldValuesFromRequest($namespace . '.fields');
             $addresses[$key] = $address;
         }
-        $addresses[] = Address::create([
+        $newAddress  = Address::create([
             'countryCode'=>'US'
         ]);
-        return $this->_addressCardsHtml($addresses);
+        $addresses[] = $newAddress;
+        return $this->_addressCardsHtml($addresses, $namespace, true );
     }
 
     /**
@@ -1922,16 +1924,16 @@ JS,
 
     /**
      * @param Address[] $addresses
-     * @param string $namespaceId
-     * @return string
+     * @param string $namespace
+     * @param string|null $autoOpenUid
      */
-    private function _addressCardsHtml(array $addresses, string $namespace = 'addresses'): string
+    private function _addressCardsHtml(array $addresses, string $namespace = 'addresses', bool $openNew = false): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(AddressesAsset::class);
         $namespacedId = $view->namespaceInputId($namespace);
 
-        return $view->namespaceInputs(function() use ($view, $namespacedId, $addresses) {
+        return $view->namespaceInputs(function() use ($view, $namespacedId, $addresses, $openNew) {
 
             $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
             $view->startJsBuffer();
@@ -1952,13 +1954,15 @@ JS,
                 $addressCount++;
                 $namespace = $address->id ? (string)$address->id : ('new' . $addressCount);
                 $namespacedName = $view->namespaceInputName($namespace);
-                $html .= $view->namespaceInputs(function() use ($address, $namespacedName) {
+                $autoOpen = ($openNew && StringHelper::startsWith($namespace,'new', false) && $addressCount == count($addresses));
+                $html .= $view->namespaceInputs(function() use ($address, $namespacedName, $autoOpen) {
                     return Craft::$app->getView()->renderTemplate('_includes/forms/address', [
                         'id' => 'address',
                         'address' => $address,
                         'name' => $namespacedName,
                         'availableCountries' => null,
                         'defaultCountryCode' => 'US',
+                        'autoOpen' => $autoOpen,
                         'hasErrors' => $address->hasErrors()
                     ]);
                 }, $namespace);

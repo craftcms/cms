@@ -33,6 +33,8 @@ class m220126_003432_addresses extends Migration
             'addressLine2' => $this->string(),
             'organization' => $this->string(),
             'metadata' => $this->text(),
+            'latitude' => $this->string(),
+            'longitude' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY(id)',

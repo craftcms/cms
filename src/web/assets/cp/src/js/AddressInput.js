@@ -9,8 +9,6 @@ Craft.AddressInput = Garnish.Base.extend({
     id: null,
     baseName: null,
 
-    initialData: null,
-
     $addressCard: null,
     $addressCardHeader: null,
     $addressCardBody: null,
@@ -109,6 +107,11 @@ Craft.AddressInput = Garnish.Base.extend({
                 ev.preventDefault();
                 this.done();
             });
+
+            console.log('autoOpen',this.settings.autoOpen);
+            if(this.settings.autoOpen) {
+                this.openSlideout();
+            }
         }
 
         this.initialized = true;
@@ -117,9 +120,7 @@ Craft.AddressInput = Garnish.Base.extend({
         this.$saveSpinner.removeClass('hidden');
         var data = new FormData(this.slideout.$container[0]);
         data.append('name', this.baseName);
-        // for(let [name, value] of data) {
-        //     console.log(`${name} = ${value}`);
-        // }
+
         this.sendActionRequest(data).then(response => {
             this.$addressCardFieldsContent.find('.address-standard-fields').html(response.data.fieldHtml);
             Garnish.requestAnimationFrame(() => {
@@ -135,18 +136,6 @@ Craft.AddressInput = Garnish.Base.extend({
     openSlideout: function() {
         this.$addressCardFieldsContent.appendTo(this.$slideoutFieldsContainer);
         this.slideout.open();
-    },
-    isDirty: function() {
-        var currentData = this._getData(this.slideout.$container[0]);
-
-        return this.initialData !== null && currentData !== this.initialData;
-    },
-    _getData: function(from) {
-        var data = new FormData(from);
-        data.append('name', this.baseName);
-        data.append('id', this.id);
-
-        return data;
     },
     done: function() {
         this.$saveSpinner.removeClass('hidden');
@@ -165,5 +154,6 @@ Craft.AddressInput = Garnish.Base.extend({
     defaults: {
         static: false,
         action: 'users/render-address',
+        autoOpen: false
     }
 });

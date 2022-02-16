@@ -105,6 +105,8 @@ class Install extends Migration
             'addressLine1' => $this->string(),
             'addressLine2' => $this->string(),
             'organization' => $this->string(),
+            'latitude' => $this->string(),
+            'longitude' => $this->string(),
             'metadata' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

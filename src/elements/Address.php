@@ -2,18 +2,13 @@
 
 namespace craft\elements;
 
-use Craft;
 use CommerceGuys\Addressing\AddressInterface;
+use Craft;
 use craft\base\Element;
-use craft\commerce\fieldlayoutelements\VariantsField;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\fieldlayoutelements\AddressField;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\records\Address as AddressRecord;
 use yii\base\Exception;
 
@@ -48,79 +43,125 @@ class Address extends Element implements AddressInterface
     public ?int $id = null;
 
     /**
-     * @inheritdoc
+     * @var string The two-letter country code.
+     *
+     * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+     * @see getCountryCode()
+     * @see setCountryCode()
      */
     private $_countryCode;
 
     /**
-     * @inheritdoc
+     * @var string|null The administrative area.
+     * @see getAdministrativeArea()
+     * @see setAdministrativeArea()
      */
     private $_administrativeArea;
 
     /**
-     * @inheritdoc
+     * @var string|null The locality.
+     * @see getLocality()
+     * @see setLocality()
      */
     private $_locality;
 
     /**
-     * @inheritdoc
+     * @var string|null The dependent locality.
+     * @see getDependentLocality()
+     * @see setDependentLocality()
      */
     private $_dependentLocality;
 
     /**
-     * @inheritdoc
+     * @var string|null The postal code.
+     * @see getPostalCode()
+     * @see setPostalCode()
      */
     private $_postalCode;
 
     /**
-     * @inheritdoc
+     * @var string|null The sorting code.
+     * @see getSortingCode()
+     * @see setSortingCode()
      */
     private $_sortingCode;
 
     /**
-     * @inheritdoc
+     * @var string|null The first line of the address.
+     * @see getAddressLine1()
+     * @see setAddressLine1()
      */
     private $_addressLine1;
 
     /**
-     * @inheritdoc
+     * @var string|null The second line of the address.
+     * @see getAddressLine2()
+     * @see setAddressLine2()
      */
     private $_addressLine2;
 
     /**
-     * @inheritdoc
+     * @var string|null The organization.
+     * @see getOrganization()
+     * @see setOrganization()
      */
     private $_organization;
 
     /**
-     * @inheritdoc
+     * @var string|null The given name.
+     * @see getGivenName()
+     * @see setGivenName()
      */
     private $_givenName;
 
     /**
-     * @inheritdoc
+     * @var string|null The additional name.
+     * @see getAdditionalName()
+     * @see setAdditionalName()
      */
     private $_additionalName;
 
     /**
-     * @inheritdoc
+     * @var string|null The family name.
+     * @see getFamilyName()
+     * @see setFamilyName()
      */
     private $_familyName;
 
     /**
-     * @inheritdoc
+     * @var array|null The metadata attached to the address. Should only be key value pairs.
+     * @see getMetadata()
+     * @see setMetadata()
+     */
+    private $_metadata;
+
+    /**
+     * @var string The locale. Defaults to 'und'.
+     * @see getLocale()
+     * @see setLocale()
      */
     private $_locale;
 
     /**
-     * L
+     * @var string The label to identify this address to the person who created it.
+     * @see getLabel()
+     * @see setLabel()
      */
     private string $_label = '';
 
     /**
-     *
+     * @var string The Latitude.
+     * @see getLatitude()
+     * @see setLatitude()
      */
-    private $_metadata;
+    private $_latitude;
+
+    /**
+     * @var string The Longitude.
+     * @see getLongitude()
+     * @see setLongitude()
+     */
+    private $_longitude;
 
     /**
      * @inheritdoc
@@ -193,6 +234,9 @@ class Address extends Element implements AddressInterface
         return new AddressQuery(static::class);
     }
 
+    /**
+     * @inheritdoc
+     */
     protected static function defineSearchableAttributes(): array
     {
         return self::_attributes();
@@ -221,6 +265,8 @@ class Address extends Element implements AddressInterface
             'sortingCode',
             'organization',
             'metadata',
+            'latitude',
+            'longitude'
         ];
     }
 
@@ -237,7 +283,7 @@ class Address extends Element implements AddressInterface
      */
     public function safeAttributes()
     {
-        return self::_attributes();
+        return self::_attributes(); // Currently, all are writable
     }
 
     /**
@@ -478,6 +524,38 @@ class Address extends Element implements AddressInterface
     public function setMetadata(mixed $metadata = []): void
     {
         $this->_metadata = Json::decodeIfJson($metadata);
+    }
+
+    /**
+     * @return string Latitude
+     */
+    public function getLatitude(): string
+    {
+        return (string)$this->_latitude;
+    }
+
+    /**
+     * @param string|null Latitude
+     */
+    public function setLatitude(?string $latitude): void
+    {
+        $this->_latitude = $latitude;
+    }
+
+    /**
+     * @return string Longitude
+     */
+    public function getLongitude(): string
+    {
+        return (string)$this->_longitude;
+    }
+
+    /**
+     * @param string|null Longitude
+     */
+    public function setLongitude(?string $longitude): void
+    {
+        $this->_longitude = $longitude;
     }
 
     /**

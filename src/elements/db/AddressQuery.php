@@ -7,16 +7,7 @@
 
 namespace craft\elements\db;
 
-use Craft;
-use craft\db\Query;
-use craft\db\QueryAbortedException;
-use craft\db\Table;
 use craft\elements\Address;
-use craft\elements\Category;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
-use craft\helpers\StringHelper;
-use craft\models\CategoryGroup;
 use yii\db\Connection;
 
 /**
@@ -57,6 +48,8 @@ class AddressQuery extends ElementQuery
             'addresses.sortingCode',
             'addresses.organization',
             'addresses.metadata',
+            'addresses.latitude',
+            'addresses.longitude'
         ]);
 
         return parent::beforePrepare();

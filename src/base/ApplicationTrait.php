@@ -28,6 +28,7 @@ use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
 use craft\fieldlayoutelements\AddressField;
+use craft\fieldlayoutelements\AddressLatitudeLongitudeField;
 use craft\fieldlayoutelements\AssetAltField;
 use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\EntryTitleField;
@@ -1548,6 +1549,7 @@ trait ApplicationTrait
             switch ($fieldLayout->type) {
                 case Address::class:
                     $event->fields[] = AddressField::class;
+                    $event->fields[] = AddressLatitudeLongitudeField::class;
                     break;
                 case Category::class:
                 case Tag::class:

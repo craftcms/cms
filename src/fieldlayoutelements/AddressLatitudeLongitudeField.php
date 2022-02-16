@@ -13,19 +13,19 @@ use craft\elements\Address;
 use yii\base\InvalidArgumentException;
 
 /**
- * AddressField represents an Address field that can be included within an Address field layout designer.
+ * AddressLatitudeLongitudeField represents the latitude and logitude fields in an address element that can be included within an Address field layout designer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AddressField extends BaseField
+class AddressLatitudeLongitudeField extends BaseField
 {
     /**
      * @inheritdoc
      */
     public function attribute(): string
     {
-        return 'address';
+        return 'latitudelongitude';
     }
 
     /**
@@ -33,7 +33,7 @@ class AddressField extends BaseField
      */
     public function mandatory(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -57,7 +57,7 @@ class AddressField extends BaseField
      */
     public function label(): ?string
     {
-        return Craft::t('commerce', 'Address');
+        return Craft::t('commerce', 'Latitude & Longitude');
     }
 
     /**
@@ -65,7 +65,7 @@ class AddressField extends BaseField
      */
     protected function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('commerce', 'Address');
+        return Craft::t('commerce', 'Latitude & Longitude');
     }
 
     /**
@@ -74,10 +74,10 @@ class AddressField extends BaseField
     protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
+            throw new InvalidArgumentException('AddressLatitudeLongitudeField can only be used in address field layouts.');
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/address-standard', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/address-latitudelongitude', [
             'address' => $element,
             'static' => $static,
         ]);
