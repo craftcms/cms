@@ -216,14 +216,13 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Perform the action
-        /** @var ElementQuery $actionCriteria */
-        $actionCriteria = clone $this->elementQuery;
-        $actionCriteria->offset = 0;
-        $actionCriteria->limit = null;
-        $actionCriteria->orderBy = null;
-        $actionCriteria->positionedAfter = null;
-        $actionCriteria->positionedBefore = null;
-        $actionCriteria->id = $elementIds;
+        $actionCriteria = (clone $this->elementQuery)
+            ->offset(0)
+            ->limit(null)
+            ->orderBy(null)
+            ->positionedAfter(null)
+            ->positionedBefore(null)
+            ->id($elementIds);
 
         // Fire a 'beforePerformAction' event
         $event = new ElementActionEvent([
@@ -323,8 +322,12 @@ class ElementIndexesController extends BaseElementsController
         $export = $exporter->export($this->elementQuery);
 
         if ($exporter::isFormattable()) {
-            if (!is_array($export)) {
-                throw new InvalidValueException(get_class($exporter) . '::export() must return an array since isFormattable() returns true.');
+            // Handle being passed in a generator function or other callable
+            if (is_callable($export)) {
+                $export = $export();
+            }
+            if (!is_iterable($export)) {
+                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
             }
 
             $this->response->data = $export;
@@ -559,8 +562,7 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $this->request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            $descendantQuery = clone $query;
-            $descendantQuery
+            $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
                 ->orderBy(null)
@@ -569,8 +571,7 @@ class ElementIndexesController extends BaseElementsController
                 ->status(null);
 
             // Get the actual elements
-            $collapsedElementsQuery = clone $descendantQuery;
-            $collapsedElements = $collapsedElementsQuery
+            $collapsedElements = (clone $descendantQuery)
                 ->id($collapsedElementIds)
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
@@ -584,8 +585,7 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $elementDescendantsQuery = clone $descendantQuery;
-                    $elementDescendantIds = $elementDescendantsQuery
+                    $elementDescendantIds = (clone $descendantQuery)
                         ->descendantOf($element)
                         ->ids();
 

@@ -125,10 +125,10 @@ class DbConfig extends BaseObject
     public $setSchemaOnConnect = false;
 
     /**
-     * @var string If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
+     * @var string|null If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
      * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
      */
-    public string $tablePrefix = '';
+    public ?string $tablePrefix = null;
 
     /**
      * @var string The database username to connect with.
@@ -158,7 +158,7 @@ class DbConfig extends BaseObject
     public ?string $url = null;
 
     /**
-     * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+     * @var string The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
      */
     public string $driver;
 

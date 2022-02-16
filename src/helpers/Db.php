@@ -16,6 +16,9 @@ use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use DateTime;
 use DateTimeZone;
+use Money\Currencies\ISOCurrencies;
+use Money\Money;
+use Money\Parser\DecimalMoneyParser;
 use PDO;
 use Throwable;
 use yii\base\Exception;
@@ -165,6 +168,24 @@ class Db
         $date = clone $date;
         $date->setTimezone(new DateTimeZone('UTC'));
         return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Prepares a money object to be sent to the database.
+     *
+     * @param mixed $money The money to be prepared
+     * @return string|null The prepped date, or `null` if it could not be prepared
+     * @since 4.0.0
+     */
+    public static function prepareMoneyForDb($money): ?string
+    {
+        $money = MoneyHelper::toMoney($money);
+
+        if ($money === false) {
+            return null;
+        }
+
+        return $money->getAmount();
     }
 
     /**
@@ -657,6 +678,55 @@ class Db
             $val = DateTimeHelper::toDateTime($val, true);
 
             $normalizedValues[] = $operator . static::prepareDateForDb($val);
+        }
+
+        return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
+    }
+
+    /**
+     * Parses a query param value for a money column, and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string $currency The currency code to use for the money object.
+     * @param string|array|Money $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @return mixed
+     * @since 4.0.0
+     */
+    public static function parseMoneyParam(string $column, string $currency, $value, string $defaultOperator = '=')
+    {
+        $normalizedValues = [];
+
+        $value = self::_toArray($value);
+
+        if (!count($value)) {
+            return '';
+        }
+
+        if (in_array($value[0], ['and', 'or', 'not'], true)) {
+            $normalizedValues[] = $value[0];
+            array_shift($value);
+        }
+
+        foreach ($value as $val) {
+            // Is this an empty value?
+            self::_normalizeEmptyValue($val);
+
+            if ($val === ':empty:' || $val === 'not :empty:') {
+                $normalizedValues[] = $val;
+
+                // Sneak out early
+                continue;
+            }
+
+            $operator = self::_parseParamOperator($val, $defaultOperator);
+
+            // Assume that date params are set in the system timezone
+            $val = MoneyHelper::toMoney(['value' => $val, 'currency' => $currency]);
+
+            $normalizedValues[] = $operator . static::prepareMoneyForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);

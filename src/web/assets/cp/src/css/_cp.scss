@@ -35,7 +35,7 @@ body {
   :focus {
     outline-style: solid;
     outline-color: transparent;
-    box-shadow: $darkFocusRing;
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -45,7 +45,7 @@ body {
   }
 
   .focus-visible {
-    box-shadow: $darkFocusRing;
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -73,12 +73,14 @@ body {
   min-height: 100vh;
   @include left(0);
 
-  body.ltr & {
-    transition: left 250ms ease-out;
-  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    body.ltr & {
+      transition: left 250ms ease-out;
+    }
 
-  body.rtl & {
-    transition: right 250ms ease-out;
+    body.rtl & {
+      transition: right 250ms ease-out;
+    }
   }
 }
 
@@ -99,11 +101,7 @@ $sidebarLinkSecondaryColor: $grey200;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
   background-color: $grey800;
-
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
-    box-shadow: $lightFocusRing;
-  }
+  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)), 0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 
   a {
     color: $sidebarLinkStaticColor;
@@ -283,15 +281,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     a {
+      position: relative;
       padding-left: var(--m);
       padding-right: var(--m);
+
+      &:focus {
+        z-index: 1;
+      }
 
       &.menubtn {
         line-height: 26px;
       }
 
       &.external:after {
-        margin-left: 5px;
+        @include margin-left(5px);
         @include icon;
         content: 'external';
       }
@@ -822,7 +825,7 @@ li.breadcrumb-toggle-wrapper {
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth - 30 - 7} !important;
+      min-width: calc(#{$sidebarWidth} - var(--xl) - var(--s)) !important;
     }
   }
 }
@@ -926,6 +929,11 @@ li.breadcrumb-toggle-wrapper {
 
     li {
       a {
+        position: relative;
+
+        &:focus {
+          z-index: 1;
+        }
         &:not(.sel) {
           &:hover {
             background-color: $grey200;
@@ -1416,16 +1424,17 @@ li.breadcrumb-toggle-wrapper {
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
 .so-content > .flex-fields {
+  --row-gap: var(--xl);
   display: flex;
-  gap: var(--xl) 0;
+  gap: var(--row-gap) 0;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--xl) * -1);
-  width: calc(100% + var(--xl) * 2);
+  margin: 0 calc(var(--row-gap) * -1);
+  width: calc(100% + var(--row-gap) * 2);
 
   & > * {
     margin: 0 !important;
-    padding: 0 var(--xl);
+    padding: 0 var(--row-gap);
     box-sizing: border-box;
   }
 
@@ -1446,21 +1455,17 @@ li.breadcrumb-toggle-wrapper {
     &, &:last-child {
       position: relative;
       width: 100%;
-      //flex: 4 0 100%;
 
       // 4 cols for >= 1536px
       @media only screen and (min-width: $minXlUiWidth) {
         &.width-25 {
           width: 25%;
-          //flex: 1 0 25%;
         }
         &.width-50 {
           width: 50%;
-          //flex: 2 0 50%;
         }
         &.width-75 {
           width: 75%;
-          //flex: 3 0 75%;
         }
       }
 
@@ -1468,7 +1473,7 @@ li.breadcrumb-toggle-wrapper {
       @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
         &.width-25,
         &.width-50 {
-          width: calc(50% - 12px);
+          width: 50%;
         }
       }
 

@@ -16,7 +16,6 @@ use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
@@ -346,6 +345,14 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ?ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
@@ -643,7 +650,7 @@ class Table extends Field
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
-            'id' => Html::id($this->handle),
+            'id' => $this->getInputId(),
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,
@@ -651,6 +658,7 @@ class Table extends Field
             'maxRows' => $this->maxRows,
             'static' => $static,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
+            'describedBy' => $this->describedBy,
         ]);
     }
 }

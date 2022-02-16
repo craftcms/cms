@@ -23,6 +23,7 @@ use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
+use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
@@ -57,6 +58,10 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use IteratorAggregate;
+use Money\Currencies\ISOCurrencies;
+use Money\Formatter\IntlMoneyFormatter;
+use Money\Money;
+use NumberFormatter;
 use Throwable;
 use Traversable;
 use Twig\Environment as TwigEnvironment;
@@ -204,6 +209,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('merge', [$this, 'mergeFilter']),
+            new TwigFilter('money', [$this, 'moneyFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
             new TwigFilter('namespace', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
@@ -288,6 +294,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return is_string($obj);
             }),
         ];
+    }
+
+    /**
+     * Outputs a value from a Money object.
+     *
+     * @param Money|null $money
+     * @param string|null $formatLocale
+     * @return string
+     */
+    public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
+    {
+        if ($money === null) {
+            return null;
+        }
+
+        return MoneyHelper::toString($money, $formatLocale);
     }
 
     /**

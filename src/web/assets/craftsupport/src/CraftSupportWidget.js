@@ -13,6 +13,7 @@ import './CraftSupportWidget.scss';
         $screens: null,
         $currentScreen: null,
         $nextScreen: null,
+        $triggerElement: null,
 
         screens: null,
         currentScreen: null,
@@ -61,6 +62,10 @@ import './CraftSupportWidget.scss';
                 default:
                     throw 'Invalid screen: ' + screen;
             }
+        },
+
+        focusTrigger: function() {
+            this.$triggerElement.focus();
         },
 
         gotoScreen: function(screen) {
@@ -139,6 +144,7 @@ import './CraftSupportWidget.scss';
 
         handleOptionClick: function(ev) {
             var screen = $.attr(ev.currentTarget, 'data-screen');
+            this.widget.$triggerElement = $(ev.currentTarget).attr('aria-expanded', true);
             this.widget.gotoScreen(screen);
         }
     });
@@ -239,6 +245,8 @@ import './CraftSupportWidget.scss';
                 case Garnish.ESC_KEY:
                     if (this.mode === BaseSearchScreen.MODE_SEARCH) {
                         this.widget.gotoScreen(Craft.CraftSupportWidget.SCREEN_HOME);
+                        this.widget.focusTrigger();
+                        this.widget.$triggerElement.attr('aria-expanded', false);
                     } else if (!this.sendingSupportTicket) {
                         this.prepForSearch(true);
                     }

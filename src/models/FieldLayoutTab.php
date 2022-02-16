@@ -12,6 +12,8 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
+use craft\db\Query;
+use craft\db\Table;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
@@ -105,20 +107,18 @@ class FieldLayoutTab extends FieldLayoutComponent
     private array $_elements;
 
     /**
-     * @var FieldInterface[]|null
-     * @see getFields()
-     * @see setFields()
-     */
-    private ?array $_fields = null;
-
-    /**
      * @inheritdoc
      */
     public function __construct($config = [])
     {
         // Config normalization
-        if (isset($config['elements']) && is_string($config['elements'])) {
-            $config['elements'] = Json::decode($config['elements']);
+        if (array_key_exists('elements', $config)) {
+            if (is_string($config['elements'])) {
+                $config['elements'] = Json::decode($config['elements']);
+            }
+            if (!is_array($config['elements'])) {
+                unset($config['elements']);
+            }
         }
 
         parent::__construct($config);
@@ -131,13 +131,28 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         parent::init();
 
-        if (!isset($this->_elements) && isset($this->_layout)) {
-            $this->setElements(array_map(function(FieldInterface $field) {
-                return Craft::createObject([
-                    'class' => CustomField::class,
-                    'required' => $field->required,
-                ], [$field]);
-            }, $this->getFields()));
+        if (!isset($this->_elements) && isset($this->id)) {
+            // No element configs for this tab yet, so create the elements ourselves
+            $fieldsService = Craft::$app->getFields();
+            $layoutElements = [];
+
+            $fieldInfo = (new Query())
+                ->select(['fieldId', 'required'])
+                ->from([Table::FIELDLAYOUTFIELDS])
+                ->where(['tabId' => $this->id])
+                ->orderBy(['sortOrder' => SORT_ASC])
+                ->all();
+
+            foreach ($fieldInfo as $row) {
+                $field = $fieldsService->getFieldById($row['fieldId']);
+                if ($field) {
+                    $layoutElements[] = new CustomField($field, [
+                        'required' => $row['required'],
+                    ]);
+                }
+            }
+
+            $this->setElements($layoutElements);
         }
 
         if (!isset($this->uid)) {
@@ -290,42 +305,15 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getFields(): array
     {
-        if (isset($this->_fields)) {
-            return $this->_fields;
-        }
+        $fields = [];
 
-        $this->_fields = [];
-
-        foreach ($this->getLayout()->getFields() as $field) {
-            if ($field->tabId == $this->id) {
-                $this->_fields[] = $field;
+        foreach ($this->getElements() as $layoutElement) {
+            if ($layoutElement instanceof CustomField) {
+                $fields[] = $layoutElement;
             }
         }
 
-        return $this->_fields;
-    }
-
-    /**
-     * Sets the custom fields included in this tab.
-     *
-     * @param FieldInterface[] $fields
-     */
-    public function setFields(array $fields): void
-    {
-        ArrayHelper::multisort($fields, 'sortOrder');
-        $this->_fields = $fields;
-
-        $this->setElements(array_map(function(FieldInterface $field) {
-            return Craft::createObject([
-                'class' => CustomField::class,
-                'required' => $field->required,
-            ], [$field]);
-        }, $this->_fields));
-
-        // Clear the field layout's field cache
-        if (isset($this->_layout)) {
-            $this->_layout->setFields(null);
-        }
+        return $fields;
     }
 
     /**

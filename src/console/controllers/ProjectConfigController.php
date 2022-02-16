@@ -70,7 +70,7 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * See a diff of the pending project config YAML changes.
+     * Prints a diff of the pending project config YAML changes.
      *
      * @return int
      * @since 3.5.6
@@ -182,6 +182,14 @@ class ProjectConfigController extends Controller
         }
 
         $this->stdout("\nFinished applying changes\n", Console::FG_GREEN);
+
+        $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem']);
+        $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem']);
+        $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem']);
+        $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem']);
+        $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem']);
+        $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem']);
+
         return ExitCode::OK;
     }
 
@@ -248,7 +256,7 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * Writes out the current project config as YAML files to the `config/project/` folder, discarding any pending YAML changes.
+     * Writes out the currently-loaded project config as YAML files to the `config/project/` folder, discarding any pending YAML changes.
      *
      * @return int
      * @since 3.5.13

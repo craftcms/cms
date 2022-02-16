@@ -9,9 +9,11 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use DateTime;
 use Throwable;
@@ -233,6 +235,57 @@ class UsersController extends Controller
     }
 
     /**
+     * Generates an activation URL for a pending user.
+     *
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     */
+    public function actionActivationUrl(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if (!$user->pending) {
+            $this->stderr("User “{$user->username}” has already been activated." . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        $url = Craft::$app->getUsers()->getActivationUrl($user);
+
+        $this->stdout("Activation URL for “{$user->username}”: ");
+        $this->stdout($url . PHP_EOL, Console::FG_CYAN, PHP_EOL);
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Generates a password reset URL for a user.
+     *
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     */
+    public function actionPasswordResetUrl(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
+
+        $this->stdout("Password reset URL for “{$user->username}”: ");
+        $this->stdout($url . PHP_EOL, Console::FG_CYAN, PHP_EOL);
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Deletes a user.
      *
      * @param string $user The ID, username, or email address of the user account.
@@ -248,7 +301,7 @@ class UsersController extends Controller
         }
 
         if ($this->deleteContent && $this->inheritor) {
-            $this->stdout('Only one of --delete-content or --inheritor may be specified.' . PHP_EOL, Console::FG_RED);
+            $this->stderr('Only one of --delete-content or --inheritor may be specified.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
 
@@ -268,7 +321,7 @@ class UsersController extends Controller
 
             if (!$this->confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
                 $this->stdout('Aborting.' . PHP_EOL);
-                return ExitCode::USAGE;
+                return ExitCode::OK;
             }
 
             $user->inheritorOnDelete = $inheritor;
@@ -277,12 +330,12 @@ class UsersController extends Controller
 
             if (!$this->deleteContent) {
                 $this->stdout('Aborting.' . PHP_EOL);
-                return ExitCode::USAGE;
+                return ExitCode::OK;
             }
         }
 
         if (!$user->inheritorOnDelete && !$this->deleteContent) {
-            $this->stdout('You must specify either --delete-content or --inheritor to proceed.' . PHP_EOL, Console::FG_RED);
+            $this->stderr('You must specify either --delete-content or --inheritor to proceed.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
 
@@ -334,7 +387,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate a URL to impersonate a user.
+     * Generates a URL to impersonate a user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -364,10 +417,24 @@ class UsersController extends Controller
         $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
         $url = UrlHelper::urlWithToken($url, $token);
 
-        $this->stdout("Impersonation URL for $user->username: ");
+        $this->stdout("Impersonation URL for “{$user->username}”: ");
         $this->stdout($url . PHP_EOL, Console::FG_CYAN);
         $this->stdout('(Expires in one hour.)' . PHP_EOL, Console::FG_GREY);
 
+        return ExitCode::OK;
+    }
+
+    /**
+     * Logs all users out of the system.
+     *
+     * @return int
+     * @since 3.7.33
+     */
+    public function actionLogoutAll(): int
+    {
+        $this->stdout('Logging all users out ... ');
+        Db::truncateTable(Table::SESSIONS);
+        $this->stdout("done\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 

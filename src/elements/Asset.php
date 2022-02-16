@@ -34,6 +34,7 @@ use craft\errors\FileException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\fieldlayoutelements\AssetAltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -67,6 +68,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use yii\validators\RequiredValidator;
 
 /**
  * Asset represents an asset element.
@@ -578,10 +580,8 @@ class Asset extends Element
             ],
         ];
 
-        if ($user) {
-            if (!$user->can("viewPeerAssets:$volume->uid")) {
-                $source['criteria']['uploaderId'] = $user->id;
-            }
+        if ($user && !$user->can("viewPeerAssets:$volume->uid")) {
+            $source['criteria']['uploaderId'] = $user->id;
         }
 
         if ($includeNestedFolders) {
@@ -847,6 +847,23 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public function afterValidate(): void
+    {
+        $scenario = $this->getScenario();
+
+        if ($scenario === self::SCENARIO_LIVE) {
+            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AssetAltField::class, $this);
+            if ($altElement && $altElement->required) {
+                (new RequiredValidator())->validateAttribute($this, 'alt');
+            }
+        }
+
+        parent::afterValidate();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -855,7 +872,7 @@ class Asset extends Element
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename'], 'safe'];
+        $rules[] = [['filename', 'alt'], 'safe'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
         $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
@@ -2333,7 +2350,11 @@ JS;
      */
     protected function htmlAttributes(string $context): array
     {
-        $attributes = [];
+        $attributes = [
+            'data' => [
+                'kind' => $this->kind,
+            ],
+        ];
 
         if ($this->kind === self::KIND_IMAGE) {
             $attributes['data']['image-width'] = $this->getWidth();

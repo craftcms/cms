@@ -8,15 +8,12 @@
 namespace craft\i18n;
 
 use Craft;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Localization;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
 use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\helpers\FormatConverter;
 
 /**
@@ -233,11 +230,6 @@ class Locale extends BaseObject
     public $id;
 
     /**
-     * @var array|null The configured locale data, used if the [PHP intl extension](https://php.net/manual/en/book.intl.php) isn’t loaded.
-     */
-    private ?array $_data = null;
-
-    /**
      * @var Formatter|null The locale's formatter.
      */
     private ?Formatter $_formatter = null;
@@ -256,18 +248,6 @@ class Locale extends BaseObject
         }
 
         $this->id = $id;
-
-        if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $this->_data = Localization::localeData($this->id);
-
-            if (!isset($this->_data) && ($languageId = $this->getLanguageID()) !== $this->id) {
-                $this->_data = Localization::localeData($languageId);
-            }
-
-            if (!isset($this->_data)) {
-                $this->_data = Localization::localeData('en-US');
-            }
-        }
 
         parent::__construct($config);
     }
@@ -357,37 +337,7 @@ class Locale extends BaseObject
             $inLocale = $this->id;
         }
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            return \Locale::getDisplayName($this->id, $inLocale);
-        }
-
-        if ($inLocale === $this->id) {
-            $locale = $this;
-        } else {
-            try {
-                $locale = new Locale($inLocale);
-            } catch (InvalidConfigException $e) {
-                $locale = $this;
-            }
-        }
-
-        if (isset($locale->_data['localeDisplayNames'][$this->id])) {
-            return $locale->_data['localeDisplayNames'][$this->id];
-        }
-
-        // Try just the language
-        $languageId = $this->getLanguageID();
-
-        if ($languageId !== $this->id && isset($locale->_data['localeDisplayNames'][$languageId])) {
-            return $locale->_data['localeDisplayNames'][$languageId];
-        }
-
-        if ($locale !== $this) {
-            // Try again with this locale
-            return $this->getDisplayName($this->id);
-        }
-
-        return $this->id;
+        return \Locale::getDisplayName($this->id, $inLocale);
     }
 
     /**
@@ -440,19 +390,6 @@ class Locale extends BaseObject
                 ],
             ];
 
-            if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
-                $config['standAloneMonthNames'] = $this->_data['standAloneMonthNames'];
-                $config['monthNames'] = $this->_data['monthNames'];
-                $config['standAloneWeekDayNames'] = $this->_data['standAloneWeekDayNames'];
-                $config['weekDayNames'] = $this->_data['weekDayNames'];
-                $config['amName'] = $this->_data['amName'];
-                $config['pmName'] = $this->_data['pmName'];
-                $config['currencySymbols'] = $this->_data['currencySymbols'];
-                $config['decimalSeparator'] = $this->getNumberSymbol(self::SYMBOL_DECIMAL_SEPARATOR);
-                $config['thousandSeparator'] = $this->getNumberSymbol(self::SYMBOL_GROUPING_SEPARATOR);
-                $config['currencyCode'] = $this->getNumberSymbol(self::SYMBOL_INTL_CURRENCY);
-            }
-
             /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->_formatter = Craft::createObject($config);
         }
@@ -500,33 +437,6 @@ class Locale extends BaseObject
     }
 
     /**
-     * Sets the date/time formats used by this locale.
-     *
-     * You should pass an array with keys `short`, `medium`, `long`, and/or `full`, set to sub-arrays
-     * with keys `date`, `time`, and/or `datetime`, which should be set to the date/time formats using
-     * [ICU date/time formatting syntax](https://unicode-org.github.io/icu/userguide/format_parse/datetime/#datetime-format-syntax).
-     *
-     * For example:
-     *
-     * ```php
-     * [
-     *     'short' => [
-     *         'date' => 'd/M/y',
-     *         'time' => 'HH:mm',
-     *         'datetime' => 'd/M/y HH:mm',
-     *     ],
-     * ]
-     * ```
-     *
-     * @param array $formats
-     * @since 3.6.0
-     */
-    public function setDateTimeFormats(array $formats): void
-    {
-        $this->_data['dateTimeFormats'] = ArrayHelper::merge($this->_data['dateTimeFormats'] ?? [], $formats);
-    }
-
-    /**
      * Returns a localized month name.
      *
      * @param int $month The month to return (1-12).
@@ -540,39 +450,22 @@ class Locale extends BaseObject
             $length = self::LENGTH_FULL;
         }
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-
-            switch ($length) {
-                case self::LENGTH_ABBREVIATED:
-                    $formatter->setPattern($standAlone ? 'LLLLL' : 'MMMMM');
-                    break; // S
-                case self::LENGTH_SHORT:
-                case self::LENGTH_MEDIUM:
-                    $formatter->setPattern($standAlone ? 'LLL' : 'MMM');
-                    break; // Sep
-                default:
-                    $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM');
-                    break; // September
-            }
-
-            return $formatter->format(new DateTime('1970-' . sprintf('%02d', $month) . '-01'));
-        }
-
-        $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
+        $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
         switch ($length) {
             case self::LENGTH_ABBREVIATED:
-                return $this->_data[$which]['abbreviated'][$month - 1];
+                $formatter->setPattern($standAlone ? 'LLLLL' : 'MMMMM');
                 break; // S
             case self::LENGTH_SHORT:
             case self::LENGTH_MEDIUM:
-                return $this->_data[$which]['medium'][$month - 1];
+                $formatter->setPattern($standAlone ? 'LLL' : 'MMM');
                 break; // Sep
             default:
-                return $this->_data[$which]['full'][$month - 1];
+                $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM');
                 break; // September
         }
+
+        return $formatter->format(new DateTime('1970-' . sprintf('%02d', $month) . '-01'));
     }
 
     /**
@@ -607,54 +500,35 @@ class Locale extends BaseObject
             $length = self::LENGTH_FULL;
         }
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-
-            switch ($length) {
-                case self::LENGTH_ABBREVIATED:
-                    // T
-                    $formatter->setPattern($standAlone ? 'ccccc' : 'eeeee');
-                    break;
-                case self::LENGTH_SHORT:
-                    // Tu
-                    $formatter->setPattern($standAlone ? 'cccccc' : 'eeeeee');
-                    break;
-                case self::LENGTH_MEDIUM:
-                    // Tue
-                    $formatter->setPattern($standAlone ? 'ccc' : 'eee');
-                    break;
-                default:
-                    // Tuesday
-                    $formatter->setPattern($standAlone ? 'cccc' : 'eeee');
-                    break;
-            }
-
-            // 1970-01-04 => Sunday (0 + 4)
-            // 1970-01-05 => Monday (1 + 4)
-            // 1970-01-06 => Tuesday (2 + 4)
-            // 1970-01-07 => Wednesday (3 + 4)
-            // 1970-01-08 => Thursday (4 + 4)
-            // 1970-01-09 => Friday (5 + 4)
-            // 1970-01-10 => Saturday (6 + 4)
-            return $formatter->format(new DateTime('1970-01-' . sprintf('%02d', $day + 4)));
-        }
-
-        $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
+        $formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
         switch ($length) {
             case self::LENGTH_ABBREVIATED:
                 // T
-                return $this->_data[$which]['abbreviated'][$day];
+                $formatter->setPattern($standAlone ? 'ccccc' : 'eeeee');
+                break;
             case self::LENGTH_SHORT:
                 // Tu
-                return $this->_data[$which]['short'][$day];
+                $formatter->setPattern($standAlone ? 'cccccc' : 'eeeeee');
+                break;
             case self::LENGTH_MEDIUM:
                 // Tue
-                return $this->_data[$which]['medium'][$day];
+                $formatter->setPattern($standAlone ? 'ccc' : 'eee');
+                break;
             default:
                 // Tuesday
-                return $this->_data[$which]['full'][$day];
+                $formatter->setPattern($standAlone ? 'cccc' : 'eeee');
+                break;
         }
+
+        // 1970-01-04 => Sunday (0 + 4)
+        // 1970-01-05 => Monday (1 + 4)
+        // 1970-01-06 => Tuesday (2 + 4)
+        // 1970-01-07 => Wednesday (3 + 4)
+        // 1970-01-08 => Thursday (4 + 4)
+        // 1970-01-09 => Friday (5 + 4)
+        // 1970-01-10 => Saturday (6 + 4)
+        return $formatter->format(new DateTime('1970-01-' . sprintf('%02d', $day + 4)));
     }
 
     /**
@@ -682,11 +556,7 @@ class Locale extends BaseObject
      */
     public function getAMName(): string
     {
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
-        }
-
-        return $this->_data['amName'];
+        return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
     }
 
     /**
@@ -696,11 +566,7 @@ class Locale extends BaseObject
      */
     public function getPMName(): string
     {
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
-        }
-
-        return $this->_data['pmName'];
+        return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
     }
 
     // Text Attributes and Symbols
@@ -714,32 +580,8 @@ class Locale extends BaseObject
      */
     public function getTextAttribute(int $attribute): ?string
     {
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
-
-            return $formatter->getTextAttribute($attribute);
-        }
-
-        switch ($attribute) {
-            case self::ATTR_POSITIVE_PREFIX:
-                return $this->_data['textAttributes']['positivePrefix'];
-            case self::ATTR_POSITIVE_SUFFIX:
-                return $this->_data['textAttributes']['positiveSuffix'];
-            case self::ATTR_NEGATIVE_PREFIX:
-                return $this->_data['textAttributes']['negativePrefix'];
-            case self::ATTR_NEGATIVE_SUFFIX:
-                return $this->_data['textAttributes']['negativeSuffix'];
-            case self::ATTR_PADDING_CHARACTER:
-                return $this->_data['textAttributes']['paddingCharacter'];
-            case self::ATTR_CURRENCY_CODE:
-                return $this->_data['textAttributes']['currencyCode'];
-            case self::ATTR_DEFAULT_RULESET:
-                return $this->_data['textAttributes']['defaultRuleset'];
-            case self::ATTR_PUBLIC_RULESETS:
-                return $this->_data['textAttributes']['publicRulesets'];
-        }
-
-        return null;
+        $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
+        return $formatter->getTextAttribute($attribute);
     }
 
     /**
@@ -751,24 +593,8 @@ class Locale extends BaseObject
      */
     public function getNumberPattern(int $style): ?string
     {
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new NumberFormatter($this->id, $style);
-
-            return $formatter->getPattern();
-        }
-
-        switch ($style) {
-            case self::STYLE_DECIMAL:
-                return $this->_data['numberPatterns']['decimal'];
-            case self::STYLE_CURRENCY:
-                return $this->_data['numberPatterns']['currency'];
-            case self::STYLE_PERCENT:
-                return $this->_data['numberPatterns']['percent'];
-            case self::STYLE_SCIENTIFIC:
-                return $this->_data['numberPatterns']['scientific'];
-        }
-
-        return null;
+        $formatter = new NumberFormatter($this->id, $style);
+        return $formatter->getPattern();
     }
 
     /**
@@ -783,52 +609,8 @@ class Locale extends BaseObject
      */
     public function getNumberSymbol(int $symbol): ?string
     {
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
-
-            return $formatter->getSymbol($symbol);
-        }
-
-        switch ($symbol) {
-            case self::SYMBOL_DECIMAL_SEPARATOR:
-                return $this->_data['numberSymbols']['decimalSeparator'];
-            case self::SYMBOL_GROUPING_SEPARATOR:
-                return $this->_data['numberSymbols']['groupingSeparator'];
-            case self::SYMBOL_PATTERN_SEPARATOR:
-                return $this->_data['numberSymbols']['patternSeparator'];
-            case self::SYMBOL_PERCENT:
-                return $this->_data['numberSymbols']['percent'];
-            case self::SYMBOL_ZERO_DIGIT:
-                return $this->_data['numberSymbols']['zeroDigit'];
-            case self::SYMBOL_DIGIT:
-                return $this->_data['numberSymbols']['digit'];
-            case self::SYMBOL_MINUS_SIGN:
-                return $this->_data['numberSymbols']['minusSign'];
-            case self::SYMBOL_PLUS_SIGN:
-                return $this->_data['numberSymbols']['plusSign'];
-            case self::SYMBOL_CURRENCY:
-                return $this->_data['numberSymbols']['currency'];
-            case self::SYMBOL_INTL_CURRENCY:
-                return $this->_data['numberSymbols']['intlCurrency'];
-            case self::SYMBOL_MONETARY_SEPARATOR:
-                return $this->_data['numberSymbols']['monetarySeparator'];
-            case self::SYMBOL_EXPONENTIAL:
-                return $this->_data['numberSymbols']['exponential'];
-            case self::SYMBOL_PERMILL:
-                return $this->_data['numberSymbols']['permill'];
-            case self::SYMBOL_PAD_ESCAPE:
-                return $this->_data['numberSymbols']['padEscape'];
-            case self::SYMBOL_INFINITY:
-                return $this->_data['numberSymbols']['infinity'];
-            case self::SYMBOL_NAN:
-                return $this->_data['numberSymbols']['nan'];
-            case self::SYMBOL_SIGNIFICANT_DIGIT:
-                return $this->_data['numberSymbols']['significantDigit'];
-            case self::SYMBOL_MONETARY_GROUPING_SEPARATOR:
-                return $this->_data['numberSymbols']['monetaryGroupingSeparator'];
-        }
-
-        return null;
+        $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
+        return $formatter->getSymbol($symbol);
     }
 
     /**
@@ -839,17 +621,9 @@ class Locale extends BaseObject
      */
     public function getCurrencySymbol(string $currency): string
     {
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            // hat tip: https://stackoverflow.com/a/30026774
-            $formatter = new NumberFormatter("$this->id@currency=$currency", NumberFormatter::CURRENCY);
-            return $formatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
-        }
-
-        if (isset($this->_data['currencySymbols'][$currency])) {
-            return $this->_data['currencySymbols'][$currency];
-        }
-
-        return $currency;
+        // hat tip: https://stackoverflow.com/a/30026774
+        $formatter = new NumberFormatter("$this->id@currency=$currency", NumberFormatter::CURRENCY);
+        return $formatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
     }
 
     /**
@@ -885,56 +659,42 @@ class Locale extends BaseObject
      * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param bool $withDate Whether the date should be included in the format.
      * @param bool $withTime Whether the time should be included in the format.
-     * @return string|null The ICU date/time format
+     * @return string The ICU date/time format
      * @throws Exception if $length is invalid
      */
-    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): ?string
+    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): string
     {
-        if ($length === null) {
-            $length = self::LENGTH_MEDIUM;
+        // Convert length to IntlDateFormatter constants
+        switch ($length) {
+            case self::LENGTH_FULL:
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $length = IntlDateFormatter::FULL;
+                break;
+            case self::LENGTH_LONG:
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $length = IntlDateFormatter::LONG;
+                break;
+            case self::LENGTH_MEDIUM:
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $length = IntlDateFormatter::MEDIUM;
+                break;
+            case self::LENGTH_SHORT:
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $length = IntlDateFormatter::SHORT;
+                break;
+            default:
+                throw new Exception('Invalid date/time format length: ' . $length);
         }
 
-        // See if it's been explicitly defined already
-        $type = ($withDate ? 'date' : '') . ($withTime ? 'time' : '');
-        if (isset($this->_data['dateTimeFormats'][$length][$type])) {
-            return $this->_data['dateTimeFormats'][$length][$type];
-        }
+        $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
+        $timeType = ($withTime ? $length : IntlDateFormatter::NONE);
+        $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
+        $pattern = $formatter->getPattern();
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            // Convert length to IntlDateFormatter constants
-            switch ($length) {
-                case self::LENGTH_FULL:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                    $length = IntlDateFormatter::FULL;
-                    break;
-                case self::LENGTH_LONG:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                    $length = IntlDateFormatter::LONG;
-                    break;
-                case self::LENGTH_MEDIUM:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                    $length = IntlDateFormatter::MEDIUM;
-                    break;
-                case self::LENGTH_SHORT:
-                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                    $length = IntlDateFormatter::SHORT;
-                    break;
-                default:
-                    throw new Exception('Invalid date/time format length: ' . $length);
-            }
-
-            $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
-            $timeType = ($withTime ? $length : IntlDateFormatter::NONE);
-            $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
-            $pattern = $formatter->getPattern();
-
-            // Use 4-digit years
-            return strtr($pattern, [
-                'yyyy' => 'yyyy',
-                'yy' => 'yyyy',
-            ]);
-        }
-
-        return null;
+        // Use 4-digit years
+        return strtr($pattern, [
+            'yyyy' => 'yyyy',
+            'yy' => 'yyyy',
+        ]);
     }
 }

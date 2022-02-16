@@ -170,6 +170,12 @@ class MatrixBlock extends Element implements BlockElementInterface
     public ?int $fieldId = null;
 
     /**
+     * @var int|null Primary owner ID
+     * @since 4.0.0
+     */
+    public ?int $primaryOwnerId = null;
+
+    /**
      * @var int|null Owner ID
      */
     public ?int $ownerId = null;
@@ -239,7 +245,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
+        $rules[] = [['fieldId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         return $rules;
     }
 
@@ -269,9 +275,9 @@ class MatrixBlock extends Element implements BlockElementInterface
     public function getCacheTags(): array
     {
         return [
-            "field-owner:$this->fieldId-$this->ownerId",
+            "field-owner:$this->fieldId-$this->primaryOwnerId",
             "field:$this->fieldId",
-            "owner:$this->ownerId",
+            "owner:$this->primaryOwnerId",
         ];
     }
 
@@ -328,6 +334,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     public function setOwner(?ElementInterface $owner = null): void
     {
         $this->_owner = $owner;
+        $this->ownerId = $owner->id;
     }
 
     /**
@@ -433,10 +440,15 @@ class MatrixBlock extends Element implements BlockElementInterface
             }
 
             $record->fieldId = (int)$this->fieldId;
-            $record->ownerId = (int)$this->ownerId;
+            $record->primaryOwnerId = (int)$this->primaryOwnerId;
             $record->typeId = (int)$this->typeId;
-            $record->sortOrder = (int)$this->sortOrder ?: null;
             $record->save(false);
+
+            Db::upsert(Table::MATRIXBLOCKS_OWNERS, [
+                'blockId' => $this->id,
+                'ownerId' => $this->ownerId,
+                'sortOrder' => $this->sortOrder ?? 0,
+            ]);
         }
 
         parent::afterSave($isNew);

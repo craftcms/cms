@@ -24,6 +24,7 @@ use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use Generator;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -200,20 +201,6 @@ class FieldLayout extends Model
     private array $_tabs;
 
     /**
-     * @var BaseField[]
-     * @see getTabs()
-     * @see isFieldIncluded()
-     */
-    private array $_fields;
-
-    /**
-     * @var FieldInterface[]|null
-     * @see getFields()
-     * @see setFields()
-     */
-    private ?array $_customFields = null;
-
-    /**
      * @inheritdoc
      */
     public function init(): void
@@ -289,7 +276,6 @@ class FieldLayout extends Model
     public function setTabs(array $tabs): void
     {
         $this->_tabs = [];
-        $this->_fields = [];
 
         $index = 0;
 
@@ -305,22 +291,22 @@ class FieldLayout extends Model
             $this->_tabs[] = $tab;
         }
 
-        // Take stock of all the selected layout elements
-        foreach ($this->_tabs as $tab) {
-            foreach ($tab->getElements() as $layoutElement) {
-                if ($layoutElement instanceof BaseField) {
-                    $this->_fields[$layoutElement->attribute()] = $layoutElement;
-                }
-            }
+        // Make sure that we aren't missing any mandatory fields
+        $includedFields = [];
+        $missingFields = [];
+
+        foreach ($this->getElementsByType(BaseField::class) as $field) {
+            /** @var BaseField $field */
+            $includedFields[$field->attribute()] = true;
         }
 
-        // Make sure that we aren't missing any mandatory fields
-        /** @var BaseField[] $missingFields */
-        $missingFields = [];
         foreach ($this->getAvailableNativeFields() as $field) {
-            if ($field->mandatory() && !isset($this->_fields[$field->attribute()])) {
-                $missingFields[$field->attribute()] = $field;
-                $this->_fields[$field->attribute()] = $field;
+            if ($field->mandatory()) {
+                $attribute = $field->attribute();
+                if (!isset($includedFields[$attribute])) {
+                    $missingFields[] = $field;
+                    $includedFields[$attribute] = true;
+                }
             }
         }
 
@@ -443,8 +429,12 @@ class FieldLayout extends Model
      */
     public function isFieldIncluded(string $attribute): bool
     {
-        $this->getTabs();
-        return isset($this->_fields[$attribute]);
+        try {
+            $this->getField($attribute);
+            return true;
+        } catch (InvalidArgumentException) {
+            return false;
+        }
     }
 
     /**
@@ -457,11 +447,16 @@ class FieldLayout extends Model
      */
     public function getField(string $attribute): BaseField
     {
-        $this->getTabs();
-        if (!isset($this->_fields[$attribute])) {
+        $filter = fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $layoutElement->attribute() === $attribute
+        );
+        /** @var BaseField|null $field */
+        $field = $this->_element($filter);
+        if (!$field) {
             throw new InvalidArgumentException("Invalid field: $attribute");
         }
-        return $this->_fields[$attribute];
+        return $field;
     }
 
     /**
@@ -491,21 +486,61 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the custom fields included in the layout.
+     * Returns the layout elements of a given type.
      *
-     * @return FieldInterface[]
+     * @template T
+     * @param class-string<T> $class
+     * @return T[]
+     * @since 4.0.0
      */
-    public function getFields(): array
+    public function getElementsByType(string $class): array
     {
-        if (isset($this->_customFields)) {
-            return $this->_customFields;
-        }
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return iterator_to_array($this->_elements($filter));
+    }
 
-        if (!$this->id) {
-            return [];
-        }
+    /**
+     * Returns the visible layout elements of a given type, taking conditions into account.
+     *
+     * @template T
+     * @param class-string<T> $class
+     * @param ElementInterface $element
+     * @return T[]
+     * @since 4.0.0
+     */
+    public function getVisibleElementsByType(string $class, ElementInterface $element): array
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return iterator_to_array($this->_elements($filter, $element));
+    }
 
-        return $this->_customFields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
+    /**
+     * Returns the first layout element of a given type.
+     *
+     * @template T
+     * @param class-string<T> $class
+     * @return T|null The layout element, or `null` if none were found
+     * @since 4.0.0
+     */
+    public function getFirstElementByType(string $class): ?FieldLayoutElement
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return $this->_element($filter);
+    }
+
+    /**
+     * Returns the first visible layout element of a given type, taking conditions into account.
+     *
+     * @template T
+     * @param class-string<T> $class
+     * @param ElementInterface $element
+     * @return T|null The layout element, or `null` if none were found
+     * @since 4.0.0
+     */
+    public function getFirstVisibleElementByType(string $class, ElementInterface $element): ?FieldLayoutElement
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return $this->_element($filter, $element);
     }
 
     /**
@@ -516,43 +551,57 @@ class FieldLayout extends Model
      */
     public function getCustomFieldElements(): array
     {
-        $response = [];
-
-        foreach ($this->getTabs() as $tab) {
-            foreach ($tab->getElements() as $element) {
-                if ($element instanceof CustomField) {
-                    $response[] = $element;
-                }
-            }
-        }
-
-        return $response;
+        return $this->getElementsByType(CustomField::class);
     }
 
+    /**
+     * Returns the custom fields included in the layout.
+     *
+     * @return FieldInterface[]
+     * @since 4.0.0
+     */
+    public function getCustomFields(): array
+    {
+        return $this->_customFields();
+    }
 
     /**
-     * Returns the custom fields included in the layout, which are configured to be shown for the given element
+     * Returns the custom fields included in the layout.
+     *
+     * @return FieldInterface[]
+     * @deprecated in 4.0.0. Use [[getCustomFields()]] instead.
+     */
+    public function getFields(): array
+    {
+        return $this->_customFields();
+    }
+
+    /**
+     * Returns the visible custom fields included in the layout, taking conditions into account.
      *
      * @param ElementInterface $element
      * @return FieldInterface[]
      * @since 4.0.0
      */
-    public function getVisibleFields(ElementInterface $element): array
+    public function getVisibleCustomFields(ElementInterface $element): array
+    {
+        return $this->_customFields($element);
+    }
+
+    /**
+     * @param ElementInterface|null $element
+     * @return FieldInterface[]
+     */
+    private function _customFields(?ElementInterface $element = null): array
     {
         $fields = [];
-
-        foreach ($this->getTabs() as $tab) {
-            if ($tab->showInForm($element)) {
-                foreach ($tab->getElements() as $layoutElement) {
-                    if ($layoutElement instanceof CustomField && $layoutElement->showInForm($element)) {
-                        $field = $layoutElement->getField();
-                        $field->required = $layoutElement->required;
-                        $fields[] = $field;
-                    }
-                }
-            }
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
+        foreach ($this->_elements($filter, $element) as $layoutElement) {
+            /** @var CustomField $layoutElement */
+            $field = $layoutElement->getField();
+            $field->required = $layoutElement->required;
+            $fields[] = $field;
         }
-
         return $fields;
     }
 
@@ -564,23 +613,13 @@ class FieldLayout extends Model
      */
     public function getFieldByHandle(string $handle): ?FieldInterface
     {
-        foreach ($this->getFields() as $field) {
+        foreach ($this->getCustomFields() as $field) {
             if ($field->handle === $handle) {
                 return $field;
             }
         }
 
         return null;
-    }
-
-    /**
-     * Sets the custom fields included in this layout.
-     *
-     * @param FieldInterface[]|null $fields
-     */
-    public function setFields(?array $fields = null): void
-    {
-        $this->_customFields = $fields;
     }
 
     /**
@@ -680,5 +719,33 @@ class FieldLayout extends Model
         }
 
         return $form;
+    }
+
+    /**
+     * @param callable $filter
+     * @param ElementInterface|null $element
+     * @return FieldLayoutElement|null
+     */
+    private function _element(callable $filter, ?ElementInterface $element = null): ?FieldLayoutElement
+    {
+        return $this->_elements($filter, $element)->current();
+    }
+
+    /**
+     * @param callable $filter
+     * @param ElementInterface|null $element
+     * @return Generator
+     */
+    private function _elements(callable $filter, ?ElementInterface $element = null): Generator
+    {
+        foreach ($this->getTabs() as $tab) {
+            if (!$element || $tab->showInForm($element)) {
+                foreach ($tab->getElements() as $layoutElement) {
+                    if ($filter($layoutElement) && (!$element || $layoutElement->showInForm($element))) {
+                        yield $layoutElement;
+                    }
+                }
+            }
+        }
     }
 }

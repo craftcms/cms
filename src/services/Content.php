@@ -88,7 +88,7 @@ class Content extends Component
         $fieldLayout = $element->getFieldLayout();
 
         if ($fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
                 if (
                     (!$element->contentId || $element->isFieldDirty($field->handle)) &&
                     $field::hasContentColumn()
