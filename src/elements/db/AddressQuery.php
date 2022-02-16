@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use craft\elements\Address;
-use craft\models\Address;
 use yii\db\Connection;
 
 /**
