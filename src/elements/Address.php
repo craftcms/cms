@@ -5,6 +5,8 @@ namespace craft\elements;
 use CommerceGuys\Addressing\AddressInterface;
 use Craft;
 use craft\base\Element;
+use craft\elements\conditions\addresses\AddressCondition;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
@@ -203,6 +205,14 @@ class Address extends Element implements AddressInterface
     public static function hasStatuses(): bool
     {
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function createCondition(): ElementConditionInterface
+    {
+        return Craft::createObject(AddressCondition::class, [static::class]);
     }
 
     /**

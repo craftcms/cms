@@ -7,7 +7,11 @@
 
 namespace craft\elements\db;
 
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Address;
+use craft\helpers\Db;
+use craft\models\Address;
 use yii\db\Connection;
 
 /**
@@ -25,6 +29,65 @@ use yii\db\Connection;
  */
 class AddressQuery extends ElementQuery
 {
+    /**
+     * @var string[]|string|null The address countryCode(s) that the resulting address must be in.
+     * ---
+     * ```php
+     * // fetch addresses that are located in AU
+     * $addresses = \craft\elements\Address::find()
+     *     ->countryCode('AU')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses that are located in AU #}
+     * {% set addresses = craft.addresses()
+     *   .countryCode('AU')
+     *   .all() %}
+     * ```
+     * @used-by countryCode()
+     * @used-by countryCode()
+     */
+    public $countryCode;
+
+    /**
+     * Narrows the query results based on the country the assets belong to.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `'AU'` | with a countryCode of `AU`.
+     * | `'not US'` | not in a countryCode of `US`.
+     * | `['AU', 'US']` | in a countryCode of `AU` or `US`.
+     * | `['not', 'AU', 'US']` | not in a countryCode of `AU` or `US`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses in the AU #}
+     * {% set {elements-var} = {twig-method}
+     *   .countryCode('AU')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses in the AU
+     * ${elements-var} = {php-method}
+     *     ->countryCode('AU')
+     *     ->all();
+     * ```
+     *
+     * @param string|string[]|null $value The property value
+     * @return self self reference
+     * @uses $countryCode
+     */
+    public function countryCode($value): self
+    {
+        $this->countryCode = $value;
+        
+        return $this;
+    }
+    
     /**
      * @inheritdoc
      */
