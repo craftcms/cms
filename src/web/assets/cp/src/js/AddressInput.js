@@ -9,8 +9,6 @@ Craft.AddressInput = Garnish.Base.extend({
     id: null,
     baseName: null,
 
-    initialData: null,
-
     $addressCard: null,
     $addressCardHeader: null,
     $addressCardLabel: null,
@@ -59,7 +57,7 @@ Craft.AddressInput = Garnish.Base.extend({
             class: 'btn submit',
             text: Craft.t('app', 'Done'),
         }).appendTo(this.$footer);
-
+        
         this.$cancelBtn = $('<button/>', {
             type: 'button',
             class: 'btn',
