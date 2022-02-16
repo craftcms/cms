@@ -669,8 +669,7 @@ class Matrix extends Component
         if (($blocks = $query->getCachedResult()) !== null) {
             $saveAll = false;
         } else {
-            $blocksQuery = clone $query;
-            $blocks = $blocksQuery->status(null)->all();
+            $blocks = (clone $query)->status(null)->all();
             $saveAll = true;
         }
         $blockIds = [];
@@ -749,8 +748,7 @@ class Matrix extends Component
                     // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
-                    $cachedQuery = clone $query;
-                    $cachedQuery->status(null);
+                    $cachedQuery = (clone $query)->status(null);
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
@@ -823,8 +821,7 @@ class Matrix extends Component
         $query = $source->getFieldValue($field->handle);
         /** @var MatrixBlock[] $blocks */
         if (($blocks = $query->getCachedResult()) === null) {
-            $blocksQuery = clone $query;
-            $blocks = $blocksQuery->status(null)->all();
+            $blocks = (clone $query)->status(null)->all();
         }
         $newBlockIds = [];
 

@@ -2801,8 +2801,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
 
-        $subSelectSqlQuery = clone $this->subQuery;
-        $subSelectSql = $subSelectSqlQuery
+        $subSelectSql = (clone $this->subQuery)
             ->select(['elements_sites.id'])
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
             ->orderBy([
