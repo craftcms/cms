@@ -5,7 +5,7 @@
         <c-icon icon="exclamation-triangle"/>
       </template>
       <template v-else>
-        <c-spinner size="lg"/>
+        <c-spinner size="5"/>
       </template>
       <div class="message">{{ message }}</div>
     </div>

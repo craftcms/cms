@@ -29,12 +29,12 @@
         <div class="swiper-button-prev">
           <c-icon
             icon="chevron-left"
-            size="xl" />
+            size="6" />
         </div>
         <div class="swiper-button-next">
           <c-icon
             icon="chevron-right"
-            size="xl" />
+            size="6" />
         </div>
 
         <div class="pagination-wrapper">

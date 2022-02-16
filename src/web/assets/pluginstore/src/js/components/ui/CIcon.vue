@@ -1,6 +1,17 @@
 <template>
   <component
-    class="align-middle"
+    class="tw-align-middle"
+    :class="{
+      'tw-w-3 tw-h-3': parseInt(size) === 3,
+      'tw-w-4 tw-h-4': parseInt(size) === 4,
+      'tw-w-5 tw-h-5': parseInt(size) === 5,
+      'tw-w-6 tw-h-6': parseInt(size) === 6,
+      'tw-w-7 tw-h-7': parseInt(size) === 7,
+      'tw-w-8 tw-h-8': parseInt(size) === 8,
+      'tw-w-10 tw-h-10': parseInt(size) === 10,
+      'tw-w-12 tw-h-12': parseInt(size) === 12,
+      'tw-w-16 tw-h-16': parseInt(size) === 16,
+    }"
     :is="computedComponent"></component>
 </template>
 
@@ -28,6 +39,10 @@ import XIcon from './icons/XIcon'
 export default {
   props: {
     icon: String,
+    size: {
+      type: [String, Number],
+      default: 4
+    }
   },
   components: {
     AlertIcon,

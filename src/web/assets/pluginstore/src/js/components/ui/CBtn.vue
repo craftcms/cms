@@ -65,7 +65,7 @@
       <c-icon
         v-if="icon && icon.length > 0"
         :icon="icon"
-        size="sm" />
+        size="3" />
 
       <slot></slot>
 
@@ -73,7 +73,7 @@
         class="ml-1"
         v-if="trailingIcon && trailingIcon.length > 0"
         :icon="trailingIcon"
-        size="sm" />
+        size="3" />
     </div>
   </component>
 </template>

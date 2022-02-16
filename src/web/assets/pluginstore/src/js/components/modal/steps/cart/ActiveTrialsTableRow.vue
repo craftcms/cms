@@ -45,7 +45,7 @@
                     }">{{ "Add to cart"|t('app') }}</a>
         </template>
         <template v-else>
-          <c-spinner size="sm"/>
+          <c-spinner size="3"/>
         </template>
       </div>
     </td>
