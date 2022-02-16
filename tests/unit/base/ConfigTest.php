@@ -34,17 +34,25 @@ class ConfigTest extends Unit
      */
     public function testEnvironmentVariableOverride(array $param, array $override, mixed $expected): void
     {
+        [$paramName, $paramValue] = $param;
+        [$overrideName, $overrideValue] = $override;
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $generalConfig->{$param[0]} = $param[1];
+        $generalConfig->$paramName = $paramValue;
 
-        putenv("$override[0]=$override[1]");
+        $envString = $overrideName;
+
+        if ($overrideValue !== null) {
+            $envString .= "=$overrideValue";
+        }
+
+        putenv($envString);
 
         $generalConfig->normalize();
 
-        self::assertEquals($expected, $generalConfig->{$param[0]});
+        self::assertEquals($expected, $generalConfig->$paramName);
 
         // Cleanup env for subsequent tests
-        putenv((string)$override[0]);
+        putenv((string)$overrideName);
     }
 
     /**
@@ -59,6 +67,11 @@ class ConfigTest extends Unit
                 false,
             ],
             [
+                ['allowAdminChanges', true],
+                ['CRAFT_ALLOW_ADMIN_CHANGES', null],
+                true,
+            ],
+            [
                 ['disabledPlugins', '*'],
                 ['CRAFT_DISABLED_PLUGINS', 'foo,bar'],
                 ['foo', 'bar'],
@@ -67,7 +80,12 @@ class ConfigTest extends Unit
                 ['disabledPlugins', ['foo', 'bar']],
                 ['CRAFT_DISABLED_PLUGINS', '*'],
                 '*',
-            ]
+            ],
+            [
+                ['defaultWeekStartDay', 0],
+                ['CRAFT_DEFAULT_WEEK_START_DAY', '1'],
+                1,
+            ],
         ];
     }
 }
