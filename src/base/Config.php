@@ -25,10 +25,19 @@ abstract class Config extends BaseObject
      */
     public function init(): void
     {
-        Craft::configure($this, $this->_getNormalizedConfig());
+        $this->normalize();
     }
 
-    private function _getNormalizedConfig(): array {
+    /**
+     * Normalize the config object, including any environment variable overrides.
+     * @return void
+     */
+    protected function normalize(): void
+    {
+        Craft::configure($this, $this->_getNormalizedProperties());
+    }
+
+    private function _getNormalizedProperties(): array {
         $reflect = new ReflectionClass($this);
 
         return Collection::make($reflect->getProperties(ReflectionProperty::IS_PUBLIC))
