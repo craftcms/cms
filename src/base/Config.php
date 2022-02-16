@@ -36,7 +36,10 @@ abstract class Config extends BaseObject
                 $name = $prop->getName();
                 $value = $this->_getConfigValueFromEnv($name) ?? $prop->getValue($this);
 
-                if (is_string($value) && $this->_getPropertyTypes($prop)->contains('array')) {
+                if (is_string($value) &&
+                    str_contains($value, ',') &&
+                    $this->_getPropertyTypes($prop)->contains('array')
+                ) {
                     $value = StringHelper::split($value);
                 }
 

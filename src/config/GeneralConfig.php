@@ -1713,10 +1713,6 @@ class GeneralConfig extends BaseConfig
     {
         parent::init();
 
-        if (is_array($this->disabledPlugins) && in_array('*', $this->disabledPlugins, true)) {
-            $this->disabledPlugins = '*';
-        }
-
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
