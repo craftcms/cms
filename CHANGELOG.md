@@ -24,6 +24,7 @@
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
 - Added the `|money` Twig filter.
 - Added the `assetUploaders` user query param.
+- Added the `primaryOwner` and `primaryOwnerId` Matrix block query params.
 - Added the `authors` user query param.
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
@@ -91,6 +92,7 @@
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
+- Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
 - Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
@@ -135,6 +137,7 @@
 - Added `craft\elements\conditions\users\LastNameConditionRule`.
 - Added `craft\elements\conditions\users\UserCondition`.
 - Added `craft\elements\conditions\users\UsernameConditionRule`.
+- Added `craft\elements\MatrixBlock::$primaryOwnerId`.
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
@@ -253,11 +256,13 @@
 - Added `craft\services\Conditions`.
 - Added `craft\services\Config::CATEGORY_CUSTOM`.
 - Added `craft\services\Config::getCustom()`.
+- Added `craft\services\Drafts::removeDraftData()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
 - Added `craft\services\Fields::createLayout()`.
 - Added `craft\services\Fs`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
+- Added `craft\services\Matrix::duplicateOwnership()`.
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
@@ -342,6 +347,7 @@
 - Craft now requires PHP 8.0 or later.
 - Craft now requires MySQL 5.7.8 / MariaDB 10.2.7 / PostgreSQL 10.0 or later.
 - Craft now requires the [Intl](https://php.net/manual/en/book.intl.php) and [BCMath](https://www.php.net/manual/en/book.bc.php) PHP extensions.
+- Improved draft creation/application performance. ([#10577](https://github.com/craftcms/cms/pull/10577))
 - The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
 - The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
 - Users are no longer required to have a username or email.
