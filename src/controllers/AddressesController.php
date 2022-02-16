@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\Address;
+use craft\helpers\Address as AddressHelper;
 use craft\web\Controller;
 use craft\web\Response;
 
@@ -23,42 +24,49 @@ use craft\web\Response;
  */
 class AddressesController extends Controller
 {
-    public function actionGetInputHtml()
+    /**
+     * @return string
+     */
+    public function actionAddAddress(): string
     {
-        $view = \Craft::$app->getView();
-        $name = $this->request->getRequiredBodyParam('name');
-        $doValidate = (bool)$this->request->getBodyParam('doValidate', false);
-        $id = $this->request->getRequiredBodyParam('id');
-        $static = $this->request->getBodyParam('static', false);
-
-        $address = new Address();
-        $address->countryCode = 'US';
-        $fieldLocationDot = str_replace(['[', ']'], ['.', ''], $name);
-        $addressData = $this->request->getBodyParam($fieldLocationDot);
-        $address->setAttributes($addressData, false);
-
-        $format = \Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
-
-        if ($doValidate) {
-            $address->validate();
+        $namespace = Craft::$app->getRequest()->getParam('namespace', 'addresses');
+        $addresses = Craft::$app->getRequest()->getParam($namespace, []);
+        foreach ($addresses as $key => $address) {
+            $address = Address::create($address);
+            $address->setFieldValuesFromRequest($namespace . '.fields');
+            $addresses[$key] = $address;
         }
-
-        $fieldHtml = $view->renderTemplate('_includes/forms/address', [
-            'address' => $address,
-            'id' => $id,
-            'name' => $name,
-            'addressFormat' => $format,
-            'static' => $static,
+        $newAddress  = Address::create([
+            'countryCode'=>'US'
         ]);
+        $addresses[] = $newAddress;
+        return AddressHelper::addressCardsHtml($addresses, $namespace, true);
+    }
 
-        $response = [
-            'fieldHtml' => $fieldHtml,
-            'success' => !$address->hasErrors(),
+    /**
+     * @return \yii\web\Response|null
+     */
+    public function actionRenderAddressStandardFields(): ?Response
+    {
+        $view = Craft::$app->getView();
+        $namespace = Craft::$app->getRequest()->getParam('name', 'address');
+        $address = Craft::$app->getRequest()->getParam($namespace, []);
+        unset($address['fields']); // Don't need this to render standard fields
+        $address = Address::create($address);
+        $html = $view->namespaceInputs(function() use ($address) {
+            return Craft::$app->getView()->renderTemplate('_includes/forms/address-standard', [
+                'address' => $address,
+                'availableCountries' => null,
+                'defaultCountryCode' => 'US',
+                'hasErrors' => $address->hasErrors()
+            ]);
+        }, $namespace);
+
+        return $this->asJson([
+            'fieldHtml' => $html,
             'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml()
-        ];
-
-        return $this->asJson($response);
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     /**

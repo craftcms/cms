@@ -15,6 +15,24 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Address record.
  *
+ * @property string $countryCode        The two-letter country code.
+ * @property string $administrativeArea The administrative area.
+ * @property string $locality           The locality.
+ * @property string $dependentLocality  The dependent locality.
+ * @property string $postalCode         The postal code.
+ * @property string $sortingCode        The sorting code
+ * @property string $addressLine1       The first line of the address block.
+ * @property string $addressLine2       The second line of the address block.
+ * @property string $organization       The organization.
+ * @property string $givenName          The given name.
+ * @property string $additionalName     The additional name.
+ * @property string $familyName         The family name.
+ * @property array $metadata            The metadata attached to the address. Should only be key value pairs.
+ * @property string $latitude            The latitude of the address.
+ * @property string $longitude           The longitude of the address.
+ * @property string $label              The label to identify this address to the person who created it.
+ * @property string $locale             The locale. Defaults to 'und'.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */

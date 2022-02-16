@@ -11,6 +11,8 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
+use craft\validators\AddressValidator;
+use craft\validators\RequiredFieldAddressValidator;
 use yii\base\Exception;
 
 /**
@@ -29,6 +31,8 @@ use yii\base\Exception;
  * @property string $additionalName     The additional name.
  * @property string $familyName         The family name.
  * @property array $metadata            The metadata attached to the address. Should only be key value pairs.
+ * @property string $latitude            The latitude of the address.
+ * @property string $longitude           The longitude of the address.
  * @property string $label              The label to identify this address to the person who created it.
  * @property string $locale             The locale. Defaults to 'und'.
  * @property-read bool $isEmpty         Whether the address is empty.
@@ -568,6 +572,11 @@ class Address extends Element implements AddressInterface
         $rules = parent::defineRules();
         $rules[] = [['countryCode'], 'required'];
 
+        $rules[] = [
+            static::_attributes(),
+            RequiredFieldAddressValidator::class
+        ];
+
         return $rules;
     }
 
@@ -611,20 +620,22 @@ class Address extends Element implements AddressInterface
             $record->id = $this->id;
         }
 
-        $record->label = $this->label;
-        $record->countryCode = $this->countryCode;
-        $record->administrativeArea = $this->administrativeArea;
-        $record->locality = $this->locality;
-        $record->dependentLocality = $this->dependentLocality;
-        $record->postalCode = $this->postalCode;
-        $record->sortingCode = $this->sortingCode;
-        $record->addressLine1 = $this->addressLine1;
-        $record->addressLine2 = $this->addressLine2;
-        $record->organization = $this->organization;
-        $record->givenName = $this->givenName;
-        $record->additionalName = $this->additionalName;
-        $record->familyName = $this->familyName;
-        $record->metadata = $this->metadata;
+        $record->label = $this->getLabel();
+        $record->countryCode = $this->getCountryCode();
+        $record->administrativeArea = $this->getAdministrativeArea();
+        $record->locality = $this->getLocality();
+        $record->dependentLocality = $this->getDependentLocality();
+        $record->postalCode = $this->getPostalCode();
+        $record->sortingCode = $this->getSortingCode();
+        $record->addressLine1 = $this->getAddressLine1();
+        $record->addressLine2 = $this->getAddressLine2();
+        $record->organization = $this->getOrganization();
+        $record->givenName = $this->getGivenName();
+        $record->additionalName = $this->getAdditionalName();
+        $record->familyName = $this->getFamilyName();
+        $record->metadata = $this->getMetadata();
+        $record->latitude = $this->getLatitude();
+        $record->longitude = $this->getLongitude();
 
         // Capture the dirty attributes from the record
         $dirtyAttributes = array_keys($record->getDirtyAttributes());

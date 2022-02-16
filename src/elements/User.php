@@ -978,11 +978,17 @@ class User extends Element implements IdentityInterface
      */
     public function getAddresses(): array
     {
-        if (isset($this->_addresses)) {
+        if ($this->_addresses !== null) {
             return $this->_addresses;
         }
 
-        return $this->_addresses = Craft::$app->getUserAddresses()->getAddressesByUserId($this->id);
+        if($this->id) {
+            $this->_addresses = Craft::$app->getUserAddresses()->getAddressesByUserId($this->id);
+        }else{
+            $this->_addresses = [];
+        }
+
+        return $this->_addresses;
     }
 
     /**
@@ -1973,11 +1979,6 @@ class User extends Element implements IdentityInterface
             ->andWhere(['not', ['addressId' => $updatedAddressIds]])
             ->column();
 
-
-        $idd = [47, 28, 39, 29, 40, 30, 41, 31, 32, 42, 43, 44, 45, 17, 18, 33, 48, 46, 35, 52, 36, 37, 38];
-        foreach ($idd as $deletableId) {
-            Craft::$app->getElements()->deleteElementById($deletableId);
-        }
         foreach ($deletableIds as $deletableId) {
             Craft::$app->getElements()->deleteElementById($deletableId);
         }
@@ -1990,7 +1991,7 @@ class User extends Element implements IdentityInterface
             }
         }
         Db::batchInsert(Table::ADDRESSES_USERS, ['userId', 'addressId'], $userRelations);
-        
+
         $this->setAddresses($updatedAddresses);
     }
 }

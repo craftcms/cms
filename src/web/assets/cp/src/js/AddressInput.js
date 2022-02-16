@@ -153,7 +153,7 @@ Craft.AddressInput = Garnish.Base.extend({
 }, {
     defaults: {
         static: false,
-        action: 'users/render-address',
+        action: 'addresses/render-address-standard-fields',
         autoOpen: false
     }
 });
