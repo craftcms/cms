@@ -57,12 +57,12 @@ Craft.AddressInput = Garnish.Base.extend({
             class: 'btn submit',
             text: Craft.t('app', 'Done'),
         }).appendTo(this.$footer);
-        
-        this.$cancelBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn',
-            text: Craft.t('app', 'Cancel'),
-        }).appendTo(this.$footer);
+
+        // this.$cancelBtn = $('<button/>', {
+        //     type: 'button',
+        //     class: 'btn',
+        //     text: Craft.t('app', 'Cancel'),
+        // }).appendTo(this.$footer);
 
         this.$saveSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo(this.$footer);
 
@@ -111,13 +111,12 @@ Craft.AddressInput = Garnish.Base.extend({
             this.addListener(this.slideout.$shade, 'click', () => {
                 this.done();
             });
-            this.$cancelBtn.on('click', (ev) => {
-                if (this.settings.autoOpen) {
-                    this.slideout.close();
-                    this.$addressCard.remove();
-                }
-
-            });
+            // this.$cancelBtn.on('click', (ev) => {
+            //     if (this.settings.autoOpen) {
+            //         this.slideout.close();
+            //         this.$addressCard.remove();
+            //     }
+            // });
             this.addListener(this.slideout.$container, 'submit', ev => {
                 ev.preventDefault();
                 this.done();
