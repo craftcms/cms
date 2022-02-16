@@ -1848,6 +1848,10 @@ div.btn.submit input {
   &:focus {
     background-color: transparentize($grey200, 0.9);
     border-color: transparent;
+
+    .reduce-focus-visibility &:not(.focus-visible) {
+      border: 1px dashed $mediumHairlineColor;
+    }
   }
 
   &:not(.disabled) {
