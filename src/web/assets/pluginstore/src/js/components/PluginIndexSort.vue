@@ -1,7 +1,7 @@
 <template>
   <div class="tw-flex tw-items-center tw-self-end">
     <c-spinner
-      v-if="!loading"
+      v-if="loading"
       class="tw-mr-4"/>
 
     <sort-menu-btn
