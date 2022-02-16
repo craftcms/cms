@@ -458,11 +458,12 @@ class View extends \yii\web\View
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
      * @param string $templateMode The template mode to use.
+     * @param bool $escapeHtml Whether dynamic HTML should be escaped
      * @return string The rendered template.
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      */
-    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
+    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
     {
         // If there are no dynamic tags, just return the template
         if (strpos($template, '{') === false) {
@@ -473,7 +474,9 @@ class View extends \yii\web\View
         $this->setTemplateMode($templateMode);
 
         $twig = $this->getTwig();
-        $twig->setDefaultEscaperStrategy(false);
+        if (!$escapeHtml) {
+            $twig->setDefaultEscaperStrategy(false);
+        }
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
@@ -481,7 +484,9 @@ class View extends \yii\web\View
             return $twig->createTemplate($template)->render($variables);
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
-            $twig->setDefaultEscaperStrategy();
+            if (!$escapeHtml) {
+                $twig->setDefaultEscaperStrategy();
+            }
             $this->setTemplateMode($oldTemplateMode);
         }
     }
