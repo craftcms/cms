@@ -344,7 +344,7 @@
 - Added the Money package.
 
 ### Changed
-- Craft now requires PHP 8.0 or later.
+- Craft now requires PHP 8.0.2 or later.
 - Craft now requires MySQL 5.7.8 / MariaDB 10.2.7 / PostgreSQL 10.0 or later.
 - Craft now requires the [Intl](https://php.net/manual/en/book.intl.php) and [BCMath](https://www.php.net/manual/en/book.bc.php) PHP extensions.
 - Improved draft creation/application performance. ([#10577](https://github.com/craftcms/cms/pull/10577))
