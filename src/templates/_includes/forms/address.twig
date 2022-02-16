@@ -25,11 +25,9 @@
 
 {% tag 'div' with containerAttributes %}
     <div class="address-card-header">
-        {% if address.label %}
-            <div class="address-card-label">
+            <div class="address-card-label {% if not address.label %}hidden{% endif %}">
                 {{ address.label }}
             </div>
-        {% endif %}
         <div class="address-card-header-actions">
             <button type="button" class="btn menubtn" data-icon="settings"
                     aria-label="{{ 'Settings'|t('app') }}"></button>

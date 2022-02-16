@@ -29,18 +29,19 @@ class AddressesController extends Controller
      */
     public function actionAddAddress(): string
     {
-        $namespace = Craft::$app->getRequest()->getParam('namespace', 'addresses');
+        $namespace = Craft::$app->getRequest()->getParam('name', 'addresses');
         $addresses = Craft::$app->getRequest()->getParam($namespace, []);
+        $addressesElements = [];
         foreach ($addresses as $key => $address) {
             $address = Address::create($address);
             $address->setFieldValuesFromRequest($namespace . '.fields');
-            $addresses[$key] = $address;
+            $addressesElements[$key] = $address;
         }
-        $newAddress  = Address::create([
-            'countryCode'=>'US'
+        $newAddress = Address::create([
+            'countryCode' => 'US'
         ]);
-        $addresses[] = $newAddress;
-        return AddressHelper::addressCardsHtml($addresses, $namespace, true);
+        $addressesElements[] = $newAddress;
+        return AddressHelper::addressCardsHtml($addressesElements, $namespace, true);
     }
 
     /**
@@ -64,6 +65,24 @@ class AddressesController extends Controller
 
         return $this->asJson([
             'fieldHtml' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
+     * @return \yii\web\Response|null
+     */
+    public function actionRenderFormattedAddress(): ?Response
+    {
+        $view = Craft::$app->getView();
+        $namespace = Craft::$app->getRequest()->getParam('name', 'address');
+        $address = Craft::$app->getRequest()->getParam($namespace, []);
+        unset($address['fields']); // Don't need this to render standard fields
+        $address = Address::create($address);
+        $html = Craft::$app->getAddresses()->formatAddress($address);
+        return $this->asJson([
+            'html' => $html,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
