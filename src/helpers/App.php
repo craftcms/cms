@@ -356,7 +356,7 @@ class App
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        return match (strtolower($value)) {
+        return match (is_string($value) ? strtolower($value) : $value) {
             'true' => true,
             'false' => false,
             default => is_numeric($value) ? Number::toIntOrFloat($value) : $value,
