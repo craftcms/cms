@@ -107,7 +107,6 @@ class Install extends Migration
             'organization' => $this->string(),
             'latitude' => $this->string(),
             'longitude' => $this->string(),
-            'metadata' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY(id)',

@@ -27,9 +27,8 @@ use yii\db\ActiveQueryInterface;
  * @property string $givenName          The given name.
  * @property string $additionalName     The additional name.
  * @property string $familyName         The family name.
- * @property array $metadata            The metadata attached to the address. Should only be key value pairs.
- * @property string $latitude            The latitude of the address.
- * @property string $longitude           The longitude of the address.
+ * @property string $latitude           The latitude of the address.
+ * @property string $longitude          The longitude of the address.
  * @property string $label              The label to identify this address to the person who created it.
  * @property string $locale             The locale. Defaults to 'und'.
  *

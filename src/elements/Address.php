@@ -18,7 +18,7 @@ use craft\validators\RequiredFieldAddressValidator;
 use yii\base\Exception;
 
 /**
- * Address model class
+ * Address element class
  *
  * @property string $countryCode        The two-letter country code.
  * @property string $administrativeArea The administrative area.
@@ -32,9 +32,8 @@ use yii\base\Exception;
  * @property string $givenName          The given name.
  * @property string $additionalName     The additional name.
  * @property string $familyName         The family name.
- * @property array $metadata            The metadata attached to the address. Should only be key value pairs.
- * @property string $latitude            The latitude of the address.
- * @property string $longitude           The longitude of the address.
+ * @property string $latitude           The latitude of the address.
+ * @property string $longitude          The longitude of the address.
  * @property string $label              The label to identify this address to the person who created it.
  * @property string $locale             The locale. Defaults to 'und'.
  * @property-read bool $isEmpty         Whether the address is empty.
@@ -136,13 +135,6 @@ class Address extends Element implements AddressInterface
     private $_familyName;
 
     /**
-     * @var array|null The metadata attached to the address. Should only be key value pairs.
-     * @see getMetadata()
-     * @see setMetadata()
-     */
-    private $_metadata;
-
-    /**
      * @var string The locale. Defaults to 'und'.
      * @see getLocale()
      * @see setLocale()
@@ -232,7 +224,6 @@ class Address extends Element implements AddressInterface
             'addressLine1' => Craft::t('app', 'Address Line 1'),
             'addressLine2' => Craft::t('app', 'Address Line 2'),
             'sortingCode' => Craft::t('app', 'Sorting code'),
-            'metadata' => Craft::t('app', 'Metadata'),
             default => parent::getAttributeLabel($attribute),
         };
     }
@@ -252,11 +243,6 @@ class Address extends Element implements AddressInterface
     public static function create($config): Address
     {
         $config = array_filter($config);
-
-        // JSON-decode the meta now
-        if (isset($config['metadata']) && is_string($config['metadata'])) {
-            $config['metadata'] = Json::decodeIfJson($config['metadata']);
-        }
 
         // Support fields
         $fields = [];
@@ -310,7 +296,6 @@ class Address extends Element implements AddressInterface
             'postalCode',
             'sortingCode',
             'organization',
-            'metadata',
             'latitude',
             'longitude'
         ];
@@ -557,22 +542,6 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @return array Metadata
-     */
-    public function getMetadata(): array
-    {
-        return $this->_metadata ?? [];
-    }
-
-    /**
-     * @param string|array Metadata
-     */
-    public function setMetadata(mixed $metadata = []): void
-    {
-        $this->_metadata = Json::decodeIfJson($metadata);
-    }
-
-    /**
      * @return string Latitude
      */
     public function getLatitude(): string
@@ -673,7 +642,6 @@ class Address extends Element implements AddressInterface
         $record->givenName = $this->getGivenName();
         $record->additionalName = $this->getAdditionalName();
         $record->familyName = $this->getFamilyName();
-        $record->metadata = $this->getMetadata();
         $record->latitude = $this->getLatitude();
         $record->longitude = $this->getLongitude();
 

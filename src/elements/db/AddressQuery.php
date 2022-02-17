@@ -106,7 +106,6 @@ class AddressQuery extends ElementQuery
             'addresses.postalCode',
             'addresses.sortingCode',
             'addresses.organization',
-            'addresses.metadata',
             'addresses.latitude',
             'addresses.longitude'
         ]);

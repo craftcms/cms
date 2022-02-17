@@ -146,26 +146,4 @@
     }) }}
 </div>
 
-{% set metaErrors = address.getErrors('metadata') %}
-{{ forms.editableTableField({
-    label: "Metadata"|t('app'),
-    id: 'metadata',
-    name: "metadata",
-    cols: {
-        key: {
-            type: 'singleline',
-            heading: "Key"|t('app'),
-        },
-        value: {
-            type: 'singleline',
-            heading: "Value"|t('app'),
-        }
-    }|filter,
-    allowAdd: true,
-    allowDelete: true,
-    allowReorder: true,
-    rows: address.metadata ? address.metadata : [[]],
-    staticRows: false,
-    errors: metaErrors|unique
-}) }}
 </div>
