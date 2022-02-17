@@ -3617,7 +3617,8 @@ ul.tree,
       }
 
       & > .heading {
-        & > label {
+        & > label,
+        & > legend {
           font-weight: normal;
         }
       }
@@ -5425,10 +5426,6 @@ body.reduce-focus-visibility {
           user-select: none;
           pointer-events: none;
           z-index: 1;
-        }
-
-        #details & {
-          color: $darkHairlineColor;
         }
       }
     }

@@ -252,6 +252,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement,
+            'isDateTime' => $this->showTime,
             'hasOuterContainer' => true,
         ];
 
@@ -318,6 +319,14 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         }
 
         return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function useFieldset(): bool
+    {
+        return $this->showTime;
     }
 
     /**
