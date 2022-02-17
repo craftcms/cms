@@ -143,7 +143,6 @@
 
 import {mapState, mapGetters, mapActions} from 'vuex'
 import CopyPackage from '../../components/CopyPackage'
-import PluginCollapsibleChangelog from '../../components/PluginCollapsibleChangelog'
 import PluginEditions from '../../components/PluginEditions'
 import PluginScreenshots from '../../components/PluginScreenshots'
 import licensesMixin from '../../mixins/licenses'
@@ -156,7 +155,6 @@ export default {
   components: {
     PluginLayout,
     CopyPackage,
-    PluginCollapsibleChangelog,
     PluginEditions,
     PluginScreenshots,
     PluginMeta
