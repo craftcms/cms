@@ -8,6 +8,8 @@ Craft.Tabs = Garnish.Base.extend({
     $tablist: null,
     $menuBtn: null,
     $tabs: null,
+    $firstTab: null,
+    $lastTab: null,
     $selectedTab: null,
     $focusableTab: null,
     menu: null,
@@ -16,6 +18,8 @@ Craft.Tabs = Garnish.Base.extend({
         this.$container = $(container);
         this.$tablist = this.$container.find('> [role="tablist"]:first');
         this.$tabs = this.$tablist.find('> [role="tab"]');
+        this.$firstTab = this.$tabs.first();
+        this.$lastTab = this.$tabs.last();
         this.$selectedTab = this.$tabs.filter('.sel:first');
         this.$focusableTab = this.$tabs.filter('[tabindex=0]:first');
         this.$menuBtn = this.$container.find('> .menubtn:first').menubtn();
@@ -36,7 +40,6 @@ Craft.Tabs = Garnish.Base.extend({
             const href = $a.attr('href');
             if (href && href.charAt(0) === '#') {
                 this.addListener($a, 'keydown', ev => {
-                    console.log(ev.keyCode);
                     if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
@@ -65,6 +68,13 @@ Craft.Tabs = Garnish.Base.extend({
                         $tab.focus();
                         this.scrollToTab($tab);
                     }
+                } else if (ev.keyCode === Garnish.HOME_KEY || ev.keyCode === Garnish.END_KEY) {
+                    const $tab = ev.keyCode === Garnish.HOME_KEY ? this.$firstTab : this.$lastTab;
+                    ev.preventDefault();
+                    this.makeTabFocusable($tab);
+                    $tab.focus();
+                    this.scrollToTab($tab);
+                    this.selectTab($tab);
                 }
             });
         }
@@ -98,6 +108,7 @@ Craft.Tabs = Garnish.Base.extend({
         this.deselectTab();
         this.$selectedTab = $tab.addClass('sel').attr('aria-selected', 'true');
         this.makeTabFocusable($tab);
+        $tab.focus();
         this.scrollToTab($tab);
 
         this.menu.$options.removeClass('sel');
