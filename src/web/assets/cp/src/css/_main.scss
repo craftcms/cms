@@ -1848,6 +1848,10 @@ div.btn.submit input {
   &:focus {
     background-color: transparentize($grey200, 0.9);
     border-color: transparent;
+
+    .reduce-focus-visibility &:not(.focus-visible) {
+      border: 1px dashed $mediumHairlineColor;
+    }
   }
 
   &:not(.disabled) {
@@ -3686,7 +3690,7 @@ ul.tree,
     .text::placeholder,
     .datewrapper .text + div[data-icon],
     .timewrapper .text + div[data-icon] {
-      color: $grey300;
+      color: $grey500;
     }
 
     .ui-datepicker {
@@ -3867,7 +3871,8 @@ ul.tree,
       }
 
       & > .heading {
-        & > label {
+        & > label,
+        & > legend {
           font-weight: normal;
         }
       }
@@ -5919,10 +5924,6 @@ body.reduce-focus-visibility {
           user-select: none;
           pointer-events: none;
           z-index: 1;
-        }
-
-        #details & {
-          color: $darkHairlineColor;
         }
       }
     }

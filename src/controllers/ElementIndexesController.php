@@ -216,14 +216,13 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Perform the action
-        /** @var ElementQuery $actionCriteria */
-        $actionCriteria = clone $this->elementQuery;
-        $actionCriteria->offset = 0;
-        $actionCriteria->limit = null;
-        $actionCriteria->orderBy = null;
-        $actionCriteria->positionedAfter = null;
-        $actionCriteria->positionedBefore = null;
-        $actionCriteria->id = $elementIds;
+        $actionCriteria = (clone $this->elementQuery)
+            ->offset(0)
+            ->limit(null)
+            ->orderBy(null)
+            ->positionedAfter(null)
+            ->positionedBefore(null)
+            ->id($elementIds);
 
         // Fire a 'beforePerformAction' event
         $event = new ElementActionEvent([
@@ -563,8 +562,7 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $this->request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            $descendantQuery = clone $query;
-            $descendantQuery
+            $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
                 ->orderBy(null)
@@ -573,8 +571,7 @@ class ElementIndexesController extends BaseElementsController
                 ->status(null);
 
             // Get the actual elements
-            $collapsedElementsQuery = clone $descendantQuery;
-            $collapsedElements = $collapsedElementsQuery
+            $collapsedElements = (clone $descendantQuery)
                 ->id($collapsedElementIds)
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
@@ -588,8 +585,7 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $elementDescendantsQuery = clone $descendantQuery;
-                    $elementDescendantIds = $elementDescendantsQuery
+                    $elementDescendantIds = (clone $descendantQuery)
                         ->descendantOf($element)
                         ->ids();
 

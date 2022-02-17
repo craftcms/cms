@@ -145,6 +145,7 @@
 - Added `craft\elements\conditions\users\UsernameConditionRule`.
 - Added `craft\elements\db\AddressQuery`.
 - Added `craft\elements\MatrixBlock::$primaryOwnerId`.
+- Added `craft\elements\MatrixBlock::$saveOwnership`.
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
@@ -274,9 +275,11 @@
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
 - Added `craft\services\Fields::createLayout()`.
 - Added `craft\services\Fs`.
+- Added `craft\services\Gc::hardDeleteElements()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
 - Added `craft\services\Matrix::duplicateOwnership()`.
+- Added `craft\services\Matrix::createRevisionBlocks()`.
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
@@ -360,12 +363,14 @@
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the Money package.
 - Added the Addressing package.
+- Added the yii2-symfonymailer package.
 
 ### Changed
-- Craft now requires PHP 8.0 or later.
+- Craft now requires PHP 8.0.2 or later.
 - Craft now requires MySQL 5.7.8 / MariaDB 10.2.7 / PostgreSQL 10.0 or later.
 - Craft now requires the [Intl](https://php.net/manual/en/book.intl.php) and [BCMath](https://www.php.net/manual/en/book.bc.php) PHP extensions.
 - Improved draft creation/application performance. ([#10577](https://github.com/craftcms/cms/pull/10577))
+- Improved revision creation performance. ([#10589](https://github.com/craftcms/cms/pull/10577))
 - The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
 - The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
 - Users are no longer required to have a username or email.
@@ -381,6 +386,7 @@
 - Images that are not web-safe now are always converted to JPEGs when transforming, if no format was specified.
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
+- Element queries’ `revision` params can now be set to `null` to include normal and revision elements.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Path options passed to console commands (e.g. `--basePath`) now take precedence over their enivronment variable/PHP constant counterparts.
@@ -539,6 +545,7 @@
 - `craft\helpers\i18n\Formatter::asPercent()` now chooses a default `$decimals` value based on the value given, if `null`.
 - `craft\helpers\i18n\Formatter::asPercent()` now treats all empty values as `0`.
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
+- `craft\helpers\MailerHelper::normalizeEmails()` now returns an empty array instead of `null`.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
@@ -546,17 +553,21 @@
 - `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
 - `craft\services\Assets::EVENT_GET_ASSET_URL` has been renamed to `EVENT_DEFINE_ASSET_URL`.
 - `craft\services\Assets::EVENT_GET_THUMB_PATH` has been renamed to `EVENT_DEFINE_THUMB_PATH`.
+- `craft\services\Matrix::duplicateBlocks()` now has a `$deleteOtherBlocks` argument.
 - `craft\services\Plugins::doesPluginRequireDatabaseUpdate()` has been renamed to `isPluginUpdatePending()`.
 - `craft\services\ProjectConfig::set()` now returns `true` or `false` depending on whether the project config was modified.
+- `craft\services\Revisions::createRevision()` now returns the ID of the revision, rather than the revision itself.
 - `craft\services\Updates::getIsCraftDbMigrationNeeded()` has been renamed to `getIsCraftUpdatePending()`.
 - `craft\services\Updates::getIsPluginDbUpdateNeeded()` has been renamed to `getIsPluginUpdatePending()`.
 - `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
 - `craft\test\fixtures\elements\BaseElementFixture` now validates elements with the `live` scenario if they are enabled, canonical, and not a provisional draft.
 - `craft\web\Request::getBodyParam()` now accepts nested param names in the `foo[bar][baz]` format.
 - `craft\web\Request::getBodyParams()` and `getBodyParam()` now check for an `X-Craft-Namespace` header. If present, only params that begin with its value will be returned, excluding the namespace.
+- `craft\web\View::renderString()` now has an `$escapeHtml` argument.
 - `craft\web\View::setNamespace()`’ `$namespace` argument no longer has a default value of `null`.
 - The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - Local volumes no longer use Flysystem.
+- Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
 
@@ -924,6 +935,7 @@
 - Removed the `Craft.DraftEditor` JavaScript class.
 - Removed the Flysystem package. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
 - Removed the laminas-feed package.
+- Removed the yii2-swiftmailer package.
 
 ### Fixed
 - Fixed a bug where pending project config changes in the YAML would get applied when other project config changes were made. ([#9660](https://github.com/craftcms/cms/issues/9660))
@@ -931,3 +943,4 @@
 ### Security
 
 - Generated control panel URLs now begin with the `@web` alias value if the `baseCpUrl` config setting isn’t defined.
+- HTML entities output within email body text are now escaped by default in HTML email bodies.
