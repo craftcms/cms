@@ -4063,12 +4063,12 @@ ul.tree,
   gap: 14px 14px;
   grid-template-columns: repeat(1, minmax(0, 1fr));
   grid-auto-rows: minmax(0, 1fr);
-}
 
-.address-card.add::before {
-  display: block;
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+  & > button.add {
+    padding: 1rem;
+    min-height: 8rem;
+    height: auto;
+  }
 }
 
 .address-card.error {
@@ -4076,7 +4076,6 @@ ul.tree,
 }
 
 .address-card.error:hover {
-  background-color: rgba(255, 227, 227, 0.5);
   border-color: #CF1124;
 }
 

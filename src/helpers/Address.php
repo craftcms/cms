@@ -41,7 +41,6 @@ class Address
                     'ext' => 'craft-cp',
                     'target' => "#$namespacedId-container", // replace self
                     'include' => "#$namespacedId-container", // Only the current address data
-                    'indicator' => sprintf('#%s', $view->namespaceInputId('address-card')),
                 ]
             ]);
             $html .= Html::beginTag('div', ['class' => 'address-cards']);
@@ -51,7 +50,7 @@ class Address
                 $addressCount++;
                 $namespace = $address->id ? (string)$address->id : ('new' . $addressCount);
                 $namespacedName = $view->namespaceInputName($namespace);
-                $autoOpen = ($openNew && StringHelper::startsWith($namespace,'new', false) && $addressCount == count($addresses));
+                $autoOpen = ($openNew && StringHelper::startsWith($namespace, 'new', false) && $addressCount == count($addresses));
                 $html .= $view->namespaceInputs(function() use ($address, $namespacedName, $autoOpen) {
                     return Craft::$app->getView()->renderTemplate('_includes/forms/address', [
                         'id' => 'address',
@@ -65,9 +64,15 @@ class Address
                 }, $namespace);
             }
 
-            $html .= Html::tag('button', Craft::t('app', 'Add an address'),
+            $btnContents = Html::tag('div', '', [
+                'class' => ['spinner', 'spinner-absolute'],
+            ]);
+            $btnContents .= Html::tag('div', Html::encode(Craft::t('app', 'Add an address')), [
+                'class' => 'label',
+            ]);
+            $html .= Html::tag('button', $btnContents,
                 [
-                    'class' => 'address-card add icon',
+                    'class' => 'btn dashed add icon',
                     'hx' => [
                         'get' => UrlHelper::actionUrl('addresses/add-address'),
                     ]
