@@ -1,10 +1,11 @@
 <template>
   <div>
-    <div class="tw-border-b tw-border-solid tw-border-gray-200 tw-pb-4 tw-flex tw-justify-between tw-items-center">
+    <div class="tw-border-b tw-border-solid tw-border-gray-200 tw-space-y-4 md:tw-space-y-0 md:tw-flex tw-justify-between tw-items-center">
       <slot name="header"></slot>
 
       <template v-if="!disableSorting">
         <plugin-index-sort
+          class="tw-pb-4"
           :loading="loading"
           :orderBy.sync="orderBy"
           :direction.sync="direction"
