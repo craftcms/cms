@@ -2,43 +2,6 @@
   <plugin-layout>
     <div class="plugin-details">
       <template v-if="!loading && plugin">
-        <!-- header -->
-        <!--
-        <div class="plugin-details-header tw-border-b tw-border-solid tw-border-gray-200 tw-tw-flex tw-mb-6 tw-pb-6 tw-items-center">
-          <div class="plugin-icon">
-            <template v-if="plugin.iconUrl">
-              <img
-                :src="plugin.iconUrl"
-                class="tw-w-24 tw-h-24" />
-            </template>
-            <template v-else>
-              <div class="tw-bg-gray-100 tw-w-24 tw-h-24 tw-flex tw-items-center tw-justify-center tw-rounded-full">
-                <c-icon
-                  icon="plug"
-                  class="tw-w-10 tw-h-10 tw-text-gray-400" />
-              </div>
-            </template>
-          </div>
-
-          <div class="description flex-1">
-            <h1 class="tw-text-lg tw-font-bold tw-mb-2">{{ plugin.name }}</h1>
-            <p class="tw-mb-2 tw-text-gray-800">{{ plugin.shortDescription }}</p>
-            <p class="tw-mb-2">
-              <router-link
-                :to="'/developer/' + plugin.developerId"
-                :title="plugin.developerName">{{
-                  plugin.developerName
-                }}
-              </router-link>
-            </p>
-          </div>
-
-          <div v-if="actionsLoading">
-            <c-spinner />
-          </div>
-        </div>
-        -->
-
         <!-- body -->
         <div class="plugin-details-body">
           <template v-if="!loading">
@@ -170,10 +133,6 @@
                   class="tw-mr-2" />
                 {{ "Report an issue"|t('app') }}</a>
             </p>
-
-            <hr>
-
-            <plugin-collapsible-changelog :pluginId="plugin.id"></plugin-collapsible-changelog>
           </template>
           <template v-else>
             <c-spinner />
