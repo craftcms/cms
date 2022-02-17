@@ -89,7 +89,7 @@ Craft.AddressInput = Garnish.Base.extend({
             });
 
             var inputSelector = "input[name^='" + this.baseName + "']";
-            this.$addressCardFieldsContent.find(inputSelector).on('blur', function(ev) {
+            this.$addressCardFieldsContent.on('blur', inputSelector,  function(ev) {
                 self.refreshCard();
             });
 
