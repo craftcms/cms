@@ -580,7 +580,7 @@ class UsersController extends Controller
             if ($loggedIn && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
-            return $this->asSuccess($return);
+            return $this->asSuccess(data: $return);
         }
 
         // Can they access the CP?
