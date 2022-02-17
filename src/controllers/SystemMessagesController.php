@@ -83,9 +83,9 @@ class SystemMessagesController extends Controller
         }
 
         if (Craft::$app->getSystemMessages()->saveMessage($message, $language)) {
-            return $this->asJson(['success' => true]);
+            return $this->asSuccess();
         }
 
-        return $this->asErrorJson(Craft::t('app', 'There was a problem saving your message.'));
+        return $this->asFailure(Craft::t('app', 'There was a problem saving your message.'));
     }
 }

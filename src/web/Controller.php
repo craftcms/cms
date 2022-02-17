@@ -222,20 +222,25 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asFailure(
         ?string $message = null,
-        ?array $errors = null,
-        array $data = [],
-        array $routeParams = [],
+        ?array  $errors = null,
+        array   $data = [],
+        array   $routeParams = [],
     ): ?YiiResponse
     {
         if ($this->request->getAcceptsJson()) {
             $this->response->setStatusCode(400);
             return $this->asJson($data + array_filter([
-                'message' => $message,
-                'errors' => $errors,
-            ]));
+                    'success' => false,
+                    'message' => $message,
+                    'errors' => $errors,
+                ]));
         }
 
         $this->setFailFlash($message);
+
+        if ($errors) {
+            $routeParams += ['errors' => $errors];
+        }
 
         if (!empty($routeParams)) {
             Craft::$app->getUrlManager()->setRouteParams($routeParams);
@@ -256,17 +261,17 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asSuccess(
         ?string $message = null,
-        array $data = [],
-        array $routeParams = [],
+        array   $data = [],
+        array   $routeParams = [],
         ?string $redirect = null
     ): ?YiiResponse
     {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
-                'success' => true,
-                'message' => $message,
-                'redirect' => $redirect,
-            ]));
+                    'success' => true,
+                    'message' => $message,
+                    'redirect' => $redirect,
+                ]));
         }
 
         $this->setSuccessFlash($message);
@@ -279,7 +284,7 @@ abstract class Controller extends \yii\web\Controller
             return $this->redirect($redirect);
         }
 
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -334,7 +339,11 @@ abstract class Controller extends \yii\web\Controller
             ($modelName ?? 'model') => $model->toArray(),
         ]);
 
-        return $this->asSuccess($message, $data) ?? $this->redirectToPostedUrl($model, $defaultRedirect);
+        return $this->asSuccess(
+            $message,
+            $data,
+            redirect: ($this->getPostedUrl($model) ?? $defaultRedirect)
+        );
     }
 
     /**
@@ -522,17 +531,35 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Gets the URI specified in the POST.
+     *
+     * @param object|null $object Object containing properties that should be parsed for in the URL.
+     * @return string|null
+     * @throws BadRequestHttpException if the redirect param was tampered with
+     */
+    protected function getPostedUrl(?object $object = null): ?string
+    {
+        $url = $this->request->getValidatedBodyParam('redirect');
+
+        if ($object) {
+            $url = $this->getView()->renderObjectTemplate($url, $object);
+        }
+
+        return $url;
+    }
+
+    /**
      * Redirects to the URI specified in the POST.
      *
-     * @param mixed $object Object containing properties that should be parsed for in the URL.
+     * @param object|null $object Object containing properties that should be parsed for in the URL.
      * @param string|null $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
      * null, then the current request’s path will be used.
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, ?string $default = null): YiiResponse
+    public function redirectToPostedUrl(?object $object = null, ?string $default = null): YiiResponse
     {
-        $url = $this->request->getValidatedBodyParam('redirect');
+        $url = $this->getPostedUrl($object);
 
         if ($url === null) {
             if ($default !== null) {
@@ -540,8 +567,6 @@ abstract class Controller extends \yii\web\Controller
             } else {
                 $url = $this->request->getPathInfo();
             }
-        } else if ($object) {
-            $url = $this->getView()->renderObjectTemplate($url, $object);
         }
 
         return $this->redirect($url);

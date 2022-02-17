@@ -222,7 +222,7 @@ class DashboardController extends Controller
         $widgetId = Json::decode($this->request->getRequiredBodyParam('id'));
         Craft::$app->getDashboard()->deleteWidgetById($widgetId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -240,7 +240,7 @@ class DashboardController extends Controller
 
         Craft::$app->getDashboard()->changeWidgetColspan($widgetId, $colspan);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -256,7 +256,7 @@ class DashboardController extends Controller
         $widgetIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getDashboard()->reorderWidgets($widgetIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -270,7 +270,7 @@ class DashboardController extends Controller
         $url = $this->request->getRequiredBodyParam('url');
         $data = $this->request->getRequiredBodyParam('data');
         Craft::$app->getCache()->set("feed:$url", $data);
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
 
@@ -515,8 +515,7 @@ class DashboardController extends Controller
             $info = $this->_getWidgetInfo($widget);
             $view = $this->getView();
 
-            return $this->asJson([
-                'success' => true,
+            return $this->asSuccess(data: [
                 'info' => $info,
                 'headHtml' => $view->getHeadHtml(),
                 'bodyHtml' => $view->getBodyHtml(),
@@ -531,9 +530,7 @@ class DashboardController extends Controller
             }
         }
 
-        return $this->asJson([
-            'errors' => $allErrors,
-        ]);
+        return $this->asFailure(errors: $allErrors);
     }
 
     /**

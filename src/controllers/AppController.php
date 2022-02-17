@@ -359,12 +359,10 @@ class AppController extends Controller
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
-            return $this->asJson([
-                'success' => true,
-            ]);
+            return $this->asSuccess();
         }
 
-        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
+        return $this->asFailure(Craft::t('app', 'A server error occurred.'));
     }
 
     /**
@@ -404,9 +402,7 @@ class AppController extends Controller
 
         Craft::$app->setEdition($edition);
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -427,7 +423,7 @@ class AppController extends Controller
             $success = true;
         }
 
-        return $this->asJson(['success' => $success]);
+        return $success ? $this->asSuccess() : $this->asFailure();
     }
 
     /**

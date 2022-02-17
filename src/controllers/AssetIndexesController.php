@@ -54,21 +54,24 @@ class AssetIndexesController extends Controller
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
 
         if (empty($volumes)) {
-            return $this->asErrorJson(Craft::t('app', 'No volumes specified.'));
+            return $this->asFailure(Craft::t('app', 'No volumes specified.'));
         }
 
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages);
         $sessionData = $this->prepareSessionData($indexingSession);
 
         $response = ['session' => $sessionData];
+        $error = null;
 
         if ($indexingSession->totalEntries === 0) {
             $response['stop'] = $indexingSession->id;
-            $response['error'] = Craft::t('app', 'Nothing to index.');
+            $error = Craft::t('app', 'Nothing to index.');
             Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
         }
 
-        return $this->asJson($response);
+        return $error ?
+            $this->asFailure($error, data: $response) :
+            $this->asSuccess(data: $response);
     }
 
     /**
@@ -83,7 +86,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);
@@ -106,7 +109,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $assetIndexer = Craft::$app->getAssetIndexer();
@@ -156,14 +159,14 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $assetIndexer = Craft::$app->getAssetIndexer();
         $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
 
         if (!$indexingSession || !$indexingSession->actionRequired) {
-            return $this->asErrorJson(Craft::t('app', 'Cannot find the indexing session, or there’s nothing to review.'));
+            return $this->asFailure(Craft::t('app', 'Cannot find the indexing session, or there’s nothing to review.'));
         }
 
         $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
@@ -184,7 +187,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);

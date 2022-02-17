@@ -176,6 +176,6 @@ class FsController extends Controller
             $fsService->removeFilesystem($fs);
         }
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

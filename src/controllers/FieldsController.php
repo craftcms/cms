@@ -71,17 +71,11 @@ class FieldsController extends Controller
         }
 
         $group->name = $this->request->getRequiredBodyParam('name');
+        $success = $fieldsService->saveGroup($group);
 
-        if (!$fieldsService->saveGroup($group)) {
-            return $this->asJson([
-                'errors' => $group->getErrors(),
-            ]);
-        }
-
-        return $this->asJson([
-            'success' => true,
-            'group' => $group->getAttributes(),
-        ]);
+        return $success ?
+            $this->asModelSuccess($group, modelName: 'group') :
+            $this->asModelFailure($group);
     }
 
     /**
@@ -97,11 +91,9 @@ class FieldsController extends Controller
         $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
 
-        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
-
-        return $this->asJson([
-            'success' => $success,
-        ]);
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Group deleted.')) :
+            $this->asFailure();
     }
 
     // Fields
@@ -370,7 +362,7 @@ JS;
         $success = $fieldsService->deleteField($field);
 
         if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => $success]);
+            return $success ? $this->asSuccess() : $this->asFailure();
         }
 
         if (!$success) {

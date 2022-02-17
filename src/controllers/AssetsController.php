@@ -145,35 +145,23 @@ class AssetsController extends Controller
         $asset->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($asset)) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson([
-                    'success' => false,
-                    'errors' => $asset->getErrors(),
-                ]);
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save asset.'));
-
-            // Send the asset back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                $assetVariable => $asset,
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $asset,
+                Craft::t('app', 'Couldn’t save asset.'),
+                $assetVariable
+            );
         }
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson([
-                'success' => true,
+        return $this->asModelSuccess(
+            $asset,
+            Craft::t('app', 'Asset saved.'),
+            data: [
                 'id' => $asset->id,
                 'title' => $asset->title,
                 'url' => $asset->getUrl(),
                 'cpEditUrl' => $asset->getCpEditUrl(),
-            ]);
-        }
-
-        $this->setSuccessFlash(Craft::t('app', 'Asset saved.'));
-        return $this->redirectToPostedUrl($asset);
+            ]
+        );
     }
 
     /**
@@ -248,7 +236,8 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', 'Failed to save the asset:') . ' ' . implode(";\n", $errors));
+                // TODO: use asModelFailure, output errors in js
+                return $this->asFailure(Craft::t('app', 'Failed to save the asset:') . ' ' . implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -264,15 +253,14 @@ class AssetsController extends Controller
                 ]);
             }
 
-            return $this->asJson([
-                'success' => true,
+            return $this->asSuccess(data: [
                 'filename' => $asset->getFilename(),
                 'assetId' => $asset->id,
             ]);
         } catch (Throwable $e) {
             Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
-            return $this->asErrorJson($e->getMessage());
+            return $this->asFailure($e->getMessage());
         }
     }
 
@@ -362,13 +350,12 @@ class AssetsController extends Controller
         } catch (Throwable $e) {
             Craft::error('An error occurred when replacing an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
-            return $this->asErrorJson($e->getMessage());
+            return $this->asFailure($e->getMessage());
         }
 
         $resultingAsset = $assetToReplace ?: $sourceAsset;
 
-        return $this->asJson([
-            'success' => true,
+        return $this->asSuccess(data: [
             'assetId' => $assetId,
             'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
@@ -411,14 +398,13 @@ class AssetsController extends Controller
 
             $assets->createFolder($folderModel);
 
-            return $this->asJson([
-                'success' => true,
+            return $this->asSuccess(data: [
                 'folderName' => $folderModel->name,
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
         } catch (FsException | ForbiddenHttpException $exception) {
-            return $this->asErrorJson($exception->getMessage());
+            return $this->asFailure($exception->getMessage());
         }
     }
 
@@ -449,10 +435,10 @@ class AssetsController extends Controller
         try {
             $assets->deleteFoldersByIds($folderId);
         } catch (FsException $exception) {
-            return $this->asErrorJson($exception->getMessage());
+            return $this->asFailure($exception->getMessage());
         }
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -482,32 +468,24 @@ class AssetsController extends Controller
             $success = Craft::$app->getElements()->deleteElement($asset);
         } catch (Throwable $e) {
             if ($this->request->getAcceptsJson()) {
-                return $this->asErrorJson($e->getMessage());
+                return $this->asFailure($e->getMessage());
             }
             throw $e;
         }
 
         if (!$success) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson(['success' => false]);
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete asset.'));
-
-            // Send the entry back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'asset' => $asset,
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $asset,
+                Craft::t('app', 'Couldn’t delete asset.'),
+                'asset'
+            );
         }
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => true]);
-        }
-
-        $this->setSuccessFlash(Craft::t('app', 'Asset deleted.'));
-        return $this->redirectToPostedUrl($asset);
+        return $this->asModelSuccess(
+            $asset,
+            Craft::t('app', 'Asset deleted.'),
+            'asset'
+        );
     }
 
     /**
@@ -538,10 +516,10 @@ class AssetsController extends Controller
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
         } catch (FsException | AssetException $exception) {
-            return $this->asErrorJson($exception->getMessage());
+            return $this->asFailure($exception->getMessage());
         }
 
-        return $this->asJson(['success' => true, 'newName' => $newName]);
+        return $this->asSuccess(data: ['newName' => $newName]);
     }
 
 
@@ -619,7 +597,7 @@ class AssetsController extends Controller
             ]);
         }
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -669,7 +647,7 @@ class AssetsController extends Controller
                 $existingFolder = $targetVolume->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
             } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
-                return $this->asErrorJson(Craft::t('app', 'An error was encountered while attempting the operation.'));
+                return $this->asFailure(Craft::t('app', 'An error was encountered while attempting the operation.'));
             }
         }
 
@@ -707,7 +685,7 @@ class AssetsController extends Controller
                         $assets->deleteFoldersByIds($existingFolder->id);
                     } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
-                        return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
+                        return $this->asFailure(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                     }
                 } else {
                     // Or build a map of existing folders for file move
@@ -725,7 +703,7 @@ class AssetsController extends Controller
                     $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
                 } catch (VolumeException $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
-                    return $this->asErrorJson(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
+                    return $this->asFailure(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
                 }
             }
 
@@ -744,8 +722,7 @@ class AssetsController extends Controller
         $newFolderId = $folderIdChanges[$folderBeingMovedId] ?? null;
         $newFolder = $assets->getFolderById($newFolderId);
 
-        return $this->asJson([
-            'success' => true,
+        return $this->asSuccess(data: [
             'transferList' => $fileTransferList,
             'newFolderUid' => $newFolder->uid,
             'newFolderId' => $newFolderId,
@@ -963,11 +940,10 @@ class AssetsController extends Controller
                 $output['elementId'] = $newAsset->id;
             }
         } catch (Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
+            return $this->asFailure($exception->getMessage());
         }
 
-        $output['success'] = true;
-        return $this->asJson($output);
+        return $this->asSuccess($output);
     }
 
     /**
@@ -1126,7 +1102,7 @@ class AssetsController extends Controller
         $asset = Asset::find()->id($assetId)->one();
 
         if (!$asset) {
-            return $this->asErrorJson(Craft::t('app', 'Asset not found with that id'));
+            return $this->asFailure(Craft::t('app', 'Asset not found with that id'));
         }
 
         $previewHtml = null;
@@ -1157,8 +1133,7 @@ class AssetsController extends Controller
 
         $view = $this->getView();
 
-        return $this->asJson([
-            'success' => true,
+        return $this->asSuccess(data: [
             'previewHtml' => $previewHtml,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
@@ -1195,7 +1170,7 @@ class AssetsController extends Controller
         $asset->setFocalPoint($focalData);
         Craft::$app->getElements()->saveElement($asset);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**

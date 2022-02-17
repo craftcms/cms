@@ -493,7 +493,7 @@ class GraphqlController extends Controller
 
         Craft::$app->getGql()->deleteTokenById($schemaId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
 
@@ -681,7 +681,7 @@ class GraphqlController extends Controller
 
         Craft::$app->getGql()->deleteSchemaById($schemaId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**

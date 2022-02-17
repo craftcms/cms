@@ -170,7 +170,9 @@ class InstallController extends Controller
 
         $validates = empty($errors);
 
-        return $this->asJson(compact('validates', 'errors'));
+        return $validates ?
+            $this->asSuccess() :
+            $this->asFailure(errors: $errors);
     }
 
     /**
@@ -196,7 +198,9 @@ class InstallController extends Controller
             $errors['password'] = ArrayHelper::remove($errors, 'newPassword');
         }
 
-        return $this->asJson(compact('validates', 'errors'));
+        return $validates ?
+            $this->asModelSuccess($user) :
+            $this->asFailure(errors: $errors);
     }
 
     /**
@@ -216,9 +220,10 @@ class InstallController extends Controller
         ]);
 
         $validates = $site->validate(['name', 'baseUrl', 'language']);
-        $errors = $site->getErrors();
 
-        return $this->asJson(compact('validates', 'errors'));
+        return $validates ?
+            $this->asModelSuccess($site) :
+            $this->asModelFailure($site);
     }
 
     /**
@@ -301,10 +306,7 @@ class InstallController extends Controller
         try {
             $migrator->migrateUp($migration);
         } catch (MigrationException $e) {
-            return $this->asJson([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ]);
+            return $this->asFailure($e->getMessage());
         }
 
         // Mark all existing migrations as applied
@@ -312,7 +314,7 @@ class InstallController extends Controller
             $migrator->addMigrationHistory($name);
         }
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
