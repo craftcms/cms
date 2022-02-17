@@ -82,14 +82,6 @@
                 </div>
               </div>
             </div>
-
-            <hr>
-
-            <div class="tw-max-w-xs tw-mx-auto tw-py-8">
-              <h2 class="tw-mt-0">{{ "Package Name"|t('app') }}</h2>
-              <p>{{ "Copy the package’s name for this plugin."|t('app') }}</p>
-              <copy-package :plugin="plugin"></copy-package>
-            </div>
           </template>
           <template v-else>
             <c-spinner />
@@ -107,7 +99,6 @@
 /* global Craft */
 
 import {mapState, mapGetters, mapActions} from 'vuex'
-import CopyPackage from '../../components/CopyPackage'
 import PluginEditions from '../../components/PluginEditions'
 import PluginScreenshots from '../../components/PluginScreenshots'
 import licensesMixin from '../../mixins/licenses'
@@ -119,7 +110,6 @@ export default {
 
   components: {
     PluginLayout,
-    CopyPackage,
     PluginEditions,
     PluginScreenshots,
     PluginMeta
