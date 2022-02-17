@@ -317,6 +317,7 @@
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
 - Added `craft\web\Controller::TemplateResponseFormatter()`.
+- Added `craft\web\Controller::getPostedUrl`.
 - Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
@@ -577,6 +578,7 @@
 - Deprecated the `categories/save-category` action. `elements/save` should be used instead.
 - Deprecated the `entries/save-entry` action. `elements/save` should be used instead.
 - Deprecated the `Craft.appendFootHtml()` JavaScript method. `appendBodyHtml()` should be used instead.
+- Deprecated `craft\web\Controller::asErrorJson()`. `asFailure()` should be used instead.
 
 ### Removed
 - Removed the `--type` option from `migrate/*` commands. `--track` or `--plugin` can be used instead.
