@@ -72,7 +72,7 @@ class FieldLayoutForm extends Model
                 'role' => 'tabpanel',
                 'tabindex' => '0',
                 'aria' => [
-                    'labelledBy' => $tab->getId(),
+                    'labelledBy' => 'tab-' . $tab->getId(),
                 ]
             ]);
         }
