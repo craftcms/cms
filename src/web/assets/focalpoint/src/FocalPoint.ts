@@ -153,12 +153,13 @@ export class FocalPoint {
 
         this.$button.parents('.buttons').css({opacity: 1});
 
-        Craft.postActionRequest('assets/update-focal-position', data, (() => {
-            this.saving = false;
-            this.shouldSave = false;
-            this.$button.parents('.buttons').css({opacity: ''});
-            this.renderButton();
-        }));
+        Craft.sendActionRequest('POST', 'assets/update-focal-position', {data})
+            .then((response) => {
+                this.saving = false;
+                this.shouldSave = false;
+                this.$button.parents('.buttons').css({opacity: ''});
+                this.renderButton();
+            });
     }
 
     public toggleFocal()
