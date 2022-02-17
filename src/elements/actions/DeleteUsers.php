@@ -102,12 +102,12 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         activate: function(\$selectedItems)
         {
             Craft.elementIndex.setIndexBusy();
-            var ids = Craft.elementIndex.getSelectedElementIds();
-            Craft.postActionRequest('users/user-content-summary', {userId: ids}, function(response, textStatus) {
-                Craft.elementIndex.setIndexAvailable();
-                if (textStatus === 'success') {
+            const ids = Craft.elementIndex.getSelectedElementIds();
+            const data = {userId: id}; 
+            Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
+                .then((response) => {
                     var modal = new Craft.DeleteUserModal(ids, {
-                        contentSummary: response,
+                        contentSummary: response.data,
                         onSubmit: function()
                         {
                             Craft.elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
@@ -117,8 +117,10 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
                         },
                         redirect: $redirect
                     });                    
-                }
-            });
+                })
+                .finally(() => {
+                    Craft.elementIndex.setIndexAvailable();
+                });
         }
     });
 })();
