@@ -345,7 +345,7 @@
 - Added the `htmx.org` JavaScript library.
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the Money package.
-- Added the yiisoft/yii2-symfonymailer package.
+- Added the yii2-symfonymailer package.
 
 ### Changed
 - Craft now requires PHP 8.0.2 or later.
@@ -549,7 +549,7 @@
 - `craft\web\View::setNamespace()`’ `$namespace` argument no longer has a default value of `null`.
 - The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - Local volumes no longer use Flysystem.
-- Craft now uses the Symfony Mailer instead of the Swift Mailer.
+- Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
 
