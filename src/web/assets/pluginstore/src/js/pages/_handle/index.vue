@@ -65,7 +65,7 @@
                     y="0px"
                     viewBox="0 0 256 448"
                     xml:space="preserve"
-                    class="tw-text-blue-600 tw-fill-current tw-w-8 tw-h-8 tw-mr-4 tw-flex tw-items-center">
+                    class="tw-text-blue-600 tw-fill-current tw-w-8 tw-h-8 tw-mr-4 tw-flex tw-items-center tw-shrink-0">
                     <path
                       fill="currentColor"
                       d="M184,144c0,4.2-3.8,8-8,8s-8-3.8-8-8c0-17.2-26.8-24-40-24c-4.2,0-8-3.8-8-8s3.8-8,8-8C151.2,104,184,116.2,184,144z
