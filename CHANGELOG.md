@@ -9,6 +9,7 @@
 - Fixed a bug where Date fields weren’t displaying properly.
 - Fixed a bug where some GraphQL API query arguments would break element queries. ([#10580](https://github.com/craftcms/cms/issues/10580))
 - Fixed a PHP 8.1 compatibility bug. ([#10594](https://github.com/craftcms/cms/issues/10594))
+- Fixed a bug where Matrix action menus were causing horizontal scrollbars within Live Preview. ([#10601](https://github.com/craftcms/cms/issues/10601))
 
 ### Security
 - Craft now HTML-encodes user’ names in the default system email messages.
