@@ -3690,7 +3690,7 @@ ul.tree,
     .text::placeholder,
     .datewrapper .text + div[data-icon],
     .timewrapper .text + div[data-icon] {
-      color: $grey300;
+      color: $grey500;
     }
 
     .ui-datepicker {
@@ -3871,7 +3871,8 @@ ul.tree,
       }
 
       & > .heading {
-        & > label {
+        & > label,
+        & > legend {
           font-weight: normal;
         }
       }
@@ -5752,10 +5753,6 @@ body.reduce-focus-visibility {
           user-select: none;
           pointer-events: none;
           z-index: 1;
-        }
-
-        #details & {
-          color: $darkHairlineColor;
         }
       }
     }

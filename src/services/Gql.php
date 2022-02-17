@@ -1153,7 +1153,7 @@ class Gql extends Component
                 }
 
                 foreach ($context->getFields() as $contentField) {
-                    if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField)) {
+                    if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField->handle)) {
                         $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
                     }
                 }
