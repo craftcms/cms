@@ -141,6 +141,22 @@ class AppHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testNormalizePhpPaths()
+    {
+        self::assertSame([getcwd()], App::normalizePhpPaths('.'));
+        self::assertSame([getcwd()], App::normalizePhpPaths('./'));
+        self::assertSame([getcwd() . DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('./foo'));
+        self::assertSame([getcwd() . DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('.\\foo'));
+
+        putenv('TEST_CONST=/foo/');
+        self::assertSame([getcwd(), DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('.:${TEST_CONST}'));
+        self::assertSame([getcwd(), DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths(' . ; ${TEST_CONST} '));
+        putenv('TEST_CONST');
+    }
+
+    /**
      * @dataProvider phpSizeToBytesDataProvider
      *
      * @param int|float $expected
