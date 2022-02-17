@@ -232,6 +232,7 @@
 - Added `craft\models\FieldLayoutElement::$uid`.
 - Added `craft\models\FieldLayoutElement::getLayout()` and `setLayout()`.
 - Added `craft\models\FieldLayoutForm::getVisibleElements()`.
+- Added `craft\models\FieldLayoutFormTab::getTabId()`.
 - Added `craft\models\FieldLayoutFormTab::getUid()`.
 - Added `craft\models\FieldLayoutTab::getElements()` and `setElements()`.
 - Added `craft\models\FsListing`.

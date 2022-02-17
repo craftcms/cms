@@ -10,18 +10,18 @@
 
 {% tag 'div' with containerAttributes %}
     <div class="scrollable" role="tablist" aria-label="{{ 'Fields'|t('app') }}">
-        {% for tabId, tab in tabs %}
+        {% for containerId, tab in tabs %}
             {% tag 'a' with {
-                id: "tab-#{tabId}",
+                id: tab.tabId ?? "tab-#{containerId}",
                 class: (tab.selected ? ['sel'] : [])|merge(tab.class),
                 tabindex: tab.selected ? '0' : '-1',
                 href: tab.url,
                 role: 'tab',
                 data: {
-                    id: tabId,
+                    id: containerId,
                 },
                 aria: {
-                    controls: tabId,
+                    controls: containerId,
                     selected: tab.selected ? 'true' : 'false',
                 },
             } %}
@@ -49,13 +49,13 @@
     }) }}
     <div class="menu">
         <ul class="padded" role="listbox">
-            {% for tabId, tab in tabs %}
+            {% for containerId, tab in tabs %}
                 <li>
                     {% tag 'a' with {
                         class: tab.selected ? 'sel' : null,
                         href: tab.url,
                         data: {
-                            id: tabId,
+                            id: containerId,
                         },
                     } %}
                         {{ tab.label }}
