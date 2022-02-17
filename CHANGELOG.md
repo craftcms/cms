@@ -2,11 +2,11 @@
 
 ## Unreleased
 
-### Changed
-- Craft now HTML encodes the user’s name in the default system emails.
-
 ### Fixed
 - Fixed a bug where Date fields weren’t displaying properly.
+
+### Security
+- Craft now HTML-encodes user’ names in the default system email messages.
 
 ## 3.7.33 - 2022-02-15
 
