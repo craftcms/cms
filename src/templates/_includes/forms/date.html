@@ -26,8 +26,10 @@
         placeholder: ' ',
         value: value ? value|date(isMobile ? 'Y-m-d' : 'short') : '',
         inputAttributes: {
-          'aria-label': isDateTime ? 'Date'|t('app') : false,
-        }
+            aria: {
+                label: isDateTime ? 'Date'|t('app') : false,
+            },
+        },
     } -%}
     <div data-icon="date"></div>
     {%- if name -%}

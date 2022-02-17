@@ -28,8 +28,10 @@
         placeholder: ' ',
         value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
         inputAttributes: {
-            'aria-label': isDateTime ? 'Time'|t('app') : false,
-        }
+            aria: {
+                label: isDateTime ? 'Time'|t('app') : false,
+            },
+        },
     } -%}
     <div data-icon="time"></div>
     {%- if name and outputTzParam -%}
