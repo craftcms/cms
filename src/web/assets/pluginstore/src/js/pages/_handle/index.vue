@@ -247,44 +247,4 @@ export default {
   @apply tw-relative;
   @include margin-right(1.5rem); // .mr-6
 }
-
-
-/* Plugin Meta */
-
-ul.plugin-meta {
-  @apply tw--mx-4 tw-flex tw-flex-wrap;
-
-  li {
-    @apply tw-mb-8 tw-px-4 tw-shrink-0 tw-grow-0;
-    flex-basis: 50%;
-
-    span {
-      @apply tw-block tw-text-gray-500;
-    }
-  }
-}
-
-@media only screen and (min-width: 672px) {
-  ul.plugin-meta {
-    li {
-      flex-basis: 33.3333%;
-    }
-  }
-}
-
-@media only screen and (min-width: 1400px) {
-  ul.plugin-meta {
-    li {
-      flex-basis: 25%;
-    }
-  }
-}
-
-@media only screen and (min-width: $minLargeScreenWidth) {
-  ul.plugin-meta {
-    li {
-      flex-basis: 20%;
-    }
-  }
-}
 </style>
