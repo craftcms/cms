@@ -124,18 +124,18 @@
             Craft.elevatedSessionManager.requireElevatedSession(function() {
                 $('#token-spinner').removeClass('hidden');
                 var data = {{ {tokenUid: token.uid}|json_encode|raw }};
-                Craft.postActionRequest('graphql/fetch-token', data, function(response, textStatus) {
-                    $('#token-spinner').addClass('hidden');
-                    if (textStatus === 'success') {
+                Craft.sendActionRequest('POST', 'graphql/fetch-token', {data})
+                    .then((response) => {
                         $headerInput
                             .val('Authorization: Bearer ' + response.accessToken)
                             .removeClass('disabled');
                         copyHeader();
-                    }
-                });
-            });
-        }
-    });
+                    })
+                    .catch(({response}) => {
+                    })
+                    .finally(() => {
+                        $('#token-spinner').addClass('hidden');
+                    });
 
     $regenBtn.on('click', function() {
         if (regenerating) {
@@ -144,18 +144,20 @@
         regenerating = true;
         $('#token-spinner').removeClass('hidden');
         $regenBtn.addClass('active');
-        Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
+
+        Craft.sendActionRequest('POST', 'graphql/generate-token')
+        .then((response) => {
+            $headerInput
+                .val('Authorization: Bearer ' + response.accessToken)
+                .removeClass('disabled');
+            $tokenInput
+                .val(response.accessToken)
+                .prop('disabled', false);
+            $regenBtn.removeClass('active');
+            regenerating = false;
+        })
+        .finally(() => {
             $('#token-spinner').addClass('hidden');
-            if (textStatus === 'success') {
-                $headerInput
-                    .val('Authorization: Bearer ' + response.accessToken)
-                    .removeClass('disabled');
-                $tokenInput
-                    .val(response.accessToken)
-                    .prop('disabled', false);
-                $regenBtn.removeClass('active');
-                regenerating = false;
-            }
         });
     });
 
