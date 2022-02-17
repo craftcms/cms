@@ -98,7 +98,7 @@ class DirectiveTest extends Unit
                 ]),
             ]),
             'folderId' => 7,
-            'getUrl' => function($parameters) use ($filename) {
+            'getUrl' => function($parameters) {
                 if (is_array($parameters)) {
                     $parameters = ImageTransforms::normalizeTransform($parameters);
                 }

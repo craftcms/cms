@@ -2806,14 +2806,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getCpEditRoute(): ?string
-    {
-
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getCpEditUrl(): ?string
     {
         $cpEditUrl = $this->cpEditUrl();
