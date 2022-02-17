@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+
 ### Fixed
 - Fixed a bug where Date fields weren’t displaying properly.
 
