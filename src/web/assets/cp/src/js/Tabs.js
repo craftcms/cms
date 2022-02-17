@@ -52,29 +52,27 @@ Craft.Tabs = Garnish.Base.extend({
             }
 
             this.addListener($a, 'keydown', ev => {
+                let $tab;
                 if (
                     [Garnish.LEFT_KEY, Garnish.RIGHT_KEY].includes(ev.keyCode) &&
                     $.contains(this.$tablist[0], ev.currentTarget)
                 ) {
-                    let $tab;
                     if (ev.keyCode === (Craft.orientation === 'ltr' ? Garnish.LEFT_KEY : Garnish.RIGHT_KEY)) {
                         $tab = $(ev.currentTarget).prevAll('[role="tab"]:not(.hidden):first');
+                        $tab = $tab.length ? $tab : this.$lastTab;
                     } else {
                         $tab = $(ev.currentTarget).nextAll('[role="tab"]:not(.hidden):first');
-                    }
-                    if ($tab.length) {
-                        ev.preventDefault();
-                        this.makeTabFocusable($tab);
-                        $tab.focus();
-                        this.scrollToTab($tab);
+                        $tab = $tab. length ? $tab : this.$firstTab;
                     }
                 } else if (ev.keyCode === Garnish.HOME_KEY || ev.keyCode === Garnish.END_KEY) {
-                    const $tab = ev.keyCode === Garnish.HOME_KEY ? this.$firstTab : this.$lastTab;
+                    $tab = ev.keyCode === Garnish.HOME_KEY ? this.$firstTab : this.$lastTab;
+                }
+
+                if ($tab) {
                     ev.preventDefault();
                     this.makeTabFocusable($tab);
                     $tab.focus();
                     this.scrollToTab($tab);
-                    this.selectTab($tab);
                 }
             });
         }
