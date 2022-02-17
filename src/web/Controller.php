@@ -615,7 +615,7 @@ abstract class Controller extends \yii\web\Controller
     public function asErrorJson(string $error): YiiResponse
     {
         Craft::$app->getDeprecator()->log(__METHOD__, 'The `asErrorJson` param has been deprecated. Use `asFailure` instead.');
-        return $this->asFailure($error);
+        return $this->asJson(['error' => $error]);
     }
 
     /**
