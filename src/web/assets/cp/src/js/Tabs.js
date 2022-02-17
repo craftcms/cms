@@ -36,6 +36,7 @@ Craft.Tabs = Garnish.Base.extend({
             const href = $a.attr('href');
             if (href && href.charAt(0) === '#') {
                 this.addListener($a, 'keydown', ev => {
+                    console.log(ev.keyCode);
                     if ([Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(ev.keyCode)) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
