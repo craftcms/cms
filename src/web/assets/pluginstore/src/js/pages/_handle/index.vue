@@ -49,21 +49,20 @@
               </div>
             </div>
 
-            <hr>
+            <template v-if="licenseMismatched">
+              <hr>
 
-            <div class="tw-py-8">
-              <div
-                v-if="licenseMismatched"
-                class="tw-mx-auto tw-max-w-sm tw-px-8">
-                <div class="tw-flex items-center">
-                  <svg
-                    version="1.1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    x="0px"
-                    y="0px"
-                    viewBox="0 0 256 448"
-                    xml:space="preserve"
-                    class="tw-text-blue-600 tw-fill-current tw-w-8 tw-h-8 tw-mr-4 tw-flex tw-items-center tw-shrink-0">
+              <div class="tw-py-8">
+                <div class="tw-mx-auto tw-max-w-sm tw-px-8">
+                  <div class="tw-flex items-center">
+                    <svg
+                      version="1.1"
+                      xmlns="http://www.w3.org/2000/svg"
+                      x="0px"
+                      y="0px"
+                      viewBox="0 0 256 448"
+                      xml:space="preserve"
+                      class="tw-text-blue-600 tw-fill-current tw-w-8 tw-h-8 tw-mr-4 tw-flex tw-items-center tw-shrink-0">
                     <path
                       fill="currentColor"
                       d="M184,144c0,4.2-3.8,8-8,8s-8-3.8-8-8c0-17.2-26.8-24-40-24c-4.2,0-8-3.8-8-8s3.8-8,8-8C151.2,104,184,116.2,184,144z
@@ -74,12 +73,13 @@
                           c0-4,1.2-8.2,3.2-11.8c-7-4.5-11.2-12-11.2-20.2c0-6,2.2-11.8,6.2-16c-4-4.2-6.2-10-6.2-16c0-8.2,4.5-16.2,11.8-20.5
                           c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z" />
                   </svg>
-                  <div>
-                    <div v-html="licenseMismatchedMessage"></div>
+                    <div>
+                      <div v-html="licenseMismatchedMessage"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </template>
           </template>
           <template v-else>
             <c-spinner />
