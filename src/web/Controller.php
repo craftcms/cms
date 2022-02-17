@@ -257,7 +257,6 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string|null $message
      * @param array $data Additional data to include in the JSON response
-     * @param array $routeParams The route params to send back to the template
      * @param string|null $redirect The URL to redirect the request
      * @return YiiResponse|null
      * @since 4.0.0
@@ -265,7 +264,6 @@ abstract class Controller extends \yii\web\Controller
     public function asSuccess(
         ?string $message = null,
         array   $data = [],
-        array   $routeParams = [],
         ?string $redirect = null
     ): ?YiiResponse
     {
@@ -278,10 +276,6 @@ abstract class Controller extends \yii\web\Controller
         }
 
         $this->setSuccessFlash($message);
-
-        if (!empty($routeParams)) {
-            Craft::$app->getUrlManager()->setRouteParams($routeParams);
-        }
 
         if ($redirect) {
             return $this->redirect($redirect);
@@ -306,14 +300,17 @@ abstract class Controller extends \yii\web\Controller
         ?string $message = null,
         ?string $modelName = null,
         array   $data = [],
+        array   $routeParams = [],
         ?string $errorAttribute = null
     ): ?YiiResponse
     {
-        $routeParams = $data += [
-            'modelName' => $modelName,
-            ($modelName ?? 'model') => $model->toArray()
-        ];
         $errors = $model->getErrors($errorAttribute);
+        $modelInfo = [
+            'modelName' => $modelName,
+            ($modelName ?? 'model') => $model->toArray(),
+        ];
+        $routeParams += $modelInfo;
+        $data += $modelInfo;
 
         return $this->asFailure($message, $errors, $data, $routeParams);
     }
