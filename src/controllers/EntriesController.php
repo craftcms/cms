@@ -143,7 +143,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Custom fields
-        foreach ($entry->getFieldLayout()->getFields() as $field) {
+        foreach ($entry->getFieldLayout()->getCustomFields() as $field) {
             if (($value = $this->request->getQueryParam($field->handle)) !== null) {
                 $entry->setFieldValue($field->handle, $value);
             }

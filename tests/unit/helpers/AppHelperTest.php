@@ -35,6 +35,94 @@ class AppHelperTest extends TestCase
     /**
      *
      */
+    public function testEnv()
+    {
+        $_SERVER['TEST_SERVER_ENV'] = 'server';
+        self::assertSame('server', App::env('TEST_SERVER_ENV'));
+        unset($_SERVER['TEST_SERVER_ENV']);
+
+        putenv('TEST_GETENV_ENV=getenv');
+        self::assertSame('getenv', App::env('TEST_GETENV_ENV'));
+        putenv('TEST_GETENV_ENV');
+
+        putenv('TEST_GETENV_TRUE_ENV=true');
+        self::assertSame(true, App::env('TEST_GETENV_TRUE_ENV'));
+        putenv('TEST_GETENV_TRUE_ENV');
+
+        putenv('TEST_GETENV_FALSE_ENV=false');
+        self::assertSame(false, App::env('TEST_GETENV_FALSE_ENV'));
+        putenv('TEST_GETENV_FALSE_ENV');
+
+        self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
+        self::assertSame(null, App::env('TEST_NONEXISTENT_ENV'));
+    }
+
+    /**
+     *
+     */
+    public function testParseEnv()
+    {
+        self::assertSame(null, App::parseEnv(null));
+        self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
+        self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
+        self::assertSame('$TEST_MISSING', App::parseEnv('$TEST_MISSING'));
+        self::assertSame(Craft::getAlias('@vendor/foo'), App::parseEnv('@vendor/foo'));
+    }
+
+    /**
+     * @dataProvider parseBooleanEnvDataProvider
+     *
+     * @param bool|null $expected
+     * @param mixed $value
+     */
+    public function testParseBooleanEnv(?bool $expected, $value)
+    {
+        self::assertSame($expected, App::parseBooleanEnv($value));
+    }
+
+    /**
+     *
+     */
+    public function testCliOption()
+    {
+        $argv = $_SERVER['argv'] ?? null;
+        $_SERVER['argv'] = [
+            'backup',
+            'some/path',
+            '--file-path=foo.sql',
+            '-f',
+            'bar.sql',
+            '--zip',
+            '--falsy=false',
+            '--empty=',
+        ];
+        $length = count($_SERVER['argv']);
+
+        self::assertSame('foo.sql', App::cliOption('--file-path'));
+        self::assertSame('bar.sql', App::cliOption('-f', true));
+        self::assertSame(true, App::cliOption('--zip'));
+        self::assertSame(false, App::cliOption('--falsy'));
+        self::assertSame('', App::cliOption('--empty'));
+        self::assertSame(null, App::cliOption('--nully'));
+
+        // `-f` and `bar.sql` should have been removed
+        self::assertSame($length - 2, count($_SERVER['argv']));
+
+        if ($argv !== null) {
+            $_SERVER['argv'] = $argv;
+        } else {
+            unset($_SERVER['argv']);
+        }
+
+        self::expectException(InvalidArgumentException::class);
+        App::cliOption('no-dash');
+
+
+    }
+
+    /**
+     *
+     */
     public function testEditions()
     {
         self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
@@ -97,6 +185,14 @@ class AppHelperTest extends TestCase
     public function testIsValidEdition(bool $expected, $edition)
     {
         self::assertSame($expected, App::isValidEdition($edition));
+    }
+
+    /**
+     * @dataProvider normalizeValueDataProvider
+     */
+    public function testNormalizeValue(mixed $expected, mixed $value)
+    {
+        self::assertSame($expected, App::normalizeValue($value));
     }
 
     /**
@@ -233,6 +329,30 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
+    public function parseBooleanEnvDataProvider(): array
+    {
+        return [
+            [true, true],
+            [false, false],
+            [true, 'yes'],
+            [false, 'no'],
+            [true, 'on'],
+            [false, 'off'],
+            [true, '1'],
+            [false, '0'],
+            [true, 'true'],
+            [false, 'false'],
+            [false, ''],
+            [null, 'whatever'],
+            [true, 1],
+            [false, 0],
+            [null, 2],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function editionHandleDataProvider(): array
     {
         return [
@@ -326,7 +446,26 @@ class AppHelperTest extends TestCase
             ['entries', Entries::class],
             ['app helper test', self::class],
             ['std class', stdClass::class],
-            ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function normalizeValueDataProvider(): array
+    {
+        return [
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [123, '123'],
+            [123, '123 '],
+            [123, ' 123'],
+            [123.4, '123.4'],
+            ['foo', 'foo'],
+            [null, null],
         ];
     }
 

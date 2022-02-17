@@ -9,9 +9,11 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use DateTime;
 use Throwable;
@@ -419,6 +421,20 @@ class UsersController extends Controller
         $this->stdout($url . PHP_EOL, Console::FG_CYAN);
         $this->stdout('(Expires in one hour.)' . PHP_EOL, Console::FG_GREY);
 
+        return ExitCode::OK;
+    }
+
+    /**
+     * Logs all users out of the system.
+     *
+     * @return int
+     * @since 3.7.33
+     */
+    public function actionLogoutAll(): int
+    {
+        $this->stdout('Logging all users out ... ');
+        Db::truncateTable(Table::SESSIONS);
+        $this->stdout("done\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 

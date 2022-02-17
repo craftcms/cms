@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use Money\Currencies\ISOCurrencies;
+use Money\Currency;
 use Money\Formatter\DecimalMoneyFormatter;
 use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
@@ -46,8 +47,10 @@ class MoneyHelper
             $value['value'] = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
+        $currency = !$value['currency'] instanceof Currency ? new Currency($value['currency']) : $value['currency'];
+
         return (new DecimalMoneyParser(self::_getIsoCurrencies()))
-            ->parse((string)$value['value'], $value['currency']);
+            ->parse((string)$value['value'], $currency);
     }
 
     /**

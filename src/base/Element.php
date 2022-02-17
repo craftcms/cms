@@ -2173,7 +2173,7 @@ abstract class Element extends Component implements ElementInterface
         ) {
             $scenario = $this->getScenario();
 
-            foreach ($fieldLayout->getVisibleFields($this) as $field) {
+            foreach ($fieldLayout->getVisibleCustomFields($this) as $field) {
                 $attribute = "field:$field->handle";
                 $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
@@ -3741,7 +3741,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _outdatedFields(): array
     {
-        if (!static::trackChanges() || $this->getIsCanonical()) {
+        if (!static::trackChanges() || !$this->getIsDraft() || $this->getIsCanonical()) {
             return [];
         }
 
@@ -4673,7 +4673,7 @@ JS,
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayout) {
-            return $visibleOnly ? $fieldLayout->getVisibleFields($this) : $fieldLayout->getFields();
+            return $visibleOnly ? $fieldLayout->getVisibleCustomFields($this) : $fieldLayout->getCustomFields();
         }
 
         return [];

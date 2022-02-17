@@ -71,10 +71,10 @@ class MatrixBlock extends Element
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the field that owns the matrix block.',
             ],
-            'ownerId' => [
-                'name' => 'ownerId',
+            'primaryOwnerId' => [
+                'name' => 'primaryOwnerId',
                 'type' => Type::nonNull(Type::int()),
-                'description' => 'The ID of the element that owns the matrix block.',
+                'description' => 'The ID of the primary owner of the Matrix block.',
             ],
             'typeId' => [
                 'name' => 'typeId',

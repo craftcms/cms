@@ -31,6 +31,8 @@ class TestMailer extends Mailer
      */
     public $callback;
 
+    public $from = 'test@test.craft';
+
     /**
      * @param $message
      * @return bool

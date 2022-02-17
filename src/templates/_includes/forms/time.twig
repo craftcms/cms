@@ -4,6 +4,7 @@
 {% set value = value ?? null -%}
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
+{% set isDateTime = isDateTime ?? false %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
 
@@ -26,6 +27,11 @@
         size: 10,
         placeholder: ' ',
         value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
+        inputAttributes: {
+            aria: {
+                label: isDateTime ? 'Time'|t('app') : false,
+            },
+        },
     } -%}
     <div data-icon="time"></div>
     {%- if name and outputTzParam -%}

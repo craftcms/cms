@@ -8,8 +8,8 @@
  */
 
 // Make sure they're running PHP 8+
-if (PHP_VERSION_ID < 80000) {
-    exit('Craft requires PHP 8.0 or later.');
+if (PHP_VERSION_ID < 80002) {
+    exit('Craft requires PHP 8.0.2 or later.');
 }
 
 // Check for this early because Craft uses it before the requirements checker gets a chance to run.
