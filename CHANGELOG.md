@@ -913,6 +913,21 @@
 - Removed the `assets/_edit` control panel template.
 - Removed the `categories/_edit` control panel template.
 - Removed the `entries/_edit` control panel template.
+- Removed the `cp.assets.edit.content` control panel template hook.
+- Removed the `cp.assets.edit.details` control panel template hook.
+- Removed the `cp.assets.edit.meta` control panel template hook.
+- Removed the `cp.assets.edit.settings` control panel template hook.
+- Removed the `cp.assets.edit` control panel template hook.
+- Removed the `cp.categories.edit.content` control panel template hook.
+- Removed the `cp.categories.edit.details` control panel template hook.
+- Removed the `cp.categories.edit.meta` control panel template hook.
+- Removed the `cp.categories.edit.settings` control panel template hook.
+- Removed the `cp.categories.edit` control panel template hook.
+- Removed the `cp.entries.edit.content` control panel template hook.
+- Removed the `cp.entries.edit.details` control panel template hook.
+- Removed the `cp.entries.edit.meta` control panel template hook.
+- Removed the `cp.entries.edit.settings` control panel template hook.
+- Removed the `cp.entries.edit` control panel template hook.
 - Removed the `Craft.AssetEditor` JavaScript class.
 - Removed the `Craft.BaseElementEditor` JavaScript class.
 - Removed the `Craft.DraftEditor` JavaScript class.
