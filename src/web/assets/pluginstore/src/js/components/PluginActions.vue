@@ -162,21 +162,21 @@
     </template>
 
     <template v-if="plugin.latestCompatibleVersion && plugin.latestCompatibleVersion != plugin.version">
-      <div class="tw-text-gray-600 tw-mt-4 tw-px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p>{{
             "Only up to {version} is compatible with your version of Craft."|t('app', {version: plugin.latestCompatibleVersion})
           }}</p>
       </div>
     </template>
     <template v-else-if="!plugin.latestCompatibleVersion">
-      <div class="tw-text-gray-600 tw-mt-4 tw-px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p>{{
             "This plugin isn’t compatible with your version of Craft."|t('app')
           }}</p>
       </div>
     </template>
     <template v-else-if="!plugin.phpVersionCompatible">
-      <div class="tw-text-gray-600 tw-mt-4 tw-px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p v-if="plugin.incompatiblePhpVersion === 'php'">{{
             "This plugin requires PHP {v1}, but your environment is currently running {v2}."|t('app', {
               v1: plugin.phpConstraint,
@@ -192,7 +192,7 @@
       </div>
     </template>
     <template v-else-if="!isPluginEditionFree && plugin.abandoned">
-      <div class="tw-text-gray-600 tw-mt-4 tw-px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p>{{ "This plugin is no longer maintained."|t('app') }}</p>
       </div>
     </template>

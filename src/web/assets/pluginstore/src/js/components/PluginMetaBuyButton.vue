@@ -1,19 +1,11 @@
 <template>
   <li v-if="!isPluginFree(plugin)">
     <template v-if="plugin.editions.length === 1">
-      <c-btn
-        kind="primary"
-        :href="'#add-to-cart'"
-        class="text-center"
-        block
-      >
-        Buy {{ getPriceRangeLabel(plugin) }}
-      </c-btn>
-
-      <small class="text-gray-500 dark:text-gray-400 text-sm leading-snug mt-2 mb-6 block">
-        Price includes 1 year of updates.<br>
-        {{ plugin.editions[0].renewalPrice|currency }}/year per site for updates after that.
-      </small>
+      <plugin-edition
+        :plugin="plugin"
+        :edition="plugin.editions[0]"
+        context="meta"
+      />
     </template>
 
     <template v-else>
@@ -31,8 +23,10 @@
 
 <script>
 import {isPluginFree, getPriceRangeLabel} from '../utils/plugins';
+import PluginEdition from './PluginEdition';
 
 export default {
+  components: {PluginEdition},
   props: {
     plugin: {
       type: Object,

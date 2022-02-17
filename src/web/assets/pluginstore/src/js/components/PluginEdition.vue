@@ -1,12 +1,25 @@
 <template>
-  <div class="plugin-editions-edition">
-    <div class="description">
+  <div
+    class="plugin-editions-edition"
+    :class="{
+      'tw-border tw-border-gray-200 tw-border-solid tw-rounded-md tw-flex tw-flex-col': true,
+      'tw-p-8 tw-text-center': context !== 'meta',
+      'tw-p-4': context === 'meta'
+    }"
+  >
+    <div class="description tw-flex-1">
       <edition-badge
         v-if="plugin.editions.length > 1"
         :name="edition.name"
         block
         big></edition-badge>
-      <div class="price">
+      <div
+        class="price tw-text-3xl tw-font-bold"
+        :class="{
+          'tw-my-8': context !== 'meta',
+          'tw-mb-4': context === 'meta'
+        }"
+      >
         <template v-if="!isPluginEditionFree(edition)">
           <template v-if="licensedEdition && licensedEdition.handle !== edition.handle && licensedEdition.price > 0 && licenseValidOrAstray">
             <del>{{ edition.price|currency }}</del>
@@ -23,16 +36,24 @@
       <p
         v-if="!isPluginEditionFree(edition)"
         class="tw--mt-8 tw-py-6 tw-text-gray-700">
-        {{ "Price includes 1 year of updates."|t('app') }}<br />
+        {{ "Price includes 1 year of updates."|t('app') }}
         {{
           "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)})
         }}
       </p>
 
-      <ul v-if="plugin.editions.length > 1 && edition.features && edition.features.length > 0">
+      <ul
+        v-if="plugin.editions.length > 1 && edition.features && edition.features.length > 0"
+        class="tw-text-left tw-mb-8"
+      >
         <li
           v-for="(feature, key) in edition.features"
-          :key="key">
+          :key="key"
+          class="tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid"
+          :class="{
+            'tw-border-t': key === 0,
+          }"
+        >
           <c-icon icon="check" />
           {{ feature.name }}
 
@@ -59,7 +80,19 @@ import licensesMixin from '../mixins/licenses'
 export default {
   mixins: [licensesMixin],
 
-  props: ['plugin', 'edition'],
+  props: {
+    edition: {
+      type: Object,
+      required: true,
+    },
+    plugin: {
+      type: Object,
+      required: true,
+    },
+    context: {
+      type: String,
+    },
+  },
 
   components: {
     PluginActions,
@@ -98,32 +131,3 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.plugin-editions-edition {
-  @apply tw-border tw-border-gray-200 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
-
-  .description {
-    @apply tw-flex-1;
-
-    .edition-name {
-      @apply tw-border-b tw-border-gray-200 tw-border-solid tw-text-gray-700 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
-    }
-
-    .price {
-      @apply tw-text-3xl tw-font-bold tw-my-8;
-    }
-
-    ul {
-      @apply tw-text-left tw-mb-8;
-
-      li {
-        @apply tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid;
-
-        &:first-child {
-          @apply tw-border-t;
-        }
-      }
-    }
-  }
-}
-</style>
