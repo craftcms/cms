@@ -52,8 +52,6 @@
             <hr>
 
             <div class="tw-py-8">
-              <plugin-editions :plugin="plugin"></plugin-editions>
-
               <div
                 v-if="licenseMismatched"
                 class="tw-mx-auto tw-max-w-sm tw-px-8">
@@ -99,7 +97,6 @@
 /* global Craft */
 
 import {mapState, mapGetters, mapActions} from 'vuex'
-import PluginEditions from '../../components/PluginEditions'
 import PluginScreenshots from '../../components/PluginScreenshots'
 import licensesMixin from '../../mixins/licenses'
 import PluginMeta from '../../components/PluginMeta'
@@ -110,7 +107,6 @@ export default {
 
   components: {
     PluginLayout,
-    PluginEditions,
     PluginScreenshots,
     PluginMeta
   },
