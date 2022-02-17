@@ -213,28 +213,33 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a failure response.
      *
-     * @param string $message
-     * @param Model|null $model The model that was being operated on
-     * @param string|null $modelName The route param name that the model should be set to
+     * @param string|null $message
+     * @param array|null $errors
+     * @param array $data Additional data to include in the JSON response
+     * @param array $routeParams The route params to send back to the template
      * @return YiiResponse|null
      * @since 4.0.0
      */
-    public function asFailure(string $message, ?Model $model = null, ?string $modelName = null): ?YiiResponse
+    public function asFailure(
+        ?string $message = null,
+        ?array $errors = null,
+        array $data = [],
+        array $routeParams = [],
+    ): ?YiiResponse
     {
         if ($this->request->getAcceptsJson()) {
             $this->response->setStatusCode(400);
-            return $this->asJson(array_filter([
+            return $this->asJson($data + array_filter([
                 'message' => $message,
-                'errors' => $model ? $model->getErrors() : null,
+                'errors' => $errors,
             ]));
         }
 
         $this->setFailFlash($message);
 
-        // Send the filesystem back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            $modelName => $model,
-        ]);
+        if (!empty($routeParams)) {
+            Craft::$app->getUrlManager()->setRouteParams($routeParams);
+        }
 
         return null;
     }
@@ -242,32 +247,94 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a success response.
      *
-     * @param string $message
-     * @param Model|null $model The model that was being operated on
+     * @param string|null $message
+     * @param array $data Additional data to include in the JSON response
+     * @param array $routeParams The route params to send back to the template
+     * @param string|null $redirect The URL to redirect the request
+     * @return YiiResponse|null
+     * @since 4.0.0
+     */
+    public function asSuccess(
+        ?string $message = null,
+        array $data = [],
+        array $routeParams = [],
+        ?string $redirect = null
+    ): ?YiiResponse
+    {
+        if ($this->request->getAcceptsJson()) {
+            return $this->asJson($data + array_filter([
+                'success' => true,
+                'message' => $message,
+                'redirect' => $redirect,
+            ]));
+        }
+
+        $this->setSuccessFlash($message);
+
+        if (!empty($routeParams)) {
+            Craft::$app->getUrlManager()->setRouteParams($routeParams);
+        }
+
+        if ($redirect) {
+            return $this->redirect($redirect);
+        }
+
+        return null;
+    }
+
+    /**
+     * Sends a failure response for a model.
+     *
+     * @param Model $model The model that was being operated on
+     * @param string|null $message
+     * @param string|null $modelName The route param name that the model should be set to
+     * @param array $data Additional data to include in the JSON response
+     * @param string|null $errorAttribute The attribute to return errors from, or all if `null`
+     * @return YiiResponse|null
+     * @since 4.0.0
+     */
+    public function asModelFailure(
+        Model   $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array   $data = [],
+        ?string $errorAttribute = null
+    ): ?YiiResponse
+    {
+        $routeParams = $data += [
+            'modelName' => $modelName,
+            ($modelName ?? 'model') => $model->toArray()
+        ];
+        $errors = $model->getErrors($errorAttribute);
+
+        return $this->asFailure($message, $errors, $data, $routeParams);
+    }
+
+    /**
+     * Sends a success response for a model.
+     *
+     * @param Model $model The model that was being operated on
+     * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
      * @param string|null $defaultRedirect The default URL to redirect the request, if no `redirect` param is present
      * @return YiiResponse|null
      * @since 4.0.0
      */
-    public function asSuccess(
-        string $message,
-        ?Model $model = null,
+    public function asModelSuccess(
+        Model   $model,
+        ?string $message = null,
         ?string $modelName = null,
-        array $data = [],
+        array   $data = [],
         ?string $defaultRedirect = null
     ): YiiResponse
     {
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson($data + array_filter([
-                'message' => $message,
-                'modelName' => $modelName,
-                ($modelName ?? 'model') => $model ? $model->toArray() : null,
-            ]));
-        }
+        $data += array_filter([
+            'modelName' => $modelName,
+            ($modelName ?? 'model') => $model->toArray(),
+        ]);
 
-        $this->setSuccessFlash($message);
-        return $this->redirectToPostedUrl($model, $defaultRedirect);
+        return $this->asSuccess($message, $data) ?? $this->redirectToPostedUrl($model, $defaultRedirect);
     }
 
     /**

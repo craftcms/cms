@@ -311,6 +311,8 @@
 - Added `craft\web\Controller::asCpScreen()`.
 - Added `craft\web\Controller::asFailure()`.
 - Added `craft\web\Controller::asSuccess()`.
+- Added `craft\web\Controller::asModelFailure()`.
+- Added `craft\web\Controller::asModelSuccess()`.
 - Added `craft\web\Controller::CpScreenResponseBehavior()`.
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.

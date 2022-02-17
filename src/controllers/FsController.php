@@ -146,7 +146,7 @@ class FsController extends Controller
         ]);
 
         if (!$fsService->saveFilesystem($fs)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t save filesystem.'), $fs, 'filesystem');
+            return $this->asModelFailure($fs, Craft::t('app', 'Couldn’t save filesystem.'), 'filesystem');
         }
 
         // Remove the old one?
@@ -158,7 +158,7 @@ class FsController extends Controller
             }
         }
 
-        return $this->asSuccess(Craft::t('app', 'Filesystem saved.'), $fs, 'filesystem');
+        return $this->asModelSuccess($fs, Craft::t('app', 'Filesystem saved.'), 'filesystem');
     }
 
     /**
