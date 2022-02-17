@@ -90,41 +90,6 @@
               <p>{{ "Copy the package’s name for this plugin."|t('app') }}</p>
               <copy-package :plugin="plugin"></copy-package>
             </div>
-
-            <hr>
-
-            <h2 class="tw-mb-4">{{ "Information"|t('app') }}</h2>
-            <div class="plugin-infos">
-              <ul class="plugin-meta">
-                <li><span>{{ "Version"|t('app') }}</span>
-                  <strong>{{ plugin.version }}</strong></li>
-                <li><span>{{ "Last update"|t('app') }}</span>
-                  <strong>{{ lastUpdate }}</strong></li>
-                <li v-if="plugin.activeInstalls > 0">
-                  <span>{{ "Active installs"|t('app') }}</span>
-                  <strong>{{ plugin.activeInstalls|formatNumber }}</strong></li>
-                <li><span>{{ "Compatibility"|t('app') }}</span>
-                  <strong>{{ plugin.compatibility }}</strong></li>
-                <li v-if="pluginCategories && pluginCategories.length > 0">
-                  <span>{{ "Categories"|t('app') }}</span>
-                  <div>
-                    <div
-                      v-for="(category, key) in pluginCategories"
-                      :key="'plugin-category-' + key">
-                      <strong>
-                        <router-link
-                          :to="'/categories/' + category.id"
-                          :title="category.title">{{ category.title }}
-                        </router-link>
-                      </strong>
-                    </div>
-                  </div>
-                </li>
-                <li><span>{{ "License"|t('app') }}</span> <strong>{{
-                    licenseLabel
-                  }}</strong></li>
-              </ul>
-            </div>
           </template>
           <template v-else>
             <c-spinner />
