@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2a670bf13d83373764360b9ba84a1862",
+    "content-hash": "4af4f7f8e9bc76b12fdc2abc6cdea5ab",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -721,16 +721,16 @@
         },
         {
             "name": "craftcms/server-check",
-            "version": "2.1.2",
+            "version": "2.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/server-check.git",
-                "reference": "a9ac65ad165281f74360d50a60920628e21cdc3c"
+                "reference": "1e052b2a4dc5751b7fe6f96fff5b89e4b1bba9d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/server-check/zipball/a9ac65ad165281f74360d50a60920628e21cdc3c",
-                "reference": "a9ac65ad165281f74360d50a60920628e21cdc3c",
+                "url": "https://api.github.com/repos/craftcms/server-check/zipball/1e052b2a4dc5751b7fe6f96fff5b89e4b1bba9d9",
+                "reference": "1e052b2a4dc5751b7fe6f96fff5b89e4b1bba9d9",
                 "shasum": ""
             },
             "type": "library",
@@ -759,7 +759,7 @@
                 "rss": "https://github.com/craftcms/server-check/releases.atom",
                 "source": "https://github.com/craftcms/server-check"
             },
-            "time": "2022-02-14T15:38:50+00:00"
+            "time": "2022-02-15T17:25:51+00:00"
         },
         {
             "name": "creocoder/yii2-nested-sets",
@@ -1059,16 +1059,16 @@
         },
         {
             "name": "enshrined/svg-sanitize",
-            "version": "0.15.2",
+            "version": "0.15.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/darylldoyle/svg-sanitizer.git",
-                "reference": "454682a67b335bb918952b93c4e699a36012c568"
+                "reference": "50c0f86ab08d8f3a986ac4f57874492a22171708"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/454682a67b335bb918952b93c4e699a36012c568",
-                "reference": "454682a67b335bb918952b93c4e699a36012c568",
+                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/50c0f86ab08d8f3a986ac4f57874492a22171708",
+                "reference": "50c0f86ab08d8f3a986ac4f57874492a22171708",
                 "shasum": ""
             },
             "require": {
@@ -1098,9 +1098,9 @@
             "description": "An SVG sanitizer for PHP",
             "support": {
                 "issues": "https://github.com/darylldoyle/svg-sanitizer/issues",
-                "source": "https://github.com/darylldoyle/svg-sanitizer/tree/0.15.2"
+                "source": "https://github.com/darylldoyle/svg-sanitizer/tree/0.15.3"
             },
-            "time": "2022-02-14T00:53:22+00:00"
+            "time": "2022-02-16T19:59:46+00:00"
         },
         {
             "name": "ezyang/htmlpurifier",
@@ -1478,16 +1478,16 @@
         },
         {
             "name": "illuminate/collections",
-            "version": "v8.83.0",
+            "version": "v8.83.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/collections.git",
-                "reference": "3933ab6b032167c0f7a598388e211c0810acf5d3"
+                "reference": "5cf7ed1c0a1b8049576b29f5cab5c822149aaa91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/collections/zipball/3933ab6b032167c0f7a598388e211c0810acf5d3",
-                "reference": "3933ab6b032167c0f7a598388e211c0810acf5d3",
+                "url": "https://api.github.com/repos/illuminate/collections/zipball/5cf7ed1c0a1b8049576b29f5cab5c822149aaa91",
+                "reference": "5cf7ed1c0a1b8049576b29f5cab5c822149aaa91",
                 "shasum": ""
             },
             "require": {
@@ -1528,11 +1528,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2022-01-24T16:41:15+00:00"
+            "time": "2022-02-15T14:40:58+00:00"
         },
         {
             "name": "illuminate/contracts",
-            "version": "v8.83.0",
+            "version": "v8.83.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -1580,7 +1580,7 @@
         },
         {
             "name": "illuminate/macroable",
-            "version": "v8.83.0",
+            "version": "v8.83.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -9098,6 +9098,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^8.0.2",
+        "ext-bcmath": "*",
         "ext-curl": "*",
         "ext-dom": "*",
         "ext-intl": "*",

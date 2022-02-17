@@ -3741,7 +3741,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _outdatedFields(): array
     {
-        if (!static::trackChanges() || $this->getIsCanonical()) {
+        if (!static::trackChanges() || !$this->getIsDraft() || $this->getIsCanonical()) {
             return [];
         }
 

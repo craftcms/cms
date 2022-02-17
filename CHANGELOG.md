@@ -24,6 +24,7 @@
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
 - Added the `|money` Twig filter.
 - Added the `assetUploaders` user query param.
+- Added the `primaryOwner` and `primaryOwnerId` Matrix block query params.
 - Added the `authors` user query param.
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
@@ -91,6 +92,7 @@
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
+- Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
 - Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
@@ -135,6 +137,8 @@
 - Added `craft\elements\conditions\users\LastNameConditionRule`.
 - Added `craft\elements\conditions\users\UserCondition`.
 - Added `craft\elements\conditions\users\UsernameConditionRule`.
+- Added `craft\elements\MatrixBlock::$primaryOwnerId`.
+- Added `craft\elements\MatrixBlock::$saveOwnership`.
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
@@ -253,11 +257,15 @@
 - Added `craft\services\Conditions`.
 - Added `craft\services\Config::CATEGORY_CUSTOM`.
 - Added `craft\services\Config::getCustom()`.
+- Added `craft\services\Drafts::removeDraftData()`.
 - Added `craft\services\ElementSources`, which replaces `craft\services\ElementIndexes`.
 - Added `craft\services\Fields::createLayout()`.
 - Added `craft\services\Fs`.
+- Added `craft\services\Gc::hardDeleteElements()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
+- Added `craft\services\Matrix::duplicateOwnership()`.
+- Added `craft\services\Matrix::createRevisionBlocks()`.
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
@@ -340,9 +348,11 @@
 - Added the yiisoft/yii2-symfonymailer package.
 
 ### Changed
-- Craft now requires PHP 8.0 or later.
+- Craft now requires PHP 8.0.2 or later.
 - Craft now requires MySQL 5.7.8 / MariaDB 10.2.7 / PostgreSQL 10.0 or later.
-- Craft now requires the [Intl](https://php.net/manual/en/book.intl.php) PHP extension.
+- Craft now requires the [Intl](https://php.net/manual/en/book.intl.php) and [BCMath](https://www.php.net/manual/en/book.bc.php) PHP extensions.
+- Improved draft creation/application performance. ([#10577](https://github.com/craftcms/cms/pull/10577))
+- Improved revision creation performance. ([#10589](https://github.com/craftcms/cms/pull/10577))
 - The “What’ New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
 - The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
 - Users are no longer required to have a username or email.
@@ -358,6 +368,7 @@
 - Images that are not web-safe now are always converted to JPEGs when transforming, if no format was specified.
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
+- Element queries’ `revision` params can now be set to `null` to include normal and revision elements.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Path options passed to console commands (e.g. `--basePath`) now take precedence over their enivronment variable/PHP constant counterparts.
@@ -524,13 +535,17 @@
 - `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
 - `craft\services\Assets::EVENT_GET_ASSET_URL` has been renamed to `EVENT_DEFINE_ASSET_URL`.
 - `craft\services\Assets::EVENT_GET_THUMB_PATH` has been renamed to `EVENT_DEFINE_THUMB_PATH`.
+- `craft\services\Matrix::duplicateBlocks()` now has a `$deleteOtherBlocks` argument.
 - `craft\services\Plugins::doesPluginRequireDatabaseUpdate()` has been renamed to `isPluginUpdatePending()`.
+- `craft\services\ProjectConfig::set()` now returns `true` or `false` depending on whether the project config was modified.
+- `craft\services\Revisions::createRevision()` now returns the ID of the revision, rather than the revision itself.
 - `craft\services\Updates::getIsCraftDbMigrationNeeded()` has been renamed to `getIsCraftUpdatePending()`.
 - `craft\services\Updates::getIsPluginDbUpdateNeeded()` has been renamed to `getIsPluginUpdatePending()`.
 - `craft\services\UserPermissions::getAllPermissions()` and `getAssignablePermissions()` now return permission groups as arrays with `heading` and `permission` sub-keys, fixing a bug where two groups with the same heading would conflict with each other. ([#7771](https://github.com/craftcms/cms/issues/7771))
 - `craft\test\fixtures\elements\BaseElementFixture` now validates elements with the `live` scenario if they are enabled, canonical, and not a provisional draft.
 - `craft\web\Request::getBodyParam()` now accepts nested param names in the `foo[bar][baz]` format.
 - `craft\web\Request::getBodyParams()` and `getBodyParam()` now check for an `X-Craft-Namespace` header. If present, only params that begin with its value will be returned, excluding the namespace.
+- `craft\web\View::renderString()` now has an `$escapeHtml` argument.
 - `craft\web\View::setNamespace()`’ `$namespace` argument no longer has a default value of `null`.
 - The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - Local volumes no longer use Flysystem.
@@ -910,3 +925,4 @@
 ### Security
 
 - Generated control panel URLs now begin with the `@web` alias value if the `baseCpUrl` config setting isn’t defined.
+- HTML entities output within email body text are now escaped by default in HTML email bodies.

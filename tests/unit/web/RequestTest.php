@@ -341,7 +341,6 @@ class RequestTest extends TestCase
         // Ensure that the data we want exists and is according to our desired specs
         self::assertSame('1', $tokenComponents['2']);
         self::assertSame(40, strlen($tokenComponents['0']));
-        self::assertSame('$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK', $tokenComponents['3']);
     }
 
     /**
@@ -631,7 +630,6 @@ class RequestTest extends TestCase
         Craft::$app->getUser()->setIdentity(
             Craft::$app->getUsers()->getUserById('1')
         );
-        Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
     }
 
     public function normalizeParamDataProvider(): array

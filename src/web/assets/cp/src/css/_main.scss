@@ -1848,6 +1848,10 @@ div.btn.submit input {
   &:focus {
     background-color: transparentize($grey200, 0.9);
     border-color: transparent;
+
+    .reduce-focus-visibility &:not(.focus-visible) {
+      border: 1px dashed $mediumHairlineColor;
+    }
   }
 
   &:not(.disabled) {
@@ -3686,7 +3690,7 @@ ul.tree,
     .text::placeholder,
     .datewrapper .text + div[data-icon],
     .timewrapper .text + div[data-icon] {
-      color: $grey300;
+      color: $grey500;
     }
 
     .ui-datepicker {
@@ -3867,7 +3871,8 @@ ul.tree,
       }
 
       & > .heading {
-        & > label {
+        & > label,
+        & > legend {
           font-weight: normal;
         }
       }
@@ -5749,10 +5754,6 @@ body.reduce-focus-visibility {
           pointer-events: none;
           z-index: 1;
         }
-
-        #details & {
-          color: $darkHairlineColor;
-        }
       }
     }
   }
@@ -6423,13 +6424,17 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
-  padding: 0 14px 14px;
+  padding: 0 var(--m) var(--m);
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
 
   &.static {
     padding-top: 14px;
+  }
+
+  .flex-fields {
+    --row-gap: var(--m) !important;
   }
 
   & > .titlebar {
@@ -6577,10 +6582,6 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   & > .fields > .flex-fields > .field {
     &:before {
       display: none;
-    }
-
-    & > .status-badge {
-      @include left(-15px);
     }
   }
 
