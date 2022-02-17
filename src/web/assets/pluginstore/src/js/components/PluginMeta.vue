@@ -83,10 +83,13 @@
         </template>
       </meta-stat>
 
-      <!-- Daily Active Installs -->
+      <!-- Active Installs -->
       <meta-stat>
         <template #title>
-          Daily Active Installs
+          Active Installs
+        </template>
+        <template #content>
+          {{ plugin.activeInstalls|formatNumber }}
         </template>
       </meta-stat>
 
