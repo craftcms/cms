@@ -55,7 +55,7 @@ class RequiredFieldAddressValidator extends Validator
         }
 
         if (in_array($attribute, $this->_countryFormatter[$countryCode]->getRequiredFields(), false) && !$model->$attribute) {
-            $message = Craft::t('app', '{attribute} is required.', ['attribute' => StringHelper::toTitleCase($attribute)]);
+            $message = Craft::t('app', '{attribute} is required.');
             $this->addError($model, $attribute, $message);
         }
     }

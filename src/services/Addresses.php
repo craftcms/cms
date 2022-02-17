@@ -326,20 +326,6 @@ class Addresses extends Component
         }
     }
 
-    const AREA = 'area';
-    const CANTON = 'canton';
-    const COUNTY = 'county';
-    const DEPARTMENT = 'department';
-    const DISTRICT = 'district';
-    const DO_SI = 'do_si';
-    const EMIRATE = 'emirate';
-    const ISLAND = 'island';
-    const OBLAST = 'oblast';
-    const PARISH = 'parish';
-    const PREFECTURE = 'prefecture';
-    const PROVINCE = 'province';
-    const STATE = 'state';
-
     /**
      * @param $type
      * @return string
@@ -378,29 +364,6 @@ class Addresses extends Component
                 return Craft::t('app', 'Province');
         }
     }
-
-//    /**
-//     * @return FieldLayout|null
-//     */
-//    public function getFieldLayout(): ?FieldLayout
-//    {
-//        $fieldLayout = Craft::$app->fields->getLayoutByType(Address::class);
-//        if (!$fieldLayout->isFieldIncluded('address')) {
-//            $layoutTabs = $fieldLayout->getTabs();
-//            $contentTab = new FieldLayoutTab([
-//                'name' => Craft::t('app', 'Content'),
-//                'layout' => $fieldLayout
-//            ]);
-//            $element = [
-//                'type' => AddressField::class,
-//                'layout' => $fieldLayout
-//            ];
-//            $contentTab->setElements([$element]);
-//            $layoutTabs[] = $contentTab;
-//            $fieldLayout->setTabs($layoutTabs);
-//        }
-//        return $fieldLayout;
-//    }
 
     /**
      * Save the address field layout

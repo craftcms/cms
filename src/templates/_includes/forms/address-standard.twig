@@ -15,7 +15,7 @@
 
 <div class="address-standard-fields">
 {{ forms.textField({
-    label: "Label"|t('app'),
+    label: address.getAttributeLabel('label'),
     instructions: "Name the address. (e.g. Work or School) "|t('app'),
     id: 'label',
     name: "label",
@@ -25,7 +25,7 @@
 }) }}
 
 {{ forms.selectField({
-    label: "Country"|t('app'),
+    label: address.getAttributeLabel('countryCode'),
     id: 'countryCode',
     name: "countryCode",
     options: availableCountries,
@@ -34,7 +34,7 @@
 
 <div class="">
     {{ forms.textField({
-        label: "Given Name"|t('app'),
+        label: address.getAttributeLabel('givenName'),
         id: 'givenName',
         name: "givenName",
         value: address.givenName,
@@ -44,7 +44,7 @@
     }) }}
 
     {{ forms.textField({
-        label: "Family Name"|t('app'),
+        label: address.getAttributeLabel('familyName'),
         id: 'familyName',
         name: "familyName",
         value: address.familyName,
@@ -54,7 +54,7 @@
     }) }}
 
     {{ forms.textField({
-        label: "Additional Name"|t('app'),
+        label: address.getAttributeLabel('additionalName'),
         id: 'additionalName',
         name: "additionalName",
         value: address.additionalName,
@@ -65,7 +65,7 @@
 </div>
 
 {{ forms.textField({
-    label: "Organization"|t('app'),
+    label: address.getAttributeLabel('organization'),
     id: 'organization',
     name: "organization",
     value: address.organization,
@@ -74,7 +74,7 @@
 }) }}
 
 {{ forms.textField({
-    label: "Address Line 1"|t('app'),
+    label: address.getAttributeLabel('addressLine1'),
     id: 'addressLine1',
     name: "addressLine1",
     value: address.addressLine1,
@@ -83,7 +83,7 @@
 }) }}
 
 {{ forms.textField({
-    label: "Address Line 2"|t('app'),
+    label: address.getAttributeLabel('addressLine2'),
     id: 'addressLine2',
     name: "addressLine2",
     value: address.addressLine2,
@@ -93,7 +93,7 @@
 
 <div class="feild {% if 'sortingCode' not in addressFormat.getUsedFields() and 'sortingCode' not in addressFormat.getRequiredFields() %}hidden{% endif %}">
 {{ forms.textField({
-    label: "Sorting Code"|t('app'),
+    label: address.getAttributeLabel('sortingCode'),
     id: 'sortingCode',
     name: "sortingCode",
     value: address.sortingCode,
@@ -104,7 +104,7 @@
 
 <div class="feild {% if 'postalCode' not in addressFormat.getUsedFields() and 'postalCode' not in addressFormat.getRequiredFields() %}hidden{% endif %}">
 {{ forms.textField({
-    label: craft.app.addresses.getPostalCodeTypeLabel(addressFormat.postalCodeType),
+    label: address.getAttributeLabel('postalCode'),
     id: 'postalCode',
     name: "postalCode",
     value: address.postalCode,
@@ -115,7 +115,7 @@
 
 <div class="field {% if 'administrativeArea' not in addressFormat.getUsedSubdivisionFields() %}hidden{% endif %}">
     {{ forms.selectField({
-        label: craft.app.addresses.getAdministrativeAreaTypeLabel(addressFormat.administrativeAreaType),
+        label: address.getAttributeLabel('administrativeArea'),
         id: 'administrativeArea',
         name: "administrativeArea",
         required: 'administrativeArea' in addressFormat.getRequiredFields(),
@@ -127,7 +127,7 @@
 
 <div class="field {% if 'locality' not in addressFormat.getUsedSubdivisionFields() %}hidden{% endif %}">
     {{ forms.textField({
-        label: craft.app.addresses.getLocalityTypeLabel(addressFormat.localityType),
+        label: address.getAttributeLabel('locality'),
         id: 'locality',
         name: "locality",
         required: 'locality' in addressFormat.getRequiredFields(),
@@ -138,7 +138,7 @@
 
 <div class="feild {% if 'dependentLocality' not in addressFormat.getUsedSubdivisionFields() %}hidden{% endif %}">
     {{ forms.textField({
-        label: craft.app.addresses.getDependentLocalityTypeLabel(addressFormat.dependentLocalityType),
+        label: address.getAttributeLabel('dependentLocality'),
         id: 'dependentLocality',
         name: "dependentLocality",
         value: address.dependentLocality,

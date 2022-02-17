@@ -210,6 +210,36 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
+    public function getAttributeLabel($attribute): string
+    {
+        $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->getCountryCode());
+        if (in_array($attribute, ['dependentLocality', 'locality', 'postalCode', 'administrativeArea'])) {
+            return match ($attribute) {
+                'dependentLocality' => Craft::$app->getAddresses()->getDependentLocalityTypeLabel($formatRepo->getDependentLocalityType()),
+                'locality' => Craft::$app->getAddresses()->getLocalityTypeLabel($formatRepo->getLocalityType()),
+                'postalCode' => Craft::$app->getAddresses()->getPostalCodeTypeLabel($formatRepo->getPostalCodeType()),
+                'administrativeArea' => Craft::$app->getAddresses()->getAdministrativeAreaTypeLabel($formatRepo->getAdministrativeAreaType()),
+            };
+        }
+
+        return match ($attribute) {
+            'label' => Craft::t('app', 'Label'),
+            'countryCode' => Craft::t('app', 'Country'),
+            'givenName' => Craft::t('app', 'Given name'),
+            'familyName' => Craft::t('app', 'Family name'),
+            'additionalName' => Craft::t('app', 'Additional name'),
+            'organization' => Craft::t('app', 'Organization'),
+            'addressLine1' => Craft::t('app', 'Address Line 1'),
+            'addressLine2' => Craft::t('app', 'Address Line 2'),
+            'sortingCode' => Craft::t('app', 'Sorting code'),
+            'metadata' => Craft::t('app', 'Metadata'),
+            default => parent::getAttributeLabel($attribute),
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(AddressCondition::class, [static::class]);
