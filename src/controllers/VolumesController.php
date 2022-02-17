@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\elements\Asset;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;

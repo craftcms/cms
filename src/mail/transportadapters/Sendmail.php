@@ -11,7 +11,6 @@ use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
 use craft\helpers\StringHelper;
-use Symfony\Component\Mailer\Transport\SendmailTransport;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.

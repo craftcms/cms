@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Cp;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;

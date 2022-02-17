@@ -7,9 +7,6 @@
 
 namespace craft\web;
 
-use Craft;
-use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 use yii\base\Behavior;
 
 /**
