@@ -85,6 +85,12 @@ Craft.AddressInput = Garnish.Base.extend({
             // All selects in standard fields are the ones we want to monitor. Country, state, etc.
             this.$addressCardFieldsContent.on('change', 'select', function(ev) {
                 self.refreshStandardFields();
+                self.refreshCard();
+            });
+
+            var inputSelector = "input[name^='" + this.baseName + "']";
+            this.$addressCardFieldsContent.find(inputSelector).on('blur', function(ev) {
+                self.refreshCard();
             });
 
             // Edit address
@@ -145,8 +151,6 @@ Craft.AddressInput = Garnish.Base.extend({
         }).catch(e => {
             console.log(e);
         });
-
-        this.refreshCard(); // may as well refresh the card
     },
     refreshCard() {
         this.$saveSpinner.removeClass('hidden');
@@ -164,7 +168,6 @@ Craft.AddressInput = Garnish.Base.extend({
         ;
 
         this.sendActionRequest(data, this.settings.renderFormattedAddressAction).then(response => {
-            console.log(response.data.html)
             this.$addressCardBody.html(response.data.html);
             Garnish.requestAnimationFrame(() => {
                 Craft.appendHeadHtml(response.data.headHtml);
