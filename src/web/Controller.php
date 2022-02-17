@@ -233,6 +233,9 @@ abstract class Controller extends \yii\web\Controller
                     'success' => false,
                     'message' => $message,
                     'errors' => $errors,
+
+                    // TODO: remove with asErrorJson
+                    'error' => $message,
                 ]));
         }
 
@@ -610,10 +613,12 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $error The error message.
      * @return YiiResponse
+     * @deprecated in 4.0.0
      */
     public function asErrorJson(string $error): YiiResponse
     {
-        return $this->asJson(['error' => $error]);
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The `asErrorJson` param has been deprecated. Use `asFailure` instead.');
+        return $this->asFailure($error);
     }
 
     /**
