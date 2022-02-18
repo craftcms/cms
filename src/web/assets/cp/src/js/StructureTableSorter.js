@@ -289,11 +289,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
             Craft.sendActionRequest('POST', 'structures/move-element', {data})
                 .then((response) => {
-                    if (!response.data.success) {
-                        Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
-                        this.tableView.elementIndex.updateElements();
-                        return;
-                    }
                     Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
                     this.onPositionChange();
 
@@ -305,6 +300,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
                     // See if we should run any pending tasks
                     Craft.cp.runQueue();
+                })
+                .catch(({response}) => {
+                    Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                    this.tableView.elementIndex.updateElements();
+                    return;
                 });
         }
     },
