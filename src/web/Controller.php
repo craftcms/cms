@@ -316,7 +316,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
-     * @param string|null $defaultRedirect The default URL to redirect the request, if no `redirect` param is present
+     * @param string|null $redirect The default URL to redirect the request
      * @return YiiResponse|null
      * @since 4.0.0
      */
@@ -325,7 +325,7 @@ abstract class Controller extends \yii\web\Controller
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
-        ?string $defaultRedirect = null
+        ?string $redirect = null
     ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,
@@ -335,7 +335,7 @@ abstract class Controller extends \yii\web\Controller
         return $this->asSuccess(
             $message,
             $data,
-            redirect: ($this->getPostedUrl($model) ?? $defaultRedirect)
+            $redirect ?? $this->getPostedUrl($model),
         );
     }
 
