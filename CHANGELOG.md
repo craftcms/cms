@@ -311,14 +311,14 @@
 - Added `craft\web\assets\money\MoneyAsset`.
 - Added `craft\web\Controller::asCpScreen()`.
 - Added `craft\web\Controller::asFailure()`.
-- Added `craft\web\Controller::asSuccess()`.
 - Added `craft\web\Controller::asModelFailure()`.
 - Added `craft\web\Controller::asModelSuccess()`.
+- Added `craft\web\Controller::asSuccess()`.
 - Added `craft\web\Controller::CpScreenResponseBehavior()`.
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
+- Added `craft\web\Controller::getPostedRedirectUrl()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
 - Added `craft\web\Controller::TemplateResponseFormatter()`.
-- Added `craft\web\Controller::getPostedRedirectUrl()`.
 - Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
