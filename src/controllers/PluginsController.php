@@ -64,7 +64,7 @@ class PluginsController extends Controller
         $edition = $this->request->getRequiredBodyParam('edition');
         Craft::$app->getPlugins()->switchEdition($pluginHandle, $edition);
 
-        return $this->asSuccess(Craft::t('app', 'Plugin installed.'));
+        return $this->asSuccess(Craft::t('app', 'Plugin edition changed.'));
     }
 
     /**
