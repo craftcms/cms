@@ -42,17 +42,15 @@
 
                 Craft.sendActionRequest('POST', 'fields/save-group', {data})
                     .then((response) => {
-                        if (response.data.success) {
-                            location.href = Craft.getUrl('settings/fields/' + response.data.group.id);
-                        } else if (response.data.errors) {
+                        location.href = Craft.getUrl('settings/fields/' + response.data.group.id);
+                    })
+                    .catch(({response}) => {
+                        if (response.data.errors) {
                             var errors = this.flattenErrors(response.data.errors);
                             alert(Craft.t('app', 'Could not create the group:') + "\n\n" + errors.join("\n"));
                         } else {
                             Craft.cp.displayError();
                         }
-                    })
-                    .catch(({response}) => {
-                        Craft.cp.displayError();
                     });
             }
         },
