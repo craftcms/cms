@@ -5,7 +5,7 @@
         {{ activeInstallsDate | formatDate }}
       </template>
       <template v-else>
-        Active Installs
+        {{ "Active Installs"|t('app') }}
       </template>
     </template>
     <template #content>

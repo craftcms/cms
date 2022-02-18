@@ -91,19 +91,19 @@ export default {
       const tabs = []
 
       tabs.push({
-        name: 'Overview',
+        name: this.$options.filters.t('Overview', 'app'),
         slug: ''
       })
 
       if (!this.isPluginFree(this.plugin) && this.plugin.editions.length > 1) {
         tabs.push({
-          name: 'Pricing',
+          name: this.$options.filters.t('Pricing', 'app'),
           slug: 'pricing'
         })
       }
 
       tabs.push({
-        name: 'Changelog',
+        name: this.$options.filters.t('Changelog', 'app'),
         slug: 'changelog'
       })
 

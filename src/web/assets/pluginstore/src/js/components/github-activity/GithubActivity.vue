@@ -4,7 +4,7 @@
     :border="false"
   >
     <template #title>
-      Activity <small>(Past Month)</small>
+      <span v-html="githubActivityTitle"></span>
     </template>
     <template #content>
       <div class="tw-mt-4 tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg">
@@ -34,7 +34,7 @@
               {{ closedIssues }}
             </template>
             <template #title>
-              Closed Issues
+              {{ "Closed Issues"|t('app')}}
             </template>
           </activity-stat>
           <activity-stat>
@@ -60,7 +60,7 @@
               {{ newIssues }}
             </template>
             <template #title>
-              New Issues
+              {{ "New Issues"|t('app')}}
             </template>
           </activity-stat>
           <activity-stat class="tw-border-t tw-border-r tw-border-solid tw-border-gray-200">
@@ -85,7 +85,7 @@
               {{ mergedPullRequests }}
             </template>
             <template #title>
-              Merged PRs
+              {{ "Merged PRs"|t('app')}}
             </template>
           </activity-stat>
           <activity-stat class="tw-border-t tw-border-solid tw-border-gray-200">
@@ -110,7 +110,7 @@
               {{ openPullRequests }}
             </template>
             <template #title>
-              Open PRs
+              {{ "Open PRs"|t('app')}}
             </template>
           </activity-stat>
         </div>
@@ -155,5 +155,11 @@ export default {
       default: 0,
     },
   },
+
+  computed: {
+    githubActivityTitle() {
+      return this.$options.filters.t('Activity <small>(Past Month)</small>', 'app');
+    }
+  }
 }
 </script>

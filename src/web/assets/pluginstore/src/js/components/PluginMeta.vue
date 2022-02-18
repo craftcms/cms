@@ -18,7 +18,7 @@
               class="tw-mr-2"
               icon="book"
             />
-            Documentation
+            {{ "Documentation"|t('app') }}
 
             <svg
               class="tw-inline-block tw-w-3 tw-text-grey tw-ml-1"
@@ -51,7 +51,7 @@
             class="tw-mr-2"
             icon="github"
           />
-          Repository
+          {{ "Repository"|t('app') }}
 
           <svg
             class="tw-inline-block tw-w-3 tw-text-grey tw-ml-1"
@@ -76,7 +76,7 @@
       <!-- Install with composer -->
       <meta-stat>
         <template #title>
-          Install with Composer
+          {{ "Install with Composer"|t('app') }}
         </template>
         <template #content>
           <composer-install :plugin="plugin" />
@@ -92,7 +92,7 @@
         <!-- Version -->
         <meta-stat>
           <template #title>
-            Version
+            {{ "Version"|t('app') }}
           </template>
           <template #content>
             {{ plugin.version }}
@@ -102,7 +102,7 @@
         <!-- License -->
         <meta-stat>
           <template #title>
-            License
+            {{ "License"|t('app') }}
           </template>
           <template #content>
             {{ licenseLabel }}
@@ -114,7 +114,7 @@
         <!-- Compatibility -->
         <meta-stat>
           <template #title>
-            Compatibility
+            {{ "Compatibility"|t('app') }}
           </template>
           <template #content>
             {{ plugin.compatibility }}
@@ -124,7 +124,7 @@
         <!-- Total releases -->
         <meta-stat>
           <template #title>
-            Total releases
+            {{ "Total releases"|t('app') }}
           </template>
           <template #content>
             X
@@ -135,7 +135,7 @@
       <!-- Last release -->
       <meta-stat>
         <template #title>
-          Last release
+          {{ "Last release"|t('app') }}
         </template>
         <template #content>
 
@@ -145,7 +145,7 @@
       <!-- Categories -->
       <meta-stat>
         <template #title>
-          Categories
+          {{ "Categories"|t('app') }}
         </template>
         <template #content>
           <ul v-if="pluginCategories.length > 0">
@@ -192,7 +192,7 @@
               icon="flag"
               set="solid"
             />
-            Report plugin
+            {{ "Report plugin"|t('app') }}
           </c-btn>
         </li>
       </ul>

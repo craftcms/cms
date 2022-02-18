@@ -34,7 +34,7 @@
 
 
     <div class="tw-mt-4 tw-text-sm tw-text-gray-500">
-      <p>To install this plugin with composer, copy the command above to your terminal.</p>
+      <p>{{ "To install this plugin with composer, copy the command above to your terminal."|t('app') }}</p>
     </div>
   </div>
 </template>
