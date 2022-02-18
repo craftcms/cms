@@ -3,13 +3,20 @@
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {% set selectedTab = selectedTab ?? tabs|keys|first %}
+{% set tablistLabel = tablistLabel ?? 'Fields'|t('app') %}
 {% set tabs = tabs|map((tab, tabId) => tab|merge({
     selected: tabId == selectedTab,
         class: (tab.class ?? [])|explodeClass,
 })) %}
 
 {% tag 'div' with containerAttributes %}
-    <div class="scrollable" role="tablist" aria-label="{{ 'Fields'|t('app') }}">
+    {% tag 'div'  with {
+        class: 'scrollable',
+        role: 'tablist',
+        aria: {
+            label: tablistLabel,
+        },
+    } %}
         {% for tabId, tab in tabs %}
             {% tag 'a' with {
                 id: "tab-#{tabId}",
@@ -38,7 +45,7 @@
                 {% endif %}
             {% endtag %}
         {% endfor %}
-    </div>
+    {%  endtag %}
     {{ tag('button', {
         type: 'button',
         class: 'btn menubtn hidden',

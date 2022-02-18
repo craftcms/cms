@@ -1168,6 +1168,7 @@ JS;
             $tabHtml = count($tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
                 'tabs' => $tabs,
                 'selectedTab' => $this->_selectedTab,
+                'tablistLabel' => Craft::t('app', 'Fields'),
             ], View::TEMPLATE_MODE_CP), $namespace) : null;
 
             // Make sure the user is authorized to preview the draft
