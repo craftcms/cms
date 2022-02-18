@@ -26,6 +26,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
 
         Craft.sendActionRequest('POST', 'users/get-elevated-session-timeout')
             .then((response) => {
+                this.fetchingTimeout = false;
                 if (response.data.timeout === false || response.data.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout) {
                     this.callback();
                 } else {
@@ -34,7 +35,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
                 }
 
             })
-            .finally(() => {
+            .catch(() => {
                 this.fetchingTimeout = false;
             });
     },
