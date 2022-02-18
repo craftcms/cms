@@ -161,7 +161,7 @@ class Raster extends Image
         // Make sure the image says it's an image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
-        if ($mimeType !== null && strpos($mimeType, 'image/') !== 0 && strpos($mimeType, 'application/pdf') !== 0) {
+        if ($mimeType !== null && !str_starts_with($mimeType, 'image/') && !str_starts_with($mimeType, 'application/pdf')) {
             throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => basename($path)]));
         }
 

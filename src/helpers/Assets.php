@@ -65,7 +65,7 @@ class Assets
      */
     public static function tempFilePath(string $extension = 'tmp'): string
     {
-        $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
+        $extension = str_contains($extension, '.') ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true) . '.' . $extension;
         $path = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename;
 

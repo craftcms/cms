@@ -76,7 +76,7 @@ class SystemSettingsController extends Controller
         $systemSettings['retryDuration'] = (int)$this->request->getBodyParam('retryDuration') ?: null;
         $systemSettings['timeZone'] = $this->request->getBodyParam('timeZone');
 
-        if (strpos($systemSettings['live'], '$') !== 0) {
+        if (!str_starts_with($systemSettings['live'], '$')) {
             $systemSettings['live'] = (bool)$systemSettings['live'];
         }
 

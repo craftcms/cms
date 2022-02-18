@@ -578,7 +578,7 @@ class ProjectConfig
         $newContents = '';
 
         while (($line = fgets($handle)) !== false) {
-            $isTimestamp = strpos($line, 'dateModified:') === 0;
+            $isTimestamp = str_starts_with($line, 'dateModified:');
 
             if ($foundTimestamp) {
                 if (!$isTimestamp) {
@@ -588,7 +588,7 @@ class ProjectConfig
             }
 
             if (!$isTimestamp) {
-                if (strpos($line, '<<<<<<<') === 0) {
+                if (str_starts_with($line, '<<<<<<<')) {
                     $mineMarker = $line;
                     $inMine = true;
                     $inTheirs = false;
@@ -596,14 +596,14 @@ class ProjectConfig
                     continue;
                 }
 
-                if (strpos($line, '=======') === 0) {
+                if (str_starts_with($line, '=======')) {
                     $inMine = false;
                     $inTheirs = true;
                     $btTheirs = '';
                     continue;
                 }
 
-                if (strpos($line, '>>>>>>>') === 0) {
+                if (str_starts_with($line, '>>>>>>>')) {
                     $theirsMarker = $line;
                     // We've reached the end of the conflict
                     if ($btMine || $btTheirs) {

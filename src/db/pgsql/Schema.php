@@ -98,7 +98,7 @@ class Schema extends \yii\db\pgsql\Schema
     public function getLastInsertID($sequenceName = ''): string
     {
         if ($sequenceName !== '') {
-            if (strpos($sequenceName, '.') === false) {
+            if (!str_contains($sequenceName, '.')) {
                 $sequenceName = $this->defaultSchema . '.' . $this->getRawTableName($sequenceName);
             }
             $sequenceName .= '_id_seq';

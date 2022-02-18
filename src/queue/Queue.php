@@ -633,7 +633,7 @@ EOD;
         if (is_resource($job)) {
             $job = stream_get_contents($job);
 
-            if (is_string($job) && strpos($job, 'x') === 0) {
+            if (is_string($job) && str_starts_with($job, 'x')) {
                 $hex = substr($job, 1);
                 if (StringHelper::isHexadecimal($hex)) {
                     $job = hex2bin($hex);

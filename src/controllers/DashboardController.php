@@ -558,9 +558,9 @@ class DashboardController extends Controller
                 'application/pdf',
                 'application/x-yaml',
             ], true) &&
-            strpos($mimeType, 'text/') !== 0 &&
-            strpos($mimeType, 'image/') !== 0 &&
-            strpos($mimeType, 'xml') === false
+            !str_starts_with($mimeType, 'text/') &&
+            !str_starts_with($mimeType, 'image/') &&
+            !str_contains($mimeType, 'xml')
         );
     }
 }

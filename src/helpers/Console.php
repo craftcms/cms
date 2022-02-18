@@ -221,7 +221,7 @@ class Console extends \yii\helpers\Console
                     $padType = STR_PAD_RIGHT;
                 }
 
-                $value = str_pad($value, $size, ' ', $padType ?? STR_PAD_RIGHT);
+                $value = str_pad($value, $size, ' ', $padType);
             } else if ($len > $size) {
                 $value = substr($value, 0, $size - 1) . '…';
             }

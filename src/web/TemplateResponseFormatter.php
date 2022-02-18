@@ -15,7 +15,6 @@ use Twig\Error\RuntimeError;
 use yii\base\Component;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
-use yii\web\JsonResponseFormatter;
 use yii\web\ResponseFormatterInterface;
 
 /**

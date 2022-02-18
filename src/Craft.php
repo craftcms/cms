@@ -321,7 +321,7 @@ EOD;
                     $b = basename($path);
                     return (
                         $b !== $basename &&
-                        strpos($b, 'CustomFieldBehavior') === 0 &&
+                        str_starts_with($b, 'CustomFieldBehavior') &&
                         filemtime($path) < $time
                     );
                 },

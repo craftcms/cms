@@ -569,7 +569,7 @@ class MigrateController extends BaseMigrateController
      */
     public function stdout($string)
     {
-        if (strpos($string, 'Yii Migration Tool') === 0) {
+        if (str_starts_with($string, 'Yii Migration Tool')) {
             return false;
         }
         return parent::stdout(...func_get_args());

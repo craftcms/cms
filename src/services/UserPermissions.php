@@ -23,7 +23,6 @@ use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
-use craft\models\Volume;
 use craft\records\UserPermission as UserPermissionRecord;
 use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use yii\base\Component;

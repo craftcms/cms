@@ -1941,7 +1941,7 @@ class GeneralConfig extends BaseObject
         }
 
         // Is this query string-based pagination?
-        if (strpos($pageTrigger, '?') === 0) {
+        if (str_starts_with($pageTrigger, '?')) {
             $pageTrigger = trim($pageTrigger, '?=');
 
             // Avoid conflict with the path param

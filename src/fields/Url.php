@@ -347,11 +347,11 @@ JS;
      */
     private function _urlType(string $value): string
     {
-        if (strpos($value, 'tel:') === 0) {
+        if (str_starts_with($value, 'tel:')) {
             return self::TYPE_TEL;
         }
 
-        if (strpos($value, 'mailto:') === 0) {
+        if (str_starts_with($value, 'mailto:')) {
             return self::TYPE_EMAIL;
         }
 

@@ -78,7 +78,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public function handleError($code, $message, $file, $line): ?bool
     {
         // Because: https://bugs.php.net/bug.php?id=74980
-        if (strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
+        if (str_contains($message, 'Narrowing occurred during type inference. Please file a bug report')) {
             return null;
         }
 
@@ -119,8 +119,8 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         $file = realpath($file);
         $pathService = Craft::$app->getPath();
-        return strpos($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) === 0 ||
-            strpos($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) === 0 ||
+        return str_starts_with($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) ||
+            str_starts_with($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) ||
             $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
     }
 
@@ -201,11 +201,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $url = parent::getTypeUrl($class, $method);
 
         if ($url === null) {
-            if (strpos($class, '__TwigTemplate_') === 0) {
+            if (str_starts_with($class, '__TwigTemplate_')) {
                 $class = Template::class;
             }
 
-            if (strpos($class, 'Twig\\') === 0) {
+            if (str_starts_with($class, 'Twig\\')) {
                 $url = "http://twig.sensiolabs.org/api/2.x/$class.html";
 
                 if ($method) {
@@ -222,7 +222,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function renderCallStackItem($file, $line, $class, $method, $args, $index): string
     {
-        if (strpos($file, 'compiled_templates') !== false) {
+        if (str_contains($file, 'compiled_templates')) {
             try {
                 [$file, $line] = $this->_resolveTemplateTrace($file, $line);
             } catch (Throwable $e) {
