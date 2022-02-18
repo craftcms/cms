@@ -542,12 +542,26 @@ button {
     justify-content: flex-start;
   }
 
+  .so-notice > & {
+    @include margin(calc(var(--s) * -1), 0, calc(var(--s) * -1), calc(var(--xl) * -1));
+    @include padding(var(--s), 0, var(--s), var(--xl));
+    @include border-bottom-left-radius($largeBorderRadius);
+
+    body.ltr & {
+      background-image: linear-gradient(to bottom right, transparentize($blue600, 0.8), transparentize($blue600, 1) 50%);
+    }
+    body.rtl & {
+      background-image: linear-gradient(to left, transparentize($blue600, 0.8), transparentize($blue600, 1));
+    }
+  }
+
   p {
     flex: 1;
     margin: 0;
   }
 
   .draft-icon {
+    position: relative;
     flex-shrink: 0;
     width: 34px;
     height: 34px;
@@ -557,12 +571,25 @@ button {
     border-radius: 100%;
     border: 2px solid transparentize($blue600, 0.8);
     box-sizing: border-box;
+    box-shadow: 0 1px 1px 1px $white;
 
     &:before {
       position: relative;
       left: 1px;
       color: $blue700 !important;
       font-size: 18px;
+    }
+
+    &:after {
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 100%;
+      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
     }
   }
 
