@@ -535,7 +535,7 @@ button {
   align-content: stretch;
   justify-content: center;
   gap: var(--s);
-  color: $blue700;
+  color: $blue800;
 
   #content-notice & {
     display: inline-flex;
@@ -569,7 +569,7 @@ button {
   .discard-changes-btn {
     @include margin-left(var(--xs));
     background-color: transparent !important;
-    color: $blue700 !important;
+    color: $blue800 !important;
     border: 2px solid $blue600;
 
     &:hover,
