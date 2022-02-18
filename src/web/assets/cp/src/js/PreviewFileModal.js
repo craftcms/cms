@@ -127,37 +127,34 @@ Craft.PreviewFileModal = Garnish.Modal.extend({
         this.requestId++;
 
         let data = {assetId: assetId, requestId: this.requestId};
+        let onResponse = () => {
+            this.$container.removeClass('loading');
+            this.$spinner.remove();
+            this.loaded = true;
+        };
         Craft.sendActionRequest('POST', 'assets/preview-file', {data})
             .then((response) => {
-                this.$container.removeClass('loading');
-                this.$spinner.remove();
-                this.loaded = true;
+                onResponse();
 
-                if (response.data.success) {
-                    if (response.data.requestId != this.requestId) {
-                        return;
-                    }
-
-                    if (!response.data.previewHtml) {
-                        this.$container.addClass('zilch');
-                        this.$container.append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
-                        return;
-                    }
-
-                    this.$container.removeClass('zilch');
-                    this.$container.append(response.data.previewHtml);
-                    Craft.appendHeadHtml(response.data.headHtml);
-                    Craft.appendBodyHtml(response.data.bodyHtml);
-                } else {
-                    alert(response.message);
-                    this.hide();
+                if (response.data.requestId != this.requestId) {
+                    return;
                 }
+
+                if (!response.data.previewHtml) {
+                    this.$container.addClass('zilch');
+                    this.$container.append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
+                    return;
+                }
+
+                this.$container.removeClass('zilch');
+                this.$container.append(response.data.previewHtml);
+                Craft.appendHeadHtml(response.data.headHtml);
+                Craft.appendBodyHtml(response.data.bodyHtml);
             })
             .catch(({response}) => {
-                this.$container.removeClass('loading');
-                this.$spinner.remove();
-                this.loaded = true;
+                onResponse();
                 alert(response.message);
+                this.hide();
             });
     },
 
