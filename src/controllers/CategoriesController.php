@@ -364,22 +364,20 @@ class CategoriesController extends Controller
             );
         }
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asModelSuccess(
-                $category,
-                Craft::t('app', '{type} saved.', [
-                    'type' => Category::displayName(),
-                ]),
-                data: [
-                    'id' => $category->id,
-                    'title' => $category->title,
-                    'slug' => $category->slug,
-                    'status' => $category->getStatus(),
-                    'url' => $category->getUrl(),
-                    'cpEditUrl' => $category->getCpEditUrl(),
-                ]
-            );
-        }
+        return $this->asModelSuccess(
+            $category,
+            Craft::t('app', '{type} saved.', [
+                'type' => Category::displayName(),
+            ]),
+            data: [
+                'id' => $category->id,
+                'title' => $category->title,
+                'slug' => $category->slug,
+                'status' => $category->getStatus(),
+                'url' => $category->getUrl(),
+                'cpEditUrl' => $category->getCpEditUrl(),
+            ],
+        );
     }
 
     /**
