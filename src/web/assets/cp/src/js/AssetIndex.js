@@ -1338,16 +1338,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
                 .then((response) => {
                     this.setIndexAvailable();
+                    var $parentFolder = this._getParentSource($targetFolder);
 
-                    if (response.data.success) {
-                        var $parentFolder = this._getParentSource($targetFolder);
+                    // Remove folder and any trace from its parent, if needed
+                    this.deinitSource($targetFolder);
 
-                        // Remove folder and any trace from its parent, if needed
-                        this.deinitSource($targetFolder);
+                    $targetFolder.parent().remove();
+                    this._cleanUpTree($parentFolder);
 
-                        $targetFolder.parent().remove();
-                        this._cleanUpTree($parentFolder);
-                    }
                 })
                 .catch(({response}) => {
                     this.setIndexAvailable();
@@ -1376,23 +1374,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 newName: newName,
             },
         }).then(response => {
-            if (response.data.success) {
-                $label.text(response.data.newName);
+            $label.text(response.data.newName);
 
-                // Is this the selected source?
-                if ($source.data('key') === this.$source.data('key')) {
-                    this.updateElements();
+            // Is this the selected source?
+            if ($source.data('key') === this.$source.data('key')) {
+                this.updateElements();
 
-                    // Update the URL if we're on the Assets index
-                    if (this.settings.context === 'index') {
-                        this._updateUrl($source);
-                    }
+                // Update the URL if we're on the Assets index
+                if (this.settings.context === 'index') {
+                    this._updateUrl($source);
                 }
-            } else if (response.data.error) {
-                alert(response.data.error);
             }
-        }).finally(() => {
+        }).catch(({response}) => {
             this.setIndexAvailable();
+            alert(response.data.error);
         });
     },
 
