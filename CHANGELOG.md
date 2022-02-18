@@ -347,6 +347,7 @@
 - Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
 - Added the Money package.
 - Added the yii2-symfonymailer package.
+- Added the symfony/var-dumper package.
 
 ### Changed
 - Craft now requires PHP 8.0.2 or later.
