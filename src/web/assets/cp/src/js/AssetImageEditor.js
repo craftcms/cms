@@ -1295,20 +1295,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         postData.flipData = this.flipData;
         postData.zoom = this.zoomRatio;
 
-
+        const onResponse() => {
+            this.$buttons.find('.btn').removeClass('loading');
+            this.saving = false;
+        };
         Craft.sendActionRequest('POST', 'assets/save-image', {data: postData})
             .then((response) => {
+                onResponse();
                 this.onSave(data);
                 this.hide();
                 Craft.cp.runQueue();
             })
             .catch(({response}) => {
+                onResponse();
                 alert(response.data.message);
                 return;
-            })
-            .finally(() => {
-                this.$buttons.find('.btn').removeClass('loading');
-                this.saving = false;
             });
     },
 
