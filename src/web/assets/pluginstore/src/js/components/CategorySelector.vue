@@ -56,7 +56,7 @@ export default {
 <style
   lang="scss"
   scoped>
-@import "../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 @import "../../sass/variables";
 
 

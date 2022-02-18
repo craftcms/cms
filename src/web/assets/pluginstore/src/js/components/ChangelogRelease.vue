@@ -38,7 +38,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import "../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 .changelog-release {
   @apply tw-pt-2 tw-pb-4 tw-border-b tw-border-gray-200 tw-border-solid;

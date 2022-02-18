@@ -21,7 +21,7 @@ export default {}
 </script>
 
 <style lang="scss">
-@import "../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 .info-hud {
   @apply tw-inline-block;

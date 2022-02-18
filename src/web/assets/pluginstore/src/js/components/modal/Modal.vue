@@ -62,7 +62,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import "../../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 #pluginstore-modal {
   @apply tw-absolute tw-top-0 tw-left-0;

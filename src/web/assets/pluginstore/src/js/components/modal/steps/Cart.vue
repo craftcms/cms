@@ -321,7 +321,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import "../../../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 table.cart-data {
   border-top: 1px solid #eee;

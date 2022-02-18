@@ -31,7 +31,7 @@ export default {
 <style
   lang="scss"
   scoped>
-@import "../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 .edition-badge {
   @apply tw-inline-block;

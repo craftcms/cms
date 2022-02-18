@@ -131,7 +131,7 @@ export default {
 <style
   lang="scss"
   scoped>
-@import "../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 .plugin-details-header {
   @apply tw-leading-normal tw-overflow-hidden tw-mb-1;

@@ -227,7 +227,7 @@ export default {
 
 <style lang="scss">
 @import "../../../sass/variables";
-@import "../../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 .plugin-icon {
   @apply tw-relative;

@@ -19,7 +19,7 @@ export default {
 <style
   lang="scss"
   scoped>
-@import "../../../../../../../packages/craftcms-sass/mixins";
+@import "@craftcms/sass/mixins";
 
 .c-btn {
   &.license-status {
