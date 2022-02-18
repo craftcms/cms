@@ -555,13 +555,13 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 100%;
-    border: 2px solid transparentize($blue600, 0.8);
+    border: 2px solid transparentize($blue800, 0.8);
     box-sizing: border-box;
 
     &:before {
       position: relative;
       left: 1px;
-      color: $blue700 !important;
+      color: $blue800 !important;
       font-size: 18px;
     }
   }
