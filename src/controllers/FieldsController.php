@@ -71,11 +71,12 @@ class FieldsController extends Controller
         }
 
         $group->name = $this->request->getRequiredBodyParam('name');
-        $success = $fieldsService->saveGroup($group);
 
-        return $success ?
-            $this->asModelSuccess($group, modelName: 'group') :
-            $this->asModelFailure($group);
+        if (!$fieldsService->saveGroup($group)) {
+            return $this->asModelFailure($group);
+        }
+
+        return $this->asModelSuccess($group, modelName: 'group');
     }
 
     /**
@@ -359,15 +360,15 @@ JS;
             throw new BadRequestHttpException("Invalid field ID: $fieldId");
         }
 
-        $success = $fieldsService->deleteField($field);
-
-        return $success ?
-            $this->asModelSuccess($field, Craft::t('app', '“{name}” deleted.', [
-                'name' => $field->name,
-            ])) :
-            $this->asModelFailure($field, Craft::t('app', 'Unable to delete field ID {fieldId}', [
+        if (!$fieldsService->deleteField($field)) {
+            return $this->asModelFailure($field, Craft::t('app', 'Unable to delete field ID {fieldId}', [
                 'fieldId' => $fieldId,
             ]));
+        }
+
+        return $this->asModelSuccess($field, Craft::t('app', '“{name}” deleted.', [
+            'name' => $field->name,
+        ]));
     }
 
     // Field Layouts

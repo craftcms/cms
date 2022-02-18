@@ -198,9 +198,11 @@ class InstallController extends Controller
             $errors['password'] = ArrayHelper::remove($errors, 'newPassword');
         }
 
-        return $validates ?
-            $this->asModelSuccess($user) :
-            $this->asFailure(errors: $errors);
+        if (!$validates) {
+            return $this->asFailure(errors: $errors);
+        }
+
+        return $this->asModelSuccess($user);
     }
 
     /**
@@ -219,11 +221,11 @@ class InstallController extends Controller
             'language' => $this->request->getBodyParam('language'),
         ]);
 
-        $validates = $site->validate(['name', 'baseUrl', 'language']);
+        if (!$site->validate(['name', 'baseUrl', 'language'])) {
+            return $this->asModelFailure($site);
+        }
 
-        return $validates ?
-            $this->asModelSuccess($site) :
-            $this->asModelFailure($site);
+        return $this->asModelSuccess($site);
     }
 
     /**
