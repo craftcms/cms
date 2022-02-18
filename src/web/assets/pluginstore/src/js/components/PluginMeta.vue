@@ -186,7 +186,7 @@
       />
 
       <!-- Report an issue -->
-      <ul class="list-reset space-y-2 mt-8">
+      <ul class="tw-list-reset tw-space-y-2 tw-mt-8">
         <li>
           <c-btn
             kind="danger"
