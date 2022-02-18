@@ -2033,7 +2033,7 @@ JS;
     private function _updatePreviewThumbJs(): string
     {
         $thumbContainerId = Craft::$app->getView()->namespaceInputId('thumb-container');
-        $js = <<<JS
+        return <<<JS
 $('#$thumbContainerId')
     .addClass('loading')
     .append($('<div class="spinner spinner-absolute"/>'));
@@ -2052,7 +2052,6 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         .find('.spinner').remove();
 });
 JS;
-        return $js;
     }
 
     /**

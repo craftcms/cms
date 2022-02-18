@@ -1852,6 +1852,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the string representation of the element.
      *
      * @return string
+     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {
