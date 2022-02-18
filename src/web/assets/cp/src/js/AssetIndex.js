@@ -1387,7 +1387,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             }
         }).catch(({response}) => {
             this.setIndexAvailable();
-            alert(response.data.error);
+            alert(response.data.message);
         });
     },
 

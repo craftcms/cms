@@ -1250,7 +1250,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                     this.failed = true;
                     if (e && e.response) {
                         this.httpStatus = e.response.status;
-                        this.httpError = e.response.data ? e.response.data.error : null;
+                        this.httpError = e.response.data ? e.response.data.message : null;
                     }
                     this._showFailStatus();
                     reject(e);

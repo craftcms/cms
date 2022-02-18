@@ -167,9 +167,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 this.selectElements([elementInfo]);
             })
             .catch(({response}) => {
-                alert(response.data.error);
-            })
-            .finally(() => {
+                alert(response.data.message);
             });
     },
 
@@ -187,7 +185,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 this.thumbLoader.load($existing);
             })
             .catch(({response}) => {
-                alert(response.data.error);
+                alert(response.data.message);
             });
     },
 
@@ -272,7 +270,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                     }
                 })
                 .catch(({response}) => {
-                    alert(response.data.error);
+                    alert(response.data.message);
                 });
 
             Craft.cp.runQueue();
