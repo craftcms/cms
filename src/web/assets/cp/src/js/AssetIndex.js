@@ -1301,28 +1301,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             Craft.sendActionRequest('POST', 'assets/create-folder', {data})
                 .then((response) => {
                     this.setIndexAvailable();
+                    this._prepareParentForChildren($parentFolder);
+                    var $subfolder = $(
+                        '<li>' +
+                        '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' +
+                        (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
+                        ' data-folder-id="' + data.folderId + '"' +
+                        (Garnish.hasAttr($parentFolder, 'data-can-upload') ? ' data-can-upload' : '') +
+                        (Garnish.hasAttr($parentFolder, 'data-can-move-to') ? ' data-can-move-to' : '') +
+                        (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to') ? ' data-can-move-peer-files-to' : '') +
+                        '>' +
+                        data.folderName +
+                        '</a>' +
+                        '</li>'
+                    );
 
-                    if (response.data.success) {
-                        this._prepareParentForChildren($parentFolder);
-
-                        var $subfolder = $(
-                            '<li>' +
-                            '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' +
-                            (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
-                            ' data-folder-id="' + data.folderId + '"' +
-                            (Garnish.hasAttr($parentFolder, 'data-can-upload') ? ' data-can-upload' : '') +
-                            (Garnish.hasAttr($parentFolder, 'data-can-move-to') ? ' data-can-move-to' : '') +
-                            (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to') ? ' data-can-move-peer-files-to' : '') +
-                            '>' +
-                            data.folderName +
-                            '</a>' +
-                            '</li>'
-                        );
-
-                        var $a = $subfolder.children('a:first');
-                        this._appendSubfolder($parentFolder, $subfolder);
-                        this.initSource($a);
-                    }
+                    var $a = $subfolder.children('a:first');
+                    this._appendSubfolder($parentFolder, $subfolder);
+                    this.initSource($a);
                 })
                 .catch(({response}) => {
                     this.setIndexAvailable();
