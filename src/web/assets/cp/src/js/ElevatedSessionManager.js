@@ -33,7 +33,6 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
                     // Show the password modal
                     this.showPasswordModal();
                 }
-
             })
             .catch(() => {
                 this.fetchingTimeout = false;
@@ -116,20 +115,14 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
         Craft.sendActionRequest('POST', 'users/start-elevated-session', {data})
             .then((response) => {
                 this.$submitBtn.removeClass('loading');
-
-                if (response.data.success) {
-                    this.passwordModal.hide();
-                    this.callback();
-                } else {
-                    this.showPasswordError(response.data.message || Craft.t('app', 'Incorrect password.'));
-                    Garnish.shake(this.passwordModal.$container);
-                    this.focusPasswordInput();
-                }
-
+                this.passwordModal.hide();
+                this.callback();
             })
             .catch(({response}) => {
                 this.$submitBtn.removeClass('loading');
-                this.showPasswordError();
+                this.showPasswordError(response.data.message || Craft.t('app', 'Incorrect password.'));
+                Garnish.shake(this.passwordModal.$container);
+                this.focusPasswordInput();
             });
     },
 
