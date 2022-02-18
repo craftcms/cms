@@ -117,11 +117,7 @@ import './login.scss';
 
             Craft.sendActionRequest('POST', 'users/send-password-reset-email', {data})
                 .then((response) => {
-                    if (response.data.success) {
-                        new MessageSentModal();
-                    } else {
-                        this.showError(response.data.message);
-                    }
+                    new MessageSentModal();
                 })
                 .catch(({response}) => {
                     this.showError(response.data.message);
@@ -145,9 +141,6 @@ import './login.scss';
 
                     // Add the error message
                     this.showError(response.data.message);
-                })
-                .finally(() => {
-                    this.onSubmitResponse();
                 });
 
             return false;
