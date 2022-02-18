@@ -608,7 +608,7 @@ $.extend(Craft,
             callback()
                 .then((response) => {
                     if (callback && typeof callback === 'function') {
-                        callback(response);
+                        callback(response.data);
                     }
 
                     if (Craft._ajaxQueue.length) {

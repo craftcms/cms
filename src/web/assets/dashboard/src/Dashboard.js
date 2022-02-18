@@ -392,7 +392,7 @@ import './dashboard.scss';
             var action = this.$container.hasClass('new') ? 'dashboard/create-widget' : 'dashboard/save-widget-settings',
                 data = this.$settingsForm.serialize();
 
-            Craft.sendActionRequest('POST', '', {data})
+            Craft.sendActionRequest('POST', action, {data})
                 .then((response) => {
                     this.$saveBtn.removeClass('loading');
 
@@ -560,13 +560,9 @@ import './dashboard.scss';
                         colspan: colspan
                     };
 
-                    Craft.sendActionRequest('POST', '', {data})
+                    Craft.sendActionRequest('POST', 'dashboard/change-widget-colspan', {data})
                         .then((response) => {
-                            if (response.data.success) {
-                                Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
-                            } else {
-                                Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
-                            }
+                            Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
                         })
                         .catch(({response}) => {
                             Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
