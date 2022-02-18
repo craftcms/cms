@@ -1676,10 +1676,10 @@ JS;
             }
 
             $response->redirect($newElement->getCpEditUrl() ?? UrlHelper::actionUrl('elements/edit', [
-                'draftId' => $newElement->draftId,
-                'siteId' => $newElement->siteId,
-                'fresh' => 1,
-            ]));
+                    'draftId' => $newElement->draftId,
+                    'siteId' => $newElement->siteId,
+                    'fresh' => 1,
+                ]));
         }
 
         return $response;
