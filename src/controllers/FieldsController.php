@@ -361,18 +361,13 @@ JS;
 
         $success = $fieldsService->deleteField($field);
 
-        if ($this->request->getAcceptsJson()) {
-            return $success ? $this->asSuccess() : $this->asFailure();
-        }
-
-        if (!$success) {
-            throw new ServerErrorHttpException("Unable to delete field ID $fieldId");
-        }
-
-        Craft::$app->getSession()->setNotice(Craft::t('app', '“{name}” deleted.', [
-            'name' => $field->name,
-        ]));
-        return $this->redirectToPostedUrl();
+        return $success ?
+            $this->asModelSuccess($field, Craft::t('app', '“{name}” deleted.', [
+                'name' => $field->name,
+            ])) :
+            $this->asModelFailure($field, Craft::t('app', 'Unable to delete field ID {fieldId}', [
+                'fieldId' => $fieldId,
+            ]));
     }
 
     // Field Layouts
