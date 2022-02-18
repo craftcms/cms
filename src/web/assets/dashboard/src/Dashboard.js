@@ -159,12 +159,8 @@ import './dashboard.scss';
 
                 Craft.sendActionRequest('POST', 'dashboard/create-widget', {data})
                     .then((response) => {
-                        if (response.data.success) {
-                            $container.removeClass('loading');
-                            widget.update(response.data);
-                        } else {
-                            widget.destroy();
-                        }
+                        $container.removeClass('loading');
+                        widget.update(response.data);
                     })
                     .catch(({response}) => {
                         widget.destroy();
