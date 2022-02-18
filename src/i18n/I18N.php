@@ -72,7 +72,7 @@ class I18N extends \yii\i18n\I18N
     public function getAllLocaleIds(): array
     {
         if (!isset($this->_allLocaleIds)) {
-            $this->_allLocaleIds = ResourceBundle::getLocales(null);
+            $this->_allLocaleIds = ResourceBundle::getLocales('');
 
             // Hyphens, not underscores
             foreach ($this->_allLocaleIds as $i => $locale) {
