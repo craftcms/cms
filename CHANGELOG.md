@@ -937,7 +937,6 @@
 - Removed the `Craft.AssetEditor` JavaScript class.
 - Removed the `Craft.BaseElementEditor` JavaScript class.
 - Removed the `Craft.DraftEditor` JavaScript class.
-- Removed the `Craft.postActionRequest` JavaScript method.
 - Removed the Flysystem package. The `craftcms/flysystem-adapter` package now provides a base Flysystem adapter class.
 - Removed the laminas-feed package.
 - Removed the yii2-swiftmailer package.
