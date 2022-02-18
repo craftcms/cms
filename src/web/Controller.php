@@ -233,9 +233,6 @@ abstract class Controller extends \yii\web\Controller
                     'success' => false,
                     'message' => $message,
                     'errors' => $errors,
-
-                    // TODO: remove with asErrorJson
-                    'error' => $message,
                 ]));
         }
 
