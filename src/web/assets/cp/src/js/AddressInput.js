@@ -1,5 +1,5 @@
 /** global: Craft */
-/** global: Garnish */
+
 /**
  * Address class
  */
@@ -106,7 +106,7 @@ Craft.AddressInput = Garnish.Base.extend({
             });
 
             // Remove
-            this.$addressCard.find('[data-action=\'remove\']').on('click', (ev) => {
+            this.$addressCard.on('click', 'a[data-action=\'remove\']', (ev) => {
                 ev.preventDefault();
                 this.$addressCard.remove();
             });
