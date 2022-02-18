@@ -13,6 +13,7 @@ use Countable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use IteratorAggregate;
+use ReturnTypeWillChange;
 
 /**
  * MemoizableArray represents an array of values that need to be run through [[ArrayHelper::where()]] or [[ArrayHelper::firstWhere()]] repeatedly,
@@ -182,6 +183,7 @@ class MemoizableArray implements IteratorAggregate, ArrayAccess, Serializable, C
      *
      * @see https://www.php.net/manual/en/arrayobject.count.php
      */
+    #[ReturnTypeWillChange]
     public function count()
     {
         return $this->_array->count();
@@ -223,6 +225,7 @@ class MemoizableArray implements IteratorAggregate, ArrayAccess, Serializable, C
      *
      * @see https://www.php.net/manual/en/arrayobject.getiterator.php
      */
+    #[ReturnTypeWillChange]
     public function getIterator()
     {
         return $this->_array->getIterator();
@@ -276,6 +279,7 @@ class MemoizableArray implements IteratorAggregate, ArrayAccess, Serializable, C
      *
      * @see https://www.php.net/manual/en/arrayobject.offsetexists.php
      */
+    #[ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return $this->_array->offsetExists($offset);
@@ -286,6 +290,7 @@ class MemoizableArray implements IteratorAggregate, ArrayAccess, Serializable, C
      *
      * @see https://www.php.net/manual/en/arrayobject.offsetget.php
      */
+    #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->_array->offsetGet($offset);
@@ -296,6 +301,7 @@ class MemoizableArray implements IteratorAggregate, ArrayAccess, Serializable, C
      *
      * @see https://www.php.net/manual/en/arrayobject.offsetset.php
      */
+    #[ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->_array->offsetSet($offset, $value);
@@ -307,6 +313,7 @@ class MemoizableArray implements IteratorAggregate, ArrayAccess, Serializable, C
      *
      * @see https://www.php.net/manual/en/arrayobject.offsetunset.php
      */
+    #[ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         $this->_array->offsetUnset($offset);
