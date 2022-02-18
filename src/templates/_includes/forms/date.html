@@ -4,6 +4,7 @@
 {% set value = (value ?? false) ? date(value, false) : null -%}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set describedBy = describedBy ?? null %}
+{% set isDateTime = isDateTime ?? false %}
 
 {% set containerAttributes = {
     class: ['datewrapper']|merge((class ?? [])|explodeClass),
@@ -24,6 +25,11 @@
         size: 10,
         placeholder: ' ',
         value: value ? value|date(isMobile ? 'Y-m-d' : 'short') : '',
+        inputAttributes: {
+            aria: {
+                label: isDateTime ? 'Date'|t('app') : false,
+            },
+        },
     } -%}
     <div data-icon="date"></div>
     {%- if name -%}

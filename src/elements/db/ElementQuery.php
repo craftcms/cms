@@ -31,6 +31,7 @@ use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\search\SearchQuery;
 use ReflectionProperty;
+use ReturnTypeWillChange;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -634,6 +635,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param int|string $name The offset to get
      * @return mixed The element at the given offset
      */
+    #[ReturnTypeWillChange]
     public function offsetGet($name)
     {
         if (is_numeric($name) && ($element = $this->nth($name)) !== null) {
@@ -651,6 +653,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param mixed $value The value
      * @throws NotSupportedException if $name is numeric
      */
+    #[ReturnTypeWillChange]
     public function offsetSet($name, $value)
     {
         if (is_numeric($name)) {
@@ -667,6 +670,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param string $name The offset to unset
      * @throws NotSupportedException if $name is numeric
      */
+    #[ReturnTypeWillChange]
     public function offsetUnset($name)
     {
         if (is_numeric($name)) {
@@ -674,7 +678,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__unset($name);
+        $this->__unset($name);
     }
 
     /**

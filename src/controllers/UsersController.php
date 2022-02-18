@@ -24,7 +24,6 @@ use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
-use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;

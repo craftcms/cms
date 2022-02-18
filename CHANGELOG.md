@@ -3,15 +3,50 @@
 ## Unreleased
 
 ### Added
+- Added `craft\helpers\App::phpConfigValueAsPaths()`.
+- Added `craft\helpers\App::normalizePhpPaths()`.
+- Added `craft\helpers\App::isPathAllowed()`.
+
+### Changed
+- Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+
+### Fixed
+- Fixed a bug where Date fields weren’t displaying properly.
+- Fixed a bug where some GraphQL API query arguments would break element queries. ([#10580](https://github.com/craftcms/cms/issues/10580))
+- Fixed a PHP 8.1 compatibility bug. ([#10594](https://github.com/craftcms/cms/issues/10594))
+- Fixed a bug where Matrix action menus were causing horizontal scrollbars within Live Preview. ([#10601](https://github.com/craftcms/cms/issues/10601))
+- Fixed a PHP warning that would occur when running Craft in Dev Mode, if the `open_basedir` PHP setting was set. ([#10581](https://github.com/craftcms/cms/issues/10581))
+- Fixed a bug where the “View” button on Edit Category pages wasn’t getting linked to a tokenized preview page for disabled sites.
+
+### Security
+- Craft now HTML-encodes user’ names in the default system email messages.
+
+## 3.7.33 - 2022-02-15
+
+> {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.
+
+### Added
+- Added support for PHP 8.1.
+- Added the `users/logout-all` console command.
 - Added `Garnish.prefersReducedMotion()`.
 
 ### Changed
 - Lightswitch inputs are no longer animated for browsers that have requested reduced motion. ([#10532](https://github.com/craftcms/cms/pull/10532))
 - Reverted the 3.7.32 change to plugin settings. ([#10533](https://github.com/craftcms/cms/issues/10533))
+- Improved accessibility for the Craft Support widget. ([#7290](https://github.com/craftcms/cms/issues/7290))
 - The `graphql/api` controller action now supports passing the GraphQL bearer token via an `X-Craft-Authorization` header, in addition to `Authorization`. ([#10539](https://github.com/craftcms/cms/discussions/10539))
 - `craft\helpers\App::parseBooleanEnv()` now treats `0` and `1` as boolean values. ([#10524](https://github.com/craftcms/cms/issues/10524))
 - Updated GraphiQL to 1.5.16.
 - Updated Yii to 2.0.45.
+- Updated svg-sanitizer to 0.15.
+
+## Fixed
+- Fixed a bug where admin tables would display the wrong handle values after an item was deleted. ([#10538](https://github.com/craftcms/cms/issues/10538))
+- Fixed a bug where entries and Matrix blocks weren’t necessarily getting propagated from the primary site, when they were activated for a new site via a setting change. ([#10561](https://github.com/craftcms/cms/issues/10561))
+- Fixed an error that occurred when testing queue jobs. ([#10569](https://github.com/craftcms/cms/pull/10569))
+
+### Security
+- Fixed a potential CSRF security issue.
 
 ## 3.7.32 - 2022-02-09
 

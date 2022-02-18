@@ -174,7 +174,10 @@
 
 
 {% macro dateTimeField(config) %}
-    {% set config = config|merge({id: config.id ?? "datetime#{random()}"}) %}
+    {% set config = config|merge({
+        id: config.id ?? "datetime#{random()}",
+        fieldset: true,
+    }) %}
     {{ _self.field(config, 'template:_includes/forms/datetime') }}
 {% endmacro %}
 
