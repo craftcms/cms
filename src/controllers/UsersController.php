@@ -389,17 +389,21 @@ class UsersController extends Controller
         // Passing false here for reasons.
         Craft::$app->getUser()->logout(false);
 
+        $data = [];
+
+        if ($this->request->getAcceptsJson()) {
+            if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+                $data['csrfTokenValue'] = $this->request->getCsrfToken();
+            }
+
+            return $this->asSuccess(
+                data: $data,
+            );
+        }
+
         // Redirect to the login page if this is a CP request
         if ($this->request->getIsCpRequest()) {
             return $this->redirect(Request::CP_PATH_LOGIN);
-        }
-
-        $data = [];
-
-        if ($this->request->getAcceptsJson() &&
-            Craft::$app->getConfig()->getGeneral()->enableCsrfProtection
-        ) {
-            $data['csrfTokenValue'] = $this->request->getCsrfToken();
         }
 
         return $this->asSuccess(
