@@ -244,8 +244,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         if (is_string($value) && (
-                strpos($value, '[') === 0 ||
-                strpos($value, '{') === 0
+                str_starts_with($value, '[') ||
+                str_starts_with($value, '{')
             )) {
             $value = Json::decodeIfJson($value);
         } else if ($value === '' && $this->multi) {

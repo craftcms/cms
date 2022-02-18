@@ -829,7 +829,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            if (strpos($format, 'icu:') === 0) {
+            if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
                 $format = StringHelper::ensureLeft($format, 'php:');
@@ -924,7 +924,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            if (strpos($format, 'icu:') === 0) {
+            if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
                 $format = StringHelper::ensureLeft($format, 'php:');
@@ -954,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            if (strpos($format, 'icu:') === 0) {
+            if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
                 $format = StringHelper::ensureLeft($format, 'php:');

@@ -467,7 +467,7 @@ class ResaveController extends Controller
         }
 
         // object template
-        if (StringHelper::startsWith($this->to, '=')) {
+        if (str_starts_with($this->to, '=')) {
             $template = substr($this->to, 1);
             $view = Craft::$app->getView();
             return function(ElementInterface $element) use ($template, $view) {

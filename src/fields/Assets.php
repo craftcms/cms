@@ -580,7 +580,7 @@ class Assets extends BaseRelationField
                     $rootRestrictedFolder = $assetsService->getFolderById($rootRestrictedFolderId);
                     return (
                         $asset->volumeId !== $rootRestrictedFolder->volumeId ||
-                        !StringHelper::startsWith($asset->folderPath, $rootRestrictedFolder->path)
+                        !str_starts_with($asset->folderPath, $rootRestrictedFolder->path)
                     );
                 });
             } else {
@@ -680,7 +680,7 @@ class Assets extends BaseRelationField
             $userService = Craft::$app->getUser();
             return ArrayHelper::where($sources, function(string $source) use ($assetsService, $userService) {
                 // If it's not a volume folder, let it through
-                if (strpos($source, 'folder:') !== 0) {
+                if (!str_starts_with($source, 'folder:')) {
                     return true;
                 }
                 // Only show it if they have permission to view it
@@ -842,7 +842,7 @@ class Assets extends BaseRelationField
             if (
                 $renderedSubpath === '' ||
                 trim($renderedSubpath, '/') != $renderedSubpath ||
-                strpos($renderedSubpath, '//') !== false
+                str_contains($renderedSubpath, '//')
             ) {
                 throw new InvalidSubpathException($subpath);
             }

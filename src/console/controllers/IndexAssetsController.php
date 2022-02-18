@@ -93,7 +93,7 @@ class IndexAssetsController extends Controller
     {
         $path = '';
 
-        if (strpos($handle, '/') !== false) {
+        if (str_contains($handle, '/')) {
             $parts = explode('/', $handle);
             $handle = array_shift($parts);
             $path = implode('/', $parts);

@@ -245,7 +245,7 @@ class UpdateController extends Controller
         if ($handles !== ['all']) {
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                     if ($handle === 'craft') {
                         $handle = 'cms';
@@ -279,7 +279,7 @@ class UpdateController extends Controller
             }
         } else {
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                 } else {
                     $to = null;

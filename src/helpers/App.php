@@ -125,7 +125,7 @@ class App
             $value = $env;
         }
 
-        if (is_string($value) && StringHelper::startsWith($value, '@')) {
+        if (is_string($value) && str_starts_with($value, '@')) {
             $value = Craft::getAlias($value, false) ?: $value;
         }
 
@@ -482,7 +482,7 @@ class App
             }
 
             // '.' => working dir
-            if ($path === '.' || StringHelper::startsWith($path, './') || StringHelper::startsWith($path, '.\\')) {
+            if ($path === '.' || str_starts_with($path, './') || str_starts_with($path, '.\\')) {
                 $path = getcwd() . substr($path, 1);
             }
 
@@ -513,7 +513,7 @@ class App
         $path = FileHelper::normalizePath($path);
 
         foreach (self::$_basePaths as $basePath) {
-            if (strpos($path, $basePath) === 0) {
+            if (str_starts_with($path, $basePath)) {
                 return true;
             }
         }

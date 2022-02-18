@@ -46,7 +46,6 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -2606,7 +2605,7 @@ JS;
         $inAllowedRoot = false;
         foreach ($allowedRoots as [$root, $isTempDir]) {
             $root = $this->_normalizeTempPath($root);
-            if ($root !== false && StringHelper::startsWith($tempFilePath, $root)) {
+            if ($root !== false && str_starts_with($tempFilePath, $root)) {
                 // If this is a known temp dir, we’re good here
                 if ($isTempDir) {
                     return true;
@@ -2627,7 +2626,7 @@ JS;
         });
 
         foreach ($systemDirs as $dir) {
-            if (StringHelper::startsWith($tempFilePath, $dir)) {
+            if (str_starts_with($tempFilePath, $dir)) {
                 return false;
             }
         }

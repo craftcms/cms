@@ -178,7 +178,7 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getErrorHandler()->logException($e);
 
             $output = $io->getOutput();
-            if (strpos($output, 'Your requirements could not be resolved to an installable set of packages.') !== false) {
+            if (str_contains($output, 'Your requirements could not be resolved to an installable set of packages.')) {
                 $error = Craft::t('app', 'Composer was unable to install the updates due to a dependency conflict.');
             } else {
                 $error = Craft::t('app', 'Composer was unable to install the updates.');
@@ -294,7 +294,7 @@ abstract class BaseUpdaterController extends Controller
         if ($returnUrl === null) {
             return null;
         }
-        if (strpos($returnUrl, '{') !== false) {
+        if (str_contains($returnUrl, '{')) {
             throw new BadRequestHttpException("Invalid return URL: $returnUrl");
         }
         return $returnUrl;

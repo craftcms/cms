@@ -111,7 +111,7 @@ class Paginate extends BaseObject
         }
 
         $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
-        $useQueryParam = strpos($pageTrigger, '?') === 0;
+        $useQueryParam = str_starts_with($pageTrigger, '?');
 
         $path = $this->getBasePath();
 

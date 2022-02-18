@@ -191,7 +191,7 @@ class Cp
 
                     // If the license key path starts with the root project path, trim the project path off
                     $rootPath = Craft::getAlias('@root');
-                    if (strpos($keyPath, $rootPath . '/') === 0) {
+                    if (str_starts_with($keyPath, $rootPath . '/')) {
                         $keyPath = substr($keyPath, strlen($rootPath) + 1);
                     }
 
@@ -488,7 +488,7 @@ class Cp
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
 
-        if (StringHelper::startsWith($input, 'template:')) {
+        if (str_starts_with($input, 'template:')) {
             // Set a describedBy value in case the input template supports it
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
@@ -1020,7 +1020,7 @@ class Cp
                     ]);
             } else if (
                 !isset($config['warning']) &&
-                ($value === '@web' || strpos($value, '@web/') === 0) &&
+                ($value === '@web' || str_starts_with($value, '@web/')) &&
                 Craft::$app->getRequest()->isWebAliasSetDynamically
             ) {
                 $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended if it is determined automatically.');

@@ -1121,7 +1121,7 @@ class Assets extends Component
 
         if ($criteria->path !== null) {
             // Does the path have a comma in it?
-            if (strpos($criteria->path, ',') !== false) {
+            if (str_contains($criteria->path, ',')) {
                 // Escape the comma.
                 $query->andWhere(Db::parseParam('path', str_replace(',', '\,', $criteria->path)));
             } else {

@@ -466,7 +466,7 @@ class View extends \yii\web\View
     public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
     {
         // If there are no dynamic tags, just return the template
-        if (strpos($template, '{') === false) {
+        if (!str_contains($template, '{')) {
             return $template;
         }
 
@@ -513,7 +513,7 @@ class View extends \yii\web\View
     public function renderObjectTemplate(string $template, $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {
         // If there are no dynamic tags, just return the template
-        if (strpos($template, '{') === false) {
+        if (!str_contains($template, '{')) {
             return $template;
         }
 
@@ -544,7 +544,7 @@ class View extends \yii\web\View
             // Get the variables to pass to the template
             if ($object instanceof Model) {
                 foreach ($object->attributes() as $name) {
-                    if (!isset($variables[$name]) && strpos($template, $name) !== false) {
+                    if (!isset($variables[$name]) && str_contains($template, $name)) {
                         $variables[$name] = $object->$name;
                     }
                 }

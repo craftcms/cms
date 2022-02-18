@@ -179,7 +179,7 @@ class DateTimeHelper
 
         // Is it the difference to GMT?
         if (preg_match('/[+\-]\d\d\:?\d\d/', $timeZone, $matches)) {
-            $format = strpos($timeZone, ':') !== false ? 'e' : 'O';
+            $format = str_contains($timeZone, ':') ? 'e' : 'O';
             $dt = DateTime::createFromFormat($format, $timeZone, new DateTimeZone('UTC'));
 
             if ($dt !== false) {
@@ -693,7 +693,7 @@ class DateTimeHelper
             // Did they specify a timezone?
             if (!empty($m['tz'])) {
                 if (!empty($m['tzd'])) {
-                    $format .= strpos($m['tzd'], ':') !== false ? 'P' : 'O';
+                    $format .= str_contains($m['tzd'], ':') ? 'P' : 'O';
                     $date .= $m['tzd'];
                 } else {
                     // "Z" = UTC

@@ -9,7 +9,7 @@ require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 // h/t https://stackoverflow.com/a/46435124/1688568
 $autoloadClass = null;
 foreach (get_declared_classes() as $class) {
-    if (strpos($class, 'ComposerAutoloaderInit') === 0) {
+    if (str_starts_with($class, 'ComposerAutoloaderInit')) {
         $autoloadClass = $class;
         break;
     }
@@ -20,17 +20,17 @@ if ($autoloadClass === null) {
 }
 
 $classes = array_filter(require(__DIR__ . '/composer-classes.php'), function($class) {
-    return strpos($class, 'Composer\\') !== 0;
+    return !str_starts_with($class, 'Composer\\');
 });
 
 /** @var ClassLoader $classLoader */
 $classLoader = $autoloadClass::getLoader();
 foreach ($classLoader->getClassMap() as $class => $file) {
     if (
-        strpos($class, 'Composer\\') === 0 &&
-        strpos($class, 'Composer\\Command\\') !== 0 &&
-        strpos($class, 'Composer\\Console\\') !== 0 &&
-        strpos($class, 'Composer\\XdebugHandler\\') !== 0
+        str_starts_with($class, 'Composer\\') &&
+        !str_starts_with($class, 'Composer\\Command\\') &&
+        !str_starts_with($class, 'Composer\\Console\\') &&
+        !str_starts_with($class, 'Composer\\XdebugHandler\\')
     ) {
         $classes[] = $class;
     }

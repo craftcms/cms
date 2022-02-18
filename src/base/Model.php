@@ -261,10 +261,10 @@ abstract class Model extends \yii\base\Model
 
         if ($includeNested) {
             foreach ($this->getErrors() as $attr => $errors) {
-                if (strpos($attr, $attribute . '.') === 0) {
+                if (str_starts_with($attr, $attribute . '.')) {
                     return true;
                 }
-                if (strpos($attr, $attribute . '[') === 0) {
+                if (str_starts_with($attr, $attribute . '[')) {
                     return true;
                 }
             }

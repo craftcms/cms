@@ -52,7 +52,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
         // Is this a UNC network share path?
-        $isUnc = (strpos($path, '//') === 0 || strpos($path, '\\\\') === 0);
+        $isUnc = (str_starts_with($path, '//') || str_starts_with($path, '\\\\'));
 
         // Normalize the path
         $path = parent::normalizePath($path, $ds);
@@ -272,7 +272,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         // Handle invalid SVG mime type reported by PHP (https://bugs.php.net/bug.php?id=79045)
-        if (strpos($mimeType, 'image/svg') === 0) {
+        if (str_starts_with($mimeType, 'image/svg')) {
             return 'image/svg+xml';
         }
 

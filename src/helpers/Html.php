@@ -432,7 +432,7 @@ class Html extends \yii\helpers\Html
                 default:
                     // See if it's a data attribute
                     foreach (self::_sortedDataAttributes() as $dataAttribute) {
-                        if (strpos($name, $dataAttribute . '-') === 0) {
+                        if (str_starts_with($name, $dataAttribute . '-')) {
                             $n = substr($name, strlen($dataAttribute) + 1);
                             $normalized[$dataAttribute][$n] = $value;
                             break 2;
