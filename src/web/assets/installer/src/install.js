@@ -96,9 +96,8 @@ import './install.scss';
                 $.extend(data, this.getInputData($screen.attr('id'), inputs, true));
             }
 
-            Craft.sendActionRequest('POST', 'install/install', data)
-                .then(() => this.allDone.bind(this))
-                .finally(() => $.noop);
+            Craft.sendActionRequest('POST', 'install/install', {data})
+                .then(() => this.allDone.bind(this));
         },
 
         allDone: function(response, textStatus) {
