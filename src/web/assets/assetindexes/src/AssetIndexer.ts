@@ -358,9 +358,9 @@ export class AssetIndexer {
         });
     }
 
-    public startIndexing(params: any, cb: () => void): void
+    public startIndexing(data: any, cb: () => void): void
     {
-        Craft.sendActionRequest('POST', IndexingActions.START)
+        Craft.sendActionRequest('POST', IndexingActions.START, {data})
             .then((response) => this.processSuccessResponse(response))
             .then(({response}) => this.processFailureResponse(response))
             .finally(() => cb());
