@@ -603,11 +603,10 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $error The error message.
      * @return YiiResponse
-     * @deprecated in 4.0.0
+     * @deprecated in 4.0.0. [[asFailure()]] should be used instead.
      */
     public function asErrorJson(string $error): YiiResponse
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The `asErrorJson` param has been deprecated. Use `asFailure` instead.');
         return $this->asJson(['error' => $error]);
     }
 
