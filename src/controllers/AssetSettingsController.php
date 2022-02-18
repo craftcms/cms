@@ -53,7 +53,6 @@ class AssetSettingsController extends Controller
             $projectConfig->remove('assets', 'Update Temporary Upload Volume settings.');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Asset settings saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t('app', 'Asset settings saved.'));
     }
 }

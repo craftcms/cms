@@ -200,7 +200,7 @@ class CategoriesController extends Controller
 
         Craft::$app->getCategories()->deleteGroupById($groupId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     // Categories
@@ -332,21 +332,17 @@ class CategoriesController extends Controller
                 $clone = $e->element;
 
                 if ($this->request->getAcceptsJson()) {
-                    return $this->asJson([
-                        'success' => false,
-                        'errors' => $clone->getErrors(),
-                    ]);
+                    return $this->asModelFailure($clone);
                 }
-
-                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate category.'));
 
                 // Send the original category back to the template, with any validation errors on the clone
                 $category->addErrors($clone->getErrors());
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'category' => $category,
-                ]);
 
-                return null;
+                return $this->asModelFailure(
+                    $category,
+                    Craft::t('app', 'Couldn’t duplicate category.'),
+                    'category'
+                );
             } catch (Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
@@ -361,39 +357,27 @@ class CategoriesController extends Controller
         }
 
         if (!Craft::$app->getElements()->saveElement($category)) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson([
-                    'success' => false,
-                    'errors' => $category->getErrors(),
-                ]);
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save category.'));
-
-            // Send the category back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                $categoryVariable => $category,
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $category,
+                Craft::t('app', 'Couldn’t save category.'),
+                $categoryVariable
+            );
         }
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson([
-                'success' => true,
+        return $this->asModelSuccess(
+            $category,
+            Craft::t('app', '{type} saved.', [
+                'type' => Category::displayName(),
+            ]),
+            data: [
                 'id' => $category->id,
                 'title' => $category->title,
                 'slug' => $category->slug,
                 'status' => $category->getStatus(),
                 'url' => $category->getUrl(),
                 'cpEditUrl' => $category->getCpEditUrl(),
-            ]);
-        }
-
-        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
-            'type' => Category::displayName(),
-        ]));
-        return $this->redirectToPostedUrl($category);
+            ],
+        );
     }
 
     /**

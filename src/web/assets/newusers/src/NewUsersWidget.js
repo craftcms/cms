@@ -43,15 +43,19 @@
             }
 
             // Request orders report
-            var requestData = {
+            var data = {
                 startDate: Craft.NewUsersWidget.getDateValue(this.startDate),
                 endDate: Craft.NewUsersWidget.getDateValue(this.endDate),
                 userGroupId: this.settings.userGroupId
             };
 
-            Craft.postActionRequest('charts/get-new-users-data', requestData, (response, textStatus) => {
-                if (textStatus === 'success' && typeof (response.error) === 'undefined') {
+            Craft.sendActionRequest('POST', 'charts/get-new-users-data', {data})
+                .then((response) => {
                     this.$chartContainer.removeClass('hidden');
+
+                    if (response.data.errors && response.data.errors.length) {
+                        return Promise.reject();
+                    }
 
                     // Create chart
                     this.chart = new Craft.charts.Area(this.$chartContainer, {
@@ -70,30 +74,25 @@
                         }
                     });
 
-                    var chartDataTable = new Craft.charts.DataTable(response.dataTable);
+                    var chartDataTable = new Craft.charts.DataTable(response.data.dataTable);
 
                     var chartSettings = {
-                        orientation: response.orientation,
-                        dataScale: response.scale,
-                        formats: response.formats
+                        orientation: response.data.orientation,
+                        dataScale: response.data.scale,
+                        formats: response.data.formats
                     };
 
                     this.chart.draw(chartDataTable, chartSettings);
 
                     // Resize chart when grid is refreshed
                     window.dashboard.grid.on('refreshCols', this.handleGridRefresh.bind(this));
-                } else {
-                    // Error
-                    var msg = Craft.t('A server error occurred.');
-
-                    if (typeof (response) !== 'undefined' && response && typeof (response.error) !== 'undefined') {
-                        msg = response.error;
-                    }
+                })
+                .catch(({response}) => {
+                    var msg = response.data.message || Craft.t('A server error occurred.');
 
                     this.$error.html(msg);
                     this.$error.removeClass('hidden');
-                }
-            });
+                });
 
             this.$widget.data('widget').on('destroy', this.destroy.bind(this));
 

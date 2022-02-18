@@ -46,18 +46,20 @@
                     name: name
                 };
 
-                Craft.postActionRequest('sites/save-group', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            location.href = Craft.getUrl('settings/sites', {groupId: response.group.id});
-                        } else if (response.errors) {
-                            var errors = this.flattenErrors(response.errors);
+                Craft.sendActionRequest('POST', 'sites/save-group', {data})
+                    .then((response) => {
+                        if (response.data.success) {
+                            location.href = Craft.getUrl('settings/sites', {groupId: response.data.group.id});
+                        } else if (response.data.errors) {
+                            var errors = this.flattenErrors(response.data.errors);
                             alert(Craft.t('app', 'Could not create the group:') + "\n\n" + errors.join("\n"));
                         } else {
-                            Craft.cp.displayError();
+                            return Promise.reject();
                         }
-                    }
-                });
+                    })
+                    .catch(({response}) => {
+                        Craft.cp.displayError();
+                    });
             }).catch(() => {});
         },
 
@@ -68,20 +70,22 @@
                     name: newName
                 };
 
-                Craft.postActionRequest('sites/save-group', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            this.$selectedGroup.text(response.group.name);
+                Craft.sendActionRequest('POST', 'sites/save-group', {data})
+                    .then((response) => {
+                        if (response.data.success) {
+                            this.$selectedGroup.text(response.data.group.name);
                             this.$selectedGroup.data('raw-name', newName);
                             Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
-                        } else if (response.errors) {
-                            var errors = this.flattenErrors(response.errors);
+                        } else if (response.data.errors) {
+                            var errors = this.flattenErrors(response.data.errors);
                             alert(Craft.t('app', 'Could not rename the group:') + "\n\n" + errors.join("\n"));
                         } else {
-                            Craft.cp.displayError();
+                            return Promise.reject();
                         }
-                    }
-                });
+                    })
+                    .catch(({response}) => {
+                        Craft.cp.displayError();
+                    });
             }).catch(() => {});
         },
 
@@ -135,15 +139,17 @@
                     id: this.$selectedGroup.data('id')
                 };
 
-                Craft.postActionRequest('sites/delete-group', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
+                Craft.sendActionRequest('POST', 'sites/delete-group', {data})
+                    .then((response) => {
+                        if (response.data.success) {
                             location.href = Craft.getUrl('settings/sites');
                         } else {
-                            Craft.cp.displayError();
+                            Promise.reject();
                         }
-                    }
-                });
+                    })
+                    .catch(({response}) => {
+                        Craft.cp.displayError();
+                    });
             }
         },
 
@@ -224,16 +230,15 @@
                 data.transferContentTo = this.$transferSelect.val();
             }
 
-            Craft.postActionRequest(this.settings.deleteAction, data, (response, textStatus) => {
-                this.$deleteSubmitBtn.removeClass('loading');
+            this.$deleteSubmitBtn.removeClass('loading');
 
-                if (textStatus === 'success') {
+            Craft.sendActionRequest('POST', this.settings.deleteAction, {data})
+                .then((response) => {
                     this._deleting = false;
                     this.enable();
                     this.confirmDeleteModal.hide();
-                    this.handleDeleteItemResponse(response, this.$rowToDelete);
-                }
-            });
+                    this.handleDeleteItemResponse(response.data, this.$rowToDelete);
+                });
         },
 
         _createConfirmDeleteModal: function($row) {

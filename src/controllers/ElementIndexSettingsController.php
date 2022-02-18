@@ -192,6 +192,6 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

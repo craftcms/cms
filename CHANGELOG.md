@@ -311,9 +311,12 @@
 - Added `craft\web\assets\money\MoneyAsset`.
 - Added `craft\web\Controller::asCpScreen()`.
 - Added `craft\web\Controller::asFailure()`.
+- Added `craft\web\Controller::asModelFailure()`.
+- Added `craft\web\Controller::asModelSuccess()`.
 - Added `craft\web\Controller::asSuccess()`.
 - Added `craft\web\Controller::CpScreenResponseBehavior()`.
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
+- Added `craft\web\Controller::getPostedRedirectUrl()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
 - Added `craft\web\Controller::TemplateResponseFormatter()`.
 - Added `craft\web\twig\Extension::moneyFilter()`.
@@ -574,6 +577,7 @@
 - Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::regenerateYamlFromConfig()`. `regenerateExternalConfig()` should be used instead.
+- Deprecated `craft\web\Controller::asErrorJson()`. `asFailure()` should be used instead.
 - Deprecated the `assets/save-asset` action. `elements/save` should be used instead.
 - Deprecated the `categories/save-category` action. `elements/save` should be used instead.
 - Deprecated the `entries/save-entry` action. `elements/save` should be used instead.

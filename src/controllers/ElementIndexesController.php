@@ -253,14 +253,10 @@ class ElementIndexesController extends BaseElementsController
             return $this->response;
         }
 
-        $responseData = [
-            'success' => $success,
-            'message' => $message,
-        ];
 
         if ($success) {
             // Send a new set of elements
-            $responseData = array_merge($responseData, $this->elementResponseData(true, true));
+            $responseData = $this->elementResponseData(true, true);
 
             // Send updated badge counts
             /** @var string|ElementInterface $elementType */
@@ -275,9 +271,11 @@ class ElementIndexesController extends BaseElementsController
                     }
                 }
             }
+
+            return $this->asSuccess($message, data: $responseData);
         }
 
-        return $this->asJson($responseData);
+        return $this->asFailure($message);
     }
 
     /**
