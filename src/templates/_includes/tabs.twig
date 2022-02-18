@@ -3,7 +3,7 @@
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {% set selectedTab = selectedTab ?? tabs|keys|first %}
-{% set tablistLabel = tablistLabel ?? 'Fields'|t('app') %}
+{% set tablistLabel = tablistLabel ?? 'Primary fields'|t('app') %}
 {% set tabs = tabs|map((tab, tabId) => tab|merge({
     selected: tabId == selectedTab,
         class: (tab.class ?? [])|explodeClass,
