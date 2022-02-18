@@ -178,14 +178,12 @@
       </meta-stat>
 
       <!-- Activity -->
-      <meta-stat
-        class="tw-pt-4"
-        :border="false"
-      >
-        <template #title>
-          Activity <small>(Past Month)</small>
-        </template>
-      </meta-stat>
+      <github-activity
+        :closed-issues="plugin.githubStats.closedIssues"
+        :new-issues="plugin.githubStats.newIssues"
+        :merged-pull-requests="plugin.githubStats.mergedPullRequests"
+        :open-pull-requests="plugin.githubStats.openPullRequests"
+      />
 
       <!-- Report an issue -->
       <ul class="list-reset space-y-2 mt-8">
@@ -212,9 +210,10 @@ import MetaStat from './MetaStat';
 import PluginMetaBuyButton from './PluginMetaBuyButton';
 import {mapState} from 'vuex';
 import ComposerInstall from './ComposerInstall';
+import GithubActivity from './github-activity/GithubActivity';
 
 export default {
-  components: {ComposerInstall, PluginMetaBuyButton, MetaStat},
+  components: {GithubActivity, ComposerInstall, PluginMetaBuyButton, MetaStat},
   props: {
     plugin: {
       type: Object,
