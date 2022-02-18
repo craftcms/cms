@@ -106,6 +106,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
             const data = {userId: id}; 
             Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
                 .then((response) => {
+                    Craft.elementIndex.setIndexAvailable();
                     var modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
                         onSubmit: function()
@@ -118,7 +119,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
                         redirect: $redirect
                     });                    
                 })
-                .finally(() => {
+                .catch(() => {
                     Craft.elementIndex.setIndexAvailable();
                 });
         }
