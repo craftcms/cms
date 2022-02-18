@@ -110,27 +110,32 @@ Craft.AdminTable = Garnish.Base.extend({
         };
 
         Craft.sendActionRequest('POST', this.settings.deleteAction, {data})
-            .then((response) => this.handleDeleteItemResponse(response.data, $row));
+            .then((response) => this.handleDeleteItemSuccess(response.data, $row))
+            .catch(({response}) => this.handleDeleteItemFailure(response.data, $row))
+        ;
     },
 
-    handleDeleteItemResponse: function(response, $row) {
+    handleDeleteItemFailure: function(data, $row) {
         var id = this.getItemId($row),
             name = this.getItemName($row);
 
-        if (response.success) {
-            if (this.sorter) {
-                this.sorter.removeItems($row);
-            }
+        Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name}));
+    },
 
-            $row.remove();
-            this.totalItems--;
-            this.updateUI();
-            this.onDeleteItem(id);
+    handleDeleteItemSuccess: function(data, $row) {
+        var id = this.getItemId($row),
+            name = this.getItemName($row);
 
-            Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name}));
-        } else {
-            Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name}));
+        if (this.sorter) {
+            this.sorter.removeItems($row);
         }
+
+        $row.remove();
+        this.totalItems--;
+        this.updateUI();
+        this.onDeleteItem(id);
+
+        Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name}));
     },
 
     onReorderItems: function(ids) {
