@@ -126,14 +126,13 @@
                 var data = {{ {tokenUid: token.uid}|json_encode|raw }};
                 Craft.sendActionRequest('POST', 'graphql/fetch-token', {data})
                     .then((response) => {
+                        $('#token-spinner').addClass('hidden');
                         $headerInput
                             .val('Authorization: Bearer ' + response.accessToken)
                             .removeClass('disabled');
                         copyHeader();
                     })
                     .catch(({response}) => {
-                    })
-                    .finally(() => {
                         $('#token-spinner').addClass('hidden');
                     });
 
@@ -147,6 +146,7 @@
 
         Craft.sendActionRequest('POST', 'graphql/generate-token')
         .then((response) => {
+            $('#token-spinner').addClass('hidden');
             $headerInput
                 .val('Authorization: Bearer ' + response.accessToken)
                 .removeClass('disabled');
@@ -156,7 +156,7 @@
             $regenBtn.removeClass('active');
             regenerating = false;
         })
-        .finally(() => {
+        .catch(() => {
             $('#token-spinner').addClass('hidden');
         });
     });
