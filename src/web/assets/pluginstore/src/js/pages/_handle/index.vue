@@ -226,7 +226,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "../../../sass/variables";
 @import "@craftcms/sass/mixins";
 
 .plugin-icon {

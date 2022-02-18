@@ -23,8 +23,6 @@ export default {
 <style
   lang="scss"
   >
-@import "../../sass/variables";
-
 .ps-sidebar {
   & > .nav-items {
     @apply tw-hidden;

@@ -57,8 +57,6 @@ export default {
   lang="scss"
   scoped>
 @import "@craftcms/sass/mixins";
-@import "../../sass/variables";
-
 
 /* Category Selector Btn */
 
