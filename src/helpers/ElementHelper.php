@@ -49,7 +49,7 @@ class ElementHelper
      */
     public static function isTempSlug(string $slug): bool
     {
-        return strpos($slug, '__temp_') === 0;
+        return str_starts_with($slug, '__temp_');
     }
 
     /**
@@ -202,14 +202,14 @@ class ElementHelper
         // If the URI format contains {id}/{canonicalId}/{sourceId} but the element doesn't have one yet, preserve the tag
         if (!$element->id) {
             $element->tempId = 'id-' . StringHelper::randomString(10);
-            if (strpos($uriFormat, '{id') !== false) {
+            if (str_contains($uriFormat, '{id')) {
                 $variables['id'] = $element->tempId;
             }
             if (!$element->getCanonicalId()) {
-                if (strpos($uriFormat, '{canonicalId') !== false) {
+                if (str_contains($uriFormat, '{canonicalId')) {
                     $variables['canonicalId'] = $element->tempId;
                 }
-                if (strpos($uriFormat, '{sourceId') !== false) {
+                if (str_contains($uriFormat, '{sourceId')) {
                     $variables['sourceId'] = $element->tempId;
                 }
             }

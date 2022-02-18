@@ -362,9 +362,9 @@ EOD;
             }
 
             if (
-                strpos($message, 'Access denied for user') !== false ||
-                strpos($message, 'no password supplied') !== false ||
-                strpos($message, 'password authentication failed for user') !== false
+                str_contains($message, 'Access denied for user') ||
+                str_contains($message, 'no password supplied') ||
+                str_contains($message, 'password authentication failed for user')
             ) {
                 $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
                 $badUserCredentials = true;
@@ -534,7 +534,7 @@ EOD;
         $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!Platform::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
-            if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
+            if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));
             }
         }

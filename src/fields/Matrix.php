@@ -1262,7 +1262,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // If this is a preexisting block but we don't have a record of it,
             // check to see if it was recently duplicated.
             if (
-                strpos($blockId, 'new') !== 0 &&
+                !str_starts_with($blockId, 'new') &&
                 !isset($oldBlocksById[$blockId]) &&
                 isset(Elements::$duplicatedElementIds[$blockId]) &&
                 isset($oldBlocksById[Elements::$duplicatedElementIds[$blockId]])

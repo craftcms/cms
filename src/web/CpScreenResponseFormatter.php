@@ -70,7 +70,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $content = $view->namespaceInputs(function() use ($behavior) {
             $components = [];
             if ($behavior->content) {
-                $components[] = $behavior->content;
+                $components[] = is_callable($behavior->content) ? call_user_func($behavior->content) : $behavior->content;
             }
             if ($behavior->action) {
                 $components[] = Html::actionInput($behavior->action, [

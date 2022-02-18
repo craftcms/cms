@@ -441,8 +441,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
                     'X-Craft-Namespace': this.namespace,
                 },
             })
-            .then(this.handleSubmitResponse)
-            .catch(this.handleSubmitError)
+            .then(response => {
+                this.handleSubmitResponse(response);
+            })
+            .catch(() => {
+                this.handleSubmitError();
+            })
             .finally(() => {
                 this.hideSubmitSpinner();
             });

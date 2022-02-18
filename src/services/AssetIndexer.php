@@ -75,7 +75,7 @@ class AssetIndexer extends Component
 
             foreach ($segments as $i => $segment) {
                 // Ignore if contained in or is a directory beginning with _
-                if (strpos($segment, '_') === 0 && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
+                if (str_starts_with($segment, '_') && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
                     continue 2;
                 }
             }

@@ -57,11 +57,9 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Support\Collection;
 use IteratorAggregate;
-use Money\Currencies\ISOCurrencies;
-use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
-use NumberFormatter;
 use Throwable;
 use Traversable;
 use Twig\Environment as TwigEnvironment;
@@ -831,7 +829,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            if (strpos($format, 'icu:') === 0) {
+            if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
                 $format = StringHelper::ensureLeft($format, 'php:');
@@ -926,7 +924,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            if (strpos($format, 'icu:') === 0) {
+            if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
                 $format = StringHelper::ensureLeft($format, 'php:');
@@ -956,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            if (strpos($format, 'icu:') === 0) {
+            if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
                 $format = StringHelper::ensureLeft($format, 'php:');
@@ -1185,6 +1183,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
+            new TwigFunction('collect', [$this, 'collectFunction']),
             new TwigFunction('combine', 'array_combine'),
             new TwigFunction('configure', [Craft::class, 'configure']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
@@ -1235,6 +1234,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function cloneFunction($var)
     {
         return clone $var;
+    }
+
+    /**
+     * Returns a new collection.
+     *
+     * @param mixed $var
+     * @return Collection
+     * @since 4.0.0
+     */
+    public function collectFunction(mixed $var): Collection
+    {
+        return new Collection($var);
     }
 
     /**

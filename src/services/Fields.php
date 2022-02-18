@@ -1512,7 +1512,7 @@ class Fields extends Component
         $fieldVersion = Craft::$app->getInfo()->fieldVersion;
 
         // If it doesn't start with `2@`, then it needs to be updated
-        if ($fieldVersion === null || strpos($fieldVersion, '2@') !== 0) {
+        if ($fieldVersion === null || !str_starts_with($fieldVersion, '2@')) {
             return null;
         }
 

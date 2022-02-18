@@ -256,14 +256,13 @@ abstract class Controller extends \yii\web\Controller
         ?string $modelName = null,
         array $data = [],
         ?string $defaultRedirect = null
-    ): YiiResponse
-    {
+    ): YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
-                'message' => $message,
-                'modelName' => $modelName,
-                ($modelName ?? 'model') => $model ? $model->toArray() : null,
-            ]));
+                    'message' => $message,
+                    'modelName' => $modelName,
+                    ($modelName ?? 'model') => $model ? $model->toArray() : null,
+                ]));
         }
 
         $this->setSuccessFlash($message);
