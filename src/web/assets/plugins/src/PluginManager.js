@@ -27,17 +27,16 @@ import './plugins.scss';
                         },
                     })
                     .then(function(response) {
-                        Craft.postActionRequest('app/get-plugin-license-info', {
-                            pluginLicenses: response.license.pluginLicenses || [],
-                        }, function(response, textStatus) {
-                            if (textStatus === 'success') {
-                                resolve(response);
-                            } else {
+                        let data = {
+                            pluginLicenses: response.data.license.pluginLicenses || [],
+                        };
+                        Craft.sendActionRequest('POST', 'app/get-plugin-license-info', {data})
+                            .then((response) => {
+                                resolve(response.data);
+                            })
+                            .catch(({response}) => {
                                 reject();
-                            }
-                        }, {
-                            contentType: 'json'
-                        });
+                            });
                     })
                     .catch(reject);
             });
@@ -278,15 +277,16 @@ import './plugins.scss';
 
         updateLicenseStatus: function() {
             this.$spinner.removeClass('hidden');
-            Craft.postActionRequest('app/update-plugin-license', {handle: this.handle, key: this.getKey()}, (response, textStatus) => {
-                if (textStatus === 'success') {
+
+            let data = {handle: this.handle, key: this.getKey()};
+            Craft.sendActionRequest('POST', 'app/update-plugin-license', {data})
+                .then((response) => {
                     this.manager.getPluginLicenseInfo()
-                        .then(response => {
+                        .then((response) => {
                             this.$spinner.addClass('hidden');
-                            this.update(response[this.handle]);
+                            this.update(response.data[this.handle]);
                         });
-                }
-            });
+                });
         },
 
         update: function(info) {

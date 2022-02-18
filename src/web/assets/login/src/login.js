@@ -115,17 +115,17 @@ import './login.scss';
                 loginName: this.$loginNameInput.val()
             };
 
-            Craft.postActionRequest('users/send-password-reset-email', data, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    if (response.success) {
+            Craft.sendActionRequest('POST', 'users/send-password-reset-email', {data})
+                .then((response) => {
+                    if (response.data.success) {
                         new MessageSentModal();
                     } else {
-                        this.showError(response.error);
+                        this.showError(response.data.message);
                     }
-                }
-
-                this.onSubmitResponse();
-            });
+                })
+                .catch(({response}) => {
+                    this.showError(response.data.message);
+                });
         },
 
         submitLogin: function() {
@@ -135,21 +135,20 @@ import './login.scss';
                 rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
             };
 
-            Craft.postActionRequest('users/login', data, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        window.location.href = response.returnUrl;
-                    } else {
-                        Garnish.shake(this.$form);
-                        this.onSubmitResponse();
-
-                        // Add the error message
-                        this.showError(response.error);
-                    }
-                } else {
+            Craft.sendActionRequest('POST', 'users/login', {data})
+                .then((response) => {
+                    window.location.href = response.returnUrl;
+                })
+                .catch(({response}) => {
+                    Garnish.shake(this.$form);
                     this.onSubmitResponse();
-                }
-            });
+
+                    // Add the error message
+                    this.showError(response.data.message);
+                })
+                .finally(() => {
+                    this.onSubmitResponse();
+                });
 
             return false;
         },

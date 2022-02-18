@@ -205,14 +205,12 @@ Craft.LivePreview = Garnish.Base.extend({
     },
 
     createToken: function() {
-        Craft.postActionRequest('live-preview/create-token', {
-            previewAction: this.settings.previewAction
-        }, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.token = response.token;
+        const data = {previewAction: this.settings.previewAction};
+        Craft.sendActionRequest('POST', 'live-preview/create-token', {data})
+            .then((response) => {
+                this.token = response.data.token;
                 this.enter();
-            }
-        });
+            });
     },
 
     save: function() {

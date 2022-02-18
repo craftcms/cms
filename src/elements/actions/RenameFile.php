@@ -69,36 +69,23 @@ class RenameFile extends ElementAction
                 folderId: Craft.elementIndex.\$source.data('folder-id'),
                 filename: newName
             };
-
-            var handleRename = function(response, textStatus)
-            {
-                Craft.elementIndex.setIndexAvailable();
-
-                if (textStatus === 'success')
-                {
-                    if (response.conflict)
-                    {
-                        alert(response.conflict);
+            
+            Craft.sendActionRequest('POST', 'assets/move-asset', {data})
+                .then((response) => {
+                    if (response.data.conflict) {
+                        alert(response.data.conflict);
                         this.activate(\$selectedItems);
                         return;
                     }
 
-                    if (response.success)
-                    {
+                    if (response.data.success) {
                         Craft.elementIndex.updateElements();
 
                         // If assets were just merged we should get the reference tags updated right away
                         Craft.cp.runQueue();
                     }
-
-                    if (response.error)
-                    {
-                        alert(response.error);
-                    }
-                }
-            }.bind(this);
-
-            Craft.postActionRequest('assets/move-asset', data, handleRename);
+                })
+                .catch(({response}) => alert(response.data.message));
         }
     });
 })();

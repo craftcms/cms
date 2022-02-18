@@ -159,19 +159,29 @@ export class AssetIndexer {
     }
 
     /**
-     * Process an indexing response.
+     * Process a failed indexing response.
      *
      * @param response
-     * @param textStatus
      */
-    public processResponse(response: CraftResponse, textStatus: string): void {
+    public processFailureResponse(response): void {
+        this._currentConnectionCount--;
+        this._updateCurrentIndexingSession();
+    }
+
+    /**
+     * Process a successful indexing response.
+     *
+     * @param response
+     */
+    public processSuccessResponse(response): void {
+        const responseData: CraftResponse = response.data;
         this._currentConnectionCount--;
 
-        if (textStatus === 'success' && response.error) {
-            alert(response.error);
+        if (responseData.error) {
+            alert(responseData.error);
 
-            if (response.stop) {
-                this.discardIndexingSession(response.stop);
+            if (responseData.stop) {
+                this.discardIndexingSession(responseData.stop);
             }
 
             // A mere error shall not stop the party.
@@ -179,8 +189,8 @@ export class AssetIndexer {
             return;
         }
 
-        if (textStatus === 'success' && response.session) {
-            const session = this.createSessionFromModel(response.session);
+        if (responseData.session) {
+            const session = this.createSessionFromModel(responseData.session);
             this.indexingSessions[session.getSessionId()] = session;
             this.renderIndexingSessionRow(session);
 
@@ -201,8 +211,8 @@ export class AssetIndexer {
 
         this._updateCurrentIndexingSession();
 
-        if (textStatus === 'success' && response.stop) {
-            this.discardIndexingSession(response.stop);
+        if (responseData.stop) {
+            this.discardIndexingSession(responseData.stop);
         }
     }
 
@@ -348,10 +358,10 @@ export class AssetIndexer {
 
     public startIndexing(params: any, cb: () => void): void
     {
-        Craft.postActionRequest(IndexingActions.START, params, (response: CraftResponse, textStatus: string) => {
-            this.processResponse(response, textStatus);
-            cb();
-        });
+        Craft.sendActionRequest('POST', IndexingActions.START)
+            .then((response) => this.processSuccessResponse(response))
+            .then(({response}) => this.processFailureResponse(response))
+            .finally(() => cb());
     }
 
     public performIndexingStep(): void
@@ -441,12 +451,15 @@ export class AssetIndexer {
         while (this._tasksWaiting.length + this._priorityTasks.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
             this._currentConnectionCount++;
             const task = this._priorityTasks.length > 0 ? this._priorityTasks.shift()! : this._tasksWaiting.shift()!;
-            Craft.postActionRequest(task.action, task.params, (response: CraftResponse, textStatus: string) => {
-                this.processResponse(response, textStatus);
-                if (task.callback) {
-                    task.callback();
-                }
-            });
+
+            Craft.sendActionRequest('POST', task.action, {data: task.params})
+                .then((response) => this.processSuccessResponse(response))
+                .then(({response}) => this.processFailureResponse(response))
+                .finally(() => {
+                    if (task.callback) {
+                        task.callback();
+                    }
+                });
         }
     }
 
