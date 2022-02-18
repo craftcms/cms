@@ -356,19 +356,18 @@ Craft.AuthManager = Garnish.Base.extend({
 
         Craft.sendActionRequest('POST', 'users/login', {data})
             .then((response) => {
+                this.$loginBtn.removeClass('loading');
                 this.hideLoginModal();
                 this.checkRemainingSessionTime();
             })
             .catch(({response}) => {
-                this.showLoginError(response.data.message);
+                this.$loginBtn.removeClass('loading');
+                this.showLoginError(response.data.message || null);
                 Garnish.shake(this.loginModal.$container);
 
                 if (!Garnish.isMobileBrowser(true)) {
                     this.$passwordInput.trigger('focus');
                 }
-            })
-            .finally(() => {
-                this.$loginBtn.removeClass('loading');
             });
     },
 
