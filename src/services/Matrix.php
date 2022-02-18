@@ -951,7 +951,8 @@ SELECT [[o.blockId]], '$draft->id', [[o.sortOrder]]
 FROM $ownersTable AS [[o]]
 INNER JOIN $blocksTable AS [[b]] ON [[b.id]] = [[o.blockId]] AND [[b.primaryOwnerId]] = '$canonical->id' AND [[b.fieldId]] = '$field->id'
 WHERE [[o.ownerId]] = '$canonical->id'
-SQL)->execute();
+SQL
+        )->execute();
     }
 
     /**

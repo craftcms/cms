@@ -27,7 +27,7 @@ class UrlHelper
      */
     public static function isAbsoluteUrl(string $url): bool
     {
-        return (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0);
+        return (str_starts_with($url, 'http://') || str_starts_with($url, 'https://'));
     }
 
     /**
@@ -38,7 +38,7 @@ class UrlHelper
      */
     public static function isProtocolRelativeUrl(string $url): bool
     {
-        return (strpos($url, '//') === 0);
+        return (str_starts_with($url, '//'));
     }
 
     /**
@@ -49,7 +49,7 @@ class UrlHelper
      */
     public static function isRootRelativeUrl(string $url): bool
     {
-        return (strpos($url, '/') === 0 && !static::isProtocolRelativeUrl($url));
+        return (str_starts_with($url, '/') && !static::isProtocolRelativeUrl($url));
     }
 
     /**
@@ -221,7 +221,7 @@ class UrlHelper
             return substr($url, $slash);
         }
         // Is this a host without a URI?
-        if (strpos($url, '//') !== false) {
+        if (str_contains($url, '//')) {
             return '/';
         }
         // Must just be a URI, then

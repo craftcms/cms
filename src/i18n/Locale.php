@@ -243,7 +243,7 @@ class Locale extends BaseObject
      */
     public function __construct(string $id, array $config = [])
     {
-        if (strpos($id, '_') !== false) {
+        if (str_contains($id, '_')) {
             $id = str_replace('_', '-', $id);
         }
 
@@ -286,7 +286,7 @@ class Locale extends BaseObject
     public function getScriptID(): ?string
     {
         // Find sub tags
-        if (strpos($this->id, '-') !== false) {
+        if (str_contains($this->id, '-')) {
             $subTag = explode('-', $this->id);
 
             // Script sub tags can be distinguished from territory sub tags by length
@@ -308,7 +308,7 @@ class Locale extends BaseObject
     public function getTerritoryID(): ?string
     {
         // Find sub tags
-        if (strpos($this->id, '-') !== false) {
+        if (str_contains($this->id, '-')) {
             $subTag = explode('-', $this->id);
 
             // Territory sub tags can be distinguished from script sub tags by length

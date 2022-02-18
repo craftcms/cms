@@ -14,10 +14,10 @@ export default Base.extend(
     $alignmentElement: null,
     $wrapper: null,
 
-    _windowWidth: null,
-    _windowHeight: null,
-    _windowScrollLeft: null,
-    _windowScrollTop: null,
+    _viewportWidth: null,
+    _viewportHeight: null,
+    _viewportScrollLeft: null,
+    _viewportScrollTop: null,
 
     _wrapperElementOffset: null,
     _alignmentElementOffset: null,
@@ -214,10 +214,15 @@ export default Base.extend(
     },
 
     setContainerPosition: function () {
-      this._windowWidth = Garnish.$win.width();
-      this._windowHeight = Garnish.$win.height();
-      this._windowScrollLeft = Garnish.$win.scrollLeft();
-      this._windowScrollTop = Garnish.$win.scrollTop();
+      // Is there an ancestor with overflow-x: hidden/scroll/auto?
+      const noFlowParent = this.$alignmentElement.parents().toArray().find(p => {
+          return ['hidden', 'scroll', 'auto'].includes($(p).css('overflow-x'));
+      });
+      const $viewport = noFlowParent ? $(noFlowParent) : Garnish.$win;
+      this._viewportWidth = $viewport.width();
+      this._viewportHeight = $viewport.height();
+      this._viewportScrollLeft = $viewport.scrollLeft();
+      this._viewportScrollTop = $viewport.scrollTop();
 
       this._alignmentElementOffset = this.$alignmentElement[0].getBoundingClientRect();
 
@@ -237,7 +242,7 @@ export default Base.extend(
 
       // Is there room for the menu below the trigger?
       var topClearance = this._alignmentElementOffset.top,
-        bottomClearance = this._windowHeight - this._alignmentElementOffset.bottom;
+        bottomClearance = this._viewportHeight - this._alignmentElementOffset.bottom;
 
       // Find top/bottom offset relative to wrapper element
       var topAdjustment = this._alignmentElementOffset.top - this._wrapperElementOffset.top;
@@ -273,8 +278,8 @@ export default Base.extend(
       } else {
         // Figure out which options are actually possible
         var rightClearance =
-            this._windowWidth +
-            this._windowScrollLeft -
+            this._viewportWidth +
+            this._viewportScrollLeft -
             (this._alignmentElementOffset.left + this._menuWidth),
           leftClearance = this._alignmentElementOffset.right - this._menuWidth;
 
@@ -285,10 +290,10 @@ export default Base.extend(
         }
       }
 
-      delete this._windowWidth;
-      delete this._windowHeight;
-      delete this._windowScrollLeft;
-      delete this._windowScrollTop;
+      delete this._viewportWidth;
+      delete this._viewportHeight;
+      delete this._viewportScrollLeft;
+      delete this._viewportScrollTop;
       delete this._wrapperElementOffset;
       delete this._alignmentElementOffset;
       delete this._triggerWidth;

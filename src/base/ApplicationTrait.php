@@ -369,7 +369,7 @@ trait ApplicationTrait
             return $this->_isInstalled = !empty($info->id);
         } catch (DbException | ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
-            if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
+            if ($e instanceof DbException && str_contains($e->getMessage(), 'Redis')) {
                 throw $e;
             }
 
@@ -621,7 +621,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
+        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**

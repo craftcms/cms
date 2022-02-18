@@ -170,6 +170,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue($element->getType()->uid);
+        $typeId = Db::idByUid(Table::ENTRYTYPES, $this->entryTypeUid);
+        return $element->getType()->id === (int)$typeId;
     }
 }

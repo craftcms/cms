@@ -289,7 +289,7 @@ class Request extends \yii\web\Request
         }
 
         // If this is a CP request and the path begins with the CP trigger, remove it
-        if ($this->_isCpRequest && $this->generalConfig->cpTrigger && strpos($this->_path . '/', $this->generalConfig->cpTrigger . '/') === 0) {
+        if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
             $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
         }
 
@@ -300,12 +300,12 @@ class Request extends \yii\web\Request
             // If Craft is running from a subfolder, chop the subfolder path off of the base path first
             if (
                 ($requestBaseUrl = $this->_normalizePath($this->getBaseUrl())) &&
-                strpos($basePath . '/', $requestBaseUrl . '/') === 0
+                str_starts_with($basePath . '/', $requestBaseUrl . '/')
             ) {
                 $basePath = ltrim(substr($basePath, strlen($requestBaseUrl)), '/');
             }
 
-            if (strpos($this->_path . '/', $basePath . '/') === 0) {
+            if (str_starts_with($this->_path . '/', $basePath . '/')) {
                 $this->_path = ltrim(substr($this->_path, strlen($basePath)), '/');
             }
         }
@@ -320,7 +320,7 @@ class Request extends \yii\web\Request
         $pageTrigger = $this->generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
-        if (strpos($pageTrigger, '?') === 0) {
+        if (str_starts_with($pageTrigger, '?')) {
             $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
         } else if ($this->_path !== '') {
             // Match against the entire path string as opposed to just the last segment so that we can support
@@ -1103,7 +1103,7 @@ class Request extends \yii\web\Request
         // Tear it down and rebuild it without the path param
         $parts = explode('&', $queryString);
         foreach ($parts as $key => $part) {
-            if (strpos($part, $this->generalConfig->pathParam . '=') === 0) {
+            if (str_starts_with($part, $this->generalConfig->pathParam . '=')) {
                 unset($parts[$key]);
                 break;
             }
@@ -1169,15 +1169,15 @@ class Request extends \yii\web\Request
     {
         $userAgent = $this->getUserAgent();
 
-        if (strpos($userAgent, 'Linux') !== false) {
+        if (str_contains($userAgent, 'Linux')) {
             return 'Linux';
         }
 
-        if (strpos($userAgent, 'Win') !== false) {
+        if (str_contains($userAgent, 'Win')) {
             return 'Windows';
         }
 
-        if (strpos($userAgent, 'Mac') !== false) {
+        if (str_contains($userAgent, 'Mac')) {
             return 'Mac';
         }
 
@@ -1345,7 +1345,7 @@ class Request extends \yii\web\Request
         // They have an existing CSRF token.
         if ($existingToken) {
             // It's a CSRF token that came from an authenticated request.
-            if (strpos($existingToken, '|') !== false) {
+            if (str_contains($existingToken, '|')) {
                 // Grab the existing nonce.
                 $parts = explode('|', $existingToken);
                 $nonce = $parts[0];
@@ -1535,7 +1535,7 @@ class Request extends \yii\web\Request
 
         // Does the site URL specify a base path?
         $parsedPath = !empty($parsed['path']) ? $this->_normalizePath($parsed['path']) : '';
-        if ($parsedPath && strpos($this->getFullUri() . '/', $parsedPath . '/') !== 0) {
+        if ($parsedPath && !str_starts_with($this->getFullUri() . '/', $parsedPath . '/')) {
             return 0;
         }
 

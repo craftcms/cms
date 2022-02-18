@@ -42,7 +42,7 @@ abstract class Translation
      */
     public static function translate(string $translation): string
     {
-        if (strpos($translation, 't9n:') !== 0) {
+        if (!str_starts_with($translation, 't9n:')) {
             return $translation;
         }
 

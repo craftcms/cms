@@ -1758,7 +1758,7 @@ class ProjectConfig extends Component
             if ($config) {
                 // Try to decode it in case it contains any 4+ byte characters
                 $config = StringHelper::decdec($config);
-                if (strpos($config, '{') === 0) {
+                if (str_starts_with($config, '{')) {
                     $data = Json::decode($config);
                 } else {
                     $data = unserialize($config, ['allowed_classes' => false]);

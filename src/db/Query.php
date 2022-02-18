@@ -69,7 +69,7 @@ class Query extends \yii\db\Query
     public function isJoined(string $table): bool
     {
         foreach ($this->join as $join) {
-            if ($join[1] === $table || strpos($join[1], $table) === 0) {
+            if ($join[1] === $table || str_starts_with($join[1], $table)) {
                 return true;
             }
         }

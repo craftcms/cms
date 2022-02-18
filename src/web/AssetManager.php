@@ -101,7 +101,7 @@ class AssetManager extends \yii\web\AssetManager
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);
 
-        if ($this->appendTimestamp && strpos($url, '?') === false && ($timestamp = @filemtime($src)) > 0) {
+        if ($this->appendTimestamp && !str_contains($url, '?') && ($timestamp = @filemtime($src)) > 0) {
             $url .= '?v=' . $timestamp;
         }
 
