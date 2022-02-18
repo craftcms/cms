@@ -96,16 +96,15 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
             var data = this._getAjaxBaseData(this.$targetItem);
 
-            Craft.postActionRequest('structures/get-element-level-delta', data, (response, textStatus) => {
-                if (textStatus === 'success') {
+            Craft.sendActionRequest('POST', 'structures/get-element-level-delta', {data})
+                .then((response) => {
                     this._loadingDraggeeLevelDelta = false;
 
                     if (this.dragging) {
-                        this._draggeeLevelDelta = response.delta;
+                        this._draggeeLevelDelta = response.data.delta;
                         this.drag(false);
                     }
-                }
-            });
+                });
         }
 
         return $draggee;
@@ -288,9 +287,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 $prevRow = $prevRow.prev();
             }
 
-            Craft.postActionRequest('structures/move-element', data, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    if (!response.success) {
+            Craft.sendActionRequest('POST', 'structures/move-element', {data})
+                .then((response) => {
+                    if (!response.data.success) {
                         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                         this.tableView.elementIndex.updateElements();
                         return;
@@ -306,8 +305,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
                     // See if we should run any pending tasks
                     Craft.cp.runQueue();
-                }
-            });
+                });
         }
     },
 

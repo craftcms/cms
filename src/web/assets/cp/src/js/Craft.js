@@ -586,67 +586,6 @@ $.extend(Craft,
             }
         },
 
-        /**
-         * Posts an action request to the server.
-         *
-         * @param {string} action
-         * @param {Object|undefined} data
-         * @param {function|undefined} callback
-         * @param {Object|undefined} options
-         * @return jqXHR
-         * @deprecated in 3.4.6. sendActionRequest() should be used instead
-         */
-        postActionRequest: function(action, data, callback, options) {
-            // Make 'data' optional
-            if (typeof data === 'function') {
-                options = callback;
-                callback = data;
-                data = {};
-            }
-
-            options = options || {};
-
-            if (options.contentType && options.contentType.match(/\bjson\b/)) {
-                if (typeof data === 'object') {
-                    data = JSON.stringify(data);
-                }
-                options.contentType = 'application/json; charset=utf-8';
-            }
-
-            var jqXHR = $.ajax($.extend({
-                url: Craft.getActionUrl(action),
-                type: 'POST',
-                dataType: 'json',
-                headers: this._actionHeaders(),
-                data: data,
-                success: callback,
-                error: function(jqXHR, textStatus, errorThrown) {
-                    // Ignore incomplete requests, likely due to navigating away from the page
-                    // h/t https://stackoverflow.com/a/22107079/1688568
-                    if (jqXHR.readyState !== 4) {
-                        return;
-                    }
-
-                    if (typeof Craft.cp !== 'undefined') {
-                        Craft.cp.displayError();
-                    } else {
-                        alert(Craft.t('app', 'A server error occurred.'));
-                    }
-
-                    if (callback) {
-                        callback(null, textStatus, jqXHR);
-                    }
-                }
-            }, options));
-
-            // Call the 'send' callback
-            if (typeof options.send === 'function') {
-                options.send(jqXHR);
-            }
-
-            return jqXHR;
-        },
-
         _waitingOnAjax: false,
         _ajaxQueue: [],
 

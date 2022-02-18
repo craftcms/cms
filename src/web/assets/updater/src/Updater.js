@@ -48,15 +48,13 @@ import './update.scss';
                 data: this.data
             };
 
-            Craft.postActionRequest(this.actionPrefix + '/' + action, data, (response, textStatus, jqXHR) => {
-                if (textStatus === 'success') {
-                    this.setState(response);
-                } else {
-                    this.handleFatalError(jqXHR);
-                }
-            }, {
-                complete: $.noop
-            });
+            Craft.sendActionRequest('POST', action, {data})
+                .then((response) => {
+                    this.setState(response.data);
+                })
+                .catch(({response}) => {
+                    this.handleFatalError(response.data);
+                });
         },
 
         setState: function(state) {
@@ -77,7 +75,7 @@ import './update.scss';
             }
 
             if (state.nextAction) {
-                this.postActionRequest(state.nextAction);
+                this.sendActionRequest('POST', state.nextAction);
             } else if (state.options) {
                 this.showOptions(state);
             } else if (state.finished) {
@@ -141,9 +139,9 @@ import './update.scss';
             }, 750);
         },
 
-        handleFatalError: function(jqXHR) {
-            var details = Craft.t('app', 'Status:') + ' ' + jqXHR.statusText + '\n\n' +
-                Craft.t('app', 'Response:') + ' ' + jqXHR.responseText + '\n\n';
+        handleFatalError: function(data) {
+            var details = Craft.t('app', 'Status:') + ' ' + data.statusText + '\n\n' +
+                Craft.t('app', 'Response:') + ' ' + data.responseText + '\n\n';
 
             this.setState({
                 error: Craft.t('app', 'A fatal error has occurred:'),
@@ -160,7 +158,7 @@ import './update.scss';
             });
 
             // Tell Craft to disable maintenance mode
-            Craft.postActionRequest(this.actionPrefix + '/finish', {data: this.data});
+            Craft.sendActionRequest('POST', this.actionPrefix + '/finish', {data: this.data});
         }
     });
 })(jQuery);

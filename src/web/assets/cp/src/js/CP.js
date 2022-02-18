@@ -959,13 +959,10 @@ Craft.CP = Garnish.Base.extend({
                 onlyIfCached: true,
                 includeDetails: includeDetails,
             };
-            Craft.postActionRequest('app/check-for-updates', data, function(info, textStatus) {
-                if (textStatus === 'success') {
-                    resolve(info);
-                } else {
-                    resolve({cached: false});
-                }
-            });
+
+            Craft.sendActionRequest('POST', 'app/check-for-updates', {data})
+                .then((response) => resolve(response.data))
+                .catch(({response}) => resolve({cached: false}));
         });
     },
 
@@ -982,20 +979,12 @@ Craft.CP = Garnish.Base.extend({
     },
 
     _cacheUpdates: function(updates, includeDetails) {
-        return new Promise(function(resolve, reject) {
-            Craft.postActionRequest('app/cache-updates', {
-                updates: updates,
-                includeDetails: includeDetails,
-            }, function(info, textStatus) {
-                if (textStatus === 'success') {
-                    resolve(info);
-                } else {
-                    reject();
-                }
-            }, {
-                contentType: 'json'
-            });
-        });
+        const data = {
+            updates,
+            includeDetails,
+        };
+
+        return Craft.sendActionRequest('POST', 'app/cache-updates', {data});
     },
 
     updateUtilitiesBadge: function() {

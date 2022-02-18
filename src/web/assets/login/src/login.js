@@ -115,17 +115,17 @@ import './login.scss';
                 loginName: this.$loginNameInput.val()
             };
 
-            Craft.postActionRequest('users/send-password-reset-email', data, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    if (response.success) {
+            Craft.sendActionRequest('POST', 'users/send-password-reset-email', {data})
+                .then((response) => {
+                    if (response.data.success) {
                         new MessageSentModal();
                     } else {
-                        this.showError(response.error);
+                        this.showError(response.data.message);
                     }
-                }
-
-                this.onSubmitResponse();
-            });
+                })
+                .catch(({response}) => {
+                    this.showError(response.data.message);
+                });
         },
 
         submitLogin: function() {

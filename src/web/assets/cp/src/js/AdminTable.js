@@ -76,16 +76,14 @@ Craft.AdminTable = Garnish.Base.extend({
             ids: JSON.stringify(ids)
         };
 
-        Craft.postActionRequest(this.settings.reorderAction, data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                if (response.success) {
-                    this.onReorderItems(ids);
-                    Craft.cp.displayNotice(Craft.t('app', this.settings.reorderSuccessMessage));
-                } else {
-                    Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
-                }
-            }
-        });
+        Craft.sendActionRequest('POST', this.settings.reorderAction, {data})
+            .then((response) => {
+                this.onReorderItems(ids);
+                Craft.cp.displayNotice(Craft.t('app', this.settings.reorderSuccessMessage));
+            })
+            .catch(({response}) => {
+                Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
+            });
     },
 
     handleDeleteBtnClick: function(event) {
@@ -111,11 +109,8 @@ Craft.AdminTable = Garnish.Base.extend({
             id: this.getItemId($row)
         };
 
-        Craft.postActionRequest(this.settings.deleteAction, data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.handleDeleteItemResponse(response, $row);
-            }
-        });
+        Craft.sendActionRequest('POST', this.settings.deleteAction, {data})
+            .then((response) => this.handleDeleteItemResponse(response.data, $row));
     },
 
     handleDeleteItemResponse: function(response, $row) {

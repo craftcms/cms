@@ -96,9 +96,9 @@ import './install.scss';
                 $.extend(data, this.getInputData($screen.attr('id'), inputs, true));
             }
 
-            Craft.postActionRequest('install/install', data, this.allDone.bind(this), {
-                complete: $.noop
-            });
+            Craft.sendActionRequest('POST', 'install/install', data)
+                .then(() => this.allDone.bind(this))
+                .finally(() => $.noop);
         },
 
         allDone: function(response, textStatus) {
@@ -183,24 +183,24 @@ import './install.scss';
             var action = 'install/validate-' + what;
             var data = this.getInputData(what, inputs, false);
 
-            Craft.postActionRequest(action, data, (response, textStatus) => {
-                this.loading = false;
-                $submitBtn.removeClass('loading');
+            Craft.sendActionRequest('POST', action, {data})
+                .then((response) => {
+                    this.loading = false;
+                    $submitBtn.removeClass('loading');
 
-                if (textStatus === 'success') {
-                    if (response.validates) {
+                    if (response.data.validates) {
                         this.gotoNextScreen();
                     } else {
                         var $errors = $('<ul/>', {'class': 'errors'})
                             .insertBefore($('#' + what).find('.buttons'));
 
-                        for (var input in response.errors) {
-                            if (!response.errors.hasOwnProperty(input)) {
+                        for (var input in response.data.errors) {
+                            if (!response.data.errors.hasOwnProperty(input)) {
                                 continue;
                             }
 
-                            for (var i = 0; i < response.errors[input].length; i++) {
-                                $('<li>' + response.errors[input][i] + '</li>').appendTo($errors);
+                            for (var i = 0; i < response.data.errors[input].length; i++) {
+                                $('<li>' + response.data.errors[input][i] + '</li>').appendTo($errors);
                             }
 
                             var $input = $('#' + what + '-' + input + '-field').children('.input');
@@ -216,8 +216,12 @@ import './install.scss';
 
                         Garnish.shake(this.$currentScreen);
                     }
-                }
-            });
+                })
+                .catch(({response}) => {
+                    this.loading = false;
+                    $submitBtn.removeClass('loading');
+                    Garnish.shake(this.$currentScreen);
+                });
         }
     }, {
         defaultDbPorts: {

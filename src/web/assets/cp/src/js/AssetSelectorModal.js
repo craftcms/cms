@@ -128,22 +128,23 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
             handle: transform
         };
 
-        Craft.postActionRequest('assets/generate-transform', data, (response, textStatus) => {
-            Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
-
-            if (textStatus === 'success') {
-                if (response.url) {
+        Craft.sendActionRequest('POST', 'assets/generate-transform', {data})
+            .then((response) => {
+                Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
+                if (response.data.url) {
                     Craft.AssetSelectorModal.transformUrls[transform][elementId] = response.url;
                 }
-            }
+            })
+            .finally(() => {
+                Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
 
-            // More to load?
-            if (imageIdsWithMissingUrls.length) {
-                this.fetchMissingTransformUrls(imageIdsWithMissingUrls, transform, callback);
-            } else {
-                callback();
-            }
-        });
+                // More to load?
+                if (imageIdsWithMissingUrls.length) {
+                    this.fetchMissingTransformUrls(imageIdsWithMissingUrls, transform, callback);
+                } else {
+                    callback();
+                }
+            });
     },
 
     getElementInfo: function($selectedElements) {

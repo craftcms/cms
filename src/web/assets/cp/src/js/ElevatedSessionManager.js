@@ -24,19 +24,19 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
         // Check the time remaining on the user's elevated session (if any)
         this.fetchingTimeout = true;
 
-        Craft.postActionRequest('users/get-elevated-session-timeout', (response, textStatus) => {
-            this.fetchingTimeout = false;
-
-            if (textStatus === 'success') {
-                // Is there still enough time left or has it been disabled?
-                if (response.timeout === false || response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout) {
+        Craft.sendActionRequest('POST', 'users/get-elevated-session-timeout')
+            .then((response) => {
+                if (response.data.timeout === false || response.data.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout) {
                     this.callback();
                 } else {
                     // Show the password modal
                     this.showPasswordModal();
                 }
-            }
-        });
+
+            })
+            .finally(() => {
+                this.fetchingTimeout = false;
+            });
     },
 
     showPasswordModal: function() {
@@ -112,22 +112,24 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
             currentPassword: this.$passwordInput.val()
         };
 
-        Craft.postActionRequest('users/start-elevated-session', data, (response, textStatus) => {
-            this.$submitBtn.removeClass('loading');
+        Craft.sendActionRequest('POST', 'users/start-elevated-session', {data})
+            .then((response) => {
+                this.$submitBtn.removeClass('loading');
 
-            if (textStatus === 'success') {
-                if (response.success) {
+                if (response.data.success) {
                     this.passwordModal.hide();
                     this.callback();
                 } else {
-                    this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
+                    this.showPasswordError(response.data.message || Craft.t('app', 'Incorrect password.'));
                     Garnish.shake(this.passwordModal.$container);
                     this.focusPasswordInput();
                 }
-            } else {
+
+            })
+            .catch(({response}) => {
+                this.$submitBtn.removeClass('loading');
                 this.showPasswordError();
-            }
-        });
+            });
     },
 
     showPasswordError: function(error) {
