@@ -133,7 +133,7 @@ import './login.scss';
 
             Craft.sendActionRequest('POST', 'users/login', {data})
                 .then((response) => {
-                    window.location.href = response.returnUrl;
+                    window.location.href = response.data.returnUrl;
                 })
                 .catch(({response}) => {
                     Garnish.shake(this.$form);

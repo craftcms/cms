@@ -73,7 +73,7 @@
                             }, 300);
                         })
                         .catch(({response}) => {
-                            alert(response.message);
+                            alert(response.data.message);
                         });
                 },
             });
