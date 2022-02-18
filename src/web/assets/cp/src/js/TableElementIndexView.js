@@ -55,10 +55,14 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             var $header = $tableHeaders.eq(i),
                 attr = $header.attr('data-attribute');
 
+            let sortValue = 'none';
+
             // Is this the selected sort attribute?
             if (attr === selectedSortAttr) {
                 this.$selectedSortHeader = $header;
                 var selectedSortDir = this.elementIndex.getSelectedSortDirection();
+
+                sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
 
                 $header
                     .addClass('ordered ' + selectedSortDir)
@@ -73,6 +77,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                         .on('click', this._handleUnselectedSortHeaderClick.bind(this));
                 }
             }
+
+            $header.attr('aria-sort', sortValue);
         }
     },
 
