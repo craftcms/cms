@@ -132,10 +132,10 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
             .then((response) => {
                 Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
                 if (response.data.url) {
-                    Craft.AssetSelectorModal.transformUrls[transform][elementId] = response.url;
+                    Craft.AssetSelectorModal.transformUrls[transform][elementId] = response.data.url;
                 }
             })
-            .finally(() => {
+            .catch(({response}) => {
                 Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
 
                 // More to load?
