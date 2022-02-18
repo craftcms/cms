@@ -72,6 +72,7 @@ class RenameFile extends ElementAction
             
             Craft.sendActionRequest('POST', 'assets/move-asset', {data})
                 .then((response) => {
+                    Craft.elementIndex.setIndexAvailable();
                     if (response.data.conflict) {
                         alert(response.data.conflict);
                         this.activate(\$selectedItems);
@@ -85,7 +86,10 @@ class RenameFile extends ElementAction
                         Craft.cp.runQueue();
                     }
                 })
-                .catch(({response}) => alert(response.data.message));
+                .catch(({response}) => {
+                    Craft.elementIndex.setIndexAvailable();
+                    alert(response.data.message)
+                });
         }
     });
 })();
