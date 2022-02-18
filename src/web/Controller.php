@@ -222,11 +222,10 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asFailure(
         ?string $message = null,
-        ?array  $errors = null,
-        array   $data = [],
-        array   $routeParams = [],
-    ): ?YiiResponse
-    {
+        ?array $errors = null,
+        array $data = [],
+        array $routeParams = [],
+    ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             $this->response->setStatusCode(400);
             return $this->asJson($data + array_filter([
@@ -260,10 +259,9 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asSuccess(
         ?string $message = null,
-        array   $data = [],
+        array $data = [],
         ?string $redirect = null
-    ): ?YiiResponse
-    {
+    ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
                     'success' => true,
@@ -293,14 +291,13 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelFailure(
-        Model   $model,
+        Model $model,
         ?string $message = null,
         ?string $modelName = null,
-        array   $data = [],
-        array   $routeParams = [],
+        array $data = [],
+        array $routeParams = [],
         ?string $errorAttribute = null
-    ): ?YiiResponse
-    {
+    ): ?YiiResponse {
         $errors = $model->getErrors($errorAttribute);
         $modelInfo = [
             'modelName' => $modelName,
@@ -324,13 +321,12 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelSuccess(
-        Model   $model,
+        Model $model,
         ?string $message = null,
         ?string $modelName = null,
-        array   $data = [],
+        array $data = [],
         ?string $defaultRedirect = null
-    ): YiiResponse
-    {
+    ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,
             ($modelName ?? 'model') => $model->toArray(),

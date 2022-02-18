@@ -410,7 +410,6 @@ class UsersController extends Controller
             data: $data,
             redirect: Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect()
         );
-
     }
 
     /**
@@ -554,15 +553,15 @@ class UsersController extends Controller
 
         if (!Craft::$app->getElements()->saveElement($user)) {
             return $this->asModelFailure(
-                $user,
-                Craft::t('app', 'Couldn’t update password.'),
-                errorAttribute: 'newPassword'
-            ) ?? $this->_renderSetPasswordTemplate([
-                'errors' => $errors,
-                'code' => $code,
-                'id' => $uid,
-                'newUser' => !$user->password,
-            ]);
+                    $user,
+                    Craft::t('app', 'Couldn’t update password.'),
+                    errorAttribute: 'newPassword'
+                ) ?? $this->_renderSetPasswordTemplate([
+                    'errors' => $errors,
+                    'code' => $code,
+                    'id' => $uid,
+                    'newUser' => !$user->password,
+                ]);
         }
 
         // If they're pending, try to activate them, and maybe treat this as an activation request
