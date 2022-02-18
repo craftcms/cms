@@ -56,6 +56,36 @@
                     if (response.data.errors && response.data.errors.length) {
                         return Promise.reject();
                     }
+
+                    // Create chart
+                    this.chart = new Craft.charts.Area(this.$chartContainer, {
+                        yAxis: {
+                            formatter: function(chart) {
+                                return function(d) {
+                                    var format = ',.0f';
+
+                                    if (d != Math.round(d)) {
+                                        format = ',.1f';
+                                    }
+
+                                    return chart.formatLocale.format(format)(d);
+                                };
+                            }
+                        }
+                    });
+
+                    var chartDataTable = new Craft.charts.DataTable(response.data.dataTable);
+
+                    var chartSettings = {
+                        orientation: response.data.orientation,
+                        dataScale: response.data.scale,
+                        formats: response.data.formats
+                    };
+
+                    this.chart.draw(chartDataTable, chartSettings);
+
+                    // Resize chart when grid is refreshed
+                    window.dashboard.grid.on('refreshCols', this.handleGridRefresh.bind(this));
                 })
                 .catch(({response}) => {
                     var msg = response.data.message || Craft.t('A server error occurred.');
