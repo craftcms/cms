@@ -66,6 +66,7 @@ class PluginStoreAsset extends AssetBundle
                 'Checkout',
                 'Closed Issues',
                 'Compatibility',
+                'Continue shopping',
                 'Couldn’t add all items to the cart.',
                 'Couldn’t load CMS editions.',
                 'Couldn’t load active trials.',
