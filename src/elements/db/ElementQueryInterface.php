@@ -27,7 +27,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, Countable, IteratorAggregate
+interface ElementQueryInterface extends QueryInterface, Arrayable
 {
     /**
      * Causes the query results to be returned in reverse order.
