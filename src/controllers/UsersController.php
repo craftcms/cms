@@ -1531,12 +1531,9 @@ JS,
 
         $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
 
-        $redirect = $this->getPostedUrl();
         return $emailSent ?
             $this->asSuccess(Craft::t('app', 'Activation email sent.')) :
             $this->asFailure(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
-
-        // return $this->redirectToPostedUrl();
     }
 
     /**
