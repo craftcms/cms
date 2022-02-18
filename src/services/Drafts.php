@@ -16,6 +16,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -125,6 +126,8 @@ class Drafts extends Component
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
         }
 
+        $markAsSaved = ArrayHelper::remove($newAttributes, 'markAsSaved') ?? true;
+
         // Fire a 'beforeCreateDraft' event
         $event = new DraftEvent([
             'canonical' => $canonical,
@@ -156,6 +159,7 @@ class Drafts extends Component
                 'draftName' => $name,
                 'draftNotes' => $notes,
                 'trackChanges' => $canonical::trackChanges(),
+                'markAsSaved' => $markAsSaved,
             ];
 
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
@@ -307,40 +311,8 @@ class Drafts extends Component
                 $elementsService->deleteElement($draft, true);
             } else {
                 // Just remove the draft data
-                $draftId = $draft->draftId;
-                $draft->draftId = null;
-                $draft->detachBehavior('draft');
                 $draft->setRevisionNotes($draftNotes);
-                $draft->firstSave = true;
-
-                // We still need to validate so the SlugValidator gets run
-                $draft->setScenario(Element::SCENARIO_ESSENTIALS);
-                $draft->validate();
-
-                // If there are any errors on the URI, re-validate as disabled
-                if ($draft->hasErrors('uri') && $draft->enabled) {
-                    $draft->enabled = false;
-                    $draft->validate();
-                }
-
-                if ($draft->hasErrors()) {
-                    throw new InvalidElementException($draft, 'Draft ' . $draft->id . ' could not be applied because it doesn\'t validate.');
-                }
-
-                try {
-                    $elementsService->saveElement($draft, false);
-                    Db::delete(Table::DRAFTS, [
-                        'id' => $draftId,
-                    ]);
-                } catch (Throwable $e) {
-                    // Put everything back
-                    $draft->draftId = $draftId;
-                    $draft->attachBehavior('draft', $behavior);
-                    $draft->firstSave = false;
-                    throw $e;
-                }
-
-                $draft->firstSave = false;
+                $this->removeDraftData($draft);
                 $newCanonical = $draft;
             }
 
@@ -368,6 +340,53 @@ class Drafts extends Component
         }
 
         return $newCanonical;
+    }
+
+    /**
+     * Removes draft data from the given draft.
+     *
+     * @param ElementInterface $draft
+     * @throws InvalidElementException
+     * @since 4.0.0
+     */
+    public function removeDraftData(ElementInterface $draft): void
+    {
+        /** @var DraftBehavior $behavior */
+        $behavior = $draft->getBehavior('draft');
+        $draftId = $draft->draftId;
+
+        $draft->draftId = null;
+        $draft->detachBehavior('draft');
+        $draft->firstSave = true;
+
+        // We still need to validate so the SlugValidator gets run
+        $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+        $draft->validate();
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($draft->hasErrors('uri') && $draft->enabled) {
+            $draft->enabled = false;
+            $draft->validate();
+        }
+
+        if ($draft->hasErrors()) {
+            throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
+        }
+
+        try {
+            Craft::$app->getElements()->saveElement($draft, false);
+            Db::delete(Table::DRAFTS, [
+                'id' => $draftId,
+            ]);
+        } catch (Throwable $e) {
+            // Put everything back
+            $draft->draftId = $draftId;
+            $draft->attachBehavior('draft', $behavior);
+            $draft->firstSave = false;
+            throw $e;
+        }
+
+        $draft->firstSave = false;
     }
 
     /**

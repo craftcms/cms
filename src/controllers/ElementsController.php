@@ -627,7 +627,7 @@ class ElementsController extends Controller
                     'class' => ['btn', 'secondary', 'formsubmit'],
                     'data' => [
                         'action' => 'elements/apply-draft',
-                        'redirect' => $canonical->getCpEditUrl(),
+                        'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
                     ],
                 ]);
             }

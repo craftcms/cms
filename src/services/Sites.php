@@ -982,7 +982,7 @@ class Sites extends Component
                     $blockIds = (new Query())
                         ->select(['id'])
                         ->from([Table::MATRIXBLOCKS])
-                        ->where(['ownerId' => $entryIds])
+                        ->where(['primaryOwnerId' => $entryIds])
                         ->column();
 
                     if (!empty($blockIds)) {

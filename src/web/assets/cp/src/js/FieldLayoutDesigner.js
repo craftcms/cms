@@ -386,7 +386,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     },
 
     get config() {
-        return this.designer.config.tabs.find(c => c.uid === this.uid);
+        return this.designer.config.tabs.find(c => c.uid === this.uid) || {};
     },
 
     set config(config) {
@@ -579,6 +579,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             this.config = response.data.config;
             this.$editBtn.detach();
             this.$container.html($(response.data.selectorHtml).html());
+            if (response.data.hasConditions) {
+                this.$container.addClass('has-conditions');
+            } else {
+                this.$container.removeClass('has-conditions');
+            }
             this.initUi();
         }).catch(e => {
             Craft.cp.displayError();
@@ -611,7 +616,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     },
 
     get config() {
-        return this.tab.config.elements.find(c => c.uid === this.uid);
+        return this.tab.config.elements.find(c => c.uid === this.uid) || {};
     },
 
     set config(config) {

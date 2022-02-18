@@ -25,9 +25,9 @@ use yii\db\Expression;
 class PruneRevisionsController extends Controller
 {
     /**
-     * @var int The maximum number of revisions an element can have.
+     * @var int|null The maximum number of revisions an element can have.
      */
-    public int $maxRevisions;
+    public ?int $maxRevisions = null;
 
     /**
      * @var bool Whether this is a dry run.
