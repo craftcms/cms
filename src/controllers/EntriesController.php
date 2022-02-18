@@ -328,7 +328,7 @@ class EntriesController extends BaseEntriesController
         return $this->asModelSuccess(
             $entry,
             Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
-            data: $data
+            data: $data,
         );
     }
 

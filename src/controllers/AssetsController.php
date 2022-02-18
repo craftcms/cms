@@ -160,7 +160,7 @@ class AssetsController extends Controller
                 'title' => $asset->title,
                 'url' => $asset->getUrl(),
                 'cpEditUrl' => $asset->getCpEditUrl(),
-            ]
+            ],
         );
     }
 
@@ -484,7 +484,7 @@ class AssetsController extends Controller
         return $this->asModelSuccess(
             $asset,
             Craft::t('app', 'Asset deleted.'),
-            'asset'
+            'asset',
         );
     }
 
