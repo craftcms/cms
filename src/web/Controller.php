@@ -335,7 +335,7 @@ abstract class Controller extends \yii\web\Controller
         return $this->asSuccess(
             $message,
             $data,
-            $redirect ?? $this->getPostedUrl($model),
+            $redirect ?? $this->getPostedRedirectUrl($model),
         );
     }
 
@@ -524,13 +524,14 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Gets the URI specified in the POST.
+     * Gets the `redirect` param specified in the POST data.
      *
      * @param object|null $object Object containing properties that should be parsed for in the URL.
      * @return string|null
      * @throws BadRequestHttpException if the redirect param was tampered with
+     * @since 4.0.0
      */
-    protected function getPostedUrl(?object $object = null): ?string
+    protected function getPostedRedirectUrl(?object $object = null): ?string
     {
         $url = $this->request->getValidatedBodyParam('redirect');
 
@@ -552,7 +553,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirectToPostedUrl(?object $object = null, ?string $default = null): YiiResponse
     {
-        $url = $this->getPostedUrl($object);
+        $url = $this->getPostedRedirectUrl($object);
 
         if ($url === null) {
             if ($default !== null) {

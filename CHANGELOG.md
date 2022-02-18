@@ -318,7 +318,7 @@
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
 - Added `craft\web\Controller::TemplateResponseFormatter()`.
-- Added `craft\web\Controller::getPostedUrl`.
+- Added `craft\web\Controller::getPostedRedirectUrl()`.
 - Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
