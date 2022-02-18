@@ -53,8 +53,7 @@ import './deprecator.scss';
                 })
                 .catch(({response}) => {
                     this.tracesModal.$container.find('.spinner').remove();
-
-                }));
+                });
         },
 
         deleteLog: function(ev) {
