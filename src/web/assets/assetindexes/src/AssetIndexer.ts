@@ -28,17 +28,20 @@ type AssetIndexingSessionModel = {
 }
 
 type CraftResponse = {
-    session?: AssetIndexingSessionModel
-    stop?: number
+    success?: boolean,
+    message?: string,
+    errors?: Array<string>,
+    session?: AssetIndexingSessionModel,
+    stop?: number,
     error?: string,
-    skipDialog?: boolean
+    skipDialog?: boolean,
 }
 
 type ConcurrentTask = {
     sessionId: number,
     action: string,
     params: any,
-    callback?: () => void
+    callback?: () => void,
 }
 
 /**
@@ -164,8 +167,19 @@ export class AssetIndexer {
      * @param response
      */
     public processFailureResponse(response): void {
+        const responseData: CraftResponse = response.data;
         this._currentConnectionCount--;
         this._updateCurrentIndexingSession();
+
+        alert(responseData.message);
+
+        if (responseData.stop) {
+            this.discardIndexingSession(responseData.stop);
+        }
+
+        // A mere error shall not stop the party.
+        this.runTasks();
+        return;
     }
 
     /**
@@ -176,18 +190,6 @@ export class AssetIndexer {
     public processSuccessResponse(response): void {
         const responseData: CraftResponse = response.data;
         this._currentConnectionCount--;
-
-        if (responseData.error) {
-            alert(responseData.error);
-
-            if (responseData.stop) {
-                this.discardIndexingSession(responseData.stop);
-            }
-
-            // A mere error shall not stop the party.
-            this.runTasks();
-            return;
-        }
 
         if (responseData.session) {
             const session = this.createSessionFromModel(responseData.session);

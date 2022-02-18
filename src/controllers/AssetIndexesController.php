@@ -60,18 +60,18 @@ class AssetIndexesController extends Controller
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages);
         $sessionData = $this->prepareSessionData($indexingSession);
 
-        $response = ['session' => $sessionData];
+        $data = ['session' => $sessionData];
         $error = null;
 
         if ($indexingSession->totalEntries === 0) {
-            $response['stop'] = $indexingSession->id;
+            $data['stop'] = $indexingSession->id;
             $error = Craft::t('app', 'Nothing to index.');
             Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
         }
 
         return $error ?
-            $this->asFailure($error, data: $response) :
-            $this->asSuccess(data: $response);
+            $this->asFailure($error, data: $data) :
+            $this->asSuccess(data: $data);
     }
 
     /**
@@ -95,7 +95,7 @@ class AssetIndexesController extends Controller
             Craft::$app->getAssetIndexer()->stopIndexingSession($session);
         }
 
-        return $this->asJson(['stop' => $sessionId]);
+        return $this->asSuccess(data: ['stop' => $sessionId]);
     }
 
     /**
@@ -118,7 +118,7 @@ class AssetIndexesController extends Controller
         // Have to account for the fact that some people might be processing this in parallel
         // If the indexing session no longer exists - most likely a parallel user finished it
         if (!$indexingSession) {
-            return $this->asJson(['stop' => $sessionId]);
+            return $this->asSuccess(data: ['stop' => $sessionId]);
         }
 
         $skipDialog = false;
@@ -136,7 +136,7 @@ class AssetIndexesController extends Controller
                 // If nothing out of ordinary, just end it.
                 if (empty($indexingSession->skippedEntries) && empty($indexingSession->missingEntries)) {
                     $assetIndexer->stopIndexingSession($indexingSession);
-                    return $this->asJson(['stop' => $sessionId]);
+                    return $this->asSuccess(data: ['stop' => $sessionId]);
                 }
             }
         } else {
@@ -144,7 +144,7 @@ class AssetIndexesController extends Controller
         }
 
         $sessionData = $this->prepareSessionData($indexingSession);
-        return $this->asJson(['session' => $sessionData, 'skipDialog' => $skipDialog]);
+        return $this->asSuccess(data: ['session' => $sessionData, 'skipDialog' => $skipDialog]);
     }
 
     /**
@@ -173,7 +173,7 @@ class AssetIndexesController extends Controller
         $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
 
         $sessionData = $this->prepareSessionData($indexingSession);
-        return $this->asJson(['session' => $sessionData]);
+        return $this->asSuccess(data: ['session' => $sessionData]);
     }
 
     /**
@@ -216,7 +216,7 @@ class AssetIndexesController extends Controller
             }
         }
 
-        return $this->asJson(['stop' => $sessionId]);
+        return $this->asSuccess(data: ['stop' => $sessionId]);
     }
 
     /**
