@@ -1295,7 +1295,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         postData.flipData = this.flipData;
         postData.zoom = this.zoomRatio;
 
-        const onResponse() => {
+        const onResponse = () => {
             this.$buttons.find('.btn').removeClass('loading');
             this.saving = false;
         };

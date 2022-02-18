@@ -362,7 +362,7 @@ export class AssetIndexer {
     {
         Craft.sendActionRequest('POST', IndexingActions.START, {data})
             .then((response) => this.processSuccessResponse(response))
-            .then(({response}) => this.processFailureResponse(response))
+            .catch(({response}) => this.processFailureResponse(response))
             .finally(() => cb());
     }
 
@@ -456,7 +456,7 @@ export class AssetIndexer {
 
             Craft.sendActionRequest('POST', task.action, {data: task.params})
                 .then((response) => this.processSuccessResponse(response))
-                .then(({response}) => this.processFailureResponse(response))
+                .catch(({response}) => this.processFailureResponse(response))
                 .finally(() => {
                     if (task.callback) {
                         task.callback();

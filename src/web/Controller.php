@@ -538,7 +538,7 @@ abstract class Controller extends \yii\web\Controller
     {
         $url = $this->request->getValidatedBodyParam('redirect');
 
-        if ($object) {
+        if ($url && $object) {
             $url = $this->getView()->renderObjectTemplate($url, $object);
         }
 

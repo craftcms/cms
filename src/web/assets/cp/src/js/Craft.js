@@ -608,7 +608,7 @@ $.extend(Craft,
             callback()
                 .then((response) => {
                     if (callback && typeof callback === 'function') {
-                        callback(response.data);
+                        callback(response ? response.data : null);
                     }
 
                     if (Craft._ajaxQueue.length) {
@@ -640,7 +640,7 @@ $.extend(Craft,
          * @returns {Promise}
          * @since 3.4.6
          */
-        sendActionRequest: function(method, action, options) {
+        sendActionRequest: function(method, action, options = {}) {
             if ($.isPlainObject(action)) {
                 options = action;
                 action = null;

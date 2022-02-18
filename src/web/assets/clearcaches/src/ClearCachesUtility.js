@@ -52,7 +52,7 @@
                     let postData = Garnish.getPostData($form);
                     let data = Craft.expandPostArray(postData);
 
-                    Craft.sendActionRequest('POST', params.action, {data})
+                    Craft.sendActionRequest('POST', data.action, {data})
                         .then((response) => {
                             progressBar.setProgressPercentage(100);
 
