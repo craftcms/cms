@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'Az ár 1 év frissítést tartalmaz.',
     'Primary {type} page' => 'Elsődleges {type} oldal',
     'Primary' => 'Elsődleges',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'Arányos kedvezmény',
     'Profile Twig templates when Dev Mode is disabled' => 'Twig profilsablonok kikapcsolt fejlesztői módban',
     'Progress' => 'Folyamat',
