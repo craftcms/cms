@@ -18,16 +18,12 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use CommerceGuys\Addressing\Formatter\PostalLabelFormatter;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository;
 use Craft;
-use craft\commerce\records\Address as AddressRecord;
-use craft\db\Table;
 use craft\elements\Address;
-use craft\events\AddressEvent;
 use craft\events\ConfigEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Addresses service.
@@ -42,26 +38,6 @@ use yii\base\Exception;
  */
 class Addresses extends Component
 {
-    /**
-     * @event AddressEvent The event that is triggered before an address is saved.
-     */
-    public const EVENT_BEFORE_SAVE_ADDRESS = 'beforeSaveAddress';
-
-    /**
-     * @event AddressEvent The event that is triggered after an address is saved.
-     */
-    public const EVENT_AFTER_SAVE_ADDRESS = 'afterSaveAddress';
-
-    /**
-     * @event AddressEvent The event that is triggered before an address is deleted.
-     */
-    public const EVENT_BEFORE_DELETE_ADDRESS = 'beforeDeleteAddress';
-
-    /**
-     * @event AddressEvent The event that is triggered after an address is saved.
-     */
-    public const EVENT_AFTER_DELETE_ADDRESS = 'afterDeleteAddress';
-
     /**
      * @var CountryRepository
      */
@@ -109,114 +85,6 @@ class Addresses extends Component
     public function getAddressFormatRepository(): AddressFormatRepository
     {
         return $this->_addressFormatRepository;
-    }
-
-    /**
-     * Returns an address by its ID.
-     *
-     * @param int $id
-     * @return Address|null
-     */
-    public function getAddressById(int $id): ?Address
-    {
-        return Address::findOne($id);
-    }
-
-    /**
-     * Saves an address.
-     *
-     * @param Address $address The address to be saved
-     * @param bool $runValidation Whether the address should be validated
-     * @return bool Whether the address was saved successfully
-     */
-    public function saveAddress(Address $address, bool $runValidation = true): bool
-    {
-        $isNewAddress = !$address->id;
-
-        // Fire a 'beforeSaveAddress' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ADDRESS)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_ADDRESS, new AddressEvent([
-                'address' => $address,
-                'isNew' => $isNewAddress,
-            ]));
-        }
-
-        if ($isNewAddress) {
-            $addressRecord = new AddressRecord();
-        } else {
-            $addressRecord = AddressRecord::findOne($address->id);
-
-            if (!$addressRecord) {
-                throw new Exception(Craft::t('commerce', 'No address exists with the ID “{id}”',
-                    ['id' => $address->id]));
-            }
-        }
-
-        if ($runValidation && !$address->validate()) {
-            Craft::info('Address not saved due to validation error.', __METHOD__);
-            return false;
-        }
-
-        $addressRecord->save(false);
-        $address->id = $addressRecord->id;
-
-        // Fire a 'afterSaveAddress' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ADDRESS)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ADDRESS, new AddressEvent([
-                'address' => $address,
-            ]));
-        }
-
-        return true;
-    }
-
-    /**
-     * Deletes an address by its ID.
-     *
-     * @param int $addressId
-     * @return bool Whether the address was deleted successfully
-     */
-    public function deleteAddressById(int $addressId): bool
-    {
-        $address = $this->getAddressById($addressId);
-
-        // Doesn't exist in the database
-        if (!$address) {
-            return false;
-        }
-
-        return $this->deleteAddress($address);
-    }
-
-    /**
-     * @param Address $address
-     * @return bool Whether the address was deleted successfully
-     */
-    public function deleteAddress(Address $address): bool
-    {
-        // Doesn't exist in the database
-        if (!$address->id) {
-            return false;
-        }
-
-        // Fire a 'beforeDeleteFieldLayout' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ADDRESS)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_ADDRESS, new AddressEvent([
-                'address' => $address,
-            ]));
-        }
-
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::ADDRESSES, ['id' => $address->id])
-            ->execute();
-
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ADDRESS)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_ADDRESS, new AddressEvent([
-                'address' => $address,
-            ]));
-        }
-
-        return true;
     }
 
     /**
