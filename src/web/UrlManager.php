@@ -498,7 +498,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {
-            if (strpos($requestPathSeg, $trigger) === 0) {
+            if (str_starts_with($requestPathSeg, $trigger)) {
                 return false;
             }
         }

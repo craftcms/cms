@@ -282,7 +282,7 @@ class Config extends Component
         $slashedValue = addslashes($value);
 
         // Only surround with quotes if the value contains a space
-        if (strpos($slashedValue, ' ') !== false || strpos($slashedValue, '#') !== false) {
+        if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
             $slashedValue = "\"$slashedValue\"";
         }
 

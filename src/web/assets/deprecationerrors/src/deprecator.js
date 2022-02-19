@@ -23,7 +23,7 @@ import './deprecator.scss';
         },
 
         clearAllLogs: function() {
-            Craft.postActionRequest('utilities/delete-all-deprecation-errors');
+            Craft.sendActionRequest('POST', 'utilities/delete-all-deprecation-errors');
             this.onClearAll();
         },
 
@@ -46,13 +46,14 @@ import './deprecator.scss';
                 logId: $(ev.currentTarget).closest('tr').data('id')
             };
 
-            Craft.postActionRequest('utilities/get-deprecation-error-traces-modal', data, (response, textStatus) => {
-                this.tracesModal.$container.find('.spinner').remove();
-
-                if (textStatus === 'success') {
-                    this.$tracesModalBody.html(response.html);
-                }
-            });
+            Craft.sendActionRequest('POST', 'utilities/get-deprecation-error-traces-modal', {data})
+                .then((response) => {
+                    this.tracesModal.$container.find('.spinner').remove();
+                    this.$tracesModalBody.html(response.data.html);
+                })
+                .catch(({response}) => {
+                    this.tracesModal.$container.find('.spinner').remove();
+                });
         },
 
         deleteLog: function(ev) {
@@ -62,9 +63,10 @@ import './deprecator.scss';
                 logId: $tr.data('id')
             };
 
-            Craft.postActionRequest('utilities/delete-deprecation-error', data, function(response, textStatus) {
-                console.log('response/textStatus', response, textStatus);
-            });
+            Craft.sendActionRequest('POST', 'utilities/delete-deprecation-error', {data})
+                .finally(() => {
+                    console.log('response', response);
+                });
 
             if ($tr.siblings().length) {
                 $tr.remove();

@@ -406,7 +406,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle . ':';
-        if (strpos($handle, $blockTypeHandlePrefix) === 0) {
+        if (str_starts_with($handle, $blockTypeHandlePrefix)) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
             parent::setEagerLoadedElements($handle, $elements);

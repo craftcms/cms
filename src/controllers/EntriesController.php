@@ -225,21 +225,17 @@ class EntriesController extends BaseEntriesController
                 $clone = $e->element;
 
                 if ($this->request->getAcceptsJson()) {
-                    return $this->asJson([
-                        'success' => false,
-                        'errors' => $clone->getErrors(),
-                    ]);
+                    return $this->asModelFailure($clone);
                 }
-
-                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
 
                 // Send the original entry back to the template, with any validation errors on the clone
                 $entry->addErrors($clone->getErrors());
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry,
-                ]);
 
-                return null;
+                return $this->asModelFailure(
+                    $entry,
+                    Craft::t('app', 'Couldn’t duplicate entry.'),
+                    'entry'
+                );
             } catch (Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
@@ -289,20 +285,11 @@ class EntriesController extends BaseEntriesController
         }
 
         if (!$success) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson([
-                    'errors' => $entry->getErrors(),
-                ]);
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
-
-            // Send the entry back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                $entryVariable => $entry,
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $entry,
+                Craft::t('app', 'Couldn’t save entry.'),
+                $entryVariable
+            );
         }
 
         // See if the user happens to have a provisional entry. If so delete it.
@@ -318,33 +305,31 @@ class EntriesController extends BaseEntriesController
             Craft::$app->getElements()->deleteElement($provisional, true);
         }
 
-        if ($this->request->getAcceptsJson()) {
-            $return = [];
+        $data = [];
 
-            $return['success'] = true;
-            $return['id'] = $entry->id;
-            $return['title'] = $entry->title;
-            $return['slug'] = $entry->slug;
+        if ($this->request->getAcceptsJson()) {
+            $data['id'] = $entry->id;
+            $data['title'] = $entry->title;
+            $data['slug'] = $entry->slug;
 
             if ($this->request->getIsCpRequest()) {
-                $return['cpEditUrl'] = $entry->getCpEditUrl();
+                $data['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
             if (($author = $entry->getAuthor()) !== null) {
-                $return['authorUsername'] = $author->username;
+                $data['authorUsername'] = $author->username;
             }
 
-            $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
-            $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
-            $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
-
-            return $this->asJson($return);
+            $data['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+            $data['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+            $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
         }
 
-        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
-            'type' => Entry::displayName(),
-        ]));
-        return $this->redirectToPostedUrl($entry);
+        return $this->asModelSuccess(
+            $entry,
+            Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
+            data: $data,
+        );
     }
 
     /**

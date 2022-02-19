@@ -863,7 +863,7 @@ class User extends Element implements IdentityInterface
 
         $rules[] = [
             ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
-                if (strpos($this->$attribute, '://') !== false) {
+                if (str_contains($this->$attribute, '://')) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
             },

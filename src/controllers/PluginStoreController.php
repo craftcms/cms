@@ -211,14 +211,12 @@ class PluginStoreController extends Controller
 
             Craft::$app->getPluginStore()->saveToken($token);
 
-            $this->setSuccessFlash(Craft::t('app', 'Connected to craftcms.com.'));
-
-            return $this->asJson([
-                'success' => true,
-                'redirect' => UrlHelper::cpUrl('plugin-store/account'),
-            ]);
+            return $this->asSuccess(
+                Craft::t('app', 'Connected to craftcms.com.'),
+                redirect: UrlHelper::cpUrl('plugin-store/account'),
+            );
         } catch (Exception $e) {
-            return $this->asErrorJson($e->getMessage());
+            return $this->asFailure($e->getMessage());
         }
     }
 
@@ -273,7 +271,7 @@ class PluginStoreController extends Controller
             }
         }
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**

@@ -50,6 +50,7 @@
     "pixelandtonic/imagine": "~1.2.4.1",
     "seld/cli-prompt": "^1.0.4",
     "symfony/http-client": "^6.0.3",
+    "symfony/var-dumper": "^6.0",
     "symfony/yaml": "^5.2.3",
     "true/punycode": "^2.1.1",
     "twig/twig": "~3.3.0",
