@@ -810,6 +810,7 @@ abstract class Element extends Component implements ElementInterface
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'showCheckboxes' => $showCheckboxes,
+            'tableName' => static::pluralDisplayName(),
         ];
 
         if (!empty($viewState['order'])) {
