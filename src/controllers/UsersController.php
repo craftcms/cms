@@ -19,7 +19,6 @@ use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
-use craft\helpers\Address as AddressHelper;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
@@ -901,19 +900,6 @@ class UsersController extends Controller
 
         $tabs += $form->getTabMenu();
 
-        $addressError = false;
-        foreach ($user->getAddresses() as $address) {
-            if ($address->hasErrors()) {
-                $addressError = true;
-                break;
-            }
-        }
-        $tabs['addresses'] = [
-            'label' => Craft::t('app', 'Addresses'),
-            'url' => '#addresses',
-            'class' => $addressError ? 'error' : null,
-        ];
-
         // Show the permission tab for the users that can change them on Craft Pro editions
         $canAssignUserGroups = $currentUser->canAssignUserGroups();
         $showPermissionsTab = (
@@ -968,9 +954,6 @@ class UsersController extends Controller
         }
 
         $fieldsHtml = $form->render(false);
-
-        // Add address book management fields
-        $addressesHtml = AddressHelper::addressCardsHtml($user->getAddresses());
 
         // Prepare the language/locale options
         // ---------------------------------------------------------------------
@@ -1071,8 +1054,7 @@ JS,
             'showPhotoField',
             'showPermissionsTab',
             'canAssignUserGroups',
-            'fieldsHtml',
-            'addressesHtml'
+            'fieldsHtml'
         ));
     }
 

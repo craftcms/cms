@@ -20,6 +20,7 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
+use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -33,6 +34,7 @@ use craft\fieldlayoutelements\assets\AltField;
 use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\users\AddressesField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
@@ -1561,6 +1563,9 @@ trait ApplicationTrait
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;
+                    break;
+                case User::class:
+                    $event->fields[] = AddressesField::class;
                     break;
             }
         });
