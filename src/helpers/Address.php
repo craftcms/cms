@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\elements\Address as AddressElement;
 use craft\web\assets\addresses\AddressesAsset;
 
 /**
@@ -18,9 +19,8 @@ use craft\web\assets\addresses\AddressesAsset;
  */
 class Address
 {
-
     /**
-     * @param array $addresses
+     * @param AddressElement[] $addresses
      * @param string $namespace
      * @param bool $openNew
      */
@@ -31,7 +31,6 @@ class Address
         $namespacedId = $view->namespaceInputId($namespace);
 
         return $view->namespaceInputs(function() use ($view, $namespacedId, $addresses, $openNew) {
-
             $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
             $view->startJsBuffer();
 
@@ -48,7 +47,7 @@ class Address
             $addressCount = 0;
             foreach ($addresses as $address) {
                 $addressCount++;
-                $namespace = $address->id ? (string)$address->id : ('new' . $addressCount);
+                $namespace = $address->id ? (string)$address->id : "new$addressCount";
                 $namespacedName = $view->namespaceInputName($namespace);
                 $autoOpen = ($openNew && StringHelper::startsWith($namespace, 'new', false) && $addressCount == count($addresses));
                 $html .= $view->namespaceInputs(function() use ($address, $namespacedName, $autoOpen) {
@@ -84,7 +83,7 @@ class Address
 
             if ($rulesJs) {
                 if ($isHtmxRequest) {
-                    $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
+                    $html .= Html::tag('script', $rulesJs, ['type' => 'text/javascript']);
                 } else {
                     $view->registerJs($rulesJs);
                 }
@@ -94,13 +93,13 @@ class Address
             // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
             if ($isHtmxRequest) {
                 if ($bodyHtml = $view->getBodyHtml()) {
-                    $html .= html::tag('template', $bodyHtml, [
+                    $html .= Html::tag('template', $bodyHtml, [
                         'id' => 'body-html',
                         'class' => ['hx-body-html'],
                     ]);
                 }
                 if ($headHtml = $view->getHeadHtml()) {
-                    $html .= html::tag('template', $headHtml, [
+                    $html .= Html::tag('template', $headHtml, [
                         'id' => 'head-html',
                         'class' => ['hx-head-html'],
                     ]);
