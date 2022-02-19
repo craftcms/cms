@@ -59,7 +59,7 @@
     {% set jsId = id|namespaceInputId|e('js') %}
     {% set jsName = name|e('js') %}
     {% js %}
-    new Craft.AddressInput("{{ jsId }}", "{{ jsName }}", {
+    new Craft.AddressInput($("#{{ jsId }}"), "{{ jsName }}", {
         static: {{ static ? 'true' : 'false'}},
         autoOpen: {{ autoOpen ? 'true' : 'false'}},
     });

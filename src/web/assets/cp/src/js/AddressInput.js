@@ -6,7 +6,6 @@
 Craft.AddressInput = Garnish.Base.extend({
     initialized: false,
 
-    id: null,
     baseName: null,
 
     $addressCard: null,
@@ -24,14 +23,11 @@ Craft.AddressInput = Garnish.Base.extend({
     $doneBtn: null,
     $cancelBtn: null,
 
-    init: function(id, baseName, settings) {
-        var self = this;
-        this.id = id;
+    init: function(addressCard, baseName, settings) {
+        this.$addressCard = $(addressCard);
         this.baseName = baseName;
-
         this.setSettings(settings, Craft.AddressInput.defaults);
 
-        this.$addressCard = $('#' + id);
         this.$addressCardHeader = this.$addressCard.find('.address-card-header');
         this.$addressCardLabel = this.$addressCard.find('.address-card-label');
         this.$addressCardBody = this.$addressCard.find('.address-card-body');
@@ -50,19 +46,13 @@ Craft.AddressInput = Garnish.Base.extend({
 
         // Footer
         this.$footer = $('<div/>', {class: 'so-footer'});
-        const $spacer = $('<div/>', {class: 'so-spacer'}).appendTo(this.$footer);
+        $('<div/>', {class: 'so-spacer'}).appendTo(this.$footer);
 
         this.$doneBtn = $('<button/>', {
             type: 'submit',
             class: 'btn submit',
             text: Craft.t('app', 'Done'),
         }).appendTo(this.$footer);
-
-        // this.$cancelBtn = $('<button/>', {
-        //     type: 'button',
-        //     class: 'btn',
-        //     text: Craft.t('app', 'Cancel'),
-        // }).appendTo(this.$footer);
 
         this.$saveSpinner = $('<div/>', {class: 'spinner hidden'}).appendTo(this.$footer);
 
@@ -75,22 +65,19 @@ Craft.AddressInput = Garnish.Base.extend({
                 closeOnEsc: true,
                 closeOnShadeClick: true,
                 containerAttributes: {
-                    // action: '',
-                    // method: 'post',
-                    // novalidate: '',
                     class: 'address-editor',
                 }
             });
 
             // All selects in standard fields are the ones we want to monitor. Country, state, etc.
-            this.$addressCardFieldsContent.on('change', 'select', function(ev) {
-                self.refreshStandardFields();
-                self.refreshCard();
+            this.$addressCardFieldsContent.on('change', 'select', () => {
+                this.refreshStandardFields();
+                this.refreshCard();
             });
 
-            var inputSelector = "input[name^='" + this.baseName + "']";
-            this.$addressCardFieldsContent.on('blur', inputSelector,  function(ev) {
-                self.refreshCard();
+            const inputSelector = "input[name^='" + this.baseName + "']";
+            this.$addressCardFieldsContent.on('blur', inputSelector,  () => {
+                this.refreshCard();
             });
 
             // Edit address
@@ -117,12 +104,6 @@ Craft.AddressInput = Garnish.Base.extend({
             this.addListener(this.slideout.$shade, 'click', () => {
                 this.done();
             });
-            // this.$cancelBtn.on('click', (ev) => {
-            //     if (this.settings.autoOpen) {
-            //         this.slideout.close();
-            //         this.$addressCard.remove();
-            //     }
-            // });
             this.addListener(this.slideout.$container, 'submit', ev => {
                 ev.preventDefault();
                 this.done();
@@ -137,7 +118,7 @@ Craft.AddressInput = Garnish.Base.extend({
     },
     refreshStandardFields() {
         this.$saveSpinner.removeClass('hidden');
-        var data = new FormData(this.slideout.$container[0]);
+        const data = new FormData(this.slideout.$container[0]);
         data.append('name', this.baseName);
 
         this.sendActionRequest(data, this.settings.renderAddressStandardFieldsAction).then(response => {
@@ -149,15 +130,15 @@ Craft.AddressInput = Garnish.Base.extend({
             });
             this.$saveSpinner.addClass('hidden');
         }).catch(e => {
-            console.log(e);
+            console.warn(e);
         });
     },
     refreshCard() {
         this.$saveSpinner.removeClass('hidden');
-        var data = new FormData(this.slideout.$container[0]);
+        const data = new FormData(this.slideout.$container[0]);
         data.append('name', this.baseName);
 
-        var label = data.get(this.baseName.concat('[label]'));
+        const label = data.get(this.baseName.concat('[label]'));
         if (label) {
             this.$addressCardLabel.removeClass('hidden');
             this.$addressCardLabel.text(label);
@@ -165,7 +146,6 @@ Craft.AddressInput = Garnish.Base.extend({
             this.$addressCardLabel.addClass('hidden');
             this.$addressCardLabel.text('');
         }
-        ;
 
         this.sendActionRequest(data, this.settings.renderFormattedAddressAction).then(response => {
             this.$addressCardBody.html(response.data.html);
