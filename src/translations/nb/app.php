@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'Prisen inkluderer ett år med oppdateringer.',
     'Primary {type} page' => 'Primær {type}-side',
     'Primary' => 'Primær',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'Pro-pris med rabatt',
     'Profile Twig templates when Dev Mode is disabled' => 'Twig-maler for profilering når utviklermodus er deaktivert',
     'Progress' => 'Fremskritt',
