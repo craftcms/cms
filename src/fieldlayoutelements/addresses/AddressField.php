@@ -5,11 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements;
+namespace craft\fieldlayoutelements\addresses;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
+use craft\fieldlayoutelements\BaseField;
 use yii\base\InvalidArgumentException;
 
 /**

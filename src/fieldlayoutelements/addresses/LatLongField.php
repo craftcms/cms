@@ -5,27 +5,28 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements;
+namespace craft\fieldlayoutelements\addresses;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
+use craft\fieldlayoutelements\BaseField;
 use yii\base\InvalidArgumentException;
 
 /**
- * AddressLatitudeLongitudeField represents the latitude and logitude fields in an address element that can be included within an Address field layout designer.
+ * LatLongField represents the latitude and logitude fields in an address element that can be included within an Address field layout designer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AddressLatitudeLongitudeField extends BaseField
+class LatLongField extends BaseField
 {
     /**
      * @inheritdoc
      */
     public function attribute(): string
     {
-        return 'latitudelongitude';
+        return 'latLong';
     }
 
     /**
@@ -74,10 +75,10 @@ class AddressLatitudeLongitudeField extends BaseField
     protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('AddressLatitudeLongitudeField can only be used in address field layouts.');
+            throw new InvalidArgumentException('LatLongField can only be used in address field layouts.');
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/address-latitudelongitude', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/address-latlong', [
             'address' => $element,
             'static' => $static,
         ]);

@@ -165,8 +165,8 @@
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\events\RegisterImageTransformersEvent`.
 - Added `craft\events\TransformImageEvent`.
-- Added `craft\fieldlayoutelements\AddressField`.
-- Added `craft\fieldlayoutelements\AddressLatitudeLongitudeField`.
+- Added `craft\fieldlayoutelements\addresses\AddressField`.
+- Added `craft\fieldlayoutelements\addresses\LatLongField`.
 - Added `craft\fieldlayoutelements\assets\AltField`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextareaField`.
