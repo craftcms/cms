@@ -57,7 +57,7 @@ class AddressLatitudeLongitudeField extends BaseField
      */
     public function label(): ?string
     {
-        return Craft::t('commerce', 'Latitude & Longitude');
+        return Craft::t('app', 'Latitude & Longitude');
     }
 
     /**
@@ -65,7 +65,7 @@ class AddressLatitudeLongitudeField extends BaseField
      */
     protected function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('commerce', 'Latitude & Longitude');
+        return Craft::t('app', 'Latitude & Longitude');
     }
 
     /**

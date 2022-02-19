@@ -57,7 +57,7 @@ class AddressField extends BaseField
      */
     public function label(): ?string
     {
-        return Craft::t('commerce', 'Address');
+        return Craft::t('app', 'Address');
     }
 
     /**
@@ -65,7 +65,7 @@ class AddressField extends BaseField
      */
     protected function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('commerce', 'Address');
+        return Craft::t('app', 'Address');
     }
 
     /**
