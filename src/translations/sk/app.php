@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'V cene je zahrnutý 1 rok aktualizácií.',
     'Primary {type} page' => 'Hlavná {type} stránka',
     'Primary' => 'Hlavný',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'Proporcionálna zľava',
     'Profile Twig templates when Dev Mode is disabled' => 'Šablóny profilu Twig v zakázanom režime vývojára',
     'Progress' => 'Pokrok',
