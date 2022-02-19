@@ -3552,7 +3552,7 @@ ul.tree,
   align-items: center;
   max-width: 100%;
 
-  ul {
+  [role="tablist"] {
     margin: calc(var(--s) * -1) var(--neg-padding) 0;
     padding: var(--s) var(--padding) 0;
     flex: 1;
@@ -3582,43 +3582,39 @@ ul.tree,
       }
     }
 
-    li {
+    [role="tab"] {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      position: relative;
+      border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+      padding: 0 12px;
+      white-space: nowrap;
+      color: $lightTextColor;
+      height: 42px;
+
       &:not(:first-child) {
-        a {
-          @include margin-left(4px);
+        @include margin-left(4px);
+      }
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      &:not(.sel) {
+        &:hover {
+          background-color: transparentize($grey300, 0.85);
         }
       }
 
-      a {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        position: relative;
-        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
-        padding: 0 12px;
-        white-space: nowrap;
-        color: $lightTextColor;
-        height: 42px;
+      &.sel {
+        cursor: default;
+        color: $textColor;
+        @include pane;
+      }
 
-        &:hover {
-          text-decoration: none;
-        }
-
-        &:not(.sel) {
-          &:hover {
-            background-color: transparentize($grey300, 0.85);
-          }
-        }
-
-        &.sel {
-          cursor: default;
-          color: $textColor;
-          @include pane;
-        }
-
-        span[data-icon] {
-          @include margin-left(4px);
-        }
+      span[data-icon] {
+        @include margin-left(4px);
       }
     }
   }
