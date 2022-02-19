@@ -17,6 +17,9 @@ class m220126_003432_addresses extends Migration
      */
     public function safeUp(): bool
     {
+        $this->dropTableIfExists(Table::ADDRESSES);
+        $this->dropTableIfExists(Table::ADDRESSES_USERS);
+
         $this->createTable(Table::ADDRESSES, [
             'id' => $this->integer()->notNull(),
             'label' => $this->string()->notNull(),
@@ -61,6 +64,7 @@ class m220126_003432_addresses extends Migration
      */
     public function safeDown(): bool
     {
-        return true;
+        echo "m220126_003432_addresses cannot be reverted.\n";
+        return false;
     }
 }
