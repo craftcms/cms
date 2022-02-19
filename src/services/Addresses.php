@@ -135,19 +135,12 @@ class Addresses extends Component
      */
     public function getLocalityTypeLabel($type): string
     {
-        switch ($type) {
-            case LocalityType::SUBURB:
-                return Craft::t('app', 'Suburb');
-            case LocalityType::DISTRICT:
-                return Craft::t('app', 'District');
-            case LocalityType::CITY:
-                return Craft::t('app', 'City');
-            case LocalityType::POST_TOWN:
-                return Craft::t('app', 'Post Town');
-            default:
-                // \CommerceGuys\Addressing\AddressFormat\LocalityType::getDefault() is Suburb
-                return Craft::t('app', 'City');
-        }
+        return match ($type) {
+            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
+            LocalityType::DISTRICT => Craft::t('app', 'District'),
+            LocalityType::POST_TOWN => Craft::t('app', 'Post Town'),
+            default => Craft::t('app', 'City'),
+        };
     }
 
     /**
@@ -156,21 +149,13 @@ class Addresses extends Component
      */
     public function getDependentLocalityTypeLabel($type): string
     {
-        switch ($type) {
-            case DependentLocalityType::DISTRICT:
-                return Craft::t('app', 'District');
-            case DependentLocalityType::NEIGHBORHOOD:
-                return Craft::t('app', 'Neighborhood');
-            case DependentLocalityType::SUBURB:
-                return Craft::t('app', 'Suburb');
-            case DependentLocalityType::TOWNLAND:
-                return Craft::t('app', 'Townland');
-            case DependentLocalityType::VILLAGE_TOWNSHIP:
-                return Craft::t('app', 'Village/Township');
-            default:
-                // \CommerceGuys\Addressing\AddressFormat\DependentLocalityType::getDefault() is Suburb
-                return Craft::t('app', 'Suburb');
-        }
+        return match ($type) {
+            DependentLocalityType::DISTRICT => Craft::t('app', 'District'),
+            DependentLocalityType::NEIGHBORHOOD => Craft::t('app', 'Neighborhood'),
+            DependentLocalityType::TOWNLAND => Craft::t('app', 'Townland'),
+            DependentLocalityType::VILLAGE_TOWNSHIP => Craft::t('app', 'Village/Township'),
+            default => Craft::t('app', 'Suburb'),
+        };
     }
 
     /**
@@ -179,19 +164,12 @@ class Addresses extends Component
      */
     public function getPostalCodeTypeLabel($type): string
     {
-        switch ($type) {
-            case PostalCodeType::EIR:
-                return Craft::t('app', 'Eircode');
-            case PostalCodeType::PIN:
-                return Craft::t('app', 'Pin');
-            case PostalCodeType::POSTAL:
-                return Craft::t('app', 'Postal Code');
-            case PostalCodeType::ZIP:
-                return Craft::t('app', 'Zip Code');
-            default:
-                // \CommerceGuys\Addressing\AddressFormat\PostalCodeType::getDefault() is Postal Code
-                return Craft::t('app', 'Postal Code');
-        }
+        return match ($type) {
+            PostalCodeType::EIR => Craft::t('app', 'Eircode'),
+            PostalCodeType::PIN => Craft::t('app', 'Pin'),
+            PostalCodeType::ZIP => Craft::t('app', 'Zip Code'),
+            default => Craft::t('app', 'Postal Code'),
+        };
     }
 
     /**
@@ -200,37 +178,21 @@ class Addresses extends Component
      */
     public function getAdministrativeAreaTypeLabel($type): string
     {
-        switch ($type) {
-            case AdministrativeAreaType::AREA:
-                return Craft::t('app', 'Area');
-            case AdministrativeAreaType::CANTON:
-                return Craft::t('app', 'Canton');
-            case AdministrativeAreaType::COUNTY:
-                return Craft::t('app', 'Country');
-            case AdministrativeAreaType::DEPARTMENT:
-                return Craft::t('app', 'Department');
-            case AdministrativeAreaType::DISTRICT:
-                return Craft::t('app', 'District');
-            case AdministrativeAreaType::DO_SI:
-                return Craft::t('app', 'Do Si');
-            case AdministrativeAreaType::EMIRATE:
-                return Craft::t('app', 'Emirate');
-            case AdministrativeAreaType::ISLAND:
-                return Craft::t('app', 'Island');
-            case AdministrativeAreaType::OBLAST:
-                return Craft::t('app', 'Oblast');
-            case AdministrativeAreaType::PARISH:
-                return Craft::t('app', 'Parish');
-            case AdministrativeAreaType::PREFECTURE:
-                return Craft::t('app', 'Prefecture');
-            case AdministrativeAreaType::PROVINCE:
-                return Craft::t('app', 'Province');
-            case AdministrativeAreaType::STATE:
-                return Craft::t('app', 'State');
-            default:
-                // \CommerceGuys\Addressing\AddressFormat\AdministrativeAreaType::getDefault() is Province
-                return Craft::t('app', 'Province');
-        }
+        return match ($type) {
+            AdministrativeAreaType::AREA => Craft::t('app', 'Area'),
+            AdministrativeAreaType::CANTON => Craft::t('app', 'Canton'),
+            AdministrativeAreaType::COUNTY => Craft::t('app', 'Country'),
+            AdministrativeAreaType::DEPARTMENT => Craft::t('app', 'Department'),
+            AdministrativeAreaType::DISTRICT => Craft::t('app', 'District'),
+            AdministrativeAreaType::DO_SI => Craft::t('app', 'Do Si'),
+            AdministrativeAreaType::EMIRATE => Craft::t('app', 'Emirate'),
+            AdministrativeAreaType::ISLAND => Craft::t('app', 'Island'),
+            AdministrativeAreaType::OBLAST => Craft::t('app', 'Oblast'),
+            AdministrativeAreaType::PARISH => Craft::t('app', 'Parish'),
+            AdministrativeAreaType::PREFECTURE => Craft::t('app', 'Prefecture'),
+            AdministrativeAreaType::STATE => Craft::t('app', 'State'),
+            default => Craft::t('app', 'Province'),
+        };
     }
 
     /**
@@ -251,7 +213,7 @@ class Addresses extends Component
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();
 
-        $projectConfig->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], "Save the address field layout");
+        $projectConfig->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], 'Save the address field layout');
         return true;
     }
 
