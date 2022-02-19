@@ -400,7 +400,7 @@ class Assets extends BaseRelationField
     public function normalizeValue($value, ?ElementInterface $element = null)
     {
         // If data strings are passed along, make sure the array keys are retained.
-        if (isset($value['data']) && !empty($value['data'])) {
+        if (is_array($value) && isset($value['data']) && !empty($value['data'])) {
             $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
             unset($value['data'], $value['filename']);
 

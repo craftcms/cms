@@ -243,6 +243,7 @@
 - Added `craft\models\FieldLayoutElement::$uid`.
 - Added `craft\models\FieldLayoutElement::getLayout()` and `setLayout()`.
 - Added `craft\models\FieldLayoutForm::getVisibleElements()`.
+- Added `craft\models\FieldLayoutFormTab::getTabId()`.
 - Added `craft\models\FieldLayoutFormTab::getUid()`.
 - Added `craft\models\FieldLayoutTab::getElements()` and `setElements()`.
 - Added `craft\models\FsListing`.
@@ -328,9 +329,12 @@
 - Added `craft\web\assets\money\MoneyAsset`.
 - Added `craft\web\Controller::asCpScreen()`.
 - Added `craft\web\Controller::asFailure()`.
+- Added `craft\web\Controller::asModelFailure()`.
+- Added `craft\web\Controller::asModelSuccess()`.
 - Added `craft\web\Controller::asSuccess()`.
 - Added `craft\web\Controller::CpScreenResponseBehavior()`.
 - Added `craft\web\Controller::CpScreenResponseFormatter()`.
+- Added `craft\web\Controller::getPostedRedirectUrl()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
 - Added `craft\web\Controller::TemplateResponseFormatter()`.
 - Added `craft\web\twig\Extension::moneyFilter()`.
@@ -389,6 +393,7 @@
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
 - Element queries’ `revision` params can now be set to `null` to include normal and revision elements.
+- Element queries can no longer be traversed or accessed like an array. Use a query execution method such as `all()`, `collect()`, or `one()` to fetch the results before working with them.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Path options passed to console commands (e.g. `--basePath`) now take precedence over their enivronment variable/PHP constant counterparts.
@@ -591,6 +596,7 @@
 - Deprecated `craft\services\ProjectConfig::getDoesYamlExist()`. `getDoesExternalConfigExist()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::getIsApplyingYamlChanges()`. `getIsApplyingExternalChanges()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::regenerateYamlFromConfig()`. `regenerateExternalConfig()` should be used instead.
+- Deprecated `craft\web\Controller::asErrorJson()`. `asFailure()` should be used instead.
 - Deprecated the `assets/save-asset` action. `elements/save` should be used instead.
 - Deprecated the `categories/save-category` action. `elements/save` should be used instead.
 - Deprecated the `entries/save-entry` action. `elements/save` should be used instead.
@@ -716,6 +722,11 @@
 - Removed `craft\elements\Asset::getUri()`. `getPath()` can be used instead.
 - Removed `craft\elements\Asset::setTransformSource()`.
 - Removed `craft\elements\Category::$newParentId`. `getParentId()` and `setParentId()` can be used instead.
+- Removed `craft\elements\db\ElementQuery::getIterator()`.
+- Removed `craft\elements\db\ElementQuery::offsetExists()`.
+- Removed `craft\elements\db\ElementQuery::offsetGet()`.
+- Removed `craft\elements\db\ElementQuery::offsetSet()`.
+- Removed `craft\elements\db\ElementQuery::offsetUnset()`.
 - Removed `craft\elements\Entry::$newParentId`. `getParentId()` and `setParentId()` can be used instead.
 - Removed `craft\elements\MatrixBlock::$ownerSiteId`. `$siteId` can be used instead.
 - Removed `craft\elements\User::getPhotoUrl()`. `getPhoto()->getUrl()` can be used instead.

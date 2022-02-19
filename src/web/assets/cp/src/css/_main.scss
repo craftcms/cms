@@ -535,11 +535,24 @@ button {
   align-content: stretch;
   justify-content: center;
   gap: var(--s);
-  color: $blue700;
+  color: $blue800;
 
   #content-notice & {
     display: inline-flex;
     justify-content: flex-start;
+  }
+
+  .so-notice > & {
+    @include margin(calc(var(--s) * -1), 0, calc(var(--s) * -1), calc(var(--xl) * -1));
+    @include padding(var(--s), 0, var(--s), var(--xl));
+    @include border-bottom-left-radius($largeBorderRadius);
+
+    body.ltr & {
+      background-image: linear-gradient(to bottom right, transparentize($blue600, 0.8), transparentize($blue600, 1) 50%);
+    }
+    body.rtl & {
+      background-image: linear-gradient(to left, transparentize($blue600, 0.8), transparentize($blue600, 1));
+    }
   }
 
   p {
@@ -548,6 +561,7 @@ button {
   }
 
   .draft-icon {
+    position: relative;
     flex-shrink: 0;
     width: 34px;
     height: 34px;
@@ -555,21 +569,34 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 100%;
-    border: 2px solid transparentize($blue600, 0.8);
+    border: 2px solid transparentize($blue800, 0.8);
     box-sizing: border-box;
+    box-shadow: 0 1px 1px 1px $white;
 
     &:before {
       position: relative;
       left: 1px;
-      color: $blue700 !important;
+      color: $blue800 !important;
       font-size: 18px;
+    }
+
+    &:after {
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 100%;
+      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
     }
   }
 
   .discard-changes-btn {
     @include margin-left(var(--xs));
     background-color: transparent !important;
-    color: $blue700 !important;
+    color: $blue800 !important;
     border: 2px solid $blue600;
 
     &:hover,
@@ -3525,7 +3552,7 @@ ul.tree,
   align-items: center;
   max-width: 100%;
 
-  ul {
+  [role="tablist"] {
     margin: calc(var(--s) * -1) var(--neg-padding) 0;
     padding: var(--s) var(--padding) 0;
     flex: 1;
@@ -3555,43 +3582,39 @@ ul.tree,
       }
     }
 
-    li {
+    [role="tab"] {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      position: relative;
+      border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+      padding: 0 12px;
+      white-space: nowrap;
+      color: $lightTextColor;
+      height: 42px;
+
       &:not(:first-child) {
-        a {
-          @include margin-left(4px);
+        @include margin-left(4px);
+      }
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      &:not(.sel) {
+        &:hover {
+          background-color: transparentize($grey300, 0.85);
         }
       }
 
-      a {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        position: relative;
-        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
-        padding: 0 12px;
-        white-space: nowrap;
-        color: $lightTextColor;
-        height: 42px;
+      &.sel {
+        cursor: default;
+        color: $textColor;
+        @include pane;
+      }
 
-        &:hover {
-          text-decoration: none;
-        }
-
-        &:not(.sel) {
-          &:hover {
-            background-color: transparentize($grey300, 0.85);
-          }
-        }
-
-        &.sel {
-          cursor: default;
-          color: $textColor;
-          @include pane;
-        }
-
-        span[data-icon] {
-          @include margin-left(4px);
-        }
+      span[data-icon] {
+        @include margin-left(4px);
       }
     }
   }
@@ -5342,7 +5365,7 @@ fieldset {
     }
 
     &.outdated {
-      background-color: $yellow300;
+      background-color: $yellow700;
     }
   }
 

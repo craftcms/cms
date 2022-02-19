@@ -86,14 +86,15 @@ import './system_messages.scss';
                 data[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
 
-            Craft.postActionRequest('system-messages/get-message-modal', data, (response, textStatus) => {
-                if (textStatus === 'success') {
+
+            Craft.sendActionRequest('POST', 'system-messages/get-message-modal', {data})
+                .then((response) => {
                     if (!this.$container) {
                         var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">' + response.body + '</form>').appendTo(Garnish.$bod);
                         this.setContainer($container);
                         this.show();
                     } else {
-                        this.$container.html(response.body);
+                        this.$container.html(response.text());
                     }
 
                     this.$languageSelect = this.$container.find('.language:first > select');
@@ -110,8 +111,7 @@ import './system_messages.scss';
                     setTimeout(() => {
                         this.$subjectInput.trigger('focus');
                     }, 100);
-                }
-            });
+                });
         },
 
         switchLanguage: function() {
@@ -152,13 +152,13 @@ import './system_messages.scss';
             this.$saveBtn.addClass('active');
             this.$spinner.show();
 
-            Craft.postActionRequest('system-messages/save-message', data, (response, textStatus) => {
-                this.$saveBtn.removeClass('active');
-                this.$spinner.hide();
-                this.loading = false;
+            Craft.sendActionRequest('POST', 'system-messages/save-message', {data})
+                .then((response) => {
+                    this.$saveBtn.removeClass('active');
+                    this.$spinner.hide();
+                    this.loading = false;
 
-                if (textStatus === 'success') {
-                    if (response.success) {
+                    if (response.data.success) {
                         // Only update the page if we're editing the current language's message
                         if (data.language === Craft.primarySiteLanguage) {
                             this.message.updateHtmlFromModal();
@@ -169,8 +169,12 @@ import './system_messages.scss';
                     } else {
                         Craft.cp.displayError();
                     }
-                }
-            });
+                })
+                .catch(({response}) => {
+                    this.$saveBtn.removeClass('active');
+                    this.$spinner.hide();
+                    this.loading = false;
+                });
         },
 
         cancel: function() {

@@ -35,12 +35,12 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\services\ElementSources;
-use craft\validators\ArrayValidator;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
+use yii\validators\NumberValidator;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -322,13 +322,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getElementValidationRules(): array
     {
         $rules = [
-            [
-                ArrayValidator::class,
-                'min' => $this->allowLimit ? $this->minRelations : null,
-                'max' => $this->allowLimit ? $this->maxRelations : null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
-                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
-            ],
+            ['validateRelationCount', 'on' => [Element::SCENARIO_LIVE]],
         ];
 
         if ($this->validateRelatedElements) {
@@ -336,6 +330,37 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         return $rules;
+    }
+
+    /**
+     * Validates that the number of related elements are within the min/max relation bounds.
+     *
+     * @param ElementInterface $element
+     */
+    public function validateRelationCount(ElementInterface $element): void
+    {
+        if ($this->allowLimit && ($this->minRelations || $this->maxRelations)) {
+            /** @var ElementQueryInterface|Collection $value */
+            $value = $element->getFieldValue($this->handle);
+
+            $arrayValidator = new NumberValidator([
+                'min' => $this->minRelations,
+                'max' => $this->maxRelations,
+                'tooSmall' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.', [
+                    'attribute' => Craft::t('site', $this->name),
+                    'min' => $this->minRelations, // Need to pass this in now
+                ]),
+                'tooBig' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.', [
+                    'attribute' => Craft::t('site', $this->name),
+                    'max' => $this->maxRelations, // Need to pass this in now
+                ]),
+                'skipOnEmpty' => false,
+            ]);
+
+            if (!$arrayValidator->validate($value->count(), $error)) {
+                $element->addError($this->handle, $error);
+            }
+        }
     }
 
     /**

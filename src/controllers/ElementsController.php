@@ -873,9 +873,9 @@ JS;
         }
 
         if (!$success) {
-            return $this->_asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => $element::lowerDisplayName(),
-            ]), $element);
+            ]));
         }
 
         // See if the user happens to have a provisional element. If so delete it.
@@ -956,9 +956,9 @@ JS;
         try {
             $newElement = Craft::$app->getElements()->duplicateElement($element);
         } catch (InvalidElementException $e) {
-            return $this->_asFailure(Craft::t('app', 'Couldn’t duplicate {type}.', [
+            return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
-            ]), $e->element);
+            ]));
         } catch (Throwable $e) {
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
         }
@@ -999,9 +999,9 @@ JS;
         }
 
         if (!Craft::$app->getElements()->deleteElement($element)) {
-            return $this->_asFailure(Craft::t('app', 'Couldn’t delete {type}.', [
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
                 'type' => $element::lowerDisplayName(),
-            ]), $element);
+            ]));
         }
 
         return $this->_asSuccess(Craft::t('app', '{type} deleted.', [
@@ -1132,9 +1132,9 @@ JS;
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
 
             if (!Craft::$app->getElements()->saveElement($element)) {
-                return $this->_asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+                return $this->_asFailure($element, Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Craft::t('app', 'draft'),
-                ]), $element);
+                ]));
             }
 
             $creator = $element->getCreator();
@@ -1304,7 +1304,7 @@ JS;
             $message = Craft::t('app', 'Couldn’t apply draft.');
         }
 
-        return $this->_asFailure($message, $element);
+        return $this->_asFailure($element, $message);
     }
 
     /**
@@ -1333,9 +1333,9 @@ JS;
         }
 
         if (!Craft::$app->getElements()->deleteElement($element, true)) {
-            return $this->_asFailure(Craft::t('app', 'Couldn’t delete {type}.', [
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
                 'type' => Craft::t('app', 'draft'),
-            ]), $element);
+            ]));
         }
 
         if ($element->isProvisionalDraft) {
@@ -1655,7 +1655,7 @@ JS;
     private function _asSuccess(string $message, ElementInterface $element, array $data = [], bool $addAnother = false): Response
     {
         /** @var Element $element */
-        $response = $this->asSuccess($message, $element, 'element', $data);
+        $response = $this->asModelSuccess($element, $message, 'element', $data);
 
         if ($addAnother && $this->_addAnother) {
             $user = Craft::$app->getUser()->getIdentity();
@@ -1685,9 +1685,9 @@ JS;
         return $response;
     }
 
-    private function _asFailure(string $message, ElementInterface $element): ?Response
+    private function _asFailure(ElementInterface $element, string $message): ?Response
     {
         /** @var Element $element */
-        return $this->asFailure($message, $element, 'element');
+        return $this->asModelFailure($element, $message, 'element');
     }
 }

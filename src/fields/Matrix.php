@@ -747,15 +747,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'validateBlocks',
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
             ],
-            [
-                ArrayValidator::class,
-                'min' => $this->minBlocks ?: null,
-                'max' => $this->maxBlocks ?: null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
-                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
-                'skipOnEmpty' => false,
-                'on' => Element::SCENARIO_LIVE,
-            ],
         ];
     }
 
@@ -799,6 +790,29 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if (!$allBlocksValidate) {
             // Just in case the blocks weren't already cached
             $value->setCachedResult($blocks);
+        }
+
+        if (
+            $element->getScenario() === Element::SCENARIO_LIVE &&
+            ($this->minBlocks || $this->maxBlocks)
+        ) {
+            $arrayValidator = new ArrayValidator([
+                'min' => $this->minBlocks ?: null,
+                'max' => $this->maxBlocks ?: null,
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
+                    'attribute' => Craft::t('site', $this->name),
+                    'min' => $this->minBlocks, // Need to pass this in now
+                ]),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
+                    'attribute' => Craft::t('site', $this->name),
+                    'max' => $this->maxBlocks, // Need to pass this in now
+                ]),
+                'skipOnEmpty' => false,
+            ]);
+
+            if (!$arrayValidator->validate($blocks, $error)) {
+                $element->addError($this->handle, $error);
+            }
         }
     }
 

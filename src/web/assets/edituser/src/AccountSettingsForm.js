@@ -42,16 +42,18 @@ import './account.scss';
                 userId: this.userId
             };
 
-            Craft.postActionRequest('users/get-password-reset-url', data, (response, textStatus) => {
-                this.$actionBtn.removeClass('loading');
-
-                if (textStatus === 'success') {
+            Craft.sendActionRequest('POST', 'users/get-password-reset-url', {data})
+                .then((response) => {
+                    this.$actionBtn.removeClass('loading');
                     Craft.ui.createCopyTextPrompt({
                         label: Craft.t('app', 'Copy the activation URL'),
-                        value: response.url,
+                        value: response.data.url,
                     });
-                }
-            });
+
+                })
+                .catch(({response}) => {
+                    this.$actionBtn.removeClass('loading');
+                });
         },
 
         handleCopyImpersonationUrlBtnClick: function() {
@@ -61,30 +63,36 @@ import './account.scss';
                 userId: this.userId
             };
 
-            Craft.postActionRequest('users/get-impersonation-url', data, (response, textStatus) => {
-                this.$actionBtn.removeClass('loading');
-
-                if (textStatus === 'success') {
+            Craft.sendActionRequest('POST', 'users/get-impersonation-url', {data})
+                .then((response) => {
+                    this.$actionBtn.removeClass('loading');
                     Craft.ui.createCopyTextPrompt({
                         label: Craft.t('app', 'Copy the impersonation URL, and open it in a new private window.'),
-                        value: response.url,
+                        value: response.data.url,
                     });
-                }
-            });
+
+                })
+                .catch(({response}) => {
+                    this.$actionBtn.removeClass('loading');
+                });
         },
 
         showConfirmDeleteModal: function() {
             if (!this.confirmDeleteModal) {
                 this.$actionBtn.addClass('loading');
-                Craft.postActionRequest('users/user-content-summary', {userId: this.userId}, (response, textStatus) => {
-                    this.$actionBtn.removeClass('loading');
-                    if (textStatus === 'success') {
+
+                let data = {userId: this.userId};
+                Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
+                    .then((response) => {
+                        this.$actionBtn.removeClass('loading');
                         this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
-                            contentSummary: response,
+                            contentSummary: response.data,
                             redirect: this.settings.deleteModalRedirect
                         });
-                    }
-                });
+                    })
+                    .catch(({response}) => {
+                        this.$actionBtn.removeClass('loading');
+                    });
             } else {
                 this.confirmDeleteModal.show();
             }
