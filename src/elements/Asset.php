@@ -34,7 +34,7 @@ use craft\errors\FileException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
-use craft\fieldlayoutelements\AssetAltField;
+use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -851,7 +851,7 @@ class Asset extends Element
         $scenario = $this->getScenario();
 
         if ($scenario === self::SCENARIO_LIVE) {
-            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AssetAltField::class, $this);
+            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
             if ($altElement && $altElement->required) {
                 (new RequiredValidator())->validateAttribute($this, 'alt');
             }

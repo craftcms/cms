@@ -29,9 +29,9 @@ use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
 use craft\fieldlayoutelements\AddressField;
 use craft\fieldlayoutelements\AddressLatitudeLongitudeField;
-use craft\fieldlayoutelements\AssetAltField;
-use craft\fieldlayoutelements\AssetTitleField;
-use craft\fieldlayoutelements\EntryTitleField;
+use craft\fieldlayoutelements\assets\AltField;
+use craft\fieldlayoutelements\assets\AssetTitleField;
+use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\App;
 use craft\helpers\Db;
@@ -1557,7 +1557,7 @@ trait ApplicationTrait
                     break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
-                    $event->fields[] = AssetAltField::class;
+                    $event->fields[] = AltField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;
