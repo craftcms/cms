@@ -5,6 +5,7 @@
  */
 Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     $table: null,
+    $tableCaption: null,
     $selectedSortHeader: null,
 
     structureTableSort: null,
@@ -19,6 +20,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     },
 
     afterInit: function() {
+        // Set table caption
+        this.$tableCaption = this.$table.find('caption');
+
         // Set the sort header
         this.initTableHeaders();
 
@@ -64,22 +68,36 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
                 sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
 
-                $header
-                    .addClass('ordered ' + selectedSortDir)
-                    .on('click', this._handleSelectedSortHeaderClick.bind(this));
+                $header.addClass('ordered ' + selectedSortDir);
+                this.makeColumnSortable($header, true);
             } else {
                 // Is this attribute sortable?
                 var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
 
                 if ($sortAttribute.length) {
-                    $header
-                        .addClass('orderable')
-                        .on('click', this._handleUnselectedSortHeaderClick.bind(this));
+                    $header.addClass('orderable');
+                    this.makeColumnSortable($header);
                 }
             }
 
             $header.attr('aria-sort', sortValue);
         }
+    },
+
+    makeColumnSortable: function($header, sorted = false) {
+        const $headerText = $header.html();
+        const captionId = this.$tableCaption.attr('id');
+
+        $headerButton = $('<button type="button" aria-pressed="false"></button>')
+          .html($headerText)
+          .attr('aria-describedby', captionId)
+          .on('click', this._handleUnselectedSortHeaderClick.bind(this));
+
+        if (sorted) {
+            $headerButton.attr('aria-pressed', 'true');
+        }
+
+        $header.empty().append($headerButton);
     },
 
     isVerticalList: function() {
@@ -321,7 +339,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     },
 
     _handleUnselectedSortHeaderClick: function(ev) {
-        var $header = $(ev.currentTarget);
+        var $header = $(ev.currentTarget).closest('th');
 
         if ($header.hasClass('loading')) {
             return;

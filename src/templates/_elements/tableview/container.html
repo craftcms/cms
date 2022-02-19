@@ -1,6 +1,7 @@
 <div class="tableview{% if context == 'index' %} tablepane{% endif %}">
     <table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %}>
-        <thead>
+      <caption id="sort-instructions" class="visually-hidden">column headers with buttons are sortable</caption>
+      <thead>
         <tr>
             {% if showCheckboxes %}
                 <th class="checkbox-cell selectallcontainer orderable"></th>
@@ -9,10 +10,10 @@
                 {% set icon = (attribute[1].icon is defined ? attribute[1].icon : null) %}
                 <th scope="col" data-attribute="{{ attribute[0] }}"
                     {%- if icon %} title="{{ attribute[1].label }}"{% endif %}>
-                    {% if icon %}
+                    {%- if icon -%}
                         <span data-icon="{{ icon }}" aria-hidden="true"></span>
                         <span class="visually-hidden">{{ attribute[1].label }}</span>
-                    {% endif %}
+                    {%- endif -%}
 
                     {%- if not icon %}{{ attribute[1].label|t('site') }}{% endif -%}
                 </th>
