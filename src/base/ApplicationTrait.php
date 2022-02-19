@@ -1547,13 +1547,13 @@ trait ApplicationTrait
             $fieldLayout = $event->sender;
 
             switch ($fieldLayout->type) {
-                case Address::class:
-                    $event->fields[] = AddressField::class;
-                    $event->fields[] = LatLongField::class;
-                    break;
                 case Category::class:
                 case Tag::class:
                     $event->fields[] = TitleField::class;
+                    break;
+                case Address::class:
+                    $event->fields[] = AddressField::class;
+                    $event->fields[] = LatLongField::class;
                     break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
