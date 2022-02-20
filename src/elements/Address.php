@@ -44,6 +44,103 @@ use yii\base\Exception;
 class Address extends Element implements AddressInterface
 {
     /**
+     * @inheritdoc
+     */
+    public static function hasContent(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inerhitdoc
+     */
+    public static function hasTitles(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasStatuses(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function createCondition(): ElementConditionInterface
+    {
+        return Craft::createObject(AddressCondition::class, [static::class]);
+    }
+
+    /**
+     * @param $config
+     * @return Address
+     */
+    public static function create($config): Address
+    {
+        $config = array_filter($config);
+
+        // Support fields
+        $fields = [];
+        if (isset($config['fields'])) {
+            $fields = $config['fields'];
+            unset($config['fields']);
+        }
+
+        $address = new static($config);
+        $address->uid = $address->uid ?: StringHelper::UUID();
+        $address->setFieldValues($fields);
+        return $address;
+    }
+
+    /**
+     * @inheritdoc
+     * @return AddressQuery The newly created [[AddressQuery]] instance.
+     */
+    public static function find(): ElementQueryInterface
+    {
+        return new AddressQuery(static::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSearchableAttributes(): array
+    {
+        return self::_attributes();
+    }
+
+    /**
+     * Returns all attributes
+     *
+     * @return string[]
+     */
+    private static function _attributes(): array
+    {
+        return [
+            'id',
+            'label',
+            'countryCode',
+            'givenName',
+            'additionalName',
+            'familyName',
+            'addressLine1',
+            'addressLine2',
+            'administrativeArea',
+            'locality',
+            'dependentLocality',
+            'postalCode',
+            'sortingCode',
+            'organization',
+            'latitude',
+            'longitude'
+        ];
+    }
+
+    /**
      * @var ?int ID
      */
     public ?int $id = null;
@@ -178,30 +275,6 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inerhitdoc
-     */
-    public static function hasTitles(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasStatuses(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getAttributeLabel($attribute): string
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->getCountryCode());
@@ -226,79 +299,6 @@ class Address extends Element implements AddressInterface
             'sortingCode' => Craft::t('app', 'Sorting code'),
             default => parent::getAttributeLabel($attribute),
         };
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function createCondition(): ElementConditionInterface
-    {
-        return Craft::createObject(AddressCondition::class, [static::class]);
-    }
-
-    /**
-     * @param $config
-     * @return Address
-     */
-    public static function create($config): Address
-    {
-        $config = array_filter($config);
-
-        // Support fields
-        $fields = [];
-        if (isset($config['fields'])) {
-            $fields = $config['fields'];
-            unset($config['fields']);
-        }
-
-        $address = new static($config);
-        $address->uid = $address->uid ?: StringHelper::UUID();
-        $address->setFieldValues($fields);
-        return $address;
-    }
-
-    /**
-     * @inheritdoc
-     * @return AddressQuery The newly created [[AddressQuery]] instance.
-     */
-    public static function find(): ElementQueryInterface
-    {
-        return new AddressQuery(static::class);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected static function defineSearchableAttributes(): array
-    {
-        return self::_attributes();
-    }
-
-    /**
-     * Returns all attributes
-     *
-     * @return string[]
-     */
-    private static function _attributes(): array
-    {
-        return [
-            'id',
-            'label',
-            'countryCode',
-            'givenName',
-            'additionalName',
-            'familyName',
-            'addressLine1',
-            'addressLine2',
-            'administrativeArea',
-            'locality',
-            'dependentLocality',
-            'postalCode',
-            'sortingCode',
-            'organization',
-            'latitude',
-            'longitude'
-        ];
     }
 
     /**
