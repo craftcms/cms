@@ -765,6 +765,7 @@
 - Removed `craft\gql\base\Resolver::prepareArguments()`.
 - Removed `craft\helpers\App::dbMutexConfig()`.
 - Removed `craft\helpers\ArrayHelper::filterByValue()`. `where()` can be used instead.
+- Removed `craft\helpers\Cp::editElementTitles()`.
 - Removed `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` can be used instead.
 - Removed `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` can be used instead.
 - Removed `craft\helpers\FileHelper::removeFile()`. `unlink()` can be used instead.
@@ -957,6 +958,7 @@
 - Removed the `cp.categories.edit.meta` control panel template hook.
 - Removed the `cp.categories.edit.settings` control panel template hook.
 - Removed the `cp.categories.edit` control panel template hook.
+- Removed the `cp.elements.edit` control panel template hook.
 - Removed the `cp.entries.edit.content` control panel template hook.
 - Removed the `cp.entries.edit.details` control panel template hook.
 - Removed the `cp.entries.edit.meta` control panel template hook.
