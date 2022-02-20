@@ -938,6 +938,7 @@
 - Removed the `cp.categories.edit.meta` control panel template hook.
 - Removed the `cp.categories.edit.settings` control panel template hook.
 - Removed the `cp.categories.edit` control panel template hook.
+- Removed the `cp.elements.edit` control panel template hook.
 - Removed the `cp.entries.edit.content` control panel template hook.
 - Removed the `cp.entries.edit.details` control panel template hook.
 - Removed the `cp.entries.edit.meta` control panel template hook.
