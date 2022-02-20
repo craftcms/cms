@@ -746,6 +746,7 @@
 - Removed `craft\gql\base\Resolver::prepareArguments()`.
 - Removed `craft\helpers\App::dbMutexConfig()`.
 - Removed `craft\helpers\ArrayHelper::filterByValue()`. `where()` can be used instead.
+- Removed `craft\helpers\Cp::editElementTitles()`.
 - Removed `craft\helpers\DateTimeHelper::translateDate()`. `craft\i18n\Formatter::asDate()` can be used instead.
 - Removed `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` can be used instead.
 - Removed `craft\helpers\FileHelper::removeFile()`. `unlink()` can be used instead.

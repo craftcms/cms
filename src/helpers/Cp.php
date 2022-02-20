@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -1346,46 +1345,6 @@ JS;
         return Html::tag('dl', implode("\n", $defs), [
             'class' => ['meta', 'read-only'],
         ]);
-    }
-
-    /**
-     * Returns the page title and document title that should be used for Edit Element pages.
-     *
-     * @param ElementInterface $element
-     * @return string[]
-     * @since 3.7.0
-     */
-    public static function editElementTitles(ElementInterface $element): array
-    {
-        $title = trim((string)$element->title);
-
-        if ($title === '') {
-            if (!$element->id || $element->getIsUnpublishedDraft()) {
-                $title = Craft::t('app', 'Create a new {type}', [
-                    'type' => $element::lowerDisplayName(),
-                ]);
-            } else {
-                $title = Craft::t('app', 'Edit {type}', [
-                    'type' => $element::displayName(),
-                ]);
-            }
-        }
-
-        $docTitle = $title;
-
-        if ($element->getIsDraft()) {
-            /** @var ElementInterface|DraftBehavior $element */
-            if ($element->isProvisionalDraft) {
-                $docTitle .= ' — ' . Craft::t('app', 'Edited');
-            } else {
-                $docTitle .= " ($element->draftName)";
-            }
-        } else if ($element->getIsRevision()) {
-            /** @var ElementInterface|RevisionBehavior $element */
-            $docTitle .= ' (' . $element->getRevisionLabel() . ')';
-        }
-
-        return [$docTitle, $title];
     }
 
     /**
