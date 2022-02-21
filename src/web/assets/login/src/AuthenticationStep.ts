@@ -1,5 +1,5 @@
 import SubmitEvent = JQuery.SubmitEvent;
-import {AuthenticationRequest} from "./AuthenticationChainHandler";
+import {AuthenticationRequestData} from "./AuthenticationChainHandler";
 
 export abstract class AuthenticationStep
 {
@@ -15,7 +15,7 @@ export abstract class AuthenticationStep
     /**
      * Return the form data gathered from the appropriate inputs.
      */
-    protected abstract returnFormData(): AuthenticationRequest;
+    protected abstract returnFormData(): AuthenticationRequestData;
 
     /**
      * Initialize the authentication step.

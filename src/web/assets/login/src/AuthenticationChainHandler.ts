@@ -3,9 +3,9 @@ import {addContainedJsFilesToPage, LoginForm} from "./LoginForm";
 import ClickEvent = JQuery.ClickEvent;
 import {AuthenticationStep} from "./AuthenticationStep";
 
-type AuthenticationStepHandler = () => AuthenticationRequest;
+type AuthenticationStepHandler = () => AuthenticationRequestData;
 
-export type AuthenticationRequest = {
+export type AuthenticationRequestData = {
     [key: string]: any
 }
 
@@ -13,7 +13,7 @@ type AuthenticationAlternatives = {
     [key: string]: any
 }
 
-type AuthenticationResponse = {
+type AuthenticationResponseData = {
     returnUrl?: string
     success?: boolean
     error?: string
@@ -131,24 +131,6 @@ export class AuthenticationChainHandler
     }
 
     /**
-     * Perform the authentication step against the endpoint.
-     *
-     * @param {string} endpoint
-     * @param {AuthenticationRequest} request
-     */
-    public performStep(endpoint: string, request: AuthenticationRequest): void
-    {
-
-        Craft.sendActionRequest('POST', endpoint, {data: request})
-            .then((response) => {
-                this.processResponse(response.data, response.statusText);
-            })
-            .catch(({response}) => {
-                this.processResponse(response.data, response.statusText);
-            });
-    }
-
-    /**
      * Switch the current authentication step to an alternative.
      *
      * @param stepType
@@ -165,13 +147,8 @@ export class AuthenticationChainHandler
         this.updateCurrentStepType();
 
         const data = { alternateStep: stepType };
-        Craft.sendActionRequest('POST', this.performAuthenticationEndpoint, {data})
-            .then((response) => {
-                this.processResponse(response.data, response.statusText);
-            })
-            .catch(({response}) => {
-                this.processResponse(response.data, response.statusText);
-            });
+
+        this.performStep(this.performAuthenticationEndpoint, {data});
     }
 
     protected updateCurrentStepType()
@@ -180,51 +157,48 @@ export class AuthenticationChainHandler
     }
 
     /**
-     * Process authentication response.
+     * Perform the authentication step against the endpoint.
+     *
      * @param response
      * @param textStatus
      * @protected
      */
-    protected processResponse(response: AuthenticationResponse, textStatus: string)
+    protected performStep(endpoint: string, data: AuthenticationRequestData)
     {
-        if (textStatus == 'success') {
-            if (response.success && response.returnUrl?.length) {
-                window.location.href = response.returnUrl;
-                // Keep the form disabled
-                return;
-            } else {
-                // Take not of errors and messages
-                if (response.error) {
-                    this.loginForm.showError(response.error);
-                    Garnish.shake(this.loginForm.$loginForm);
+        return Craft.sendActionRequest('POST', endpoint, {data})
+            .then(response => {
+                const data: AuthenticationResponseData = response?.data;
+                if (data?.returnUrl?.length) {
+                    window.location.href = data.returnUrl;
+                    // Keep the form disabled
+                    return;
                 }
-                if (response.message) {
-                    this.loginForm.showMessage(response.message);
+
+                if (data?.message) {
+                    this.loginForm.showMessage(data.message);
                 }
 
                 // Handle password reset response early and bail
-                if (response.passwordReset) {
-                    if (!response.error) {
-                        this.loginForm.toggleRecoverAccountForm();
-                        this.restartAuthentication();
-                    }
+                if (data?.passwordReset) {
+                    this.loginForm.toggleRecoverAccountForm();
+                    this.restartAuthentication();
                 }
 
                 // Ensure alternative login options are handled
-                if (response.alternatives && Object.keys(response.alternatives).length > 0) {
-                    this.showAlternatives(response.alternatives);
+                if (data?.alternatives && Object.keys(data.alternatives).length > 0) {
+                    this.showAlternatives(data.alternatives);
                 } else {
                     this.loginForm.hideAlternatives();
                 }
 
                 // Keep track of current step type
-                if (response.stepType){
-                    this.$authenticationStep.attr('rel', response.stepType);
+                if (data?.stepType){
+                    this.$authenticationStep.attr('rel', data.stepType);
                 }
 
                 // Load any JS files if needed
-                if (response.footHtml) {
-                    addContainedJsFilesToPage(response.footHtml);
+                if (data?.footHtml) {
+                    addContainedJsFilesToPage(data.footHtml);
                 }
 
                 const initStepType = (stepType: string) => {
@@ -234,28 +208,34 @@ export class AuthenticationChainHandler
                 }
 
                 // Display the HTML for the auth step.
-                if (response.html) {
+                if (data?.html) {
                     this.currentStep?.cleanup();
-                    this.$authenticationStep.html(response.html);
-                    initStepType(response.stepType!);
+                    this.$authenticationStep.html(data?.html);
+                    initStepType(data?.stepType!);
                 }
 
                 // Display the HTML for the entire login form, in case we just started an authentication chain
-                if (response.loginFormHtml) {
+                if (data?.loginFormHtml) {
                     this.currentStep?.cleanup();
-                    this.loginForm.$loginForm.html(response.loginFormHtml);
+                    this.loginForm.$loginForm.html(data?.loginFormHtml);
                     this.loginForm.prepareForm();
-                    initStepType(response.stepType!);
+                    initStepType(data?.stepType!);
                 }
 
                 // Just in case this was the first step, remove all the misc things.
-                if (response.stepComplete) {
+                if (data?.stepComplete) {
                     this.loginForm.hideRememberMe();
                 }
-            }
-        }
 
-        this.loginForm.enableForm();
+            })
+            .catch(({response}) => {
+                const data: AuthenticationResponseData = response?.data;
+                if (data?.message) {
+                    this.loginForm.showError(response.data.message);
+                    Garnish.shake(this.loginForm.$loginForm);
+                }
+            })
+            .finally(() => this.loginForm.enableForm());
     }
 
     /**
@@ -280,7 +260,7 @@ export class AuthenticationChainHandler
      * @param ev
      * @param additionalData
      */
-    public handleFormSubmit (ev: any, additionalData: AuthenticationRequest) {
+    public handleFormSubmit (ev: any, additionalData: AuthenticationRequestData) {
         this.invokeStepHandler(ev, additionalData)
     }
 
@@ -309,10 +289,10 @@ export class AuthenticationChainHandler
      * Invoke the current step handler
      * @param ev
      */
-    protected async invokeStepHandler(ev: any, additionalData: AuthenticationRequest)
+    protected async invokeStepHandler(ev: any, additionalData: AuthenticationRequestData)
     {
         try {
-            let requestData: AuthenticationRequest;
+            let requestData: AuthenticationRequestData;
 
             if (this.isExistingChain()) {
                 this.updateCurrentStepType();
