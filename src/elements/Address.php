@@ -594,6 +594,7 @@ class Address extends Element implements AddressInterface
 
     /**
      * @inheritdoc
+     * @thows InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -601,7 +602,7 @@ class Address extends Element implements AddressInterface
             $record = AddressRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid address ID: ' . $this->id);
+                throw new InvalidConfigException("Invalid address ID: $this->id");
             }
         } else {
             $record = new AddressRecord();

@@ -13,6 +13,7 @@ use craft\db\Table;
 /**
  * Class Address record.
  *
+ * @property int $id ID
  * @property string $countryCode The two-letter country code.
  * @property string $administrativeArea The administrative area.
  * @property string $locality The locality.
