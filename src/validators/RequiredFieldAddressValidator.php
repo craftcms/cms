@@ -7,6 +7,7 @@
 
 namespace craft\validators;
 
+use CommerceGuys\Addressing\AddressFormat\AddressFormat;
 use Craft;
 use craft\elements\Address;
 use yii\base\Exception;
@@ -21,19 +22,14 @@ use yii\validators\Validator;
 class RequiredFieldAddressValidator extends Validator
 {
     /**
-     * @var string[] The memoized array of formatters by country code
-     */
-    private $_countryFormatter = [];
-
-    /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        parent::init();
+    public $skipOnEmpty = false;
 
-        $this->skipOnEmpty = false;
-    }
+    /**
+     * @var AddressFormat[] The memoized array of formatters by country code
+     */
+    private array $_countryFormatters = [];
 
     /**
      * @inheritdoc
@@ -49,11 +45,11 @@ class RequiredFieldAddressValidator extends Validator
         $countryCode = $model->getCountryCode();
 
         // Cache the country formatter
-        if (!isset($this->_countryFormatter[$countryCode])) {
-            $this->_countryFormatter[$countryCode] = Craft::$app->getAddresses()->getAddressFormatRepository()->get($countryCode);
+        if (!isset($this->_countryFormatters[$countryCode])) {
+            $this->_countryFormatters[$countryCode] = Craft::$app->getAddresses()->getAddressFormatRepository()->get($countryCode);
         }
 
-        if (in_array($attribute, $this->_countryFormatter[$countryCode]->getRequiredFields(), false) && !$model->$attribute) {
+        if (in_array($attribute, $this->_countryFormatters[$countryCode]->getRequiredFields(), false) && !$model->$attribute) {
             $message = Craft::t('app', '{attribute} is required.');
             $this->addError($model, $attribute, $message);
         }

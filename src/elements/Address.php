@@ -139,123 +139,117 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @var ?int ID
-     */
-    public ?int $id = null;
-
-    /**
      * @var string The two-letter country code.
-     *
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      * @see getCountryCode()
      * @see setCountryCode()
      */
-    private $_countryCode;
+    private string $_countryCode = 'US';
 
     /**
      * @var string|null The administrative area.
      * @see getAdministrativeArea()
      * @see setAdministrativeArea()
      */
-    private $_administrativeArea;
+    private ?string $_administrativeArea = null;
 
     /**
      * @var string|null The locality.
      * @see getLocality()
      * @see setLocality()
      */
-    private $_locality;
+    private ?string $_locality = null;
 
     /**
      * @var string|null The dependent locality.
      * @see getDependentLocality()
      * @see setDependentLocality()
      */
-    private $_dependentLocality;
+    private ?string $_dependentLocality = null;
 
     /**
      * @var string|null The postal code.
      * @see getPostalCode()
      * @see setPostalCode()
      */
-    private $_postalCode;
+    private ?string $_postalCode = null;
 
     /**
      * @var string|null The sorting code.
      * @see getSortingCode()
      * @see setSortingCode()
      */
-    private $_sortingCode;
+    private ?string $_sortingCode = null;
 
     /**
      * @var string|null The first line of the address.
      * @see getAddressLine1()
      * @see setAddressLine1()
      */
-    private $_addressLine1;
+    private ?string $_addressLine1 = null;
 
     /**
      * @var string|null The second line of the address.
      * @see getAddressLine2()
      * @see setAddressLine2()
      */
-    private $_addressLine2;
+    private ?string $_addressLine2 = null;
 
     /**
      * @var string|null The organization.
      * @see getOrganization()
      * @see setOrganization()
      */
-    private $_organization;
+    private ?string $_organization = null;
 
     /**
      * @var string|null The given name.
      * @see getGivenName()
      * @see setGivenName()
      */
-    private $_givenName;
+    private ?string $_givenName = null;
 
     /**
      * @var string|null The additional name.
      * @see getAdditionalName()
      * @see setAdditionalName()
      */
-    private $_additionalName;
+    private ?string $_additionalName = null;
 
     /**
      * @var string|null The family name.
      * @see getFamilyName()
      * @see setFamilyName()
      */
-    private $_familyName;
+    private ?string $_familyName = null;
 
     /**
-     * @var string The locale. Defaults to 'und'.
+     * @var string|null The locale.
      * @see getLocale()
      * @see setLocale()
      */
-    private $_locale;
+    private ?string $_locale = null;
 
     /**
-     * @var string The label to identify this address to the person who created it.
+     * @var string|null The label to identify this address to the person who created it.
      * @see getLabel()
      * @see setLabel()
      */
-    private string $_label = '';
+    private ?string $_label = null;
 
     /**
-     * @var string The Latitude.
+     * @var string|null The Latitude.
      * @see getLatitude()
      * @see setLatitude()
      */
-    private $_latitude;
+    private ?string $_latitude = null;
 
     /**
      * @var string The Longitude.
      * @see getLongitude()
      * @see setLongitude()
      */
-    private $_longitude;
+    private ?string $_longitude = null;
 
     /**
      * @inheritdoc
@@ -524,17 +518,17 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @return string Label
+     * @return string|null Label
      */
-    public function getLabel(): string
+    public function getLabel(): ?string
     {
         return $this->_label;
     }
 
     /**
-     * @param string $label
+     * @param string|null $label
      */
-    public function setLabel(string $label = ''): void
+    public function setLabel(?string $label): void
     {
         $this->_label = $label;
     }
@@ -608,7 +602,7 @@ class Address extends Element implements AddressInterface
      */
     public function __toString(): string
     {
-        return \Craft::$app->getAddresses()->formatAddressPostalLabel($this);
+        return Craft::$app->getAddresses()->formatAddressPostalLabel($this);
     }
 
     /**
