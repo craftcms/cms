@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -27,22 +28,27 @@ class Webpack extends Component
     /**
      * @var array Dev servers public addresses
      */
-    private $_devServers = [];
+    private array $_devServers = [];
 
     /**
      * @var array Dev servers running statuses
      */
-    private $_isDevServerRunning = [];
+    private array $_isDevServerRunning = [];
 
     /**
      * @var array
      */
-    private $_envFileVariables = [];
+    private array $_envFileVariables = [];
 
     /**
      * @var array
      */
-    private $_serverResponse = [];
+    private array $_serverResponse = [];
+
+    /**
+     * @var boolean[]
+     */
+    private array $_checkedEnvDirs = [];
 
     /**
      * Returns the environment file.
@@ -53,16 +59,32 @@ class Webpack extends Component
      */
     private function _getEnvFilePath(string $class): ?string
     {
-        $assetPath = $this->_getDirectory($class) . DIRECTORY_SEPARATOR . '.env';
-        $rootPath = FileHelper::normalizePath(Craft::getAlias('@craft') . DIRECTORY_SEPARATOR . '..');
-        $rootPath .= DIRECTORY_SEPARATOR . '.env';
+        $assetDir = $this->_getDirectory($class);
 
-        if (file_exists($assetPath)) {
-            return $assetPath;
-        }
+        // Search up the directory tree for the .env file in $assetPath
+        while ($assetDir) {
+            $assetDir = FileHelper::normalizePath($assetDir);
+            $assetPath = $assetDir . DIRECTORY_SEPARATOR . '.env';
 
-        if (file_exists($rootPath)) {
-            return $rootPath;
+            if (!isset($this->_checkedEnvDirs[$assetDir])) {
+                // Make sure it's within the allowed base paths
+                if (!App::isPathAllowed($assetDir)) {
+                    $this->_checkedEnvDirs[$assetDir] = false;
+                    break;
+                }
+
+                $this->_checkedEnvDirs[$assetDir] = file_exists($assetPath);
+            }
+
+            if ($this->_checkedEnvDirs[$assetDir]) {
+                return $assetPath;
+            }
+
+            if ($assetDir === DIRECTORY_SEPARATOR || $assetDir === dirname($assetDir)) {
+                break;
+            }
+
+            $assetDir = dirname($assetDir);
         }
 
         return null;

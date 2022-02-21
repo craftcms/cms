@@ -717,33 +717,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns all of the fields used by a given element type.
-     *
-     * @param string $elementType
-     * @return FieldInterface[] The fields
-     */
-    public function getFieldsByElementType(string $elementType): array
-    {
-        $results = $this->_createFieldQuery()
-            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
-            ->innerJoin(['fl' => Table::FIELDLAYOUTS], '[[fl.id]] = [[flf.layoutId]]')
-            ->where([
-                'fl.type' => $elementType,
-                'fl.dateDeleted' => null,
-            ])
-            ->groupBy(['fields.id'])
-            ->all();
-
-        $fields = [];
-
-        foreach ($results as $result) {
-            $fields[] = $this->createField($result);
-        }
-
-        return $fields;
-    }
-
-    /**
      * Returns the config for the given field.
      *
      * @param FieldInterface $field
@@ -819,13 +792,16 @@ class Fields extends Component
 
         $this->prepFieldForSave($field);
         $configData = $this->createFieldConfig($field);
+        $appliedConfig = false;
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
             $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
-            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
-        } else {
-            // Otherwise just save it to the DB
+            $appliedConfig = Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
+        }
+
+        if (!$appliedConfig) {
+            // If it's not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 
@@ -1123,26 +1099,27 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (array_key_exists($type, $this->_layoutsByType)) {
-            return $this->_layoutsByType[$type];
+        if (!isset($this->_layoutsByType[$type])) {
+            if (Craft::$app->getIsInstalled()) {
+                $result = $this->_createLayoutQuery()
+                    ->andWhere(['type' => $type])
+                    ->one();
+            }
+
+            if (isset($result)) {
+                if (!isset($this->_layoutsById[$result['id']])) {
+                    $this->_layoutsById[$result['id']] = new FieldLayout($result);
+                }
+
+                $this->_layoutsByType[$type] = $this->_layoutsById[$result['id']];
+            } else {
+                $this->_layoutsByType[$type] = new FieldLayout([
+                    'type' => $type,
+                ]);
+            }
         }
 
-        $result = $this->_createLayoutQuery()
-            ->andWhere(['type' => $type])
-            ->one();
-
-        if (!$result) {
-            return $this->_layoutsByType[$type] = new FieldLayout([
-                'type' => $type,
-            ]);
-        }
-
-        $id = $result['id'];
-        if (!isset($this->_layoutsById[$id])) {
-            $this->_layoutsById[$id] = new FieldLayout($result);
-        }
-
-        return $this->_layoutsByType[$type] = $this->_layoutsById[$id];
+        return $this->_layoutsByType[$type];
     }
 
     /**
@@ -1235,22 +1212,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns the field IDs for a given layout ID.
-     *
-     * @param int $layoutId The field layout ID
-     * @return int[]
-     * @since 3.1.24
-     */
-    public function getFieldIdsByLayoutId(int $layoutId): array
-    {
-        return (new Query())
-            ->select(['fieldId'])
-            ->from([Table::FIELDLAYOUTFIELDS])
-            ->where(['layoutId' => $layoutId])
-            ->column();
-    }
-
-    /**
      * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
      *
      * @param int[] $layoutIds The field layout IDs
@@ -1273,36 +1234,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns the fields in a field layout, identified by its ID.
-     *
-     * @param int $layoutId The field layout’s ID
-     * @return FieldInterface[] The fields
-     */
-    public function getFieldsByLayoutId(int $layoutId): array
-    {
-        $fields = [];
-
-        $results = $this->_createFieldQuery()
-            ->addSelect([
-                'flf.layoutId',
-                'flf.tabId',
-                'flf.required',
-                'flf.sortOrder',
-            ])
-            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
-            ->innerJoin(['flt' => Table::FIELDLAYOUTTABS], '[[flt.id]] = [[flf.tabId]]')
-            ->where(['flf.layoutId' => $layoutId])
-            ->orderBy(['flt.sortOrder' => SORT_ASC, 'flf.sortOrder' => SORT_ASC])
-            ->all();
-
-        foreach ($results as $result) {
-            $fields[] = $this->createField($result);
-        }
-
-        return $fields;
-    }
-
-    /**
      * Creates a field layout from the given config.
      *
      * @param array $config
@@ -1312,21 +1243,7 @@ class Fields extends Component
     public function createLayout(array $config): FieldLayout
     {
         $config['class'] = FieldLayout::class;
-        /** @var FieldLayout $fieldLayout */
-        $fieldLayout = Craft::createObject($config);
-
-        // Prep getFields()
-        $fields = [];
-        foreach ($fieldLayout->getTabs() as $tab) {
-            foreach ($tab->getElements() as $element) {
-                if ($element instanceof CustomField) {
-                    $fields[] = $element->getField();
-                }
-            }
-        }
-        $fieldLayout->setFields($fields);
-
-        return $fieldLayout;
+        return Craft::createObject($config);
     }
 
     /**
@@ -1362,72 +1279,6 @@ class Fields extends Component
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
         $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
         return $this->createLayout($config);
-    }
-
-    /**
-     * Assembles a field layout.
-     *
-     * @param array $postedFieldLayout The post data for the field layout
-     * @param array $requiredFields The field IDs that should be marked as required in the field layout
-     * @return FieldLayout The field layout
-     * @deprecated in 3.5.0.
-     */
-    public function assembleLayout(array $postedFieldLayout, array $requiredFields = []): FieldLayout
-    {
-        $tabs = [];
-        $fields = [];
-
-        $tabSortOrder = 0;
-
-        // Get all the fields
-        $allFieldIds = [];
-
-        foreach ($postedFieldLayout as $fieldIds) {
-            foreach ($fieldIds as $fieldId) {
-                $allFieldIds[] = $fieldId;
-            }
-        }
-
-        if (!empty($allFieldIds)) {
-            $allFieldsById = [];
-
-            $results = $this->_createFieldQuery()
-                ->where(['id' => $allFieldIds])
-                ->all();
-
-            foreach ($results as $result) {
-                $allFieldsById[$result['id']] = $this->createField($result);
-            }
-        }
-
-        foreach ($postedFieldLayout as $tabName => $fieldIds) {
-            $tabFields = [];
-
-            foreach ($fieldIds as $fieldSortOrder => $fieldId) {
-                if (!isset($allFieldsById[$fieldId])) {
-                    continue;
-                }
-
-                $field = $allFieldsById[$fieldId];
-                $field->required = in_array($fieldId, $requiredFields, false);
-                $field->sortOrder = ($fieldSortOrder + 1);
-
-                $fields[] = $field;
-                $tabFields[] = $field;
-            }
-
-            $tab = new FieldLayoutTab();
-            $tab->name = urldecode($tabName);
-            $tab->setFields($tabFields);
-
-            $tabs[] = $tab;
-        }
-
-        $layout = new FieldLayout();
-        $layout->setTabs($tabs);
-        $layout->setFields($fields);
-
-        return $layout;
     }
 
     /**
@@ -1662,7 +1513,7 @@ class Fields extends Component
         $fieldVersion = Craft::$app->getInfo()->fieldVersion;
 
         // If it doesn't start with `2@`, then it needs to be updated
-        if ($fieldVersion === null || strpos($fieldVersion, '2@') !== 0) {
+        if ($fieldVersion === null || !str_starts_with($fieldVersion, '2@')) {
             return null;
         }
 

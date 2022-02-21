@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -191,7 +190,7 @@ class Cp
 
                     // If the license key path starts with the root project path, trim the project path off
                     $rootPath = Craft::getAlias('@root');
-                    if (strpos($keyPath, $rootPath . '/') === 0) {
+                    if (str_starts_with($keyPath, $rootPath . '/')) {
                         $keyPath = substr($keyPath, strlen($rootPath) + 1);
                     }
 
@@ -488,7 +487,7 @@ class Cp
         $errors = $config['errors'] ?? null;
         $status = $config['status'] ?? null;
 
-        if (StringHelper::startsWith($input, 'template:')) {
+        if (str_starts_with($input, 'template:')) {
             // Set a describedBy value in case the input template supports it
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
@@ -1020,7 +1019,7 @@ class Cp
                     ]);
             } else if (
                 !isset($config['warning']) &&
-                ($value === '@web' || strpos($value, '@web/') === 0) &&
+                ($value === '@web' || str_starts_with($value, '@web/')) &&
                 Craft::$app->getRequest()->isWebAliasSetDynamically
             ) {
                 $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended if it is determined automatically.');
@@ -1274,6 +1273,7 @@ JS;
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
+                'type' => $forLibrary ? str_replace('\\', '-', get_class($element)) : false,
                 'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
                 'has-custom-width' => $element->hasCustomWidth(),
                 'settings-namespace' => $settingsNamespace,
@@ -1345,46 +1345,6 @@ JS;
         return Html::tag('dl', implode("\n", $defs), [
             'class' => ['meta', 'read-only'],
         ]);
-    }
-
-    /**
-     * Returns the page title and document title that should be used for Edit Element pages.
-     *
-     * @param ElementInterface $element
-     * @return string[]
-     * @since 3.7.0
-     */
-    public static function editElementTitles(ElementInterface $element): array
-    {
-        $title = trim((string)$element->title);
-
-        if ($title === '') {
-            if (!$element->id || $element->getIsUnpublishedDraft()) {
-                $title = Craft::t('app', 'Create a new {type}', [
-                    'type' => $element::lowerDisplayName(),
-                ]);
-            } else {
-                $title = Craft::t('app', 'Edit {type}', [
-                    'type' => $element::displayName(),
-                ]);
-            }
-        }
-
-        $docTitle = $title;
-
-        if ($element->getIsDraft()) {
-            /** @var ElementInterface|DraftBehavior $element */
-            if ($element->isProvisionalDraft) {
-                $docTitle .= ' — ' . Craft::t('app', 'Edited');
-            } else {
-                $docTitle .= " ($element->draftName)";
-            }
-        } else if ($element->getIsRevision()) {
-            /** @var ElementInterface|RevisionBehavior $element */
-            $docTitle .= ' (' . $element->getRevisionLabel() . ')';
-        }
-
-        return [$docTitle, $title];
     }
 
     /**

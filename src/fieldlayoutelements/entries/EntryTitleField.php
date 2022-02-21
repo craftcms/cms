@@ -5,11 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements;
+namespace craft\fieldlayoutelements\entries;
 
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Entry;
+use craft\fieldlayoutelements\TitleField;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use yii\base\InvalidArgumentException;

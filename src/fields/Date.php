@@ -21,6 +21,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
+use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\validators\DateTimeValidator;
 use DateTime;
@@ -252,15 +253,12 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement,
+            'isDateTime' => $this->showTime,
+            'hasOuterContainer' => true,
         ];
 
-        $input = '';
-        $wrap = $this->showTime && ($this->showDate || $this->showTimeZone);
         $view = Craft::$app->getView();
-
-        if ($wrap) {
-            $input .= '<div class="datetimewrapper">';
-        }
+        $input = Html::beginTag('div', ['class' => 'datetimewrapper']);
 
         if ($this->showDate) {
             $input .= $view->renderTemplate('_includes/forms/date', $variables);
@@ -278,10 +276,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
                 ]);
         }
 
-        if ($wrap) {
-            $input .= '</div>';
-        }
-
+        $input .= Html::endTag('div');
         return $input;
     }
 
@@ -325,6 +320,14 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         }
 
         return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function useFieldset(): bool
+    {
+        return $this->showTime;
     }
 
     /**

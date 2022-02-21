@@ -95,7 +95,7 @@ export class AuthenticationChainHandler
         this.loginForm.resetLoginForm();
 
         // Let the backend know to let it go, turn away and slam the door.
-        Craft.postActionRequest(this.startAuthenticationEndpoint, {});
+        Craft.sendActionRequest('POST', this.startAuthenticationEndpoint);
 
         if (event) {
             event.preventDefault();
@@ -138,7 +138,14 @@ export class AuthenticationChainHandler
      */
     public performStep(endpoint: string, request: AuthenticationRequest): void
     {
-        Craft.postActionRequest(endpoint, request, this.processResponse.bind(this));
+
+        Craft.sendActionRequest('POST', endpoint, {data: request})
+            .then((response) => {
+                this.processResponse(response.data, response.statusText);
+            })
+            .catch(({response}) => {
+                this.processResponse(response.data, response.statusText);
+            });
     }
 
     /**
@@ -157,9 +164,14 @@ export class AuthenticationChainHandler
 
         this.updateCurrentStepType();
 
-        Craft.postActionRequest(this.performAuthenticationEndpoint, {
-            alternateStep: stepType,
-        }, this.processResponse.bind(this));
+        const data = { alternateStep: stepType };
+        Craft.sendActionRequest('POST', this.performAuthenticationEndpoint, {data})
+            .then((response) => {
+                this.processResponse(response.data, response.statusText);
+            })
+            .catch(({response}) => {
+                this.processResponse(response.data, response.statusText);
+            });
     }
 
     protected updateCurrentStepType()

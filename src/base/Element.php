@@ -1197,9 +1197,8 @@ abstract class Element extends Component implements ElementInterface
 
         // Build the descendant condition & params
         $condition = ['or'];
-        $params = [];
 
-        foreach ($elementStructureData as $i => $elementStructureDatum) {
+        foreach ($elementStructureData as $elementStructureDatum) {
             $thisElementCondition = [
                 'and',
                 ['structureId' => $elementStructureDatum['structureId']],
@@ -1212,7 +1211,6 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $condition[] = $thisElementCondition;
-            $params[":sourceId$i"] = $elementStructureDatum['elementId'];
         }
 
         // Fetch the descendant data
@@ -1285,9 +1283,8 @@ abstract class Element extends Component implements ElementInterface
 
         // Build the ancestor condition & params
         $condition = ['or'];
-        $params = [];
 
-        foreach ($elementStructureData as $i => $elementStructureDatum) {
+        foreach ($elementStructureData as $elementStructureDatum) {
             $thisElementCondition = [
                 'and',
                 ['structureId' => $elementStructureDatum['structureId']],
@@ -1300,7 +1297,6 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $condition[] = $thisElementCondition;
-            $params[":sourceId$i"] = $elementStructureDatum['elementId'];
         }
 
         // Fetch the ancestor data
@@ -1856,6 +1852,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the string representation of the element.
      *
      * @return string
+     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {
@@ -2173,7 +2170,7 @@ abstract class Element extends Component implements ElementInterface
         ) {
             $scenario = $this->getScenario();
 
-            foreach ($fieldLayout->getVisibleFields($this) as $field) {
+            foreach ($fieldLayout->getVisibleCustomFields($this) as $field) {
                 $attribute = "field:$field->handle";
                 $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
@@ -2801,14 +2798,6 @@ abstract class Element extends Component implements ElementInterface
     public function hasRevisions(): bool
     {
         return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCpEditRoute(): ?string
-    {
-
     }
 
     /**
@@ -3741,7 +3730,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _outdatedFields(): array
     {
-        if (!static::trackChanges() || $this->getIsCanonical()) {
+        if (!static::trackChanges() || !$this->getIsDraft() || $this->getIsCanonical()) {
             return [];
         }
 
@@ -4673,7 +4662,7 @@ JS,
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayout) {
-            return $visibleOnly ? $fieldLayout->getVisibleFields($this) : $fieldLayout->getFields();
+            return $visibleOnly ? $fieldLayout->getVisibleCustomFields($this) : $fieldLayout->getCustomFields();
         }
 
         return [];

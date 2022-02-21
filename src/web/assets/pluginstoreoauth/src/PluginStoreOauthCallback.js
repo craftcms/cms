@@ -32,11 +32,9 @@ import './pluginstore-oauth-callback.scss';
             var fragmentString = window.location.hash.substr(1);
             var fragments = $.parseFragmentString(fragmentString);
 
-            Craft.postActionRequest('plugin-store/save-token', fragments, (response, textStatus, jqXHR) => {
-                if (textStatus == 'success') {
-                    if (response.error) {
-                        this.showError(response.error);
-                    } else {
+            Craft.sendActionRequest('POST', 'plugin-store/save-token', {data: fragments})
+                .then((response) => {
+                    if (response.data.success) {
                         this.updateStatus('<p>' + Craft.t('app', 'Connected!') + '</p>');
                         this.$graphic.addClass('success');
 
@@ -48,28 +46,30 @@ import './pluginstore-oauth-callback.scss';
                                 window.location = Craft.getCpUrl('plugin-store');
                             }
                         }, 500);
+                    } else {
+                        this.showError(response.message);
                     }
-                } else {
-                    this.showFatalError(jqXHR);
-                }
-            });
+                })
+                .catch(({response}) => {
+                    this.showFatalError(response);
+                });
         },
 
-        showFatalError: function(jqXHR) {
+        showFatalError: function(response) {
             this.$graphic.addClass('error');
             var statusHtml =
                 '<p>' + Craft.t('app', 'A fatal error has occurred:') + '</p>' +
                 '<div id="error" class="code">' +
-                '<p><strong class="code">' + Craft.t('app', 'Status:') + '</strong> ' + Craft.escapeHtml(jqXHR.statusText) + '</p>' +
-                '<p><strong class="code">' + Craft.t('app', 'Response:') + '</strong> ' + Craft.escapeHtml(jqXHR.responseText) + '</p>' +
+                '<p><strong class="code">' + Craft.t('app', 'Status:') + '</strong> ' + Craft.escapeHtml(response.statusText) + '</p>' +
+                '<p><strong class="code">' + Craft.t('app', 'Response:') + '</strong> ' + Craft.escapeHtml(response.text()) + '</p>' +
                 '</div>' +
                 '<a class="btn submit big" href="mailto:support@craftcms.com' +
                 '?subject=' + encodeURIComponent('Craft update failure') +
                 '&body=' + encodeURIComponent(
                 'Describe what happened here.\n\n' +
                 '-----------------------------------------------------------\n\n' +
-                'Status: ' + jqXHR.statusText + '\n\n' +
-                'Response: ' + jqXHR.responseText
+                'Status: ' + response.statusText + '\n\n' +
+                'Response: ' + response.text()
                 ) +
                 '">' +
                 Craft.t('app', 'Send for help') +

@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\elements\Asset;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
@@ -179,7 +178,7 @@ class VolumesController extends Controller
         $volumeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -196,6 +195,6 @@ class VolumesController extends Controller
 
         Craft::$app->getVolumes()->deleteVolumeById($volumeId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

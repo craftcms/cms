@@ -91,40 +91,44 @@ export class AuthenticatorFormHandler extends AuthenticationSetupFormHandler
         const submitUpdate = (payload) => {
             this.setStatus(Craft.t('app', 'Updating the authenticator settings'));
 
-            Craft.postActionRequest(this.endpoint, payload, (response: any, textStatus: string) => {
-                this.enable();
+            Craft.sendActionRequest('POST', this.endpoint, {data: payload})
+                .then((response) => {
+                    this.enable();
 
-                if (response.html) {
-                    this.$container.replaceWith(response.html);
-                    this.attachEvents();
-                }
+                    if (response?.data?.html) {
+                        this.$container.replaceWith(response.data.html);
+                        this.attachEvents();
+                    }
 
-                if (response.message) {
-                    this.setStatus(response.message, false, 750);
-                }
+                    if (response?.data?.message) {
+                        this.setStatus(response.data.message, false, 750);
+                    }
 
-                if (response.error) {
-                    this.setErrorStatus(response.error);
-                }
+                    if (response?.data?.codeHtml) {
+                        const $codeHtml = $('<div class="modal secure fitted"></div>').append($(response.data.codeHtml));
 
-                if (response.codeHtml) {
-                    const $codeHtml = $('<div class="modal secure fitted"></div>').append($(response.codeHtml));
+                        $codeHtml.find('#close-codes').on('click', () => {
+                            this.codeModal.hide();
+                        })
+                        this.codeModal = new Garnish.Modal($codeHtml, {
+                            closeOtherModals: false,
+                            hideOnEsc: false,
+                            hideOnShadeClick: false,
+                            onFadeOut: () => {
+                                $codeHtml.find('.codes').remove();
+                                this.codeModal.destroy();
+                                this.codeModal = null;
+                            },
+                        });
+                    }
+                })
+                .catch(({response}) => {
+                    this.enable();
 
-                    $codeHtml.find('#close-codes').on('click', () => {
-                        this.codeModal.hide();
-                    })
-                    this.codeModal = new Garnish.Modal($codeHtml, {
-                        closeOtherModals: false,
-                        hideOnEsc: false,
-                        hideOnShadeClick: false,
-                        onFadeOut: () => {
-                            $codeHtml.find('.codes').remove();
-                            this.codeModal.destroy();
-                            this.codeModal = null;
-                        },
-                    });
-                }
-            });
+                    if (response?.data?.message) {
+                        this.setErrorStatus(response.data.message);
+                    }
+                });
         }
 
         this.setStatus(Craft.t('app', 'Waiting for elevated session'));

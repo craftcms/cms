@@ -441,47 +441,47 @@ class ProjectConfig extends Component
      *
      * @param string $path The config item path
      * @param mixed $value The config item value
-     * @param string|null $message The message describing changes.
+     * @param string|null $message A message describing the changes
      * @param bool $updateTimestamp Whether the `dateModified` value should be updated, if it hasn’t been updated yet for this request
-     * @param bool $rebuilding Whether the change should always be processed. This should only used when rebuilding.
+     * @param bool $force Whether the update should be processed regardless of whether the value actually changed
+     * @return bool Whether the project config was modified
      * @throws ErrorException
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws ServerErrorHttpException
      * @throws InvalidConfigException
      */
-    public function set(string $path, $value, ?string $message = null, bool $updateTimestamp = true, bool $rebuilding = false): void
+    public function set(string $path, mixed $value, ?string $message = null, bool $updateTimestamp = true, bool $force = false): bool
     {
         if (is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
-        $valueHasChanged = $rebuilding;
         $workingConfig = $this->getCurrentWorkingConfig();
         $previousValue = $workingConfig->get($path);
+        $valueHasChanged = $value !== $previousValue;
 
-        if (!$rebuilding && $value !== $previousValue) {
-            if ($this->readOnly) {
-                // If we're applying yaml changes that are coming in via external config, anyway, bail silently.
-                if ($this->getIsApplyingExternalChanges() && $value === $this->getExternalConfig()->get($path)) {
-                    return;
-                }
-
-                throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
-            }
-
-            if ($updateTimestamp && !$this->_timestampUpdated) {
-                $this->_timestampUpdated = true;
-                $this->set(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
-            }
-
-            $valueHasChanged = true;
+        if (!$valueHasChanged && !$force) {
+            return false;
         }
 
-        if ($valueHasChanged) {
-            $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message, true);
-            $this->_saveConfigAfterRequest();
+        if ($this->readOnly && $valueHasChanged) {
+            // If we're applying yaml changes that are coming in via external config, anyway, bail silently.
+            if ($this->getIsApplyingExternalChanges() && $value === $this->getExternalConfig()->get($path)) {
+                return true;
+            }
+
+            throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
         }
+
+        if ($updateTimestamp && !$this->_timestampUpdated && $valueHasChanged) {
+            $this->_timestampUpdated = true;
+            $this->set(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
+        }
+
+        $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message, true);
+        $this->_saveConfigAfterRequest();
+        return true;
     }
 
     /**
@@ -1756,7 +1756,7 @@ class ProjectConfig extends Component
             if ($config) {
                 // Try to decode it in case it contains any 4+ byte characters
                 $config = StringHelper::decdec($config);
-                if (strpos($config, '{') === 0) {
+                if (str_starts_with($config, '{')) {
                     $data = Json::decode($config);
                 } else {
                     $data = unserialize($config, ['allowed_classes' => false]);

@@ -894,7 +894,7 @@ class User extends Element implements IdentityInterface
 
         $rules[] = [
             ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
-                if (strpos($this->$attribute, '://') !== false) {
+                if (str_contains($this->$attribute, '://')) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
             },
@@ -1653,7 +1653,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferredLanguage(): ?string
     {
-        return $this->_validateLocale($this->getPreference('language'));
+        return $this->_validateLocale($this->getPreference('language'), false);
     }
 
     /**
@@ -1666,18 +1666,20 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferredLocale(): ?string
     {
-        return $this->_validateLocale($this->getPreference('locale'));
+        return $this->_validateLocale($this->getPreference('locale'), true);
     }
 
     /**
      * Validates and returns a locale ID.
      *
      * @param string|null $locale
+     * @param bool $checkAllLocales Whether to check all known locale IDs, rather than just the app locales
      * @return string|null
      */
-    private function _validateLocale(?string $locale = null): ?string
+    private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
-        if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
+        $locales = $checkAllLocales ? Craft::$app->getI18n()->getAllLocaleIds() : Craft::$app->getI18n()->getAppLocaleIds();
+        if ($locale && in_array($locale, $locales, true)) {
             return $locale;
         }
 

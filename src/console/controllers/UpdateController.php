@@ -135,9 +135,8 @@ class UpdateController extends Controller
     /**
      * Updates Craft and/or plugins.
      *
-     * @param string|null $handle
-     * The update handle (`all`, `craft`, or a plugin handle). You can pass
-     * multiple handles separated by spaces, and you can update to a specific
+     * @param string|null $handle The update handle (`all`, `craft`, or a plugin handle).
+     * You can pass multiple handles separated by spaces, and you can update to a specific
      * version using the syntax `<handle>:<version>`.
      * @return int
      */
@@ -189,7 +188,7 @@ class UpdateController extends Controller
     }
 
     /**
-     * Installs dependencies based on the current composer.json & composer.lock.
+     * Installs dependencies based on the current `composer.json` & `composer.lock`.
      *
      * @return int
      */
@@ -246,7 +245,7 @@ class UpdateController extends Controller
         if ($handles !== ['all']) {
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                     if ($handle === 'craft') {
                         $handle = 'cms';
@@ -280,7 +279,7 @@ class UpdateController extends Controller
             }
         } else {
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                 } else {
                     $to = null;

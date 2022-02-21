@@ -362,9 +362,9 @@ EOD;
             }
 
             if (
-                strpos($message, 'Access denied for user') !== false ||
-                strpos($message, 'no password supplied') !== false ||
-                strpos($message, 'password authentication failed for user') !== false
+                str_contains($message, 'Access denied for user') ||
+                str_contains($message, 'no password supplied') ||
+                str_contains($message, 'password authentication failed for user')
             ) {
                 $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
                 $badUserCredentials = true;
@@ -385,7 +385,7 @@ EOD;
             if ($dbConfig->setSchemaOnConnect) {
                 $this->schema = $this->prompt('Database schema:', [
                     'required' => true,
-                    'default' => $this->schema ?? App::env('DB_SCHEMA') ?: 'public',
+                    'default' => $this->schema ?? App::env('DB_SCHEMA') ?? 'public',
                 ]);
                 $db->createCommand("SET search_path TO $this->schema;")->execute();
             } else if ($this->schema === null) {
@@ -442,7 +442,7 @@ EOD;
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         // If there's a DB_DSN environment variable, go with that
-        if (App::env('DB_DSN') !== false) {
+        if (App::env('DB_DSN') !== null) {
             if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
@@ -532,9 +532,9 @@ EOD;
     private function _outputCommand(string $command): void
     {
         $script = FileHelper::normalizePath($this->request->getScriptFile());
-        if (!Platform::isWindows() && ($home = App::env('HOME')) !== false) {
+        if (!Platform::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
-            if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
+            if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));
             }
         }
@@ -587,6 +587,6 @@ EOD;
      */
     private function _envDefault(string $name): ?string
     {
-        return $this->_useEnvDefaults ? (App::env($name) ?: null) : null;
+        return $this->_useEnvDefaults ? App::env($name) : null;
     }
 }

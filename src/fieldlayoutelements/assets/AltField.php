@@ -5,19 +5,20 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements;
+namespace craft\fieldlayoutelements\assets;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\fieldlayoutelements\TextareaField;
 
 /**
- * AssetAltField represents an Alternative Text field that can be included within a volume’s field layout designer.
+ * AltField represents an Alternative Text field that can be included within a volume’s field layout designer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AssetAltField extends TextareaField
+class AltField extends TextareaField
 {
     /**
      * @inheritdoc
@@ -32,15 +33,20 @@ class AssetAltField extends TextareaField
     /**
      * @inheritdoc
      */
+    public bool $requirable = true;
+
+    /**
+     * @inheritdoc
+     */
     public function __construct($config = [])
     {
-        // We didn't start removing autofocus from fields() until 3.5.6
         unset(
-            $config['mandatory'],
             $config['attribute'],
-            $config['translatable'],
+            $config['autofocus'],
+            $config['mandatory'],
             $config['maxlength'],
-            $config['autofocus']
+            $config['requirable'],
+            $config['translatable'],
         );
 
         parent::__construct($config);
@@ -53,11 +59,10 @@ class AssetAltField extends TextareaField
     {
         $fields = parent::fields();
         unset(
+            $fields['autofocus'],
             $fields['mandatory'],
-            $fields['attribute'],
-            $fields['translatable'],
             $fields['maxlength'],
-            $fields['autofocus']
+            $fields['translatable'],
         );
         return $fields;
     }

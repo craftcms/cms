@@ -37,6 +37,7 @@ use craft\web\View;
 use HTMLPurifier_Encoder;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher as YiiDispatcher;
@@ -59,15 +60,33 @@ class App
     private static bool $_iconv;
 
     /**
-     * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.
+     * @var string[]
+     * @see isPathAllowed()
+     */
+    private static $_basePaths;
+
+    /**
+     * Returns an environment variable, falling back to a PHP constant of the same name.
      *
      * @param string $name The environment variable name
-     * @return string|array|false The environment variable value
+     * @return mixed The environment variable, PHP constant, or `null` if neither are found
      * @since 3.4.18
      */
-    public static function env(string $name)
+    public static function env(string $name): mixed
     {
-        return $_SERVER[$name] ?? getenv($name);
+        if (isset($_SERVER[$name])) {
+            return static::normalizeValue($_SERVER[$name]);
+        }
+
+        if (($env = getenv($name)) !== false) {
+            return static::normalizeValue($env);
+        }
+
+        if (defined($name)) {
+            return static::normalizeValue(constant($name));
+        }
+
+        return null;
     }
 
     /**
@@ -84,35 +103,33 @@ class App
      * $value2 = App::parseEnv('@webroot');
      * ```
      *
-     * @param string|null $str
+     * @param string|null $value
      * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      * @since 3.7.29
      */
-    public static function parseEnv(string $str = null)
+    public static function parseEnv(?string $value)
     {
-        if ($str === null) {
+        if ($value === null) {
             return null;
         }
 
-        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $value = App::env($matches[1]);
-            if ($value !== false) {
-                switch (strtolower($value)) {
-                    case 'true':
-                        return true;
-                    case 'false':
-                        return false;
-                }
-                $str = $value;
+        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
+            $env = static::env($matches[1]);
+
+            if ($env === null) {
+                // starts with $ but not an environment variable/constant, so just give up, it's hopeless!
+                return $value;
             }
+
+            $value = $env;
         }
 
-        if (StringHelper::startsWith($str, '@')) {
-            $str = Craft::getAlias($str, false) ?: $str;
+        if (is_string($value) && str_starts_with($value, '@')) {
+            $value = Craft::getAlias($value, false) ?: $value;
         }
 
-        return $str;
+        return $value;
     }
 
     /**
@@ -135,11 +152,84 @@ class App
             return $value;
         }
 
+        if ($value === 0 || $value === 1) {
+            return (bool)$value;
+        }
+
         if (!is_string($value)) {
             return null;
         }
 
         return filter_var(static::parseEnv($value), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+    }
+
+    /**
+     * Returns a CLI command option from `argv`, or `null` if it wasn’t passed.
+     *
+     * Supported option syntaxes are:
+     *
+     * - `name=value`
+     * - `name value`
+     * - `name` (implies `true`)
+     *
+     * `name` must begin with `--` or `-`. Other values will be rejected.
+     *
+     * If the value is numeric, a float or int will be returned.
+     *
+     * If the value is `true` or `false`, a boolean will be returned.
+     *
+     * If the option has no value (either because the following item begins with `-` or it’s the last item),
+     * `true` will be returned.
+     *
+     * @param string $name The option name, beginning with `--` or `-`
+     * @param bool $unset Whether the option should be removed from `argv` if found
+     * @return string|float|int|true|null
+     * @since 4.0.0
+     */
+    public static function cliOption(string $name, bool $unset = false): string|float|int|bool|null
+    {
+        if (!preg_match('/^--?[\w-]+$/', $name)) {
+            throw new InvalidArgumentException("Invalid CLI option name: $name");
+        }
+
+        if (empty($_SERVER['argv'])) {
+            return null;
+        }
+
+        // We shouldn’t count on array being perfectly indexed
+        $keys = array_keys($_SERVER['argv']);
+        $nameLen = strlen($name);
+
+        foreach ($keys as $i => $key) {
+            $item = $_SERVER['argv'][$key];
+            $nextKey = $keys[$i + 1] ?? null;
+
+            if ($item === $name) {
+                $nextItem = $nextKey !== null ? ($_SERVER['argv'][$nextKey] ?? null) : null;
+                if ($nextItem !== null && $nextItem[0] !== '-') {
+                    $value = $nextItem;
+                    $unsetNext = true;
+                } else {
+                    $value = true;
+                }
+            } else if (str_starts_with($item, "$name=")) {
+                $value = substr($item, $nameLen + 1);
+            } else {
+                continue;
+            }
+
+            if ($unset) {
+                unset($_SERVER['argv'][$key]);
+                if (isset($unsetNext)) {
+                    unset($_SERVER['argv'][$nextKey]);
+                }
+                $_SERVER['argv'] = array_values($_SERVER['argv']);
+            }
+
+            return static::normalizeValue($value);
+        }
+
+        return null;
     }
 
     /**
@@ -259,6 +349,28 @@ class App
     }
 
     /**
+     * Normalizes an environment variable/constant name/CLI command option.
+     *
+     * It converts the following:
+     *
+     * - `'true'` → `true`
+     * - `'false'` → `false`
+     * - Numeric string → integer or float
+     *
+     * @param mixed $value
+     * @return mixed
+     * @since 4.0.0
+     */
+    public static function normalizeValue(mixed $value): mixed
+    {
+        return match (is_string($value) ? strtolower($value) : $value) {
+            'true' => true,
+            'false' => false,
+            default => is_numeric($value) ? Number::toIntOrFloat($value) : $value,
+        };
+    }
+
+    /**
      * Removes distribution info from a version
      *
      * @param string $version
@@ -320,6 +432,93 @@ class App
         }
 
         return $value;
+    }
+
+    /**
+     * Retrieves a file path PHP config setting and normalizes it to an array of paths.
+     *
+     * @param string $var The PHP config setting to retrieve
+     * @return string[] The normalized paths
+     * @since 3.7.34
+     */
+    public static function phpConfigValueAsPaths(string $var): array
+    {
+        return static::normalizePhpPaths(ini_get($var));
+    }
+
+    /**
+     * Normalizes a PHP path setting to an array of paths
+     *
+     * @param string $value The PHP path setting value
+     * @return string[] The normalized paths
+     * @since 3.7.34
+     */
+    public static function normalizePhpPaths(string $value): array
+    {
+        // semicolons are used to separate paths on Windows; everything else uses colons
+        $value = str_replace(';', ':', trim($value));
+
+        if ($value === '') {
+            return [];
+        }
+
+        $paths = [];
+
+        foreach (explode(':', $value) as $path) {
+            $path = trim($path);
+
+            // Parse ${ENV_VAR}s
+            try {
+                $path = preg_replace_callback('/\$\{(.*?)\}/', function($match) {
+                    $env = App::env($match[1]);
+                    if ($env === false) {
+                        throw new InvalidValueException();
+                    }
+                    return $env;
+                }, $path);
+            } catch (InvalidValueException $e) {
+                // References an env var that doesn’t exist
+                continue;
+            }
+
+            // '.' => working dir
+            if ($path === '.' || str_starts_with($path, './') || str_starts_with($path, '.\\')) {
+                $path = getcwd() . substr($path, 1);
+            }
+
+            // Normalize
+            $paths[] = FileHelper::normalizePath($path);
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Returns whether the given path is within PHP’s `open_basedir` setting.
+     *
+     * @param string $path
+     * @return bool
+     * @since 3.7.34
+     */
+    public static function isPathAllowed(string $path): bool
+    {
+        if (!isset(self::$_basePaths)) {
+            self::$_basePaths = static::phpConfigValueAsPaths('open_basedir');
+        }
+
+        if (!self::$_basePaths) {
+            return true;
+        }
+
+        $path = FileHelper::normalizePath($path);
+
+        foreach (self::$_basePaths as $basePath) {
+            if (str_starts_with($path, $basePath)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -479,7 +678,18 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true;
+        return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
+    }
+
+    /**
+     * Returns whether Craft is logging to stdout/stderr.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function isStreamLog(): bool
+    {
+        return self::parseBooleanEnv('$CRAFT_STREAM_LOG') === true;
     }
 
     // App component configs
@@ -675,52 +885,45 @@ class App
         // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
         // targets haven’t been instantiated yet.
 
-        $targets = [];
-
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
-        if ($isConsoleRequest || Craft::$app->getUser()->enableSession) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+        // Only log console requests and web requests that aren't getAuthTimeout requests
+        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
+            return [];
+        }
 
-            $fileTargetConfig = [
+        $targets = [];
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $baseTargetConfig = [
+            'includeUserIp' => $generalConfig->storeUserIps,
+            'except' => [
+                PhpMessageSource::class . ':*',
+            ],
+        ];
+
+        if (self::isStreamLog()) {
+            $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
+                'class' => StreamLogTarget::class,
+                'url' => 'php://stderr',
+                'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
+            ]));
+
+            // Don't pollute console request output
+            if (!$isConsoleRequest && YII_DEBUG) {
+                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
+                    'class' => StreamLogTarget::class,
+                    'url' => 'php://stdout',
+                    'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
+                ]));
+            }
+        } else {
+            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
                 'class' => FileTarget::class,
                 'fileMode' => $generalConfig->defaultFileMode,
                 'dirMode' => $generalConfig->defaultDirMode,
-                'includeUserIp' => $generalConfig->storeUserIps,
-                'except' => [
-                    PhpMessageSource::class . ':*',
-                ],
-            ];
-
-            if ($isConsoleRequest) {
-                $fileTargetConfig['logFile'] = '@storage/logs/console.log';
-            } else {
-                $fileTargetConfig['logFile'] = '@storage/logs/web.log';
-            }
-
-            if (!YII_DEBUG) {
-                $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
-            }
-
-            $targets[Dispatcher::TARGET_FILE] = Craft::createObject($fileTargetConfig);
-
-            if (!$isConsoleRequest && defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
-                $targets[Dispatcher::TARGET_STDERR] = Craft::createObject([
-                    'class' => StreamLogTarget::class,
-                    'url' => 'php://stderr',
-                    'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
-                    'includeUserIp' => $generalConfig->storeUserIps,
-                ]);
-
-                if (YII_DEBUG) {
-                    $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject([
-                        'class' => StreamLogTarget::class,
-                        'url' => 'php://stdout',
-                        'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
-                        'includeUserIp' => $generalConfig->storeUserIps,
-                    ]);
-                }
-            }
+                'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
+                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
+            ]));
         }
 
         return $targets;
@@ -837,7 +1040,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
-            'isCpRequest' => defined('CRAFT_CP') ? (bool)CRAFT_CP : null,
+            'isCpRequest' => static::parseBooleanEnv('$CRAFT_CP'),
         ];
 
         if ($generalConfig->trustedHosts !== null) {

@@ -37,10 +37,11 @@ class FieldLayoutForm extends Model
     {
         $menu = [];
         foreach ($this->tabs as $tab) {
-            $tabId = $this->_tabId($tab->getId());
-            $menu[$tabId] = [
+            $containerId = $this->_tabId($tab->getId());
+            $menu[$containerId] = [
+                'tabId' => $tab->getTabId(),
                 'label' => $tab->getName(),
-                'url' => "#$tabId",
+                'url' => "#$containerId",
                 'class' => $tab->hasErrors ? 'error' : null,
             ];
         }
@@ -69,6 +70,11 @@ class FieldLayoutForm extends Model
                     'id' => $id,
                     'layout-tab' => $tab->getUid(),
                 ],
+                'role' => 'tabpanel',
+                'tabindex' => '0',
+                'aria' => [
+                    'labelledBy' => $tab->getTabId(),
+                ]
             ]);
         }
         return implode("\n", $html);

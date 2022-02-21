@@ -142,16 +142,13 @@ class ImageTransformsController extends Controller
         }
 
         if (!$success) {
-            // Send the transform back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'transform' => $transform,
-            ]);
-
-            return null;
+            return $this->asModelFailure($transform, modelName: 'transform');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Transform saved.'));
-        return $this->redirectToPostedUrl($transform);
+        return $this->asModelSuccess(
+            $transform,
+            Craft::t('app', 'Transform saved.'),
+        );
     }
 
     /**
@@ -168,6 +165,6 @@ class ImageTransformsController extends Controller
 
         Craft::$app->getImageTransforms()->deleteTransformById($transformId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

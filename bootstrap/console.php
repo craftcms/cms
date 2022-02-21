@@ -10,8 +10,8 @@
 use yii\console\ExitCode;
 
 // Make sure they're running PHP 8+
-if (PHP_VERSION_ID < 80000) {
-    echo "Craft requires PHP 8.0 or later.\n";
+if (PHP_VERSION_ID < 80002) {
+    echo "Craft requires PHP 8.0.2 or later.\n";
     exit(ExitCode::UNSPECIFIED_ERROR);
 }
 

@@ -982,7 +982,7 @@ class Sites extends Component
                     $blockIds = (new Query())
                         ->select(['id'])
                         ->from([Table::MATRIXBLOCKS])
-                        ->where(['ownerId' => $entryIds])
+                        ->where(['primaryOwnerId' => $entryIds])
                         ->column();
 
                     if (!empty($blockIds)) {
@@ -1001,7 +1001,7 @@ class Sites extends Component
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                            if (strpos($tableName, $matrixTablePrefix) === 0) {
+                            if (str_starts_with($tableName, $matrixTablePrefix)) {
                                 Db::delete($tableName, [
                                     'elementId' => $blockIds,
                                     'siteId' => $transferContentTo,

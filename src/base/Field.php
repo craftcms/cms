@@ -182,6 +182,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Use the translated field name as the string representation.
      *
      * @return string
+     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {

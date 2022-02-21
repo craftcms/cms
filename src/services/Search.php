@@ -133,7 +133,7 @@ class Search extends Component
             if ($fieldHandles !== null) {
                 $fieldHandles = array_flip($fieldHandles);
             }
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
                 if ($field->searchable) {
                     // Are we updating this field's keywords?
                     if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
@@ -817,7 +817,7 @@ SQL;
             $this->_isSupportedFullTextWord($keywords) &&
             // Workaround on MySQL until this gets fixed: https://bugs.mysql.com/bug.php?id=78485
             // Related issue: https://github.com/craftcms/cms/issues/3862
-            strpos($keywords, ' ') === false;
+            !str_contains($keywords, ' ');
     }
 
     /**

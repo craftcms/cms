@@ -120,7 +120,7 @@ class FindAndReplace extends BaseJob
         foreach ($blockTypes as $blockType) {
             $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
-            foreach ($blockType->getFields() as $field) {
+            foreach ($blockType->getCustomFields() as $field) {
                 $this->_checkField($field, $matrixField->contentTable, $fieldColumnPrefix);
             }
         }

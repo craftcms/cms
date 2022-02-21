@@ -10,7 +10,6 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
-use Swift_SmtpTransport;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -151,7 +150,7 @@ class Smtp extends BaseTransportAdapter
     public function defineTransport()
     {
         $config = [
-            'class' => Swift_SmtpTransport::class,
+            'scheme' => 'smtp',
             'host' => App::parseEnv($this->host),
             'port' => App::parseEnv($this->port),
             'timeout' => $this->timeout,

@@ -29,10 +29,14 @@
 
       .cs-screen-home {
         .cs-opt {
+          --focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)), inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
           display: block;
           padding: 24px;
           text-align: center;
           cursor: pointer;
+          color: inherit;
+          font: inherit;
+          width: 100%;
 
           &:first-child {
             border-radius: 4px 4px 0 0;

@@ -58,8 +58,7 @@
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)}, #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
-  --focus-hsl: var(--dark-focus-hsl); // use the dark color by default
-  --focus-ring: 0 0 0 1px hsl(var(--focus-hsl)), 0 0 0 3px hsla(var(--focus-hsl), 0.7);
+  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)), 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
 }
 
 body,
@@ -536,11 +535,24 @@ button {
   align-content: stretch;
   justify-content: center;
   gap: var(--s);
-  color: $blue700;
+  color: $blue800;
 
   #content-notice & {
     display: inline-flex;
     justify-content: flex-start;
+  }
+
+  .so-notice > & {
+    @include margin(calc(var(--s) * -1), 0, calc(var(--s) * -1), calc(var(--xl) * -1));
+    @include padding(var(--s), 0, var(--s), var(--xl));
+    @include border-bottom-left-radius($largeBorderRadius);
+
+    body.ltr & {
+      background-image: linear-gradient(to bottom right, transparentize($blue600, 0.8), transparentize($blue600, 1) 50%);
+    }
+    body.rtl & {
+      background-image: linear-gradient(to left, transparentize($blue600, 0.8), transparentize($blue600, 1));
+    }
   }
 
   p {
@@ -549,6 +561,7 @@ button {
   }
 
   .draft-icon {
+    position: relative;
     flex-shrink: 0;
     width: 34px;
     height: 34px;
@@ -556,21 +569,34 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 100%;
-    border: 2px solid transparentize($blue600, 0.8);
+    border: 2px solid transparentize($blue800, 0.8);
     box-sizing: border-box;
+    box-shadow: 0 1px 1px 1px $white;
 
     &:before {
       position: relative;
       left: 1px;
-      color: $blue700 !important;
+      color: $blue800 !important;
       font-size: 18px;
+    }
+
+    &:after {
+      content: '';
+      font-size: 0;
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 100%;
+      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
     }
   }
 
   .discard-changes-btn {
     @include margin-left(var(--xs));
     background-color: transparent !important;
-    color: $blue700 !important;
+    color: $blue800 !important;
     border: 2px solid $blue600;
 
     &:hover,
@@ -828,7 +854,7 @@ td.right {
   &.has-icon {
     display: flex;
     flex-wrap: nowrap;
-    align-items: start;
+    align-items: flex-start;
 
     .icon {
       flex-shrink: 1;
@@ -1356,7 +1382,7 @@ ul.icons {
     }
   }
 
-  &:not(.disabled):not(.loading) {
+  &:not(.disabled):not(.loading):not(.dashed) {
     &:focus,
     &.focus,
     &:hover {
@@ -1839,7 +1865,7 @@ div.btn.submit input {
 /* dashed buttons */
 .btn.dashed {
   border: 1px dashed $mediumHairlineColor;
-  background-color: transparent !important;
+  background-color: transparent;
 
   .btngroup &:not(:last-child) {
     @include border-right(1px solid transparent);
@@ -1847,13 +1873,18 @@ div.btn.submit input {
   }
 
   &:focus {
-    background-color: transparentize($grey200, 0.9) !important;
+    background-color: transparentize($grey200, 0.9);
+    border-color: transparent;
+
+    .reduce-focus-visibility &:not(.focus-visible) {
+      border: 1px dashed $mediumHairlineColor;
+    }
   }
 
   &:not(.disabled) {
     &:active,
     &.active {
-      background-color: transparentize($grey200, 0.75) !important;
+      background-color: transparentize($grey200, 0.75);
     }
   }
 }
@@ -3174,14 +3205,6 @@ table.editable {
   & + .btn.add {
     display: block;
     width: 100%;
-    border: 1px dashed $mediumHairlineColor;
-    background-color: transparent;
-    box-shadow: none;
-
-    &:focus {
-      border-style: solid;
-      border-color: $blue600;
-    }
   }
 
   &:not(.hidden) + .btn.add {
@@ -3529,7 +3552,7 @@ ul.tree,
   align-items: center;
   max-width: 100%;
 
-  ul {
+  [role="tablist"] {
     margin: calc(var(--s) * -1) var(--neg-padding) 0;
     padding: var(--s) var(--padding) 0;
     flex: 1;
@@ -3559,43 +3582,39 @@ ul.tree,
       }
     }
 
-    li {
+    [role="tab"] {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      position: relative;
+      border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+      padding: 0 12px;
+      white-space: nowrap;
+      color: $lightTextColor;
+      height: 42px;
+
       &:not(:first-child) {
-        a {
-          @include margin-left(4px);
+        @include margin-left(4px);
+      }
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      &:not(.sel) {
+        &:hover {
+          background-color: transparentize($grey300, 0.85);
         }
       }
 
-      a {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        position: relative;
-        border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
-        padding: 0 12px;
-        white-space: nowrap;
-        color: $lightTextColor;
-        height: 42px;
+      &.sel {
+        cursor: default;
+        color: $textColor;
+        @include pane;
+      }
 
-        &:hover {
-          text-decoration: none;
-        }
-
-        &:not(.sel) {
-          &:hover {
-            background-color: transparentize($grey300, 0.85);
-          }
-        }
-
-        &.sel {
-          cursor: default;
-          color: $textColor;
-          @include pane;
-        }
-
-        span[data-icon] {
-          @include margin-left(4px);
-        }
+      span[data-icon] {
+        @include margin-left(4px);
       }
     }
   }
@@ -3694,7 +3713,7 @@ ul.tree,
     .text::placeholder,
     .datewrapper .text + div[data-icon],
     .timewrapper .text + div[data-icon] {
-      color: $grey300;
+      color: $grey500;
     }
 
     .ui-datepicker {
@@ -3875,7 +3894,8 @@ ul.tree,
       }
 
       & > .heading {
-        & > label {
+        & > label,
+        & > legend {
           font-weight: normal;
         }
       }
@@ -4898,7 +4918,7 @@ ul.tree,
 
     body:not(.reduce-focus-visibility) &:focus,
     body.reduce-focus-visibility &.focus-visible {
-      box-shadow: inset 0 0 0 3px hsla(var(--focus-hsl), 0.7);
+      box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
     }
   }
 }
@@ -5174,7 +5194,7 @@ fieldset {
     }
 
     &.outdated {
-      background-color: $yellow300;
+      background-color: $yellow700;
     }
   }
 
@@ -5756,10 +5776,6 @@ body.reduce-focus-visibility {
           user-select: none;
           pointer-events: none;
           z-index: 1;
-        }
-
-        #details & {
-          color: $darkHairlineColor;
         }
       }
     }
@@ -6431,13 +6447,17 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
-  padding: 0 14px 14px;
+  padding: 0 var(--m) var(--m);
   border-radius: $largeBorderRadius;
   border: 1px solid $hairlineColor;
   background-color: $grey050;
 
   &.static {
     padding-top: 14px;
+  }
+
+  .flex-fields {
+    --row-gap: var(--m) !important;
   }
 
   & > .titlebar {
@@ -6585,10 +6605,6 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   & > .fields > .flex-fields > .field {
     &:before {
       display: none;
-    }
-
-    & > .status-badge {
-      @include left(-15px);
     }
   }
 

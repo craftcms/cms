@@ -34,6 +34,7 @@ use craft\errors\FileException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -45,7 +46,6 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -67,6 +67,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use yii\validators\RequiredValidator;
 
 /**
  * Asset represents an asset element.
@@ -845,6 +846,23 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public function afterValidate(): void
+    {
+        $scenario = $this->getScenario();
+
+        if ($scenario === self::SCENARIO_LIVE) {
+            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
+            if ($altElement && $altElement->required) {
+                (new RequiredValidator())->validateAttribute($this, 'alt');
+            }
+        }
+
+        parent::afterValidate();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -853,7 +871,7 @@ class Asset extends Element
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename'], 'safe'];
+        $rules[] = [['filename', 'alt'], 'safe'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
         $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
@@ -2014,7 +2032,7 @@ JS;
     private function _updatePreviewThumbJs(): string
     {
         $thumbContainerId = Craft::$app->getView()->namespaceInputId('thumb-container');
-        $js = <<<JS
+        return <<<JS
 $('#$thumbContainerId')
     .addClass('loading')
     .append($('<div class="spinner spinner-absolute"/>'));
@@ -2033,7 +2051,6 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         .find('.spinner').remove();
 });
 JS;
-        return $js;
     }
 
     /**
@@ -2588,7 +2605,7 @@ JS;
         $inAllowedRoot = false;
         foreach ($allowedRoots as [$root, $isTempDir]) {
             $root = $this->_normalizeTempPath($root);
-            if ($root !== false && StringHelper::startsWith($tempFilePath, $root)) {
+            if ($root !== false && str_starts_with($tempFilePath, $root)) {
                 // If this is a known temp dir, we’re good here
                 if ($isTempDir) {
                     return true;
@@ -2609,7 +2626,7 @@ JS;
         });
 
         foreach ($systemDirs as $dir) {
-            if (StringHelper::startsWith($tempFilePath, $dir)) {
+            if (str_starts_with($tempFilePath, $dir)) {
                 return false;
             }
         }

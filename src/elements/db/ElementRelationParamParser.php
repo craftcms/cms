@@ -343,7 +343,7 @@ class ElementRelationParamParser extends BaseObject
                         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($fieldModel->id);
 
                         foreach ($blockTypes as $blockType) {
-                            foreach ($blockType->getFields() as $blockTypeField) {
+                            foreach ($blockType->getCustomFields() as $blockTypeField) {
                                 if ($blockTypeField->handle == $fieldHandleParts[1]) {
                                     $blockTypeFieldIds[] = $blockTypeField->id;
                                     break;
@@ -370,7 +370,7 @@ class ElementRelationParamParser extends BaseObject
                             ->innerJoin([$targetMatrixBlocksAlias => Table::MATRIXBLOCKS], "[[$targetMatrixBlocksAlias.id]] = [[$sourcesAlias.sourceId]]")
                             ->innerJoin([$targetMatrixElementsAlias => Table::ELEMENTS], "[[$targetMatrixElementsAlias.id]] = [[$targetMatrixBlocksAlias.id]]")
                             ->where([
-                                "$targetMatrixBlocksAlias.ownerId" => $relElementIds,
+                                "$targetMatrixBlocksAlias.primaryOwnerId" => $relElementIds,
                                 "$targetMatrixBlocksAlias.fieldId" => $fieldModel->id,
                                 "$targetMatrixElementsAlias.enabled" => true,
                                 "$targetMatrixElementsAlias.dateDeleted" => null,
@@ -394,7 +394,7 @@ class ElementRelationParamParser extends BaseObject
                         $matrixBlockTargetsAlias = 'matrixblock_targets' . self::$_relateSourceMatrixBlocksCount;
 
                         $subQuery = (new Query())
-                            ->select(["$sourceMatrixBlocksAlias.ownerId"])
+                            ->select(["$sourceMatrixBlocksAlias.primaryOwnerId"])
                             ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
                             ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[$sourceMatrixElementsAlias.id]] = [[$sourceMatrixBlocksAlias.id]]")
                             ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[$matrixBlockTargetsAlias.sourceId]] = [[$sourceMatrixBlocksAlias.id]]")

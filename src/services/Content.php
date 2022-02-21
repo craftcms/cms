@@ -88,7 +88,7 @@ class Content extends Component
         $fieldLayout = $element->getFieldLayout();
 
         if ($fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
                 if (
                     (!$element->contentId || $element->isFieldDirty($field->handle)) &&
                     $field::hasContentColumn()
@@ -185,7 +185,7 @@ class Content extends Component
     private function _removeColumnPrefixesFromRow(array $row): array
     {
         foreach ($row as $column => $value) {
-            if (strpos($column, $this->fieldColumnPrefix) === 0) {
+            if (str_starts_with($column, $this->fieldColumnPrefix)) {
                 $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
                 $row[$fieldHandle] = $value;
                 unset($row[$column]);

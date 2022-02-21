@@ -2,7 +2,7 @@
     {% import "_includes/forms" as forms %}
     {% set idPrefix = 'cs-'~screen~random() %}
 
-    <div class="cs-screen cs-screen-2 cs-screen-{{ screen }}" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
+    <div id="cs-screen-{{ screen }}" class="cs-screen cs-screen-2 cs-screen-{{ screen }}" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
         {{ forms.textareaField({
             first: true,
             class: 'cs-body-text',
@@ -109,16 +109,16 @@
 
 
 <div class="cs-screen cs-screen-home">
-    <div class="cs-opt" data-screen="help">
+    <button type="button" class="cs-opt" data-screen="help" aria-controls="cs-screen-help" aria-expanded="false">
         <div class="cs-opt-icon">{{ svg(buoeyIcon, sanitize=false) }}</div>
         <h2>{{ "Get help"|t('app') }}</h2>
         <p>{{ "How-to’s and other questions"|t('app') }}</p>
-    </div>
-    <div class="cs-opt" data-screen="feedback">
+    </button>
+    <button type="button" class="cs-opt" data-screen="feedback" aria-controls="cs-screen-feedback" aria-expanded="false">
         <div class="cs-opt-icon">{{ svg(bullhornIcon, sanitize=false) }}</div>
         <h2>{{ "Give feedback"|t('app') }}</h2>
         <p>{{ "Bug reports and feature requests"|t('app') }}</p>
-    </div>
+    </button>
 </div>
 
 {{ screen(widget, showBackupOption, bundleUrl, 'help', "Briefly describe your question."|t('app'), seIcon, "Similar questions on Stack Exchange"|t('app'), 'https://craftcms.stackexchange.com/questions/ask', "Ask on Stack Exchange"|t('app')) }}

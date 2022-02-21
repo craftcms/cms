@@ -224,21 +224,21 @@
 
         {% if user.getIsCurrent() %}
             <div id="prefs" class="flex-fields hidden">
-                {{ forms.selectField({
+                {{ forms.selectizeField({
                     id: 'preferredLanguage',
                     name: 'preferredLanguage',
                     label: "Language"|t('app'),
                     instructions: 'The language that the control panel should use.'|t('app'),
-                    options: localeOptions,
+                    options: languageOptions,
                     value: userLanguage,
                 }) }}
 
-                {{ forms.selectField({
+                {{ forms.selectizeField({
                     id: 'preferredLocale',
                     name: 'preferredLocale',
                     label: "Formatting Locale"|t('app'),
                     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-                    options: (localeOptions ?? [])|unshift({label: 'Same as language'|t('app'), value: ''}),
+                    options: localeOptions,
                     value: userLocale,
                 }) }}
 

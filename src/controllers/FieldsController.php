@@ -73,15 +73,10 @@ class FieldsController extends Controller
         $group->name = $this->request->getRequiredBodyParam('name');
 
         if (!$fieldsService->saveGroup($group)) {
-            return $this->asJson([
-                'errors' => $group->getErrors(),
-            ]);
+            return $this->asModelFailure($group);
         }
 
-        return $this->asJson([
-            'success' => true,
-            'group' => $group->getAttributes(),
-        ]);
+        return $this->asModelSuccess($group, modelName: 'group');
     }
 
     /**
@@ -97,11 +92,9 @@ class FieldsController extends Controller
         $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
 
-        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
-
-        return $this->asJson([
-            'success' => $success,
-        ]);
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Group deleted.')) :
+            $this->asFailure();
     }
 
     // Fields
@@ -367,20 +360,15 @@ JS;
             throw new BadRequestHttpException("Invalid field ID: $fieldId");
         }
 
-        $success = $fieldsService->deleteField($field);
-
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => $success]);
+        if (!$fieldsService->deleteField($field)) {
+            return $this->asModelFailure($field, Craft::t('app', 'Unable to delete field ID {fieldId}', [
+                'fieldId' => $fieldId,
+            ]));
         }
 
-        if (!$success) {
-            throw new ServerErrorHttpException("Unable to delete field ID $fieldId");
-        }
-
-        Craft::$app->getSession()->setNotice(Craft::t('app', '“{name}” deleted.', [
+        return $this->asModelSuccess($field, Craft::t('app', '“{name}” deleted.', [
             'name' => $field->name,
         ]));
-        return $this->redirectToPostedUrl();
     }
 
     // Field Layouts
@@ -416,6 +404,7 @@ JS;
         return $this->asJson([
             'config' => ['type' => get_class($element)] + $element->toArray(),
             'selectorHtml' => $element->selectorHtml(),
+            'hasConditions' => $element->hasConditions(),
         ]);
     }
 

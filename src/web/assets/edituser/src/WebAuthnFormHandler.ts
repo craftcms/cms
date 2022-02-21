@@ -118,24 +118,26 @@ export class WebAuthnFormHandler extends AuthenticationSetupFormHandler
             }
         }
 
-        Craft.postActionRequest(this.attachEndpoint, requestData, (response: any, textStatus: string) => {
-            if (response.html) {
-                this.$container.replaceWith(response.html);
-                this.$container = $('#webauthn-settings');
-                this.attachEvents();
-            }
+        Craft.sendActionRequest('POST', this.attachEndpoint, {data: requestData})
+            .then((response) => {
+                if (response?.data?.html) {
+                    this.$container.replaceWith(response.data.html);
+                    this.$container = $('#webauthn-settings');
+                    this.attachEvents();
+                }
 
-            if (response.footHtml) {
-                addContainedJsFilesToPage(response.footHtml);
-            }
-
-            if (response.error) {
-                this.setErrorStatus(response.error);
-            }
-
-            this.enable();
-        });
-
+                if (response?.data?.footHtml) {
+                    addContainedJsFilesToPage(response.data.footHtml);
+                }
+            })
+            .catch(({response}) => {
+                if (response?.data?.message) {
+                    this.setErrorStatus(response.data.message);
+                }
+            })
+            .finally(() => {
+                this.enable();
+            });
     }
 
     /**

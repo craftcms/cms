@@ -556,7 +556,7 @@ class Category extends Element
         $path = sprintf('categories/%s/%s', $group->handle, $this->getCanonicalId());
 
         // Ignore homepage/temp slugs
-        if ($this->slug && strpos($this->slug, '__') !== 0) {
+        if ($this->slug && !str_starts_with($this->slug, '__')) {
             $path .= "-$this->slug";
         }
 

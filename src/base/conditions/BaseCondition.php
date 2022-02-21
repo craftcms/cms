@@ -257,6 +257,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                     'ext' => 'craft-cp, craft-condition',
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
+                    'indicator' => sprintf('#%s', $view->namespaceInputId('add-btn')),
                 ],
                 'data' => [
                     'condition-config' => Json::encode(array_merge($this->toArray(), [
@@ -374,6 +375,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
                 ]) .
                 Html::beginTag('button', [
                     'type' => 'button',
+                    'id' => 'add-btn',
                     'class' => array_filter([
                         'btn',
                         'add',

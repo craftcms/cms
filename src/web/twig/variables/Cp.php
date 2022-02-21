@@ -338,7 +338,7 @@ class Cp extends Component
         $foundSelectedItem = false;
 
         foreach ($navItems as &$item) {
-            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'] . '/'))) {
+            if (!$foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
                 if (!isset($item['subnav'])) {
                     $item['subnav'] = false;
@@ -787,7 +787,7 @@ class Cp extends Component
 
                     // Is it in a site template directory?
                     foreach ($sites as $handle => $name) {
-                        if (strpos($template, $handle . DIRECTORY_SEPARATOR) === 0) {
+                        if (str_starts_with($template, $handle . DIRECTORY_SEPARATOR)) {
                             $hint = $name;
                             $template = substr($template, strlen($handle) + 1);
                             break;

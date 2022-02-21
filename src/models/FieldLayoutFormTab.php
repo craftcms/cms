@@ -57,7 +57,18 @@ class FieldLayoutFormTab extends Model
     }
 
     /**
-     * Returns the tab’s HTML ID.
+     * Returns the tab anchor’s HTML ID.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    public function getTabId(): string
+    {
+        return sprintf('tab-%s', $this->getId());
+    }
+
+    /**
+     * Returns the content container’s HTML ID.
      *
      * @return string
      * @since 4.0.0

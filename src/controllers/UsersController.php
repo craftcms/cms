@@ -25,7 +25,6 @@ use craft\helpers\Authentication as AuthenticationHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
-use craft\helpers\Json;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
@@ -399,15 +398,10 @@ class UsersController extends Controller
 
             $message = UserHelper::getLoginFailureMessage($authError, $e->user);
 
-            return $this->asJson([
-                'success' => false,
-                'message' => $message,
-            ]);
+            return $this->asFailure($message);
         }
 
-        return $this->asJson([
-            'success' => $success,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -418,16 +412,16 @@ class UsersController extends Controller
         // Passing false here for reasons.
         Craft::$app->getUser()->logout(false);
 
-        if ($this->request->getAcceptsJson()) {
-            $return = [
-                'success' => true,
-            ];
+        $data = [];
 
+        if ($this->request->getAcceptsJson()) {
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
-                $return['csrfTokenValue'] = $this->request->getCsrfToken();
+                $data['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asJson($return);
+            return $this->asSuccess(
+                data: $data,
+            );
         }
 
         // Redirect to the login page if this is a CP request
@@ -435,7 +429,10 @@ class UsersController extends Controller
             return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
-        return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
+        return $this->asSuccess(
+            data: $data,
+            redirect: Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect()
+        );
     }
 
     /**
@@ -486,7 +483,7 @@ class UsersController extends Controller
         }
 
         if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $list = implode("\n", array_map(function(string $error) {
+            $list = implode("\n", array_map(function (string $error) {
                 return sprintf('- %s', $error);
             }, $errors));
             Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
@@ -494,16 +491,12 @@ class UsersController extends Controller
         }
 
         if (empty($errors)) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson([
-                    'success' => true,
-                    'message' => 'Password reset email sent.',
+            return $this->asSuccess(
+                Craft::t('app', 'Password reset email sent.'),
+                data: [
                     'passwordReset' => true,
-                ]);
-            }
-
-            $this->setSuccessFlash(Craft::t('app', 'Password reset email sent.'));
-            return $this->redirectToPostedUrl();
+                ]
+            );
         }
 
         // Handle the errors.
@@ -582,20 +575,16 @@ class UsersController extends Controller
         $user->setScenario(User::SCENARIO_PASSWORD);
 
         if (!Craft::$app->getElements()->saveElement($user)) {
-            $errors = $user->getErrors('newPassword');
-
-            if ($this->request->getAcceptsJson()) {
-                return $this->asErrorJson(implode(', ', $errors));
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t update password.'));
-
-            return $this->_renderSetPasswordTemplate([
-                'errors' => $errors,
-                'code' => $code,
-                'id' => $uid,
-                'newUser' => !$user->password,
-            ]);
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'Couldn’t update password.'),
+                errorAttribute: 'newPassword'
+            ) ?? $this->_renderSetPasswordTemplate([
+                    'errors' => $errors,
+                    'code' => $code,
+                    'id' => $uid,
+                    'newUser' => !$user->password,
+                ]);
         }
 
         // If they're pending, try to activate them, and maybe treat this as an activation request
@@ -612,13 +601,12 @@ class UsersController extends Controller
 
         if ($this->request->getAcceptsJson()) {
             $return = [
-                'success' => true,
                 'status' => $user->getStatus(),
             ];
             if ($loggedIn && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
-            return $this->asJson($return);
+            return $this->asSuccess(data: $return);
         }
 
         // Can they access the CP?
@@ -657,7 +645,7 @@ class UsersController extends Controller
                     'email' => $user->unverifiedEmail,
                 ]);
             }
-        } else if ($pending) {
+        } elseif ($pending) {
             // No unverified email so just get on with activating their account
             $usersService->activateUser($user);
         }
@@ -731,7 +719,7 @@ class UsersController extends Controller
                     ->id($userId === 'current' ? $currentUser->id : $userId)
                     ->status(null)
                     ->one();
-            } else if ($edition === Craft::Pro) {
+            } elseif ($edition === Craft::Pro) {
                 // Registering a new user
                 $user = new User();
             }
@@ -883,7 +871,7 @@ class UsersController extends Controller
             }
 
             foreach (Craft::$app->getAuthentication()->getUserConfigurableTypes() as $type) {
-                $configurableStepTypes[] = new $type;
+                $configurableStepTypes[] = new $type();
             }
         }
 
@@ -901,7 +889,7 @@ class UsersController extends Controller
             $event->statusActions,
             $event->miscActions,
             $event->sessionActions,
-            array_map(function(array $action): array {
+            array_map(function (array $action): array {
                 $action['destructive'] = true;
                 return $action;
             }, $event->destructiveActions),
@@ -913,7 +901,7 @@ class UsersController extends Controller
         if (!$isNewUser) {
             if ($isCurrentUser) {
                 $title = Craft::t('app', 'My Account');
-            } else if ($name) {
+            } elseif ($name) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
                 $title = Craft::t('app', 'Edit User');
@@ -999,41 +987,59 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         if ($isCurrentUser) {
-            /** @var Locale[] $allLocales */
-            $allLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
-            ArrayHelper::multisort($allLocales, 'displayName');
-            $localeOptions = [];
-            foreach ($allLocales as $locale) {
-                $localeOptions[] = [
-                    'label' => $locale->getDisplayName(),
-                    'value' => $locale->id,
-                ];
-            }
+            $i18n = Craft::$app->getI18n();
+
+            // Language
+            $appLocales = $i18n->getAppLocales();
+            ArrayHelper::multisort($appLocales, fn (Locale $locale) => $locale->getDisplayName());
+            $languageId = Craft::$app->getLocale()->getLanguageID();
+
+            $languageOptions = array_map(fn (Locale $locale) => [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
+            ], $appLocales);
 
             $userLanguage = $user->getPreferredLanguage();
-            if ($userLanguage !== null && !isset($allLocales[$userLanguage])) {
-                $userLanguage = null;
+
+            if (
+                !$userLanguage ||
+                !ArrayHelper::contains($appLocales, fn (Locale $locale) => $locale->id === $userLanguage)
+            ) {
+                $userLanguage = Craft::$app->language;
             }
+
+            // Formatting Locale
+            $allLocales = $i18n->getAllLocales();
+            ArrayHelper::multisort($allLocales, fn (Locale $locale) => $locale->getDisplayName());
+
+            $localeOptions = [
+                ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
+            ];
+            array_push($localeOptions, ...array_map(fn (Locale $locale) => [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
+            ], $allLocales));
 
             $userLocale = $user->getPreferredLocale();
-            if ($userLocale !== null && !isset($allLocales[$userLocale])) {
-                $userLocale = null;
-            }
 
-            if ($userLanguage === null) {
-                $userLanguage = Craft::$app->language;
-
-                // Only set the locale to the defaultCpLocale by default if the language isn't set either.
-                // Otherwise `null` means "Same as language"
-                if ($userLocale === null) {
-                    $generalConfig = Craft::$app->getConfig()->getGeneral();
-                    if ($generalConfig->defaultCpLocale) {
-                        $userLocale = $generalConfig->defaultCpLocale;
-                    }
-                }
+            if (
+                !$userLocale ||
+                !ArrayHelper::contains($allLocales, fn (Locale $locale) => $locale->id === $userLocale)
+            ) {
+                $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
             }
         } else {
-            $localeOptions = $userLanguage = $userLocale = null;
+            $languageOptions = $localeOptions = $userLanguage = $userLocale = null;
         }
 
         // Determine whether user photo uploading should be possible
@@ -1051,7 +1057,7 @@ class UsersController extends Controller
         $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
 
         $this->getView()->registerJsWithVars(
-            fn($userId, $isCurrent, $deleteModalRedirect) => <<<JS
+            fn ($userId, $isCurrent, $deleteModalRedirect) => <<<JS
 new Craft.AccountSettingsForm($userId, $isCurrent, {
     deleteModalRedirect: $deleteModalRedirect,
 })
@@ -1065,6 +1071,7 @@ JS,
             'isNewUser',
             'statusLabel',
             'actions',
+            'languageOptions',
             'localeOptions',
             'userLanguage',
             'userLocale',
@@ -1180,20 +1187,20 @@ JS,
                 // Should we be sending a verification email now?
                 // Even if verification isn't required, send one out on account creation if we don't have a password yet
                 $sendVerificationEmail = (!$isPublicRegistration || !$deactivateByDefault) && (
-                        (
-                            $requireEmailVerification && (
+                    (
+                        $requireEmailVerification && (
                                 $isPublicRegistration ||
                                 ($isCurrentUser && !$canAdministrateUsers) ||
                                 $this->request->getBodyParam('sendVerificationEmail')
                             )
-                        ) ||
+                    ) ||
                         (
                             !$requireEmailVerification && $isNewUser && (
                                 ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
                                 $this->request->getBodyParam('sendVerificationEmail')
                             )
                         )
-                    );
+                );
 
                 if ($sendVerificationEmail) {
                     $user->unverifiedEmail = $newEmail;
@@ -1314,20 +1321,11 @@ JS,
                 $user->clearErrors('unverifiedEmail');
             }
 
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson([
-                    'errors' => $user->getErrors(),
-                ]);
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save user.'));
-
-            // Send the account back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                $userVariable => $user,
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'Couldn’t save user.'),
+                $userVariable
+            );
         }
 
         // If this is a new user and email verification isn't required,
@@ -1376,7 +1374,7 @@ JS,
             if ($isPublicRegistration) {
                 // Assign them to the default user group
                 Craft::$app->getUsers()->assignUserToDefaultGroup($user);
-            } else if ($currentUser) {
+            } elseif ($currentUser) {
                 // Fire an 'afterBeforeGroupsAndPermissions' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                     $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
@@ -1423,13 +1421,13 @@ JS,
 
         if ($this->request->getAcceptsJson()) {
             $return = [
-                'success' => true,
                 'id' => $user->id,
             ];
             if ($returnCsrfToken && $generalConfig->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
-            return $this->asJson($return);
+
+            return $this->asSuccess($return);
         }
 
         if ($isPublicRegistration) {
@@ -1497,7 +1495,7 @@ JS,
 
             Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);
 
-            return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
+            return $this->asFailure(Craft::t('app', 'There was an error uploading your photo: {error}', [
                 'error' => $exception->getMessage(),
             ]));
         }
@@ -1563,17 +1561,9 @@ JS,
 
         $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => $emailSent]);
-        }
-
-        if ($emailSent) {
-            $this->setSuccessFlash(Craft::t('app', 'Activation email sent.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
-        }
-
-        return $this->redirectToPostedUrl();
+        return $emailSent ?
+            $this->asSuccess(Craft::t('app', 'Activation email sent.')) :
+            $this->asFailure(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
     }
 
     /**
@@ -1851,10 +1841,10 @@ JS,
         $this->requireAcceptsJson();
 
         if ($this->_verifyExistingPassword()) {
-            return $this->asJson(['success' => true]);
+            return $this->asSuccess();
         }
 
-        return $this->asErrorJson(Craft::t('app', 'Invalid password.'));
+        return $this->asFailure(Craft::t('app', 'Invalid password.'));
     }
 
     /**
@@ -1880,23 +1870,18 @@ JS,
         ]);
         $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson([
+        return $this->asFailure(
+            $event->message,
+            data: [
                 'errorCode' => $authError,
-                'error' => $event->message,
-            ]);
-        }
-
-        $this->setFailFlash($event->message);
-
-        Craft::$app->getUrlManager()->setRouteParams([
-            'loginName' => $this->request->getBodyParam('loginName'),
-            'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
-            'errorCode' => $authError,
-            'errorMessage' => $event->message,
-        ]);
-
-        return null;
+            ],
+            routeParams: [
+                'loginName' => $this->request->getBodyParam('loginName'),
+                'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
+                'errorCode' => $authError,
+                'errorMessage' => $event->message,
+            ]
+        );
     }
 
     /**
@@ -1917,7 +1902,6 @@ JS,
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
             $return = [
-                'success' => true,
                 'returnUrl' => $returnUrl,
             ];
 
@@ -1925,7 +1909,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asJson($return);
+            return $this->asSuccess(data: $return);
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
@@ -2034,7 +2018,7 @@ JS,
             move_uploaded_file($photo->tempName, $fileLocation);
             $filename = $photo->name;
             $newPhoto = true;
-        } else if (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
+        } elseif (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
             // base64-encoded photo
             $matches = [];
 
@@ -2231,7 +2215,7 @@ JS,
         ]));
 
         if ($this->request->getAcceptsJson()) {
-            return $this->asErrorJson('InvalidVerificationCode');
+            return $this->asFailure('InvalidVerificationCode');
         }
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
@@ -2336,20 +2320,15 @@ JS,
      */
     private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
-        if ($this->request->getAcceptsJson()) {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-            $errors = implode(', ', $errors);
+        $errorString = implode(', ', $errors);
 
-            return $this->asErrorJson($errors);
-        }
-
-        // Send the data back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'errors' => $errors,
-            'loginName' => $loginName,
-        ]);
-
-        return null;
+        return $this->asFailure(
+            $errorString,
+            errors: $errors,
+            routeParams: [
+                'loginName' => $loginName,
+            ]
+        );
     }
 
     /**
@@ -2381,6 +2360,6 @@ JS,
         $this->requirePostRequest();
         $ids = $this->request->getRequiredBodyParam('ids');
         Craft::$app->getAnnouncements()->markAsRead($ids);
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

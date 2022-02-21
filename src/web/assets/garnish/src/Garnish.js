@@ -52,6 +52,8 @@ Garnish = $.extend(Garnish, {
     RETURN_KEY: 13,
     ESC_KEY: 27,
     SPACE_KEY: 32,
+    END_KEY: 35,
+    HOME_KEY: 36,
     LEFT_KEY: 37,
     UP_KEY: 38,
     RIGHT_KEY: 39,
@@ -111,6 +113,19 @@ Garnish = $.extend(Garnish, {
         }
 
         return Garnish[key];
+    },
+
+    /**
+     * Returns whether user prefers reduced motion
+     *
+     * @return {boolean}
+     */
+    prefersReducedMotion: function () {
+        // Grab the prefers reduced media query.
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+        // Check if the media query matches or is not available.
+        return !mediaQuery || mediaQuery.matches;
     },
 
     /**
