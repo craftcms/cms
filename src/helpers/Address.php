@@ -110,7 +110,7 @@ class Address
 htmx.process(htmx.find($containerSelector));
 htmx.trigger(htmx.find($containerSelector), 'htmx:load');
 JS,
-                    [sprintf('#%s', $namespacedId)]
+                    [sprintf('#%s', "$namespacedId-container")]
                 );
             }
             $html .= Html::endTag('div');
