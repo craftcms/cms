@@ -1907,7 +1907,7 @@ EOD;
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -1919,7 +1919,7 @@ EOD;
                 $record = EntryRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid entry ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid entry ID: $this->id");
                 }
             } else {
                 $record = new EntryRecord();

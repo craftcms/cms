@@ -48,6 +48,7 @@ use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\validators\Validator;
@@ -1734,7 +1735,8 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
+     * @throws Exception
      */
     public function afterSave(bool $isNew): void
     {
@@ -1743,7 +1745,7 @@ class User extends Element implements IdentityInterface
             $record = UserRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid user ID: ' . $this->id);
+                throw new InvalidConfigException("Invalid user ID: $this->id");
             }
 
             if ($this->active != $record->active) {
