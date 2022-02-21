@@ -23,7 +23,6 @@ use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\web\assets\matrix\MatrixAsset;
 use Illuminate\Support\Collection;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -440,7 +439,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -453,7 +452,7 @@ class MatrixBlock extends Element implements BlockElementInterface
                 $record = MatrixBlockRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid Matrix block ID: $this->id");
                 }
             } else {
                 $record = new MatrixBlockRecord();

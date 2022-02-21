@@ -2244,7 +2244,7 @@ JS;
 
     /**
      * @inheritdoc
-     * @throws Exception if the asset isn't new but doesn't have a row in the `assets` table for some reason
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -2270,7 +2270,7 @@ JS;
                 $record = AssetRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid asset ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid asset ID: $this->id");
                 }
             } else {
                 $record = new AssetRecord();
