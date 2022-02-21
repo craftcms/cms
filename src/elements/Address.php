@@ -224,11 +224,11 @@ class Address extends Element implements AddressInterface
     private ?string $_familyName = null;
 
     /**
-     * @var string|null The locale.
+     * @var string The locale.
      * @see getLocale()
      * @see setLocale()
      */
-    private ?string $_locale = null;
+    private string $_locale = 'und';
 
     /**
      * @var string|null The label to identify this address to the person who created it.
@@ -245,23 +245,18 @@ class Address extends Element implements AddressInterface
     private ?string $_latitude = null;
 
     /**
-     * @var string The Longitude.
+     * @var string|null The Longitude.
      * @see getLongitude()
      * @see setLongitude()
      */
     private ?string $_longitude = null;
 
     /**
-     * @inheritdoc
+     * @return string
      */
-    public function init(): void
+    public function __toString(): string
     {
-        parent::init();
-
-        // Default local in addressing for 'all locales'
-        if (!$this->_locale) {
-            $this->_locale = 'und';
-        }
+        return Craft::$app->getAddresses()->formatAddressPostalLabel($this);
     }
 
     /**
@@ -312,7 +307,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getCountryCode()
+    public function getCountryCode(): string
     {
         return $this->_countryCode;
     }
@@ -328,7 +323,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getAdministrativeArea()
+    public function getAdministrativeArea(): ?string
     {
         return $this->_administrativeArea;
     }
@@ -344,7 +339,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getLocality()
+    public function getLocality(): ?string
     {
         return $this->_locality;
     }
@@ -360,7 +355,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getDependentLocality()
+    public function getDependentLocality(): ?string
     {
         return $this->_dependentLocality;
     }
@@ -376,7 +371,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getPostalCode()
+    public function getPostalCode(): ?string
     {
         return $this->_postalCode;
     }
@@ -392,7 +387,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getSortingCode()
+    public function getSortingCode(): ?string
     {
         return $this->_sortingCode;
     }
@@ -408,7 +403,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getAddressLine1()
+    public function getAddressLine1(): ?string
     {
         return $this->_addressLine1;
     }
@@ -424,7 +419,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getAddressLine2()
+    public function getAddressLine2(): ?string
     {
         return $this->_addressLine2;
     }
@@ -440,7 +435,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getOrganization()
+    public function getOrganization(): ?string
     {
         return $this->_organization;
     }
@@ -456,7 +451,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getGivenName()
+    public function getGivenName(): ?string
     {
         return $this->_givenName;
     }
@@ -472,7 +467,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getAdditionalName()
+    public function getAdditionalName(): ?string
     {
         return $this->_additionalName;
     }
@@ -488,7 +483,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getFamilyName()
+    public function getFamilyName(): ?string
     {
         return $this->_familyName;
     }
@@ -504,7 +499,7 @@ class Address extends Element implements AddressInterface
     /**
      * @inheritdoc
      */
-    public function getLocale()
+    public function getLocale(): string
     {
         return $this->_locale;
     }
@@ -512,7 +507,7 @@ class Address extends Element implements AddressInterface
     /**
      * @param string $locale
      */
-    public function setLocale(string $locale = 'und'): void
+    public function setLocale(string $locale): void
     {
         $this->_locale = $locale;
     }
@@ -534,11 +529,11 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @return string Latitude
+     * @return string|null Latitude
      */
-    public function getLatitude(): string
+    public function getLatitude(): ?string
     {
-        return (string)$this->_latitude;
+        return $this->_latitude;
     }
 
     /**
@@ -550,11 +545,11 @@ class Address extends Element implements AddressInterface
     }
 
     /**
-     * @return string Longitude
+     * @return string|null Longitude
      */
-    public function getLongitude(): string
+    public function getLongitude(): ?string
     {
-        return (string)$this->_longitude;
+        return $this->_longitude;
     }
 
     /**
@@ -595,14 +590,6 @@ class Address extends Element implements AddressInterface
         }
 
         return true;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return Craft::$app->getAddresses()->formatAddressPostalLabel($this);
     }
 
     /**
