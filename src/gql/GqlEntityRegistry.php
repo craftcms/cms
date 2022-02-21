@@ -8,7 +8,6 @@
 namespace craft\gql;
 
 use Craft;
-use craft\helpers\StringHelper;
 
 /**
  * Class GqlEntityRegistry
@@ -81,7 +80,7 @@ class GqlEntityRegistry
     {
         // Check if we need to apply the prefix.
         $prefix = self::getPrefix();
-        if ($prefix && !StringHelper::startsWith($entityName, $prefix)) {
+        if ($prefix && !str_starts_with($entityName, $prefix)) {
             $entityName = self::prefixTypeName($entityName);
         }
 

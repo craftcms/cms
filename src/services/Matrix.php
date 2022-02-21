@@ -951,7 +951,41 @@ SELECT [[o.blockId]], '$draft->id', [[o.sortOrder]]
 FROM $ownersTable AS [[o]]
 INNER JOIN $blocksTable AS [[b]] ON [[b.id]] = [[o.blockId]] AND [[b.primaryOwnerId]] = '$canonical->id' AND [[b.fieldId]] = '$field->id'
 WHERE [[o.ownerId]] = '$canonical->id'
-SQL)->execute();
+SQL
+        )->execute();
+    }
+
+    /**
+     * Creates revisions for all the blocks that belong to the given canonical element, and assigns those
+     * revisions to the given owner revision.
+     *
+     * @param MatrixField $field The Matrix field
+     * @param ElementInterface $canonical The canonical element
+     * @param ElementInterface $revision The revision element
+     * @since 4.0.0
+     */
+    public function createRevisionBlocks(MatrixField $field, ElementInterface $canonical, ElementInterface $revision): void
+    {
+        $blocks = MatrixBlock::find()
+            ->ownerId($canonical->id)
+            ->fieldId($field->id)
+            ->siteId('*')
+            ->unique()
+            ->status(null)
+            ->all();
+
+        $revisionsService = Craft::$app->getRevisions();
+        $ownershipData = [];
+
+        foreach ($blocks as $block) {
+            $blockRevisionId = $revisionsService->createRevision($block, null, null, [
+                'primaryOwnerId' => $revision->id,
+                'saveOwnership' => false,
+            ]);
+            $ownershipData[] = [$blockRevisionId, $revision->id, $block->sortOrder];
+        }
+
+        Db::batchInsert(Table::MATRIXBLOCKS_OWNERS, ['blockId', 'ownerId', 'sortOrder'], $ownershipData);
     }
 
     /**
@@ -1184,18 +1218,31 @@ SQL)->execute();
      */
     private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except): void
     {
-        $deleteBlocks = MatrixBlock::find()
+        $blocks = MatrixBlock::find()
             ->status(null)
-            ->primaryOwnerId($owner->id)
+            ->ownerId($owner->id)
             ->fieldId($field->id)
             ->siteId($owner->siteId)
             ->andWhere(['not', ['elements.id' => $except]])
             ->all();
 
         $elementsService = Craft::$app->getElements();
+        $deleteOwnership = [];
 
-        foreach ($deleteBlocks as $deleteBlock) {
-            $elementsService->deleteElement($deleteBlock);
+        foreach ($blocks as $block) {
+            if ($block->primaryOwnerId === $owner->id) {
+                $elementsService->deleteElement($block);
+            } else {
+                // Just delete the ownership relation
+                $deleteOwnership[] = $block->id;
+            }
+        }
+
+        if ($deleteOwnership) {
+            Db::delete(Table::MATRIXBLOCKS_OWNERS, [
+                'blockId' => $deleteOwnership,
+                'ownerId' => $owner->id,
+            ]);
         }
     }
 }

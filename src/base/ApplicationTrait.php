@@ -26,9 +26,9 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
-use craft\fieldlayoutelements\AssetAltField;
-use craft\fieldlayoutelements\AssetTitleField;
-use craft\fieldlayoutelements\EntryTitleField;
+use craft\fieldlayoutelements\assets\AltField;
+use craft\fieldlayoutelements\assets\AssetTitleField;
+use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\App;
 use craft\helpers\Db;
@@ -362,7 +362,7 @@ trait ApplicationTrait
             return $this->_isInstalled = !empty($info->id);
         } catch (DbException | ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
-            if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
+            if ($e instanceof DbException && str_contains($e->getMessage(), 'Redis')) {
                 throw $e;
             }
 
@@ -614,7 +614,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
+        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -1523,7 +1523,7 @@ trait ApplicationTrait
                     break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
-                    $event->fields[] = AssetAltField::class;
+                    $event->fields[] = AltField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;

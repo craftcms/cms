@@ -127,9 +127,7 @@ class UtilitiesController extends Controller
 
         Craft::$app->deprecator->deleteAllLogs();
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -147,9 +145,7 @@ class UtilitiesController extends Controller
         $logId = $this->request->getRequiredBodyParam('logId');
         Craft::$app->deprecator->deleteLogById($logId);
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -190,7 +186,7 @@ class UtilitiesController extends Controller
                 $indexList = $assetIndexerService->prepareIndexList($sessionId, $volumeId);
 
                 if (!empty($indexList['error'])) {
-                    return $this->asJson($indexList);
+                    return $this->asFailure(data: $indexList);
                 }
 
                 if (isset($indexList['missingFolders'])) {
@@ -220,9 +216,7 @@ class UtilitiesController extends Controller
             // Index the file
             $assetIndexerService->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
 
-            return $this->asJson([
-                'success' => true,
-            ]);
+            return $this->asSuccess();
         }
 
         if (!empty($params['overview'])) {
@@ -301,9 +295,7 @@ class UtilitiesController extends Controller
             }
         }
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -325,9 +317,7 @@ class UtilitiesController extends Controller
             TagDependency::invalidate($cache, $tag);
         }
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -356,7 +346,7 @@ class UtilitiesController extends Controller
         unlink($backupPath);
 
         if (!$this->request->getBodyParam('downloadBackup')) {
-            return $this->asJson(['success' => true]);
+            return $this->asSuccess();
         }
 
         return $this->response->sendFile($zipPath, null, [
@@ -383,9 +373,7 @@ class UtilitiesController extends Controller
             ]));
         }
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**

@@ -117,6 +117,9 @@ class StructuresController extends Controller
             $success = $structuresService->prependToRoot($this->_structure->id, $this->_element);
         }
 
-        return $this->asJson(compact('success'));
+        if ($success) {
+            return $this->asSuccess();
+        }
+        return $this->asFailure();
     }
 }

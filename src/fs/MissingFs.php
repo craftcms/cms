@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpInconsistentReturnPointsInspection */
 declare(strict_types = 1);
 /**
  * @link https://craftcms.com/

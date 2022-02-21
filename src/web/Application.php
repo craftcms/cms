@@ -484,7 +484,7 @@ class Application extends \yii\web\Application
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
-        if (strpos('/' . $requestPath, $resourceBaseUri . '/') !== 0) {
+        if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
         }
 

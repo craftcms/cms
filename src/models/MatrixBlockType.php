@@ -105,7 +105,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
      */
     public function getIsNew(): bool
     {
-        return (!$this->id || strpos($this->id, 'new') === 0);
+        return (!$this->id || str_starts_with($this->id, 'new'));
     }
 
     /**

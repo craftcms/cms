@@ -12,7 +12,7 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
-use Swift_TransportException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -25,7 +25,7 @@ use yii\mail\MailEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Mailer extends \yii\swiftmailer\Mailer
+class Mailer extends \yii\symfonymailer\Mailer
 {
     /**
      * @event MailEvent The event that is triggered before a message is prepped to be sent.
@@ -123,10 +123,11 @@ class Mailer extends \yii\swiftmailer\Mailer
             // Render the subject and body text
             $view = Craft::$app->getView();
             $subject = $view->renderString($systemMessage->subject, $variables, View::TEMPLATE_MODE_SITE);
-            $body = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
+            $textBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
+            $htmlBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE, true);
 
             // Remove </> from around URLs, so they’re not interpreted as HTML tags
-            $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $body);
+            $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);
 
             $message->setSubject($subject);
             $message->setTextBody($textBody);
@@ -143,7 +144,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             try {
                 $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
-                    'body' => Template::raw(Markdown::process($body)),
+                    'body' => Template::raw(Markdown::process($htmlBody)),
                 ]), $templateMode));
             } catch (Throwable $e) {
                 // Just log it and don't worry about the HTML body
@@ -175,11 +176,10 @@ class Mailer extends \yii\swiftmailer\Mailer
 
         try {
             return parent::send($message);
-        } catch (Swift_TransportException $e) {
+        } catch (TransportExceptionInterface $e) {
             $eMessage = $e->getMessage();
 
-            // Remove the stack trace to get rid of any sensitive info. Note that Swiftmailer includes a debug
-            // backlog in the exception message. :-/
+            // Remove the stack trace to get rid of any sensitive info.
             $eMessage = substr($eMessage, 0, strpos($eMessage, 'Stack trace:') - 1);
             Craft::warning('Error sending email: ' . $eMessage);
 

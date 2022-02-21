@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\behaviors\DraftBehavior;
 use craft\elements\Entry;
 use craft\models\Section;
 use craft\models\Site;

@@ -213,28 +213,37 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a failure response.
      *
-     * @param string $message
-     * @param Model|null $model The model that was being operated on
-     * @param string|null $modelName The route param name that the model should be set to
+     * @param string|null $message
+     * @param array|null $errors
+     * @param array $data Additional data to include in the JSON response
+     * @param array $routeParams The route params to send back to the template
      * @return YiiResponse|null
      * @since 4.0.0
      */
-    public function asFailure(string $message, ?Model $model = null, ?string $modelName = null): ?YiiResponse
-    {
+    public function asFailure(
+        ?string $message = null,
+        ?array $errors = null,
+        array $data = [],
+        array $routeParams = [],
+    ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             $this->response->setStatusCode(400);
-            return $this->asJson(array_filter([
-                'message' => $message,
-                'errors' => $model ? $model->getErrors() : null,
-            ]));
+            return $this->asJson($data + array_filter([
+                    'success' => false,
+                    'message' => $message,
+                    'errors' => $errors,
+                ]));
         }
 
         $this->setFailFlash($message);
 
-        // Send the filesystem back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            $modelName => $model,
-        ]);
+        if ($errors) {
+            $routeParams += ['errors' => $errors];
+        }
+
+        if (!empty($routeParams)) {
+            Craft::$app->getUrlManager()->setRouteParams($routeParams);
+        }
 
         return null;
     }
@@ -242,32 +251,92 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a success response.
      *
-     * @param string $message
-     * @param Model|null $model The model that was being operated on
-     * @param string|null $modelName The route param name that the model should be set to
+     * @param string|null $message
      * @param array $data Additional data to include in the JSON response
-     * @param string|null $defaultRedirect The default URL to redirect the request, if no `redirect` param is present
+     * @param string|null $redirect The URL to redirect the request
      * @return YiiResponse|null
      * @since 4.0.0
      */
     public function asSuccess(
-        string $message,
-        ?Model $model = null,
-        ?string $modelName = null,
+        ?string $message = null,
         array $data = [],
-        ?string $defaultRedirect = null
-    ): YiiResponse
-    {
+        ?string $redirect = null
+    ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
-                'message' => $message,
-                'modelName' => $modelName,
-                ($modelName ?? 'model') => $model ? $model->toArray() : null,
-            ]));
+                    'success' => true,
+                    'message' => $message,
+                    'redirect' => $redirect,
+                ]));
         }
 
         $this->setSuccessFlash($message);
-        return $this->redirectToPostedUrl($model, $defaultRedirect);
+
+        if ($redirect) {
+            return $this->redirect($redirect);
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Sends a failure response for a model.
+     *
+     * @param Model $model The model that was being operated on
+     * @param string|null $message
+     * @param string|null $modelName The route param name that the model should be set to
+     * @param array $data Additional data to include in the JSON response
+     * @param string|null $errorAttribute The attribute to return errors from, or all if `null`
+     * @return YiiResponse|null
+     * @since 4.0.0
+     */
+    public function asModelFailure(
+        Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        array $routeParams = [],
+        ?string $errorAttribute = null
+    ): ?YiiResponse {
+        $errors = $model->getErrors($errorAttribute);
+        $modelInfo = [
+            'modelName' => $modelName,
+            ($modelName ?? 'model') => $model->toArray(),
+        ];
+        $routeParams += $modelInfo;
+        $data += $modelInfo;
+
+        return $this->asFailure($message, $errors, $data, $routeParams);
+    }
+
+    /**
+     * Sends a success response for a model.
+     *
+     * @param Model $model The model that was being operated on
+     * @param string|null $message
+     * @param string|null $modelName The route param name that the model should be set to
+     * @param array $data Additional data to include in the JSON response
+     * @param string|null $redirect The default URL to redirect the request
+     * @return YiiResponse|null
+     * @since 4.0.0
+     */
+    public function asModelSuccess(
+        Model $model,
+        ?string $message = null,
+        ?string $modelName = null,
+        array $data = [],
+        ?string $redirect = null
+    ): YiiResponse {
+        $data += array_filter([
+            'modelName' => $modelName,
+            ($modelName ?? 'model') => $model->toArray(),
+        ]);
+
+        return $this->asSuccess(
+            $message,
+            $data,
+            $redirect ?? $this->getPostedRedirectUrl($model),
+        );
     }
 
     /**
@@ -455,17 +524,36 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Gets the `redirect` param specified in the POST data.
+     *
+     * @param object|null $object Object containing properties that should be parsed for in the URL.
+     * @return string|null
+     * @throws BadRequestHttpException if the redirect param was tampered with
+     * @since 4.0.0
+     */
+    protected function getPostedRedirectUrl(?object $object = null): ?string
+    {
+        $url = $this->request->getValidatedBodyParam('redirect');
+
+        if ($url && $object) {
+            $url = $this->getView()->renderObjectTemplate($url, $object);
+        }
+
+        return $url;
+    }
+
+    /**
      * Redirects to the URI specified in the POST.
      *
-     * @param mixed $object Object containing properties that should be parsed for in the URL.
+     * @param object|null $object Object containing properties that should be parsed for in the URL.
      * @param string|null $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
      * null, then the current request’s path will be used.
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, ?string $default = null): YiiResponse
+    public function redirectToPostedUrl(?object $object = null, ?string $default = null): YiiResponse
     {
-        $url = $this->request->getValidatedBodyParam('redirect');
+        $url = $this->getPostedRedirectUrl($object);
 
         if ($url === null) {
             if ($default !== null) {
@@ -473,8 +561,6 @@ abstract class Controller extends \yii\web\Controller
             } else {
                 $url = $this->request->getPathInfo();
             }
-        } else if ($object) {
-            $url = $this->getView()->renderObjectTemplate($url, $object);
         }
 
         return $this->redirect($url);
@@ -518,6 +604,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $error The error message.
      * @return YiiResponse
+     * @deprecated in 4.0.0. [[asFailure()]] should be used instead.
      */
     public function asErrorJson(string $error): YiiResponse
     {

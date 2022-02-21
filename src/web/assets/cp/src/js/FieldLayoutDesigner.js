@@ -27,6 +27,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 
         this.$configInput = this.$container.children('input[data-config-input]');
         this._config = JSON.parse(this.$configInput.val());
+        if (!this._config.tabs) {
+            this._config.tabs = [];
+        }
 
         let $workspace = this.$container.children('.fld-workspace');
         this.$tabContainer = $workspace.children('.fld-tabs');

@@ -24,14 +24,14 @@ class TestController extends Controller
     protected $allowAnonymous = ['allow-anonymous'];
 
     /**
-     * @return mixed
+     *
      */
     public function actionNotAllowAnonymous()
     {
     }
 
     /**
-     * @return mixed
+     *
      */
     public function actionAllowAnonymous()
     {

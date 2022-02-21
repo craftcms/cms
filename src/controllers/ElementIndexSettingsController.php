@@ -159,7 +159,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     'heading' => $source['heading'],
                 ];
             } else if (isset($source['key'])) {
-                $isCustom = strpos($source['key'], 'custom:') === 0;
+                $isCustom = str_starts_with($source['key'], 'custom:');
                 $sourceConfig = [
                     'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
                     'key' => $source['key'],
@@ -192,6 +192,6 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

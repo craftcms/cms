@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 
@@ -35,7 +34,8 @@ class m220213_015220_matrixblocks_owners_table extends Migration
 INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]]) 
 SELECT [[id]], [[ownerId]], [[sortOrder]] 
 FROM $blocksTable
-SQL);
+SQL
+        );
 
         // drop sortOrder
         $this->dropIndexIfExists(Table::MATRIXBLOCKS, ['sortOrder'], false);

@@ -44,15 +44,17 @@ import './routes.scss';
                 data['routeUids[' + i + ']'] = $($routes[i]).attr('data-uid');
             }
 
-            Craft.postActionRequest('routes/update-route-order', data, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    if (response.success) {
+            Craft.sendActionRequest('POST', 'routes/update-route-order', {data})
+                .then((response) => {
+                    if (response.data.success) {
                         Craft.cp.displayNotice(Craft.t('app', 'New route order saved.'));
                     } else {
-                        Craft.cp.displayError(Craft.t('app', 'Couldn’t save new route order.'));
+                        return Promise.reject();
                     }
-                }
-            });
+                })
+                .catch(({response}) => {
+                    Craft.cp.displayError(Craft.t('app', 'Couldn’t save new route order.'));
+                });
         },
 
         addRoute: function() {
@@ -395,17 +397,17 @@ import './routes.scss';
             this.$saveBtn.addClass('active');
             this.$spinner.show();
 
-            Craft.postActionRequest('routes/save-route', data, (response, textStatus) => {
-                this.$saveBtn.removeClass('active');
-                this.$spinner.hide();
-                this.loading = false;
+            Craft.sendActionRequest('POST', 'routes/save-route', {data})
+                .then((response) => {
+                    this.$saveBtn.removeClass('active');
+                    this.$spinner.hide();
+                    this.loading = false;
 
-                if (textStatus === 'success') {
-                    if (response.success) {
+                    if (response.data.success) {
                         // Is this a new route?
                         if (!this.route) {
                             var routeHtml =
-                                '<div class="route" data-uid="' + response.routeUid + '"' + (response.siteUid ? ' data-site-uid="' + response.siteUid + '"' : '') + '>' +
+                                '<div class="route" data-uid="' + response.data.routeUid + '"' + (response.data.siteUid ? ' data-site-uid="' + response.data.siteUid + '"' : '') + '>' +
                                 '<div class="uri-container">';
 
                             if (Craft.isMultiSite) {
@@ -433,19 +435,26 @@ import './routes.scss';
                             }
                         }
 
-                        this.route.siteUid = response.siteUid;
+                        this.route.siteUid = response.data.siteUid;
                         this.route.updateHtmlFromModal();
                         this.hide();
 
                         Craft.cp.displayNotice(Craft.t('app', 'Route saved.'));
-                    } else if (response.errors) {
-                        if (response.errors.uri) {
+                    } else if (response.data.errors) {
+
+                        // TODO: huh?
+                        if (response.data.errors.uri) {
                         }
                     } else {
-                        Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
+                        return Promise.reject();
                     }
-                }
-            });
+                })
+                .catch(({response}) => {
+                    this.$saveBtn.removeClass('active');
+                    this.$spinner.hide();
+                    this.loading = false;
+                    Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
+                });
         },
 
         addUriError: function(error) {
@@ -468,11 +477,11 @@ import './routes.scss';
 
         deleteRoute: function() {
             if (confirm(Craft.t('app', ('Are you sure you want to delete this route?')))) {
-                Craft.postActionRequest('routes/delete-route', {routeUid: this.route.uid}, function(response, textStatus) {
-                    if (textStatus === 'success') {
+
+                Craft.sendActionRequest('POST', 'routes/delete-route', {data: {routeUid: this.route.uid}})
+                    .then((response) => {
                         Craft.cp.displayNotice(Craft.t('app', 'Route deleted.'));
-                    }
-                });
+                    });
 
                 Craft.routes.sorter.removeItems(this.route.$container);
                 this.route.$container.remove();

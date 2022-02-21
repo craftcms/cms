@@ -117,7 +117,7 @@ class UserSettingsController extends Controller
 
         Craft::$app->getUserGroups()->deleteGroupById($groupId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**

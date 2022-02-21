@@ -166,10 +166,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public bool $savedDraftsOnly = false;
 
     /**
-     * @var bool Whether revision elements should be returned.
+     * @var bool|null Whether revision elements should be returned.
      * @since 3.2.0
      */
-    public bool $revisions = false;
+    public ?bool $revisions = false;
 
     /**
      * @var int|null The ID of the revision to return (from the `revisions` table)
@@ -498,98 +498,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Required by the IteratorAggregate interface.
-     *
-     * @return ArrayIterator
-     */
-    public function getIterator(): ArrayIterator
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the `all()` function to fetch the query results before looping over them.');
-        return new ArrayIterator($this->all());
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param int|string $offset The offset to check
-     * @return bool
-     */
-    public function offsetExists($offset): bool
-    {
-        if (is_numeric($offset)) {
-            // Cached?
-            if (($cachedResult = $this->getCachedResult()) !== null) {
-                return $offset < count($cachedResult);
-            }
-
-            $oldOffset = $this->offset;
-            $limit = $this->limit;
-
-            $this->offset = $offset;
-            $this->limit = 1;
-
-            $exists = $this->exists();
-
-            $this->offset = $oldOffset;
-            $this->limit = $limit;
-
-            return $exists;
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__isset($offset);
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param int|string $offset The offset to get
-     * @return mixed The element at the given offset
-     */
-    public function offsetGet($offset)
-    {
-        if (is_numeric($offset) && ($element = $this->nth($offset)) !== null) {
-            return $element;
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__get($offset);
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param string $offset The offset to set
-     * @param mixed $value The value
-     * @throws NotSupportedException if $name is numeric
-     */
-    public function offsetSet($offset, $value): void
-    {
-        if (is_numeric($offset)) {
-            throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        $this->__set($offset, $value);
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param string $offset The offset to unset
-     * @throws NotSupportedException if $name is numeric
-     */
-    public function offsetUnset($offset): void
-    {
-        if (is_numeric($offset)) {
-            throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        $this->__unset($offset);
-    }
-
-    /**
      * @inheritdoc
      */
     public function behaviors(): array
@@ -727,7 +635,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisions
      */
-    public function revisions(bool $value = true): self
+    public function revisions(?bool $value = true): self
     {
         $this->revisions = $value;
         return $this;
@@ -741,7 +649,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function revisionId(?int $value = null): self
     {
         $this->revisionId = $value;
-        $this->revisions = $value !== null;
+        if ($value !== null && $this->revisions === false) {
+            $this->revisions = true;
+        }
         return $this;
     }
 
@@ -759,7 +669,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         } else {
             throw new InvalidArgumentException('Invalid revisionOf value');
         }
-        $this->revisions = $value !== null;
+        if ($value !== null && $this->revisions === false) {
+            $this->revisions = true;
+        }
         return $this;
     }
 
@@ -777,7 +689,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         } else {
             throw new InvalidArgumentException('Invalid revisionCreator value');
         }
-        $this->revisions = $value !== null;
+        if ($value !== null && $this->revisions === false) {
+            $this->revisions = true;
+        }
         return $this;
     }
 
@@ -1814,12 +1728,20 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        if ($this->revisions) {
-            $behaviors['revision'] = new RevisionBehavior([
-                'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
-                'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
-                'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
-            ]);
+        if ($this->revisions !== false) {
+            if (!empty($row['revisionId'])) {
+                $behaviors['revision'] = new RevisionBehavior([
+                    'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
+                    'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
+                    'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
+                ]);
+            } else {
+                unset(
+                    $row['revisionCreatorId'],
+                    $row['revisionNum'],
+                    $row['revisionNotes'],
+                );
+            }
         }
 
         $element = new $class($row);
@@ -2467,16 +2389,17 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
 
-        if ($this->revisions) {
-            $this->subQuery->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]');
-            $this->query
-                ->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]')
-                ->addSelect([
-                    'elements.revisionId',
-                    'revisions.creatorId as revisionCreatorId',
-                    'revisions.num as revisionNum',
-                    'revisions.notes as revisionNotes',
-                ]);
+        if ($this->revisions !== false) {
+            $joinType = $this->revisions === true ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]');
+            $this->query->join($joinType, ['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]');
+
+            $this->query->addSelect([
+                'elements.revisionId',
+                'revisions.creatorId as revisionCreatorId',
+                'revisions.num as revisionNum',
+                'revisions.notes as revisionNotes',
+            ]);
 
             if ($this->revisionId) {
                 $this->subQuery->andWhere(['elements.revisionId' => $this->revisionId]);

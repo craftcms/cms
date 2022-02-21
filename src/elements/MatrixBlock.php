@@ -209,6 +209,12 @@ class MatrixBlock extends Element implements BlockElementInterface
     public bool $deletedWithOwner = false;
 
     /**
+     * @var bool Whether to save the block’s row in the `matrixblocks_owners` table in [[afterSave()]].
+     * @since 4.0.0
+     */
+    public bool $saveOwnership = true;
+
+    /**
      * @var ElementInterface|null The owner element, or false if [[ownerId]] is invalid
      */
     private ?ElementInterface $_owner = null;
@@ -400,7 +406,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle . ':';
-        if (strpos($handle, $blockTypeHandlePrefix) === 0) {
+        if (str_starts_with($handle, $blockTypeHandlePrefix)) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
             parent::setEagerLoadedElements($handle, $elements);
@@ -422,11 +428,26 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!$this->primaryOwnerId && !$this->ownerId) {
+            throw new InvalidConfigException('No owner ID assigned to the Matrix block.');
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      * @throws Exception if reasons
      */
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
+            $this->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
+            $this->ownerId = $this->ownerId ?? $this->primaryOwnerId;
+
             // Get the block record
             if (!$isNew) {
                 $record = MatrixBlockRecord::findOne($this->id);
@@ -439,16 +460,28 @@ class MatrixBlock extends Element implements BlockElementInterface
                 $record->id = (int)$this->id;
             }
 
-            $record->fieldId = (int)$this->fieldId;
-            $record->primaryOwnerId = (int)$this->primaryOwnerId;
-            $record->typeId = (int)$this->typeId;
+            $record->fieldId = $this->fieldId;
+            $record->primaryOwnerId = $this->primaryOwnerId ?? $this->ownerId;
+            $record->typeId = $this->typeId;
             $record->save(false);
 
-            Db::upsert(Table::MATRIXBLOCKS_OWNERS, [
-                'blockId' => $this->id,
-                'ownerId' => $this->ownerId,
-                'sortOrder' => $this->sortOrder ?? 0,
-            ]);
+            // ownerId will be null when creating a revision
+            if ($this->saveOwnership) {
+                if ($isNew) {
+                    Db::insert(Table::MATRIXBLOCKS_OWNERS, [
+                        'blockId' => $this->id,
+                        'ownerId' => $this->ownerId,
+                        'sortOrder' => $this->sortOrder ?? 0,
+                    ], false);
+                } else {
+                    Db::update(Table::MATRIXBLOCKS_OWNERS, [
+                        'sortOrder' => $this->sortOrder ?? 0,
+                    ], [
+                        'blockId' => $this->id,
+                        'ownerId' => $this->ownerId,
+                    ], [], false);
+                }
+            }
         }
 
         parent::afterSave($isNew);

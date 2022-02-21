@@ -10,8 +10,6 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
-use craft\helpers\StringHelper;
-use Swift_SendmailTransport;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
@@ -132,8 +130,7 @@ class Sendmail extends BaseTransportAdapter
     public function defineTransport()
     {
         return [
-            'class' => Swift_SendmailTransport::class,
-            'command' => $this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND,
+            'dsn' => 'sendmail://default?command=' . $this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND,
         ];
     }
 
@@ -149,7 +146,7 @@ class Sendmail extends BaseTransportAdapter
         $command = Craft::$app->getProjectConfig()->get('email.transportSettings.command');
 
         return array_unique(array_filter([
-            !StringHelper::startsWith($command, '$') ? $command : null,
+            !str_starts_with($command, '$') ? $command : null,
             self::DEFAULT_COMMAND,
             ini_get('sendmail_path'),
         ]));

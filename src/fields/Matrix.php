@@ -525,6 +525,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             if ($query->id === false) {
                 $query->id = null;
             }
+
+            // If the owner is a revision, allow revision blocks to be returned as well
+            if ($element->getIsRevision()) {
+                $query
+                    ->revisions(null)
+                    ->trashed(null);
+            }
         } else {
             $query->id = false;
         }
@@ -740,15 +747,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'validateBlocks',
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
             ],
-            [
-                ArrayValidator::class,
-                'min' => $this->minBlocks ?: null,
-                'max' => $this->maxBlocks ?: null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
-                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
-                'skipOnEmpty' => false,
-                'on' => Element::SCENARIO_LIVE,
-            ],
         ];
     }
 
@@ -792,6 +790,29 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if (!$allBlocksValidate) {
             // Just in case the blocks weren't already cached
             $value->setCachedResult($blocks);
+        }
+
+        if (
+            $element->getScenario() === Element::SCENARIO_LIVE &&
+            ($this->minBlocks || $this->maxBlocks)
+        ) {
+            $arrayValidator = new ArrayValidator([
+                'min' => $this->minBlocks ?: null,
+                'max' => $this->maxBlocks ?: null,
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
+                    'attribute' => Craft::t('site', $this->name),
+                    'min' => $this->minBlocks, // Need to pass this in now
+                ]),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
+                    'attribute' => Craft::t('site', $this->name),
+                    'max' => $this->maxBlocks, // Need to pass this in now
+                ]),
+                'skipOnEmpty' => false,
+            ]);
+
+            if (!$arrayValidator->validate($blocks, $error)) {
+                $element->addError($this->handle, $error);
+            }
         }
     }
 
@@ -1023,6 +1044,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // If this is a draft, just duplicate the relations
             if ($element->getIsDraft()) {
                 $matrixService->duplicateOwnership($this, $element->duplicateOf, $element);
+            } else if ($element->getIsRevision()) {
+                $matrixService->createRevisionBlocks($this, $element->duplicateOf, $element);
             } else {
                 $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true, !$isNew);
             }
@@ -1253,7 +1276,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // If this is a preexisting block but we don't have a record of it,
             // check to see if it was recently duplicated.
             if (
-                strpos($blockId, 'new') !== 0 &&
+                !str_starts_with($blockId, 'new') &&
                 !isset($oldBlocksById[$blockId]) &&
                 isset(Elements::$duplicatedElementIds[$blockId]) &&
                 isset($oldBlocksById[Elements::$duplicatedElementIds[$blockId]])

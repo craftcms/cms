@@ -27,7 +27,7 @@ use yii\db\QueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, Countable, IteratorAggregate
+interface ElementQueryInterface extends QueryInterface, Arrayable
 {
     /**
      * Causes the query results to be returned in reverse order.
@@ -286,11 +286,11 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->one();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param bool|null $value The property value (defaults to true)
      * @return self self reference
      * @since 3.2.0
      */
-    public function revisions(bool $value = true): self;
+    public function revisions(?bool $value = true): self;
 
     /**
      * Narrows the query results based on the {elements}’ revision’s ID (from the `revisions` table).
