@@ -48,7 +48,7 @@ import './update.scss';
                 data: this.data
             };
 
-            Craft.sendActionRequest('POST', action, {data})
+            Craft.sendActionRequest('POST', `${this.actionPrefix}/${action}`, {data})
                 .then((response) => {
                     this.setState(response.data);
                 })
