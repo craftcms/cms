@@ -2,10 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
-use craft\models\FieldLayoutTab;
 
 /**
  * m220126_003432_addresses migration.

@@ -982,9 +982,9 @@ class User extends Element implements IdentityInterface
             return $this->_addresses;
         }
 
-        if($this->id) {
+        if ($this->id) {
             $this->_addresses = Craft::$app->getUserAddresses()->getAddressesByUserId($this->id);
-        }else{
+        } else {
             $this->_addresses = [];
         }
 

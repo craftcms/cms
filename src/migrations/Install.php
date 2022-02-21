@@ -1216,8 +1216,7 @@ class Install extends Migration
                 $pluginsService->installPlugin($handle);
                 echo "done\n";
             }
-        }
-        finally {
+        } finally {
             // Put the real response back
             Craft::$app->set('response', $realResponse);
         }

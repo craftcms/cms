@@ -9,7 +9,6 @@ namespace craft\validators;
 
 use Craft;
 use craft\elements\Address;
-use craft\helpers\StringHelper;
 use yii\base\Exception;
 use yii\validators\Validator;
 
@@ -50,7 +49,7 @@ class RequiredFieldAddressValidator extends Validator
         $countryCode = $model->getCountryCode();
 
         // Cache the country formatter
-        if(!isset($this->_countryFormatter[$countryCode])) {
+        if (!isset($this->_countryFormatter[$countryCode])) {
             $this->_countryFormatter[$countryCode] = Craft::$app->getAddresses()->getAddressFormatRepository()->get($countryCode);
         }
 

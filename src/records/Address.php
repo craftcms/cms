@@ -9,8 +9,6 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use DateTime;
-use yii\db\ActiveQueryInterface;
 
 /**
  * Class Address record.

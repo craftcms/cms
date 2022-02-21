@@ -9,7 +9,6 @@ use craft\elements\Address;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
 
 /**
  * Address country condition rule.

@@ -7,7 +7,6 @@
 
 namespace craft\services;
 
-use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Address;
