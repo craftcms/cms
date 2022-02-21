@@ -468,12 +468,7 @@ class UsersController extends Controller
         }
 
         if (empty($errors)) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asSuccess();
-            }
-
-            $this->setSuccessFlash(Craft::t('app', 'Password reset email sent.'));
-            return $this->redirectToPostedUrl();
+            return $this->asSuccess(Craft::t('app', 'Password reset email sent.'));
         }
 
         // Handle the errors.
