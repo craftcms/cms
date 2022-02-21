@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c6bf196cca23a46e14024c6d90da1687",
+    "content-hash": "3d4638e5978b34ed03e097c152ae4b5c",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -2765,6 +2765,68 @@
                 }
             ],
             "time": "2022-02-11T10:27:51+00:00"
+        },
+        {
+            "name": "samdark/yii2-psr-log-target",
+            "version": "1.1.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/samdark/yii2-psr-log-target.git",
+                "reference": "ccb29ecb7140c4eb81c3dfad38f61b21a9c1ed30"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/samdark/yii2-psr-log-target/zipball/ccb29ecb7140c4eb81c3dfad38f61b21a9c1ed30",
+                "reference": "ccb29ecb7140c4eb81c3dfad38f61b21a9c1ed30",
+                "shasum": ""
+            },
+            "require": {
+                "psr/log": "~1.0.2|~1.1.0",
+                "yiisoft/yii2": "~2.0.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.4"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "samdark\\log\\": "src",
+                    "samdark\\log\\tests\\": "tests"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander Makarov",
+                    "email": "sam@rmcreative.ru"
+                }
+            ],
+            "description": "Yii 2 log target which uses PSR-3 compatible logger",
+            "homepage": "https://github.com/samdark/yii2-psr-log-target",
+            "keywords": [
+                "extension",
+                "log",
+                "psr-3",
+                "yii"
+            ],
+            "support": {
+                "issues": "https://github.com/samdark/yii2-psr-log-target/issues",
+                "source": "https://github.com/samdark/yii2-psr-log-target"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/samdark",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/samdark",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2020-07-16T12:34:01+00:00"
         },
         {
             "name": "seld/cli-prompt",
