@@ -1099,26 +1099,27 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (array_key_exists($type, $this->_layoutsByType)) {
-            return $this->_layoutsByType[$type];
+        if (!isset($this->_layoutsByType[$type])) {
+            if (Craft::$app->getIsInstalled()) {
+                $result = $this->_createLayoutQuery()
+                    ->andWhere(['type' => $type])
+                    ->one();
+            }
+
+            if (isset($result)) {
+                if (!isset($this->_layoutsById[$result['id']])) {
+                    $this->_layoutsById[$result['id']] = new FieldLayout($result);
+                }
+
+                $this->_layoutsByType[$type] = $this->_layoutsById[$result['id']];
+            } else {
+                $this->_layoutsByType[$type] = new FieldLayout([
+                    'type' => $type,
+                ]);
+            }
         }
 
-        $result = $this->_createLayoutQuery()
-            ->andWhere(['type' => $type])
-            ->one();
-
-        if (!$result) {
-            return $this->_layoutsByType[$type] = new FieldLayout([
-                'type' => $type,
-            ]);
-        }
-
-        $id = $result['id'];
-        if (!isset($this->_layoutsById[$id])) {
-            $this->_layoutsById[$id] = new FieldLayout($result);
-        }
-
-        return $this->_layoutsByType[$type] = $this->_layoutsById[$id];
+        return $this->_layoutsByType[$type];
     }
 
     /**

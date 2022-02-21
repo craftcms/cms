@@ -97,14 +97,15 @@ import './install.scss';
             }
 
             Craft.sendActionRequest('POST', 'install/install', {data})
-                .then(() => this.allDone.bind(this));
+                .then(response => this.allDone(response))
+                .catch(response => this.allDone(response));
         },
 
-        allDone: function(response, textStatus) {
+        allDone: function(response) {
             $('#spinner').remove();
             var $h1 = this.$currentScreen.find('h1:first');
 
-            if (textStatus === 'success' && response.success) {
+            if (response.status === 200) {
                 $h1.text(Craft.t('app', 'Craft is installed! 🎉'));
 
                 setTimeout(function() {
@@ -183,17 +184,15 @@ import './install.scss';
             var data = this.getInputData(what, inputs, false);
 
             Craft.sendActionRequest('POST', action, {data})
-                .then((response) => {
-                    this.loading = false;
-                    $submitBtn.removeClass('loading');
-
-                    if (response.data.validates) {
-                        this.gotoNextScreen();
-                    } else {
-                        var $errors = $('<ul/>', {'class': 'errors'})
+                .then(() => {
+                    this.gotoNextScreen();
+                })
+                .catch(({response}) => {
+                    if (response.status === 400) {
+                        const $errors = $('<ul/>', {'class': 'errors'})
                             .insertBefore($('#' + what).find('.buttons'));
 
-                        for (var input in response.data.errors) {
+                        for (let input in response.data.errors) {
                             if (!response.data.errors.hasOwnProperty(input)) {
                                 continue;
                             }
@@ -214,12 +213,13 @@ import './install.scss';
                         }
 
                         Garnish.shake(this.$currentScreen);
+                    } else {
+                        console.warn('Unexpected response:', response);
                     }
                 })
-                .catch(({response}) => {
+                .finally(() => {
                     this.loading = false;
                     $submitBtn.removeClass('loading');
-                    Garnish.shake(this.$currentScreen);
                 });
         }
     }, {
