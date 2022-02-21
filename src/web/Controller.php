@@ -298,15 +298,19 @@ abstract class Controller extends \yii\web\Controller
         array $routeParams = [],
         ?string $errorAttribute = null
     ): ?YiiResponse {
-        $errors = $model->getErrors($errorAttribute);
-        $modelInfo = [
+        $modelName = $modelName ?? 'model';
+        $routeParams += [$modelName => $model];
+        $data += [
             'modelName' => $modelName,
-            ($modelName ?? 'model') => $model->toArray(),
+            $modelName => $model->toArray(),
         ];
-        $routeParams += $modelInfo;
-        $data += $modelInfo;
 
-        return $this->asFailure($message, $errors, $data, $routeParams);
+        return $this->asFailure(
+            $message,
+            $model->getErrors($errorAttribute),
+            $data,
+            $routeParams,
+        );
     }
 
     /**
