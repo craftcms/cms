@@ -323,7 +323,7 @@ class ElementsController extends Controller
         }
 
         // Screen prep
-        [$docTitle, $title] = Cp::editElementTitles($element);
+        [$docTitle, $title] = $this->_editElementTitles($element);
         $type = $element::lowerDisplayName();
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
@@ -554,6 +554,46 @@ class ElementsController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * Returns the page title and document title that should be used for Edit Element pages.
+     *
+     * @param ElementInterface $element
+     * @return string[]
+     * @since 3.7.0
+     */
+    private function _editElementTitles(ElementInterface $element): array
+    {
+        $title = trim((string)$element->title);
+
+        if ($title === '') {
+            if (!$element->id || $element->getIsUnpublishedDraft()) {
+                $title = Craft::t('app', 'Create a new {type}', [
+                    'type' => $element::lowerDisplayName(),
+                ]);
+            } else {
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => $element::displayName(),
+                ]);
+            }
+        }
+
+        $docTitle = $title;
+
+        if ($element->getIsDraft()) {
+            /** @var ElementInterface|DraftBehavior $element */
+            if ($element->isProvisionalDraft) {
+                $docTitle .= ' — ' . Craft::t('app', 'Edited');
+            } else {
+                $docTitle .= " ($element->draftName)";
+            }
+        } else if ($element->getIsRevision()) {
+            /** @var ElementInterface|RevisionBehavior $element */
+            $docTitle .= ' (' . $element->getRevisionLabel() . ')';
+        }
+
+        return [$docTitle, $title];
     }
 
     private function _contextMenu(
@@ -1138,7 +1178,7 @@ JS;
             }
 
             $creator = $element->getCreator();
-            [$docTitle, $title] = Cp::editElementTitles($element);
+            [$docTitle, $title] = $this->_editElementTitles($element);
 
             $view = Craft::$app->getView();
 

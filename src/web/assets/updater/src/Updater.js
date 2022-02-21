@@ -30,7 +30,7 @@ import './update.scss';
         },
 
         showError: function(error) {
-            this.$graphic.addClass('error');
+            this.$graphic.removeClass('spinner').addClass('error');
             this.showStatus(error);
         },
 
@@ -48,7 +48,7 @@ import './update.scss';
                 data: this.data
             };
 
-            Craft.sendActionRequest('POST', action, {data})
+            Craft.sendActionRequest('POST', `${this.actionPrefix}/${action}`, {data})
                 .then((response) => {
                     this.setState(response.data);
                 })
@@ -58,7 +58,7 @@ import './update.scss';
         },
 
         setState: function(state) {
-            this.$graphic.removeClass('error');
+            this.$graphic.addClass('spinner').removeClass('error');
 
             // Data probably won't be set if this is coming from an option
             if (state.data) {
@@ -75,7 +75,7 @@ import './update.scss';
             }
 
             if (state.nextAction) {
-                this.sendActionRequest('POST', state.nextAction);
+                this.postActionRequest(state.nextAction);
             } else if (state.options) {
                 this.showOptions(state);
             } else if (state.finished) {
@@ -127,7 +127,7 @@ import './update.scss';
         },
 
         onFinish: function(returnUrl) {
-            this.$graphic.addClass('success');
+            this.$graphic.removeClass('spinner').addClass('success');
 
             // Redirect in a moment
             setTimeout(function() {

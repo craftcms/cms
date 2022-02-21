@@ -34,7 +34,7 @@ use craft\errors\FileException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
-use craft\fieldlayoutelements\AssetAltField;
+use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -851,7 +851,7 @@ class Asset extends Element
         $scenario = $this->getScenario();
 
         if ($scenario === self::SCENARIO_LIVE) {
-            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AssetAltField::class, $this);
+            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
             if ($altElement && $altElement->required) {
                 (new RequiredValidator())->validateAttribute($this, 'alt');
             }
@@ -2244,7 +2244,7 @@ JS;
 
     /**
      * @inheritdoc
-     * @throws Exception if the asset isn't new but doesn't have a row in the `assets` table for some reason
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -2270,7 +2270,7 @@ JS;
                 $record = AssetRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid asset ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid asset ID: $this->id");
                 }
             } else {
                 $record = new AssetRecord();
