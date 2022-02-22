@@ -18,6 +18,7 @@
 - Fixed a PHP warning that would occur when running Craft in Dev Mode, if the `open_basedir` PHP setting was set. ([#10581](https://github.com/craftcms/cms/issues/10581))
 - Fixed a bug where the “View” button on Edit Category pages wasn’t getting linked to a tokenized preview page for disabled sites.
 - Fixed a bug where asset subfolder toggles weren’t visible when their source was focused. ([#10617](https://github.com/craftcms/cms/issues/10617))
+- Fixed a bug where Live Preview would close when the <kbd>Esc</kbd> key was pressed, when a modal window was open. ([#10623](https://github.com/craftcms/cms/issues/10623))
 
 ### Security
 - Craft now HTML-encodes user’ names in the default system email messages.
