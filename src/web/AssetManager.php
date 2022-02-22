@@ -22,9 +22,8 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
-
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function publish($path, $options = []): array
     {
