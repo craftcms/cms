@@ -17,6 +17,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\EagerLoadPlan;
@@ -1864,6 +1865,7 @@ class Elements extends Component
     public function getAllElementTypes(): array
     {
         $elementTypes = [
+            Address::class,
             Asset::class,
             Category::class,
             Entry::class,

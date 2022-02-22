@@ -9,7 +9,9 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend({
     init: function(element, settings) {
         this.$element = $(element);
 
-        settings = Object.assign({}, Craft.ElementEditorSlideout.defaults, settings);
+        settings = Object.assign({}, Craft.ElementEditorSlideout.defaults, settings, {
+            showHeader: true,
+        });
         this.base('elements/edit', settings);
 
         this.on('load', () => {
