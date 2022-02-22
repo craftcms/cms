@@ -1224,8 +1224,6 @@ JS,
         $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
         $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
 
-        $user->setAddresses($this->request->getBodyParam('addresses', []));
-
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
         if ($isNewUser) {

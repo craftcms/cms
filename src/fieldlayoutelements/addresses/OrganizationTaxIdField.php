@@ -5,27 +5,29 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\users;
+namespace craft\fieldlayoutelements\addresses;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\User;
-use craft\fieldlayoutelements\BaseNativeField;
-use craft\helpers\Cp;
-use yii\base\InvalidArgumentException;
+use craft\fieldlayoutelements\TextField;
 
 /**
- * AddressesField represents an Addresses field that can be included in the user field layout.
+ * Class OrganizationTaxIdField.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AddressesField extends BaseNativeField
+class OrganizationTaxIdField extends TextField
 {
     /**
      * @inheritdoc
      */
-    public string $attribute = 'addresses';
+    public string $attribute = 'organizationTaxId';
+
+    /**
+     * @inheritdoc
+     */
+    public bool $requirable = true;
 
     /**
      * @inheritdoc
@@ -33,10 +35,10 @@ class AddressesField extends BaseNativeField
     public function __construct($config = [])
     {
         unset(
-            $config['attribute'],
             $config['mandatory'],
-            $config['requirable'],
             $config['translatable'],
+            $config['maxlength'],
+            $config['autofocus']
         );
 
         parent::__construct($config);
@@ -51,6 +53,8 @@ class AddressesField extends BaseNativeField
         unset(
             $fields['mandatory'],
             $fields['translatable'],
+            $fields['maxlength'],
+            $fields['autofocus']
         );
         return $fields;
     }
@@ -60,22 +64,6 @@ class AddressesField extends BaseNativeField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Addresses');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        if (!$element instanceof User) {
-            throw new InvalidArgumentException('AddressesField can only be used in the user field layout.');
-        }
-
-        if (!$element->id) {
-            return null;
-        }
-
-        return Cp::addressCardsHtml($element);
+        return Craft::t('app', 'Organization Tax ID');
     }
 }

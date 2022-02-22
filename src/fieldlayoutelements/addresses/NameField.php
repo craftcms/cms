@@ -16,17 +16,17 @@ use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
- * Class LatLongField.
+ * Class NameField.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class LatLongField extends BaseNativeField
+class NameField extends BaseNativeField
 {
     /**
      * @inheritdoc
      */
-    public string $attribute = 'latLong';
+    public string $attribute = 'name';
 
     /**
      * @inheritdoc
@@ -84,34 +84,34 @@ class LatLongField extends BaseNativeField
      */
     protected function selectorLabel(): ?string
     {
-        return Craft::t('app', 'Latitude/Longitude');
+        return Craft::t('app', 'Name');
     }
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
+    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException('LatLongField can only be used in address field layouts.');
+            throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
         }
 
         return
             Html::beginTag('div', ['class' => 'flex-fields']) .
             Cp::textFieldHtml([
                 'fieldClass' => 'width-50',
-                'label' => Craft::t('app', 'Latitude'),
-                'id' => 'latitude',
-                'name' => 'latitude',
-                'value' => $element->latitude,
+                'label' => Craft::t('app', 'First Name'),
+                'id' => 'first-name',
+                'name' => 'firstName',
+                'value' => $element->firstName,
                 'required' => $this->required,
             ]) .
             Cp::textFieldHtml([
                 'fieldClass' => 'width-50',
-                'label' => Craft::t('app', 'Longitude'),
-                'id' => 'longitude',
-                'name' => 'longitude',
-                'value' => $element->longitude,
+                'label' => Craft::t('app', 'Last Name'),
+                'id' => 'last-name',
+                'name' => 'lastName',
+                'value' => $element->lastName,
                 'required' => $this->required,
             ]) .
             Html::endTag('div');
@@ -125,6 +125,6 @@ class LatLongField extends BaseNativeField
         if (!$element) {
             return [];
         }
-        return array_merge($element->getErrors('latitude'), $element->getErrors('longitude'));
+        return array_merge($element->getErrors('firstname'), $element->getErrors('lastName'));
     }
 }

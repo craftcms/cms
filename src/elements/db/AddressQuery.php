@@ -7,7 +7,11 @@
 
 namespace craft\elements\db;
 
+use craft\base\ElementInterface;
+use craft\db\QueryAbortedException;
 use craft\elements\Address;
+use craft\helpers\ArrayHelper;
+use yii\base\InvalidConfigException;
 use yii\db\Connection;
 
 /**
@@ -25,6 +29,13 @@ use yii\db\Connection;
  */
 class AddressQuery extends ElementQuery
 {
+    /**
+     * @var int|int[]|null The owner element ID(s) that the resulting addresses must belong to.
+     * @used-by owner()
+     * @used-by ownerId()
+     */
+    public $ownerId;
+
     /**
      * @var string[]|string|null The address countryCode(s) that the resulting address must be in.
      * ---
@@ -44,6 +55,73 @@ class AddressQuery extends ElementQuery
      * @used-by countryCode()
      */
     public $countryCode;
+
+    /**
+     * Sets the [[ownerId()]] parameter based on a given owner element.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses for the current user #}
+     * {% set {elements-var} = {twig-method}
+     *   .owner(currentUser)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses created for the current user
+     * ${elements-var} = {php-method}
+     *     ->owner(Craft::$app->user->identity)
+     *     ->all();
+     * ```
+     *
+     * @param ElementInterface $owner The owner element
+     * @return self self reference
+     * @uses $ownerId
+     */
+    public function owner(ElementInterface $owner): self
+    {
+        $this->ownerId = [$owner->id];
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the addresses’ owner elements, per their IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `1` | created for an element with an ID of 1.
+     * | `'not 1'` | not created for an element with an ID of 1.
+     * | `[1, 2]` | created for an element with an ID of 1 or 2.
+     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses created for an element with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .ownerId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses created for an element with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->ownerId(1)
+     *     ->all();
+     * ```
+     *
+     * @param int|int[]|null $value The property value
+     * @return self self reference
+     * @uses $ownerId
+     */
+    public function ownerId($value): self
+    {
+        $this->ownerId = $value;
+        return $this;
+    }
 
     /**
      * Narrows the query results based on the country the assets belong to.
@@ -89,26 +167,35 @@ class AddressQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        $this->_normalizeOwnerId();
+
         $this->joinElementTable('addresses');
 
         $this->query->select([
             'addresses.id',
-            'addresses.label',
+            'addresses.ownerId',
             'addresses.countryCode',
-            'addresses.givenName',
-            'addresses.additionalName',
-            'addresses.familyName',
-            'addresses.addressLine1',
-            'addresses.addressLine2',
             'addresses.administrativeArea',
             'addresses.locality',
             'addresses.dependentLocality',
             'addresses.postalCode',
             'addresses.sortingCode',
+            'addresses.addressLine1',
+            'addresses.addressLine2',
             'addresses.organization',
+            'addresses.organizationTaxId',
+            'addresses.firstName',
+            'addresses.lastName',
             'addresses.latitude',
-            'addresses.longitude'
+            'addresses.longitude',
         ]);
+
+        if (isset($this->ownerId)) {
+            if (!$this->ownerId) {
+                throw new QueryAbortedException();
+            }
+            $this->subQuery->andWhere(['addresses.ownerId' => $this->ownerId]);
+        }
 
         if ($this->countryCode) {
             $this->subQuery->andWhere(['addresses.countryCode' => $this->countryCode]);
@@ -117,4 +204,38 @@ class AddressQuery extends ElementQuery
         return parent::beforePrepare();
     }
 
+    /**
+     * Normalizes the ownerId param to an array of IDs or null
+     *
+     * @throws InvalidConfigException
+     */
+    private function _normalizeOwnerId(): void
+    {
+        if ($this->ownerId === null) {
+            return;
+        }
+        if (is_numeric($this->ownerId)) {
+            $this->ownerId = [$this->ownerId];
+        }
+        if (!is_array($this->ownerId) || !ArrayHelper::isNumeric($this->ownerId)) {
+            throw new InvalidConfigException();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+
+        if ($this->ownerId) {
+            foreach ($this->ownerId as $ownerId) {
+                $tags[] = "owner:$ownerId";
+            }
+        }
+
+        return $tags;
+    }
 }

@@ -16,14 +16,10 @@ class m220126_003432_addresses extends Migration
     public function safeUp(): bool
     {
         $this->dropTableIfExists(Table::ADDRESSES);
-        $this->dropTableIfExists(Table::ADDRESSES_USERS);
 
         $this->createTable(Table::ADDRESSES, [
             'id' => $this->integer()->notNull(),
-            'label' => $this->string()->notNull(),
-            'givenName' => $this->string(),
-            'additionalName' => $this->string(),
-            'familyName' => $this->string(),
+            'ownerId' => $this->integer()->notNull(),
             'countryCode' => $this->string()->notNull(),
             'administrativeArea' => $this->string(),
             'locality' => $this->string(),
@@ -33,6 +29,9 @@ class m220126_003432_addresses extends Migration
             'addressLine1' => $this->string(),
             'addressLine2' => $this->string(),
             'organization' => $this->string(),
+            'organizationTaxId' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
             'latitude' => $this->string(),
             'longitude' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -40,19 +39,8 @@ class m220126_003432_addresses extends Migration
             'PRIMARY KEY(id)',
         ]);
 
-        $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
-
-        $this->createTable(Table::ADDRESSES_USERS, [
-            'id' => $this->primaryKey(),
-            'addressId' => $this->integer()->notNull(),
-            'userId' => $this->integer()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull()
-        ]);
-
-        $this->createIndex(null, Table::ADDRESSES_USERS, ['userId', 'addressId'], true);
-        $this->addForeignKey(null, Table::ADDRESSES_USERS, ['addressId'], Table::ADDRESSES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ADDRESSES_USERS, ['userId'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ADDRESSES, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
 
         return true;
     }
@@ -62,7 +50,7 @@ class m220126_003432_addresses extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m220126_003432_addresses cannot be reverted.\n";
-        return false;
+        $this->dropTableIfExists(Table::ADDRESSES);
+        return true;
     }
 }

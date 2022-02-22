@@ -92,10 +92,7 @@ class Install extends Migration
     {
         $this->createTable(Table::ADDRESSES, [
             'id' => $this->integer()->notNull(),
-            'label' => $this->string()->notNull(),
-            'givenName' => $this->string(),
-            'additionalName' => $this->string(),
-            'familyName' => $this->string(),
+            'ownerId' => $this->integer()->notNull(),
             'countryCode' => $this->string()->notNull(),
             'administrativeArea' => $this->string(),
             'locality' => $this->string(),
@@ -105,18 +102,14 @@ class Install extends Migration
             'addressLine1' => $this->string(),
             'addressLine2' => $this->string(),
             'organization' => $this->string(),
+            'organizationTaxId' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
             'latitude' => $this->string(),
             'longitude' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY(id)',
-        ]);
-        $this->createTable(Table::ADDRESSES_USERS, [
-            'id' => $this->primaryKey(),
-            'addressId' => $this->integer()->notNull(),
-            'userId' => $this->integer()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull()
         ]);
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
@@ -799,7 +792,6 @@ class Install extends Migration
      */
     public function createIndexes(): void
     {
-        $this->createIndex(null, Table::ADDRESSES_USERS, ['userId', 'addressId'], true);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
@@ -987,9 +979,8 @@ class Install extends Migration
      */
     public function addForeignKeys(): void
     {
-        $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::ADDRESSES_USERS, ['addressId'], Table::ADDRESSES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ADDRESSES_USERS, ['userId'], Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ADDRESSES, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);

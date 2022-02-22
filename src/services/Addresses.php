@@ -15,7 +15,6 @@ use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use CommerceGuys\Addressing\Formatter\PostalLabelFormatter;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository;
 use Craft;
 use craft\elements\Address;
@@ -110,23 +109,6 @@ class Addresses extends Component
         }
 
         return $formatter->format($address, $options);
-    }
-
-    /**
-     * Formats the address model into the correct format for a postage label in plain text.
-     *
-     * @param Address $address
-     * @return string
-     */
-    public function formatAddressPostalLabel(Address $address, array $options = []): string
-    {
-        $postalLabelFormatter = new PostalLabelFormatter(
-            $this->addressFormatRepository,
-            $this->countryRepository,
-            $this->subdivisionRepository
-        );
-
-        return $this->formatAddress($address, $options, $postalLabelFormatter);
     }
 
     /**

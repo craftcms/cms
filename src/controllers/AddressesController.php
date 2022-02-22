@@ -9,9 +9,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\Address;
-use craft\helpers\Address as AddressHelper;
+use craft\helpers\Cp;
 use craft\web\Controller;
-use craft\web\Response;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -25,67 +27,85 @@ use craft\web\Response;
 class AddressesController extends Controller
 {
     /**
-     * @return string
+     * Renders an address’ card HTML.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
-    public function actionAddAddress(): string
+    public function actionCardHtml(): Response
     {
-        $namespace = Craft::$app->getRequest()->getParam('name', 'addresses');
-        $addresses = Craft::$app->getRequest()->getParam($namespace, []);
-        $addressesElements = [];
-        foreach ($addresses as $key => $address) {
-            $address = Address::create($address);
-            $address->setFieldValuesFromRequest($namespace . '.fields');
-            $addressesElements[$key] = $address;
+        $this->requireAcceptsJson();
+
+        $addressId = $this->request->getRequiredBodyParam('addressId');
+
+        $address = Address::find()
+            ->id($addressId)
+            ->one();
+
+        if (!$address) {
+            throw new BadRequestHttpException("Invalid address ID: $addressId");
         }
-        $newAddress = Address::create([
-            'countryCode' => 'US'
+
+        if (!$address->canView(Craft::$app->getUser()->getIdentity())) {
+            throw new ForbiddenHttpException('User not authorized to view this address.');
+        }
+
+        $html = Cp::addressCardHtml($address, [
+            'name' => $this->request->getBodyParam('name'),
         ]);
-        $addressesElements[] = $newAddress;
-        return AddressHelper::addressCardsHtml($addressesElements, $namespace, true);
-    }
 
-    /**
-     * @return \yii\web\Response|null
-     */
-    public function actionRenderAddressStandardFields(): ?Response
-    {
-        $view = Craft::$app->getView();
-        $namespace = Craft::$app->getRequest()->getParam('name', 'address');
-        $address = Craft::$app->getRequest()->getParam($namespace, []);
-        unset($address['fields']); // Don't need this to render standard fields
-        $address = Address::create($address);
-        $html = $view->namespaceInputs(function() use ($address) {
-            return Craft::$app->getView()->renderTemplate('_includes/forms/address-standard', [
-                'address' => $address,
-                'availableCountries' => null,
-                'defaultCountryCode' => 'US',
-                'hasErrors' => $address->hasErrors()
-            ]);
-        }, $namespace);
-
-        return $this->asJson([
-            'fieldHtml' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
-        ]);
-    }
-
-    /**
-     * @return \yii\web\Response|null
-     */
-    public function actionRenderFormattedAddress(): ?Response
-    {
-        $view = Craft::$app->getView();
-        $namespace = Craft::$app->getRequest()->getParam('name', 'address');
-        $address = Craft::$app->getRequest()->getParam($namespace, []);
-        unset($address['fields']); // Don't need this to render standard fields
-        $address = Address::create($address);
-        $html = Craft::$app->getAddresses()->formatAddress($address);
         return $this->asJson([
             'html' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    /**
+     * Returns address field info, based on a country code.
+     *
+     * @param string $countryCode
+     * @return Response
+     */
+    public function actionFieldInfo(string $countryCode): Response
+    {
+        $addressesService = Craft::$app->getAddresses();
+
+        $formatRepo = $addressesService->getAddressFormatRepository()->get($countryCode);
+        $requiredFields = array_flip($formatRepo->getRequiredFields());
+        $visibleFields = array_flip(array_merge(
+                $formatRepo->getUsedFields(),
+                $formatRepo->getUsedSubdivisionFields(),
+            )) + $requiredFields;
+
+        $administrativeAreaOptions = [];
+
+        foreach ($addressesService->getSubdivisionRepository()->getList([$countryCode], Craft::$app->language) as $code => $label) {
+            $administrativeAreaOptions[] = ['value' => $code, 'text' => $label];
+        }
+
+        $info = [
+            'administrativeAreaOptions' => $administrativeAreaOptions,
+        ];
+
+        $attributes = [
+            'addressLine1',
+            'addressLine2',
+            'postalCode',
+            'sortingCode',
+            'administrativeArea',
+            'locality',
+            'dependentLocality',
+        ];
+
+        foreach ($attributes as $attribute) {
+            $info['fields'][$attribute] = [
+                'label' => Address::addressAttributeLabel($attribute, $countryCode),
+                'visible' => isset($visibleFields[$attribute]),
+                'required' => isset($requiredFields[$attribute]),
+            ];
+        }
+
+        return $this->asJson($info);
     }
 
     /**

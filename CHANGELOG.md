@@ -14,6 +14,7 @@
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
+- Users can now have an “Addresses” field. ([#10507](https://github.com/craftcms/cms/pull/10507))
 - Added the Money field type.
 - Craft now provides a native “Alternative Text” (`alt`) field for assets. ([#10302](https://github.com/craftcms/cms/discussions/10302))
 - Asset thumbnails in the control panel now have `alt` attributes, for assets with a filled-in Alternative Text value.
@@ -92,7 +93,6 @@
 - Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - Added `craft\db\Table::ADDRESSES`.
-- Added `craft\db\Table::ADDRESSES_USERS`.
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
@@ -157,7 +157,6 @@
 - Added `craft\errors\ImageTransformException`.
 - Added `craft\errors\InvalidFsException`.
 - Added `craft\errors\MissingVolumeFolderException`.
-- Added `craft\events\AddressEvent`.
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
 - Added `craft\events\DefineHtmlEvent::$static`.
@@ -166,8 +165,14 @@
 - Added `craft\events\RegisterImageTransformersEvent`.
 - Added `craft\events\TransformImageEvent`.
 - Added `craft\fieldlayoutelements\addresses\AddressField`.
+- Added `craft\fieldlayoutelements\addresses\CountryCodeField`.
+- Added `craft\fieldlayoutelements\addresses\LabelField`.
 - Added `craft\fieldlayoutelements\addresses\LatLongField`.
+- Added `craft\fieldlayoutelements\addresses\NameField`.
+- Added `craft\fieldlayoutelements\addresses\OrganizationField`.
+- Added `craft\fieldlayoutelements\addresses\OrganizationTaxIdField`.
 - Added `craft\fieldlayoutelements\assets\AltField`.
+- Added `craft\fieldlayoutelements\BaseField::selectorLabel()`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\TextareaField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
@@ -194,11 +199,12 @@
 - Added `craft\fs\Temp`.
 - Added `craft\gql\base\SingularTypeInterface`.
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
-- Added `craft\helpers\Address`.
 - Added `craft\helpers\App::cliOption()`.
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Cp::addressCardHtml()`.
+- Added `craft\helpers\Cp::addressCardsHtml()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
 - Added `craft\helpers\Cp::dateHtml()`.
 - Added `craft\helpers\Cp::elementSelectHtml()`.
@@ -254,7 +260,6 @@
 - Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\Volume`.
 - Added `craft\records\Address`.
-- Added `craft\records\Address_User`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\records\ImageTransform`.
 - Added `craft\services\Addresses`.
@@ -323,8 +328,6 @@
 - Added `craft\services\Users::removeCredentials()`.
 - Added `craft\services\Volumes::getTemporaryVolume()`.
 - Added `craft\validators\MoneyValidator`.
-- Added `craft\validators\RequiredFieldAddressValidator`.
-- Added `craft\web\assets\addresses\AddressesAsset`.
 - Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
 - Added `craft\web\assets\htmx\HtmxAsset`.
 - Added `craft\web\assets\money\MoneyAsset`.

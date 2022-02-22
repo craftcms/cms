@@ -154,9 +154,6 @@ return [
         'volumes' => [
             'class' => craft\services\Volumes::class,
         ],
-        'userAddresses' => [
-            'class' => craft\services\UserAddresses::class,
-        ],
         'userGroups' => [
             'class' => craft\services\UserGroups::class,
         ],

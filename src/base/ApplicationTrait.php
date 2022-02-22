@@ -29,7 +29,12 @@ use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
 use craft\fieldlayoutelements\addresses\AddressField;
+use craft\fieldlayoutelements\addresses\CountryCodeField;
+use craft\fieldlayoutelements\addresses\LabelField;
 use craft\fieldlayoutelements\addresses\LatLongField;
+use craft\fieldlayoutelements\addresses\NameField;
+use craft\fieldlayoutelements\addresses\OrganizationField;
+use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -86,7 +91,6 @@ use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
 use craft\services\Updates;
-use craft\services\UserAddresses;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -169,7 +173,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read Updates $updates The updates service
- * @property-read UserAddresses $userAddresses The user addresses service
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
  * @property-read Users $users The users service
@@ -1358,17 +1361,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the user addresses service.
-     *
-     * @return UserAddresses The user addresses service
-     */
-    public function getUserAddresses(): UserAddresses
-    {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->get('userAddresses');
-    }
-
-    /**
      * Returns the user groups service.
      *
      * @return UserGroups The user groups service
@@ -1554,6 +1546,11 @@ trait ApplicationTrait
                     $event->fields[] = TitleField::class;
                     break;
                 case Address::class:
+                    $event->fields[] = LabelField::class;
+                    $event->fields[] = OrganizationField::class;
+                    $event->fields[] = OrganizationTaxIdField::class;
+                    $event->fields[] = NameField::class;
+                    $event->fields[] = CountryCodeField::class;
                     $event->fields[] = AddressField::class;
                     $event->fields[] = LatLongField::class;
                     break;

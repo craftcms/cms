@@ -14,22 +14,21 @@ use craft\db\Table;
  * Class Address record.
  *
  * @property int $id ID
- * @property string $countryCode The two-letter country code.
- * @property string $administrativeArea The administrative area.
- * @property string $locality The locality.
- * @property string $dependentLocality The dependent locality.
- * @property string $postalCode The postal code.
- * @property string $sortingCode The sorting code
- * @property string $addressLine1 The first line of the address block.
- * @property string $addressLine2 The second line of the address block.
- * @property string $organization The organization.
- * @property string $givenName The given name.
- * @property string $additionalName The additional name.
- * @property string $familyName The family name.
- * @property string $latitude The latitude of the address.
- * @property string $longitude The longitude of the address.
- * @property string $label The label to identify this address to the person who created it.
- * @property string $locale The locale. Defaults to 'und'.
+ * @property int $ownerId Owner ID
+ * @property string $countryCode Country code
+ * @property string $administrativeArea Administrative area
+ * @property string $locality Locality
+ * @property string $dependentLocality Dependent locality
+ * @property string $postalCode Postal code
+ * @property string $sortingCode Sorting code
+ * @property string $addressLine1 First line of the address block
+ * @property string $addressLine2 Second line of the address block
+ * @property string $organization Organization name
+ * @property string $organizationTaxId Organization tax ID
+ * @property string $firstName First name
+ * @property string $lastName Last name
+ * @property string $latitude Latitude
+ * @property string $longitude Longitude
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

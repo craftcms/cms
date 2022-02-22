@@ -1423,7 +1423,7 @@ li.breadcrumb-toggle-wrapper {
 /* flexbox field layouts */
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
-.so-content > .flex-fields {
+.so-content .flex-fields {
   --row-gap: var(--xl);
   display: flex;
   gap: var(--row-gap) 0;
