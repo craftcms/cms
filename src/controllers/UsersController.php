@@ -1220,7 +1220,21 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $user->fullName = $this->request->getBodyParam('fullName', $user->fullName);
+        $fullName = $this->request->getBodyParam('fullName');
+
+        if ($fullName !== null) {
+            $user->fullName = $fullName;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $this->request->getBodyParam('firstName');
+            $lastName = $this->request->getBodyParam('lastName');
+
+            if ($firstName !== null || $lastName !== null) {
+                $user->fullName = null;
+                $user->firstName = $firstName ?? $user->firstName;
+                $user->lastName = $lastName ?? $user->lastName;
+            }
+        }
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
