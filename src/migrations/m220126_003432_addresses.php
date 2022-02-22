@@ -30,6 +30,7 @@ class m220126_003432_addresses extends Migration
             'addressLine2' => $this->string(),
             'organization' => $this->string(),
             'organizationTaxId' => $this->string(),
+            'fullName' => $this->string(),
             'firstName' => $this->string(),
             'lastName' => $this->string(),
             'latitude' => $this->string(),

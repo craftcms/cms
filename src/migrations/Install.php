@@ -103,6 +103,7 @@ class Install extends Migration
             'addressLine2' => $this->string(),
             'organization' => $this->string(),
             'organizationTaxId' => $this->string(),
+            'fullName' => $this->string(),
             'firstName' => $this->string(),
             'lastName' => $this->string(),
             'latitude' => $this->string(),

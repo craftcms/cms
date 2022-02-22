@@ -79,6 +79,7 @@
 - Added `craft\base\imagetransforms\EagerImageTransformerInterface`.
 - Added `craft\base\imagetransforms\ImageTransformerInterface`.
 - Added `craft\base\LocalFsInterface`.
+- Added `craft\base\NameTrait`.
 - Added `craft\behaviors\FieldLayoutBehavior::getCustomFields()`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
@@ -169,12 +170,12 @@
 - Added `craft\fieldlayoutelements\addresses\CountryCodeField`.
 - Added `craft\fieldlayoutelements\addresses\LabelField`.
 - Added `craft\fieldlayoutelements\addresses\LatLongField`.
-- Added `craft\fieldlayoutelements\addresses\NameField`.
 - Added `craft\fieldlayoutelements\addresses\OrganizationField`.
 - Added `craft\fieldlayoutelements\addresses\OrganizationTaxIdField`.
 - Added `craft\fieldlayoutelements\assets\AltField`.
 - Added `craft\fieldlayoutelements\BaseField::selectorLabel()`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
+- Added `craft\fieldlayoutelements\FullNameField`.
 - Added `craft\fieldlayoutelements\TextareaField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
 - Added `craft\fieldlayoutelements\users\AddressesField`.

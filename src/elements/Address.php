@@ -7,15 +7,16 @@ use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\NameTrait;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\addresses\LatLongField;
-use craft\fieldlayoutelements\addresses\NameField;
 use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
+use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use craft\validators\RequiredFieldAddressValidator;
@@ -30,6 +31,8 @@ use yii\validators\RequiredValidator;
  */
 class Address extends Element implements AddressInterface, BlockElementInterface
 {
+    use NameTrait;
+
     /**
      * @inheritdoc
      */
@@ -97,8 +100,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             'addressLine2',
             'organization',
             'organizationTaxId',
-            'firstName',
-            'lastName',
+            'fullName',
         ];
     }
 
@@ -198,16 +200,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public ?string $organizationTaxId = null;
 
     /**
-     * @var string|null First name
-     */
-    public ?string $firstName = null;
-
-    /**
-     * @var string|null Last name
-     */
-    public ?string $lastName = null;
-
-    /**
      * @var string|null Latitude
      */
     public ?string $latitude = null;
@@ -220,26 +212,28 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+        $this->normalizeNames();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAttributeLabel($attribute): string
     {
         return match ($attribute) {
             'title' => Craft::t('app', 'Label'),
             'organization' => Craft::t('app', 'Organization'),
             'organizationTaxId' => Craft::t('app', 'Organization Tax ID'),
+            'fullName' => Craft::t('app', 'Full Name'),
             'firstName' => Craft::t('app', 'First Name'),
             'lastName' => Craft::t('app', 'Last Name'),
             'latitude' => Craft::t('app', 'Latitude'),
             'longitude' => Craft::t('app', 'Longitude'),
             default => static::addressAttributeLabel($attribute, $this->countryCode) ?? parent::getAttributeLabel($attribute),
         };
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function attributes(): array
-    {
-        return array_merge(parent::attributes(), self::_addressAttributes());
     }
 
     /**
@@ -431,7 +425,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             $requirableNativeFields = [
                 OrganizationField::class,
                 OrganizationTaxIdField::class,
-                NameField::class,
+                FullNameField::class,
                 LatLongField::class,
             ];
 
@@ -442,7 +436,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
                 $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
                 if ($field && $field->required) {
                     $attributes = match ($field->attribute()) {
-                        'name' => ['firstName'],
                         'latLong' => ['latitude', 'longitude'],
                         default => [$field->attribute()],
                     };
@@ -483,6 +476,8 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             $record->id = $this->id;
         }
 
+        $this->prepareNamesForSave();
+
         $record->ownerId = $this->ownerId;
         $record->countryCode = $this->countryCode;
         $record->administrativeArea = $this->administrativeArea;
@@ -494,6 +489,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         $record->addressLine2 = $this->addressLine2;
         $record->organization = $this->organization;
         $record->organizationTaxId = $this->organizationTaxId;
+        $record->fullName = $this->fullName;
         $record->firstName = $this->firstName;
         $record->lastName = $this->lastName;
         $record->latitude = $this->latitude;

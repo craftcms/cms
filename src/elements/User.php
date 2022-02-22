@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -74,6 +75,8 @@ use yii\web\IdentityInterface;
  */
 class User extends Element implements IdentityInterface
 {
+    use NameTrait;
+
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
@@ -600,22 +603,6 @@ class User extends Element implements IdentityInterface
     public ?string $username = null;
 
     /**
-     * @var string|null Full name
-     * @since 4.0.0
-     */
-    public ?string $fullName = null;
-
-    /**
-     * @var string|null First name
-     */
-    public ?string $firstName = null;
-
-    /**
-     * @var string|null Last name
-     */
-    public ?string $lastName = null;
-
-    /**
      * @var string|null Email
      */
     public ?string $email = null;
@@ -755,12 +742,7 @@ class User extends Element implements IdentityInterface
             $this->email = StringHelper::idnToUtf8Email($this->email);
         }
 
-        $names = ['fullName', 'firstName', 'lastName'];
-        foreach ($names as $name) {
-            if (isset($this->$name) && trim($this->$name) === '') {
-                $this->$name = null;
-            }
-        }
+        $this->normalizeNames();
     }
 
     /**
@@ -1734,13 +1716,7 @@ class User extends Element implements IdentityInterface
             $record->suspended = $this->suspended;
         }
 
-        if ($this->fullName !== null) {
-            $name = (new NameParser())->parse($this->fullName);
-            $this->firstName = $name->getFirstname() ?: null;
-            $this->lastName = $name->getLastname() ?: null;
-        } else if ($this->firstName !== null || $this->lastName !== null) {
-            $this->fullName = trim("$this->firstName $this->lastName") ?: null;
-        }
+        $this->prepareNamesForSave();
 
         $record->photoId = (int)$this->photoId ?: null;
         $record->admin = $this->admin;

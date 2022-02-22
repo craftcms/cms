@@ -184,6 +184,7 @@ class AddressQuery extends ElementQuery
             'addresses.addressLine2',
             'addresses.organization',
             'addresses.organizationTaxId',
+            'addresses.fullName',
             'addresses.firstName',
             'addresses.lastName',
             'addresses.latitude',

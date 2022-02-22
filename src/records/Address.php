@@ -25,6 +25,7 @@ use craft\db\Table;
  * @property string|null $addressLine2 Second line of the address block
  * @property string|null $organization Organization name
  * @property string|null $organizationTaxId Organization tax ID
+ * @property string|null $fullName Full name
  * @property string|null $firstName First name
  * @property string|null $lastName Last name
  * @property string|null $latitude Latitude
