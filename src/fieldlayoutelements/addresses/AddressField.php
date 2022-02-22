@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -34,14 +35,6 @@ class AddressField extends BaseField
      * @inheritdoc
      */
     public function mandatory(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function useFieldset(): bool
     {
         return true;
     }
@@ -159,34 +152,6 @@ JS, [
                 'errors' => $element->getErrors('addressLine2'),
             ]) .
             Cp::textFieldHtml([
-                'fieldClass' => !isset($visibleFields['postalCode']) ? 'hidden' : null,
-                'label' => $element->getAttributeLabel('postalCode'),
-                'id' => 'postalCode',
-                'name' => 'postalCode',
-                'value' => $element->postalCode,
-                'required' => isset($requiredFields['postalCode']),
-                'errors' => $element->getErrors('postalCode'),
-            ]) .
-            Cp::textFieldHtml([
-                'fieldClass' => !isset($visibleFields['sortingCode']) ? 'hidden' : null,
-                'label' => $element->getAttributeLabel('sortingCode'),
-                'id' => 'sortingCode',
-                'name' => 'sortingCode',
-                'value' => $element->sortingCode,
-                'required' => isset($requiredFields['sortingCode']),
-                'errors' => $element->getErrors('sortingCode'),
-            ]) .
-            Cp::selectizeFieldHtml([
-                'fieldClass' => !isset($visibleFields['administrativeArea']) ? 'hidden' : null,
-                'label' => $element->getAttributeLabel('administrativeArea'),
-                'id' => 'administrativeArea',
-                'name' => 'administrativeArea',
-                'value' => $element->administrativeArea,
-                'options' => $addressesService->getSubdivisionRepository()->getList([$element->countryCode], Craft::$app->language),
-                'required' => isset($requiredFields['administrativeArea']),
-                'errors' => $element->getErrors('administrativeArea'),
-            ]) .
-            Cp::textFieldHtml([
                 'fieldClass' => !isset($visibleFields['locality']) ? 'hidden' : null,
                 'label' => $element->getAttributeLabel('locality'),
                 'id' => 'locality',
@@ -203,6 +168,42 @@ JS, [
                 'value' => $element->dependentLocality,
                 'required' => isset($requiredFields['dependentLocality']),
                 'errors' => $element->getErrors('dependentLocality'),
-            ]);
+            ]) .
+            Cp::selectizeFieldHtml([
+                'fieldClass' => !isset($visibleFields['administrativeArea']) ? 'hidden' : null,
+                'label' => $element->getAttributeLabel('administrativeArea'),
+                'id' => 'administrativeArea',
+                'name' => 'administrativeArea',
+                'value' => $element->administrativeArea,
+                'options' => $addressesService->getSubdivisionRepository()->getList([$element->countryCode], Craft::$app->language),
+                'required' => isset($requiredFields['administrativeArea']),
+                'errors' => $element->getErrors('administrativeArea'),
+            ]) .
+            Html::beginTag('div', ['class' => 'flex-fields']) .
+            Cp::textFieldHtml([
+                'fieldClass' => array_filter([
+                    'width-50',
+                    !isset($visibleFields['postalCode']) ? 'hidden' : null,
+                ]),
+                'label' => $element->getAttributeLabel('postalCode'),
+                'id' => 'postalCode',
+                'name' => 'postalCode',
+                'value' => $element->postalCode,
+                'required' => isset($requiredFields['postalCode']),
+                'errors' => $element->getErrors('postalCode'),
+            ]) .
+            Cp::textFieldHtml([
+                'fieldClass' => array_filter([
+                    'width-50',
+                    !isset($visibleFields['sortingCode']) ? 'hidden' : null,
+                ]),
+                'label' => $element->getAttributeLabel('sortingCode'),
+                'id' => 'sortingCode',
+                'name' => 'sortingCode',
+                'value' => $element->sortingCode,
+                'required' => isset($requiredFields['sortingCode']),
+                'errors' => $element->getErrors('sortingCode'),
+            ]) .
+            Html::endTag('div'); // .flex-fields
     }
 }
