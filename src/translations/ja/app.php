@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => '価格には1年間のアップデートが含まれます。',
     'Primary {type} page' => 'プライマリの{type}ページ',
     'Primary' => 'プライマリ',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => '割引を比例計算',
     'Profile Twig templates when Dev Mode is disabled' => '開発モードが無効な場合にTwigテンプレートをプロファイリングする',
     'Progress' => '進捗',

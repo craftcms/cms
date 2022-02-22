@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => '가격에는 1년간 업데이트가 포함됩니다.',
     'Primary {type} page' => '기본 {type} 페이지',
     'Primary' => '기본',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => '비례 배분 할인',
     'Profile Twig templates when Dev Mode is disabled' => '프로필 트윅 템플릿(개발자 모드가 비활성화 상태인 경우)',
     'Progress' => '진행률',

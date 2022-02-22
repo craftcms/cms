@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'המחיר כולל עדכונים לשנה אחת.',
     'Primary {type} page' => 'עמוד {type} ראשי',
     'Primary' => 'יסודי',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'שער חליפין',
     'Profile Twig templates when Dev Mode is disabled' => 'צור תבניות פרופיל Twig כאשר מצב Dev מנוטרל',
     'Progress' => 'התקדמות',

@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'В стоимость входит 1 год обновлений.',
     'Primary {type} page' => 'Основная {type} страница',
     'Primary' => 'Основной',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'Пропорциональная скидка',
     'Profile Twig templates when Dev Mode is disabled' => 'Профилировать шаблоны Twig при отключенном режиме разработчика',
     'Progress' => 'Прогресс',

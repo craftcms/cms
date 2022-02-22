@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'Prijs is inclusief 1 jaar updates.',
     'Primary {type} page' => 'Primaire {type}-pagina',
     'Primary' => 'Primair',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'Pro Rate Korting',
     'Profile Twig templates when Dev Mode is disabled' => 'Profieltwigsjablonen wanneer ontwikkelmodus is ingeschakeld',
     'Progress' => 'Voortgang',
