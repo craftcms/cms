@@ -9,6 +9,9 @@
 
 ### Changed
 - Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+- Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+- Craft no longer attempts to write a license key file when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer attempts to write project config files when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
 
 ### Fixed
 - Fixed a bug where Date fields weren’t displaying properly.
