@@ -708,6 +708,7 @@ class Install extends Migration
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
             'admin' => $this->boolean()->defaultValue(false)->notNull(),
             'username' => $this->string(),
+            'fullName' => $this->string(),
             'firstName' => $this->string(),
             'lastName' => $this->string(),
             'email' => $this->string(),

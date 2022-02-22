@@ -56,7 +56,7 @@ class EditUserCest
         $I->see('My Account');
 
         $I->submitForm('#userform', [
-            'firstName' => 'IM A CHANGED FIRSTNAME',
+            'fullName' => 'IM A CHANGED FULLNAME',
         ]);
 
         $I->see('User saved');
@@ -64,10 +64,10 @@ class EditUserCest
 
         // Check that the Db was updated.
         $I->assertSame(
-            'IM A CHANGED FIRSTNAME',
+            'IM A CHANGED FULLNAME',
             User::find()
                 ->id($this->currentUser->id)
-                ->one()->firstName
+                ->one()->fullName
         );
     }
 
