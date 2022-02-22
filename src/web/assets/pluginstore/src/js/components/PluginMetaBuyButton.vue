@@ -1,5 +1,5 @@
 <template>
-  <li v-if="!isPluginFree(plugin)">
+  <div>
     <template v-if="plugin.editions.length === 1">
       <plugin-edition
         :plugin="plugin"
@@ -7,7 +7,6 @@
         context="meta"
       />
     </template>
-
     <template v-else>
       <c-btn
         kind="primary"
@@ -18,7 +17,7 @@
         Buy {{ getPriceRangeLabel(plugin) }}
       </c-btn>
     </template>
-  </li>
+  </div>
 </template>
 
 <script>

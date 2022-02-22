@@ -2,7 +2,9 @@
   <div>
     <ul class="tw-list-reset tw-space-y-2">
       <!-- Buy button -->
-      <plugin-meta-buy-button :plugin="plugin" />
+      <li>
+        <plugin-meta-buy-button :plugin="plugin" />
+      </li>
 
       <!-- Documentation Button -->
       <template v-if="plugin.documentationUrl">
