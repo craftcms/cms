@@ -18,7 +18,7 @@
   }
 
   .ps-main {
-    @apply tw-flex-1 tw-overflow-auto tw-flex;
+    @apply tw-flex-1 tw-overflow-auto;
 
     .ps-container {
       @apply tw-flex-1 tw-max-w-screen-xl tw-mx-auto;
