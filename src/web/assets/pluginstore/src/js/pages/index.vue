@@ -108,6 +108,10 @@ export default {
 
       this.loading = false
     })
+  },
+
+  beforeDestroy() {
+    this.$store.dispatch('pluginStore/cancelRequests')
   }
 }
 </script>
