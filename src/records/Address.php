@@ -16,19 +16,19 @@ use craft\db\Table;
  * @property int $id ID
  * @property int $ownerId Owner ID
  * @property string $countryCode Country code
- * @property string $administrativeArea Administrative area
- * @property string $locality Locality
- * @property string $dependentLocality Dependent locality
- * @property string $postalCode Postal code
- * @property string $sortingCode Sorting code
- * @property string $addressLine1 First line of the address block
- * @property string $addressLine2 Second line of the address block
- * @property string $organization Organization name
- * @property string $organizationTaxId Organization tax ID
- * @property string $firstName First name
- * @property string $lastName Last name
- * @property string $latitude Latitude
- * @property string $longitude Longitude
+ * @property string|null $administrativeArea Administrative area
+ * @property string|null $locality Locality
+ * @property string|null $dependentLocality Dependent locality
+ * @property string|null $postalCode Postal code
+ * @property string|null $sortingCode Sorting code
+ * @property string|null $addressLine1 First line of the address block
+ * @property string|null $addressLine2 Second line of the address block
+ * @property string|null $organization Organization name
+ * @property string|null $organizationTaxId Organization tax ID
+ * @property string|null $firstName First name
+ * @property string|null $lastName Last name
+ * @property string|null $latitude Latitude
+ * @property string|null $longitude Longitude
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
