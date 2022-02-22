@@ -386,7 +386,7 @@ class CategoriesController extends Controller
             // Should we show the Share button too?
             if ($category->id !== null) {
                 // If the category is enabled, use its main URL as its share URL.
-                if ($category->getStatus() === Element::STATUS_ENABLED) {
+                if ($category->getStatus() === Element::STATUS_ENABLED && $siteModel->enabled) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
                     $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category', [

@@ -1,5 +1,31 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.34 - 2022-02-22
+
+### Added
+- Added `craft\helpers\App::phpConfigValueAsPaths()`.
+- Added `craft\helpers\App::normalizePhpPaths()`.
+- Added `craft\helpers\App::isPathAllowed()`.
+
+### Changed
+- Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+- Craft no longer attempts to write a license key file when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer attempts to write project config YAML files when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer publishes asset bundles when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+
+### Fixed
+- Fixed a bug where Date fields weren’t displaying properly.
+- Fixed a bug where some GraphQL API query arguments would break element queries. ([#10580](https://github.com/craftcms/cms/issues/10580))
+- Fixed a PHP 8.1 compatibility bug. ([#10594](https://github.com/craftcms/cms/issues/10594))
+- Fixed a bug where Matrix action menus were causing horizontal scrollbars within Live Preview. ([#10601](https://github.com/craftcms/cms/issues/10601))
+- Fixed a PHP warning that would occur when running Craft in Dev Mode, if the `open_basedir` PHP setting was set. ([#10581](https://github.com/craftcms/cms/issues/10581))
+- Fixed a bug where the “View” button on Edit Category pages wasn’t getting linked to a tokenized preview page for disabled sites.
+- Fixed a bug where asset subfolder toggles weren’t visible when their source was focused. ([#10617](https://github.com/craftcms/cms/issues/10617))
+- Fixed a bug where Live Preview would close when the <kbd>Esc</kbd> key was pressed, when a modal window was open. ([#10623](https://github.com/craftcms/cms/issues/10623))
+
+### Security
+- Craft now HTML-encodes user’ names in the default system email messages.
+
 ## 3.7.33 - 2022-02-15
 
 > {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.

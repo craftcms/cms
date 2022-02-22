@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\db\Table;
 use craft\errors\DbConnectException;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
@@ -21,6 +22,18 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
+    /**
+     * @inheritdoc
+     */
+    public function publish($path, $options = []): array
+    {
+        if (App::isEphemeral()) {
+            return [$path, $this->getPublishedUrl($path)];
+        }
+
+        return parent::publish($path, $options);
+    }
+
     /**
      * Returns the published path of a file/directory path.
      *
@@ -49,7 +62,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function getPublishedUrl($sourcePath, bool $publish = false, $filePath = null)
     {
-        if ($publish === true) {
+        if ($publish === true && !App::isEphemeral()) {
             [, $url] = $this->publish($sourcePath);
         } else {
             $url = parent::getPublishedUrl($sourcePath);

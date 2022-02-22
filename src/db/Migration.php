@@ -407,6 +407,7 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * Builds and executes a SQL statement for dropping an index, if it exists.
+     *
      * @param string $table the table whose index is to be dropped. The name will be properly quoted by the method.
      * @param string|array $columns the column(s) that are included in the index. If there are multiple columns, please separate them
      * by commas or use an array.
