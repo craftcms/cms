@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'Le prix comprend 1 an de mises à jour.',
     'Primary {type} page' => 'Page {type} primaire',
     'Primary' => 'Principal',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'Taux de remise Pro',
     'Profile Twig templates when Dev Mode is disabled' => 'Profiler les modèles Twig quand le mode dev est désactivé',
     'Progress' => 'Achèvement',

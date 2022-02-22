@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => '价格包括 1 年的更新。',
     'Primary {type} page' => '主要{type}页面',
     'Primary' => '主要',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => '按比例折扣',
     'Profile Twig templates when Dev Mode is disabled' => '在开发者模式禁用时分析 Twig 模板',
     'Progress' => '进度',

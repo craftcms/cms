@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'Fiyata 1 yıllık güncelleme dahildir.',
     'Primary {type} page' => 'Birincil {type} sayfası',
     'Primary' => 'Birincil',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'Eşit Dağılımlı İndirim',
     'Profile Twig templates when Dev Mode is disabled' => 'Geliştirici Modu devre dışıyken Twig şablonlarını profille',
     'Progress' => 'Devam ediyor',

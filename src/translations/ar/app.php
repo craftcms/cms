@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'السعر يشمل سنة واحدة من التحديثات.',
     'Primary {type} page' => 'صفحة {type} أساسية',
     'Primary' => 'أساسي',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'خصم بالتناسب',
     'Profile Twig templates when Dev Mode is disabled' => 'تشكيل قوالب Twig عندما يكون وضع التطوير معطلًا',
     'Progress' => 'التقدم',

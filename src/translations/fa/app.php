@@ -1080,6 +1080,7 @@ return [
     'Price includes 1 year of updates.' => 'قیمت شامل 1 سال بروزرسانی می شود',
     'Primary {type} page' => 'صفحه اصلی {type}',
     'Primary' => 'اصلی',
+    'Primary fields' => 'Primary fields',
     'Pro Rate Discount' => 'تخفیف بسته به نرخ',
     'Profile Twig templates when Dev Mode is disabled' => 'ثبت قالب های Twig در هنگامی که حالت توسعه غیر فعال است.',
     'Progress' => 'پیشرفت',
