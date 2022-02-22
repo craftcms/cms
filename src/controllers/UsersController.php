@@ -926,8 +926,7 @@ class UsersController extends Controller
                 $errors = $user->getErrors();
                 $accountFields = [
                     'username',
-                    'firstName',
-                    'lastName',
+                    'fullName',
                     'email',
                     'password',
                     'newPassword',
@@ -1221,8 +1220,7 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
-        $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
+        $user->fullName = $this->request->getBodyParam('fullName', $user->fullName);
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
