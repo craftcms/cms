@@ -1,21 +1,12 @@
-/* global Craft */
-
 import axios from 'axios'
-
-// create a cancel token for axios
-let CancelToken = axios.CancelToken
-let cancelTokenSource = CancelToken.source()
+import api from '../utils/api'
 
 export default {
   /**
    * Cancel requests.
    */
   cancelRequests() {
-    // cancel requests
-    cancelTokenSource.cancel()
-
-    // create a new cancel token
-    cancelTokenSource = CancelToken.source()
+    api.cancelRequests()
   },
 
   /**
@@ -25,9 +16,7 @@ export default {
    */
   getCoreData() {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'plugin-store/core-data', {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'plugin-store/core-data')
         .then((responseData) => {
           resolve(responseData)
         })
@@ -48,9 +37,7 @@ export default {
    */
   getCmsEditions() {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'cms-editions', {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'cms-editions')
         .then((responseData) => {
           resolve(responseData)
         })
@@ -72,9 +59,7 @@ export default {
    */
   getDeveloper(developerId) {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'developer/' + developerId, {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'developer/' + developerId)
         .then((responseData) => {
           resolve(responseData)
         })
@@ -96,9 +81,7 @@ export default {
    */
   getFeaturedSectionByHandle(featuredSectionHandle) {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'plugin-store/featured-section/' + featuredSectionHandle, {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'plugin-store/featured-section/' + featuredSectionHandle)
         .then((responseData) => {
           resolve(responseData)
         })
@@ -119,9 +102,7 @@ export default {
    */
   getFeaturedSections() {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'plugin-store/featured-sections', {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'plugin-store/featured-sections')
         .then((responseData) => {
           resolve(responseData)
         })
@@ -143,9 +124,7 @@ export default {
    */
   getPluginChangelog(pluginId) {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'plugin/' + pluginId + '/changelog', {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'plugin/' + pluginId + '/changelog')
         .then((responseData) => {
           resolve(responseData)
         })
@@ -167,9 +146,7 @@ export default {
    */
   getPluginDetails(pluginId) {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'plugin/' + pluginId, {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'plugin/' + pluginId)
         .then((responseData) => {
           resolve(responseData)
         })
@@ -191,9 +168,7 @@ export default {
    */
   getPluginDetailsByHandle(pluginHandle) {
     return new Promise((resolve, reject) => {
-      Craft.sendApiRequest('GET', 'plugin-store/plugin/' + pluginHandle, {
-          cancelToken: cancelTokenSource.token,
-        })
+      api.sendApiRequest('GET', 'plugin-store/plugin/' + pluginHandle)
         .then((responseData) => {
           resolve(responseData)
         })
@@ -219,8 +194,7 @@ export default {
       const params = this._getPluginIndexParams(pluginIndexParams)
       params.categoryId = categoryId
 
-      Craft.sendApiRequest('GET', 'plugin-store/plugins', {
-          cancelToken: cancelTokenSource.token,
+      api.sendApiRequest('GET', 'plugin-store/plugins', {
           params,
         })
         .then((responseData) => {
@@ -228,7 +202,7 @@ export default {
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
-            // request cancelled
+            // Request was cancelled, silently fail
           } else {
             reject(error)
           }
@@ -248,8 +222,7 @@ export default {
       const params = this._getPluginIndexParams(pluginIndexParams)
       params.developerId = developerId
 
-      Craft.sendApiRequest('GET', 'plugin-store/plugins', {
-          cancelToken: cancelTokenSource.token,
+      api.sendApiRequest('GET', 'plugin-store/plugins', {
           params,
         })
         .then((responseData) => {
@@ -276,8 +249,7 @@ export default {
     return new Promise((resolve, reject) => {
       const params = this._getPluginIndexParams(pluginIndexParams)
 
-      Craft.sendApiRequest('GET', 'plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
-          cancelToken: cancelTokenSource.token,
+      api.sendApiRequest('GET', 'plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
           params,
         })
         .then((responseData) => {
@@ -309,8 +281,7 @@ export default {
         pluginHandlesString = pluginHandles
       }
 
-      Craft.sendApiRequest('GET', 'plugin-store/plugins-by-handles', {
-          cancelToken: cancelTokenSource.token,
+      api.sendApiRequest('GET', 'plugin-store/plugins-by-handles', {
           params: {
             pluginHandles: pluginHandlesString
           },
@@ -344,8 +315,7 @@ export default {
         pluginIdsString = pluginIds
       }
 
-      Craft.sendApiRequest('GET', 'plugins', {
-          cancelToken: cancelTokenSource.token,
+      api.sendApiRequest('GET', 'plugins', {
           params: {
             ids: pluginIdsString
           },
@@ -375,8 +345,7 @@ export default {
       const params = this._getPluginIndexParams(pluginIndexParams)
       params.searchQuery = searchQuery
 
-      Craft.sendApiRequest('GET', 'plugin-store/plugins', {
-          cancelToken: cancelTokenSource.token,
+      api.sendApiRequest('GET', 'plugin-store/plugins', {
           params,
         })
         .then((responseData) => {
