@@ -364,15 +364,14 @@ Craft.Preview = Garnish.Base.extend({
             Garnish.$win.trigger('resize');
         });
 
-        this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', () => {
-            this.addListener(Garnish.$bod, 'keyup', function(ev) {
-                if (ev.keyCode === Garnish.ESC_KEY) {
-                    this.close();
-                }
-            });
-        });
+        this.$previewContainer.show().velocity('stop').animateRight(0, 'slow');
 
         this.isVisible = true;
+
+        Garnish.uiLayerManager.addLayer(this.$sidebar);
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.close();
+        });
     },
 
     close: function() {
@@ -385,7 +384,7 @@ Craft.Preview = Garnish.Base.extend({
         $('html').removeClass('noscroll');
 
         this.removeListener(Garnish.$win, 'resize');
-        this.removeListener(Garnish.$bod, 'keyup');
+        Garnish.uiLayerManager.removeLayer();
 
         // Remove our temporary input and move the preview fields back into place
         this.$tempInput.detach();

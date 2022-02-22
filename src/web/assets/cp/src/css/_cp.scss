@@ -1386,6 +1386,7 @@ li.breadcrumb-toggle-wrapper {
 
       .toggle {
         position: absolute;
+        z-index: 1;
         height: 34px;
         top: 0;
         width: var(--xl);
