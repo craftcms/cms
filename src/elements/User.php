@@ -346,7 +346,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineSearchableAttributes(): array
     {
-        return ['username', 'fullName', 'email'];
+        return ['username', 'fullName', 'firstName', 'lastName', 'email'];
     }
 
     /**
