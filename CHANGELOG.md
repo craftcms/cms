@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.34 - 2022-02-22
 
 ### Added
 - Added `craft\helpers\App::phpConfigValueAsPaths()`.
