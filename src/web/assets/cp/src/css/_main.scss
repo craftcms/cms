@@ -2186,7 +2186,14 @@ table {
           font: inherit;
           width: 100%;
           padding: 14px;
-          text-align: left;
+
+          body.ltr & {
+            text-align: left;
+          }
+
+          body.rtl & {
+            text-align: right;
+          }
         }
 
         &[data-orderable] {
@@ -2207,10 +2214,6 @@ table {
 
           & button {
             @include padding-right(26px);
-          }
-
-          &:first-child {
-            @include padding-left(10px);
           }
 
           &:not(.loading) {
