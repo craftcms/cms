@@ -323,16 +323,11 @@ class MigrateController extends BaseMigrateController
         foreach ($migrationsByTrack as $track => $migrations) {
             $n = count($migrations);
 
-            switch ($track) {
-                case MigrationManager::TRACK_CRAFT:
-                    $which = 'Craft';
-                    break;
-                case MigrationManager::TRACK_CONTENT:
-                    $which = 'content';
-                    break;
-                default:
-                    $which = $plugins[substr($track, 7)]->name;
-            }
+            $which = match ($track) {
+                MigrationManager::TRACK_CRAFT => 'Craft',
+                MigrationManager::TRACK_CONTENT => 'content',
+                default => $plugins[substr($track, 7)]->name,
+            };
 
             $this->stdout("Total $n new $which " . ($n === 1 ? 'migration' : 'migrations') . ' to be applied:' . PHP_EOL, Console::FG_YELLOW);
             foreach ($migrations as $migration) {

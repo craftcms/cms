@@ -39,11 +39,9 @@ class Category extends Element
         /** @var CategoryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        switch ($fieldName) {
-            case 'groupHandle':
-                return $source->getGroup()->handle;
-        }
-
-        return parent::resolve($source, $arguments, $context, $resolveInfo);
+        return match ($fieldName) {
+            'groupHandle' => $source->getGroup()->handle,
+            default => parent::resolve($source, $arguments, $context, $resolveInfo),
+        };
     }
 }

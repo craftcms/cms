@@ -98,12 +98,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function operatorLabel(string $operator): string
     {
-        switch ($operator) {
-            case self::OPERATOR_RELATED_TO:
-                return Craft::t('app', 'is related to');
-            default:
-                return parent::operatorLabel($operator);
-        }
+        return match ($operator) {
+            self::OPERATOR_RELATED_TO => Craft::t('app', 'is related to'),
+            default => parent::operatorLabel($operator),
+        };
     }
 
     /**
@@ -111,12 +109,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function inputHtml(): string
     {
-        switch ($this->operator) {
-            case self::OPERATOR_RELATED_TO:
-                return parent::inputHtml();
-            default:
-                return '';
-        }
+        return match ($this->operator) {
+            self::OPERATOR_RELATED_TO => parent::inputHtml(),
+            default => '',
+        };
     }
 
     /**
@@ -124,16 +120,12 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function elementQueryParam()
     {
-        switch ($this->operator) {
-            case self::OPERATOR_RELATED_TO:
-                return $this->getElementId();
-            case self::OPERATOR_EMPTY:
-                return ':empty:';
-            case self::OPERATOR_NOT_EMPTY:
-                return 'not :empty:';
-            default:
-                throw new InvalidConfigException("Invalid operator: $this->operator");
-        }
+        return match ($this->operator) {
+            self::OPERATOR_RELATED_TO => $this->getElementId(),
+            self::OPERATOR_EMPTY => ':empty:',
+            self::OPERATOR_NOT_EMPTY => 'not :empty:',
+            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+        };
     }
 
     /**

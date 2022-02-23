@@ -316,14 +316,11 @@ JS;
             return '';
         }
 
-        switch ($this->previewFormat) {
-            case self::FORMAT_DECIMAL:
-                return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
-            case self::FORMAT_CURRENCY:
-                return Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals);
-            default:
-                return $value;
-        }
+        return match ($this->previewFormat) {
+            self::FORMAT_DECIMAL => Craft::$app->getFormatter()->asDecimal($value, $this->decimals),
+            self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals),
+            default => $value,
+        };
     }
 
     /**

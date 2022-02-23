@@ -384,16 +384,11 @@ class AppController extends Controller
             $licensedEdition = 0;
         }
 
-        switch ($edition) {
-            case 'solo':
-                $edition = Craft::Solo;
-                break;
-            case 'pro':
-                $edition = Craft::Pro;
-                break;
-            default:
-                throw new BadRequestHttpException('Invalid Craft edition: ' . $edition);
-        }
+        $edition = match ($edition) {
+            'solo' => Craft::Solo,
+            'pro' => Craft::Pro,
+            default => throw new BadRequestHttpException('Invalid Craft edition: ' . $edition),
+        };
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
         if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {

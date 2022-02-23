@@ -151,19 +151,12 @@ class InstallController extends Controller
             } catch (DbConnectException $e) {
                 /** @var PDOException $pdoException */
                 $pdoException = $e->getPrevious()->getPrevious();
-                switch ($pdoException->getCode()) {
-                    case 1045:
-                        $attr = 'user';
-                        break;
-                    case 1049:
-                        $attr = 'database';
-                        break;
-                    case 2002:
-                        $attr = 'server';
-                        break;
-                    default:
-                        $attr = '*';
-                }
+                $attr = match ($pdoException->getCode()) {
+                    1045 => 'user',
+                    1049 => 'database',
+                    2002 => 'server',
+                    default => '*',
+                };
                 $errors[$attr][] = 'PDO exception: ' . $pdoException->getMessage();
             }
         }

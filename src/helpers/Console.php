@@ -204,19 +204,12 @@ class Console extends \yii\helpers\Console
 
             if ($len < $size) {
                 if (isset($cell['align'])) {
-                    switch ($cell['align']) {
-                        case 'left':
-                            $padType = STR_PAD_RIGHT;
-                            break;
-                        case 'right':
-                            $padType = STR_PAD_LEFT;
-                            break;
-                        case 'center':
-                            $padType = STR_PAD_BOTH;
-                            break;
-                        default:
-                            throw new InvalidValueException("Invalid align value: {$cell['align']}");
-                    }
+                    $padType = match ($cell['align']) {
+                        'left' => STR_PAD_RIGHT,
+                        'right' => STR_PAD_LEFT,
+                        'center' => STR_PAD_BOTH,
+                        default => throw new InvalidValueException("Invalid align value: {$cell['align']}"),
+                    };
                 } else {
                     $padType = STR_PAD_RIGHT;
                 }

@@ -1032,23 +1032,13 @@ class Assets extends Component
         }
 
         // These are our default preview handlers if one is not supplied
-        switch ($asset->kind) {
-            case Asset::KIND_IMAGE:
-                return new ImagePreview($asset);
-            case Asset::KIND_PDF:
-                return new Pdf($asset);
-            case Asset::KIND_VIDEO:
-                return new Video($asset);
-            case Asset::KIND_HTML:
-            case Asset::KIND_JAVASCRIPT:
-            case Asset::KIND_JSON:
-            case Asset::KIND_PHP:
-            case Asset::KIND_TEXT:
-            case Asset::KIND_XML:
-                return new Text($asset);
-        }
-
-        return null;
+        return match ($asset->kind) {
+            Asset::KIND_IMAGE => new ImagePreview($asset),
+            Asset::KIND_PDF => new Pdf($asset),
+            Asset::KIND_VIDEO => new Video($asset),
+            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
+            default => null,
+        };
     }
 
     /**

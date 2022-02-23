@@ -370,23 +370,15 @@ class Image
     {
         $ppi = 72;
 
-        switch ($unit) {
-            case 'in':
-                return $ppi;
-            case 'pt':
-                return $ppi / 72;
-            case 'pc':
-                return $ppi / 6;
-            case 'cm':
-                return $ppi / 2.54;
-            case 'mm':
-                return $ppi / 25.4;
-            case 'em':
-                return 16;
-            case 'ex':
-                return 10;
-            default:
-                return 1;
-        }
+        return match ($unit) {
+            'in' => $ppi,
+            'pt' => $ppi / 72,
+            'pc' => $ppi / 6,
+            'cm' => $ppi / 2.54,
+            'mm' => $ppi / 25.4,
+            'em' => 16,
+            'ex' => 10,
+            default => 1,
+        };
     }
 }

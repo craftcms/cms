@@ -883,31 +883,25 @@ class UserQuery extends ElementQuery
      */
     protected function statusCondition(string $status)
     {
-        switch ($status) {
-            case User::STATUS_INACTIVE:
-                return [
-                    'users.active' => false,
-                    'users.pending' => false,
-                ];
-            case User::STATUS_ACTIVE:
-                return [
-                    'users.active' => true,
-                ];
-            case User::STATUS_PENDING:
-                return [
-                    'users.pending' => true,
-                ];
-            case User::STATUS_LOCKED:
-                return [
-                    'users.locked' => true,
-                ];
-            case User::STATUS_SUSPENDED:
-                return [
-                    'users.suspended' => true,
-                ];
-            default:
-                return parent::statusCondition($status);
-        }
+        return match ($status) {
+            User::STATUS_INACTIVE => [
+                'users.active' => false,
+                'users.pending' => false,
+            ],
+            User::STATUS_ACTIVE => [
+                'users.active' => true,
+            ],
+            User::STATUS_PENDING => [
+                'users.pending' => true,
+            ],
+            User::STATUS_LOCKED => [
+                'users.locked' => true,
+            ],
+            User::STATUS_SUSPENDED => [
+                'users.suspended' => true,
+            ],
+            default => parent::statusCondition($status),
+        };
     }
 
     /**

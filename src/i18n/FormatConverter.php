@@ -20,23 +20,14 @@ class FormatConverter extends \yii\helpers\FormatConverter
     public static function convertDatePhpToIcu($pattern): string
     {
         // Special cases for standalone values
-        switch ($pattern) {
-            // month names
-            case 'n':
-                return 'L';
-            case 'm':
-                return 'LL';
-            case 'M':
-                return 'LLL';
-            case 'F':
-                return 'LLLL';
-            // week day names
-            case 'D':
-                return 'ccc';
-            case 'l':
-                return 'cccc';
-        }
-
-        return parent::convertDatePhpToIcu($pattern);
+        return match ($pattern) {
+            'n' => 'L',
+            'm' => 'LL',
+            'M' => 'LLL',
+            'F' => 'LLLL',
+            'D' => 'ccc',
+            'l' => 'cccc',
+            default => parent::convertDatePhpToIcu($pattern),
+        };
     }
 }

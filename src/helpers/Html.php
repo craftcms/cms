@@ -535,16 +535,13 @@ class Html extends \yii\helpers\Html
             $child = ArrayHelper::firstWhere($info['children'], 'type', $type, true);
 
             if ($child) {
-                switch ($ifExists) {
-                    case 'keep':
-                        return $tag;
-                    case 'replace':
-                        return substr($tag, 0, $child['start']) .
-                            $html .
-                            substr($tag, $child['end']);
-                    default:
-                        throw new InvalidArgumentException('Invalid $ifExists value: ' . $ifExists);
-                }
+                return match ($ifExists) {
+                    'keep' => $tag,
+                    'replace' => substr($tag, 0, $child['start']) .
+                        $html .
+                        substr($tag, $child['end']),
+                    default => throw new InvalidArgumentException('Invalid $ifExists value: ' . $ifExists),
+                };
             }
         }
 

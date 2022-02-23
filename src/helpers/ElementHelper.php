@@ -606,16 +606,12 @@ class ElementHelper
      */
     public static function translationDescription(string $translationMethod): ?string
     {
-        switch ($translationMethod) {
-            case Field::TRANSLATION_METHOD_SITE:
-                return Craft::t('app', 'This field is translated for each site.');
-            case Field::TRANSLATION_METHOD_SITE_GROUP:
-                return Craft::t('app', 'This field is translated for each site group.');
-            case Field::TRANSLATION_METHOD_LANGUAGE:
-                return Craft::t('app', 'This field is translated for each language.');
-            default:
-                return null;
-        }
+        return match ($translationMethod) {
+            Field::TRANSLATION_METHOD_SITE => Craft::t('app', 'This field is translated for each site.'),
+            Field::TRANSLATION_METHOD_SITE_GROUP => Craft::t('app', 'This field is translated for each site group.'),
+            Field::TRANSLATION_METHOD_LANGUAGE => Craft::t('app', 'This field is translated for each language.'),
+            default => null,
+        };
     }
 
     /**

@@ -665,26 +665,13 @@ class Locale extends BaseObject
     private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): string
     {
         // Convert length to IntlDateFormatter constants
-        switch ($length) {
-            case self::LENGTH_FULL:
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                $length = IntlDateFormatter::FULL;
-                break;
-            case self::LENGTH_LONG:
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                $length = IntlDateFormatter::LONG;
-                break;
-            case self::LENGTH_MEDIUM:
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                $length = IntlDateFormatter::MEDIUM;
-                break;
-            case self::LENGTH_SHORT:
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-                $length = IntlDateFormatter::SHORT;
-                break;
-            default:
-                throw new Exception('Invalid date/time format length: ' . $length);
-        }
+        $length = match ($length) {
+            self::LENGTH_FULL => IntlDateFormatter::FULL,
+            self::LENGTH_LONG => IntlDateFormatter::LONG,
+            self::LENGTH_MEDIUM => IntlDateFormatter::MEDIUM,
+            self::LENGTH_SHORT => IntlDateFormatter::SHORT,
+            default => throw new Exception('Invalid date/time format length: ' . $length),
+        };
 
         $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
         $timeType = ($withTime ? $length : IntlDateFormatter::NONE);

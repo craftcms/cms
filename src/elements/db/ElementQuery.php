@@ -1899,23 +1899,19 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function statusCondition(string $status)
     {
-        switch ($status) {
-            case Element::STATUS_ENABLED:
-                return [
-                    'elements.enabled' => true,
-                    'elements_sites.enabled' => true,
-                ];
-            case Element::STATUS_DISABLED:
-                return [
-                    'or',
-                    ['elements.enabled' => false],
-                    ['elements_sites.enabled' => false],
-                ];
-            case Element::STATUS_ARCHIVED:
-                return ['elements.archived' => true];
-            default:
-                return false;
-        }
+        return match ($status) {
+            Element::STATUS_ENABLED => [
+                'elements.enabled' => true,
+                'elements_sites.enabled' => true,
+            ],
+            Element::STATUS_DISABLED => [
+                'or',
+                ['elements.enabled' => false],
+                ['elements_sites.enabled' => false],
+            ],
+            Element::STATUS_ARCHIVED => ['elements.archived' => true],
+            default => false,
+        };
     }
 
     /**

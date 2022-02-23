@@ -254,30 +254,15 @@ class Plugin extends Module implements PluginInterface
             throw new InvalidArgumentException('Unsupported edition: ' . $edition);
         }
 
-        switch ($operator) {
-            case '<':
-            case 'lt':
-                return $activeIndex < $otherIndex;
-            case '<=':
-            case 'le':
-                return $activeIndex <= $otherIndex;
-            case '>':
-            case 'gt':
-                return $activeIndex > $otherIndex;
-            case '>=':
-            case 'ge':
-                return $activeIndex >= $otherIndex;
-            case '==':
-            case '=':
-            case 'eq':
-                return $activeIndex == $otherIndex;
-            case '!=':
-            case '<>':
-            case 'ne':
-                return $activeIndex != $otherIndex;
-            default:
-                throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator);
-        }
+        return match ($operator) {
+            '<', 'lt' => $activeIndex < $otherIndex,
+            '<=', 'le' => $activeIndex <= $otherIndex,
+            '>', 'gt' => $activeIndex > $otherIndex,
+            '>=', 'ge' => $activeIndex >= $otherIndex,
+            '==', '=', 'eq' => $activeIndex == $otherIndex,
+            '!=', '<>', 'ne' => $activeIndex != $otherIndex,
+            default => throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator),
+        };
     }
 
     // Events

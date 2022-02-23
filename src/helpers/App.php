@@ -263,14 +263,11 @@ class App
      */
     public static function editionHandle(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'solo';
-            case Craft::Pro:
-                return 'pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'solo',
+            Craft::Pro => 'pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -281,14 +278,11 @@ class App
      */
     public static function editionName(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'Solo';
-            case Craft::Pro:
-                return 'Pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'Solo',
+            Craft::Pro => 'Pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -301,14 +295,11 @@ class App
      */
     public static function editionIdByHandle(string $handle): int
     {
-        switch ($handle) {
-            case 'solo':
-                return Craft::Solo;
-            case 'pro':
-                return Craft::Pro;
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle);
-        }
+        return match ($handle) {
+            'solo' => Craft::Solo,
+            'pro' => Craft::Pro,
+            default => throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle),
+        };
     }
 
     /**

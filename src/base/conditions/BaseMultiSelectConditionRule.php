@@ -146,14 +146,11 @@ JS;
             return null;
         }
 
-        switch ($this->operator) {
-            case self::OPERATOR_IN:
-                return $values;
-            case self::OPERATOR_NOT_IN:
-                return array_merge(['not'], $values);
-            default:
-                throw new InvalidConfigException("Invalid operator: $this->operator");
-        }
+        return match ($this->operator) {
+            self::OPERATOR_IN => $values,
+            self::OPERATOR_NOT_IN => array_merge(['not'], $values),
+            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+        };
     }
 
     /**
@@ -174,13 +171,10 @@ JS;
             $value = (array)$value;
         }
 
-        switch ($this->operator) {
-            case self::OPERATOR_IN:
-                return !empty(array_intersect($value, $this->_values));
-            case self::OPERATOR_NOT_IN:
-                return empty(array_intersect($value, $this->_values));
-            default:
-                throw new InvalidConfigException("Invalid operator: $this->operator");
-        }
+        return match ($this->operator) {
+            self::OPERATOR_IN => !empty(array_intersect($value, $this->_values)),
+            self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
+            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+        };
     }
 }
