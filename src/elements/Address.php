@@ -337,14 +337,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * @param string|null $sortingCode
-     */
-    public function setSortingCode(?string $sortingCode): void
-    {
-        $this->_sortingCode = $sortingCode;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getAddressLine1(): ?string
