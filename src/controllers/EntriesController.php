@@ -181,7 +181,6 @@ class EntriesController extends BaseEntriesController
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      * @throws ForbiddenHttpException
-     * @deprecated in 4.0.0
      */
     public function actionSaveEntry(bool $duplicate = false): ?Response
     {
