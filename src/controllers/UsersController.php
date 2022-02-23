@@ -552,7 +552,7 @@ class UsersController extends Controller
                     Craft::t('app', 'Couldn’t update password.'),
                     errorAttribute: 'newPassword'
                 ) ?? $this->_renderSetPasswordTemplate([
-                    'errors' => $errors,
+                    'errors' => $user->getErrors('newPassword'),
                     'code' => $code,
                     'id' => $uid,
                     'newUser' => !$user->password,
