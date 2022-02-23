@@ -868,7 +868,7 @@ class Users extends Component
         }
 
         // If the user status is pending, let's activate them.
-        if ($userRecord->pending == true) {
+        if ($userRecord->pending) {
             $this->activateUser($user);
         }
 
