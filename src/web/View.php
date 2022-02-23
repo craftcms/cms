@@ -192,7 +192,7 @@ class View extends \yii\web\View
     private array $_deltaNames = [];
 
     /**
-     * @var mixed[] The initial delta input values.
+     * @var array The initial delta input values.
      * @see setInitialDeltaValue()
      */
     private array $_initialDeltaValues = [];

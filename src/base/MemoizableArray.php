@@ -90,7 +90,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * Array keys are preserved by default.
      *
      * @param string $key the column name whose result will be used to index the array
-     * @param mixed[] $values the value that `$key` should be compared with
+     * @param array $values the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
      * @return self the filtered array
      */

@@ -146,7 +146,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @param array|Traversable $array the array that needs to be indexed or grouped
      * @param string|Closure $key the column name or anonymous function which result will be used to index the array
-     * @param mixed[] $values the range of values that `$key` should be compared with
+     * @param array $values the range of values that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
      * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
      * will be re-indexed with integers.
