@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred when initializing an element with custom field values that weren’t included in its field layout. ([#10622](https://github.com/craftcms/cms/issues/10622))
+
 ## 3.7.34 - 2022-02-22
 
 ### Added

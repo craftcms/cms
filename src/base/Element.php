@@ -1805,7 +1805,6 @@ abstract class Element extends Component implements ElementInterface
         $behaviors = parent::behaviors();
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
-            'canSetProperties' => false,
         ];
         return $behaviors;
     }
@@ -3345,7 +3344,13 @@ abstract class Element extends Component implements ElementInterface
         // Make sure the value has been normalized
         $this->normalizeFieldValue($fieldHandle);
 
-        return $this->getBehavior('customFields')->$fieldHandle;
+        /** @var CustomFieldBehavior $behavior */
+        $behavior = $this->getBehavior('customFields');
+
+        // Stop allowing setting custom field values directly on the behavior now that we've started normalizing them
+        $behavior->canSetProperties = false;
+
+        return $behavior->$fieldHandle;
     }
 
     /**
