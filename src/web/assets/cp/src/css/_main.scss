@@ -2168,7 +2168,7 @@ table {
     }
 
     thead {
-      th,
+      th:not([data-orderable]),
       td {
         padding-top: 14px;
         padding-bottom: 14px;
@@ -2179,6 +2179,20 @@ table {
 
       th {
         white-space: nowrap;
+        vertical-align: middle;
+
+        button {
+          position: relative;
+          font: inherit;
+          width: 100%;
+          padding: 14px;
+          text-align: left;
+        }
+
+        &[data-orderable] {
+          padding-left: 0;
+          padding-right: 0;
+        }
 
         &.orderable:not(.ordered):hover {
           background-color: $grey100;
@@ -2190,21 +2204,24 @@ table {
 
         &.ordered {
           position: relative;
-          @include padding-right(26px);
+
+          & button {
+            @include padding-right(26px);
+          }
 
           &:first-child {
             @include padding-left(10px);
           }
 
           &:not(.loading) {
-            &:after {
+            & button:after {
               @include angle(up);
               position: absolute;
               @include right(10px);
               top: calc(50% - 3px);
             }
 
-            &.desc:after {
+            &.desc button:after {
               transform: rotate(45deg);
             }
           }

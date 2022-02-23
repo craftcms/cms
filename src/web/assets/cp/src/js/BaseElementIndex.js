@@ -913,8 +913,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         if ($option.length) {
             this.$sortAttributesList.find('a.sel').removeClass('sel');
             $option.addClass('sel');
-
-            var label = $option.text();
+            
+            const label = this.getSortLabel(attr);
             this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
             this.$sortMenuBtn.text(label);
 
@@ -930,6 +930,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 this.$sortDirectionsList.find('a').removeClass('disabled');
             }
         }
+    },
+
+    getSortLabel: function(attr) {
+        const $option = this.getSortAttributeOption(attr);
+
+        if (!$option.length) return;
+
+        return $option.text();
     },
 
     getSortDirectionOption: function(dir) {

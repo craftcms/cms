@@ -71,18 +71,14 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
                 sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
 
-                $header
-                    .addClass('ordered ' + selectedSortDir)
-                    .on('click', this._handleSelectedSortHeaderClick.bind(this));
+                $header.addClass('ordered ' + selectedSortDir).attr('data-orderable', true);
                 this.makeColumnSortable($header, true);
             } else {
                 // Is this attribute sortable?
                 var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
 
                 if ($sortAttribute.length) {
-                    $header
-                        .addClass('orderable')
-                        .on('click', this._handleUnselectedSortHeaderClick.bind(this));
+                    $header.addClass('orderable').attr('data-orderable', true);
                     this.makeColumnSortable($header);
                 }
             }
@@ -101,6 +97,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
         if (sorted) {
             $headerButton.attr('aria-pressed', 'true');
+            $headerButton.on('click', this._handleSelectedSortHeaderClick.bind(this));
+        } else {
+            $headerButton.on('click', this._handleUnselectedSortHeaderClick.bind(this));
         }
 
         $header.empty().append($headerButton);
@@ -360,6 +359,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     _handleSortHeaderClick: function(ev, $header) {
         if (this.$selectedSortHeader) {
             this.$selectedSortHeader.removeClass('ordered asc desc');
+            console.log(this.$selectedSortHeader);
         }
 
         $header.removeClass('orderable').addClass('ordered loading');
@@ -368,18 +368,23 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
         // No need for two spinners
         this.elementIndex.setIndexAvailable();
+
+        setTimeout(() => {
+            this.$table.find('th [aria-pressed="true"]').focus();
+        }, 3000);
         this._updateScreenReaderStatus();
     },
 
     _updateScreenReaderStatus: function() {
         const attribute = this.elementIndex.getSelectedSortAttribute();
         const direction = this.elementIndex.getSelectedSortDirection() === 'asc' ? Craft.t('app', 'Ascending') : Craft.t('app', 'Descending');
+        const label = this.elementIndex.getSortLabel(attribute);
 
-        if (!attribute && !direction) return;
+        if (!attribute && !direction && !label) return;
 
         const message =  Craft.t('app', 'Table {name} sorted by {attribute}, {direction}', {
             name: 'Test',
-            attribute: attribute,
+            attribute: label,
             direction: direction,
         });
 
