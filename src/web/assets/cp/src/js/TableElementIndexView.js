@@ -95,11 +95,11 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     makeColumnSortable: function($header, sorted = false) {
         const $headerText = $header.html();
-        const captionId = this.$tableCaption.attr('id');
+        const instructionId = this.$tableCaption.find('span').attr('id');
 
         $headerButton = $('<button type="button" aria-pressed="false"></button>')
           .html($headerText)
-          .attr('aria-describedby', captionId);
+          .attr('aria-describedby', instructionId);
 
         if (sorted) {
             $headerButton.attr('aria-pressed', 'true');
