@@ -14,6 +14,7 @@ use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
@@ -294,7 +295,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         try {
             return parent::inputHtml($value, $element);
@@ -397,7 +398,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null)
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (is_array($value) && isset($value['data']) && !empty($value['data'])) {
@@ -439,7 +440,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         return parent::isValueEmpty($value, $element) && empty($this->_getUploadedFiles($element));
     }
@@ -467,7 +468,7 @@ class Assets extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -632,7 +633,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputSources(?ElementInterface $element = null)
+    public function getInputSources(?ElementInterface $element = null): array|string|null
     {
         $folderId = $this->_determineUploadFolderId($element, false, false);
         Craft::$app->getSession()->authorize('saveAssets:' . $folderId);
@@ -696,7 +697,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
+    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
 

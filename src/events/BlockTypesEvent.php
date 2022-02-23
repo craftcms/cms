@@ -28,7 +28,7 @@ class BlockTypesEvent extends Event
     /**
      * @var ElementInterface|null The element that the field is generating an input for.
      */
-    public ?ElementInterface $element;
+    public ?ElementInterface $element = null;
 
     /**
      * @var MatrixBlock[] The current value of the field.

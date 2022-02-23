@@ -121,7 +121,7 @@ trait FieldConditionRuleTrait
     /**
      * @return mixed
      */
-    abstract protected function elementQueryParam();
+    abstract protected function elementQueryParam(): mixed;
 
     /**
      * @return mixed

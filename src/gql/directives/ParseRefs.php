@@ -52,7 +52,7 @@ class ParseRefs extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo)
     {
         return Craft::$app->getElements()->parseRefs((string)$value);
     }

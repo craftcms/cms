@@ -62,7 +62,7 @@ class Gc extends Component
      * @var Connection|array|string The database connection to use
      * @since 4.0.0
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var GeneralConfig
@@ -240,7 +240,7 @@ SQL;
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
-    public function hardDelete($tables): void
+    public function hardDelete(array|string $tables): void
     {
         if (!$this->_shouldHardDelete()) {
             return;

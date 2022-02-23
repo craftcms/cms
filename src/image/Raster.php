@@ -65,7 +65,7 @@ class Raster extends Image
     /**
      * @var Imagine|null
      */
-    private $_instance;
+    private ?Imagine $_instance = null;
 
     /**
      * @var RGB|null
@@ -249,7 +249,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 

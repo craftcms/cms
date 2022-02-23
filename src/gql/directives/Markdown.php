@@ -70,7 +70,7 @@ class Markdown extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo)
     {
         $inlineOnly = $arguments['inlineOnly'] ?? self::DEFAULT_INLINE_ONLY;
 

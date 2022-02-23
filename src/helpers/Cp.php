@@ -50,7 +50,7 @@ class Cp
      * @var Site|false
      * @see requestedSite()
      */
-    private static $_requestedSite;
+    private static Site|false $_requestedSite;
 
     /**
      * Renders a control panel template.

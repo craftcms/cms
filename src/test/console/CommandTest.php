@@ -34,62 +34,62 @@ class CommandTest
     /**
      * @var ConsoleTest
      */
-    protected $test;
+    protected ConsoleTest $test;
 
     /**
      * @var string
      */
-    protected $command;
+    protected string $command;
 
     /**
      * @var array
      */
-    protected $parameters;
+    protected array $parameters;
 
     /**
      * @var bool
      */
-    protected $ignoreStdout = false;
+    protected bool $ignoreStdout = false;
 
     /**
      * @var int
      */
-    protected $expectedExitCode;
+    protected int $expectedExitCode;
 
     /**
      * @var bool
      */
-    protected $hasExecuted = false;
+    protected bool $hasExecuted = false;
 
     /**
      * @var array|CommandTestItem
      */
-    protected $eventChain = [];
+    protected CommandTestItem|array $eventChain = [];
 
     /**
      * @var integer
      */
-    protected $currentIndex;
+    protected int $currentIndex;
 
     /**
      * @var Controller
      */
-    protected $controller;
+    protected Controller $controller;
 
     /**
      * @var string
      */
-    protected $actionId;
+    protected string $actionId;
 
     /**
      * @var int
      */
-    protected $desiredExitCode;
+    protected int $desiredExitCode;
 
     /**
      * @var int
      */
-    protected $eventChainItemsHandled = 0;
+    protected int $eventChainItemsHandled = 0;
 
     /**
      * CommandTest constructor.
@@ -134,10 +134,10 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @return CommandTest
      */
-    public function stdout($desiredOutput): CommandTest
+    public function stdout(iterable|string $desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_OUT,
@@ -146,11 +146,11 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @param bool $withScriptName
      * @return CommandTest
      */
-    public function outputCommand($desiredOutput, bool $withScriptName = true): CommandTest
+    public function outputCommand(iterable|string $desiredOutput, bool $withScriptName = true): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::OUTPUT_COMMAND,
@@ -160,10 +160,10 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @return CommandTest
      */
-    public function stderr($desiredOutput): CommandTest
+    public function stderr(iterable|string $desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_ERR,
@@ -209,7 +209,7 @@ class CommandTest
      * @param array $options
      * @return CommandTest
      */
-    public function select(string $prompt, $returnValue, $options = []): CommandTest
+    public function select(string $prompt, $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::SELECT,

@@ -70,9 +70,9 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $viewState = null;
 
     /**
-     * @var ElementQueryInterface|ElementQuery|null
+     * @var ElementQueryInterface|null
      */
-    protected $elementQuery;
+    protected ?ElementQueryInterface $elementQuery = null;
 
     /**
      * @var ElementActionInterface[]|null

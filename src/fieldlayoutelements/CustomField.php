@@ -27,7 +27,7 @@ class CustomField extends BaseField
     /**
      * @var FieldInterface|null The custom field this layout field is based on.
      */
-    private ?FieldInterface $_field;
+    private ?FieldInterface $_field = null;
 
     /**
      * @inheritdoc

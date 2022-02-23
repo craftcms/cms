@@ -478,9 +478,9 @@ JS;
 
     /**
      * @param GeneralConfig $generalConfig
-     * @return array|false|null
+     * @return array|null|false
      */
-    private function _previewIframeResizerOptions(GeneralConfig $generalConfig)
+    private function _previewIframeResizerOptions(GeneralConfig $generalConfig): array|null|false
     {
         if (!$generalConfig->useIframeResizer) {
             return false;

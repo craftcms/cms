@@ -21,9 +21,4 @@ class DefineGqlValidationRulesEvent extends Event
      * @var array List of GraphQL validation rules to use.
      */
     public array $validationRules = [];
-
-    /**
-     * @var array Whether debug rules should be allowed
-     */
-    public $debug = false;
 }

@@ -508,7 +508,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      * @return ImageTransformIndex
      * @throws ImageTransformException if the transform cannot be found by the handle
      */
-    protected function getTransformIndex(Asset $asset, $transform): ImageTransformIndex
+    protected function getTransformIndex(Asset $asset, mixed $transform): ImageTransformIndex
     {
         $transform = TransformHelper::normalizeTransform($transform);
 
@@ -582,10 +582,10 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      *
      * @param array $result
      * @param ImageTransform $transform
-     * @param Asset|array $asset The asset object or a raw database result
+     * @param array|Asset $asset The asset object or a raw database result
      * @return bool Whether the index result is still valid
      */
-    protected function validateTransformIndexResult(array $result, ImageTransform $transform, $asset): bool
+    protected function validateTransformIndexResult(array $result, ImageTransform $transform, array|Asset $asset): bool
     {
         // If the transform hasn't been generated yet, it's probably not yet invalid.
         if (empty($result['dateIndexed'])) {

@@ -25,7 +25,7 @@ abstract class Generator
      * @param mixed $context
      * @return array
      */
-    protected static function getContentFields($context): array
+    protected static function getContentFields(mixed $context): array
     {
         try {
             $schema = Craft::$app->getGql()->getActiveSchema();

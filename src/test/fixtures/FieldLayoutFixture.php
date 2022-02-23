@@ -38,12 +38,12 @@ abstract class FieldLayoutFixture extends DbFixture
     /**
      * @var FieldLayout[]
      */
-    private $_layouts = [];
+    private array $_layouts = [];
 
     /**
      * @var FieldInterface[]
      */
-    private $_fields = [];
+    private array $_fields = [];
 
     /**
      * @throws Throwable

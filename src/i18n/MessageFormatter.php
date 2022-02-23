@@ -18,7 +18,7 @@ class MessageFormatter extends \yii\i18n\MessageFormatter
     /**
      * @inheritdoc
      */
-    public function format($pattern, $params, $language)
+    public function format($pattern, $params, $language): string|false
     {
         if ($params === []) {
             return $pattern;

@@ -417,7 +417,7 @@ class ProjectConfig extends Component
      * @param bool $getFromExternalConfig whether data should be fetched from the working config instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
-    public function get(?string $path = null, bool $getFromExternalConfig = false)
+    public function get(?string $path = null, bool $getFromExternalConfig = false): mixed
     {
         if ($getFromExternalConfig) {
             $source = $this->getExternalConfig();
@@ -1002,11 +1002,11 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
-    public function onAdd(string $path, callable $handler, $data = null): self
+    public function onAdd(string $path, callable $handler, mixed $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_ADD_ITEM, $path, $handler, $data);
         return $this;
@@ -1034,11 +1034,11 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
-    public function onUpdate(string $path, callable $handler, $data = null): self
+    public function onUpdate(string $path, callable $handler, mixed $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_UPDATE_ITEM, $path, $handler, $data);
         return $this;
@@ -1065,11 +1065,11 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
-    public function onRemove(string $path, callable $handler, $data = null): self
+    public function onRemove(string $path, callable $handler, mixed $data = null): self
     {
         $this->registerChangeEventHandler(self::EVENT_REMOVE_ITEM, $path, $handler, $data);
         return $this;
@@ -1094,10 +1094,10 @@ class ProjectConfig extends Component
      * @param string $event The event name
      * @param string $path The config path pattern. Can contain `{uid}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      */
-    public function registerChangeEventHandler(string $event, string $path, callable $handler, $data = null): void
+    public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
         $specificity = substr_count($path, '.');
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
@@ -1378,7 +1378,7 @@ class ProjectConfig extends Component
      * @param bool $existsOnly whether to just return `true` or `false` depending on whether any changes are found.
      * @return array|bool
      */
-    private function _getPendingChanges(?array $configData = null, bool $existsOnly = false)
+    private function _getPendingChanges(?array $configData = null, bool $existsOnly = false): bool|array
     {
         $newItems = [];
         $changedItems = [];
@@ -1653,7 +1653,7 @@ class ProjectConfig extends Component
      * @param string|null $message message describing the changes made.
      * @since 4.0.0
      */
-    public function rememberAppliedChanges(string $path, $oldValue, $newValue, ?string $message = null): void
+    public function rememberAppliedChanges(string $path, mixed $oldValue, mixed $newValue, ?string $message = null): void
     {
         $appliedChanges = [];
 

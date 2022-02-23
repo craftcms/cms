@@ -452,7 +452,7 @@ class Html extends \yii\helpers\Html
      * @return string[]
      * @since 3.5.0
      */
-    public static function explodeClass($value): array
+    public static function explodeClass(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];
@@ -473,7 +473,7 @@ class Html extends \yii\helpers\Html
      * @return string[]
      * @since 3.5.0
      */
-    public static function explodeStyle($value): array
+    public static function explodeStyle(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];

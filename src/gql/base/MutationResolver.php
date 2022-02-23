@@ -76,7 +76,7 @@ abstract class MutationResolver extends Component
      * @param string $key
      * @return mixed
      */
-    public function getResolutionData(string $key)
+    public function getResolutionData(string $key): mixed
     {
         return $this->_resolutionData[$key] ?? null;
     }
@@ -88,7 +88,7 @@ abstract class MutationResolver extends Component
      * @param mixed $value
      * @return mixed
      */
-    protected function normalizeValue(string $argument, $value)
+    protected function normalizeValue(string $argument, mixed $value): mixed
     {
         if (array_key_exists($argument, $this->_valueNormalizers)) {
             $normalizer = $this->_valueNormalizers[$argument];

@@ -136,7 +136,7 @@ class UserQuery extends ElementQuery
      * ```
      * @used-by can()
      */
-    public $can;
+    public mixed $can = null;
 
     /**
      * @var int|int[]|null The user group ID(s) that the resulting users must belong to.
@@ -156,44 +156,44 @@ class UserQuery extends ElementQuery
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @var string|string[]|null The email address that the resulting users must have.
      * @used-by email()
      */
-    public $email;
+    public mixed $email = null;
 
     /**
      * @var string|string[]|null The username that the resulting users must have.
      * @used-by username()
      */
-    public $username;
+    public mixed $username = null;
 
     /**
      * @var string|string[]|null The full name that the resulting users must have.
      * @used-by fullName()
      * @since 4.0.0
      */
-    public $fullName;
+    public mixed $fullName = null;
 
     /**
      * @var string|string[]|null The first name that the resulting users must have.
      * @used-by firstName()
      */
-    public $firstName;
+    public mixed $firstName = null;
 
     /**
      * @var string|string[]|null The last name that the resulting users must have.
      * @used-by lastName()
      */
-    public $lastName;
+    public mixed $lastName = null;
 
     /**
      * @var mixed The date that the resulting users must have last logged in.
      * @used-by lastLoginDate()
      */
-    public $lastLoginDate;
+    public mixed $lastLoginDate = null;
 
     /**
      * @var bool Whether the users’ groups should be eager-loaded.
@@ -370,7 +370,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $can
      */
-    public function can($value): self
+    public function can(mixed $value): self
     {
         $this->can = $value;
         return $this;
@@ -409,7 +409,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function group($value): self
+    public function group(mixed $value): self
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
@@ -458,7 +458,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value): self
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;
@@ -495,7 +495,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $email
      */
-    public function email($value): self
+    public function email(mixed $value): self
     {
         $this->email = $value;
         return $this;
@@ -537,7 +537,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $username
      */
-    public function username($value): self
+    public function username(mixed $value): self
     {
         $this->username = $value;
         return $this;
@@ -574,7 +574,7 @@ class UserQuery extends ElementQuery
      * @uses $fullName
      * @since 4.0.0
      */
-    public function fullName($value): self
+    public function fullName(mixed $value): self
     {
         $this->fullName = $value;
         return $this;
@@ -610,7 +610,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $firstName
      */
-    public function firstName($value): self
+    public function firstName(mixed $value): self
     {
         $this->firstName = $value;
         return $this;
@@ -646,7 +646,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $lastName
      */
-    public function lastName($value): self
+    public function lastName(mixed $value): self
     {
         $this->lastName = $value;
         return $this;
@@ -687,7 +687,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate($value): self
+    public function lastLoginDate(mixed $value): self
     {
         $this->lastLoginDate = $value;
         return $this;
@@ -723,7 +723,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value): self
+    public function status(array|string|null $value): self
     {
         return parent::status($value);
     }
@@ -881,7 +881,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
         return match ($status) {
             User::STATUS_INACTIVE => [

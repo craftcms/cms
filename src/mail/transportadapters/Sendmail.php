@@ -10,6 +10,7 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
+use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
@@ -127,7 +128,7 @@ class Sendmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function defineTransport()
+    public function defineTransport(): array|AbstractTransport
     {
         return [
             'dsn' => 'sendmail://default?command=' . $this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND,

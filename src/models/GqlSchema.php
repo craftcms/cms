@@ -34,12 +34,12 @@ class GqlSchema extends Model
     /**
      * @var array The schema’s scope
      */
-    public $scope = [];
+    public array $scope = [];
 
     /**
-     * @var array Whether this schema is public
+     * @var bool Whether this schema is public
      */
-    public $isPublic = false;
+    public bool $isPublic = false;
 
     /**
      * @var string|null $uid

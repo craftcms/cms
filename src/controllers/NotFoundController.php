@@ -16,7 +16,7 @@ class NotFoundController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = true;
+    protected array|bool|int $allowAnonymous = true;
 
     /**
      * Just return a 404 error.

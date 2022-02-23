@@ -60,7 +60,7 @@ class Paginator extends BaseObject
     /**
      * @var QueryInterface|YiiQuery The query being paginated
      */
-    protected $query;
+    protected QueryInterface|YiiQuery $query;
 
     /**
      * @var int The total query count
@@ -121,7 +121,7 @@ class Paginator extends BaseObject
      *
      * @return int|float
      */
-    public function getTotalResults()
+    public function getTotalResults(): float|int
     {
         if (isset($this->totalResults)) {
             return $this->totalResults;
@@ -234,7 +234,7 @@ class Paginator extends BaseObject
      *
      * @return int|float
      */
-    public function getPageOffset()
+    public function getPageOffset(): float|int
     {
         return $this->pageSize * ($this->currentPage - 1);
     }

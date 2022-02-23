@@ -22,7 +22,7 @@ class DefineAssetUrlEvent extends Event
     /**
      * @var ImageTransform|string|array|null Asset transform index that is being generated (if any)
      */
-    public $transform;
+    public mixed $transform = null;
 
     /**
      * @var Asset The asset that is being transformed.

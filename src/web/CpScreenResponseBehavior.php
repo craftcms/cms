@@ -181,10 +181,10 @@ class CpScreenResponseBehavior extends Behavior
      *
      * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
      *
-     * @param array|callable|null $value
+     * @param callable|array|null $value
      * @return Response|self
      */
-    public function crumbs($value): Response
+    public function crumbs(callable|array|null $value): Response
     {
         $this->crumbs = $value;
         return $this->owner;
@@ -241,7 +241,7 @@ class CpScreenResponseBehavior extends Behavior
      * @param bool $visible
      * @return Response|self
      */
-    public function addTab(string $id, string $label, string $url, $class = null, bool $visible = true): Response
+    public function addTab(string $id, string $label, string $url, array|string $class = null, bool $visible = true): Response
     {
         $this->tabs[$id] = [
             'label' => $label,
@@ -280,10 +280,10 @@ class CpScreenResponseBehavior extends Behavior
      *   (or <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> if `'shift' => true` is also set).
      * - `retainScroll` _(optional)_ – Whether the browser should retain its scroll position on the next page.
      *
-     * @param array|callable|null $value
+     * @param callable|array|null $value
      * @return Response|self
      */
-    public function altActions($value): Response
+    public function altActions(callable|array|null $value): Response
     {
         $this->altActions = $value;
         return $this->owner;
@@ -334,10 +334,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the context menu HTML.
      *
-     * @param string|callable|null $value
+     * @param callable|string|null $value
      * @return Response|self
      */
-    public function contextMenu($value): Response
+    public function contextMenu(callable|string|null $value): Response
     {
         $this->contextMenu = $value;
         return $this->owner;
@@ -372,10 +372,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the additional buttons’ HTML.
      *
-     * @param string|callable|null $value
+     * @param callable|string|null $value
      * @return Response|self
      */
-    public function addlButtons($value): Response
+    public function addlButtons(callable|string|null $value): Response
     {
         $this->addlButtons = $value;
         return $this->owner;
@@ -398,10 +398,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the content HTML.
      *
-     * @param string|callable|null $value
+     * @param callable|string|null $value
      * @return Response|self
      */
-    public function content($value): Response
+    public function content(callable|string|null $value): Response
     {
         $this->content = $value;
         return $this->owner;
@@ -424,10 +424,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the sidebar HTML.
      *
-     * @param string|callable|null $value
+     * @param callable|string|null $value
      * @return Response|self
      */
-    public function sidebar($value): Response
+    public function sidebar(callable|string|null $value): Response
     {
         $this->sidebar = $value;
         return $this->owner;
@@ -450,10 +450,10 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the content notice HTML.
      *
-     * @param string|callable|null $value
+     * @param callable|string|null $value
      * @return Response|self
      */
-    public function notice($value): Response
+    public function notice(callable|string|null $value): Response
     {
         $this->notice = $value;
         return $this->owner;

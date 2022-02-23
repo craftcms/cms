@@ -85,7 +85,7 @@ class Component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
-    public static function createComponent($config, ?string $instanceOf = null): ComponentInterface
+    public static function createComponent(mixed $config, ?string $instanceOf = null): ComponentInterface
     {
         // Normalize the config
         if (is_string($config)) {

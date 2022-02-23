@@ -27,14 +27,14 @@ class MockElementQuery extends ElementQuery
      *
      * @var array
      */
-    protected $returnValues = [];
+    protected array $returnValues = [];
 
     /**
      * The element query properties
      *
      * @var array
      */
-    protected $properties = [];
+    protected array $properties = [];
 
     /**
      * MockElementQuery constructor.
@@ -148,7 +148,7 @@ class MockElementQuery extends ElementQuery
      *
      * @return array|ElementInterface|null
      */
-    public function one($db = null)
+    public function one($db = null): ElementInterface|array|null
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

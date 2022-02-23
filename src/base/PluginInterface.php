@@ -75,7 +75,7 @@ interface PluginInterface
      *
      * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
      */
-    public function getSettingsResponse();
+    public function getSettingsResponse(): mixed;
 
     /**
      * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.

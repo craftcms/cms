@@ -35,7 +35,7 @@ class Console extends \yii\helpers\Console
      * @param string $string the string to print
      * @return int|false Number of bytes printed or false on error
      */
-    public static function stdout($string)
+    public static function stdout($string): int|false
     {
         if (static::streamSupportsAnsiColors(STDOUT)) {
             $args = func_get_args();

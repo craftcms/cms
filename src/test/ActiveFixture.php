@@ -24,7 +24,7 @@ class ActiveFixture extends BaseActiveFixture
     /**
      * @var array
      */
-    protected $ids = [];
+    protected array $ids = [];
 
     /**
      * @inheritdoc

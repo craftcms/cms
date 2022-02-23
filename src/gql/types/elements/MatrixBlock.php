@@ -34,7 +34,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo)
     {
         /** @var MatrixBlockElement $source */
         $fieldName = $resolveInfo->fieldName;

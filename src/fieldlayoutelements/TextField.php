@@ -30,12 +30,12 @@ class TextField extends BaseNativeField
      *
      * If this is explicitly set to `null`, the input won’t get an `autocomplete` attribute.
      */
-    public $autocomplete = false;
+    public string|bool|null $autocomplete = false;
 
     /**
      * @var string|string[]|null The input’s `class` attribute value.
      */
-    public $class;
+    public string|array|null $class = null;
 
     /**
      * @var int|null The input’s `size` attribute value.

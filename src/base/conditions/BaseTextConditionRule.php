@@ -115,7 +115,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      * @param mixed $value
      * @return bool
      */
-    protected function matchValue($value): bool
+    protected function matchValue(mixed $value): bool
     {
         if ($this->value === '') {
             return true;

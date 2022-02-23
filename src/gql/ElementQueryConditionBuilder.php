@@ -77,7 +77,7 @@ class ElementQueryConditionBuilder extends Component
     /**
      * @var ResolveInfo
      */
-    private $_resolveInfo;
+    private mixed $_resolveInfo = null;
 
     /**
      * @var ArgumentManager
@@ -168,10 +168,10 @@ class ElementQueryConditionBuilder extends Component
     /**
      * Extract arguments from an array of argument nodes, substituting variables wit the real values.
      *
-     * @param NodeList|ArgumentNode[] $argumentNodes
+     * @param ArgumentNode[]|NodeList $argumentNodes
      * @return array
      */
-    private function _extractArguments($argumentNodes): array
+    private function _extractArguments(NodeList|array $argumentNodes): array
     {
         $arguments = [];
 
@@ -188,7 +188,7 @@ class ElementQueryConditionBuilder extends Component
      * @param Node $argumentNode
      * @return mixed
      */
-    private function _extractArgumentValue(Node $argumentNode)
+    private function _extractArgumentValue(Node $argumentNode): mixed
     {
         // Deal with a raw object value.
         if ($argumentNode->kind === 'ObjectValue') {

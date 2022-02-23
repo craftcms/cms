@@ -41,13 +41,13 @@ class Mailer extends \yii\symfonymailer\Mailer
     /**
      * @var string|array|User|User[]|null The default sender’s email address, or their user model(s).
      */
-    public $from;
+    public User|string|array|null $from = null;
 
     /**
      * @var string|array|User|User[]|null The default Reply-To email address, or their user model(s).
      * @since 3.4.0
      */
-    public $replyTo;
+    public User|string|array|null $replyTo = null;
 
     /**
      * Composes a new email based on a given key.

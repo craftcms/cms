@@ -124,7 +124,7 @@ class Entry extends ElementMutationResolver
      * @return mixed
      * @throws Throwable if reasons.
      */
-    public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
     {
         $entryId = $arguments['id'];
 

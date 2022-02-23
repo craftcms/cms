@@ -10,6 +10,7 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
+use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -38,9 +39,9 @@ class Gmail extends BaseTransportAdapter
     public ?string $password = null;
 
     /**
-     * @var string The timeout duration (in seconds)
+     * @var int The timeout duration (in seconds)
      */
-    public $timeout = 10;
+    public int $timeout = 10;
 
     /**
      * @inheritdoc
@@ -110,7 +111,7 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function defineTransport()
+    public function defineTransport(): array|AbstractTransport
     {
         return [
             'scheme' => 'smtp',

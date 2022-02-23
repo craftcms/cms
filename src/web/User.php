@@ -278,7 +278,7 @@ class User extends \yii\web\User
      * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
      */
-    public function getElevatedSessionTimeout()
+    public function getElevatedSessionTimeout(): int|false
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {

@@ -92,7 +92,7 @@ class ImageTransforms extends Component
     /**
      * @var Connection|array|string The database connection to use
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var MemoizableArray<ImageTransform>|null
@@ -103,7 +103,7 @@ class ImageTransforms extends Component
     /**
      * @var ImageTransformerInterface[]
      */
-    private $_imageTransformers = [];
+    private array $_imageTransformers = [];
 
     /**
      * Serializer

@@ -118,7 +118,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam()
+    protected function elementQueryParam(): int|string|null
     {
         return match ($this->operator) {
             self::OPERATOR_RELATED_TO => $this->getElementId(),

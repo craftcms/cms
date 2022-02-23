@@ -51,7 +51,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     /**
      * @param string|string[] $values
      */
-    public function setValues($values): void
+    public function setValues(array|string $values): void
     {
         if ($values === '') {
             $this->_values = [];
@@ -159,7 +159,7 @@ JS;
      * @param string|string[]|null $value
      * @return bool
      */
-    protected function matchValue($value): bool
+    protected function matchValue(array|string|null $value): bool
     {
         if (!$this->_values) {
             return true;

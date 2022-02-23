@@ -27,11 +27,11 @@ class TestMailer extends Mailer
     public $messageClass = Message::class;
 
     /**
-     * @var Closure
+     * @var callable
      */
     public $callback;
 
-    public $from = 'test@test.craft';
+    public \craft\elements\User|string|array|null $from = 'test@test.craft';
 
     /**
      * @param $message

@@ -59,9 +59,9 @@ class QuickPost extends Widget
     public ?array $fields = null;
 
     /**
-     * @var Section|false
+     * @var Section|false|null
      */
-    private $_section;
+    private Section|false|null $_section = null;
 
     /**
      * @inheritdoc

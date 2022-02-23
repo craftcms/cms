@@ -89,9 +89,9 @@ class FieldLayoutBehavior extends Behavior
     /**
      * Sets the owner's field layout ID.
      *
-     * @param int|string|callable $id
+     * @param callable|int|string $id
      */
-    public function setFieldLayoutId($id): void
+    public function setFieldLayoutId(callable|int|string $id): void
     {
         $this->_fieldLayoutId = $id;
     }

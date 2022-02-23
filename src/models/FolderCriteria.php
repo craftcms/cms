@@ -25,12 +25,12 @@ class FolderCriteria extends Model
     /**
      * @var int|string|null Parent ID
      */
-    public $parentId;
+    public string|int|null $parentId = null;
 
     /**
      * @var int|string|null Source ID
      */
-    public $volumeId;
+    public string|int|null $volumeId = null;
 
     /**
      * @var string|string[]|null The folder name(s).
@@ -40,7 +40,7 @@ class FolderCriteria extends Model
      * [[\craft\helpers\Db::escapeParam()]] to prevent it from getting treated as multiple folder name values.
      * :::
      */
-    public $name;
+    public array|string|null $name = null;
 
     /**
      * @var string|null Path
@@ -65,7 +65,7 @@ class FolderCriteria extends Model
     /**
      * @var string|string[]|null
      */
-    public $uid;
+    public array|string|null $uid = null;
 
     /**
      * @inheritdoc

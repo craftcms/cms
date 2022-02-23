@@ -515,7 +515,7 @@ class ElementHelper
      *
      * @param iterable|ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements($elements): void
+    public static function setNextPrevOnElements(iterable $elements): void
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;

@@ -637,10 +637,10 @@ class Assets
      *
      * @param int $assetId
      * @param int $size
-     * @return false|string
+     * @return string|false
      * @throws Exception in case of failure
      */
-    public static function getImageEditorSource(int $assetId, int $size)
+    public static function getImageEditorSource(int $assetId, int $size): string|false
     {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
@@ -710,7 +710,7 @@ class Assets
      *
      * @return int|float
      */
-    public static function getMaxUploadSize()
+    public static function getMaxUploadSize(): float|int
     {
         $maxUpload = ConfigHelper::sizeInBytes(ini_get('upload_max_filesize'));
         $maxPost = ConfigHelper::sizeInBytes(ini_get('post_max_size'));
@@ -770,7 +770,7 @@ class Assets
      * @throws InvalidArgumentException if the size can’t be parsed
      * @since 3.5.0
      */
-    public static function parseSrcsetSize($size): array
+    public static function parseSrcsetSize(mixed $size): array
     {
         if (is_numeric($size)) {
             $size = $size . 'w';

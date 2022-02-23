@@ -273,11 +273,11 @@ abstract class Migration extends \yii\db\Migration
      * @param string $column The column to be searched.
      * @param string $find The text to be searched for.
      * @param string $replace The replacement text.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): void
+    public function replace(string $table, string $column, string $find, string $replace, array|string $condition = '', array $params = []): void
     {
         $time = $this->beginCommand("replace \"$find\" with \"$replace\" in $table.$column");
         $this->db->createCommand()
@@ -312,7 +312,7 @@ abstract class Migration extends \yii\db\Migration
      * @param bool $unique Whether the index has a UNIQUE constraint.
      * @since 3.7.32
      */
-    public function dropIndexIfExists(string $table, $columns, bool $unique = false): void
+    public function dropIndexIfExists(string $table, array|string $columns, bool $unique = false): void
     {
         $time = $this->beginCommand("dropping index on $table if it exists");
         Db::dropIndexIfExists($table, $columns, $unique, $this->db);
@@ -327,7 +327,7 @@ abstract class Migration extends \yii\db\Migration
      * columns, separate them by commas or use an array.
      * @since 4.0.0
      */
-    public function dropForeignKeyIfExists(string $table, $columns): void
+    public function dropForeignKeyIfExists(string $table, array|string $columns): void
     {
         $time = $this->beginCommand("dropping foreign key on $table if it exists");
         Db::dropForeignKeyIfExists($table, $columns, $this->db);
@@ -418,12 +418,12 @@ abstract class Migration extends \yii\db\Migration
      * Creates a new index if a similar one doesn’t already exist.
      *
      * @param string $table the table that the new index will be created for. The table name will be properly quoted by the method.
-     * @param string|array $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
+     * @param array|string $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
      * by commas or use an array.
      * @param bool $unique whether to add UNIQUE constraint on the created index.
      * @since 3.7.32
      */
-    public function createIndexIfMissing(string $table, $columns, bool $unique = false): void
+    public function createIndexIfMissing(string $table, array|string $columns, bool $unique = false): void
     {
         if (Db::findIndex($table, $columns, $unique, $this->db) === null) {
             $this->createIndex(null, $table, $columns, $unique);
@@ -434,12 +434,12 @@ abstract class Migration extends \yii\db\Migration
      * Creates and executes a SQL statement for soft-deleting a row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function softDelete(string $table, $condition = '', array $params = []): void
+    public function softDelete(string $table, array|string $condition = '', array $params = []): void
     {
         $time = $this->beginCommand("soft delete from $table");
         $this->db->createCommand()
@@ -452,12 +452,12 @@ abstract class Migration extends \yii\db\Migration
      * Creates and executes a SQL statement for restoring a soft-deleted row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function restore(string $table, $condition = '', array $params = []): void
+    public function restore(string $table, array|string $condition = '', array $params = []): void
     {
         $time = $this->beginCommand("restore from $table");
         $this->db->createCommand()
@@ -467,9 +467,9 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * @param Throwable|Exception $e
+     * @param Throwable $e
      */
-    private function _printException($e): void
+    private function _printException(Throwable $e): void
     {
         // Copied from \yii\db\Migration::printException(), only because it’s private
         echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";

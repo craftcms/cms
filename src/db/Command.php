@@ -195,12 +195,12 @@ class Command extends \yii\db\Command
      * @param string $column The column to be searched.
      * @param string $find The text to be searched for.
      * @param string $replace The replacement text.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return Command The command object itself.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): Command
+    public function replace(string $table, string $column, string $find, string $replace, array|string $condition = '', array $params = []): Command
     {
         $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $condition, $params);
 
@@ -238,13 +238,13 @@ class Command extends \yii\db\Command
      * Creates a SQL statement for soft-deleting a row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
      * @since 3.1.0
      */
-    public function softDelete(string $table, $condition = '', array $params = []): Command
+    public function softDelete(string $table, array|string $condition = '', array $params = []): Command
     {
         return $this->update($table, [
             'dateDeleted' => Db::prepareDateForDb(new DateTime()),
@@ -255,13 +255,13 @@ class Command extends \yii\db\Command
      * Creates a SQL statement for restoring a soft-deleted row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
      * @since 3.1.0
      */
-    public function restore(string $table, $condition = '', array $params = []): Command
+    public function restore(string $table, array|string $condition = '', array $params = []): Command
     {
         return $this->update($table, [
             'dateDeleted' => null,

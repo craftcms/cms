@@ -325,7 +325,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): array|string
     {
         return Schema::TYPE_STRING;
     }
@@ -421,7 +421,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null)
     {
         return $value;
     }
@@ -429,7 +429,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ?ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $html = $this->inputHtml($value, $element);
 
@@ -454,7 +454,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @see getInputHtml()
      * @since 3.5.0
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return Html::textarea($this->handle, $value);
     }
@@ -462,7 +462,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
         Craft::$app->getView()->startJsBuffer();
@@ -484,7 +484,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
         return $value === null || $value === [] || $value === '';
@@ -493,7 +493,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element): string
+    public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
         // Give plugins/modules a chance to define custom keywords
         if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
@@ -520,7 +520,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @return string A string of search keywords.
      * @since 3.5.0
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return StringHelper::toString($value, ' ');
     }
@@ -532,7 +532,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param ElementInterface $element The element the field is associated with
      * @return string The HTML that should be shown for this field in Table View
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         $value = (string)$value;
 
@@ -565,7 +565,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null)
     {
         // If the object explicitly defines its savable value, use that
         if ($value instanceof Serializable) {
@@ -597,7 +597,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return null;
     }
@@ -605,7 +605,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         /** @var ElementQuery $query */
         if ($value !== null) {
@@ -658,7 +658,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return Type::string();
     }
@@ -667,7 +667,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -680,7 +680,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlQueryArgumentType()
+    public function getContentGqlQueryArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,

@@ -1236,8 +1236,8 @@ class Gql extends Component
     private function _getCacheKey(
         GqlSchema $schema,
         string $query,
-        $rootValue,
-        $context,
+        mixed $rootValue,
+        mixed $context,
         ?array $variables = null,
         ?string $operationName = null
     ): ?string {

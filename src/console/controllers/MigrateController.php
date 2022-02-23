@@ -99,7 +99,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself.
      */
-    public $plugin;
+    public PluginInterface|string|null $plugin = null;
 
     /**
      * @var bool Exclude pending content migrations.
@@ -545,7 +545,7 @@ class MigrateController extends BaseMigrateController
     /**
      * Not supported.
      */
-    public function actionFresh()
+    public function actionFresh(): int
     {
         $this->stderr('This command is not supported.' . PHP_EOL, Console::FG_RED);
         return ExitCode::OK;
@@ -562,7 +562,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function stdout($string)
+    public function stdout($string): bool|int
     {
         if (str_starts_with($string, 'Yii Migration Tool')) {
             return false;

@@ -21,9 +21,9 @@ use craft\queue\BaseJob;
 class PruneRevisions extends BaseJob
 {
     /**
-     * @var string|ElementInterface The type of elements to update.
+     * @var string The type of elements to update.
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var int The ID of the canonical element.

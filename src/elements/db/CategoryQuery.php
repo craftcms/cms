@@ -56,7 +56,7 @@ class CategoryQuery extends ElementQuery
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @inheritdoc
@@ -128,7 +128,7 @@ class CategoryQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function group($value): self
+    public function group(mixed $value): self
     {
         if ($value instanceof CategoryGroup) {
             $this->structureId = ($value->structureId ?: false);
@@ -178,7 +178,7 @@ class CategoryQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value): self
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;

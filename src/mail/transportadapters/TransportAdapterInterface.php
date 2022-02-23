@@ -23,5 +23,5 @@ interface TransportAdapterInterface extends ConfigurableComponentInterface
      *
      * @return array|AbstractTransport
      */
-    public function defineTransport();
+    public function defineTransport(): array|AbstractTransport;
 }

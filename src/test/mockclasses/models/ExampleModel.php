@@ -22,22 +22,22 @@ class ExampleModel extends Model
     /**
      * @var mixed
      */
-    public $exampleParam;
+    public mixed $exampleParam = null;
 
     /**
      * @var string
      */
-    public $exampleDateParam;
+    public string $exampleDateParam;
 
     /**
      * @var DateTime
      */
-    public $dateCreated;
+    public DateTime $dateCreated;
 
     /**
      * @var DateTime
      */
-    public $dateUpdated;
+    public DateTime $dateUpdated;
 
     /**
      * @inheritdoc

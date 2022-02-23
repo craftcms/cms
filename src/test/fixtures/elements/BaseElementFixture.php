@@ -34,12 +34,12 @@ abstract class BaseElementFixture extends DbFixture
     /**
      * @var array
      */
-    protected $siteIds = [];
+    protected array $siteIds = [];
 
     /**
      * @var ElementInterface[] The loaded elements
      */
-    private $_elements = [];
+    private array $_elements = [];
 
     /**
      * @inheritdoc

@@ -53,7 +53,7 @@ abstract class Controller extends \yii\web\Controller
      * - An array of action ID/bitwise pairs (e.g. `['save-guest-entry' => self::ALLOW_ANONYMOUS_OFFLINE]` – indicates
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
     /**
      * @inheritdoc
@@ -581,7 +581,7 @@ abstract class Controller extends \yii\web\Controller
      * @see YiiResponse::FORMAT_JSONP
      * @see JsonResponseFormatter
      */
-    public function asJsonP($data): YiiResponse
+    public function asJsonP(mixed $data): YiiResponse
     {
         $this->response->data = $data;
         $this->response->format = YiiResponse::FORMAT_JSONP;
@@ -597,7 +597,7 @@ abstract class Controller extends \yii\web\Controller
      * @see YiiResponse::$format
      * @see YiiResponse::FORMAT_RAW
      */
-    public function asRaw($data): YiiResponse
+    public function asRaw(mixed $data): YiiResponse
     {
         $this->response->data = $data;
         $this->response->format = YiiResponse::FORMAT_RAW;

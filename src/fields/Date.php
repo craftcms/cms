@@ -27,6 +27,7 @@ use craft\validators\DateTimeValidator;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
@@ -177,7 +178,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): array|string
     {
         if ($this->showTimeZone) {
             return [
@@ -244,7 +245,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
         $variables = [
@@ -297,7 +298,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return '';
     }
@@ -305,7 +306,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
@@ -333,7 +334,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null)
     {
         if ($value instanceof DateTime) {
             return $value;
@@ -368,7 +369,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null)
     {
         if (!$value) {
             return null;
@@ -388,7 +389,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return DateFieldConditionRule::class;
     }
@@ -396,7 +397,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         /** @var ElementQuery $query */
         if ($value !== null) {
@@ -408,7 +409,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -431,7 +432,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,

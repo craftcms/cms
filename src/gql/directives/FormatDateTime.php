@@ -78,7 +78,7 @@ class FormatDateTime extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo)
     {
         if ($value instanceof DateTime) {
             /** @var DateTime $value */

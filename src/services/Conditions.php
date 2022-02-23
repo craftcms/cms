@@ -31,12 +31,12 @@ class Conditions extends Component
     /**
      * Creates a condition instance.
      *
-     * @param string|array{class: string} $config The condition class or configuration array
+     * @param array{class: string}|string $config The condition class or configuration array
      * @return ConditionInterface
      * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      * @throws InvalidConfigException
      */
-    public function createCondition($config): ConditionInterface
+    public function createCondition(array|string $config): ConditionInterface
     {
         if (is_string($config)) {
             $class = $config;
@@ -70,11 +70,11 @@ class Conditions extends Component
     /**
      * Creates a condition rule instance.
      *
-     * @param string|array{class: string}|array{type: string} $config The condition class or configuration array
+     * @param array{class: string}|array{type: string}|string $config The condition class or configuration array
      * @return ConditionRuleInterface
      * @throws InvalidArgumentException if the condition rule does not implement [[ConditionRuleInterface]]
      */
-    public function createConditionRule($config): ConditionRuleInterface
+    public function createConditionRule(array|string $config): ConditionRuleInterface
     {
         if (is_string($config)) {
             $class = $config;

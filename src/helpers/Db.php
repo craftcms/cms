@@ -98,7 +98,7 @@ class Db
      * @param mixed $values The values to be prepared
      * @return array The prepared values
      */
-    public static function prepareValuesForDb($values): array
+    public static function prepareValuesForDb(mixed $values): array
     {
         // Normalize to an array
         $values = ArrayHelper::toArray($values, [], false);
@@ -175,7 +175,7 @@ class Db
      * @return string|null The prepped date, or `null` if it could not be prepared
      * @since 4.0.0
      */
-    public static function prepareMoneyForDb($money): ?string
+    public static function prepareMoneyForDb(mixed $money): ?string
     {
         $money = MoneyHelper::toMoney($money);
 
@@ -1283,7 +1283,7 @@ class Db
      * @throws InvalidArgumentException if $dsn is invalid
      * @since 3.4.0
      */
-    public static function parseDsn(string $dsn, ?string $key = null)
+    public static function parseDsn(string $dsn, ?string $key = null): array|string|false
     {
         if (($pos = strpos($dsn, ':')) === false) {
             throw new InvalidArgumentException('Invalid DSN: ' . $dsn);
@@ -1413,7 +1413,7 @@ class Db
     /**
      * @var Connection|null;
      */
-    private static ?Connection $_db;
+    private static ?Connection $_db = null;
 
     /**
      * Resets the memoized database connection.

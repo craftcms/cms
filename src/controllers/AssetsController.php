@@ -63,7 +63,7 @@ class AssetsController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['generate-thumb', 'generate-transform'];
+    protected array|bool|int $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
     /**
      * Returns an updated preview image for an asset.

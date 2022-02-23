@@ -473,7 +473,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // Get the source element IDs
         $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
@@ -515,7 +515,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         return 'User';
     }
@@ -702,16 +702,16 @@ class User extends Element implements IdentityInterface
     private ?string $_name = null;
 
     /**
-     * @var string|bool
+     * @var string|bool|null
      * @see getFriendlyName()
      * @see setFriendlyName()
      */
-    private $_friendlyName;
+    private string|bool|null $_friendlyName = null;
 
     /**
      * @var Asset|false|null user photo
      */
-    private $_photo;
+    private Asset|null|false $_photo = null;
 
     /**
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
@@ -1121,10 +1121,10 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param UserGroup|int|string $group The user group model, its handle, or ID.
+     * @param int|string|UserGroup $group The user group model, its handle, or ID.
      * @return bool
      */
-    public function isInGroup($group): bool
+    public function isInGroup(UserGroup|int|string $group): bool
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
             return false;
@@ -1473,10 +1473,10 @@ class User extends Element implements IdentityInterface
      * Returns one of the user’s preferences by its key.
      *
      * @param string $key The preference’s key
-     * @param mixed $default The default value, if the preference hasn’t been set
+     * @param mixed|null $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
-    public function getPreference(string $key, $default = null)
+    public function getPreference(string $key, mixed $default = null): mixed
     {
         $preferences = $this->getPreferences();
 

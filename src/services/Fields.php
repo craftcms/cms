@@ -568,7 +568,7 @@ class Fields extends Component
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
      * @return FieldInterface The field
      */
-    public function createField($config): FieldInterface
+    public function createField(mixed $config): FieldInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -600,7 +600,7 @@ class Fields extends Component
      *
      * @return MemoizableArray<FieldInterface>
      */
-    private function _fields($context = null): MemoizableArray
+    private function _fields(mixed $context = null): MemoizableArray
     {
         if (!isset($this->_fields)) {
             $fields = [];
@@ -632,7 +632,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
-    public function getAllFields($context = null): array
+    public function getAllFields(mixed $context = null): array
     {
         return $this->_fields($context)->all();
     }
@@ -689,7 +689,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle(string $handle, $context = null): ?FieldInterface
+    public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
     {
         return $this->_fields($context)->firstWhere('handle', $handle, true);
     }
@@ -1427,7 +1427,7 @@ class Fields extends Component
      * @param int|int[] $layoutId The field layout’s ID
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById($layoutId): bool
+    public function deleteLayoutById(array|int $layoutId): bool
     {
         if (!$layoutId) {
             return false;
@@ -1840,7 +1840,7 @@ class Fields extends Component
      * @param bool $withTrashed Whether to include trashed field groups in search
      * @return FieldGroupRecord
      */
-    private function _getGroupRecord($criteria, bool $withTrashed = false): FieldGroupRecord
+    private function _getGroupRecord(int|string $criteria, bool $withTrashed = false): FieldGroupRecord
     {
         $query = $withTrashed ? FieldGroupRecord::findWithTrashed() : FieldGroupRecord::find();
 

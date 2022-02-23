@@ -27,7 +27,7 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         // Base elements have no context
         $type = static::generateType(null);
@@ -37,7 +37,7 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
         $typeName = BaseElement::gqlTypeNameByContext(null);
         $elementFields = ElementInterface::getFieldDefinitions();

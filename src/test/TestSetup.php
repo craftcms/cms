@@ -103,12 +103,12 @@ class TestSetup
     /**
      * @var array Project Config data
      */
-    private static $_parsedProjectConfig = [];
+    private static array $_parsedProjectConfig = [];
 
     /**
      * @var Config|null An instance of the config service.
      */
-    private static $_configService = null;
+    private static ?Config $_configService = null;
 
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
@@ -116,7 +116,7 @@ class TestSetup
      * @return mixed
      * @throws InvalidConfigException
      */
-    public static function warmCraft()
+    public static function warmCraft(): mixed
     {
         $app = self::createTestCraftObjectConfig();
         $app['isInstalled'] = false;
@@ -436,7 +436,7 @@ class TestSetup
      *
      * @return array|false
      */
-    public static function useProjectConfig()
+    public static function useProjectConfig(): array|false
     {
         $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
 

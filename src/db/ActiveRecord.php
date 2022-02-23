@@ -135,7 +135,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @return mixed The prepared value
      * @since 3.4.0
      */
-    private function _prepareValue(string $name, $value)
+    private function _prepareValue(string $name, mixed $value): mixed
     {
         $columnType = static::getTableSchema()->columns[$name]->dbType ?? null;
         return Db::prepareValueForDb($value, $columnType);

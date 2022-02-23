@@ -136,7 +136,7 @@ class Assets extends Component
      * @param mixed $criteria
      * @return int
      */
-    public function getTotalAssets($criteria = null): int
+    public function getTotalAssets(mixed $criteria = null): int
     {
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
@@ -306,11 +306,11 @@ class Assets extends Component
     /**
      * Deletes a folder by its ID.
      *
-     * @param array|int $folderIds
+     * @param int|array $folderIds
      * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      * @throws InvalidConfigException if the volume cannot be fetched from folder.
      */
-    public function deleteFoldersByIds($folderIds, bool $deleteDir = true): void
+    public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
         $folders = [];
 
@@ -452,10 +452,10 @@ class Assets extends Component
     /**
      * Finds folders that match a given criteria.
      *
-     * @param mixed $criteria
+     * @param mixed|null $criteria
      * @return VolumeFolder[]
      */
-    public function findFolders($criteria = null): array
+    public function findFolders(mixed $criteria = null): array
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -525,10 +525,10 @@ class Assets extends Component
     /**
      * Finds the first folder that matches a given criteria.
      *
-     * @param mixed $criteria
+     * @param mixed|null $criteria
      * @return VolumeFolder|null
      */
-    public function findFolder($criteria = null): ?VolumeFolder
+    public function findFolder(mixed $criteria = null): ?VolumeFolder
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -564,7 +564,7 @@ class Assets extends Component
      * @param mixed $criteria
      * @return int
      */
-    public function getTotalFolders($criteria): int
+    public function getTotalFolders(mixed $criteria): int
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -590,7 +590,7 @@ class Assets extends Component
      * @throws VolumeException
      * @throws ImageTransformException
      */
-    public function getAssetUrl(Asset $asset, $transform = null): ?string
+    public function getAssetUrl(Asset $asset, mixed $transform = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new DefineAssetUrlEvent([
@@ -667,7 +667,7 @@ class Assets extends Component
      * @throws FsObjectNotFoundException
      * @see getThumbUrl()
      */
-    public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true)
+    public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true): string|false
     {
         // Maybe a plugin wants to do something here
         $event = new AssetThumbEvent([

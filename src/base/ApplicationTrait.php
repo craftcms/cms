@@ -262,7 +262,7 @@ trait ApplicationTrait
     /**
      * @var Info|null
      */
-    private ?Info $_info;
+    private ?Info $_info = null;
 
     /**
      * @var bool

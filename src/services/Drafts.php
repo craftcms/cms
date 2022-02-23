@@ -63,7 +63,7 @@ class Drafts extends Component
      * @var Connection|array|string The database connection to use
      * @since 3.5.4
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @inheritdoc

@@ -30,13 +30,13 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param int|float|null $targetWidth
-     * @param int|float|null $targetHeight
-     * @param int|float $sourceWidth
-     * @param int|float $sourceHeight
+     * @param float|int|null $targetWidth
+     * @param float|int|null $targetHeight
+     * @param float|int $sourceWidth
+     * @param float|int $sourceHeight
      * @return int[] Array of the width and height.
      */
-    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
+    public static function calculateMissingDimension(float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight): array
     {
         // If the target width & height are both present, return them
         if ($targetWidth && $targetHeight) {
@@ -98,7 +98,7 @@ class Image
      * @return array|false Info embedded in the PNG file, or `false` if it wasn’t found.
      * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
      */
-    public static function pngImageInfo(string $file)
+    public static function pngImageInfo(string $file): array|false
     {
         if (empty($file)) {
             return false;
@@ -207,7 +207,7 @@ class Image
      * @return array|false
      * @throws TypeError
      */
-    public static function imageSizeByStream($stream)
+    public static function imageSizeByStream($stream): array|false
     {
         if (!is_resource($stream)) {
             throw new TypeError('Argument passed should be a resource.');

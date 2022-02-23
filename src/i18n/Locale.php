@@ -227,7 +227,7 @@ class Locale extends BaseObject
     /**
      * @var string|null The locale ID.
      */
-    public $id;
+    public ?string $id = null;
 
     /**
      * @var Formatter|null The locale's formatter.
