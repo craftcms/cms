@@ -489,6 +489,7 @@
 - Element types’ `refHandle()` methods must now have a `?string` return type declaration.
 - Element types’ `sources()` methods’ `$context` arguments should no longer accept `null`.
 - Element types’ `tableAttributes()` and `defineTableAttributes()` methods should no longer return a generic attribute for defining the header column heading at the beginning of the returned array. The header column heading is now set to the element type’s display name, per its `displayName()` method.
+- Block element types’ `getOwner()` methods can now return `null`.
 - Element queries’ `status()` methods must now have a `self` return type declaration.
 - Fields’ `afterElementDelete()` methods must now have a `void` return type declaration.
 - Fields’ `afterElementPropagate()` methods must now have a `void` return type declaration.

@@ -92,7 +92,7 @@ class Install extends Migration
     {
         $this->createTable(Table::ADDRESSES, [
             'id' => $this->integer()->notNull(),
-            'ownerId' => $this->integer()->notNull(),
+            'ownerId' => $this->integer(),
             'countryCode' => $this->string()->notNull(),
             'administrativeArea' => $this->string(),
             'locality' => $this->string(),

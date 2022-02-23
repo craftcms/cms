@@ -1034,8 +1034,10 @@ JS;
                 do {
                     try {
                         $el = $el->getOwner();
-                        $disabledElementIds[] = $el->getCanonicalId();
-                    } catch (InvalidConfigException $e) {
+                        if ($el) {
+                            $disabledElementIds[] = $el->getCanonicalId();
+                        }
+                    } catch (InvalidConfigException) {
                         break;
                     }
                 } while ($el instanceof BlockElementInterface);
