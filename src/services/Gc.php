@@ -359,6 +359,7 @@ SQL;
     }
 
     /**
+     * @param string|null $tableAlias
      * @return array
      */
     private function _hardDeleteCondition(?string $tableAlias = null): array

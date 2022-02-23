@@ -48,6 +48,7 @@ class MockElementQuery extends ElementQuery
      * Generate a more specific query class for the provided element type class.
      *
      * @param $elementClass
+     * @return ElementQuery
      */
     public static function generateSpecificQueryClass($elementClass): ElementQuery
     {
@@ -111,6 +112,7 @@ class MockElementQuery extends ElementQuery
      * Getter for mock query arguments.
      *
      * @param $name
+     * @return mixed|null
      */
     public function __get($name)
     {
@@ -133,6 +135,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Return all the return values.
      *
+     * @param mixed|null $db
      * @return array
      */
     public function all($db = null): array

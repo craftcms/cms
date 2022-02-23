@@ -286,6 +286,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
+     * @param array $routeParams Additional route params that should be set for the next controller action
      * @param string|null $errorAttribute The attribute to return errors from, or all if `null`
      * @return YiiResponse|null
      * @since 4.0.0
