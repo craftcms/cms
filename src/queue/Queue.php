@@ -573,7 +573,7 @@ EOD;
             'ttr' => $ttr,
             'delay' => $delay,
             'priority' => $priority ?: 1024,
-        ], false, $this->db);
+        ], $this->db);
 
         return $this->db->getLastInsertID($this->tableName);
     }

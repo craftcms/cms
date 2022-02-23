@@ -471,14 +471,14 @@ class MatrixBlock extends Element implements BlockElementInterface
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
                         'sortOrder' => $this->sortOrder ?? 0,
-                    ], false);
+                    ]);
                 } else {
                     Db::update(Table::MATRIXBLOCKS_OWNERS, [
                         'sortOrder' => $this->sortOrder ?? 0,
                     ], [
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
-                    ], [], false);
+                    ]);
                 }
             }
         }

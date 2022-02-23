@@ -158,7 +158,7 @@ class Content extends Component
             ], [], true, $this->db);
         } else {
             // Insert a new row and store its ID on the element
-            Db::insert($this->contentTable, $values, true, $this->db);
+            Db::insert($this->contentTable, $values, $this->db);
             $element->contentId = $this->db->getLastInsertID($this->contentTable);
         }
 

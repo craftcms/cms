@@ -364,7 +364,7 @@ SQL;
         }
 
         // Insert/update the row in searchindex
-        Db::insert(Table::SEARCHINDEX, $columns, false);
+        Db::insert(Table::SEARCHINDEX, $columns);
     }
 
     /**

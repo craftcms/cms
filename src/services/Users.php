@@ -354,7 +354,7 @@ class Users extends Component
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
             'preferences' => Json::encode($preferences),
-        ], true, [], false);
+        ]);
 
         $this->_userPreferences[$user->id] = $preferences;
     }
@@ -1212,7 +1212,7 @@ class Users extends Component
                 foreach ($event->newGroupIds as $groupId) {
                     $values[] = [$groupId, $userId];
                 }
-                Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, true, $db);
+                Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, $db);
             }
 
             if (!empty($event->removedGroupIds)) {

@@ -896,7 +896,7 @@ class ProjectConfig extends Component
             $batch[] = [$path, $value];
         }
 
-        Db::batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false);
+        Db::batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch);
     }
 
     /**

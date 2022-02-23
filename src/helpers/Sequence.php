@@ -60,13 +60,13 @@ class Sequence
                 Db::insert(Table::SEQUENCES, [
                     'name' => $name,
                     'next' => $num + 1,
-                ], false);
+                ]);
             } else {
                 Db::update(Table::SEQUENCES, [
                     'next' => $num + 1,
                 ], [
                     'name' => $name,
-                ], [], false);
+                ]);
             }
         } catch (Throwable $e) {
             $mutex->release($lockName);

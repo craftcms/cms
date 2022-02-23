@@ -186,45 +186,33 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
-     * Creates and executes an `INSERT` SQL statement.
+     * @inheritdoc
      *
-     * The method will properly escape the column names, and bind the values to be inserted.
-     *
-     * @param string $table The table that new rows will be inserted into.
-     * @param array $columns The column data (name=>value) to be inserted into the table.
-     * @param bool $includeAuditColumns Whether to include the data for the audit columns
-     * (dateCreated, dateUpdated, uid).
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
      */
-    public function insert($table, $columns, bool $includeAuditColumns = true): void
+    public function insert($table, $columns): void
     {
-        $time = $this->beginCommand("insert into $table");
-        $this->db->createCommand()
-            ->insert($table, $columns, $includeAuditColumns)
-            ->execute();
-        $this->endCommand($time);
-    }
-
-    /**
-     * Creates and executes a batch `INSERT` SQL statement.
-     *
-     * The method will properly escape the column names, and bind the values to be inserted.
-     *
-     * @param string $table The table that new rows will be inserted into.
-     * @param array $columns The column names.
-     * @param array $rows The rows to be batch inserted into the table.
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
-     */
-    public function batchInsert($table, $columns, $rows, bool $includeAuditColumns = true): void
-    {
-        $time = $this->beginCommand("batch insert into $table");
-        $this->db->createCommand()
-            ->batchInsert($table, $columns, $rows, $includeAuditColumns)
-            ->execute();
-        $this->endCommand($time);
+        parent::insert($table, $columns);
     }
 
     /**
      * @inheritdoc
+     *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
+     */
+    public function batchInsert($table, $columns, $rows): void
+    {
+        parent::batchInsert($table, $columns, $rows);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * for new rows automatically, if not already set.
+     *
      * @param string $table the table that new rows will be inserted into/updated in.
      * @param array|Query $insertColumns the column data (name => value) to be inserted into the table or instance
      * of [[Query]] to perform `INSERT INTO ... SELECT` SQL statement.
@@ -232,13 +220,13 @@ abstract class Migration extends \yii\db\Migration
      * If `true` is passed, the column data will be updated to match the insert column data.
      * If `false` is passed, no update will be performed if the column data already exists.
      * @param array $params the parameters to be bound to the command.
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated for existing rows, if the table has one.
      * @since 2.0.14
      */
-    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): void
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $updateTimestamp = true): void
     {
         $time = $this->beginCommand("upsert into $table");
-        $this->db->createCommand()->upsert($table, $insertColumns, $updateColumns, $params, $includeAuditColumns)->execute();
+        $this->db->createCommand()->upsert($table, $insertColumns, $updateColumns, $params, $updateTimestamp)->execute();
         $this->endCommand($time);
     }
 
@@ -252,13 +240,13 @@ abstract class Migration extends \yii\db\Migration
      * @param string|array $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
-     * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated, if the table has one.
      */
-    public function update($table, $columns, $condition = '', $params = [], bool $includeAuditColumns = true): void
+    public function update($table, $columns, $condition = '', $params = [], bool $updateTimestamp = true): void
     {
         $time = $this->beginCommand("update in $table");
         $this->db->createCommand()
-            ->update($table, $columns, $condition, $params, $includeAuditColumns)
+            ->update($table, $columns, $condition, $params, $updateTimestamp)
             ->execute();
         $this->endCommand($time);
     }

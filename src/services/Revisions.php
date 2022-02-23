@@ -141,7 +141,7 @@ class Revisions extends Component
                 'creatorId' => $creatorId,
                 'num' => $num,
                 'notes' => $notes,
-            ], false);
+            ]);
 
             // Duplicate the element
             $newAttributes['canonicalId'] = $canonical->id;

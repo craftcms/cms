@@ -638,7 +638,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
                 'id' => $index->id,
             ], [], true, $db);
         } else {
-            Db::insert(Table::IMAGETRANSFORMINDEX, $values, true, $db);
+            Db::insert(Table::IMAGETRANSFORMINDEX, $values, $db);
             $index->id = (int)$db->getLastInsertID(Table::IMAGETRANSFORMINDEX);
         }
 

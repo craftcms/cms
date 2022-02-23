@@ -839,7 +839,7 @@ JS;
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
-                        ], true, [], false);
+                        ]);
                     }
                 }
             }

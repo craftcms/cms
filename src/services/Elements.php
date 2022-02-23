@@ -899,7 +899,7 @@ class Elements extends Component
                 'dateUpdated' => $timestamp,
                 'propagated' => $attribute['propagated'],
                 'userId' => $attribute['userId'],
-            ], true, [], false);
+            ]);
         }
 
         $fields = (new Query())
@@ -916,7 +916,7 @@ class Elements extends Component
                 'dateUpdated' => $timestamp,
                 'propagated' => $field['propagated'],
                 'userId' => $field['userId'],
-            ], true, [], false);
+            ]);
         }
 
         return $updatedCanonical;
@@ -2783,7 +2783,7 @@ class Elements extends Component
                     'dateUpdated' => $timestamp,
                     'propagated' => $element->propagating,
                     'userId' => $userId,
-                ], true, [], false);
+                ]);
             }
 
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
@@ -2796,7 +2796,7 @@ class Elements extends Component
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
-                        ], true, [], false);
+                        ]);
                     }
                 }
             }
