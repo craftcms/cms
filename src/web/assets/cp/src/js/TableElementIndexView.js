@@ -24,7 +24,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         // Set table caption
         this.$tableCaption = this.$table.find('caption');
 
-        this.$statusMessage = this.$table.parent().find('[data-notifier]');
+        this.$statusMessage = this.$table.parent().find('[data-status-message]');
 
         // Set the sort header
         this.initTableHeaders();
@@ -77,14 +77,14 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
                 sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
 
-                $header.addClass('ordered ' + selectedSortDir).attr('data-orderable', true);
+                $header.addClass('ordered ' + selectedSortDir);
                 this.makeColumnSortable($header, true);
             } else {
                 // Is this attribute sortable?
                 var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
 
                 if ($sortAttribute.length) {
-                    $header.addClass('orderable').attr('data-orderable', true);
+                    $header.addClass('orderable');
                     this.makeColumnSortable($header);
                 }
             }
@@ -96,6 +96,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     makeColumnSortable: function($header, sorted = false) {
         const $headerText = $header.html();
         const instructionId = this.$tableCaption.find('span').attr('id');
+
+        $header.attr('data-orderable', true);
 
         $headerButton = $('<button type="button" aria-pressed="false"></button>')
           .html($headerText)
