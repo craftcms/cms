@@ -674,7 +674,7 @@ class UsersController extends Controller
     public function actionEditUser($userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
-            $this->setFailFlash(reset($errors));
+            $this->setFailFlash(implode(', ', reset($errors)));
         }
 
         // Determine which user account we're editing
@@ -926,8 +926,7 @@ class UsersController extends Controller
                 $errors = $user->getErrors();
                 $accountFields = [
                     'username',
-                    'firstName',
-                    'lastName',
+                    'fullName',
                     'email',
                     'password',
                     'newPassword',
@@ -1221,8 +1220,21 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
-        $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
+        $fullName = $this->request->getBodyParam('fullName');
+
+        if ($fullName !== null) {
+            $user->fullName = $fullName;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $this->request->getBodyParam('firstName');
+            $lastName = $this->request->getBodyParam('lastName');
+
+            if ($firstName !== null || $lastName !== null) {
+                $user->fullName = null;
+                $user->firstName = $firstName ?? $user->firstName;
+                $user->lastName = $lastName ?? $user->lastName;
+            }
+        }
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
@@ -2198,7 +2210,7 @@ JS,
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
+        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
     }
 
     /**

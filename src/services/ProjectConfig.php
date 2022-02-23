@@ -93,6 +93,8 @@ class ProjectConfig extends Component
      */
     public const ASSOC_KEY = '__assoc__';
 
+    public const PATH_ADDRESSES = 'addresses';
+    public const PATH_ADDRESS_FIELD_LAYOUTS = self::PATH_ADDRESSES . '.' . 'fieldLayouts';
     public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = 'dateModified';
     public const PATH_ELEMENT_SOURCES = 'elementSources';

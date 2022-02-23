@@ -11,9 +11,11 @@
 - Field layout tabs, fields, and UI elements can now be conditionally shown based on properties of the current user and/or element being edited. ([#8099](https://github.com/craftcms/cms/discussions/8099), [#8154](https://github.com/craftcms/cms/discussions/8154))
 - Assets, Entries, and Users fields have new condition settings that can be used to further limit which elements should be relatable, beyond the existing field settings. ([#10393](https://github.com/craftcms/cms/pull/10393))
 - Assets, Entries, and Users fields have new “Min Relations” settings, and their former “Limit” settings have been renamed to “Max Relations”. ([#8621](https://github.com/craftcms/cms/discussions/8621))
+- Added a dedicated “Full Name” field to users. “First Name” and “Last Name” are now parsed out from the full name automatically when a user is saved. ([#10405](https://github.com/craftcms/cms/discussions/10405))
 - Added the “Inactive” user status, which can be used by users which can’t be signed into. ([#8963](https://github.com/craftcms/cms/discussions/8963))
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
+- Users can now have an “Addresses” field. ([#10507](https://github.com/craftcms/cms/pull/10507))
 - Added the Money field type.
 - Craft now provides a native “Alternative Text” (`alt`) field for assets. ([#10302](https://github.com/craftcms/cms/discussions/10302))
 - Asset thumbnails in the control panel now have `alt` attributes, for assets with a filled-in Alternative Text value.
@@ -24,9 +26,8 @@
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
 - Added the `|money` Twig filter.
 - Added the `collect()` Twig function.
-- Added the `assetUploaders` user query param.
+- Added the `assetUploaders`, `authors`, and `fullName` user query params.
 - Added the `primaryOwner` and `primaryOwnerId` Matrix block query params.
-- Added the `authors` user query param.
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
@@ -78,9 +79,11 @@
 - Added `craft\base\imagetransforms\EagerImageTransformerInterface`.
 - Added `craft\base\imagetransforms\ImageTransformerInterface`.
 - Added `craft\base\LocalFsInterface`.
+- Added `craft\base\NameTrait`.
 - Added `craft\behaviors\FieldLayoutBehavior::getCustomFields()`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
+- Added `craft\controllers\AddressesController`.
 - Added `craft\controllers\AssetIndexesController`.
 - Added `craft\controllers\ConditionsController`.
 - Added `craft\controllers\ElementIndexesController::$condition`.
@@ -90,13 +93,17 @@
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::renameTable()`.
 - Added `craft\db\Query::collect()`, which returns the query results as an `Illuminate\Support\Collection` object rather than an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
+- Added `craft\db\Table::ADDRESSES`.
 - Added `craft\db\Table::ASSETINDEXINGSESSIONS`.
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
 - Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
+- Added `craft\elements\Address`.
 - Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
+- Added `craft\elements\conditions\addresses\AddressCondition`.
+- Added `craft\elements\conditions\addresses\CountryConditionRule`.
 - Added `craft\elements\conditions\assets\AssetCondition`.
 - Added `craft\elements\conditions\assets\DateModifiedConditionRule`.
 - Added `craft\elements\conditions\assets\FilenameConditionRule`.
@@ -138,9 +145,11 @@
 - Added `craft\elements\conditions\users\LastNameConditionRule`.
 - Added `craft\elements\conditions\users\UserCondition`.
 - Added `craft\elements\conditions\users\UsernameConditionRule`.
+- Added `craft\elements\db\AddressQuery`.
 - Added `craft\elements\MatrixBlock::$primaryOwnerId`.
 - Added `craft\elements\MatrixBlock::$saveOwnership`.
 - Added `craft\elements\User::$active`.
+- Added `craft\elements\User::$fullName`.
 - Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
@@ -157,16 +166,24 @@
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\events\RegisterImageTransformersEvent`.
 - Added `craft\events\TransformImageEvent`.
+- Added `craft\fieldlayoutelements\addresses\AddressField`.
+- Added `craft\fieldlayoutelements\addresses\CountryCodeField`.
+- Added `craft\fieldlayoutelements\addresses\LabelField`.
+- Added `craft\fieldlayoutelements\addresses\LatLongField`.
+- Added `craft\fieldlayoutelements\addresses\OrganizationField`.
+- Added `craft\fieldlayoutelements\addresses\OrganizationTaxIdField`.
 - Added `craft\fieldlayoutelements\assets\AltField`.
+- Added `craft\fieldlayoutelements\BaseField::selectorLabel()`.
 - Added `craft\fieldlayoutelements\BaseNativeField`, which replaces `craft\fieldlayoutelements\StandardField`.
+- Added `craft\fieldlayoutelements\FullNameField`.
 - Added `craft\fieldlayoutelements\TextareaField`.
 - Added `craft\fieldlayoutelements\TextField`, which replaces `craft\fieldlayoutelements\StandardTextField`.
+- Added `craft\fieldlayoutelements\users\AddressesField`.
 - Added `craft\fields\Assets::$allowSubfolders`.
 - Added `craft\fields\Assets::$restrictedDefaulUploadSubpath`.
 - Added `craft\fields\Assets::$restrictedLocationSource`, which replaces `$singleUploadLocationSource`.
 - Added `craft\fields\Assets::$restrictedLocationSubpath`, which replaces `$singleUploadLocationSubpath`.
 - Added `craft\fields\Assets::$restrictLocation`, which replaces `$useSingleFolder`.
-- Added `craft\fields\Money`.
 - Added `craft\fields\BaseRelationField::createSelectionCondition()`.
 - Added `craft\fields\BaseRelationField::getSelectionCondition()`.
 - Added `craft\fields\BaseRelationField::setSelectionCondition()`.
@@ -178,6 +195,7 @@
 - Added `craft\fields\conditions\OptionsFieldConditionRule`.
 - Added `craft\fields\conditions\RelationalFieldConditionRule`.
 - Added `craft\fields\conditions\TextFieldConditionRule`.
+- Added `craft\fields\Money`.
 - Added `craft\fs\Local`.
 - Added `craft\fs\MissingFs`.
 - Added `craft\fs\Temp`.
@@ -187,6 +205,8 @@
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Cp::addressCardHtml()`.
+- Added `craft\helpers\Cp::addressCardsHtml()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
 - Added `craft\helpers\Cp::dateHtml()`.
 - Added `craft\helpers\Cp::elementSelectHtml()`.
@@ -241,8 +261,10 @@
 - Added `craft\models\ProjectConfigData`.
 - Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\Volume`.
+- Added `craft\records\Address`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\records\ImageTransform`.
+- Added `craft\services\Addresses`.
 - Added `craft\services\AssetIndexer::createIndexingSession()`.
 - Added `craft\services\AssetIndexer::getExistingIndexingSessions()`.
 - Added `craft\services\AssetIndexer::getIndexingSessionById()`.
@@ -266,8 +288,8 @@
 - Added `craft\services\Gc::hardDeleteElements()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
-- Added `craft\services\Matrix::duplicateOwnership()`.
 - Added `craft\services\Matrix::createRevisionBlocks()`.
+- Added `craft\services\Matrix::duplicateOwnership()`.
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
@@ -300,6 +322,7 @@
 - Added `craft\services\ProjectConfig::PATH_VOLUMES`.
 - Added `craft\services\ProjectConfig::regenerateExternalConfig()`.
 - Added `craft\services\ProjectConfig::rememberAppliedChanges()`.
+- Added `craft\services\UserAddresses`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
@@ -348,10 +371,12 @@
 - Added the `Craft.ui.createButton()` JavaScript method.
 - Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
-- Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
-- Added the Money package.
-- Added the yii2-symfonymailer package.
+- Added the commerceguys/addressing package.
+- Added the illuminate/collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
+- Added the moneyphp/money package.
 - Added the symfony/var-dumper package.
+- Added the theiconic/name-parser package.
+- Added the yiisoft/yii2-symfonymailer package.
 
 ### Changed
 - Craft now requires PHP 8.0.2 or later.
@@ -512,8 +537,8 @@
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
-- `craft\fieldlayoutelements\AssetTitleField` has been renomed to `craft\fieldlayoutelements\assets\AssetTitleField`.
-- `craft\fieldlayoutelements\EntryTitleField` has been renomed to `craft\fieldlayoutelements\entries\EntryTitleField`.
+- `craft\fieldlayoutelements\AssetTitleField` has been renamed to `craft\fieldlayoutelements\assets\AssetTitleField`.
+- `craft\fieldlayoutelements\EntryTitleField` has been renamed to `craft\fieldlayoutelements\entries\EntryTitleField`.
 - `craft\fields\BaseRelationField::$limit` has been renamed to `$maxRelations`.
 - `craft\fields\BaseRelationField::elementType()` is now public.
 - `craft\fields\BaseRelationField::inputSelectionCriteria()` has been renamed to `getInputSelectionCriteria()`, and is now public.
@@ -535,8 +560,8 @@
 - `craft\helpers\Html` now supports defining `hx-*` and `data-hx-*` attributes via a `hx` and `data-hx` keys, similar to `aria` and `data`.
 - `craft\helpers\i18n\Formatter::asPercent()` now chooses a default `$decimals` value based on the value given, if `null`.
 - `craft\helpers\i18n\Formatter::asPercent()` now treats all empty values as `0`.
-- `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\helpers\MailerHelper::normalizeEmails()` now returns an empty array instead of `null`.
+- `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
@@ -561,11 +586,13 @@
 - Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
+- `craft\controllers\UsersController::actionSetPassword` now returns an HTTP response with a status code of 400 when it encounters an invalid token. ([#10592](https://github.com/craftcms/cms/discussions/10592))
 
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
 - Deprecated `craft\behaviors\FieldLayoutBehavior::getFields()`. `getCustomFields()` should be used instead.
+- Deprecated `craft\elements\User::getFullName()`. `$fullName` should be used instead.
 - Deprecated `craft\fieldlayoutelements\StandardField`. `craft\fieldlayoutelements\BaseNativeField` should be used instead.
 - Deprecated `craft\fieldlayoutelements\StandardTextField`. `craft\fieldlayoutelements\TextField` should be used instead.
 - Deprecated `craft\gql\TypeManager::flush()`. `craft\services\Gql::flushCaches()` should be used instead.
@@ -583,7 +610,6 @@
 - Deprecated `craft\web\Controller::asErrorJson()`. `asFailure()` should be used instead.
 - Deprecated the `assets/save-asset` action. `elements/save` should be used instead.
 - Deprecated the `categories/save-category` action. `elements/save` should be used instead.
-- Deprecated the `entries/save-entry` action. `elements/save` should be used instead.
 - Deprecated the `Craft.appendFootHtml()` JavaScript method. `appendBodyHtml()` should be used instead.
 
 ### Removed

@@ -361,8 +361,8 @@ JS;
         }
 
         if (!$fieldsService->deleteField($field)) {
-            return $this->asModelFailure($field, Craft::t('app', 'Unable to delete field ID {fieldId}', [
-                'fieldId' => $fieldId,
+            return $this->asModelFailure($field, Craft::t('app', 'Couldn’t delete “{name}”.', [
+                'name' => $field->name,
             ]));
         }
 

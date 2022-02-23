@@ -90,6 +90,28 @@ class Install extends Migration
      */
     public function createTables(): void
     {
+        $this->createTable(Table::ADDRESSES, [
+            'id' => $this->integer()->notNull(),
+            'ownerId' => $this->integer()->notNull(),
+            'countryCode' => $this->string()->notNull(),
+            'administrativeArea' => $this->string(),
+            'locality' => $this->string(),
+            'dependentLocality' => $this->string(),
+            'postalCode' => $this->string(),
+            'sortingCode' => $this->string(),
+            'addressLine1' => $this->string(),
+            'addressLine2' => $this->string(),
+            'organization' => $this->string(),
+            'organizationTaxId' => $this->string(),
+            'fullName' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
+            'latitude' => $this->string(),
+            'longitude' => $this->string(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'PRIMARY KEY(id)',
+        ]);
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
@@ -708,6 +730,7 @@ class Install extends Migration
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
             'admin' => $this->boolean()->defaultValue(false)->notNull(),
             'username' => $this->string(),
+            'fullName' => $this->string(),
             'firstName' => $this->string(),
             'lastName' => $this->string(),
             'email' => $this->string(),
@@ -958,6 +981,8 @@ class Install extends Migration
      */
     public function addForeignKeys(): void
     {
+        $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ADDRESSES, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);

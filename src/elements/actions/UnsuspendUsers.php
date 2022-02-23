@@ -83,7 +83,7 @@ JS;
         }));
 
         if ($successCount !== count($users)) {
-            $this->setMessage(Craft::t('app', 'Could not unsuspend all users.'));
+            $this->setMessage(Craft::t('app', 'Couldn’t unsuspend all users.'));
             return false;
         }
 

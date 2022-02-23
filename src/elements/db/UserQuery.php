@@ -171,6 +171,13 @@ class UserQuery extends ElementQuery
     public $username;
 
     /**
+     * @var string|string[]|null The full name that the resulting users must have.
+     * @used-by fullName()
+     * @since 4.0.0
+     */
+    public $fullName;
+
+    /**
      * @var string|string[]|null The first name that the resulting users must have.
      * @used-by firstName()
      */
@@ -537,6 +544,43 @@ class UserQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on the users’ full names.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches users…
+     * | - | -
+     * | `'Jane Doe'` | with a full name of `Jane Doe`.
+     * | `'not Jane Doe'` | not with a full name of `Jane Doe`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all the Jane Doe's #}
+     * {% set {elements-var} = {twig-method}
+     *   .fullName('Jane Doe')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all the Jane Doe's
+     * ${elements-var} = {php-method}
+     *     ->fullName('JaneDoe')
+     *     ->one();
+     * ```
+     *
+     * @param string|string[]|null $value The property value
+     * @return self self reference
+     * @uses $fullName
+     * @since 4.0.0
+     */
+    public function fullName($value): self
+    {
+        $this->fullName = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the users’ first names.
      *
      * Possible values include:
@@ -751,8 +795,16 @@ class UserQuery extends ElementQuery
         ]);
 
         // todo: cleanup after next breakpoint
-        if (Craft::$app->getDb()->columnExists(Table::USERS, 'active')) {
+        $db = Craft::$app->getDb();
+        $activeColumnExists = $db->columnExists(Table::USERS, 'active');
+        $fullNameColumnExists = $db->columnExists(Table::USERS, 'fullName');
+
+        if ($activeColumnExists) {
             $this->query->addSelect(['users.active']);
+        }
+
+        if ($fullNameColumnExists) {
+            $this->query->addSelect(['users.fullName']);
         }
 
         if (is_bool($this->admin)) {
@@ -805,6 +857,10 @@ class UserQuery extends ElementQuery
 
         if ($this->username) {
             $this->subQuery->andWhere(Db::parseParam('users.username', $this->username, '=', true));
+        }
+
+        if ($fullNameColumnExists && $this->fullName) {
+            $this->subQuery->andWhere(Db::parseParam('users.fullName', $this->fullName, '=', true));
         }
 
         if ($this->firstName) {
