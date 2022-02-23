@@ -34,7 +34,7 @@ class Command extends \yii\db\Command
         }
 
         if (!isset($columns['dateUpdated']) && $this->db->columnExists($table, 'dateUpdated')) {
-            $columns['dateUpdated'] = $now ?? Db::prepareDateForDb(new DateTime());;
+            $columns['dateUpdated'] = $now ?? Db::prepareDateForDb(new DateTime());
         }
 
         if (!isset($columns['uid']) && $this->db->columnExists($table, 'uid')) {
