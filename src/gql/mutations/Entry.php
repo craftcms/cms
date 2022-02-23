@@ -173,6 +173,7 @@ class Entry extends Mutation
                 break;
             case Section::TYPE_STRUCTURE:
                 $entryMutationArguments = array_merge($entryMutationArguments, StructureArguments::getArguments());
+                // no break
             default:
                 $description = 'Save a “' . $entryType->name . '” entry in the “' . $section->name . '” section.';
                 $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';
