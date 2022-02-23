@@ -142,7 +142,7 @@ class User extends \yii\web\User
     /**
      * Returns the user token from the session.
      *
-     * @return string
+     * @return string|null
      * @since 3.6.11
      */
     public function getToken(): ?string

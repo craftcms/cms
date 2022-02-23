@@ -1613,7 +1613,7 @@ JS,
     /**
      * Returns a summary of the content that is owned by a given user ID(s).
      *
-     * @return Response|null
+     * @return Response
      * @since 3.0.13
      */
     public function actionUserContentSummary(): Response

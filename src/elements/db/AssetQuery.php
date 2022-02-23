@@ -755,7 +755,7 @@ class AssetQuery extends ElementQuery
      * @return self The query object itself
      * @uses $withTransforms
      */
-    public function withTransforms(?array $value = null): self
+    public function withTransforms(string|array|null $value = null): self
     {
         $this->withTransforms = $value;
         return $this;

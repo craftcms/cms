@@ -56,7 +56,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume The Volume to perform indexing on.
      * @param string $directory Optional path to get index list on a subfolder.
-     * @return Generator|FsListing[]
+     * @return Generator
      * @throws FsException
      */
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator

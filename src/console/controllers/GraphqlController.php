@@ -158,7 +158,6 @@ class GraphqlController extends Controller
      * Creates a new authorization token for a schema.
      *
      * @param string $schemaUid The schema UUID
-     * @param string $name The token name
      * @return int
      * @since 3.7.15
      */

@@ -662,7 +662,7 @@ interface ElementInterface extends ComponentInterface
      * - `enabledByDefault` (boolean) – Whether the element should be enabled in this site by default
      *   (`true` by default)
      *
-     * @return int[]|array
+     * @return array
      */
     public function getSupportedSites(): array;
 
@@ -838,7 +838,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL that users should be redirected to after editing the element.
      *
-     * @return string
+     * @return string|null
      * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
@@ -856,7 +856,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.
      *
-     * @return string|null
+     * @return string
      * @since 4.0.0
      */
     public function getAddlButtons(): string;

@@ -1506,8 +1506,6 @@ class ProjectConfig extends Component
 
     /**
      * Save configuration data after the request.
-     *
-     * @param array $data
      */
     private function _saveConfigAfterRequest(): void
     {

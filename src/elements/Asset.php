@@ -1555,8 +1555,8 @@ JS;
     /**
      * Returns preview thumb image HTML.
      *
-     * @param int $width
-     * @param int $height
+     * @param int $desiredWidth
+     * @param int $desiredHeight
      * @return string
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @since 3.4.0

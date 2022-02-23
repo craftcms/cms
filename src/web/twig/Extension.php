@@ -300,7 +300,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param Money|null $money
      * @param string|null $formatLocale
-     * @return string
+     * @return string|null
      */
     public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
     {

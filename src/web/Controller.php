@@ -322,7 +322,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
      * @param string|null $redirect The default URL to redirect the request
-     * @return YiiResponse|null
+     * @return YiiResponse
      * @since 4.0.0
      */
     public function asModelSuccess(

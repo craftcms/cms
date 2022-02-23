@@ -112,7 +112,7 @@ class TestCase extends Unit
     /**
      * Invokes an inaccessible static method on a class
      *
-     * @param $object
+     * @param $className
      * @param $method
      * @param array $args
      * @param bool $revoke whether to make method inaccessible after execution

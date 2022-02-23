@@ -204,7 +204,7 @@ class CommandTest
     }
 
     /**
-     * @param $prompt
+     * @param string $prompt
      * @param $returnValue
      * @param array $options
      * @return CommandTest
