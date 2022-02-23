@@ -29,6 +29,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         // Set the sort header
         this.initTableHeaders();
 
+        // Add callback for after elements are updated
+        this.elementIndex.settings.onUpdateElements = () => {
+            this.$table.find('th [aria-pressed="true"]').focus();
+            this._updateScreenReaderStatus();
+        };
+
         // Create the Structure Table Sorter
         if (
             this.elementIndex.settings.context === 'index' &&
@@ -359,7 +365,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     _handleSortHeaderClick: function(ev, $header) {
         if (this.$selectedSortHeader) {
             this.$selectedSortHeader.removeClass('ordered asc desc');
-            console.log(this.$selectedSortHeader);
         }
 
         $header.removeClass('orderable').addClass('ordered loading');
@@ -368,11 +373,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
         // No need for two spinners
         this.elementIndex.setIndexAvailable();
-
-        setTimeout(() => {
-            this.$table.find('th [aria-pressed="true"]').focus();
-        }, 3000);
-        this._updateScreenReaderStatus();
     },
 
     _updateScreenReaderStatus: function() {
