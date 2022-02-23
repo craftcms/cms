@@ -71,14 +71,18 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
                 sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
 
-                $header.addClass('ordered ' + selectedSortDir);
+                $header
+                    .addClass('ordered ' + selectedSortDir)
+                    .on('click', this._handleSelectedSortHeaderClick.bind(this));
                 this.makeColumnSortable($header, true);
             } else {
                 // Is this attribute sortable?
                 var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
 
                 if ($sortAttribute.length) {
-                    $header.addClass('orderable');
+                    $header
+                        .addClass('orderable')
+                        .on('click', this._handleUnselectedSortHeaderClick.bind(this));
                     this.makeColumnSortable($header);
                 }
             }
@@ -93,8 +97,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
         $headerButton = $('<button type="button" aria-pressed="false"></button>')
           .html($headerText)
-          .attr('aria-describedby', captionId)
-          .on('click', this._handleUnselectedSortHeaderClick.bind(this));
+          .attr('aria-describedby', captionId);
 
         if (sorted) {
             $headerButton.attr('aria-pressed', 'true');
