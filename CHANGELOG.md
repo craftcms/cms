@@ -184,7 +184,6 @@
 - Added `craft\fields\Assets::$restrictedLocationSource`, which replaces `$singleUploadLocationSource`.
 - Added `craft\fields\Assets::$restrictedLocationSubpath`, which replaces `$singleUploadLocationSubpath`.
 - Added `craft\fields\Assets::$restrictLocation`, which replaces `$useSingleFolder`.
-- Added `craft\fields\Money`.
 - Added `craft\fields\BaseRelationField::createSelectionCondition()`.
 - Added `craft\fields\BaseRelationField::getSelectionCondition()`.
 - Added `craft\fields\BaseRelationField::setSelectionCondition()`.
@@ -196,6 +195,7 @@
 - Added `craft\fields\conditions\OptionsFieldConditionRule`.
 - Added `craft\fields\conditions\RelationalFieldConditionRule`.
 - Added `craft\fields\conditions\TextFieldConditionRule`.
+- Added `craft\fields\Money`.
 - Added `craft\fs\Local`.
 - Added `craft\fs\MissingFs`.
 - Added `craft\fs\Temp`.
@@ -288,8 +288,8 @@
 - Added `craft\services\Gc::hardDeleteElements()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
-- Added `craft\services\Matrix::duplicateOwnership()`.
 - Added `craft\services\Matrix::createRevisionBlocks()`.
+- Added `craft\services\Matrix::duplicateOwnership()`.
 - Added `craft\services\ProjectConfig::applyExternalChanges()`.
 - Added `craft\services\ProjectConfig::ASSOC_KEY`.
 - Added `craft\services\ProjectConfig::getDoesExternalConfigExist()`.
@@ -371,12 +371,12 @@
 - Added the `Craft.ui.createButton()` JavaScript method.
 - Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
-- Added the Illuminate Collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
-- Added the Money package.
-- Added the Addressing package.
-- Added the yii2-symfonymailer package.
+- Added the commerceguys/addressing package.
+- Added the illuminate/collections package. ([#8475](https://github.com/craftcms/cms/discussions/8475))
+- Added the moneyphp/money package.
 - Added the symfony/var-dumper package.
 - Added the theiconic/name-parser package.
+- Added the yiisoft/yii2-symfonymailer package.
 
 ### Changed
 - Craft now requires PHP 8.0.2 or later.
@@ -560,8 +560,8 @@
 - `craft\helpers\Html` now supports defining `hx-*` and `data-hx-*` attributes via a `hx` and `data-hx` keys, similar to `aria` and `data`.
 - `craft\helpers\i18n\Formatter::asPercent()` now chooses a default `$decimals` value based on the value given, if `null`.
 - `craft\helpers\i18n\Formatter::asPercent()` now treats all empty values as `0`.
-- `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\helpers\MailerHelper::normalizeEmails()` now returns an empty array instead of `null`.
+- `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
