@@ -16,7 +16,7 @@ use craft\search\SearchQueryTermGroup;
  * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/3.x/searching.html
+ * https://craftcms.com/docs/4.x/searching.html
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
