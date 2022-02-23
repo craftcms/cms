@@ -913,7 +913,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         if ($option.length) {
             this.$sortAttributesList.find('a.sel').removeClass('sel');
             $option.addClass('sel');
-            
+
             const label = this.getSortLabel(attr);
             this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
             this.$sortMenuBtn.text(label);
