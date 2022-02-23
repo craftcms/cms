@@ -293,7 +293,7 @@ class Craft extends Yii2
     public function installPlugin(array $plugin): void
     {
         if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
-            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle'] . '');
+            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle']);
         }
     }
 

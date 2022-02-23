@@ -190,7 +190,7 @@ class TestSetup
 
         if (!$migration instanceof Migration) {
             throw new InvalidArgumentException(
-                'Migration class is not an instance of: ' . Migration::class . ''
+                'Migration class is not an instance of: ' . Migration::class
             );
         }
 
