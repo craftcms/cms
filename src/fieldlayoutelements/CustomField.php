@@ -53,10 +53,7 @@ class CustomField extends BaseField
      */
     protected function value(?ElementInterface $element = null)
     {
-        if (!$element) {
-            return null;
-        }
-        return $element->getFieldValue($this->_field->handle);
+        return $element?->getFieldValue($this->_field->handle);
     }
 
     /**

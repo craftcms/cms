@@ -624,8 +624,7 @@ class Gql extends Component
      */
     public function getPublicSchema(): ?GqlSchema
     {
-        $token = $this->getPublicToken();
-        return $token ? $token->getSchema() : null;
+        return $this->getPublicToken()?->getSchema();
     }
 
     /**
@@ -860,7 +859,7 @@ class Gql extends Component
         // Public token information is stored in the project config
         if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
             $data = [
-                'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
+                'expiryDate' => $token->expiryDate?->getTimestamp(),
                 'enabled' => $token->enabled,
             ];
 

@@ -1010,11 +1010,7 @@ abstract class Element extends Component implements ElementInterface
         // Is this a custom field?
         if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
             $fieldId = $matches[1];
-            $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-            if ($field) {
-                $field->modifyElementIndexQuery($elementQuery);
-            }
+            Craft::$app->getFields()->getFieldById($fieldId)?->modifyElementIndexQuery($elementQuery);
         }
     }
 
@@ -3097,8 +3093,7 @@ abstract class Element extends Component implements ElementInterface
             return $this->_parentId ?: null;
         }
 
-        $parent = $this->getParent();
-        return $parent ? $parent->id : null;
+        return $this->getParent()?->id;
     }
 
     /**
@@ -4649,7 +4644,7 @@ JS,
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = $this->getFieldContext();
         $fieldLayout = $this->getFieldLayout();
-        $this->_fieldsByHandle[$handle] = $fieldLayout ? $fieldLayout->getFieldByHandle($handle) : null;
+        $this->_fieldsByHandle[$handle] = $fieldLayout?->getFieldByHandle($handle);
         $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];

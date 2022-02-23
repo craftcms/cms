@@ -207,7 +207,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function serializeValue($value, ?ElementInterface $element = null)
     {
         /** @var DateTime|null $value */
-        return $value ? $value->format('H:i:s') : null;
+        return $value?->format('H:i:s');
     }
 
     /**

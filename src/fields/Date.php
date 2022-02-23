@@ -288,8 +288,8 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         return [
             [
                 DateTimeValidator::class,
-                'min' => $this->min ? $this->min->setTime(0, 0, 0) : null,
-                'max' => $this->max ? $this->max->setTime(23, 59, 59) : null,
+                'min' => $this->min?->setTime(0, 0, 0),
+                'max' => $this->max?->setTime(23, 59, 59),
             ],
         ];
     }

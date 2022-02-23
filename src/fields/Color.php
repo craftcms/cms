@@ -141,7 +141,7 @@ class Color extends Field implements PreviewableFieldInterface
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $value ? $value->getHex() : null,
+            'value' => $value?->getHex(),
         ]);
     }
 

@@ -700,17 +700,13 @@ class ElementsController extends Controller
         callable $jsSettingsFn
     ) {
         $fieldLayout = $element->getFieldLayout();
-        if ($fieldLayout) {
-            $form = $fieldLayout->createForm($element, !$canSave, [
-                'registerDeltas' => true,
-            ]);
-        } else {
-            $form = null;
-        }
+        $form = $fieldLayout?->createForm($element, !$canSave, [
+            'registerDeltas' => true,
+        ]);
 
         /** @var Response|CpScreenResponseBehavior $response */
         $response
-            ->tabs($form ? $form->getTabMenu() : null)
+            ->tabs($form?->getTabMenu())
             ->content($contentFn($form))
             ->sidebar($sidebarFn($form));
 
@@ -1219,7 +1215,7 @@ JS;
                 'canonicalId' => $element->getCanonicalId(),
                 'draftId' => $element->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
-                'creator' => $creator ? $creator->getName() : null,
+                'creator' => $creator?->getName(),
                 'draftName' => $element->draftName,
                 'draftNotes' => $element->draftNotes,
                 'docTitle' => $docTitle,

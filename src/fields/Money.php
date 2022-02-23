@@ -221,10 +221,9 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             if ($value['value'] === '') {
                 return null;
             }
-            $value['currency'] = $this->currency;
 
-            $value = MoneyHelper::toMoney($value);
-            return $value ? $value->getAmount() : null;
+            $value['currency'] = $this->currency;
+            return MoneyHelper::toMoney($value)?->getAmount();
         }
 
         $money = new MoneyLibrary($value, new Currency($this->currency));

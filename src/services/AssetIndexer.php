@@ -191,11 +191,7 @@ class AssetIndexer extends Component
      */
     public function stopIndexingSession(AssetIndexingSession $session): void
     {
-        $sessionRecord = AssetIndexingSessionRecord::findOne($session->id);
-
-        if ($sessionRecord) {
-            $sessionRecord->delete();
-        }
+        AssetIndexingSessionRecord::findOne($session->id)?->delete();
     }
 
     /**

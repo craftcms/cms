@@ -531,9 +531,7 @@ class ElementHelper
             $lastElement = $element;
         }
 
-        if ($lastElement) {
-            $lastElement->setNext(false);
-        }
+        $lastElement?->setNext(false);
     }
 
     /**

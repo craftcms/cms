@@ -2480,7 +2480,7 @@ JS;
         $tempPath = null;
 
         $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
-        $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
+        $oldVolume = $oldFolder?->getVolume();
 
         $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
         $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;

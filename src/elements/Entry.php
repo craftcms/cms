@@ -1270,7 +1270,7 @@ class Entry extends Element
         if ($status == self::STATUS_ENABLED && $this->postDate) {
             $currentTime = DateTimeHelper::currentTimeStamp();
             $postDate = $this->postDate->getTimestamp();
-            $expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+            $expiryDate = $this->expiryDate?->getTimestamp();
 
             if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;

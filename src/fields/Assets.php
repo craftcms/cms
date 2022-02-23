@@ -685,7 +685,7 @@ class Assets extends BaseRelationField
                 }
                 // Only show it if they have permission to view it
                 $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
-                $volume = $folder ? $folder->getVolume() : null;
+                $volume = $folder?->getVolume();
                 return $volume && $userService->checkPermission("viewAssets:$volume->uid");
             }, true, true, false);
         }
@@ -993,8 +993,7 @@ class Assets extends BaseRelationField
             return null;
         }
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
-        return $volume ? $volume->id : null;
+        return Craft::$app->getVolumes()->getVolumeByUid($parts[1])?->id;
     }
 
     /**
