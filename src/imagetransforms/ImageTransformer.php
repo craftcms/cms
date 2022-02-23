@@ -33,6 +33,8 @@ use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GeneratePendingTransforms;
 use craft\services\ImageTransforms;
+use Exception;
+use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -300,7 +302,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
             // Let's cook up a new one.
             try {
                 $volume->getFs()->deleteFile($transformPath);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
         }
@@ -482,7 +484,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
                 }
 
                 $this->storeTransformIndexData($index);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $index->inProgress = false;
                 $index->fileExists = false;
                 $index->error = true;

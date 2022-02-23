@@ -1689,7 +1689,7 @@ JS;
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      * @throws ServerErrorHttpException
      */
     private function _asSuccess(string $message, ElementInterface $element, array $data = [], bool $addAnother = false): Response

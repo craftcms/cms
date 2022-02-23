@@ -140,7 +140,7 @@ class Fs extends Component
      * @param FsInterface $fs the filesystem to be saved.
      * @param bool $runValidation Whether the filesystem should be validated
      * @return bool Whether the filesystem was saved successfully
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
     {

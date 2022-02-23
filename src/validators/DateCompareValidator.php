@@ -7,6 +7,7 @@
 
 namespace craft\validators;
 
+use Closure;
 use Craft;
 use craft\i18n\Formatter;
 use DateTime;
@@ -105,7 +106,7 @@ class DateCompareValidator extends Validator
         $value = $model->$attribute;
 
         if (isset($this->compareValue)) {
-            if ($this->compareValue instanceof \Closure) {
+            if ($this->compareValue instanceof Closure) {
                 $this->compareValue = call_user_func($this->compareValue);
             }
             $compareValue = $this->compareValue;
@@ -137,7 +138,7 @@ class DateCompareValidator extends Validator
             throw new InvalidConfigException('CompareValidator::compareValue must be set.');
         }
 
-        if ($this->compareValue instanceof \Closure) {
+        if ($this->compareValue instanceof Closure) {
             $this->compareValue = call_user_func($this->compareValue);
         }
 

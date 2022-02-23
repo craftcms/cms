@@ -325,7 +325,7 @@ class AssetIndexer extends Component
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
         } catch (AssetDisallowedExtensionException | AssetNotIndexableException $exception) {
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
         }

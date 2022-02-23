@@ -8,6 +8,7 @@
 namespace craft\web\twig;
 
 use Closure;
+use Countable;
 use Craft;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
@@ -260,7 +261,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }),
             new TwigTest('countable', function($obj): bool {
                 if (!function_exists('is_countable')) {
-                    return is_array($obj) || $obj instanceof \Countable;
+                    return is_array($obj) || $obj instanceof Countable;
                 }
                 return is_countable($obj);
             }),

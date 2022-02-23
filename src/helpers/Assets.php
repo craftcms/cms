@@ -23,6 +23,7 @@ use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Assets
@@ -85,7 +86,7 @@ class Assets
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public static function generateUrl(Volume $volume, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {

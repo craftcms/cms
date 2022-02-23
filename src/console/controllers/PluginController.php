@@ -126,7 +126,7 @@ class PluginController extends Controller
 
         try {
             $success = Craft::$app->getPlugins()->installPlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         } finally {
             if (!$success) {

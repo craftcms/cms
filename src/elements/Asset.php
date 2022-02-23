@@ -91,16 +91,16 @@ use yii\validators\RequiredValidator;
  * @property-read bool $hasCheckeredThumb
  * @property-read bool $supportsImageEditor
  * @property-read array $previewTargets
- * @property-read \craft\base\FsInterface $fs
+ * @property-read FsInterface $fs
  * @property-read string $titleTranslationKey
  * @property-read null|string $titleTranslationDescription
  * @property-read string $dataUrl
  * @property-read bool $isTitleTranslatable
  * @property-read string $previewHtml
  * @property-read string $imageTransformSourcePath
- * @property \craft\elements\User|null $uploader
+ * @property User|null $uploader
  * @property-read resource $stream
- * @property-write null|string|array|\craft\models\ImageTransform $transform
+ * @property-write null|string|array|ImageTransform $transform
  * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

@@ -34,6 +34,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\di\Instance;
 
 /**
@@ -312,7 +313,7 @@ class ImageTransforms extends Component
      *
      * @param int $transformId The transform's ID
      * @return bool Whether the transform was deleted.
-     * @throws \yii\db\Exception on DB error
+     * @throws Exception on DB error
      */
     public function deleteTransformById(int $transformId): bool
     {
@@ -332,7 +333,7 @@ class ImageTransforms extends Component
      *
      * @param int|ImageTransform $transform The transform
      * @return bool Whether the transform was deleted
-     * @throws \yii\db\Exception on DB error
+     * @throws Exception on DB error
      */
     public function deleteTransform(ImageTransform $transform): bool
     {
