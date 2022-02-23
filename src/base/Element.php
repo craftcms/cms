@@ -1843,6 +1843,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $this->_initialized = true;
+
+        // Stop allowing setting custom field values directly on the behavior
+        /** @var CustomFieldBehavior $behavior */
+        $behavior = $this->getBehavior('customFields');
+        $behavior->canSetProperties = false;
     }
 
     /**
@@ -3344,13 +3349,7 @@ abstract class Element extends Component implements ElementInterface
         // Make sure the value has been normalized
         $this->normalizeFieldValue($fieldHandle);
 
-        /** @var CustomFieldBehavior $behavior */
-        $behavior = $this->getBehavior('customFields');
-
-        // Stop allowing setting custom field values directly on the behavior now that we've started normalizing them
-        $behavior->canSetProperties = false;
-
-        return $behavior->$fieldHandle;
+        return $this->getBehavior('customFields')->$fieldHandle;
     }
 
     /**
