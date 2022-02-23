@@ -95,13 +95,15 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     makeColumnSortable: function($header, sorted = false) {
         const $headerText = $header.html();
-        const instructionId = this.$tableCaption.find('span').attr('id');
+        const $instructions = this.$tableCaption.find('[data-sort-instructions]');
 
         $header.attr('data-orderable', true);
 
-        $headerButton = $('<button type="button" aria-pressed="false"></button>')
-          .html($headerText)
-          .attr('aria-describedby', instructionId);
+        $headerButton = $('<button type="button" aria-pressed="false"></button>').html($headerText);
+
+        if ($instructions) {
+            $headerButton.attr('aria-describedby', $instructions.attr('id'));
+        }
 
         if (sorted) {
             $headerButton.attr('aria-pressed', 'true');
@@ -385,7 +387,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         if (!attribute && !direction && !label) return;
 
         const message =  Craft.t('app', 'Table {name} sorted by {attribute}, {direction}', {
-            name: 'Test',
+            name: this.$table.attr('data-name'),
             attribute: label,
             direction: direction,
         });
