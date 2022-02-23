@@ -472,7 +472,7 @@ class GraphqlController extends Controller
             );
         }
 
-        return $this->asSuccess(Craft::t('app', 'Schema saved.'))
+        return $this->asSuccess(Craft::t('app', 'Schema saved.'));
     }
 
     /**

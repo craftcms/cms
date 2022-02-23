@@ -663,8 +663,7 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-.breadcrumb-toggle-wrapper,
-.account-toggle-wrapper {
+[data-wrapper] {
   position: relative;
 }
 
