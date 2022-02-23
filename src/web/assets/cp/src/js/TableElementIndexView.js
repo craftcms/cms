@@ -335,7 +335,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     },
 
     _handleSelectedSortHeaderClick: function(ev) {
-        var $header = $(ev.currentTarget);
+        var $header = $(ev.currentTarget).closest('th');
 
         if ($header.hasClass('loading')) {
             return;

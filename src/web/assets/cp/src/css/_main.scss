@@ -2177,6 +2177,10 @@ table {
         cursor: default;
       }
 
+      th[data-orderable] {
+        position: relative;
+      }
+
       th {
         white-space: nowrap;
         vertical-align: middle;
@@ -2210,8 +2214,6 @@ table {
         }
 
         &.ordered {
-          position: relative;
-
           & button {
             @include padding-right(26px);
           }
