@@ -411,6 +411,7 @@
 - Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
 - Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
+- The `users/set-password` action now returns a 400 HTTP response when an invalid token is passed, if there’s no URL to redirect to. ([#10592](https://github.com/craftcms/cms/discussions/10592))
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - GraphQL field types that can’t be null now specify so in their type declaration.
 - The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
@@ -586,7 +587,6 @@
 - Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
-- `craft\controllers\UsersController::actionSetPassword` now returns an HTTP response with a status code of 400 when it encounters an invalid token. ([#10592](https://github.com/craftcms/cms/discussions/10592))
 
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
