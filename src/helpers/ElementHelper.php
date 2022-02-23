@@ -398,7 +398,10 @@ class ElementHelper
     public static function rootElement(ElementInterface $element): ElementInterface
     {
         if ($element instanceof BlockElementInterface) {
-            return static::rootElement($element->getOwner());
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::rootElement($owner);
+            }
         }
         return $element;
     }

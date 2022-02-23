@@ -315,7 +315,9 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $blockType;
     }
 
-    /** @inheritdoc */
+    /**
+     * @inheritdoc
+     */
     public function getOwner(): ElementInterface
     {
         if (!isset($this->_owner)) {

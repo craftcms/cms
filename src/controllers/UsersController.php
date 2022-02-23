@@ -552,7 +552,7 @@ class UsersController extends Controller
                     Craft::t('app', 'Couldn’t update password.'),
                     errorAttribute: 'newPassword'
                 ) ?? $this->_renderSetPasswordTemplate([
-                    'errors' => $errors,
+                    'errors' => $user->getErrors('newPassword'),
                     'code' => $code,
                     'id' => $uid,
                     'newUser' => !$user->password,
@@ -2210,7 +2210,7 @@ JS,
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
+        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
     }
 
     /**
