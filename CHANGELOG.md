@@ -586,6 +586,7 @@
 - Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
+- `craft\controllers\UsersController::actionSetPassword` now returns an HTTP response with a status code of 400 when it encounters an invalid token. ([#10592](https://github.com/craftcms/cms/discussions/10592))
 
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
