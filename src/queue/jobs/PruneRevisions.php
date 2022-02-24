@@ -55,6 +55,7 @@ class PruneRevisions extends BaseJob
             $this->maxRevisions = $generalConfig->maxRevisions;
         }
 
+        /** @var string|ElementInterface $class */
         $class = $this->elementType;
         $extraRevisions = $class::find()
             ->revisionOf($this->canonicalId)

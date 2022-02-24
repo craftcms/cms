@@ -288,14 +288,14 @@ class CategoriesController extends Controller
             throw new ServerErrorHttpException(sprintf('Unable to save category as a draft: %s', implode(', ', $category->getErrorSummary(true))));
         }
 
-        // Set its position in the structure if a before/after parma was passed
+        // Set its position in the structure if a before/after param was passed
         if ($nextId = $this->request->getParam('before')) {
-            $nextCategory = Craft::$app->getEntries()->getCategoryById($nextId, $site->id, [
+            $nextCategory = Craft::$app->getCategories()->getCategoryById($nextId, $site->id, [
                 'structureId' => $group->structureId,
             ]);
             Craft::$app->getStructures()->moveBefore($group->structureId, $category, $nextCategory);
         } else if ($prevId = $this->request->getParam('after')) {
-            $prevCategory = Craft::$app->getEntries()->getCategoryById($prevId, $site->id, [
+            $prevCategory = Craft::$app->getCategories()->getCategoryById($prevId, $site->id, [
                 'structureId' => $group->structureId,
             ]);
             Craft::$app->getStructures()->moveAfter($group->structureId, $category, $prevCategory);

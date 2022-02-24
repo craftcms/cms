@@ -511,10 +511,6 @@ class Volumes extends Component
             ]));
         }
 
-        if (!$volume->beforeDelete()) {
-            return false;
-        }
-
         Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
         return true;
     }
@@ -546,8 +542,6 @@ class Volumes extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            $volume->beforeApplyDelete();
-
             // Delete the assets
             $assets = Asset::find()
                 ->status(null)
@@ -570,8 +564,6 @@ class Volumes extends Component
             $db->createCommand()
                 ->softDelete(Table::VOLUMES, ['id' => $volumeRecord->id])
                 ->execute();
-
-            $volume->afterDelete();
 
             $transaction->commit();
         } catch (Throwable $e) {
