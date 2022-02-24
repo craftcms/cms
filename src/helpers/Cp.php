@@ -1149,13 +1149,12 @@ JS, [
                     ],
                     'data' => [
                         'icon' => 'settings',
-//                    'disclosure-trigger' => true,
+                    'disclosure-trigger' => true,
                     ],
                 ]) .
                 Html::beginTag('div', [
                     'id' => $actionMenuId,
-//                'class' => ['menu', 'menu--disclosure'],
-                    'class' => ['menu'],
+                    'class' => ['menu', 'menu--disclosure'],
                 ]) .
                 Html::beginTag('ul', ['class' => 'padded']) .
                 Html::beginTag('li') .
