@@ -725,8 +725,6 @@ class Sections extends Component
                         'criteria' => [
                             'sectionId' => $sectionRecord->id,
                             'structureId' => $sectionRecord->structureId,
-                            'drafts' => null,
-                            'provisionalDrafts' => null,
                         ],
                     ]));
                 } else if ($this->autoResaveEntries) {

@@ -5,7 +5,8 @@
 ### Fixed
 - Fixed an error that occurred when initializing an element with custom field values that weren’t included in its field layout. ([#10622](https://github.com/craftcms/cms/issues/10622))
 - Fixed a PHP 8 compatibility bug.
-- Fixed a bug where drafts weren't propagated to enabled sites when changing a section's settings. ([#10634](https://github.com/craftcms/cms/issues/10634))
+- Fixed a bug where drafts weren’t getting propagated when a section was enabled for new sites. ([#10634](https://github.com/craftcms/cms/issues/10634))
+- Fixed a bug where moving files and folders from the Assets index page wouldn’t ever resolve properly if there was an unexpected server error.
 
 ## 3.7.34 - 2022-02-22
 
