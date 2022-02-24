@@ -51,7 +51,7 @@ class CustomField extends BaseField
      * @inheritdoc
      * @since 3.5.2
      */
-    protected function value(?ElementInterface $element = null)
+    protected function value(?ElementInterface $element = null): mixed
     {
         return $element?->getFieldValue($this->_field->handle);
     }

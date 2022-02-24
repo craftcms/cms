@@ -422,7 +422,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function getTotalJobs()
+    public function getTotalJobs(): int
     {
         return $this->db->usePrimary(function() {
             return $this->_createJobQuery()

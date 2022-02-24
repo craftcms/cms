@@ -22,7 +22,7 @@ class Site extends ArgumentHandler
     /**
      * @inheritdoc
      */
-    protected function handleArgument($argumentValue)
+    protected function handleArgument($argumentValue): mixed
     {
         if (is_array($argumentValue) && count($argumentValue) == 1 && $argumentValue[0] == '*') {
             $argumentValue = '*';

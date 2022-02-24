@@ -66,7 +66,7 @@ class Transform extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         $onAssetElement = $value instanceof Asset;
         $onAssetElementList = is_array($value) && !empty($value);

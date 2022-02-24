@@ -34,7 +34,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         /** @var TagElement $source */
         $fieldName = $resolveInfo->fieldName;

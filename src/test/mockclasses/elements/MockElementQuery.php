@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
+use yii\base\Model;
 
 /**
  * MockElementQuery is used to mimic element query and help mocking element query results.
@@ -148,7 +149,7 @@ class MockElementQuery extends ElementQuery
      *
      * @return array|ElementInterface|null
      */
-    public function one($db = null): ElementInterface|array|null
+    public function one($db = null): Model|array|null
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

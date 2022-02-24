@@ -44,7 +44,7 @@ abstract class ElementResolver extends Resolver
     /**
      * @inheritdoc
      */
-    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo)
+    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         $value = $query instanceof ElementQuery ? $query->all() : $query;

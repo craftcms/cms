@@ -34,6 +34,7 @@ use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\db\Connection;
 use yii\db\Expression;
@@ -1406,7 +1407,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return ElementInterface|array|null the first element. Null is returned if the query
      * results in nothing.
      */
-    public function one($db = null): ElementInterface|array|null
+    public function one($db = null): Model|array|null
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1455,7 +1456,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return ElementInterface|array|null The element. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, ?Connection $db = null): ElementInterface|array|null
+    public function nth(int $n, ?Connection $db = null): Model|array|null
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {

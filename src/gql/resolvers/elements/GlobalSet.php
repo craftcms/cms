@@ -22,7 +22,7 @@ class GlobalSet extends ElementResolver
     /**
      * @inheritdoc
      */
-    public static function prepareQuery(mixed $source, array $arguments, $fieldName = null)
+    public static function prepareQuery(mixed $source, array $arguments, $fieldName = null): mixed
     {
         $query = GlobalSetElement::find();
 

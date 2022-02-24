@@ -13,6 +13,7 @@ use craft\models\Site;
 use craft\search\SearchQuery;
 use Illuminate\Support\Collection;
 use yii\base\Arrayable;
+use yii\base\Model;
 use yii\db\Connection;
 use yii\db\QueryInterface;
 
@@ -1451,7 +1452,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * component will be used.
      * @return ElementInterface|array|null The resulting element. Null is returned if the query results in nothing.
      */
-    public function one($db = null): ElementInterface|array|null;
+    public function one($db = null): Model|array|null;
 
     /**
      * Executes the query and returns a single row of result at a given offset.
@@ -1462,7 +1463,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return ElementInterface|array|null The element or row of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, ?Connection $db = null): ElementInterface|array|null;
+    public function nth(int $n, ?Connection $db = null): Model|array|null;
 
     /**
      * Executes the query and returns the IDs of the resulting elements.

@@ -2629,7 +2629,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getRoute()
+    public function getRoute(): mixed
     {
         // Give plugins a chance to set this
         if ($this->hasEventHandlers(self::EVENT_SET_ROUTE)) {

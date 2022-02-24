@@ -65,7 +65,7 @@ class OptionData implements Serializable
     /**
      * @inheritdoc
      */
-    public function serialize()
+    public function serialize(): mixed
     {
         return $this->value;
     }

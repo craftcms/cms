@@ -188,7 +188,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
         $view = Craft::$app->getView();
         $settingsHtml = $view->namespaceInputs(function() {

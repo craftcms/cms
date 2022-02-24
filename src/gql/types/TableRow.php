@@ -22,7 +22,7 @@ class TableRow extends ObjectType
     /**
      * @inheritdoc
      */
-    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $fieldName = $resolveInfo->fieldName;
 
