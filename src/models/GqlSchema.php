@@ -54,11 +54,11 @@ class GqlSchema extends Model
 
     public function __construct($config = [])
     {
-        parent::__construct($config);
-
-        if (is_string($this->scope)) {
-            $this->scope = Json::decode($this->scope);
+        if (isset($config['scope']) && is_string($config['scope'])) {
+            $config['scope'] = Json::decode($config['scope']);
         }
+
+        parent::__construct($config);
     }
 
     /**
