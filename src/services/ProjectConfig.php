@@ -275,14 +275,14 @@ class ProjectConfig extends Component
     private $_configFileList = [];
 
     /**
-     * @var bool Whether the config has been modified during the request and must be saved.
+     * @var bool Whether to write out updated YAML changes at the end of the request
      */
-    private $_isConfigModified = false;
+    private $_updateYaml = false;
 
     /**
-     * @var bool Whether the config should be saved to DB after request
+     * @var bool Whether to update the database config data at the end of the request
      */
-    private $_updateInternalConfig = false;
+    private $_updateDb = false;
 
     /**
      * @var bool Whether we’re listening for the request end, to update the Yaml caches.
@@ -413,8 +413,8 @@ class ProjectConfig extends Component
         $this->_parsedChanges = [];
         $this->_appliedConfig = [];
         $this->_configFileList = [];
-        $this->_isConfigModified = false;
-        $this->_updateInternalConfig = false;
+        $this->_updateYaml = false;
+        $this->_updateDb = false;
         $this->_applyingYamlChanges = false;
         $this->_timestampUpdated = false;
         $this->_changesBeingApplied = null;
@@ -781,7 +781,7 @@ class ProjectConfig extends Component
      */
     public function updateStoredConfigAfterRequest()
     {
-        $this->_updateInternalConfig = true;
+        $this->_updateDb = true;
     }
 
     /**
@@ -836,7 +836,7 @@ class ProjectConfig extends Component
     {
         $this->_processProjectConfigNameChanges();
 
-        if ($this->_isConfigModified) {
+        if ($this->_updateYaml) {
             $this->_updateConfigVersion();
 
             if ($writeYaml ?? $this->writeYamlAutomatically) {
@@ -844,7 +844,7 @@ class ProjectConfig extends Component
             }
         }
 
-        if (!$this->_updateInternalConfig) {
+        if (!$this->_updateDb) {
             return;
         }
 
@@ -1271,8 +1271,8 @@ class ProjectConfig extends Component
         }
 
         // And now ensure that Project Config doesn't attempt to save to yaml files again
-        $this->_isConfigModified = false;
-        $this->_updateInternalConfig = true;
+        $this->_updateYaml = false;
+        $this->_updateDb = true;
 
         $this->readOnly = $readOnly;
         $this->muteEvents = false;
@@ -1558,7 +1558,7 @@ class ProjectConfig extends Component
     private function _saveConfig(array $data)
     {
         $this->_appliedConfig = $data;
-        $this->_isConfigModified = true;
+        $this->_updateYaml = true;
     }
 
     /**
