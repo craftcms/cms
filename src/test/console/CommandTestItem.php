@@ -55,7 +55,7 @@ class CommandTestItem extends Model
     public mixed $returnValue = null;
 
     /**
-     * @var string
+     * @var bool
      */
-    public string $withScriptName;
+    public bool $withScriptName;
 }
