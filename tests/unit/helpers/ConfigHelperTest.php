@@ -131,9 +131,6 @@ class ConfigHelperTest extends Unit
             [4, '4'],
             [5, 5],
             [0, 'M5'],
-            [0, false],
-            [1, true],
-            [0, null],
         ];
     }
 
