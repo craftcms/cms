@@ -123,13 +123,13 @@ class MockElementQuery extends ElementQuery
     /**
      * Mock setting query arguments via a method call.
      *
-     * @param $method
-     * @param $arguments
+     * @param $name
+     * @param $params
      * @return self
      */
-    public function __call($method, $arguments): self
+    public function __call($name, $params): self
     {
-        $this->properties[$method] = reset($arguments);
+        $this->properties[$name] = reset($params);
         return $this;
     }
 
