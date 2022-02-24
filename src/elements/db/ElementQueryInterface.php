@@ -790,7 +790,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -816,7 +816,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -965,7 +965,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that match a search query.
      *
-     * See [Searching](https://craftcms.com/docs/3.x/searching.html) for a full explanation of how to work with this parameter.
+     * See [Searching](https://craftcms.com/docs/4.x/searching.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -1005,7 +1005,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
      *
-     * See [Eager-Loading Elements](https://craftcms.com/docs/3.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *

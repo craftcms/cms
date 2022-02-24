@@ -1016,7 +1016,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         };
 
         this.progressBar.showProgressBar();
-        doFollowup(data, 0, finalCallback);
+        doFollowup(returnData, 0, finalCallback);
     },
 
     /**

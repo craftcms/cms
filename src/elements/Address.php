@@ -143,10 +143,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public ?int $ownerId = null;
 
     /**
-     * @var ElementInterface The owner element
+     * @var ElementInterface|null The owner element
      * @see getOwner()
      */
-    private ElementInterface $_owner;
+    private ?ElementInterface $_owner = null;
 
     /**
      * @var string Two-letter country code
@@ -237,21 +237,19 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * Returns the owner the address belongs to.
+     * @inheritdoc
      */
-    public function getOwner(): ElementInterface
+    public function getOwner(): ?ElementInterface
     {
+        if (!isset($this->ownerId)) {
+            return null;
+        }
+
         if (!isset($this->_owner)) {
-            if (!isset($this->ownerId)) {
-                throw new InvalidConfigException('Address is missing its owner ID');
-            }
-
             $owner = Craft::$app->getElements()->getElementById($this->ownerId);
-
             if ($owner === null) {
                 throw new InvalidConfigException("Invalid owner ID: $this->ownerId");
             }
-
             $this->_owner = $owner;
         }
 
@@ -263,7 +261,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canView(User $user): bool
     {
-        return parent::canView($user) || $this->getOwner()->getCanonical(true)->canView($user);
+        return parent::canView($user) || $this->getOwner()?->getCanonical(true)->canView($user) ?? false;
     }
 
     /**
@@ -271,7 +269,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canSave(User $user): bool
     {
-        return parent::canSave($user) || $this->getOwner()->getcanonical(true)->canSave($user);
+        return parent::canSave($user) || $this->getOwner()?->getcanonical(true)->canSave($user) ?? false;
     }
 
     /**
@@ -279,7 +277,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canDelete(User $user): bool
     {
-        return parent::canDelete($user) || $this->getOwner()->getCanonical(true)->canSave($user);
+        return parent::canDelete($user) || $this->getOwner()?->getCanonical(true)->canSave($user) ?? false;
     }
 
     /**
@@ -454,9 +452,13 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getCacheTags(): array
     {
-        return [
-            "owner:$this->ownerId",
-        ];
+        $tags = [];
+
+        if ($this->ownerId) {
+            $tags[] = "owner:$this->ownerId";
+        }
+
+        return $tags;
     }
 
     /**
