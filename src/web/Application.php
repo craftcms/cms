@@ -492,15 +492,22 @@ class Application extends \yii\web\Application
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
 
-        try {
-            $sourcePath = (new Query())
-                ->select(['path'])
-                ->from(Table::RESOURCEPATHS)
-                ->where(['hash' => $hash])
-                ->scalar();
-        } catch (DbException $e) {
-            // Craft is either not installed or not updated to 3.0.3+ yet
-        }
+        $sourcePath = Craft::$app->getCache()->getOrSet(
+            Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
+            function() {
+                try {
+                    return (new Query())
+                        ->select(['path'])
+                        ->from(Table::RESOURCEPATHS)
+                        ->where(['hash' => $hash])
+                        ->scalar();
+                } catch (DbException $e) {
+                    // Craft is either not installed or not updated to 3.0.3+ yet
+                }
+
+                return false;
+            }
+        );
 
         if (empty($sourcePath)) {
             return;
