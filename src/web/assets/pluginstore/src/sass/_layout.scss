@@ -9,12 +9,19 @@
 
 .ps-wrapper {
   @apply tw-flex tw-flex-1 tw-flex-col;
+  @apply lg:tw-flex-row;
   padding-bottom: 0 !important;
 
   .ps-sidebar {
     @apply tw-px-6 tw-py-6 tw-w-full;
     background-color: $grey050;
     @include border-radius($largeBorderRadius, 0, 0, $largeBorderRadius);
+    @apply lg:tw-border-b-0 lg:tw-border-r lg:tw-overflow-auto lg:tw-w-64;
+
+
+    .categories {
+      @apply lg:tw-block;
+    }
   }
 
   .ps-main {
@@ -28,18 +35,4 @@
 
 .ps-container {
   @apply tw-px-10 tw-py-6;
-}
-
-@media only screen and (min-width: 975px) {
-  .ps-wrapper {
-    @apply tw-flex-row;
-
-    .ps-sidebar {
-      @apply tw-border-b-0 tw-border-r tw-overflow-auto tw-w-64;
-
-      .categories {
-        display: block;
-      }
-    }
-  }
 }

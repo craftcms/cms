@@ -61,7 +61,8 @@ export default {
 /* Category Selector Btn */
 
 .category-selector-btn {
-  @apply tw-hidden tw-relative;
+  @apply tw-block tw-relative;
+  @apply lg:tw-hidden;
   background: $grey050;
   border: 1px solid $hairlineColor;
   padding: 10px 20px;
@@ -87,7 +88,8 @@ export default {
 /* Category Selector */
 
 .category-selector {
-  @apply tw-hidden tw-flex-col tw-fixed tw-top-0 tw-left-0 tw-bg-white tw-z-20;
+  @apply lg:tw-flex tw-flex-col tw-fixed tw-top-0 tw-left-0 tw-bg-white tw-z-20;
+  @apply tw-hidden;
   width: 100vw;
   height: 100vh;
   box-sizing: border-box;
@@ -138,16 +140,6 @@ export default {
         }
       }
     }
-  }
-}
-
-@media only screen and (max-width: 974px) {
-  .category-selector-btn {
-    @apply tw-block;
-  }
-
-  .category-selector {
-    @apply tw-flex;
   }
 }
 </style>

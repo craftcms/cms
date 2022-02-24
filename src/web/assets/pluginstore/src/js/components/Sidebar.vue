@@ -25,15 +25,7 @@ export default {
   >
 .ps-sidebar {
   & > .nav-items {
-    @apply tw-hidden;
-  }
-}
-
-@media only screen and (min-width: 975px) {
-  .ps-sidebar {
-    & > .nav-items {
-      @apply tw-block;
-    }
+    @apply tw-hidden lg:tw-block;
   }
 }
 </style>
