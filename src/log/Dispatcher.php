@@ -17,14 +17,17 @@ use craft\helpers\App;
  */
 class Dispatcher extends \yii\log\Dispatcher
 {
-    /** @since 3.6.9 */
-    public const TARGET_FILE = '__file__';
+    /** @since 4.0.0 */
+    public const LOGGER_WEB = 'web';
 
-    /** @since 3.6.9 */
-    public const TARGET_STDOUT = '__stdout__';
+    /** @since 4.0.0 */
+    public const LOGGER_WEB_404 = 'web-404';
 
-    /** @since 3.6.9 */
-    public const TARGET_STDERR = '__stderr__';
+    /** @since 4.0.0 */
+    public const LOGGER_CONSOLE = 'console';
+
+    /** @since 4.0.0 */
+    public const LOGGER_QUEUE = 'queue';
 
     /**
      * @inheritdoc

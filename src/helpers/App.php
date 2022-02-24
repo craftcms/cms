@@ -21,6 +21,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\log\Dispatcher;
 use craft\log\FileTarget;
+use craft\log\LogProcessor;
 use craft\log\StreamLogTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
@@ -35,13 +36,17 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use samdark\log\PsrTarget;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher as YiiDispatcher;
-use yii\log\Logger;
+// use yii\log\Logger;
 use yii\log\Target;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
@@ -894,36 +899,62 @@ class App
 
         $targets = [];
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        $processor = new LogProcessor(includeUserIp: $generalConfig->storeUserIps);
+        $consoleLogger = (new Logger(Dispatcher::LOGGER_CONSOLE))
+            ->pushProcessor($processor)
+        ;
+        $webLogger = (new Logger(Dispatcher::LOGGER_CONSOLE))
+            ->pushProcessor($processor)
+        ;
+
+        // $web404Logger = new Logger('web-404');
+        // $queueLogger = new Logger('queue');
+
         $baseTargetConfig = [
-            'includeUserIp' => $generalConfig->storeUserIps,
+            'class' => PsrTarget::class,
+            'extractExceptionTrace' => true,
+            'addTimestampToContext' => true,
             'except' => [
                 PhpMessageSource::class . ':*',
             ],
         ];
 
+        // TODO: make configurable
+        $level = YII_DEBUG ? Logger::DEBUG : Logger::WARNING;
         if (self::isStreamLog()) {
-            $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => StreamLogTarget::class,
-                'url' => 'php://stderr',
-                'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
-            ]));
+            $webLogger
+                ->pushHandler(new StreamHandler('php://stderr', Logger::WARNING, bubble: false));
+            $consoleLogger
+                ->pushHandler(new StreamHandler('php://stderr', Logger::WARNING, bubble: false));
 
             // Don't pollute console request output
-            if (!$isConsoleRequest && YII_DEBUG) {
-                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
-                    'class' => StreamLogTarget::class,
-                    'url' => 'php://stdout',
-                    'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
-                ]));
+            if (!$isConsoleRequest) {
+                // TODO: make configurable
+                $consoleLogger->pushHandler(new StreamHandler('php://stdout', $level));
             }
         } else {
-            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => FileTarget::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-                'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
-                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
-            ]));
+            // TODO: make configurable
+            $maxFiles = 5;
+
+            $webLogger->pushHandler(new RotatingFileHandler(
+                self::parseEnv('@storage/logs/web.log'),
+                $maxFiles,
+                $level,
+                filePermission: $generalConfig->defaultFileMode,
+            ));
+            $consoleLogger->pushHandler(new RotatingFileHandler(
+                self::parseEnv('@storage/logs/console.log'),
+                $maxFiles,
+                $level,
+                filePermission: $generalConfig->defaultFileMode,
+            ));
+        }
+
+        if ($isConsoleRequest) {
+            $targets['console'] = Craft::createObject(array_merge($baseTargetConfig, ['logger' => $consoleLogger]));
+        } else {
+            $targets['web'] = Craft::createObject(array_merge($baseTargetConfig, ['logger' => $webLogger]));
         }
 
         return $targets;
