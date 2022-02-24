@@ -755,10 +755,6 @@ Craft.Preview = Garnish.Base.extend({
         }
     },
 
-    _getDeviceInputs: function() {
-
-    },
-
     _getClone: function($field) {
         var $clone = $field.clone();
 
