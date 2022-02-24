@@ -9,11 +9,9 @@ namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\ReadOnlyProjectConfigData;
 use craft\services\ProjectConfig;
-use craft\services\Sections;
 use craft\test\TestCase;
 use UnitTester;
 use yii\base\NotSupportedException;
@@ -171,7 +169,6 @@ class ProjectConfigTest extends TestCase
         $pc->readOnly = true;
         $this->expectExceptionMessage('while in read-only');
         $pc->set('path', 'value');
-
     }
 
     public function testSettingValueChangesTimestamp()
@@ -186,16 +183,15 @@ class ProjectConfigTest extends TestCase
     {
         $pc = $this->getProjectConfig(null, null, [
             'trigger' => Expected::atLeastOnce(),
-            'storeYamlHistory'=> Expected::atLeastOnce(),
+            'storeYamlHistory' => Expected::atLeastOnce(),
         ]);
         Craft::$app->set('projectConfig', $pc);
 
         $pc->set('some.path', 'value');
         $pc->saveModifiedConfigData();
-        
+
         $pc->remove('some.path');
         $pc->saveModifiedConfigData();
-
     }
 
     public function getConfigProvider()

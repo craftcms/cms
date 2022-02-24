@@ -7,7 +7,6 @@
 
 namespace craft\test;
 
-use Closure;
 use craft\elements\User;
 use craft\mail\Mailer;
 use craft\mail\Message;

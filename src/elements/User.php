@@ -43,7 +43,6 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use DateInterval;
 use DateTime;
-use TheIconic\NameParser\Parser as NameParser;
 use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;

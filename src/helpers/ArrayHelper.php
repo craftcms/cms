@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Closure;
 use Craft;
 use Illuminate\Support\Collection;
-use Traversable;
 
 /**
  * Class ArrayHelper

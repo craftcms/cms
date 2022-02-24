@@ -8,7 +8,6 @@
 namespace craft\db;
 
 use craft\helpers\Db;
-use Exception;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
 

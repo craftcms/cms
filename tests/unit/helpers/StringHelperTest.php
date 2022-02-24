@@ -46,13 +46,13 @@ class StringHelperTest extends Unit
             'é' => 'e',
         ];
 
-        $mapByAscii =  StringHelper::asciiCharMap(false, 'de');
+        $mapByAscii = StringHelper::asciiCharMap(false, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($ascii, $mapByAscii);
             self::assertContains($char, $mapByAscii[$ascii]);
         }
 
-        $mapByChar =  StringHelper::asciiCharMap(true, 'de');
+        $mapByChar = StringHelper::asciiCharMap(true, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($char, $mapByChar);
             self::assertSame($ascii, $mapByChar[$char]);

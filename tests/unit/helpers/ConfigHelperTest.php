@@ -9,11 +9,9 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ConfigHelper;
-use craft\test\mockclasses\models\ExampleModel;
 use DateTime;
 use stdClass;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 
 /**

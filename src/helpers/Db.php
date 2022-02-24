@@ -838,7 +838,8 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function insert(string $table, array $columns, Connection|null $db = null): int {
+    public static function insert(string $table, array $columns, Connection|null $db = null): int
+    {
         if ($db === null) {
             $db = self::db();
         }
@@ -864,7 +865,8 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function batchInsert(string $table, array $columns, array $rows, Connection|null $db = null): int {
+    public static function batchInsert(string $table, array $columns, array $rows, Connection|null $db = null): int
+    {
         if ($db === null) {
             $db = self::db();
         }

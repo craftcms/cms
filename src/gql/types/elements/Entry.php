@@ -8,7 +8,6 @@
 namespace craft\gql\types\elements;
 
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use GraphQL\Type\Definition\ResolveInfo;

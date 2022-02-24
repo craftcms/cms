@@ -10,7 +10,6 @@ namespace craft\base;
 
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
-use craft\models\FsListing;
 use Generator;
 
 /**

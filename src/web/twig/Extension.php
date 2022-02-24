@@ -7,13 +7,11 @@
 
 namespace craft\web\twig;
 
-use Closure;
 use Countable;
 use Craft;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
 use craft\elements\Asset;
-use craft\elements\db\ElementQuery;
 use craft\errors\AssetException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;

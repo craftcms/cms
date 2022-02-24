@@ -11,7 +11,6 @@ use Closure;
 use Codeception\Stub;
 use Craft;
 use craft\console\Controller;
-use Traversable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 

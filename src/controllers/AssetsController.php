@@ -403,7 +403,7 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (FsException | ForbiddenHttpException $exception) {
+        } catch (FsException|ForbiddenHttpException $exception) {
             return $this->asFailure($exception->getMessage());
         }
     }
@@ -515,7 +515,7 @@ class AssetsController extends Controller
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
-        } catch (FsException | AssetException $exception) {
+        } catch (FsException|AssetException $exception) {
             return $this->asFailure($exception->getMessage());
         }
 

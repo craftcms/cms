@@ -20,6 +20,7 @@ use craft\elements\User as UserElement;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\fields\Table;
+use craft\fs\Local;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -37,7 +38,6 @@ use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
-use craft\fs\Local;
 use GraphQL\Type\Definition\ObjectType;
 
 class InterfaceAndGeneratorTest extends Unit

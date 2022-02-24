@@ -1934,7 +1934,7 @@ abstract class Element extends Component implements ElementInterface
 
         try {
             parent::__set($name, $value);
-        } catch (InvalidCallException | UnknownPropertyException $e) {
+        } catch (InvalidCallException|UnknownPropertyException $e) {
             // Is this is a field?
             if ($this->fieldByHandle($name) !== null) {
                 $this->setFieldValue($name, $value);
