@@ -155,7 +155,7 @@ class EntriesController extends BaseEntriesController
             throw new ServerErrorHttpException(sprintf('Unable to save entry as a draft: %s', implode(', ', $entry->getErrorSummary(true))));
         }
 
-        // Set its position in the structure if a before/after parma was passed
+        // Set its position in the structure if a before/after param was passed
         if ($section->type === Section::TYPE_STRUCTURE) {
             if ($nextId = $this->request->getParam('before')) {
                 $nextEntry = Craft::$app->getEntries()->getEntryById($nextId, $site->id, [

@@ -46,6 +46,7 @@ class UpdateSearchIndex extends BaseJob
      */
     public function execute($queue): void
     {
+        /** @var string|ElementInterface $class */
         $class = $this->elementType;
         $elements = $class::find()
             ->drafts(null)

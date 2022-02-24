@@ -904,7 +904,7 @@ class Assets extends Component
 
                 // Ensure a physical folder exists, if needed.
                 if (!$justRecord) {
-                    $volume->createDirectory($path);
+                    $volume->getFs()->createDirectory($path);
                 }
 
                 // Set the variables for next iteration.

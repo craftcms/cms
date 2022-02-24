@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
@@ -1142,6 +1143,7 @@ class Gql extends Component
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
+        /** @var string|BaseElementInterface $elementType */
         if (!array_key_exists($elementType, $this->_contentFieldCache)) {
             $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
             $contentArguments = [];

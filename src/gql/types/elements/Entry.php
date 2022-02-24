@@ -38,7 +38,7 @@ class Entry extends Element
      */
     protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
-        /** @var EntryElement $source */
+        /** @var EntryElement|DraftBehavior $source */
         $fieldName = $resolveInfo->fieldName;
 
         return match ($fieldName) {

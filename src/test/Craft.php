@@ -422,7 +422,7 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var ElementQuery $elementQuery */
+        /** @var string|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
