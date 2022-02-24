@@ -42,14 +42,16 @@ export default {
 
 .changelog-release {
   @apply tw-pt-2 tw-pb-4 tw-border-b tw-border-gray-200 tw-border-solid;
+  @apply md:tw-flex;
 
   .version {
     @apply tw-relative;
+    @apply md:tw-w-48;
 
     .anchor {
       @apply tw-absolute tw-text-white tw-p-1 tw-rounded-full;
       @include left(-24px);
-      top: 0px;
+      @apply tw-top-5;
       font-size: 14px;
       transform: rotate(45deg);
 
@@ -65,7 +67,7 @@ export default {
     }
 
     h2 {
-      @apply tw-mt-6 tw-mb-2;
+      @apply tw-mt-6 tw-mb-2 tw-text-lg;
     }
 
     .date {
@@ -78,10 +80,11 @@ export default {
   }
 
   .details {
-    @apply tw-pt-6;
+    @apply tw-p-0 tw-pt-6;
+    @apply md:tw-flex-1;
 
     h3 {
-      @apply tw-mt-6 tw-mb-4;
+      @apply tw-mt-6 tw-mb-4 tw-text-base;
     }
 
     ul {
@@ -94,23 +97,4 @@ export default {
     }
   }
 }
-
-@media (min-width: 992px) {
-  .changelog-release {
-    @apply tw-flex;
-
-    .version {
-      @apply tw-w-full tw-max-w-xs;
-
-      .anchor {
-        top: 20px;
-      }
-    }
-
-    .details {
-      @apply tw-flex-1;
-    }
-  }
-}
-
 </style>
