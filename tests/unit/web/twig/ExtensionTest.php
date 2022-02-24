@@ -671,12 +671,6 @@ class ExtensionTest extends Unit
      */
     public function testGroupFilter()
     {
-        // deprecated element query
-        $this->testRenderResult(
-            TestSetup::USERNAME,
-            '{{ craft.users().id(1)|group("username")|keys|join(",") }}'
-        );
-
         $this->testRenderResult(
             TestSetup::USERNAME,
             '{{ craft.users().id(1).all()|group("username")|keys|join(",") }}'
