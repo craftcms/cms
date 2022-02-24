@@ -14,10 +14,12 @@
         },
 
         mounted() {
-          $(this.$el).html(Craft.ui.createCopyTextBtn({
-            value: this.value,
-            class: 'code small light copytextbtn-expand-r',
-          }));
+            if (this.value) {
+                $(this.$el).html(Craft.ui.createCopyTextBtn({
+                    value: this.value,
+                    class: 'code small light copytextbtn-expand-r',
+                }));
+            }
         }
     }
 </script>
