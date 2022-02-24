@@ -25,19 +25,19 @@ class ExampleModel extends Model
     public mixed $exampleParam = null;
 
     /**
-     * @var DateTime|string
+     * @var DateTime|string|null
      */
-    public DateTime|string $exampleDateParam;
+    public DateTime|string|null $exampleDateParam = null;
 
     /**
-     * @var DateTime
+     * @var DateTime|null
      */
-    public DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
-     * @var DateTime
+     * @var DateTime|null
      */
-    public DateTime $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
      * @inheritdoc
