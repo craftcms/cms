@@ -40,7 +40,6 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     public static function find(): ActiveQuery
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject(ActiveQuery::class, [static::class]);
     }
 

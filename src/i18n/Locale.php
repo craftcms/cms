@@ -390,7 +390,6 @@ class Locale extends BaseObject
                 ],
             ];
 
-            /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
             $this->_formatter = Craft::createObject($config);
         }
 
