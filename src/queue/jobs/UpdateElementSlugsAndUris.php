@@ -105,6 +105,7 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private function _processElements(Queue|QueueInterface $queue, ElementQueryInterface $query): void
     {
+        /** @var ElementQueryInterface|ElementQuery $query */
         $this->_totalToProcess += $query->count();
         $elementsService = Craft::$app->getElements();
 

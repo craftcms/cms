@@ -8,6 +8,7 @@
 namespace craft\test\fixtures;
 
 use Craft;
+use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
 use craft\fieldlayoutelements\CustomField;
@@ -79,7 +80,7 @@ abstract class FieldLayoutFixture extends DbFixture
                     }
 
                     $required = ArrayHelper::remove($fieldConfig, 'required') ?? false;
-                    /** @var FieldInterface $field */
+                    /** @var FieldInterface|Field $field */
                     $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
 
                     if (!$fieldsService->saveField($field)) {
@@ -124,6 +125,7 @@ abstract class FieldLayoutFixture extends DbFixture
         $fieldsService = Craft::$app->getFields();
 
         foreach ($this->_fields as $field) {
+            /** @var FieldInterface|Field $field */
             if (!$fieldsService->deleteField($field)) {
                 $this->throwModelError($field);
             }

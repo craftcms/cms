@@ -708,7 +708,7 @@ SQL;
     private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
     {
         if ($customFields !== null) {
-            return ArrayHelper::getColumn($customFields->where('handle', $attribute), 'id');
+            return ArrayHelper::getColumn((array)$customFields->where('handle', $attribute), 'id');
         }
 
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);

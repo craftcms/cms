@@ -992,7 +992,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
+        /** @var array|Traversable $arr */
         if ($arrow === null) {
+            if ($arr instanceof Traversable) {
+                $arr = iterator_to_array($arr);
+            }
             return array_filter($arr);
         }
 
@@ -1022,15 +1026,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function groupFilter(iterable $arr, callable|string $arrow): array
     {
-        if ($arr instanceof ElementQuery) {
-            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the `all()` function to fetch the query results before looping over them.');
-            $arr = $arr->all();
-        }
-
-        if (!is_array($arr) && !$arr instanceof Traversable) {
-            throw new RuntimeError('Values passed to the |group filter must be of type array or Traversable.');
-        }
-
         $groups = [];
 
         if (!is_string($arrow) && is_callable($arrow)) {
@@ -1140,6 +1135,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function mergeFilter(iterable $arr1, iterable $arr2, bool $recursive = false): array
     {
+        if ($arr1 instanceof Traversable) {
+            $arr1 = iterator_to_array($arr1);
+        }
+
+        if ($arr2 instanceof Traversable) {
+            $arr2 = iterator_to_array($arr2);
+        }
+
         if ($recursive) {
             return ArrayHelper::merge($arr1, $arr2);
         }
@@ -1366,6 +1369,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function shuffleFunction(iterable $arr): array
     {
+        /** @var array|Traversable $arr */
         if ($arr instanceof Traversable) {
             $arr = iterator_to_array($arr, false);
         } else {

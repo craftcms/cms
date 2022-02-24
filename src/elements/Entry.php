@@ -1592,9 +1592,9 @@ class Entry extends Element
                     return '';
                 }
 
-                $drafts = $this->getEagerLoadedElements('drafts');
+                $drafts = $this->getEagerLoadedElements('drafts')->all();
 
-                foreach ($drafts->all() as $draft) {
+                foreach ($drafts as $draft) {
                     /** @var ElementInterface|DraftBehavior $draft */
                     $draft->setUiLabel($draft->draftName);
                 }
