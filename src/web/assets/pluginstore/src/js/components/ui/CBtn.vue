@@ -64,13 +64,14 @@
     <div class="c-btn-content">
       <c-icon
         v-if="icon && icon.length > 0"
+        class="tw-mr-1"
         :icon="icon"
         size="3" />
 
       <slot></slot>
 
       <c-icon
-        class="ml-1"
+        class="tw-ml-1"
         v-if="trailingIcon && trailingIcon.length > 0"
         :icon="trailingIcon"
         size="3" />
