@@ -25,9 +25,9 @@ class ExampleModel extends Model
     public mixed $exampleParam = null;
 
     /**
-     * @var DateTime
+     * @var DateTime|string
      */
-    public DateTime $exampleDateParam;
+    public DateTime|string $exampleDateParam;
 
     /**
      * @var DateTime
