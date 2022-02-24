@@ -19,7 +19,6 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
-use craft\validators\RequiredFieldAddressValidator;
 use yii\base\InvalidConfigException;
 use yii\validators\RequiredValidator;
 

@@ -23,7 +23,6 @@ use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
-use craft\fields\Address;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
