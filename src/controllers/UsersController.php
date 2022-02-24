@@ -1403,7 +1403,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asSuccess($return);
+            return $this->asSuccess(data: $return);
         }
 
         if ($isPublicRegistration) {
