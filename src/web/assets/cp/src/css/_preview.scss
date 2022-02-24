@@ -115,7 +115,9 @@
     }
 
     .lp-device-type {
-      .btn {
+      margin: 0;
+
+      label {
         &::before {
           width: 27px;
           height: 22px;
@@ -128,13 +130,13 @@
         }
 
         // SVGs
-        &.lp-device-type-btn--phone::before {
+        &.lp-device-type-label--phone::before {
           background-image: url(../images/preview/icon-phone.svg);
         }
-        &.lp-device-type-btn--tablet::before {
+        &.lp-device-type-label--tablet::before {
           background-image: url(../images/preview/icon-tablet.svg);
         }
-        &.lp-device-type-btn--desktop::before {
+        &.lp-device-type-label--desktop::before {
           background-image: url(../images/preview/icon-desktop.svg);
         }
       }

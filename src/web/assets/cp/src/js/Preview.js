@@ -161,54 +161,128 @@ Craft.Preview = Garnish.Base.extend({
                 }
 
                 // Device type buttons
-                this.$deviceTypeContainer = $('<div/>', {
+                // this.$deviceTypeContainer = $('<div/>', {
+                //     class: 'btngroup lp-device-type',
+                //     role: 'listbox',
+                //     'aria-label': Craft.t('app', 'Device type'),
+                // }).appendTo(this.$previewHeader);
+                // $('<button/>', {
+                //     type: 'button',
+                //     role: 'option',
+                //     'class': 'btn lp-device-type-btn--desktop active',
+                //     title: Craft.t('app', 'Desktop'),
+                //     'aria-label': Craft.t('app', 'Desktop'),
+                //     'aria-selected': 'true',
+                //     data: {
+                //         width: '',
+                //         height: '',
+                //         deviceType: 'desktop'
+                //     }
+                // }).appendTo(this.$deviceTypeContainer);
+                // $('<button/>', {
+                //     type: 'button',
+                //     role: 'option',
+                //     'class': 'btn lp-device-type-btn--tablet',
+                //     title: Craft.t('app', 'Tablet'),
+                //     'aria-label': Craft.t('app', 'Tablet'),
+                //     'aria-selected': 'false',
+                //     data: {
+                //         width: 768,
+                //         height: 1024,
+                //         deviceType: 'tablet'
+                //     }
+                // }).appendTo(this.$deviceTypeContainer);
+                // $('<button/>', {
+                //     type: 'button',
+                //     role: 'option',
+                //     'class': 'btn lp-device-type-btn--phone',
+                //     title: Craft.t('app', 'Mobile'),
+                //     'aria-label': Craft.t('app', 'Mobile'),
+                //     'aria-selected': 'false',
+                //     data: {
+                //         width: 375,
+                //         height: 667,
+                //         deviceType: 'phone'
+                //     }
+                // }).appendTo(this.$deviceTypeContainer);
+
+                this.$deviceTypeContainer = $('<fieldset/>', {
                     class: 'btngroup lp-device-type',
-                    role: 'listbox',
-                    'aria-label': Craft.t('app', 'Device type'),
-                    tabindex: '0',
                 }).appendTo(this.$previewHeader);
-                $('<button/>', {
-                    type: 'button',
-                    role: 'option',
-                    'class': 'btn lp-device-type-btn--desktop active',
-                    title: Craft.t('app', 'Desktop'),
-                    'aria-label': Craft.t('app', 'Desktop'),
-                    'aria-selected': 'true',
-                    tabindex: '-1',
+
+                $('<legend/>', {
+                    text: Craft.t('app', 'Device type'),
+                    class: 'visually-hidden',
+                }).appendTo(this.$deviceTypeContainer);
+
+                // Desktop
+                $('<input/>', {
+                    type: 'radio',
+                    name: 'device',
+                    value: 'desktop',
+                    id: 'device-desktop',
                     data: {
                         width: '',
                         height: '',
                         deviceType: 'desktop'
-                    }
+                    },
                 }).appendTo(this.$deviceTypeContainer);
-                $('<button/>', {
-                    type: 'button',
-                    role: 'option',
-                    'class': 'btn lp-device-type-btn--tablet',
-                    title: Craft.t('app', 'Tablet'),
-                    'aria-label': Craft.t('app', 'Tablet'),
-                    'aria-selected': 'false',
-                    tabindex: '-1',
+
+                $desktopLabel = $('<label/>', {
+                    for: 'device-desktop',
+                    class: 'btn lp-device-type-label--desktop active',
+                }).appendTo(this.$deviceTypeContainer);
+
+                $('<span/>', {
+                    class: 'visually-hidden',
+                    text: Craft.t('app', 'Desktop'),
+                }).appendTo($desktopLabel);
+
+                // Tablet
+                $('<input/>', {
+                    type: 'radio',
+                    name: 'device',
+                    value: 'tablet',
+                    id: 'device-tablet',
                     data: {
                         width: 768,
                         height: 1024,
                         deviceType: 'tablet'
-                    }
+                    },
                 }).appendTo(this.$deviceTypeContainer);
-                $('<button/>', {
-                    type: 'button',
-                    role: 'option',
-                    'class': 'btn lp-device-type-btn--phone',
-                    title: Craft.t('app', 'Mobile'),
-                    'aria-label': Craft.t('app', 'Mobile'),
-                    'aria-selected': 'false',
-                    tabindex: '-1',
+
+                $tabletLabel = $('<label/>', {
+                    for: 'device-tablet',
+                    class: 'btn lp-device-type-label--tablet',
+                }).appendTo(this.$deviceTypeContainer);
+
+                $('<span/>', {
+                    class: 'visually-hidden',
+                    text: Craft.t('app', 'Tablet'),
+                }).appendTo($tabletLabel);
+
+                // Mobile
+                $('<input/>', {
+                    type: 'radio',
+                    name: 'device',
+                    value: 'phone',
+                    id: 'device-phone',
                     data: {
                         width: 375,
                         height: 667,
                         deviceType: 'phone'
-                    }
+                    },
                 }).appendTo(this.$deviceTypeContainer);
+
+                $mobileLabel = $('<label/>', {
+                    for: 'device-phone',
+                    class: 'btn lp-device-type-label--phone',
+                }).appendTo(this.$deviceTypeContainer);
+
+                $('<span/>', {
+                    class: 'visually-hidden',
+                    text: Craft.t('app', 'Mobile'),
+                }).appendTo($mobileLabel);
 
                 $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
                 const $buttonContainer = $('<div class="buttons"/>').appendTo(this.$previewHeader);
@@ -704,6 +778,10 @@ Craft.Preview = Garnish.Base.extend({
                 marginLeft: 0
             });
         }
+    },
+
+    _getDeviceInputs: function() {
+
     },
 
     _getClone: function($field) {
