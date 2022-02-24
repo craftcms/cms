@@ -4,7 +4,7 @@
 <div class="tableview{% if context == 'index' %} tablepane{% endif %}">
     <span class="visually-hidden" data-status-message aria-live="assertive"></span>
     <table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %} data-name="{{ tableName }}">
-      <caption class="visually-hidden">{{ tableName }}<span id="{{ instructionId }}" data-sort-instructions>, column headers with buttons are sortable</span></caption>
+      <caption class="visually-hidden">{{ tableName }}<span id="{{ instructionId }}" data-sort-instructions>, {{ 'Column headers with buttons are sortable'|t('app') }}</span></caption>
       <thead>
         <tr>
             {% if showCheckboxes %}

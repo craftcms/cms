@@ -263,6 +263,7 @@ return [
     'Color hex value' => 'Color hex value',
     'Color picker' => 'Color picker',
     'Color' => 'Color',
+    'Column headers with buttons are sortable' => 'Column headers with buttons are sortable',
     'Column Heading' => 'Column Heading',
     'Column Type' => 'Column Type',
     'Column handles can’t be in the format “{format}”.' => 'Column handles can’t be in the format “{format}”.',
