@@ -115,6 +115,9 @@
     }
 
     .lp-device-type {
+      display: flex;
+      white-space: nowrap;
+      align-items: center;
       margin: 0;
 
       label {
@@ -141,6 +144,14 @@
         }
       }
     }
+  }
+
+  .lp-device-type__radio-group {
+
+  }
+
+  .lp-device-type__radio-wrapper {
+
   }
 
   .lp-device-mask {
