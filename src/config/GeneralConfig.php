@@ -121,7 +121,7 @@ class GeneralConfig extends BaseObject
     public bool $allowAdminChanges = true;
 
     /**
-     * @var string[]|false|null The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     * @var string[]|null|false The Ajax origins that should be allowed to access the GraphQL API, if enabled.
      *
      * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
      * in the `Access-Control-Allow-Origin` response header if it’s listed here.
@@ -280,7 +280,7 @@ class GeneralConfig extends BaseObject
     public bool $backupOnUpdate = true;
 
     /**
-     * @var string|false|null The shell command that Craft should execute to create a database backup.
+     * @var string|null|false The shell command that Craft should execute to create a database backup.
      *
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
@@ -725,10 +725,10 @@ class GeneralConfig extends BaseObject
     public array $extraFileKinds = [];
 
     /**
-     * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      * @group Assets
      */
-    public string|bool $filenameWordSeparator = '-';
+    public string|false $filenameWordSeparator = '-';
 
     /**
      * @var bool Whether image transforms should be generated before page load.
@@ -1288,7 +1288,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Environment
      */
-    public ?string $restoreCommand = null;
+    public string|null|false $restoreCommand = null;
 
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
@@ -1471,7 +1471,7 @@ class GeneralConfig extends BaseObject
     public bool $storeUserIps = false;
 
     /**
-     * @var string|array|false|null Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
      * for testing purposes.
      *
      * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
