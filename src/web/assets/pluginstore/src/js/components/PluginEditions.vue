@@ -1,7 +1,14 @@
 <template>
-  <div class="plugin-editions tw-mb-4">
+  <div
+    class="plugin-editions"
+    :class="{
+      'tw-py-6': true,
+      'md:tw-flex md:tw--mx-4 md:tw-justify-center': true,
+    }"
+  >
     <plugin-edition
       v-for="(edition, key) in plugin.editions"
+      class="md:tw-flex-1 md:tw-mx-4 md:tw-max-w-xs"
       :plugin="plugin"
       :edition="edition"
       :key="key"></plugin-edition>
@@ -20,28 +27,3 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.plugin-editions {
-  @apply tw-py-6;
-
-  .plugin-editions-edition {
-    &:not(:last-child) {
-      @apply tw-mb-6;
-    }
-  }
-}
-
-@media (min-width: 992px) {
-  .plugin-editions {
-    @apply tw-flex tw--mx-4 tw-justify-center;
-
-    .plugin-editions-edition {
-      @apply tw-w-1/3 tw-mx-4;
-
-      &:not(:last-child) {
-        @apply tw-mb-0;
-      }
-    }
-  }
-}
-</style>
