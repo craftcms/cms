@@ -160,52 +160,6 @@ Craft.Preview = Garnish.Base.extend({
                     $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
                 }
 
-                // Device type buttons
-                // this.$deviceTypeContainer = $('<div/>', {
-                //     class: 'btngroup lp-device-type',
-                //     role: 'listbox',
-                //     'aria-label': Craft.t('app', 'Device type'),
-                // }).appendTo(this.$previewHeader);
-                // $('<button/>', {
-                //     type: 'button',
-                //     role: 'option',
-                //     'class': 'btn lp-device-type-btn--desktop active',
-                //     title: Craft.t('app', 'Desktop'),
-                //     'aria-label': Craft.t('app', 'Desktop'),
-                //     'aria-selected': 'true',
-                //     data: {
-                //         width: '',
-                //         height: '',
-                //         deviceType: 'desktop'
-                //     }
-                // }).appendTo(this.$deviceTypeContainer);
-                // $('<button/>', {
-                //     type: 'button',
-                //     role: 'option',
-                //     'class': 'btn lp-device-type-btn--tablet',
-                //     title: Craft.t('app', 'Tablet'),
-                //     'aria-label': Craft.t('app', 'Tablet'),
-                //     'aria-selected': 'false',
-                //     data: {
-                //         width: 768,
-                //         height: 1024,
-                //         deviceType: 'tablet'
-                //     }
-                // }).appendTo(this.$deviceTypeContainer);
-                // $('<button/>', {
-                //     type: 'button',
-                //     role: 'option',
-                //     'class': 'btn lp-device-type-btn--phone',
-                //     title: Craft.t('app', 'Mobile'),
-                //     'aria-label': Craft.t('app', 'Mobile'),
-                //     'aria-selected': 'false',
-                //     data: {
-                //         width: 375,
-                //         height: 667,
-                //         deviceType: 'phone'
-                //     }
-                // }).appendTo(this.$deviceTypeContainer);
-
                 this.$deviceTypeContainer = $('<fieldset/>', {
                     class: 'lp-device-type',
                 }).appendTo(this.$previewHeader);
@@ -228,7 +182,6 @@ Craft.Preview = Garnish.Base.extend({
                     data: {
                         width: '',
                         height: '',
-                        deviceType: 'desktop'
                     },
                 }).appendTo($desktopWrapper);
 
@@ -255,7 +208,6 @@ Craft.Preview = Garnish.Base.extend({
                     data: {
                         width: 768,
                         height: 1024,
-                        deviceType: 'tablet'
                     },
                 }).appendTo($tabletWrapper);
 
@@ -282,7 +234,6 @@ Craft.Preview = Garnish.Base.extend({
                     data: {
                         width: 375,
                         height: 667,
-                        deviceType: 'phone'
                     },
                 }).appendTo($mobileWrapper);
 
@@ -652,8 +603,9 @@ Craft.Preview = Garnish.Base.extend({
     switchDeviceType: function(ev) {
         this.$iframeContainer.removeClass('lp-iframe-container--rotating');
 
-        const $btn = $(ev.target);
-        const newDeviceType = $btn.data('deviceType');
+        const $input = $(ev.target);
+        const $inputWrapper = $input.closest('.lp-device-type__radio-wrapper');
+        const newDeviceType = $input.val();
 
         // Bail if we’re just smashing the same button
         if (newDeviceType === this.currentDeviceType) {
@@ -662,17 +614,14 @@ Craft.Preview = Garnish.Base.extend({
 
         // Store new device type data
         this.currentDeviceType = newDeviceType;
-        this.deviceWidth = $btn.data('width');
-        this.deviceHeight = $btn.data('height');
+        this.deviceWidth = $input.data('width');
+        this.deviceHeight = $input.data('height');
 
-        // Set the active state on the button
+        // Set the active state on the label
         this.$deviceTypeContainer.find('.btn')
-            .removeClass('active')
-            .attr('aria-selected', 'false');
+            .removeClass('active');
 
-        $btn
-            .addClass('active')
-            .attr('aria-selected', 'true');
+        $inputWrapper.find('.btn').addClass('active');
 
         if (this.currentDeviceType === 'desktop') {
             // Disable the orientation button
