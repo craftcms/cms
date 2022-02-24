@@ -204,13 +204,13 @@ class AssetIndexesController extends Controller
         }
 
         if (!empty($deleteFiles)) {
-            Craft::$app->getImageTransforms()->deleteTransformIndexDataByAssetIds($deleteFiles);
             $assets = Asset::find()
                 ->status(null)
                 ->id($deleteFiles)
                 ->all();
 
             foreach ($assets as $asset) {
+                Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
                 $asset->keepFileOnDelete = true;
                 Craft::$app->getElements()->deleteElement($asset);
             }
