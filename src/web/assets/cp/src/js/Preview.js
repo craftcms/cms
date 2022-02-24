@@ -165,7 +165,6 @@ Craft.Preview = Garnish.Base.extend({
                     class: 'btngroup lp-device-type',
                     role: 'listbox',
                     'aria-label': Craft.t('app', 'Device type'),
-                    'data-test': 'Hi there',
                     tabindex: '0',
                 }).appendTo(this.$previewHeader);
                 $('<button/>', {
