@@ -171,7 +171,8 @@ Craft.Preview = Garnish.Base.extend({
                     'class': 'btn disabled',
                     'data-icon': 'rotate',
                     disabled: '',
-                    'text': Craft.t('app', 'Rotate')
+                    'text': Craft.t('app', 'Rotate'),
+                    'aria-label': Craft.t('app', 'Rotate'),
                 }).appendTo($buttonContainer);
                 this.addListener(this.$orientationBtn, 'click', 'switchOrientation');
 
