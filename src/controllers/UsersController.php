@@ -671,7 +671,7 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser(int|string|null $userId = null, ?User $user = null, ?array $errors = null): Response
+    public function actionEditUser(mixed $userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
             $this->setFailFlash(implode(', ', reset($errors)));
