@@ -443,11 +443,11 @@ class Gql
     }
 
     /**
-     * @param ValueNode|VariableNode $value
+     * @param mixed $value
      * @param array $variableValues
      * @return mixed
      */
-    private static function _convertArgumentValue(ValueNode|VariableNode $value, array $variableValues = []): mixed
+    private static function _convertArgumentValue(mixed $value, array $variableValues = []): mixed
     {
         if ($value instanceof VariableNode) {
             return $variableValues[$value->name->value];
