@@ -1,6 +1,13 @@
 <template>
-  <div class="cms-editions">
+  <div
+    class="cms-editions"
+    :class="{
+      'tw-py-6': true,
+      'md:tw-flex md:tw--mx-4 md:tw-justify-center': true,
+    }"
+  >
     <cms-edition
+      class="md:tw-flex-1 md:tw-mx-4 md:tw-max-w-xs"
       v-for="(edition, key) in cmsEditions"
       :edition="edition"
       :key="key"></cms-edition>
@@ -33,29 +40,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss">
-.cms-editions {
-  @apply tw-py-6;
-
-  .cms-editions-edition {
-    &:not(:last-child) {
-      @apply tw-mb-6;
-    }
-  }
-}
-
-@media (min-width: 992px) {
-  .cms-editions {
-    @apply tw-flex tw--mx-4 tw-justify-center;
-
-    .cms-editions-edition {
-      @apply tw-w-1/3 tw-mx-4;
-
-      &:not(:last-child) {
-        @apply tw-mb-0;
-      }
-    }
-  }
-}
-</style>
