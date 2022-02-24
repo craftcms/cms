@@ -1300,16 +1300,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this.saving = false;
         };
         Craft.sendActionRequest('POST', 'assets/save-image', {data: postData})
-            .then((response) => {
+            .then(response => {
                 onResponse();
-                this.onSave(data);
+                this.onSave(response.data);
                 this.hide();
                 Craft.cp.runQueue();
             })
             .catch(({response}) => {
                 onResponse();
                 alert(response.data.message);
-                return;
             });
     },
 

@@ -943,7 +943,7 @@ class AssetsController extends Controller
             return $this->asFailure($exception->getMessage());
         }
 
-        return $this->asSuccess($output);
+        return $this->asSuccess(data: $output);
     }
 
     /**
