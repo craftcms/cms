@@ -290,7 +290,7 @@ class TestSetup
     public static function appType(): string
     {
         $appType = 'web';
-        if (CraftTest::$currentTest instanceof ConsoleTest) {
+        if (isset(CraftTest::$currentTest) && CraftTest::$currentTest instanceof ConsoleTest) {
             $appType = 'console';
         }
 
