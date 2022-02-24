@@ -326,10 +326,10 @@ class DateTimeHelper
     }
 
     /**
-     * @param int|string $timestamp
+     * @param mixed $timestamp
      * @return bool
      */
-    public static function isValidTimeStamp(int|string $timestamp): bool
+    public static function isValidTimeStamp(mixed $timestamp): bool
     {
         if (!is_numeric($timestamp)) {
             return false;
