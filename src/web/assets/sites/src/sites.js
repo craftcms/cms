@@ -237,7 +237,7 @@
                     this._deleting = false;
                     this.enable();
                     this.confirmDeleteModal.hide();
-                    this.handleDeleteItemResponse(response.data, this.$rowToDelete);
+                    this.handleDeleteItemSuccess(response.data, this.$rowToDelete);
                 });
         },
 
