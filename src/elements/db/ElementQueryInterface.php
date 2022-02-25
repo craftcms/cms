@@ -91,7 +91,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * ```twig
      * {# Fetch a draft {element} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .drafts()
      *   .id(123)
      *   .one() %}
@@ -242,7 +242,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * ```twig
      * {# Fetch saved, unpublished draft {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .draftOf(false)
      *   .savedDraftsOnly()
      *   .all() %}
@@ -269,7 +269,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * ```twig
      * {# Fetch a revision {element} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .revisions()
      *   .id(123)
      *   .one() %}

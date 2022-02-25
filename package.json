@@ -25,7 +25,7 @@
     "event-stream": "3.3.5",
     "fabric": "^1.7.19",
     "focus-visible": "^5.2.0",
-    "graphiql": "^1.5.16",
+    "graphiql": "^1.5.17",
     "graphiql-explorer": "^0.6.3",
     "graphql": "^15.8.0",
     "htmx.org": "^1.6.1",
