@@ -39,11 +39,11 @@ Craft.AddressesInput = Garnish.Base.extend({
 
         const $actionBtn = $card.find('.menubtn');
         if ($actionBtn.length) {
-            const menuBtn = $actionBtn.data('menubtn');
-            const $menu = menuBtn ? menuBtn.menu.$container : $actionBtn.data('trigger').$container;
+            const $menu = $actionBtn.data('trigger').$container;
             const $deleteBtn = $menu.find('[data-action="delete"]');
             this.addListener($deleteBtn, 'click', ev => {
                 ev.preventDefault();
+                ev.stopPropagation();
                 if (confirm(Craft.t('app', 'Are you sure you want to delete this address?'))) {
                     this.$addBtn.addClass('loading');
                     Craft.sendActionRequest('POST', 'elements/delete', {

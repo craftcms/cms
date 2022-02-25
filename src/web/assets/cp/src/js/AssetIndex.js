@@ -1478,36 +1478,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     _performBatchRequests: function(parameterArray, finalCallback) {
-        var responseArray = [];
+        const responseArray = [];
+        let activeRequests = parameterArray.length;
 
-        var onResponse = () => {
-            this.progressBar.incrementProcessedItemCount(1);
-            this.progressBar.updateProgressBar();
-        };
-        var doRequest = parameters => {
-            Craft.sendActionRequest('POST', parameters.action, {data: parameters.params})
-                .then((response) => {
-                    onResponse();
-                    responseArray.push(response.data);
+        while (parameterArray.length) {
+            const parameters = parameterArray.shift();
+            Craft.sendActionRequest('POST', parameters.action, {
+                data: parameters.params
+            }).then((response) => {
+                responseArray.push(response.data);
+            }).finally(() => {
+                this.progressBar.incrementProcessedItemCount(1);
+                this.progressBar.updateProgressBar();
 
+                // Was that the last one?
+                if (--activeRequests === 0) {
                     // If assets were just merged we should get the reference tags updated right away
                     Craft.cp.runQueue();
-
-                })
-                .catch(({response}) => {
-                    return onResponse();
-                })
-                .finally(() => {
-                    if (responseArray.length >= parameterArray.length) {
-                        finalCallback(responseArray);
-                    }
-                });
-        };
-
-        for (var i = 0; i < parameterArray.length; i++) {
-            doRequest(parameterArray[i]);
+                    finalCallback(responseArray);
+                }
+            });
         }
-    }
+    },
 });
 
 // Register it!

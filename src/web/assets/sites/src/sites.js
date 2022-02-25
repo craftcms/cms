@@ -48,17 +48,14 @@
 
                 Craft.sendActionRequest('POST', 'sites/save-group', {data})
                     .then((response) => {
-                        if (response.data.success) {
-                            location.href = Craft.getUrl('settings/sites', {groupId: response.data.group.id});
-                        } else if (response.data.errors) {
-                            var errors = this.flattenErrors(response.data.errors);
-                            alert(Craft.t('app', 'Could not create the group:') + "\n\n" + errors.join("\n"));
-                        } else {
-                            return Promise.reject();
-                        }
+                        location.href = Craft.getUrl('settings/sites', {groupId: response.data.group.id});
                     })
                     .catch(({response}) => {
-                        Craft.cp.displayError();
+                        if (response.data && response.data.errors) {
+                            alert(Craft.t('app', 'Could not create the group:') + "\n\n" + response.data.errors.join("\n"));
+                        } else {
+                            Craft.cp.displayError();
+                        }
                     });
             }).catch(() => {});
         },
@@ -72,19 +69,16 @@
 
                 Craft.sendActionRequest('POST', 'sites/save-group', {data})
                     .then((response) => {
-                        if (response.data.success) {
-                            this.$selectedGroup.text(response.data.group.name);
-                            this.$selectedGroup.data('raw-name', newName);
-                            Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
-                        } else if (response.data.errors) {
-                            var errors = this.flattenErrors(response.data.errors);
-                            alert(Craft.t('app', 'Could not rename the group:') + "\n\n" + errors.join("\n"));
-                        } else {
-                            return Promise.reject();
-                        }
+                        this.$selectedGroup.text(response.data.group.name);
+                        this.$selectedGroup.data('raw-name', newName);
+                        Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
                     })
                     .catch(({response}) => {
-                        Craft.cp.displayError();
+                        if (response.data && response.data.errors) {
+                            alert(Craft.t('app', 'Could not rename the group:') + "\n\n" + response.data.errors.join("\n"));
+                        } else {
+                            Craft.cp.displayError();
+                        }
                     });
             }).catch(() => {});
         },
@@ -140,14 +134,10 @@
                 };
 
                 Craft.sendActionRequest('POST', 'sites/delete-group', {data})
-                    .then((response) => {
-                        if (response.data.success) {
-                            location.href = Craft.getUrl('settings/sites');
-                        } else {
-                            Promise.reject();
-                        }
+                    .then(() => {
+                        location.href = Craft.getUrl('settings/sites');
                     })
-                    .catch(({response}) => {
+                    .catch(() => {
                         Craft.cp.displayError();
                     });
             }
@@ -237,7 +227,7 @@
                     this._deleting = false;
                     this.enable();
                     this.confirmDeleteModal.hide();
-                    this.handleDeleteItemResponse(response.data, this.$rowToDelete);
+                    this.handleDeleteItemSuccess(response.data, this.$rowToDelete);
                 });
         },
 

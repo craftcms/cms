@@ -547,10 +547,9 @@ class UsersController extends Controller
         $user->setScenario(User::SCENARIO_PASSWORD);
 
         if (!Craft::$app->getElements()->saveElement($user)) {
-            return $this->asModelFailure(
-                    $user,
+            return $this->asFailure(
                     Craft::t('app', 'Couldn’t update password.'),
-                    errorAttribute: 'newPassword'
+                    $user->getErrors('newPassword'),
                 ) ?? $this->_renderSetPasswordTemplate([
                     'errors' => $user->getErrors('newPassword'),
                     'code' => $code,
@@ -1403,7 +1402,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asSuccess($return);
+            return $this->asSuccess(data: $return);
         }
 
         if ($isPublicRegistration) {
@@ -2300,8 +2299,10 @@ JS,
 
         return $this->asFailure(
             $errorString,
-            errors: $errors,
-            routeParams: [
+            [
+                'errors' => $errors,
+            ],
+            [
                 'loginName' => $loginName,
             ]
         );
