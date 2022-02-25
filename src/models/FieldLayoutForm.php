@@ -7,6 +7,7 @@
 
 namespace craft\models;
 
+use craft\base\FieldLayoutComponent;
 use craft\base\Model;
 use craft\helpers\Html;
 
@@ -68,7 +69,7 @@ class FieldLayoutForm extends Model
                 ]),
                 'data' => [
                     'id' => $id,
-                    'layout-tab' => $tab->getUid(),
+                    'layout-tab' => $tab->getUid() ?? true,
                 ],
                 'role' => 'tabpanel',
                 'tabindex' => '0',
@@ -92,7 +93,7 @@ class FieldLayoutForm extends Model
     }
 
     /**
-     * Returns lists of visible layout elements, indexed by tab UUIDs.
+     * Returns lists of visible layout elements’ UUIDs, indexed by their tabs’ UUIDs.
      *
      * @return array
      * @since 4.0.0
@@ -102,7 +103,20 @@ class FieldLayoutForm extends Model
         $response = [];
 
         foreach ($this->tabs as $tab) {
-            $response[$tab->getUid()] = array_keys(array_filter($tab->elementHtml));
+            if ($tab->getUid()) {
+                $elementUids = [];
+                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
+                    /** @var FieldLayoutComponent $layoutElement */
+                    /** @var bool $isConditional */
+                    /** @var string|bool $elementHtml */
+                    if ($isConditional && $elementHtml) {
+                        $elementUids[] = $layoutElement->uid;
+                    }
+                }
+                if ($elementUids) {
+                    $response[$tab->getUid()] = $elementUids;
+                }
+            }
         }
 
         return $response;

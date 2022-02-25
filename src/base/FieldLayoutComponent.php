@@ -28,9 +28,9 @@ use craft\models\FieldLayout;
 abstract class FieldLayoutComponent extends Model
 {
     /**
-     * @var string The UUID of the layout element.
+     * @var string|null The UUID of the layout element.
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @var FieldLayout The field layout tab this element belongs to
@@ -52,18 +52,6 @@ abstract class FieldLayoutComponent extends Model
      * @see setElementCondition()
      */
     private ?ElementConditionInterface $_elementCondition = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
-        }
-    }
 
     /**
      * Returns the layout this element belongs to.
@@ -250,6 +238,8 @@ abstract class FieldLayoutComponent extends Model
 
     /**
      * Returns whether the layout element should be shown in an edit form for the given element.
+     *
+     * This will only be called if the field layout component has been saved with a [[uid|UUID]] already.
      *
      * @param ElementInterface|null $element
      * @return bool

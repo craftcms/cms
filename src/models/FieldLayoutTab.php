@@ -154,10 +154,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 
             $this->setElements($layoutElements);
         }
-
-        if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
-        }
     }
 
     /**
@@ -207,6 +203,10 @@ class FieldLayoutTab extends FieldLayoutComponent
             return null;
         }
 
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+
         $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
         return $config;
@@ -222,6 +222,9 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         $elementConfigs = [];
         foreach ($this->getElements() as $layoutElement) {
+            if (!isset($layoutElement->uid)) {
+                $layoutElement->uid = StringHelper::UUID();
+            }
             $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
         }
         return $elementConfigs;
