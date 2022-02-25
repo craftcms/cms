@@ -261,6 +261,7 @@ JS;
             'This month',
             'This week',
             'This year',
+            'Tip:',
             'To {date}',
             'To',
             'Today',
