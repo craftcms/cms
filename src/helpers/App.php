@@ -904,7 +904,7 @@ class App
             allowInlineLineBreaks: true,
             ignoreEmptyContextAndExtra: true,
         );
-        $formatter->includeStacktraces(false);
+        // $formatter->includeStacktraces(true);
         $consoleLogger = (new Logger(Dispatcher::LOGGER_CONSOLE))->pushProcessor($processor);
         $webLogger = (new Logger(Dispatcher::LOGGER_WEB))->pushProcessor($processor);
 
@@ -915,6 +915,7 @@ class App
             'class' => PsrTarget::class,
             'extractExceptionTrace' => false,
             'addTimestampToContext' => false,
+            // 'logVars' => [],
             'except' => [
                 PhpMessageSource::class . ':*',
             ],
@@ -924,7 +925,8 @@ class App
         $level = YII_DEBUG ? Logger::DEBUG : Logger::WARNING;
         if (self::isStreamLog()) {
             $webLogger
-                ->pushHandler(new StreamHandler('php://stderr', Logger::WARNING, bubble: false));
+                ->pushHandler(new StreamHandler('php://stderr', Logger::WARNING, bubble: false))
+                ->pushHandler(new StreamHandler('php://stdout', $level));
             $consoleLogger
                 ->pushHandler(new StreamHandler('php://stderr', Logger::WARNING, bubble: false));
 
