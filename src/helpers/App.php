@@ -20,9 +20,7 @@ use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\log\Dispatcher;
-use craft\log\FileTarget;
 use craft\log\LogProcessor;
-use craft\log\StreamLogTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -36,6 +34,7 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -46,7 +45,6 @@ use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher as YiiDispatcher;
-// use yii\log\Logger;
 use yii\log\Target;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
@@ -901,20 +899,22 @@ class App
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         $processor = new LogProcessor(includeUserIp: $generalConfig->storeUserIps);
-        $consoleLogger = (new Logger(Dispatcher::LOGGER_CONSOLE))
-            ->pushProcessor($processor)
-        ;
-        $webLogger = (new Logger(Dispatcher::LOGGER_CONSOLE))
-            ->pushProcessor($processor)
-        ;
+        $formatter = new LineFormatter(
+            format: "%channel%.%level_name%: %message% %context% %extra%\n",
+            allowInlineLineBreaks: true,
+            ignoreEmptyContextAndExtra: true,
+        );
+        $formatter->includeStacktraces(false);
+        $consoleLogger = (new Logger(Dispatcher::LOGGER_CONSOLE))->pushProcessor($processor);
+        $webLogger = (new Logger(Dispatcher::LOGGER_WEB))->pushProcessor($processor);
 
         // $web404Logger = new Logger('web-404');
         // $queueLogger = new Logger('queue');
 
         $baseTargetConfig = [
             'class' => PsrTarget::class,
-            'extractExceptionTrace' => true,
-            'addTimestampToContext' => true,
+            'extractExceptionTrace' => false,
+            'addTimestampToContext' => false,
             'except' => [
                 PhpMessageSource::class . ':*',
             ],
@@ -949,6 +949,14 @@ class App
                 $level,
                 filePermission: $generalConfig->defaultFileMode,
             ));
+        }
+
+        // Set custom formatter
+        foreach ($webLogger->getHandlers() as $handler) {
+            $handler->setFormatter($formatter);
+        }
+        foreach ($consoleLogger->getHandlers() as $handler) {
+            $handler->setFormatter($formatter);
         }
 
         if ($isConsoleRequest) {
