@@ -97,8 +97,11 @@
                     }) }}
                 </div>
 
-                <button type="submit" class="btn submit fullwidth disabled">{{ 'Send'|t('app') }}</button>
-                <div class="spinner hidden"></div>
+                {{ forms.submitButton({
+                    class: ['fullwidth', 'disabled'],
+                    label: 'Send'|t('app'),
+                    spinner: true,
+                }) }}
             </form>
         </div>
         <iframe id="{{ idPrefix }}-iframe" name="{{ idPrefix }}-iframe" class="hidden"></iframe>
