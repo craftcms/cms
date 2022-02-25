@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Added
+### Changed
 - The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
 
 ### Fixed
