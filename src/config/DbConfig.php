@@ -147,6 +147,20 @@ class DbConfig extends BaseObject
      */
     public bool $useUnbufferedConnections = false;
 
+    /**
+     * @var bool Whether to enable logging of database queries.
+     * @since 4.0.0
+     * @see Connection::$enableLogging
+     */
+    public bool $enableLogging = true;
+
+    /**
+     * @var bool Whether to enable profiling of opening database connection and database queries.
+     * @since 4.0.0
+     * @see Connection::$enableLogging
+     */
+    public bool $enableProfiling = true;
+
     // Deprecated Properties
     // -------------------------------------------------------------------------
 

@@ -772,6 +772,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
+            'enableLogging' => $dbConfig->enableLogging,
+            'enableProfiling' => $dbConfig->enableProfiling,
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],
