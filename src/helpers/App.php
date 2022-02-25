@@ -47,6 +47,7 @@ use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher as YiiDispatcher;
 use yii\log\Target;
 use yii\mutex\FileMutex;
+use yii\web\HttpException;
 use yii\web\JsonParser;
 
 /**
@@ -900,6 +901,7 @@ class App
         $targets = [];
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
+        $logVars = [];
         $processor = new LogProcessor(includeUserIp: $generalConfig->storeUserIps);
         $formatter = new LineFormatter(
             format: "%channel%.%level_name%: %message% %context% %extra%\n",
@@ -917,9 +919,10 @@ class App
             'class' => PsrTarget::class,
             'extractExceptionTrace' => false,
             'addTimestampToContext' => false,
-            // 'logVars' => [],
+            'logVars' => $logVars,
             'except' => [
                 PhpMessageSource::class . ':*',
+                HttpException::class . ':404',
             ],
         ];
 
