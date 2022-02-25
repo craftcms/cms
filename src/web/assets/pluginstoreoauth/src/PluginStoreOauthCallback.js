@@ -34,24 +34,24 @@ import './pluginstore-oauth-callback.scss';
 
             Craft.sendActionRequest('POST', 'plugin-store/save-token', {data: fragments})
                 .then((response) => {
-                    if (response.data.success) {
-                        this.updateStatus('<p>' + Craft.t('app', 'Connected!') + '</p>');
-                        this.$graphic.addClass('success');
+                    this.updateStatus('<p>' + Craft.t('app', 'Connected!') + '</p>');
+                    this.$graphic.addClass('success');
 
-                        // Redirect to the Dashboard in half a second
-                        setTimeout(() => {
-                            if (typeof (this.settings.redirectUrl) != 'undefined') {
-                                window.location = this.settings.redirectUrl;
-                            } else {
-                                window.location = Craft.getCpUrl('plugin-store');
-                            }
-                        }, 500);
-                    } else {
-                        this.showError(response.message);
-                    }
+                    // Redirect to the Dashboard in half a second
+                    setTimeout(() => {
+                        if (typeof (this.settings.redirectUrl) != 'undefined') {
+                            window.location = this.settings.redirectUrl;
+                        } else {
+                            window.location = Craft.getCpUrl('plugin-store');
+                        }
+                    }, 500);
                 })
                 .catch(({response}) => {
-                    this.showFatalError(response);
+                    if (response.data && response.data.message) {
+                        this.showError(response.data.message);
+                    } else {
+                        this.showFatalError(response);
+                    }
                 });
         },
 
