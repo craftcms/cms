@@ -515,26 +515,18 @@ class DashboardController extends Controller
     {
         $dashboardService = Craft::$app->getDashboard();
 
-        if ($dashboardService->saveWidget($widget)) {
-            $info = $this->_getWidgetInfo($widget);
-            $view = $this->getView();
-
-            return $this->asSuccess(data: [
-                'info' => $info,
-                'headHtml' => $view->getHeadHtml(),
-                'bodyHtml' => $view->getBodyHtml(),
-            ]);
+        if (!$dashboardService->saveWidget($widget)) {
+            return $this->asFailure(errors: $widget->getFirstErrors());
         }
 
-        $allErrors = [];
+        $info = $this->_getWidgetInfo($widget);
+        $view = $this->getView();
 
-        foreach ($widget->getErrors() as $attribute => $errors) {
-            foreach ($errors as $error) {
-                $allErrors[] = $error;
-            }
-        }
-
-        return $this->asFailure(errors: $allErrors);
+        return $this->asSuccess(data: [
+            'info' => $info,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     /**
