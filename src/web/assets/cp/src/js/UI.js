@@ -925,7 +925,7 @@ Craft.ui =
             if (config.tip) {
               const $tip = $('<p class="notice has-icon"/>');
               $('<span class="icon" aria-hidden="true"/>').appendTo($tip);
-              $('<span class="visually-hidden" aria-hidden="true"/>').text(Craft.t('app', 'Tip:') + ' ').appendTo($tip);
+              $('<span class="visually-hidden" aria-hidden="true"/>').text(Craft.t('app', 'Tip') + ' ').appendTo($tip);
               $('<span/>').text(config.tip).appendTo($tip);
               $tip.appendTo($field);
             }
