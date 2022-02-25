@@ -484,6 +484,8 @@ class ProjectConfig extends Component
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws InvalidConfigException
+     * @throws BusyResourceException if a lock could not be acquired
+     * @throws StaleResourceException if the loaded project config is out-of-date
      */
     public function set(string $path, $value, string $message = null, bool $updateTimestamp = true, $rebuilding = false)
     {
