@@ -929,7 +929,7 @@ class ProjectConfig extends Component
                     $changeSet = array_filter($changeSet);
 
                     if (!empty($changeSet)) {
-                        $deltaChanges[] = array_filter($changeSet);
+                        $deltaChanges[] = $changeSet;
                     }
                 }
 
