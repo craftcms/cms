@@ -738,6 +738,7 @@ class Sections extends Component
                             'status' => null,
                             'drafts' => null,
                             'provisionalDrafts' => null,
+                            'revisions' => null,
                         ],
                         'updateSearchIndex' => $hasNewSite,
                     ]));
