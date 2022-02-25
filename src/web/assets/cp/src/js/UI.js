@@ -923,15 +923,19 @@ Craft.ui =
             $('<div class="input"/>').append(input).appendTo($field);
 
             if (config.tip) {
-              const $tip = $('<p class="notice has-icon"/>');
-              $('<span class="icon" aria-hidden="true"/>').appendTo($tip);
-              $('<span class="visually-hidden" aria-hidden="true"/>').text(Craft.t('app', 'Tip') + ' ').appendTo($tip);
-              $('<span/>').text(config.tip).appendTo($tip);
-              $tip.appendTo($field);
+                const $tip = $('<p class="notice has-icon"/>');
+                $('<span class="icon" aria-hidden="true"/>').appendTo($tip);
+                $('<span class="visually-hidden"/>').text(Craft.t('app', 'Tip') + ': ').appendTo($tip);
+                $('<span/>').text(config.tip).appendTo($tip);
+                $tip.appendTo($field);
             }
 
             if (config.warning) {
-                $('<p class="warning"/>').text(config.warning).appendTo($field);
+                const $warning = $('<p class="warning has-icon"/>');
+                $('<span class="icon" aria-hidden="true"/>').appendTo($warning);
+                $('<span class="visually-hidden"/>').text(Craft.t('app', 'Warning') + ': ').appendTo($warning);
+                $('<span/>').text(config.warning).appendTo($warning);
+                $warning.appendTo($field);
             }
 
             if (config.errors) {
