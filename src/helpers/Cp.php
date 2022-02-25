@@ -1059,24 +1059,29 @@ class Cp
     /**
      * Renders address cards.
      *
-     * @param ElementInterface $owner
+     * @param Address[] $addresses
      * @param array $config
      * @return string
      * @since 4.0.0
      */
-    public static function addressCardsHtml(ElementInterface $owner, array $config = []): string
+    public static function addressCardsHtml(array $addresses, array $config = []): string
     {
         $config += [
             'id' => sprintf('addresses%s', mt_rand()),
+            'ownerId' => null,
+            'maxAddresses' => null,
         ];
 
         $view = Craft::$app->getView();
 
-        $view->registerJsWithVars(fn($ownerId, $selector) => <<<JS
-new Craft.AddressesInput($ownerId, $($selector));
+        $view->registerJsWithVars(fn($selector, $settings) => <<<JS
+new Craft.AddressesInput($($selector), $settings);
 JS, [
-            $owner->id,
             sprintf('#%s', $view->namespaceInputId($config['id'])),
+            [
+                'ownerId' => $config['ownerId'],
+                'maxAddresses' => $config['maxAddresses'],
+            ]
         ]);
 
         return
@@ -1084,7 +1089,7 @@ JS, [
                 'id' => $config['id'],
                 'class' => 'address-cards',
             ]) .
-            implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $owner->getAddresses())) .
+            implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
             Html::beginTag('button', [
                 'type' => 'button',
                 'class' => ['btn', 'dashed', 'add', 'icon'],
