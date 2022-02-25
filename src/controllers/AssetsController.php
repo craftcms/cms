@@ -597,7 +597,9 @@ class AssetsController extends Controller
             ]);
         }
 
-        return $this->asSuccess();
+        return $this->asSuccess(data: [
+            'success' => true,
+        ]);
     }
 
     /**
@@ -713,6 +715,7 @@ class AssetsController extends Controller
         $newFolder = $assets->getFolderById($newFolderId);
 
         return $this->asSuccess(data: [
+            'success' => true,
             'transferList' => $fileTransferList,
             'newFolderUid' => $newFolder->uid,
             'newFolderId' => $newFolderId,

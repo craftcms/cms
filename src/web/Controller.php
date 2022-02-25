@@ -229,7 +229,6 @@ abstract class Controller extends \yii\web\Controller
         if ($this->request->getAcceptsJson()) {
             $this->response->setStatusCode(400);
             return $this->asJson($data + array_filter([
-                    'success' => false,
                     'message' => $message,
                     'errors' => $errors,
                 ]));
@@ -264,7 +263,6 @@ abstract class Controller extends \yii\web\Controller
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
-                    'success' => true,
                     'message' => $message,
                     'redirect' => $redirect,
                 ]));
