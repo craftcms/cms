@@ -421,7 +421,9 @@ class DashboardController extends Controller
             Craft::$app->getApi()->request('POST', 'support', [
                 RequestOptions::MULTIPART => $parts,
             ]);
-        } catch (RequestException $requestException) {
+        } catch (Throwable $requestException) {
+            Craft::error("Unable to send support request: {$requestException->getMessage()}", __METHOD__);
+            Craft::$app->getErrorHandler()->logException($requestException);
         }
 
         // Delete the zip file
@@ -434,7 +436,9 @@ class DashboardController extends Controller
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
-                    'Support' => [$requestException->getMessage()],
+                    'Support' => [
+                        Craft::t('app', 'A server error occurred.'),
+                    ],
                 ],
             ]);
         }
