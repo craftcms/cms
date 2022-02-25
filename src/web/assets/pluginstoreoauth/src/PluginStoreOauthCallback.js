@@ -86,15 +86,15 @@ import './pluginstore-oauth-callback.scss';
             this.$graphic.addClass('error');
             this.updateStatus('<p>' + msg + '</p>');
 
-            var $buttonContainer = $('<div id="junction-buttons"/>').appendTo(this.$status);
+            const $buttonContainer = $('<div id="junction-buttons"/>').appendTo(this.$status);
 
-            $cancelBtn = $('<a/>', {
+            $('<a/>', {
                 'class': 'btn big',
                 'href': Craft.getCpUrl('plugin-store'),
                 text: "Cancel",
             }).appendTo($buttonContainer);
 
-            $retryBtn = $('<a/>', {
+            $('<a/>', {
                 'class': 'btn big',
                 'href': Craft.getActionUrl('plugin-store/connect'),
                 text: "Try again",
