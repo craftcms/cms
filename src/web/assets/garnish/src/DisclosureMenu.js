@@ -62,7 +62,7 @@ export default Base.extend(
       // Capture additional alignment element
       var alignmentSelector = this.$container.data('align-to');
       if (alignmentSelector) {
-        this.$alignmentElement = this.$wrapper.find(alignmentSelector).first();
+        this.$alignmentElement = this.$trigger.find(alignmentSelector).first();
       } else {
         this.$alignmentElement = this.$trigger;
       }
