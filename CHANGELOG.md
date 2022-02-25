@@ -416,7 +416,7 @@
 - Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
 - Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
-- The `users/set-password` action now returns a 400 HTTP response when an invalid token is passed, if there’s no URL to redirect to. ([#10592](https://github.com/craftcms/cms/discussions/10592))
+- The `users/set-password` action now returns a 400 HTTP status when an invalid token is passed, if there’s no URL to redirect to. ([#10592](https://github.com/craftcms/cms/discussions/10592))
 - `createFoldersInVolume:<uid>` user permissions have been renamed to `createFolders:<uid>`.
 - `deleteFilesAndFoldersInVolume:<uid>` user permissions have been renamed to `deleteAssets:<uid>`.
 - `deletePeerFilesInVolume:<uid>` user permissions have been renamed to `deletePeerAssets:<uid>`.
