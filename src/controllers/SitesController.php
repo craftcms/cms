@@ -148,7 +148,9 @@ class SitesController extends Controller
         $group->setName($this->request->getRequiredBodyParam('name'));
 
         if (!Craft::$app->getSites()->saveGroup($group)) {
-            return $this->asFailure(errors: $group->getFirstErrors());
+            return $this->asFailure(data: [
+                'errors' => $group->getFirstErrors(),
+            ]);
         }
 
         $attr = $group->getAttributes();

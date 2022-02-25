@@ -516,7 +516,9 @@ class DashboardController extends Controller
         $dashboardService = Craft::$app->getDashboard();
 
         if (!$dashboardService->saveWidget($widget)) {
-            return $this->asFailure(errors: $widget->getFirstErrors());
+            return $this->asFailure(data: [
+                'errors' => $widget->getFirstErrors(),
+            ]);
         }
 
         $info = $this->_getWidgetInfo($widget);

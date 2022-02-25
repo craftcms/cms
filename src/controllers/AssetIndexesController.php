@@ -70,7 +70,7 @@ class AssetIndexesController extends Controller
         }
 
         return $error ?
-            $this->asFailure($error, data: $data) :
+            $this->asFailure($error, $data) :
             $this->asSuccess(data: $data);
     }
 
