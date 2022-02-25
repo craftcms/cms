@@ -19,7 +19,7 @@ use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\Controller;
 use craft\web\View;
 use craftcms\oauth2\client\provider\CraftId;
-use Exception;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -137,7 +137,7 @@ class PluginStoreController extends Controller
             $options = ['query' => ['accessToken' => $token->accessToken]];
             $client->request('GET', $url, $options);
             $this->setSuccessFlash(Craft::t('app', 'Disconnected from id.craftcms.com.'));
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Craft::error('Couldn’t revoke token: ' . $e->getMessage());
             $this->setFailFlash(Craft::t('app', 'Disconnected from id.craftcms.com with errors, check the logs.'));
         }
@@ -198,26 +198,26 @@ class PluginStoreController extends Controller
         $this->requireAcceptsJson();
         $this->requirePostRequest();
 
+        $token_type = $this->request->getParam('token_type');
+        $access_token = $this->request->getParam('access_token');
+        $expires_in = $this->request->getParam('expires_in');
+
+        $token = [
+            'access_token' => $access_token,
+            'token_type' => $token_type,
+            'expires_in' => $expires_in,
+        ];
+
         try {
-            $token_type = $this->request->getParam('token_type');
-            $access_token = $this->request->getParam('access_token');
-            $expires_in = $this->request->getParam('expires_in');
-
-            $token = [
-                'access_token' => $access_token,
-                'token_type' => $token_type,
-                'expires_in' => $expires_in,
-            ];
-
             Craft::$app->getPluginStore()->saveToken($token);
-
-            return $this->asSuccess(
-                Craft::t('app', 'Connected to craftcms.com.'),
-                redirect: UrlHelper::cpUrl('plugin-store/account'),
-            );
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return $this->asFailure($e->getMessage());
         }
+
+        return $this->asSuccess(
+            Craft::t('app', 'Connected to craftcms.com.'),
+            redirect: UrlHelper::cpUrl('plugin-store/account'),
+        );
     }
 
     /**

@@ -222,24 +222,17 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asFailure(
         ?string $message = null,
-        ?array $errors = null,
         array $data = [],
         array $routeParams = [],
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             $this->response->setStatusCode(400);
             return $this->asJson($data + array_filter([
-                    'success' => false,
                     'message' => $message,
-                    'errors' => $errors,
                 ]));
         }
 
         $this->setFailFlash($message);
-
-        if ($errors) {
-            $routeParams += ['errors' => $errors];
-        }
 
         if (!empty($routeParams)) {
             Craft::$app->getUrlManager()->setRouteParams($routeParams);
@@ -264,7 +257,6 @@ abstract class Controller extends \yii\web\Controller
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
-                    'success' => true,
                     'message' => $message,
                     'redirect' => $redirect,
                 ]));
@@ -287,7 +279,6 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
      * @param array $routeParams Additional route params that should be set for the next controller action
-     * @param string|null $errorAttribute The attribute to return errors from, or all if `null`
      * @return YiiResponse|null
      * @since 4.0.0
      */
@@ -297,18 +288,17 @@ abstract class Controller extends \yii\web\Controller
         ?string $modelName = null,
         array $data = [],
         array $routeParams = [],
-        ?string $errorAttribute = null
     ): ?YiiResponse {
         $modelName = $modelName ?? 'model';
         $routeParams += [$modelName => $model];
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
+            'errors' => $model->getErrors(),
         ];
 
         return $this->asFailure(
             $message,
-            $model->getErrors($errorAttribute),
             $data,
             $routeParams,
         );

@@ -1614,6 +1614,8 @@ ul.icons {
 
 // Prevent the button from jumping if the added width would otherwise bump it down to the next line
 .copytextbtn-expand-r {
+  @include margin-right(16px);
+
   &:hover,
   &:focus {
     @include margin-right(-16px);
@@ -1621,6 +1623,8 @@ ul.icons {
 }
 
 .copytextbtn-expand-l {
+  @include margin-left(16px);
+
   &:hover,
   &:focus {
     @include margin-left(-16px);

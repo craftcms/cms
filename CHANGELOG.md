@@ -31,6 +31,20 @@
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
+- Added the `assets/update-focal-point` action.
+- Added the `categories/create` action.
+- Added the `elements/apply-draft` action.
+- Added the `elements/create` action.
+- Added the `elements/create` action.
+- Added the `elements/delete-draft` action.
+- Added the `elements/delete-for-site` action.
+- Added the `elements/delete` action.
+- Added the `elements/duplicate` action.
+- Added the `elements/edit` action.
+- Added the `elements/redirect` action.
+- Added the `elements/revert` action.
+- Added the `elements/save-draft` action.
+- Added the `elements/save` action.
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
 - Added `craft\base\ApplicationTrait::getFs()`.
@@ -346,20 +360,6 @@
 - Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
-- Added the `assets/update-focal-point` action.
-- Added the `categories/create` action.
-- Added the `elements/apply-draft` action.
-- Added the `elements/create` action.
-- Added the `elements/create` action.
-- Added the `elements/delete-draft` action.
-- Added the `elements/delete-for-site` action.
-- Added the `elements/delete` action.
-- Added the `elements/duplicate` action.
-- Added the `elements/edit` action.
-- Added the `elements/redirect` action.
-- Added the `elements/revert` action.
-- Added the `elements/save-draft` action.
-- Added the `elements/save` action.
 - Added the `Craft.appendBodyHtml()` JavaScript method, which replaces the now-deprecated `appendFootHtml()` method.
 - Added the `Craft.CpScreenSlideout` JavaScript class, which can be used to create slideouts from actions that return `$this->asCpScreen()`.
 - Added the `Craft.ElementEditor` JavaScript class.
@@ -408,15 +408,16 @@
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
 - Improved the look of loading spinners in the control panel. ([#9109](https://github.com/craftcms/cms/discussions/9109))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
-- Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
-- Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.
-- The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
-- The `users/set-password` action now returns a 400 HTTP response when an invalid token is passed, if there’s no URL to redirect to. ([#10592](https://github.com/craftcms/cms/discussions/10592))
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - GraphQL field types that can’t be null now specify so in their type declaration.
 - The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
 - Editable tables now support `allowAdd`, `allowDelete`, and `allowReorder` settings, replacing `staticRows`. ([#10163](https://github.com/craftcms/cms/pull/10163))
 - The `limitField` macro in the `_components/fieldtypes/elementfieldsettings` control panel template has been renamed to `limitFields`.
+- Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
+- Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.
+- The `entries/save-entry` action now returns a 400 HTTP status for JSON responses when the entry couldn’t be saved.
+- The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
+- The `users/set-password` action now returns a 400 HTTP status when an invalid token is passed, if there’s no URL to redirect to. ([#10592](https://github.com/craftcms/cms/discussions/10592))
 - `createFoldersInVolume:<uid>` user permissions have been renamed to `createFolders:<uid>`.
 - `deleteFilesAndFoldersInVolume:<uid>` user permissions have been renamed to `deleteAssets:<uid>`.
 - `deletePeerFilesInVolume:<uid>` user permissions have been renamed to `deletePeerAssets:<uid>`.
@@ -671,6 +672,28 @@
 - Removed the `customizeSources` user permission. Only admins can customize element sources now, and only from an environment that allows admin changes.
 - Removed the `publishPeerEntryDrafts:<uid>` permissions, as they were pointless. (If a user is authorized to save an entry and view other users’ drafts of it, there’s nothing stopping them from making the same changes themselves.)
 - Removed support for the `staticRows` editable table setting. `allowAdd`, `allowDelete`, and `allowReorder` can be used instead.
+- Removed the `assets/edit-asset` action.
+- Removed the `assets/generate-thumb` action. `assets/thumb` can be used instead.
+- Removed the `categories/delete-category` action. `elements/delete` can be used instead.
+- Removed the `categories/edit-category` action.
+- Removed the `categories/preview-category` action.
+- Removed the `categories/share-category` action.
+- Removed the `categories/view-shared-category` action.
+- Removed the `dashboard/get-feed-items` action.
+- Removed the `edit/by-id` action. `elements/edit` can be used instead.
+- Removed the `edit/by-uid` action. `elements/edit` can be used instead.
+- Removed the `elements/get-editor-html` action.
+- Removed the `elements/save-element` action. `elements/save` can be used instead.
+- Removed the `entries/delete-entry` action. `elements/delete` can be used instead.
+- Removed the `entries/delete-for-site` action. `elements/delete-for-site` can be used instead.
+- Removed the `entries/duplicate-entry` action. `elements/duplicate` can be used instead.
+- Removed the `entries/switch-entry-type` action.
+- Removed the `entry-revisions/create-draft` action. `elements/create` can be used instead.
+- Removed the `entry-revisions/delete-draft` action. `elements/delete-draft` can be used instead.
+- Removed the `entry-revisions/publish-draft` action. `elements/apply-draft` can be used instead.
+- Removed the `entry-revisions/revert-entry-to-version` action. `elements/revert` can be used instead.
+- Removed the `entry-revisions/save-draft` action. `elements/save-draft` can be used instead.
+- Removed the `users/get-remaining-session-time` action. `users/session-info` can be used instead.
 - Removed support for the `CRAFT_LOCALE` PHP constant. `CRAFT_SITE` can be used instead.
 - Removed `Craft::Client`. `Pro` can be used instead.
 - Removed `Craft::Personal`. `Solo` can be used instead.
@@ -931,28 +954,6 @@
 - Removed `craft\web\View::getInitialDeltaValue()`. `getInitialDeltaValues()` can be used instead.
 - Removed `craft\web\View::registerHiResCss()`.
 - Removed `craft\web\View::renderTemplateMacro()`.
-- Removed the `assets/edit-asset` action.
-- Removed the `assets/generate-thumb` action. `assets/thumb` can be used instead.
-- Removed the `categories/delete-category` action. `elements/delete` can be used instead.
-- Removed the `categories/edit-category` action.
-- Removed the `categories/preview-category` action.
-- Removed the `categories/share-category` action.
-- Removed the `categories/view-shared-category` action.
-- Removed the `dashboard/get-feed-items` action.
-- Removed the `edit/by-id` action. `elements/edit` can be used instead.
-- Removed the `edit/by-uid` action. `elements/edit` can be used instead.
-- Removed the `elements/get-editor-html` action.
-- Removed the `elements/save-element` action. `elements/save` can be used instead.
-- Removed the `entries/delete-entry` action. `elements/delete` can be used instead.
-- Removed the `entries/delete-for-site` action. `elements/delete-for-site` can be used instead.
-- Removed the `entries/duplicate-entry` action. `elements/duplicate` can be used instead.
-- Removed the `entries/switch-entry-type` action.
-- Removed the `entry-revisions/create-draft` action. `elements/create` can be used instead.
-- Removed the `entry-revisions/delete-draft` action. `elements/delete-draft` can be used instead.
-- Removed the `entry-revisions/publish-draft` action. `elements/apply-draft` can be used instead.
-- Removed the `entry-revisions/revert-entry-to-version` action. `elements/revert` can be used instead.
-- Removed the `entry-revisions/save-draft` action. `elements/save-draft` can be used instead.
-- Removed the `users/get-remaining-session-time` action. `users/session-info` can be used instead.
 - Removed the `_layouts/element` control panel template.
 - Removed the `assets/_edit` control panel template.
 - Removed the `categories/_edit` control panel template.
@@ -982,6 +983,7 @@
 
 ### Fixed
 - Fixed a bug where pending project config changes in the YAML would get applied when other project config changes were made. ([#9660](https://github.com/craftcms/cms/issues/9660))
+- Fixed a bug where revisions weren’t getting propagated when a section was enabled for new sites, or its Propagation Method was changed. ([#10634](https://github.com/craftcms/cms/issues/10634))
 
 ### Security
 

@@ -165,7 +165,9 @@ class InstallController extends Controller
 
         return $validates ?
             $this->asSuccess() :
-            $this->asFailure(errors: $errors);
+            $this->asFailure(data: [
+                'errors' => $errors,
+            ]);
     }
 
     /**
@@ -192,7 +194,9 @@ class InstallController extends Controller
         }
 
         if (!$validates) {
-            return $this->asFailure(errors: $errors);
+            return $this->asFailure(data: [
+                'errors' => $errors,
+            ]);
         }
 
         return $this->asModelSuccess($user);

@@ -54,7 +54,8 @@ class ApplyNewPropagationMethod extends BaseJob
             ->unique()
             ->status(null)
             ->drafts(null)
-            ->provisionalDrafts(null);
+            ->provisionalDrafts(null)
+            ->revisions(null);
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);

@@ -148,7 +148,9 @@ class SitesController extends Controller
         $group->setName($this->request->getRequiredBodyParam('name'));
 
         if (!Craft::$app->getSites()->saveGroup($group)) {
-            return $this->asFailure(errors: $group->getErrors());
+            return $this->asFailure(data: [
+                'errors' => $group->getFirstErrors(),
+            ]);
         }
 
         $attr = $group->getAttributes();
@@ -170,12 +172,12 @@ class SitesController extends Controller
         $this->requireAcceptsJson();
 
         $groupId = $this->request->getRequiredBodyParam('id');
-        $success = Craft::$app->getSites()->deleteGroupById($groupId);
 
-        if ($success) {
-            return $this->asSuccess(Craft::t('app', 'Group deleted.'));
+        if (!Craft::$app->getSites()->deleteGroupById($groupId)) {
+            return $this->asFailure();
         }
-        return $this->asFailure();
+
+        return $this->asSuccess(Craft::t('app', 'Group deleted.'));
     }
 
     // Sites

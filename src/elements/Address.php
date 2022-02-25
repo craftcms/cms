@@ -220,6 +220,19 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        // Don't even allow setting a blank country code
+        if (array_key_exists('countryCode', $values) && empty($values['countryCode'])) {
+            unset($values['countryCode']);
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAttributeLabel($attribute): string
     {
         return match ($attribute) {

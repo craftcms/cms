@@ -28,7 +28,6 @@ type AssetIndexingSessionModel = {
 }
 
 type CraftResponse = {
-    success?: boolean,
     message?: string,
     errors?: Array<string>,
     session?: AssetIndexingSessionModel,

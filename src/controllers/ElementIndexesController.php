@@ -252,29 +252,28 @@ class ElementIndexesController extends BaseElementsController
             return $this->response;
         }
 
-
-        if ($success) {
-            // Send a new set of elements
-            $responseData = $this->elementResponseData(true, true);
-
-            // Send updated badge counts
-            /** @var string|ElementInterface $elementType */
-            $elementType = $this->elementType;
-            $formatter = Craft::$app->getFormatter();
-            foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
-                if (isset($source['key'])) {
-                    if (isset($source['badgeCount'])) {
-                        $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
-                    } else {
-                        $responseData['badgeCounts'][$source['key']] = null;
-                    }
-                }
-            }
-
-            return $this->asSuccess($message, data: $responseData);
+        if (!$success) {
+            return $this->asFailure($message);
         }
 
-        return $this->asFailure($message);
+        // Send a new set of elements
+        $responseData = $this->elementResponseData(true, true);
+
+        // Send updated badge counts
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $formatter = Craft::$app->getFormatter();
+        foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
+            if (isset($source['key'])) {
+                if (isset($source['badgeCount'])) {
+                    $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
+                } else {
+                    $responseData['badgeCounts'][$source['key']] = null;
+                }
+            }
+        }
+
+        return $this->asSuccess($message, data: $responseData);
     }
 
     /**

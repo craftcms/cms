@@ -748,7 +748,7 @@ trait ApplicationTrait
     {
 
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
         }
 
         if (!$info->validate($attributeNames)) {

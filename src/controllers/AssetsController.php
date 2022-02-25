@@ -179,8 +179,8 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('No file was uploaded');
         }
 
-        $folderId = $this->request->getBodyParam('folderId');
-        $fieldId = $this->request->getBodyParam('fieldId');
+        $folderId = (int)$this->request->getBodyParam('folderId') ?: null;
+        $fieldId = (int)$this->request->getBodyParam('fieldId') ?: null;
 
         if (!$folderId && !$fieldId) {
             throw new BadRequestHttpException('No target destination provided for uploading');
@@ -597,7 +597,9 @@ class AssetsController extends Controller
             ]);
         }
 
-        return $this->asSuccess();
+        return $this->asSuccess(data: [
+            'success' => true,
+        ]);
     }
 
     /**
@@ -713,6 +715,7 @@ class AssetsController extends Controller
         $newFolder = $assets->getFolderById($newFolderId);
 
         return $this->asSuccess(data: [
+            'success' => true,
             'transferList' => $fileTransferList,
             'newFolderUid' => $newFolder->uid,
             'newFolderId' => $newFolderId,

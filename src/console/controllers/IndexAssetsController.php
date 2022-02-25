@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\FsObjectNotFoundException;
@@ -269,10 +270,13 @@ class IndexAssetsController extends Controller
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-            Craft::$app->getImageTransforms()->deleteTransformIndexDataByAssetIds($assetIds);
-            Db::delete(Table::ASSETS, [
-                'id' => $assetIds,
-            ]);
+
+            $assets = Asset::find()->id($assetIds)->all();
+            foreach ($assets as $asset) {
+                Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
+                $asset->keepFileOnDelete = true;
+                Craft::$app->getElements()->deleteElement($asset);
+            }
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
