@@ -1154,7 +1154,7 @@ JS, [
                     ],
                     'data' => [
                         'icon' => 'settings',
-                    'disclosure-trigger' => true,
+                        'disclosure-trigger' => true,
                     ],
                 ]) .
                 Html::beginTag('div', [
