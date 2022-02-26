@@ -13,7 +13,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\helpers\Cp;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 
 /**

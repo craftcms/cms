@@ -11,10 +11,13 @@ use Codeception\Stub\Expected;
 use Craft;
 use craft\helpers\StringHelper;
 use craft\models\ReadOnlyProjectConfigData;
+use craft\mutex\Mutex;
+use craft\mutex\NullMutex;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use UnitTester;
 use yii\base\NotSupportedException;
+use yii\mutex\Mutex as YiiMutex;
 
 /**
  * Unit tests for ProjectConfig service.
@@ -48,6 +51,23 @@ class ProjectConfigTest extends TestCase
         'ee' => [11, 22, 33],
         'f' => 'g'
     ];
+
+    private YiiMutex $_originalMutex;
+
+    protected function _before()
+    {
+        parent::_before();
+        $this->_originalMutex = Craft::$app->getMutex();
+        Craft::$app->set('mutex', new Mutex([
+            'mutex' => new NullMutex(),
+        ]));
+    }
+
+    protected function _after()
+    {
+        parent::_after();
+        Craft::$app->set('mutex', $this->_originalMutex);
+    }
 
     /**
      * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
