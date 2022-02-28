@@ -30,6 +30,6 @@ class TailwindResetAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'js/tailwind_reset.js',
+        'tailwind_reset.js',
     ];
 }
