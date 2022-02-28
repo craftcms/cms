@@ -24,12 +24,37 @@ use yii\web\HttpException;
  */
 class MonologTarget extends PsrTarget
 {
+    /**
+     * @inheritdoc
+     */
     public $except = [
         PhpMessageSource::class . ':*',
         HttpException::class . ':404',
     ];
+
+    /**
+     * @inheritdoc
+     */
     public $extractExceptionTrace = true;
 
+    /**
+     * @inheritdoc
+     */
+    public $addTimestampToContext;
+
+    /**
+     * @var array
+     */
+    public const LOGGER_PROPS = [
+        'name',
+        'maxFiles',
+        'level',
+        'processor',
+        'formatter',
+        'addTimestampToMessage',
+    ];
+
+    protected bool $addTimestampToMessage;
     protected string $name;
     protected int $maxFiles = 5;
     protected string $level = LogLevel::WARNING;
@@ -37,30 +62,38 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
     protected $logger;
 
-    public function __construct($config = [])
+    /**
+     * Disallow setting logger props after logger is created.
+     * @inheritDoc
+     * @throws InvalidConfigException
+     */
+    public function __set($name, $value)
     {
-        // We don't want to allow setting these props outside initialization,
-        // as they won't be passed to the logger.
-        $config = Collection::make($config)->filter(function($value, $key) use ($config) {
-            $filterProps = ['name', 'maxFiles', 'level', 'processor', 'formatter'];
-
-            if (in_array($key, $filterProps, true)) {
-                $this->$key = $value;
-                return false;
+        if (in_array($name, static::LOGGER_PROPS, true)) {
+            if ($this->logger) {
+                throw new InvalidConfigException("The property \"$name\" must be set before \"logger\".");
             }
 
-            return true;
-        })->all();
+            $this->$name = $value;
 
-        parent::__construct($config);
+            return null;
+        }
+
+        return parent::__set($name, $value);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function init(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
+        $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
+        $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
+
         $this->formatter = $this->formatter ?? new LineFormatter(
-            format: "%channel%.%level_name%: %message% %context% %extra%\n",
+            format: $this->addTimestampToMessage ? null : "%channel%.%level_name%: %message% %context% %extra%\n",
             allowInlineLineBreaks: $generalConfig->allowLogLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
@@ -78,7 +111,7 @@ class MonologTarget extends PsrTarget
      */
     public function setLogger(LoggerInterface $logger): void
     {
-        throw new InvalidConfigException('Logger may not be configured. Use `samdark\log\PsrTarget`.');
+        throw new InvalidConfigException('Logger may not be configured directly. Use "samdark\log\PsrTarget".');
     }
 
     /**
