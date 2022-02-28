@@ -1,6 +1,6 @@
 <template>
   <component
-    class="tw-align-middle"
+    class="tw-align-middle tw-inline-block"
     :class="{
       'tw-w-3 tw-h-3': parseInt(size) === 3,
       'tw-w-4 tw-h-4': parseInt(size) === 4,
