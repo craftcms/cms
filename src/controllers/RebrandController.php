@@ -15,7 +15,7 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\web\Response;
 
-if (isset(Craft::$app)) {
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
     Craft::$app->requireEdition(Craft::Pro);
 }
 

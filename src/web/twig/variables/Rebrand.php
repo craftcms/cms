@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\Image as ImageHelper;
 use yii\base\Exception;
 
-if (isset(Craft::$app)) {
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
     Craft::$app->requireEdition(Craft::Pro);
 }
 

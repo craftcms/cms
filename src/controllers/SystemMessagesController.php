@@ -12,7 +12,7 @@ use craft\models\SystemMessage;
 use craft\web\Controller;
 use yii\web\Response;
 
-if (isset(Craft::$app)) {
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
     Craft::$app->requireEdition(Craft::Pro);
 }
 

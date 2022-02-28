@@ -10,7 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\models\SystemMessage;
 
-if (isset(Craft::$app)) {
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
     Craft::$app->requireEdition(Craft::Pro);
 }
 
