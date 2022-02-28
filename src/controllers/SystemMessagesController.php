@@ -12,7 +12,9 @@ use craft\models\SystemMessage;
 use craft\web\Controller;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Pro);
+if (isset(Craft::$app)) {
+    Craft::$app->requireEdition(Craft::Pro);
+}
 
 /**
  * The SystemMessagesController class is a controller that handles various email message tasks such as saving email
