@@ -59,7 +59,7 @@ class MonologTarget extends PsrTarget
 
         $this->formatter = $this->formatter ?? new LineFormatter(
             format: "%channel%.%level_name%: %message% %context% %extra%\n",
-            allowInlineLineBreaks: $generalConfig->allowLineBreaksInLogs,
+            allowInlineLineBreaks: $generalConfig->allowLogLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
 

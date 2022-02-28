@@ -137,7 +137,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool
      */
-    public bool $allowLineBreaksInLogs = false;
+    public bool $allowLogLineBreaks = false;
 
     /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
@@ -554,7 +554,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var string The PSR-3 log level used when `devMode` is set to `true`.
      */
-    public string|int $devModeLogLevel = LogLevel::DEBUG;
+    public string $devModeLogLevel = LogLevel::DEBUG;
 
     /**
      * @var string[]|string|null Array of plugin handles that should be disabled, regardless of what the project config says.
