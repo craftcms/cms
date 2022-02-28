@@ -12,6 +12,7 @@ use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use craft\services\Config;
+use Psr\Log\LogLevel;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -132,6 +133,11 @@ class GeneralConfig extends BaseObject
      * @group GraphQL
      */
     public $allowedGraphqlOrigins;
+
+    /**
+     * @var bool
+     */
+    public bool $allowLineBreaksInLogs = false;
 
     /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
@@ -544,6 +550,11 @@ class GeneralConfig extends BaseObject
      * @group System
      */
     public bool $devMode = false;
+
+    /**
+     * @var string The PSR-3 log level used when `devMode` is set to `true`.
+     */
+    public string|int $devModeLogLevel = LogLevel::DEBUG;
 
     /**
      * @var string[]|string|null Array of plugin handles that should be disabled, regardless of what the project config says.

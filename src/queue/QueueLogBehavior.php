@@ -8,7 +8,14 @@
 namespace craft\queue;
 
 use Craft;
+use craft\helpers\App;
+use craft\log\Dispatcher;
 use craft\log\FileTarget;
+use craft\log\MonologTarget;
+use Illuminate\Support\Collection;
+use Monolog\Handler\RotatingFileHandler;
+use samdark\log\PsrTarget;
+use yii\log\Target;
 use yii\queue\ExecEvent;
 
 /**
@@ -47,7 +54,7 @@ class QueueLogBehavior extends VerboseBehavior
     public function beforeExec(ExecEvent $event): void
     {
         if (!$this->_jobExecuted) {
-            $this->_changeLogFile();
+            $this->_enableLogTarget();
         }
 
         $this->_jobStartedAt = microtime(true);
@@ -81,29 +88,15 @@ class QueueLogBehavior extends VerboseBehavior
     }
 
     /**
-     * Changes the file that logs will get flushed to.
+     * Enables the log target logs will get flushed to.
      */
-    private function _changeLogFile(): void
+    private function _enableLogTarget(): void
     {
-        $logDispatcher = Craft::$app->getLog();
-
-        foreach ($logDispatcher->targets as $target) {
-            if ($target instanceof FileTarget) {
-                // Log to queue.log
-                $target->logFile = Craft::getAlias('@storage/logs/queue.log');
-
-                // Don't log global vars
-                $target->logVars = [];
-
-                // Prevent verbose system logs
-                if (!YII_DEBUG) {
-                    $target->except = ['yii\*'];
-                    $target->setLevels(['info', 'warning', 'error']);
-                }
-
-                break;
-            }
-        }
+        Collection::make(Craft::$app->getLog()->targets)
+            ->whereInstanceOf(MonologTarget::class)
+            ->each(function(MonologTarget $target) {
+                $target->enabled = $target->name === Dispatcher::TARGET_QUEUE;
+            });
     }
 
     /**

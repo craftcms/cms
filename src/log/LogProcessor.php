@@ -9,10 +9,12 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\ArrayHelper;
+use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\log\LogRuntimeException;
+use yii\log\Target;
 use yii\web\Request;
 use yii\web\Session;
 
@@ -26,6 +28,7 @@ class LogProcessor implements ProcessorInterface
 {
     public function __construct(
         protected bool $includeUserIp = false,
+        protected array $contextVars = [],
     ) {}
 
     /**
@@ -53,48 +56,38 @@ class LogProcessor implements ProcessorInterface
             $record['extra']['sessionId'] = $session->getId();
         }
 
+        if (
+            ($postPos = array_search('_POST', $this->contextVars)) !== false &&
+            empty($GLOBALS['_POST']) &&
+            !empty($body = file_get_contents('php://input'))
+        ) {
+            // Log the raw request body instead
+            // TODO: why?
+            $this->contextVars = array_merge($this->contextVars);
+            array_splice($this->contextVars, $postPos, 1);
+            $record['extra']['body'] = $body;
+        }
+
+        $record['extra']['vars'] = $this->filterVars($this->contextVars);
+
         return $record;
     }
 
-    /**
-     * Generates the context information to be logged.
-     *
-     * @return string the context information. If an empty string, it means no context information.
-     * @see Target::getContextMessage()
-     */
-    // protected function getContextMessage(): string
-    // {
-    //     $result = [];
-    //
-    //     if (
-    //         ($postPos = array_search('_POST', $this->logVars)) !== false &&
-    //         empty($GLOBALS['_POST']) &&
-    //         !empty($body = file_get_contents('php://input'))
-    //     ) {
-    //         // Log the raw request body instead
-    //         $logVars = array_merge($this->logVars);
-    //         array_splice($logVars, $postPos, 1);
-    //         $result[] = "Request body: $body";
-    //     } else {
-    //         $logVars = $this->logVars;
-    //     }
-    //
-    //     $context = ArrayHelper::filter($GLOBALS, $logVars);
-    //
-    //     // Workaround for codeception testing until these gets addressed:
-    //     // https://github.com/yiisoft/yii-core/issues/49
-    //     // https://github.com/yiisoft/yii2/issues/15847
-    //     if (Craft::$app) {
-    //         $security = Craft::$app->getSecurity();
-    //
-    //         foreach ($context as $key => $value) {
-    //             $value = $security->redactIfSensitive($key, $value);
-    //             $result[] = "\$$key = " . VarDumper::dumpAsString($value);
-    //         }
-    //     }
-    //
-    //     return implode("\n\n", $result);
-    // }
+    protected function filterVars(array $vars = []): array
+    {
+        $filtered = Collection::make($GLOBALS)
+            ->filter(fn($value, $key) => in_array($key, $vars, true));
+
+        // Workaround for codeception testing until these gets addressed:
+        // https://github.com/yiisoft/yii-core/issues/49
+        // https://github.com/yiisoft/yii2/issues/15847
+        if (Craft::$app) {
+            $security = Craft::$app->getSecurity();
+            $filtered = $filtered->map(fn($value, $key) => $security->redactIfSensitive($key, $value));
+        }
+
+        return $filtered->all();
+    }
 
     /**
      * @var string|null a string that should replace all newline characters

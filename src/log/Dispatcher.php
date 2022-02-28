@@ -7,7 +7,17 @@
 
 namespace craft\log;
 
+use Craft;
 use craft\helpers\App;
+use Illuminate\Support\Collection;
+use Monolog\Formatter\FormatterInterface;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use yii\i18n\PhpMessageSource;
+use yii\log\Target;
+use yii\web\HttpException;
 
 /**
  * Class Dispatcher
@@ -18,16 +28,13 @@ use craft\helpers\App;
 class Dispatcher extends \yii\log\Dispatcher
 {
     /** @since 4.0.0 */
-    public const LOGGER_WEB = 'web';
+    public const TARGET_WEB = 'web';
 
     /** @since 4.0.0 */
-    public const LOGGER_WEB_404 = 'web-404';
+    public const TARGET_CONSOLE = 'console';
 
     /** @since 4.0.0 */
-    public const LOGGER_CONSOLE = 'console';
-
-    /** @since 4.0.0 */
-    public const LOGGER_QUEUE = 'queue';
+    public const TARGET_QUEUE = 'queue';
 
     /**
      * @inheritdoc
