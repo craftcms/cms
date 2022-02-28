@@ -11,6 +11,7 @@ use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\ProcessorInterface;
+use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use samdark\log\PsrTarget;
@@ -27,6 +28,7 @@ class MonologTarget extends PsrTarget
         PhpMessageSource::class . ':*',
         HttpException::class . ':404',
     ];
+    public $extractExceptionTrace = true;
 
     protected string $name;
     protected int $maxFiles = 5;
@@ -92,7 +94,9 @@ class MonologTarget extends PsrTarget
     private function _createLogger(string $name): Logger
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $logger = (new Logger($name))->pushProcessor($this->processor);
+        $logger = (new Logger($name))
+            ->pushProcessor(new PsrLogMessageProcessor())
+            ->pushProcessor($this->processor);
 
         if (App::isStreamLog()) {
             $logger->pushHandler((new StreamHandler(

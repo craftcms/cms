@@ -8,13 +8,10 @@
 namespace craft\log;
 
 use Craft;
-use craft\helpers\ArrayHelper;
 use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
 use yii\base\InvalidConfigException;
-use yii\helpers\VarDumper;
 use yii\log\LogRuntimeException;
-use yii\log\Target;
 use yii\web\Request;
 use yii\web\Session;
 
@@ -88,71 +85,4 @@ class LogProcessor implements ProcessorInterface
 
         return $filtered->all();
     }
-
-    /**
-     * @var string|null a string that should replace all newline characters
-     * in a log message. Default is `null` for no replacement.
-     */
-    // public ?string $replaceNewline = null;
-
-    /**
-     * @var bool whether to disable the timestamp. The default is `false` which
-     * will prepend every message with a timestamp created with
-     * [yii\log\Target::getTime()].
-     */
-    // public bool $disableTimestamp = false;
-
-    /**
-     * @var bool whether to use flock() to lock/unlock the stream before/after
-     * writing. This can be used to ensure that the stream is written by 2
-     * processes simultaneously. Note though, that not all stream types support
-     * locking. The default is `false`.
-     */
-    // public bool $enableLocking = false;
-
-    /**
-     * Writes a log message to the given target URL
-     *
-     * @throws InvalidConfigException If unable to open the stream for writing
-     * @throws LogRuntimeException If unable to write to the log
-     */
-    // public function export(): void
-    // {
-    //     $text = implode("\n", array_map([$this, 'formatMessage'], $this->messages)) . "\n";
-    //
-    //     $fp = $this->getFp();
-    //     if ($this->enableLocking) {
-    //         @flock($fp, LOCK_EX);
-    //     }
-    //
-    //     if (@fwrite($fp, $text) === false) {
-    //         $error = error_get_last();
-    //         throw new LogRuntimeException("Unable to export log!: {$error['message']}");
-    //     }
-    //
-    //     if ($this->enableLocking) {
-    //         @flock($fp, LOCK_UN);
-    //     }
-    //
-    //     $this->closeFp();
-    // }
-
-    /**
-     * @inheritdoc
-     */
-    // public function formatMessage($message): string
-    // {
-    //     $text = $this->prefixString . trim(parent::formatMessage($message));
-    //     return !isset($this->replaceNewline) ?
-    //         $text :
-    //         str_replace("\n", $this->replaceNewline, $text);
-    // }
-
-    /**
-     * @inheritdoc
-     */
-    // protected function getTime($timestamp): string
-    // {
-    //     return $this->disableTimestamp ? '' : parent::getTime($timestamp);
-    // }
 }
