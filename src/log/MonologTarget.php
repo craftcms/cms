@@ -4,6 +4,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -22,18 +23,33 @@ use yii\web\HttpException;
  */
 class MonologTarget extends PsrTarget
 {
-    public string $name;
-    public int $maxFiles = 5;
-    public string $level = LogLevel::WARNING;
-    public ?FormatterInterface $formatter = null;
-    public ?ProcessorInterface $processor = null;
-
-    protected $logger;
-
     public $except = [
         PhpMessageSource::class . ':*',
         HttpException::class . ':404',
     ];
+
+    protected string $name;
+    protected int $maxFiles = 5;
+    protected string $level = LogLevel::WARNING;
+    protected ?FormatterInterface $formatter = null;
+    protected ?ProcessorInterface $processor = null;
+    protected $logger;
+
+    public function __construct($config = [])
+    {
+        $config = Collection::make($config)->filter(function($value, $key) use ($config) {
+            $filterProps = ['name', 'maxFiles', 'level', 'processor', 'formatter'];
+
+            if (in_array($key, $filterProps, true)) {
+                $this->$key = $value;
+                return false;
+            }
+
+            return true;
+        })->all();
+
+        parent::__construct($config);
+    }
 
     public function init(): void
     {
@@ -58,7 +74,7 @@ class MonologTarget extends PsrTarget
      */
     public function setLogger(LoggerInterface $logger): void
     {
-        throw new InvalidConfigException('Logger may not be manually configured.');
+        throw new InvalidConfigException('Logger may not be configured. Use `samdark\log\PsrTarget`.');
     }
 
     /**
