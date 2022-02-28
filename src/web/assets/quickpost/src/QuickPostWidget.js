@@ -58,23 +58,14 @@
 
             Craft.sendActionRequest('POST', 'entries/save-entry', {data})
                 .then((response) => {
-                    this.loading = false;
-                    this.$saveBtn.removeClass('loading');
                     if (this.$errorList) {
                         this.$errorList.children().remove();
                     }
 
-                    if (response.data.success) {
-                        Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
-                        callback(response.data);
-                    } else {
-                        return Promise.reject();
-                    }
+                    Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
+                    callback(response.data);
                 })
                 .catch(({response}) => {
-                    this.loading = false;
-                    this.$saveBtn.removeClass('loading');
-
                     if (this.$errorList) {
                         this.$errorList.children().remove();
                     }
@@ -97,6 +88,10 @@
                             }
                         }
                     }
+                })
+                .finally(() => {
+                    this.loading = false;
+                    this.$saveBtn.removeClass('loading');
                 });
         },
 

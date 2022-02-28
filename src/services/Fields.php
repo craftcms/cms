@@ -23,6 +23,7 @@ use craft\events\FieldGroupEvent;
 use craft\events\FieldLayoutEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\Address;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
@@ -83,7 +84,7 @@ class Fields extends Component
      *
      * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
      *
-     * See [Field Types](https://craftcms.com/docs/3.x/extend/field-types.html) for documentation on creating field types.
+     * See [Field Types](https://craftcms.com/docs/4.x/extend/field-types.html) for documentation on creating field types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -1365,6 +1366,9 @@ class Fields extends Component
                 $tabRecord = $tabRecords[$tab->id];
                 unset($tabRecords[$tab->id]);
             } else {
+                if (!isset($tab->uid)) {
+                    $tab->uid = StringHelper::UUID();
+                }
                 $tabRecord = new FieldLayoutTabRecord();
                 $tabRecord->layoutId = $layout->id;
                 $tabRecord->uid = $tab->uid;

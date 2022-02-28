@@ -7,14 +7,11 @@
 
 namespace craft\elements\db;
 
-use ArrayAccess;
-use Countable;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\models\Site;
 use craft\search\SearchQuery;
 use Illuminate\Support\Collection;
-use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\db\Connection;
 use yii\db\QueryInterface;
@@ -94,7 +91,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * ```twig
      * {# Fetch a draft {element} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .drafts()
      *   .id(123)
      *   .one() %}
@@ -245,7 +242,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * ```twig
      * {# Fetch saved, unpublished draft {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .draftOf(false)
      *   .savedDraftsOnly()
      *   .all() %}
@@ -272,7 +269,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *
      * ```twig
      * {# Fetch a revision {element} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .revisions()
      *   .id(123)
      *   .one() %}
@@ -793,7 +790,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -819,7 +816,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -968,7 +965,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that match a search query.
      *
-     * See [Searching](https://craftcms.com/docs/3.x/searching.html) for a full explanation of how to work with this parameter.
+     * See [Searching](https://craftcms.com/docs/4.x/searching.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -1008,7 +1005,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
      *
-     * See [Eager-Loading Elements](https://craftcms.com/docs/3.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *

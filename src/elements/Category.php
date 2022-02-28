@@ -690,7 +690,7 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -702,7 +702,7 @@ class Category extends Element
                 $record = CategoryRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid category ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid category ID: $this->id");
                 }
             } else {
                 $record = new CategoryRecord();

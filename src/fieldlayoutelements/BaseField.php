@@ -128,7 +128,7 @@ abstract class BaseField extends FieldLayoutElement
     {
         $innerHtml = '';
 
-        $label = $this->showLabel() ? $this->label() : null;
+        $label = $this->selectorLabel();
         $requiredHtml = $this->required ? Html::tag('div', '', [
             'class' => 'fld-required-indicator',
             'title' => Craft::t('app', 'This field is required'),
@@ -174,6 +174,16 @@ abstract class BaseField extends FieldLayoutElement
                 'requirable' => $this->requirable(),
             ],
         ];
+    }
+
+    /**
+     * Returns the selector label.
+     *
+     * @since 4.0.0
+     */
+    protected function selectorLabel(): ?string
+    {
+        return $this->showLabel() ? $this->label() : null;
     }
 
     /**

@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\FieldLayoutComponent;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Table;
@@ -1191,19 +1192,31 @@ JS;
             ]);
             $missingElements = [];
             foreach ($form->tabs as $tab) {
-                $elementInfo = [];
-                foreach ($tab->elementHtml as $elementUid => $elementHtml) {
-                    $elementInfo[] = [
-                        'uid' => $elementUid,
-                        'html' => $elementHtml,
-                    ];
+                if (!$tab->getUid()) {
+                    continue;
                 }
+
+                $elementInfo = [];
+
+                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
+                    /** @var FieldLayoutComponent $layoutElement */
+                    /** @var bool $isConditional */
+                    /** @var string|bool $elementHtml */
+                    if ($isConditional) {
+                        $elementInfo[] = [
+                            'uid' => $layoutElement->uid,
+                            'html' => $elementHtml,
+                        ];
+                    }
+                }
+
                 $missingElements[] = [
                     'uid' => $tab->getUid(),
                     'id' => $tab->getId(),
                     'elements' => $elementInfo,
                 ];
             }
+
             $tabs = $form->getTabMenu();
             $tabHtml = count($tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
                 'tabs' => $tabs,

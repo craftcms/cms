@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
+use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -818,6 +819,32 @@ class Cp
     }
 
     /**
+     * Renders a selectize input.
+     *
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public static function selectizeHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/selectize', $config);
+    }
+
+    /**
+     * Renders a selectize field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 4.0.0
+     */
+    public static function selectizeFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'selectize' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/selectize', $config);
+    }
+
+    /**
      * Renders a multi-select input.
      *
      * @param array $config
@@ -1014,7 +1041,7 @@ class Cp
                     $config['tip'] = Craft::t('app', 'This can be set to an environment variable.');
                 }
                 $config['tip'] .= ' ' .
-                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/3.x/config/#environmental-configuration', [
+                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/4.x/config/#environmental-configuration', [
                         'class' => 'go',
                     ]);
             } else if (
@@ -1027,6 +1054,138 @@ class Cp
         }
 
         return static::fieldHtml('template:_includes/forms/autosuggest', $config);
+    }
+
+    /**
+     * Renders address cards.
+     *
+     * @param Address[] $addresses
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public static function addressCardsHtml(array $addresses, array $config = []): string
+    {
+        $config += [
+            'id' => sprintf('addresses%s', mt_rand()),
+            'ownerId' => null,
+            'maxAddresses' => null,
+        ];
+
+        $view = Craft::$app->getView();
+
+        $view->registerJsWithVars(fn($selector, $settings) => <<<JS
+new Craft.AddressesInput($($selector), $settings);
+JS, [
+            sprintf('#%s', $view->namespaceInputId($config['id'])),
+            [
+                'ownerId' => $config['ownerId'],
+                'maxAddresses' => $config['maxAddresses'],
+            ]
+        ]);
+
+        return
+            Html::beginTag('div', [
+                'id' => $config['id'],
+                'class' => 'address-cards',
+            ]) .
+            implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
+            Html::beginTag('button', [
+                'type' => 'button',
+                'class' => ['btn', 'dashed', 'add', 'icon'],
+            ]) .
+            Html::tag('div', '', [
+                'class' => ['spinner', 'spinner-absolute'],
+            ]) .
+            Html::tag('div', Craft::t('app', 'Add an address'), [
+                'class' => 'label',
+            ]) .
+            Html::endTag('button') .
+            Html::endTag('div'); // .address-cards
+    }
+
+    /**
+     * Renders an address card for an Addresses input.
+     *
+     * @param Address $address
+     * @param array $config
+     * @return string
+     * @since 4.0.0
+     */
+    public static function addressCardHtml(Address $address, array $config = []): string
+    {
+        $config += [
+            'name' => null,
+        ];
+
+        $label = $address->title;
+        $canDelete = $address->canDelete(Craft::$app->getUser()->getIdentity());
+        $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
+
+        return
+            Html::beginTag('div', [
+                'class' => 'address-card',
+                'data' => [
+                    'id' => $address->id,
+                    'draftId' => $address->draftId,
+                ],
+            ]) .
+            ($config['name'] ? Html::hiddenInput("{$config['name']}[]", $address->id) : '') .
+            Html::beginTag('div', ['class' => 'address-card-header']) .
+            Html::tag('div', $address->title, [
+                'class' => array_filter([
+                    'address-card-label',
+                    !$label ? 'hidden' : null,
+                ]),
+            ]) .
+            ($canDelete
+                ? Html::beginTag('div', [
+                    'class' => 'address-card-header-actions',
+                    'data' => [
+                        'wrapper' => true,
+                    ],
+                ]) .
+                Html::button('', [
+                    'class' => ['btn', 'menubtn'],
+                    'title' => Craft::t('app', 'Actions'),
+                    'aria' => [
+                        'controls' => $actionMenuId,
+                        'label' => sprintf('%s %s', $label ?? Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
+                    ],
+                    'data' => [
+                        'icon' => 'settings',
+                        'disclosure-trigger' => true,
+                    ],
+                ]) .
+                Html::beginTag('div', [
+                    'id' => $actionMenuId,
+                    'class' => ['menu', 'menu--disclosure'],
+                ]) .
+                Html::beginTag('ul', ['class' => 'padded']) .
+                Html::beginTag('li') .
+                Html::a(Craft::t('app', 'Delete'), '#', [
+                    'class' => 'error',
+                    'type' => 'button',
+                    'role' => 'button',
+                    'aria' => [
+                        'label' => Craft::t('app', 'Delete'),
+                    ],
+                    'data' => [
+                        'icon' => 'remove',
+                        'action' => 'delete',
+                    ],
+                ]) .
+                Html::endTag('li') .
+                Html::endTag('ul') .
+                Html::endTag('div') . // .menu
+                Html::endTag('div') // .address-card-header-actions
+                : ''
+            ) .
+            Html::endTag('div') . // .address-card-header
+            Html::tag('div', Craft::$app->getAddresses()->formatAddress($address), [
+                'class' => 'address-card-body',
+            ]) .
+            Html::endTag('div'); // .address-card
     }
 
     /**
@@ -1061,6 +1220,21 @@ class Cp
             }
 
             $tabs = [$tab];
+        }
+
+        // Make sure all tabs and their elements have UUIDs
+        // (We do this here instead of from FieldLayoutComponent::init() because the we don't want field layout forms to
+        // get the impression that tabs/elements have persisting UUIDs if they don't.)
+        foreach ($tabs as $tab) {
+            if (!isset($tab->uid)) {
+                $tab->uid = StringHelper::UUID();
+            }
+
+            foreach ($tab->getElements() as $layoutElement) {
+                if (!isset($layoutElement->uid)) {
+                    $layoutElement->uid = StringHelper::UUID();
+                }
+            }
         }
 
         $view = Craft::$app->getView();

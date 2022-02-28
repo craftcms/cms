@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -46,6 +47,7 @@ use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\validators\Validator;
@@ -58,7 +60,7 @@ use yii\web\IdentityInterface;
  * @property UserGroup[] $groups the user's groups
  * @property string $name the user's full name or username
  * @property string|null $friendlyName the user's first name or username
- * @property string|null $fullName the user's full name
+ * @property-read Address[]|null $addresses the user's addresses
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property-read array $preferences the user’s preferences
@@ -72,6 +74,8 @@ use yii\web\IdentityInterface;
  */
 class User extends Element implements IdentityInterface
 {
+    use NameTrait;
+
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
@@ -345,7 +349,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineSearchableAttributes(): array
     {
-        return ['username', 'firstName', 'lastName', 'fullName', 'email'];
+        return ['username', 'fullName', 'firstName', 'lastName', 'email'];
     }
 
     /**
@@ -356,6 +360,7 @@ class User extends Element implements IdentityInterface
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $attributes = [
                 'email' => Craft::t('app', 'Email'),
+                'fullName' => Craft::t('app', 'Full Name'),
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 [
@@ -384,6 +389,7 @@ class User extends Element implements IdentityInterface
         } else {
             $attributes = [
                 'username' => Craft::t('app', 'Username'),
+                'fullName' => Craft::t('app', 'Full Name'),
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 'email' => Craft::t('app', 'Email'),
@@ -468,10 +474,26 @@ class User extends Element implements IdentityInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
-        if ($handle === 'photo') {
-            // Get the source element IDs
-            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+        // Get the source element IDs
+        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
+        if ($handle == 'addresses') {
+            $map = (new Query())
+                ->select([
+                    'source' => 'ownerId',
+                    'target' => 'id',
+                ])
+                ->from([Table::ADDRESSES])
+                ->where(['ownerId' => $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Address::class,
+                'map' => $map,
+            ];
+        }
+
+        if ($handle === 'photo') {
             $map = (new Query())
                 ->select(['id as source', 'photoId as target'])
                 ->from([Table::USERS])
@@ -580,16 +602,6 @@ class User extends Element implements IdentityInterface
     public ?string $username = null;
 
     /**
-     * @var string|null First name
-     */
-    public ?string $firstName = null;
-
-    /**
-     * @var string|null Last name
-     */
-    public ?string $lastName = null;
-
-    /**
      * @var string|null Email
      */
     public ?string $email = null;
@@ -676,6 +688,12 @@ class User extends Element implements IdentityInterface
     public ?User $inheritorOnDelete = null;
 
     /**
+     * @var Address[] Addresses
+     * @see getAddresses()
+     */
+    private array $_addresses;
+
+    /**
      * @var string|null
      * @see getName()
      * @see setName()
@@ -722,6 +740,8 @@ class User extends Element implements IdentityInterface
         if ($this->email) {
             $this->email = StringHelper::idnToUtf8Email($this->email);
         }
+
+        $this->normalizeNames();
     }
 
     /**
@@ -774,6 +794,7 @@ class User extends Element implements IdentityInterface
     {
         $names = parent::extraFields();
         $names[] = 'groups';
+        $names[] = 'addresses';
         $names[] = 'photo';
         return $names;
     }
@@ -800,6 +821,7 @@ class User extends Element implements IdentityInterface
         $labels = parent::attributeLabels();
         $labels['currentPassword'] = Craft::t('app', 'Current Password');
         $labels['email'] = Craft::t('app', 'Email');
+        $labels['fullName'] = Craft::t('app', 'Full Name');
         $labels['firstName'] = Craft::t('app', 'First Name');
         $labels['lastName'] = Craft::t('app', 'Last Name');
         $labels['newPassword'] = Craft::t('app', 'New Password');
@@ -820,9 +842,9 @@ class User extends Element implements IdentityInterface
 
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
-        $rules[] = [['username', 'email', 'unverifiedEmail', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
+        $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
-        $rules[] = [['email', 'username', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
+        $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
         $rules[] = [['email'], 'required', 'when' => $treatAsActive];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
@@ -862,7 +884,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
+            ['fullName', 'firstName', 'lastName'], function($attribute, $params, Validator $validator) {
                 if (str_contains($this->$attribute, '://')) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
@@ -933,6 +955,26 @@ class User extends Element implements IdentityInterface
     public function getFieldLayout(): ?FieldLayout
     {
         return Craft::$app->getFields()->getLayoutByType(self::class);
+    }
+
+    /**
+     * Gets the user's addresses.
+     *
+     * @return Address[]
+     */
+    public function getAddresses(): array
+    {
+        if (!isset($this->_addresses)) {
+            if (!$this->id) {
+                return [];
+            }
+
+            $this->_addresses = Address::find()
+                ->ownerId($this->id)
+                ->all();
+        }
+
+        return $this->_addresses;
     }
 
     /**
@@ -1102,25 +1144,11 @@ class User extends Element implements IdentityInterface
      * Returns the user's full name.
      *
      * @return string|null
+     * @deprecated in 4.0.0. [[fullName]] should be used instead.
      */
     public function getFullName(): ?string
     {
-        $firstName = trim($this->firstName);
-        $lastName = trim($this->lastName);
-
-        if (!$firstName && !$lastName) {
-            return null;
-        }
-
-        $name = $firstName;
-
-        if ($firstName && $lastName) {
-            $name .= ' ';
-        }
-
-        $name .= $lastName;
-
-        return $name;
+        return $this->fullName;
     }
 
     /**
@@ -1149,11 +1177,7 @@ class User extends Element implements IdentityInterface
             }
         }
 
-        if (($fullName = $this->getFullName()) !== null) {
-            return $fullName;
-        }
-
-        return (string)$this->username;
+        return $this->fullName ?? (string)$this->username;
     }
 
     /**
@@ -1193,11 +1217,7 @@ class User extends Element implements IdentityInterface
             }
         }
 
-        if ($firstName = trim($this->firstName)) {
-            return $firstName;
-        }
-
-        return $this->username;
+        return $this->firstName ?? $this->username;
     }
 
     /**
@@ -1658,7 +1678,8 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
+     * @throws Exception
      */
     public function afterSave(bool $isNew): void
     {
@@ -1667,7 +1688,7 @@ class User extends Element implements IdentityInterface
             $record = UserRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid user ID: ' . $this->id);
+                throw new InvalidConfigException("Invalid user ID: $this->id");
             }
 
             if ($this->active != $record->active) {
@@ -1694,9 +1715,12 @@ class User extends Element implements IdentityInterface
             $record->suspended = $this->suspended;
         }
 
+        $this->prepareNamesForSave();
+
         $record->photoId = (int)$this->photoId ?: null;
         $record->admin = $this->admin;
         $record->username = $this->username;
+        $record->fullName = $this->fullName;
         $record->firstName = $this->firstName;
         $record->lastName = $this->lastName;
         $record->email = $this->email;

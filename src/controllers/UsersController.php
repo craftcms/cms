@@ -468,12 +468,7 @@ class UsersController extends Controller
         }
 
         if (empty($errors)) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asSuccess();
-            }
-
-            $this->setSuccessFlash(Craft::t('app', 'Password reset email sent.'));
-            return $this->redirectToPostedUrl();
+            return $this->asSuccess(Craft::t('app', 'Password reset email sent.'));
         }
 
         // Handle the errors.
@@ -552,12 +547,11 @@ class UsersController extends Controller
         $user->setScenario(User::SCENARIO_PASSWORD);
 
         if (!Craft::$app->getElements()->saveElement($user)) {
-            return $this->asModelFailure(
-                    $user,
+            return $this->asFailure(
                     Craft::t('app', 'Couldn’t update password.'),
-                    errorAttribute: 'newPassword'
+                    $user->getErrors('newPassword'),
                 ) ?? $this->_renderSetPasswordTemplate([
-                    'errors' => $errors,
+                    'errors' => $user->getErrors('newPassword'),
                     'code' => $code,
                     'id' => $uid,
                     'newUser' => !$user->password,
@@ -679,7 +673,7 @@ class UsersController extends Controller
     public function actionEditUser($userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
-            $this->setFailFlash(reset($errors));
+            $this->setFailFlash(implode(', ', reset($errors)));
         }
 
         // Determine which user account we're editing
@@ -931,8 +925,7 @@ class UsersController extends Controller
                 $errors = $user->getErrors();
                 $accountFields = [
                     'username',
-                    'firstName',
-                    'lastName',
+                    'fullName',
                     'email',
                     'password',
                     'newPassword',
@@ -1226,8 +1219,21 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
-        $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
+        $fullName = $this->request->getBodyParam('fullName');
+
+        if ($fullName !== null) {
+            $user->fullName = $fullName;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $this->request->getBodyParam('firstName');
+            $lastName = $this->request->getBodyParam('lastName');
+
+            if ($firstName !== null || $lastName !== null) {
+                $user->fullName = null;
+                $user->firstName = $firstName ?? $user->firstName;
+                $user->lastName = $lastName ?? $user->lastName;
+            }
+        }
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
@@ -1396,7 +1402,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asSuccess($return);
+            return $this->asSuccess(data: $return);
         }
 
         if ($isPublicRegistration) {
@@ -2203,7 +2209,7 @@ JS,
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
+        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
     }
 
     /**
@@ -2293,8 +2299,10 @@ JS,
 
         return $this->asFailure(
             $errorString,
-            errors: $errors,
-            routeParams: [
+            [
+                'errors' => $errors,
+            ],
+            [
                 'loginName' => $loginName,
             ]
         );

@@ -10,9 +10,9 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\services\ProjectConfig;
 
 /**
- * m220219_202304_rename_field_layout_elements migration.
+ * m220225_134220_rename_field_layout_elements migration.
  */
-class m220219_202304_rename_field_layout_elements extends Migration
+class m220225_134220_rename_field_layout_elements extends Migration
 {
     /**
      * @inheritdoc
@@ -22,7 +22,7 @@ class m220219_202304_rename_field_layout_elements extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
-        if (version_compare($schemaVersion, '4.0.0.1', '<')) {
+        if (version_compare($schemaVersion, '4.0.0.4', '<')) {
             $this->_updateFieldLayouts($projectConfig, ProjectConfig::PATH_VOLUMES, [
                 'craft\fieldlayoutelements\AssetTitleField' => AssetTitleField::class,
                 'craft\fieldlayoutelements\AssetAltField' => AltField::class,
@@ -41,19 +41,21 @@ class m220219_202304_rename_field_layout_elements extends Migration
         $baseConfigs = $projectConfig->get($basePath) ?? [];
 
         foreach ($baseConfigs as $uid => $baseConfig) {
-            $fieldLayoutConfigs = $baseConfig['fieldLayouts'] ?? [];
-            $modified = false;
+            if (isset($baseConfig['fieldLayouts'])) {
+                $fieldLayoutConfigs = &$baseConfig['fieldLayouts'];
+                $modified = false;
 
-            foreach ($fieldLayoutConfigs as &$fieldLayoutConfig) {
-                if (isset($fieldLayoutConfig['tabs'])) {
-                    foreach ($fieldLayoutConfig['tabs'] as &$tabConfig) {
-                        if (isset($tabConfig['elements'])) {
-                            foreach ($tabConfig['elements'] as &$elementConfig) {
-                                if (isset($elementConfig['type'])) {
-                                    foreach ($map as $from => $to) {
-                                        if ($elementConfig['type'] === $from) {
-                                            $elementConfig['type'] = $to;
-                                            $modified = true;
+                foreach ($fieldLayoutConfigs as &$fieldLayoutConfig) {
+                    if (isset($fieldLayoutConfig['tabs'])) {
+                        foreach ($fieldLayoutConfig['tabs'] as &$tabConfig) {
+                            if (isset($tabConfig['elements'])) {
+                                foreach ($tabConfig['elements'] as &$elementConfig) {
+                                    if (isset($elementConfig['type'])) {
+                                        foreach ($map as $from => $to) {
+                                            if ($elementConfig['type'] === $from) {
+                                                $elementConfig['type'] = $to;
+                                                $modified = true;
+                                            }
                                         }
                                     }
                                 }
@@ -61,10 +63,12 @@ class m220219_202304_rename_field_layout_elements extends Migration
                         }
                     }
                 }
-            }
 
-            if ($modified) {
-                $projectConfig->set("$basePath.$uid.fieldLayouts", $fieldLayoutConfigs);
+                if ($modified) {
+                    // todo: this should work:
+                    // $projectConfig->set("$basePath.$uid.fieldLayouts", $fieldLayoutConfigs);
+                    $projectConfig->set("$basePath.$uid", $baseConfig);
+                }
             }
         }
     }
@@ -74,7 +78,7 @@ class m220219_202304_rename_field_layout_elements extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m220219_202304_rename_field_layout_elements cannot be reverted.\n";
+        echo "m220225_134220_rename_field_layout_elements cannot be reverted.\n";
         return false;
     }
 }

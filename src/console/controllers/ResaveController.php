@@ -54,6 +54,12 @@ class ResaveController extends Controller
     public bool $provisionalDrafts = false;
 
     /**
+     * @var bool Whether to resave element revisions.
+     * @since 3.7.35
+     */
+    public $revisions = false;
+
+    /**
      * @var int|string The ID(s) of the elements to resave.
      */
     public $elementId;
@@ -175,6 +181,7 @@ class ResaveController extends Controller
                 $options[] = 'type';
                 $options[] = 'drafts';
                 $options[] = 'provisionalDrafts';
+                $options[] = 'revisions';
                 break;
             case 'matrix-blocks':
                 $options[] = 'field';
@@ -358,6 +365,10 @@ class ResaveController extends Controller
             $criteria['provisionalDrafts'] = true;
         }
 
+        if ($this->revisions) {
+            $criteria['revisions'] = true;
+        }
+
         if ($this->elementId) {
             $criteria['id'] = is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId);
         }
@@ -443,7 +454,7 @@ class ResaveController extends Controller
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $elementsService->resaveElements($query, true, true, $this->updateSearchIndex);
+        $elementsService->resaveElements($query, true, !$this->revisions, $this->updateSearchIndex);
 
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);

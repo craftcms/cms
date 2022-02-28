@@ -82,10 +82,10 @@ class SystemMessagesController extends Controller
             $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
-        if (Craft::$app->getSystemMessages()->saveMessage($message, $language)) {
-            return $this->asSuccess();
+        if (!Craft::$app->getSystemMessages()->saveMessage($message, $language)) {
+            return $this->asFailure(Craft::t('app', 'There was a problem saving your message.'));
         }
 
-        return $this->asFailure(Craft::t('app', 'There was a problem saving your message.'));
+        return $this->asSuccess();
     }
 }

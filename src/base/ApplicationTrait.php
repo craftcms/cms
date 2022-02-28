@@ -15,10 +15,12 @@ use craft\db\MigrationManager;
 use craft\db\mysql\Schema;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
+use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -26,10 +28,18 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
+use craft\fieldlayoutelements\addresses\AddressField;
+use craft\fieldlayoutelements\addresses\CountryCodeField;
+use craft\fieldlayoutelements\addresses\LabelField;
+use craft\fieldlayoutelements\addresses\LatLongField;
+use craft\fieldlayoutelements\addresses\OrganizationField;
+use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
+use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\users\AddressesField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
@@ -40,6 +50,7 @@ use craft\mail\Mailer;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
+use craft\services\Addresses;
 use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
@@ -110,6 +121,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @property bool $isInstalled Whether Craft is installed
  * @property int $edition The active Craft edition
+ * @property-read Addresses $addresses The addresses service
  * @property-read Announcements $announcements The announcements service
  * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
@@ -736,7 +748,7 @@ trait ApplicationTrait
     {
 
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
         }
 
         if (!$info->validate($attributeNames)) {
@@ -822,6 +834,18 @@ trait ApplicationTrait
 
     // Service Getters
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the addresses service.
+     *
+     * @return Addresses The addresses service
+     * @since 4.0.0
+     */
+    public function getAddresses(): Addresses
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('addresses');
+    }
 
     /**
      * Returns the announcements service.
@@ -1521,12 +1545,24 @@ trait ApplicationTrait
                 case Tag::class:
                     $event->fields[] = TitleField::class;
                     break;
+                case Address::class:
+                    $event->fields[] = LabelField::class;
+                    $event->fields[] = OrganizationField::class;
+                    $event->fields[] = OrganizationTaxIdField::class;
+                    $event->fields[] = FullNameField::class;
+                    $event->fields[] = CountryCodeField::class;
+                    $event->fields[] = AddressField::class;
+                    $event->fields[] = LatLongField::class;
+                    break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
                     $event->fields[] = AltField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;
+                    break;
+                case User::class:
+                    $event->fields[] = AddressesField::class;
                     break;
             }
         });
@@ -1538,6 +1574,10 @@ trait ApplicationTrait
     private function _registerConfigListeners(): void
     {
         $this->getProjectConfig()
+            // Address field layout
+            ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
+            ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
+            ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
             // Field groups
             ->onAdd(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
             ->onUpdate(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))

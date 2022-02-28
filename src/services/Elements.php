@@ -17,6 +17,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\EagerLoadPlan;
@@ -80,7 +81,7 @@ class Elements extends Component
      *
      * Element types must implement [[ElementInterface]]. [[Element]] provides a base implementation.
      *
-     * See [Element Types](https://craftcms.com/docs/3.x/extend/element-types.html) for documentation on creating element types.
+     * See [Element Types](https://craftcms.com/docs/4.x/extend/element-types.html) for documentation on creating element types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -1864,6 +1865,7 @@ class Elements extends Component
     public function getAllElementTypes(): array
     {
         $elementTypes = [
+            Address::class,
             Asset::class,
             Category::class,
             Entry::class,

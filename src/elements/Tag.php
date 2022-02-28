@@ -18,7 +18,6 @@ use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
 
@@ -315,7 +314,7 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -325,7 +324,7 @@ class Tag extends Element
                 $record = TagRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid tag ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid tag ID: $this->id");
                 }
             } else {
                 $record = new TagRecord();

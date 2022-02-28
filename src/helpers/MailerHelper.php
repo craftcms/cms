@@ -106,8 +106,8 @@ class MailerHelper
 
         foreach ($emails as $key => $value) {
             if ($value instanceof User) {
-                if (($name = $value->getFullName()) !== null) {
-                    $normalized[$value->email] = $name;
+                if ($value->fullName !== null) {
+                    $normalized[$value->email] = $value->fullName;
                 } else {
                     $normalized[] = $value->email;
                 }

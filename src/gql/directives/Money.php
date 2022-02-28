@@ -64,7 +64,7 @@ class Money extends Directive
                     'description' => 'The locale to use when formatting the money value. (e.g. `en_US`). This argument is only valid with `number` and `string` formats.',
                 ]),
             ],
-            'description' => 'This directive allows for formatting a money object to the desired format. It can be applied to all fields, but changes anything only when applied to a Money field.',
+            'description' => 'Formats a money object to the desired format. It can be applied to any fields, but only changes a Money field.',
         ]));
     }
 

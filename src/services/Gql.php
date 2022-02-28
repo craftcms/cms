@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
@@ -100,7 +101,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -120,7 +121,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -146,7 +147,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -171,7 +172,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -1143,6 +1144,7 @@ class Gql extends Component
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
+        /** @var string|BaseElementInterface $elementType */
         if (!array_key_exists($elementType, $this->_contentFieldCache)) {
             $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
             $contentArguments = [];

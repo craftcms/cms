@@ -37,6 +37,9 @@
 <footer class="footer">
     <div class="buttons right">
         <button type="button" class="btn cancel">{{ 'Cancel'|t('app') }}</button>
-        <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+        {{ forms.submitButton({
+            label: 'Save'|t('app'),
+            spinner: true,
+        }) }}
     </div>
 </footer>

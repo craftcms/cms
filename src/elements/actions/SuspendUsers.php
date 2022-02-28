@@ -91,11 +91,11 @@ JS;
         }));
 
         if ($successCount !== count($users)) {
-            $this->setMessage(Craft::t('app', 'Could not suspend all users.'));
+            $this->setMessage(Craft::t('app', 'Couldn’t suspend all users.'));
             return false;
         }
 
-        $this->setMessage(Craft::t('app', 'Users Suspended.'));
+        $this->setMessage(Craft::t('app', 'Users suspended.'));
         return true;
     }
 }

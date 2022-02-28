@@ -937,6 +937,7 @@ class App
         return [
             'class' => ProjectConfigService::class,
             'readOnly' => Craft::$app->getIsInstalled() && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
 

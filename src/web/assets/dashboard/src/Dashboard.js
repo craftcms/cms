@@ -394,40 +394,36 @@ import './dashboard.scss';
 
             Craft.sendActionRequest('POST', action, {data})
                 .then((response) => {
-                    this.$saveBtn.removeClass('loading');
-
                     if (this.$settingsErrorList) {
                         this.$settingsErrorList.remove();
                         this.$settingsErrorList = null;
                     }
 
-                    if (response.data.success) {
-                        Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
+                    Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
 
-                        // Make sure the widget is still allowed to be shown, just in case
-                        if (!response.data.info) {
-                            this.destroy();
-                        } else {
-                            this.update(response.data);
-                            this.hideSettings();
-                        }
+                    // Make sure the widget is still allowed to be shown, just in case
+                    if (!response.data.info) {
+                        this.destroy();
                     } else {
-                        Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
-
-                        if (response.data.errors) {
-                            this.$settingsErrorList = Craft.ui.createErrorList(response.errors)
-                                .insertAfter(this.$settingsContainer);
-                        }
+                        this.update(response.data);
+                        this.hideSettings();
                     }
                 })
                 .catch(({response}) => {
-                    this.$saveBtn.removeClass('loading');
+                    if (this.$settingsErrorList) {
+                        this.$settingsErrorList.remove();
+                        this.$settingsErrorList = null;
+                    }
+
                     Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
 
                     if (response.data.errors) {
-                        this.$settingsErrorList = Craft.ui.createErrorList(response.errors)
+                        this.$settingsErrorList = Craft.ui.createErrorList(response.data.errors)
                             .insertAfter(this.$settingsContainer);
                     }
+                })
+                .finally(() => {
+                    this.$saveBtn.removeClass('loading');
                 });
         },
 

@@ -140,7 +140,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public ?string $viewMode = null;
 
     /**
-     * @var int|null The maximum number of relations this field can have  (used if [[allowLimit]] is set to true).
+     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
      * @since 4.0.0
      */
     public ?int $minRelations = null;
@@ -1034,8 +1034,10 @@ JS;
                 do {
                     try {
                         $el = $el->getOwner();
-                        $disabledElementIds[] = $el->getCanonicalId();
-                    } catch (InvalidConfigException $e) {
+                        if ($el) {
+                            $disabledElementIds[] = $el->getCanonicalId();
+                        }
+                    } catch (InvalidConfigException) {
                         break;
                     }
                 } while ($el instanceof BlockElementInterface);

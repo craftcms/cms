@@ -1168,7 +1168,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                             visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
 
                             if (typeof elementInfo.html === 'string') {
-                                let $oldElement = $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`);
+                                const $oldElement = $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`);
                                 const $newElement = $(elementInfo.html);
                                 if ($oldElement.length) {
                                     $oldElement.replaceWith($newElement);
@@ -1179,24 +1179,29 @@ Craft.ElementEditor = Garnish.Base.extend({
                                 changedElements = true;
                             }
                         } else {
-                            const $placeholder = $('<div/>', {
-                                class: 'hidden',
-                                'data-layout-element': elementInfo.uid,
-                            });
+                            const $oldElement = $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`);
+                            if (!$oldElement.length || !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')) {
+                                const $placeholder = $('<div/>', {
+                                    class: 'hidden',
+                                    'data-layout-element': elementInfo.uid,
+                                    'data-layout-element-placeholder': '',
+                                });
 
-                            if (this.settings.visibleLayoutElements[tabInfo.uid] && this.settings.visibleLayoutElements[tabInfo.uid].includes(elementInfo.uid)) {
-                                $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`).replaceWith($placeholder);
-                            } else {
-                                $placeholder.appendTo($tabContainer);
+                                if ($oldElement.length) {
+                                    $oldElement.replaceWith($placeholder);
+                                } else {
+                                    $placeholder.appendTo($tabContainer);
+                                }
+
+                                changedElements = true;
                             }
-
-                            changedElements = true;
                         }
                     }
                 }
 
                 // Remove any unused tab content containers
-                const $unusedTabContainers = this.$contentContainer.children('[data-layout-tab]').not($allTabContainers);
+                // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
+                const $unusedTabContainers = this.$contentContainer.children('[data-layout-tab]').not($allTabContainers).not('[data-layout-tab=""]');
                 if ($unusedTabContainers.length) {
                     $unusedTabContainers.remove();
                     changedElements = true;

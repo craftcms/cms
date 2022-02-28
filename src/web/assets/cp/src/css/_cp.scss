@@ -663,8 +663,7 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-.breadcrumb-toggle-wrapper,
-.account-toggle-wrapper {
+[data-wrapper] {
   position: relative;
 }
 
@@ -1386,6 +1385,7 @@ li.breadcrumb-toggle-wrapper {
 
       .toggle {
         position: absolute;
+        z-index: 1;
         height: 34px;
         top: 0;
         width: var(--xl);
@@ -1423,7 +1423,7 @@ li.breadcrumb-toggle-wrapper {
 /* flexbox field layouts */
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
-.so-content > .flex-fields {
+.so-content .flex-fields {
   --row-gap: var(--xl);
   display: flex;
   gap: var(--row-gap) 0;

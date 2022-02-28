@@ -7,7 +7,6 @@
 
 namespace craft\elements\db;
 
-use ArrayIterator;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -282,7 +281,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var int|array|ElementInterface|null The element relation criteria.
      *
-     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for supported syntax options.
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for supported syntax options.
      *
      * @used-by relatedTo()
      */
@@ -309,7 +308,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|array|SearchQuery|null The search term to filter the resulting elements by.
      *
-     * See [Searching](https://craftcms.com/docs/3.x/searching.html) for supported syntax options.
+     * See [Searching](https://craftcms.com/docs/4.x/searching.html) for supported syntax options.
      *
      * @used-by ElementQuery::search()
      */
@@ -327,7 +326,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|array|null The eager-loading declaration.
      *
-     * See [Eager-Loading Elements](https://craftcms.com/docs/3.x/dev/eager-loading-elements.html) for supported syntax options.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for supported syntax options.
      *
      * @used-by with()
      * @used-by andWith()
@@ -1516,7 +1515,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Clears the [cached result](https://craftcms.com/docs/3.x/element-queries.html#cache).
+     * Clears the [cached result](https://craftcms.com/docs/4.x/element-queries.html#cache).
      *
      * @see getCachedResult()
      * @see setCachedResult()

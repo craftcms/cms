@@ -87,6 +87,7 @@ class PropagateElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
