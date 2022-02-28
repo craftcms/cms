@@ -68,7 +68,7 @@ export default {
   @apply tw-absolute tw-top-0 tw-left-0;
   max-width: 850px;
   max-height: 650px;
-  z-index: 20000;
+  z-index: 100;
 
   .pluginstore-modal-flex {
     @apply tw-absolute tw-inset-0 tw-flex tw-flex-col;
