@@ -210,7 +210,7 @@ class FieldLayout extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
-        $rules[] = [['fields'], 'validateFields'];
+        $rules[] = [['customFields'], 'validateFields'];
         return $rules;
     }
 
