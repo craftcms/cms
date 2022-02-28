@@ -48,7 +48,7 @@
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
 - Added `craft\base\ApplicationTrait::getFs()`.
-- Added `craft\base\ApplicationTrait::getImageTransforms()`.
+- Added `craft\base\ApplicationTrait::getImageTransforms()`, which replaces `getAssetTransforms()`.
 - Added `craft\base\conditions\BaseCondition`.
 - Added `craft\base\conditions\BaseConditionRule`.
 - Added `craft\base\conditions\BaseDateRangeConditionRule`.
@@ -698,7 +698,7 @@
 - Removed `Craft::Client`. `Pro` can be used instead.
 - Removed `Craft::Personal`. `Solo` can be used instead.
 - Removed `craft\app\web\UrlRule`.
-- Removed `craft\base\ApplicationTrait::getAssetTransforms()`.
+- Removed `craft\base\ApplicationTrait::getAssetTransforms()`. `getImageTransforms()` can be used instead.
 - Removed `craft\base\ApplicationTrait::getElementIndexes()`. `getElementSources()` can be used instead.
 - Removed `craft\base\ApplicationTrait::getEntryRevisions()`.
 - Removed `craft\base\ApplicationTrait::getFeed()`.
