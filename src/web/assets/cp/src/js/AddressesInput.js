@@ -4,13 +4,13 @@
  * AddressInput class
  */
 Craft.AddressesInput = Garnish.Base.extend({
-    ownerId: null,
     $container: null,
     $addBtn: null,
+    $cards: null,
 
-    init: function(ownerId, container) {
-        this.ownerId = ownerId;
+    init: function(container, settings) {
         this.$container = $(container);
+        this.setSettings(settings, Craft.AddressesInput.defaults);
 
         // Is this already an address input?
         if (this.$container.data('addresses')) {
@@ -21,11 +21,13 @@ Craft.AddressesInput = Garnish.Base.extend({
         this.$container.data('addresses', this);
 
         this.$addBtn = this.$container.find('> .btn.add');
+        this.$cards = this.$container.find('> .address-card');
 
-        const $cards = this.$container.find('> .address-card');
-        for (let i = 0; i < $cards.length; i++) {
-            this.initCard($cards.eq(i));
+        for (let i = 0; i < this.$cards.length; i++) {
+            this.initCard(this.$cards.eq(i));
         }
+
+        this.updateAddButton();
 
         this.addListener(this.$addBtn, 'click', () => {
             this.createAddress();
@@ -53,6 +55,8 @@ Craft.AddressesInput = Garnish.Base.extend({
                         },
                     }).then(() => {
                         $card.remove();
+                        this.$cards = this.$cards.not($card);
+                        this.updateAddButton();
                     }).finally(() => {
                         this.$addBtn.removeClass('loading');
                     });
@@ -73,22 +77,41 @@ Craft.AddressesInput = Garnish.Base.extend({
                 const $newCard = $(response.data.html);
                 if ($card) {
                     $card.replaceWith($newCard);
+                    this.$cards = this.$cards.not($card);
                 } else {
                     $newCard.insertBefore(this.$addBtn);
                 }
                 Craft.initUiElements($newCard);
                 this.initCard($newCard);
+                this.$cards = this.$cards.add($newCard);
+                this.updateAddButton();
             });
         });
     },
 
+    updateAddButton: function() {
+        if (this.canCreateAddress()) {
+            this.$addBtn.removeClass('hidden');
+        } else {
+            this.$addBtn.addClass('hidden');
+        }
+    },
+
+    canCreateAddress: function() {
+        return !this.settings.maxAddresses || this.$cards.length < this.settings.maxAddresses;
+    },
+
     createAddress: function() {
+        if (!this.canCreateAddress()) {
+            throw 'No more addresses can be created.';
+        }
+
         this.$addBtn.addClass('loading');
 
         Craft.sendActionRequest('POST', 'elements/create', {
             data: {
                 elementType: 'craft\\elements\\Address',
-                ownerId: this.ownerId,
+                ownerId: this.settings.ownerId,
             },
         }).then(ev => {
             this.editAddress(null, {
@@ -98,5 +121,10 @@ Craft.AddressesInput = Garnish.Base.extend({
         }).finally(() => {
             this.$addBtn.removeClass('loading');
         });
+    }
+}, {
+    ownerId: null,
+    defaults: {
+        maxAddresses: null,
     }
 });

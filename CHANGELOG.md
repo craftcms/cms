@@ -589,7 +589,6 @@
 - Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.
-- Drafts and revisions are now propagated to enabled sites when changing section settings. [#10634](https://github.com/craftcms/cms/issues/10634)
 
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
@@ -983,6 +982,7 @@
 
 ### Fixed
 - Fixed a bug where pending project config changes in the YAML would get applied when other project config changes were made. ([#9660](https://github.com/craftcms/cms/issues/9660))
+- Fixed a bug where revisions weren’t getting propagated when a section was enabled for new sites, or its Propagation Method was changed. ([#10634](https://github.com/craftcms/cms/issues/10634))
 
 ### Security
 

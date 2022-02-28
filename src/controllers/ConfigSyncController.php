@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
+use craft\errors\StaleResourceException;
 use craft\helpers\ArrayHelper;
 use craft\services\ProjectConfig;
 use Throwable;
@@ -54,7 +56,18 @@ class ConfigSyncController extends BaseUpdaterController
             $projectConfig->forceUpdate = true;
         }
 
-        $projectConfig->applyExternalChanges();
+        try {
+            $projectConfig->applyExternalChanges();
+        } catch (BusyResourceException|StaleResourceException $e) {
+            return $this->send([
+                'error' => $e->getMessage(),
+                'options' => [
+                    $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
+                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
+                ],
+            ]);
+        }
+
         return $this->sendFinished();
     }
 

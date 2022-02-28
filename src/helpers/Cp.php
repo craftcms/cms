@@ -1059,24 +1059,29 @@ class Cp
     /**
      * Renders address cards.
      *
-     * @param ElementInterface $owner
+     * @param Address[] $addresses
      * @param array $config
      * @return string
      * @since 4.0.0
      */
-    public static function addressCardsHtml(ElementInterface $owner, array $config = []): string
+    public static function addressCardsHtml(array $addresses, array $config = []): string
     {
         $config += [
             'id' => sprintf('addresses%s', mt_rand()),
+            'ownerId' => null,
+            'maxAddresses' => null,
         ];
 
         $view = Craft::$app->getView();
 
-        $view->registerJsWithVars(fn($ownerId, $selector) => <<<JS
-new Craft.AddressesInput($ownerId, $($selector));
+        $view->registerJsWithVars(fn($selector, $settings) => <<<JS
+new Craft.AddressesInput($($selector), $settings);
 JS, [
-            $owner->id,
             sprintf('#%s', $view->namespaceInputId($config['id'])),
+            [
+                'ownerId' => $config['ownerId'],
+                'maxAddresses' => $config['maxAddresses'],
+            ]
         ]);
 
         return
@@ -1084,7 +1089,7 @@ JS, [
                 'id' => $config['id'],
                 'class' => 'address-cards',
             ]) .
-            implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $owner->getAddresses())) .
+            implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
             Html::beginTag('button', [
                 'type' => 'button',
                 'class' => ['btn', 'dashed', 'add', 'icon'],
@@ -1149,7 +1154,7 @@ JS, [
                     ],
                     'data' => [
                         'icon' => 'settings',
-                    'disclosure-trigger' => true,
+                        'disclosure-trigger' => true,
                     ],
                 ]) .
                 Html::beginTag('div', [
@@ -1215,6 +1220,21 @@ JS, [
             }
 
             $tabs = [$tab];
+        }
+
+        // Make sure all tabs and their elements have UUIDs
+        // (We do this here instead of from FieldLayoutComponent::init() because the we don't want field layout forms to
+        // get the impression that tabs/elements have persisting UUIDs if they don't.)
+        foreach ($tabs as $tab) {
+            if (!isset($tab->uid)) {
+                $tab->uid = StringHelper::UUID();
+            }
+
+            foreach ($tab->getElements() as $layoutElement) {
+                if (!isset($layoutElement->uid)) {
+                    $layoutElement->uid = StringHelper::UUID();
+                }
+            }
         }
 
         $view = Craft::$app->getView();

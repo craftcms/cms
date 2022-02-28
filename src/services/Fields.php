@@ -1366,6 +1366,9 @@ class Fields extends Component
                 $tabRecord = $tabRecords[$tab->id];
                 unset($tabRecords[$tab->id]);
             } else {
+                if (!isset($tab->uid)) {
+                    $tab->uid = StringHelper::UUID();
+                }
                 $tabRecord = new FieldLayoutTabRecord();
                 $tabRecord->layoutId = $layout->id;
                 $tabRecord->uid = $tab->uid;
