@@ -35,7 +35,12 @@
       </div>
       <p
         v-if="!isPluginEditionFree(edition)"
-        class="tw--mt-8 tw-py-6 tw-text-gray-700">
+        class="tw--mt-8 tw-text-gray-700"
+        :class="{
+          'tw-py-6': context !== 'meta',
+          'tw-pt-6 tw-pb-2': context === 'meta'
+        }"
+      >
         {{ "Price includes 1 year of updates."|t('app') }}
         {{
           "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)})
