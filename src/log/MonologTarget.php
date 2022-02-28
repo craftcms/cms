@@ -4,7 +4,6 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
-use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -16,22 +15,12 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use samdark\log\PsrTarget;
 use yii\base\InvalidConfigException;
-use yii\i18n\PhpMessageSource;
-use yii\web\HttpException;
 
 /**
  * @property-read string $contextMessage
  */
 class MonologTarget extends PsrTarget
 {
-    /**
-     * @inheritdoc
-     */
-    public $except = [
-        PhpMessageSource::class . ':*',
-        HttpException::class . ':404',
-    ];
-
     /**
      * @inheritdoc
      */
@@ -91,6 +80,7 @@ class MonologTarget extends PsrTarget
 
         $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
         $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
+        $this->except = $generalConfig->filterLogCategories;
 
         $this->formatter = $this->formatter ?? new LineFormatter(
             format: $this->addTimestampToMessage ? null : "%channel%.%level_name%: %message% %context% %extra%\n",

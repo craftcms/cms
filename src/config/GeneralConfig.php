@@ -11,12 +11,15 @@ use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
 use craft\helpers\StringHelper;
+use craft\log\MonologTarget;
 use craft\services\Config;
 use Psr\Log\LogLevel;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
+use yii\i18n\PhpMessageSource;
+use yii\web\HttpException;
 
 /**
  * General config class
@@ -880,6 +883,16 @@ class GeneralConfig extends BaseObject
      * @group System
      */
     public bool $limitAutoSlugsToAscii = false;
+
+    /**
+     *
+     * @var array A list of message categories that should NOT be logged.
+     * @see MonologTarget::$except
+     */
+    public array $filterLogCategories = [
+        PhpMessageSource::class . ':*',
+        HttpException::class . ':404',
+    ];
 
     /**
      * @var mixed The URI Craft should use for user login on the front end.
