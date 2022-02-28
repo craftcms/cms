@@ -14,10 +14,10 @@
         block
         big></edition-badge>
       <div
-        class="price tw-text-3xl tw-font-bold"
+        class="price tw-font-bold"
         :class="{
-          'tw-my-8': context !== 'meta',
-          'tw-mb-4': context === 'meta'
+          'tw-my-8 tw-text-3xl': context !== 'meta',
+          'tw-mb-4 tw-text-2xl': context === 'meta'
         }"
       >
         <template v-if="!isPluginEditionFree(edition)">
