@@ -156,6 +156,3 @@ abstract class BaseNativeField extends BaseField
         return $this->translatable;
     }
 }
-
-/** @noinspection PhpIgnoredClassAliasDeclaration */
-class_alias(BaseNativeField::class, StandardField::class);

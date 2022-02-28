@@ -64,15 +64,6 @@ class FieldLayout extends Model
     public const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';
 
     /**
-     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the native (not custom) fields for the layout.
-     *
-     * @see getAvailableNativeFields()
-     * @since 3.5.0
-     * @deprecated in 4.0.0. Use [[EVENT_DEFINE_NATIVE_FIELDS]] instead.
-     */
-    public const EVENT_DEFINE_STANDARD_FIELDS = 'defineNativeFields';
-
-    /**
      * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
      *
      * ```php
@@ -561,17 +552,6 @@ class FieldLayout extends Model
      * @since 4.0.0
      */
     public function getCustomFields(): array
-    {
-        return $this->_customFields();
-    }
-
-    /**
-     * Returns the custom fields included in the layout.
-     *
-     * @return FieldInterface[]
-     * @deprecated in 4.0.0. Use [[getCustomFields()]] instead.
-     */
-    public function getFields(): array
     {
         return $this->_customFields();
     }

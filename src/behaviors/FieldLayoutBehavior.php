@@ -145,15 +145,4 @@ class FieldLayoutBehavior extends Behavior
         $fieldLayout = $this->owner->getFieldLayout();
         return $fieldLayout ? $fieldLayout->getCustomFields() : [];
     }
-
-    /**
-     * Returns the custom fields associated with the owner's field layout.
-     *
-     * @return FieldInterface[]
-     * @deprecated in 4.0.0. [[FieldLayout::getCustomFields()]] should be used instead.
-     */
-    public function getFields(): array
-    {
-        return $this->getCustomFields();
-    }
 }

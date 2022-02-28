@@ -146,6 +146,3 @@ class TextField extends BaseNativeField
         ]);
     }
 }
-
-/** @noinspection PhpIgnoredClassAliasDeclaration */
-class_alias(TextField::class, StandardTextField::class);

@@ -525,17 +525,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Regenerates `project.yaml` based on the loaded project config.
-     *
-     * @deprecated in 4.0.0. use [[regenerateExternalConfig()]] instead.
-     */
-    public function regenerateYamlFromConfig(): void
-    {
-        Craft::$app->getDeprecator()->log(__CLASS__ . '::regenerateYamlFromConfig()', '`' . __CLASS__ . '::regenerateYamlFromConfig()` has been deprecated. Use `regenerateExternalConfig()` instead.');
-        $this->regenerateExternalConfig();
-    }
-
-    /**
      * Regenerates the external config based on the loaded project config.
      *
      * @since 4.0.0
@@ -551,17 +540,6 @@ class ProjectConfig extends Component
         $this->_saveConfigAfterRequest();
         $this->updateParsedConfigTimesAfterRequest();
         $this->saveModifiedConfigData(true);
-    }
-
-    /**
-     * Applies changes in `project.yaml` to the project config.
-     *
-     * @deprecated in 4.0.0. Use [[applyExternalChanges()]] instead.
-     */
-    public function applyYamlChanges(): void
-    {
-        Craft::$app->getDeprecator()->log(__CLASS__ . '::applyYamlChanges()', '`' . __CLASS__ . '::applyYamlChanges()` has been deprecated. Use `applyExternalChanges()` instead.');
-        $this->applyExternalChanges();
     }
 
     /**
@@ -614,18 +592,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns whether project.yaml changes are currently being applied
-     *
-     * @return bool
-     * @deprecated in 4.0.0. Use [[getIsApplyingExternalChanges()]] instead.
-     */
-    public function getIsApplyingYamlChanges(): bool
-    {
-        Craft::$app->getDeprecator()->log(__CLASS__ . '::getIsApplyingYamlChanges()', '`' . __CLASS__ . '::applyYamlChanges()` has been deprecated. Use `getIsApplyingExternalChanges()` instead.');
-        return $this->getIsApplyingExternalChanges();
-    }
-
-    /**
      * Returns whether external changes are currently being applied
      *
      * @return bool
@@ -634,19 +600,6 @@ class ProjectConfig extends Component
     public function getIsApplyingExternalChanges(): bool
     {
         return $this->_applyingExternalChanges;
-    }
-
-    /**
-     * Returns whether project config YAML files appear to exist.
-     *
-     * @return bool
-     * @since 3.5.13
-     * @deprecated in 4.0.0. Use [[getDoesExternalConfigExist()]].
-     */
-    public function getDoesYamlExist(): bool
-    {
-        Craft::$app->getDeprecator()->log(__CLASS__ . '::getDoesYamlExist()', '`' . __CLASS__ . '::getDoesYamlExist()` has been deprecated. Use `getDoesExternalConfigExist()` instead.');
-        return $this->getDoesExternalConfigExist();
     }
 
     /**
