@@ -347,15 +347,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_METADATA = 'defineMetadata';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_VIEW,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -367,15 +367,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to save the element in its current state.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to save the element in its current state.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_SAVE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -387,15 +387,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to create drafts for the element.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to create drafts for the element.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_CREATE_DRAFTS,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -407,15 +407,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to duplicate the element.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to duplicate the element.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_DUPLICATE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -427,15 +427,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to delete the element.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_DELETE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -447,15 +447,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to delete the element for its current site.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element for its current site.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_DELETE_FOR_SITE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
