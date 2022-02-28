@@ -9,7 +9,9 @@ namespace craft\gql\base;
 
 use Craft;
 use craft\base\Field;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\errors\GqlException;
+use craft\models\FieldLayout;
 
 /**
  * Class Generator
@@ -27,6 +29,7 @@ abstract class Generator
      */
     protected static function getContentFields(mixed $context): array
     {
+        /** @var FieldLayout|FieldLayoutBehavior $context */
         try {
             $schema = Craft::$app->getGql()->getActiveSchema();
         } catch (GqlException $e) {
@@ -35,7 +38,7 @@ abstract class Generator
             return [];
         }
 
-        $contentFields = $context->getFields();
+        $contentFields = $context->getCustomFields();
         $contentFieldGqlTypes = [];
 
         /** @var Field $contentField */

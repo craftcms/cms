@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
 use craft\errors\GqlException;
@@ -1143,6 +1144,7 @@ class Gql extends Component
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
+        /** @var FieldLayoutBehavior[] $contexts */
         /** @var string|BaseElementInterface $elementType */
         if (!array_key_exists($elementType, $this->_contentFieldCache)) {
             $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
@@ -1153,7 +1155,7 @@ class Gql extends Component
                     continue;
                 }
 
-                foreach ($context->getFields() as $contentField) {
+                foreach ($context->getCustomFields() as $contentField) {
                     if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField->handle)) {
                         $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
                     }
