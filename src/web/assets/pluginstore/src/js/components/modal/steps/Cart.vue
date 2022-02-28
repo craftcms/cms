@@ -10,106 +10,70 @@
 
         <template v-if="cart">
           <template v-if="cartItems.length">
-            <table class="cart-data fullwidth">
-              <thead>
-              <tr>
-                <th></th>
-                <th>{{ "Item"|t('app') }}</th>
-                <th>{{ "Updates"|t('app') }}</th>
-                <th class="tw-w-10"></th>
-              </tr>
-              </thead>
-              <tbody
+            <!-- Cart data -->
+            <div class="cart-data tw-border-t tw-border-solid tw-border-gray-200">
+              <!-- Line Item -->
+              <div
                 v-for="(item, itemKey) in cartItems"
-                :key="'item' + itemKey">
-              <tr class="item-details">
-                <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
-                  <td class="thin">
-                    <div class="plugin-icon">
-                      <img
-                        :src="craftLogo"
-                        width="40"
-                        height="40" />
+                :key="'item' + itemKey"
+                class="tw-border-b tw-border-solid tw-border-gray-200 tw-flex"
+              >
+                <div class="tw-mr-6 tw-py-4 tw-px-4">
+                  <item-icon :item="item" />
+                </div>
+
+                <div class="tw-flex-1">
+                  <div class="tw-flex tw-py-4">
+                    <!-- Item name -->
+                    <item-name class="tw-flex-1" :item="item" />
+
+                    <!-- Price -->
+                    <div class="price tw-w-24 tw-text-right">
+                      <strong>{{ item.lineItem.price|currency }}</strong>
                     </div>
-                  </td>
-                  <td class="item-name">
-                    <strong>Craft CMS</strong>
-                    <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
-                  </td>
-                </template>
+                  </div>
 
-                <template v-else-if="item.lineItem.purchasable.type === 'plugin-edition'">
-                  <td class="thin">
-                    <div class="plugin-icon">
-                      <img
-                        v-if="item.plugin.iconUrl"
-                        :src="item.plugin.iconUrl"
-                        width="40"
-                        height="40" />
+
+                  <!-- Expiry date -->
+                  <div class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-py-4">
+                    <div class="expiry-date">
+                      <template
+                        v-if="
+                          item.lineItem.purchasable.type === 'cms-edition' ||
+                          (
+                            item.lineItem.purchasable.type === 'plugin-edition' &&
+                            (
+                              item.lineItem.options.licenseKey.substr(0, 4) === 'new:' ||
+                              (
+                                pluginLicenseInfo(item.plugin.handle) &&
+                                pluginLicenseInfo(item.plugin.handle).isTrial
+                              )
+                            )
+                          )
+                        ">
+                        <c-dropdown
+                          v-model="selectedExpiryDates[itemKey]"
+                          :options="itemExpiryDateOptions(itemKey)"
+                          @input="onSelectedExpiryDateChange(itemKey)" />
+                      </template>
+
+                      <c-spinner v-if="itemLoading(itemKey)" />
                     </div>
-                  </td>
-                  <td>
-                    <div class="item-name">
-                      <strong>{{ item.plugin.name }}</strong>
-                      <edition-badge
-                        v-if="item.plugin.editions > 1"
-                        :name="item.lineItem.purchasable.name"></edition-badge>
-                    </div>
-                  </td>
-                </template>
 
-                <td class="expiry-date">
-                  <template
-                    v-if="
-                                            item.lineItem.purchasable.type === 'cms-edition'
-                                            || (item.lineItem.purchasable.type === 'plugin-edition'
-                                            && (
-                                                item.lineItem.options.licenseKey.substr(0, 4) === 'new:'
-                                                || (
-                                                    pluginLicenseInfo(item.plugin.handle) &&
-                                                    pluginLicenseInfo(item.plugin.handle).isTrial
-                                                )
-                                            )
-                                        )">
-                    <c-dropdown
-                      v-model="selectedExpiryDates[itemKey]"
-                      :options="itemExpiryDateOptions(itemKey)"
-                      @input="onSelectedExpiryDateChange(itemKey)" />
-                  </template>
-
-                  <c-spinner v-if="itemLoading(itemKey)"/>
-                </td>
-                <td class="price">
-                  <strong>{{ item.lineItem.price|currency }}</strong>
-                </td>
-              </tr>
-
-              <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments">
-                <tr
-                  :key="itemKey + 'adjustment-' + adjustmentKey"
-                  class="sub-item">
-                  <td class="blank-cell"></td>
-                  <td class="blank-cell"></td>
-                  <td>
-                    <template v-if="adjustment.sourceSnapshot.type === 'extendedUpdates'">
-                      {{ "Updates until {date}"|t('app', {date: $options.filters.formatDate(adjustment.sourceSnapshot.expiryDate)}) }}
+                    <template v-for="(adjustment, adjustmentKey) in item.lineItem.adjustments.filter(lineItemAdustment => lineItemAdustment.sourceSnapshot.type === 'extendedUpdates')">
+                      <div
+                        :key="itemKey + 'adjustment-' + adjustmentKey"
+                      >
+                        {{ adjustment.amount|currency }}
+                      </div>
                     </template>
-                    <template v-else>
-                      {{ adjustment.name }}
-                    </template>
-                  </td>
-                  <td class="price">
-                    {{ adjustment.amount|currency }}
-                  </td>
-                </tr>
-              </template>
+                  </div>
 
-              <tr class="sub-item">
-                <td class="blank-cell"></td>
-                <td class="blank-cell"></td>
-                <td class="empty-cell"></td>
-                <td class="price">
-                  <div class="tw-w-16">
+                  <!-- Adjustments -->
+                  <item-adjustments :item="item" />
+
+                  <!-- Remove button-->
+                  <div class="tw-py-4 tw-text-right tw-border-t tw-border-solid tw-border-gray-200">
                     <template v-if="!removeFromCartLoading(itemKey)">
                       <a
                         role="button"
@@ -118,25 +82,32 @@
                         }}</a>
                     </template>
                     <template v-else>
-                      <c-spinner class="sm"/>
+                      <c-spinner class="sm" />
                     </template>
                   </div>
-                </td>
-              </tr>
-              </tbody>
+                  <!-- /Remove button-->
+                </div>
+              </div>
+              <!-- /Line Item -->
 
-              <tbody>
-              <tr>
-                <th
-                  class="total-price"
-                  colspan="3"><strong>{{ "Total Price"|t('app') }}</strong></th>
-                <td class="total-price">
-                  <strong>{{ cart.totalPrice|currency }}</strong></td>
-              </tr>
-              </tbody>
-            </table>
+              <!-- Total price -->
+              <div class="tw-flex tw-mt-4 tw-text-lg">
+                <div class="tw-w-14 tw-mr-14"></div>
+                <div class="tw-flex-1 tw-flex tw-justify-between">
+                  <div>
+                    <strong>{{ "Total Price"|t('app') }}</strong>
+                  </div>
+                  <div>
+                    <strong>{{ cart.totalPrice|currency }}</strong>
+                  </div>
+                </div>
+              </div>
+              <!-- /Total price -->
+            </div>
+            <!-- /Cart data -->
 
-            <div class="tw-py-4 tw-flex">
+            <!-- Checkout button -->
+            <div class="tw-mt-4 tw-py-4 tw-text-right">
               <c-btn
                 kind="primary"
                 @click="payment()"
@@ -145,6 +116,7 @@
             </div>
           </template>
 
+          <!-- Empty cart -->
           <div v-else>
             <p>{{ "Your cart is empty."|t('app') }}
               <a @click="$emit('continue-shopping')">{{
@@ -153,10 +125,11 @@
           </div>
         </template>
 
+        <!-- Active trials -->
         <active-trials></active-trials>
       </template>
       <template v-else>
-        <c-spinner/>
+        <c-spinner />
       </template>
     </template>
   </step>
@@ -167,8 +140,10 @@
 
 import {mapState, mapGetters, mapActions} from 'vuex'
 import Step from '../Step'
-import EditionBadge from '../../EditionBadge'
 import ActiveTrials from './cart/ActiveTrials';
+import ItemIcon from './cart/ItemIcon';
+import ItemName from './cart/ItemName';
+import ItemAdjustments from './cart/ItemAdjustments';
 
 export default {
   data() {
@@ -181,8 +156,10 @@ export default {
   },
 
   components: {
+    ItemAdjustments,
+    ItemName,
+    ItemIcon,
     ActiveTrials,
-    EditionBadge,
     Step,
   },
 
@@ -190,7 +167,6 @@ export default {
     ...mapState({
       activeTrialPlugins: state => state.cart.activeTrialPlugins,
       cart: state => state.cart.cart,
-      craftLogo: state => state.craft.craftLogo,
       expiryDateOptions: state => state.pluginStore.expiryDateOptions,
     }),
 
@@ -319,107 +295,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss">
-@import "@craftcms/sass/mixins";
-
-table.cart-data {
-  border-top: 1px solid #eee;
-
-  thead,
-  tbody {
-    border-bottom: 1px solid #eee;
-  }
-
-  tr {
-    th, td {
-      padding: 7px 0;
-    }
-
-    td.expiry-date {
-      & > div {
-        display: inline-block;
-        margin-bottom: 0;
-      }
-
-      .c-spinner {
-        @apply tw-relative tw-ml-4;
-        top: 6px;
-      }
-    }
-
-    td.thin {
-      .c-btn {
-        white-space: nowrap;
-      }
-    }
-  }
-
-  .item-name {
-    .edition-badge {
-      @apply tw-ml-2;
-    }
-  }
-
-  .plugin-icon {
-    margin-right: 10px !important;
-
-    img {
-      max-width: none;
-    }
-  }
-}
-
-@media (max-width: 991px) {
-  table.cart-data {
-    thead {
-      display: none;
-    }
-
-
-    tr,
-    td,
-    th {
-      display: block;
-    }
-
-    tr {
-      &.sub-item {
-        td.blank-cell,
-        td.empty-cell {
-          display: none;
-        }
-      }
-    }
-  }
-}
-
-@media (min-width: 992px) {
-  table.cart-data {
-    tr {
-      &.sub-item {
-        td:not(.blank-cell) {
-          border-top: 1px dotted #eee;
-        }
-      }
-
-      th,
-      td {
-        padding: 10px 0;
-
-        &.price {
-          text-align: right;
-        }
-
-        &.total-price {
-          text-align: right;
-        }
-      }
-
-      td.expiry-date {
-        @apply tw-w-3/5;
-      }
-    }
-  }
-}
-</style>

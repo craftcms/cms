@@ -10,26 +10,27 @@
 
     <h2>{{ "Active Trials"|t('app') }}</h2>
 
-    <table class="cart-data">
-      <tbody
+    <div class="cart-data">
+      <div
         v-for="(activeTrial, key) in pendingActiveTrials"
-        :key="key">
-      <active-trials-table-row :activeTrial="activeTrial"></active-trials-table-row>
-      </tbody>
-    </table>
+        :key="key"
+      >
+        <active-trial :activeTrial="activeTrial"></active-trial>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex'
 import licensesMixin from '../../../../mixins/licenses'
-import ActiveTrialsTableRow from './ActiveTrialsTableRow';
+import ActiveTrial from './ActiveTrial';
 
 export default {
   mixins: [licensesMixin],
 
   components: {
-    ActiveTrialsTableRow,
+    ActiveTrial,
   },
 
   computed: {

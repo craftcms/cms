@@ -1,29 +1,34 @@
 <template>
-  <tr>
-    <td class="thin">
-      <div class="plugin-icon">
+  <div class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-items-center tw-py-2">
+    <div class="tw-flex tw-items-center">
+      <!-- Icon -->
+      <div class="tw-mr-4 tw-leading-3">
         <img
           v-if="activeTrial.iconUrl"
           :src="activeTrial.iconUrl"
-          height="40"
-          width="40" />
+          class="tw-w-10 tw-h-10"
+        />
         <div
           class="default-icon"
           v-else></div>
       </div>
-    </td>
-    <td class="item-name">
-      <a
-        :title="activeTrial.name"
-        @click.prevent="navigateToPlugin"><strong>{{
-          activeTrial.name
-        }}</strong></a>
 
-      <edition-badge
-        v-if="activeTrial.editionName && activeTrial.showEditionBadge"
-        :name="activeTrial.editionName"></edition-badge>
-    </td>
-    <td>
+      <!-- Item name -->
+      <div class="item-name">
+        <a
+          :title="activeTrial.name"
+          @click.prevent="navigateToPlugin"><strong>{{
+            activeTrial.name
+          }}</strong></a>
+
+        <edition-badge
+          v-if="activeTrial.editionName && activeTrial.showEditionBadge"
+          :name="activeTrial.editionName"></edition-badge>
+      </div>
+    </div>
+
+    <!-- Price -->
+    <div>
       <template v-if="activeTrial.price">
         <template v-if="activeTrial.discountPrice">
           <del class="tw-mr-1">{{ activeTrial.price|currency }}</del>
@@ -33,8 +38,10 @@
           <strong>{{ activeTrial.price|currency }}</strong>
         </template>
       </template>
-    </td>
-    <td class="tw-w-1/4">
+    </div>
+
+    <!-- Add to cart -->
+    <div class="tw-w-1/4">
       <div class="tw-text-right">
         <template v-if="!addToCartLoading">
           <a
@@ -48,8 +55,8 @@
           <c-spinner size="3"/>
         </template>
       </div>
-    </td>
-  </tr>
+    </div>
+  </div>
 </template>
 
 <script>

@@ -118,6 +118,7 @@ const getters = {
         editionName: 'Pro',
         price: cmsProEdition.price,
         navigateTo: '/upgrade-craft',
+        showEditionBadge: true,
       })
     }
 
