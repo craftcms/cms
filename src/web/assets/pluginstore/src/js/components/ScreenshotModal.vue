@@ -4,8 +4,12 @@
     ref="screenshotModal"
     @keydown.esc="close">
     <a
-      class="close"
-      @click="close">&times;</a>
+      class="close screenshot-modal-button"
+      @click="close">
+      <c-icon
+        icon="x"
+        size="8" />
+    </a>
 
     <div
       v-if="screenshotModalImages"
@@ -26,15 +30,15 @@
       </swiper>
 
       <template v-if="screenshotModalImages.length > 1">
-        <div class="swiper-button-prev">
+        <div class="ps-swiper-button-prev screenshot-modal-button">
           <c-icon
             icon="chevron-left"
-            size="6" />
+            size="8" />
         </div>
-        <div class="swiper-button-next">
+        <div class="ps-swiper-button-next screenshot-modal-button">
           <c-icon
             icon="chevron-right"
-            size="6" />
+            size="8" />
         </div>
 
         <div class="pagination-wrapper">
@@ -66,7 +70,7 @@ export default {
     }),
 
     swiper() {
-      return this.$refs.screenshotModalSwiper.swiper
+      return this.$refs.screenshotModalSwiper.swiperInstance
     },
 
     swiperOption() {
@@ -75,13 +79,14 @@ export default {
         loop: false,
         pagination: {
           el: '.swiper-pagination',
+          type: 'bullets',
           clickable: true
         },
         keyboard: true,
         zoom: true,
         navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev'
+          nextEl: '.ps-swiper-button-next',
+          prevEl: '.ps-swiper-button-prev'
         }
       }
     }
@@ -156,12 +161,15 @@ export default {
   @apply tw-fixed tw-inset-0 tw-bg-gray-100 tw-overflow-hidden;
   z-index: 101;
 
+  .screenshot-modal-button {
+    @apply tw-bg-gray-300/30 hover:tw-bg-gray-300/80;
+    @apply tw-text-gray-700 tw-text-3xl;
+    @apply tw-rounded tw-px-2 tw-py-2;
+  }
+
   .close {
-    @apply tw-inline-block tw-text-center tw-absolute tw-top-0 tw-left-0 tw-z-30;
-    font-size: 30px;
-    color: rgba(0, 0, 0, 0.6);
-    padding: 14px 24px;
-    line-height: 16px;
+    @apply tw-inline-block tw-text-center tw-z-30;
+    @apply tw-absolute tw-top-4 tw-left-4;
 
     &:hover {
       @apply tw-no-underline;
@@ -198,31 +206,34 @@ export default {
       }
     }
 
-    .swiper-button-prev,
-    .swiper-button-next {
-      @apply tw-flex tw-justify-center tw-items-center tw-w-auto;
-      background-color: rgba(248, 250, 252, .7);
+    .ps-swiper-button-prev,
+    .ps-swiper-button-next {
+      @apply tw-absolute tw-flex tw-justify-center tw-items-center tw-w-auto tw--mt-12 tw-z-10 tw-top-1/2;
       background-image: none;
+
+      &.swiper-button-disabled {
+        @apply tw-hidden;
+      }
 
       .c-icon {
         @apply tw-flex-1 tw-top-0;
       }
     }
 
-    .swiper-button-prev {
-      @apply tw-rounded tw-px-2 tw-py-8 tw-left-0 tw-ml-4;
+    .ps-swiper-button-prev {
+      @apply tw-left-0 tw-ml-4;
 
       .c-icon {
         left: -2px;
       }
     }
 
-    .swiper-button-next {
-      @apply tw-rounded tw-px-2 tw-py-8 tw-right-0 tw-mr-4;
+    .ps-swiper-button-next {
+      @apply tw-rounded tw-px-2 tw-py-2 tw-right-0 tw-mr-4 tw-h-auto;
     }
 
     .pagination-wrapper {
-      @apply tw-w-full tw-absolute tw-bottom-0 tw-py-0 tw-flex tw-z-10;
+      @apply tw-w-full tw-absolute tw-bottom-0 tw-py-0 tw-flex tw-z-10 tw-h-2;
       bottom: 40px;
 
       .pagination-content {
@@ -232,11 +243,9 @@ export default {
           @apply tw-relative tw-flex tw-flex-1 tw-bg-gray-200 tw-p-0 tw-rounded-full;
 
           .swiper-pagination-bullet {
-            @apply tw-flex-1 tw-rounded-full tw-bg-gray-200;
-            height: 8px;
-
+            @apply tw-flex-1 tw-rounded-full tw-bg-gray-200 tw-h-2;
             &.swiper-pagination-bullet-active {
-              @apply tw-bg-gray-900;
+              @apply tw-bg-gray-600;
             }
           }
         }
