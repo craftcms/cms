@@ -37,6 +37,8 @@ class MonologTarget extends PsrTarget
 
     public function __construct($config = [])
     {
+        // We don't want to allow setting these props outside initialization,
+        // as they won't be passed to the logger.
         $config = Collection::make($config)->filter(function($value, $key) use ($config) {
             $filterProps = ['name', 'maxFiles', 'level', 'processor', 'formatter'];
 
