@@ -16,9 +16,9 @@
               <div
                 v-for="(item, itemKey) in cartItems"
                 :key="'item' + itemKey"
-                class="tw-border-b tw-border-solid tw-border-gray-200 tw-flex"
+                class="tw-border-b tw-border-solid tw-border-gray-200 md:tw-flex"
               >
-                <div class="tw-mr-6 tw-py-4 tw-px-4">
+                <div class="md:tw-mr-6 tw-pt-4 md:tw-pb-4 md:tw-px-4">
                   <item-icon :item="item" />
                 </div>
 

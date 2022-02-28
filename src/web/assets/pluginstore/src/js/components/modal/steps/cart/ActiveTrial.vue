@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-items-center tw-py-2">
+  <div class="tw-border-t tw-border-solid tw-border-gray-200 md:tw-flex md:tw-justify-between md:tw-items-center tw-py-4 md:tw-py-2 tw-space-y-2 md:tw-space-y-0">
     <div class="tw-flex tw-items-center">
       <!-- Icon -->
       <div class="tw-mr-4 tw-leading-3">
@@ -41,8 +41,8 @@
     </div>
 
     <!-- Add to cart -->
-    <div class="tw-w-1/4">
-      <div class="tw-text-right">
+    <div class="md:tw-w-1/4">
+      <div class="md:tw-text-right">
         <template v-if="!addToCartLoading">
           <a
             @click="addToCart()"
