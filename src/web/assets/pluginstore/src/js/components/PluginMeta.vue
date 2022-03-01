@@ -85,10 +85,12 @@
         </template>
       </meta-stat>
 
-      <!-- Active Installs -->
+      <!-- TODO: Enable Active Installs -->
+      <!--
       <active-installs
         :plugin="plugin"
       />
+      -->
 
       <div class="tw-grid tw-grid-cols-2">
         <!-- Version -->
@@ -208,10 +210,16 @@ import PluginMetaBuyButton from './PluginMetaBuyButton';
 import {mapState} from 'vuex';
 import ComposerInstall from './ComposerInstall';
 import GithubActivity from './github-activity/GithubActivity';
-import ActiveInstalls from './ActiveInstalls';
+// import ActiveInstalls from './ActiveInstalls';
 
 export default {
-  components: {ActiveInstalls, GithubActivity, ComposerInstall, PluginMetaBuyButton, MetaStat},
+  components: {
+    // ActiveInstalls,
+    GithubActivity,
+    ComposerInstall,
+    PluginMetaBuyButton,
+    MetaStat
+  },
   props: {
     plugin: {
       type: Object,
