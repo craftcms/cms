@@ -1,6 +1,6 @@
 const {test, expect} = require('@playwright/test');
 
-test('Shoud show the Discover page', async ({ page, context, baseURL }) => {
+test('Shoud show a category page', async ({ page, context, baseURL }) => {
   await page.goto(baseURL + '/plugin-store/categories/seo');
 
   // Category title

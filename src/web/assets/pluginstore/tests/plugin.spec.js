@@ -1,6 +1,6 @@
 const {test, expect} = require('@playwright/test');
 
-test('Should show developer details', async ({ page, baseURL }) => {
+test('Should show plugin details', async ({ page, baseURL }) => {
   await page.goto(baseURL + '/plugin-store/commerce');
 
   // Developer name
