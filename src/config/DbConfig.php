@@ -152,14 +152,14 @@ class DbConfig extends BaseObject
      * @since 4.0.0
      * @see Connection::$enableLogging
      */
-    public bool $enableLogging = true;
+    public bool $enableLogging = YII_DEBUG;
 
     /**
      * @var bool Whether to enable profiling of opening database connection and database queries.
      * @since 4.0.0
      * @see Connection::$enableLogging
      */
-    public bool $enableProfiling = true;
+    public bool $enableProfiling = YII_DEBUG;
 
     // Deprecated Properties
     // -------------------------------------------------------------------------
