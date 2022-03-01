@@ -3,7 +3,9 @@
     <template v-if="!loading">
       <div
         v-for="(featuredSection, key) in featuredSections"
-        :key="'featuredSection-' + key">
+        :key="'featuredSection-' + key"
+        class="featured-section"
+      >
         <div
           class="tw-flex tw-items-baseline tw-justify-between"
           :class="{'tw-mt-8': key > 0}">
