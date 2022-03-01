@@ -46,7 +46,7 @@ interface ElementExporterInterface extends ComponentInterface
      * @param ElementQueryInterface $query The element query
      * @return array|string|callable|resource
      */
-    public function export(ElementQueryInterface $query): callable|array|string;
+    public function export(ElementQueryInterface $query): mixed;
 
     /**
      * Returns the filename that the export file should have.

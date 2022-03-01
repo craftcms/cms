@@ -33,7 +33,7 @@ class Expanded extends ElementExporter
     /**
      * @inheritdoc
      */
-    public function export(ElementQueryInterface $query): array
+    public function export(ElementQueryInterface $query): mixed
     {
         // Eager-load as much as we can
         $eagerLoadableFields = [];
