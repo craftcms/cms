@@ -114,7 +114,11 @@
         </meta-stat>
       </div>
 
-      <div class="tw-grid tw-grid-cols-2">
+      <div
+        :class="{
+          'tw-grid tw-grid-cols-2': plugin.totalReleases
+        }"
+      >
         <!-- Compatibility -->
         <meta-stat>
           <template #title>
@@ -126,14 +130,16 @@
         </meta-stat>
 
         <!-- Total releases -->
-        <meta-stat>
-          <template #title>
-            {{ "Total releases"|t('app') }}
-          </template>
-          <template #content>
-            X
-          </template>
-        </meta-stat>
+        <template v-if="plugin.totalReleases">
+          <meta-stat>
+            <template #title>
+              {{ "Total releases"|t('app') }}
+            </template>
+            <template #content>
+              {{ plugin.totalReleases }}
+            </template>
+          </meta-stat>
+        </template>
       </div>
 
       <!-- Last release -->
