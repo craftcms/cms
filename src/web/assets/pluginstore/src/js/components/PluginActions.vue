@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="plugin"
-    class="plugin-actions">
+    class="plugin-actions tw-relative">
     <template v-if="!isPluginEditionFree">
       <template v-if="isInCart(plugin, edition)">
         <!-- Already in cart -->
@@ -338,12 +338,9 @@ export default {
 
 <style lang="scss">
 .plugin-actions {
-  position: relative;
-
   .c-spinner {
-    position: absolute;
+    @apply tw-absolute tw-left-1/2;
     bottom: -32px;
-    left: 50%;
   }
 
   .c-btn {

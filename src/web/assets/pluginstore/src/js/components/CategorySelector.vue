@@ -94,21 +94,6 @@ export default {
   height: 100vh;
   box-sizing: border-box;
 
-  /*
-  .category-selector-header {
-    a {
-      @apply tw-block tw-text-black;
-      padding: 14px 24px;
-      background: #fafafa;
-      border-bottom: 1px solid #eee;
-
-      &:hover {
-        @apply tw-no-underline;
-      }
-    }
-  }
-  */
-
   .category-selector-body {
     @apply tw-overflow-auto tw-h-full tw-p-6;
     box-sizing: border-box;

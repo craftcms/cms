@@ -224,12 +224,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss">
-@import "@craftcms/sass/mixins";
-
-.plugin-icon {
-  @apply tw-relative;
-  @include margin-right(1.5rem); // .mr-6
-}
-</style>

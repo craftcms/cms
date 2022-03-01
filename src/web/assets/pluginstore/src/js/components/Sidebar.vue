@@ -2,7 +2,7 @@
   <div class="ps-sidebar">
     <plugin-search />
     <category-selector />
-    <nav-items />
+    <nav-items class="tw-hidden lg:tw-block" />
   </div>
 </template>
 
@@ -19,13 +19,3 @@ export default {
   },
 }
 </script>
-
-<style
-  lang="scss"
-  >
-.ps-sidebar {
-  & > .nav-items {
-    @apply tw-hidden lg:tw-block;
-  }
-}
-</style>

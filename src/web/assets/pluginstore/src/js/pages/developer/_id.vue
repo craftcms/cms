@@ -10,11 +10,11 @@
           <div
             v-if="developer"
             class="developer-card tw-flex tw-pb-2 tw-items-center">
-            <div class="avatar tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-6 tw-no-line-height">
+            <div class="avatar tw-w-24 tw-h-24 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-6 tw-no-line-height">
               <img
                 :src="developer.photoUrl"
-                width="120"
-                height="120" />
+                class="tw-w-full tw-h-full"
+              />
             </div>
 
             <div class="tw-flex-1">
@@ -86,18 +86,3 @@ export default {
   },
 }
 </script>
-
-<style
-  lang="scss"
-  scoped>
-.developer-card {
-  .avatar {
-    width: 120px;
-    height: 120px;
-  }
-
-  h1 {
-    border-bottom: 0;
-  }
-}
-</style>

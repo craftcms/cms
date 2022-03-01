@@ -73,6 +73,8 @@ export default {
     @apply tw-border-gray-200;
 
     /*
+    TODO
+
     @include ltr() {
         background-position: right 0.5rem center;
     }
