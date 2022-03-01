@@ -31,6 +31,7 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
 use craft\errors\FileException;
+use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
@@ -1788,7 +1789,7 @@ JS;
      *
      * @return resource
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws VolumeException if a stream cannot be created
+     * @throws FsException if a stream cannot be created
      */
     public function getStream()
     {
