@@ -15,24 +15,46 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use samdark\log\PsrTarget;
 use yii\base\InvalidConfigException;
+use yii\i18n\PhpMessageSource;
+use yii\web\HttpException;
+
 
 /**
+ * Class MonologTarget
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @property-read string $contextMessage
+ * @since 4.0.0
  */
 class MonologTarget extends PsrTarget
 {
     /**
-     * @inheritdoc
-     */
-    public $extractExceptionTrace = true;
-
-    /**
+     * @var bool|null $addTimestampToContext Defaults to `true` if `addTimestampToMessage` is `false`.
+     * @see addTimestampToMessage
      * @inheritdoc
      */
     public $addTimestampToContext;
 
     /**
-     * @var array
+     * @inheritdoc
+     */
+    public $extractExceptionTrace = !YII_DEBUG;
+
+    /**
+     * @var bool
+     */
+    public bool $allowLineBreaks = YII_DEBUG;
+
+    /**
+     * @inheritdoc
+     */
+    public $except = [
+        PhpMessageSource::class . ':*',
+        HttpException::class . ':404',
+    ];
+
+    /**
+     * @var array Properties used to configure the Logger.
      */
     public const LOGGER_PROPS = [
         'name',
@@ -43,12 +65,44 @@ class MonologTarget extends PsrTarget
         'addTimestampToMessage',
     ];
 
-    protected bool $addTimestampToMessage;
+    /**
+     * @var string|null The PSR-3 log level to use.
+     * Defaults to `LogLevel::DEBUG` if `devMode` is set to `true, otherwise `LogLevel::WARNING`.
+     */
+    protected ?string $level = null;
+
+    /**
+     * @var bool|null Whether to prepend a timestamp to the log message.
+     * Defaults to `true` unless `CRAFT_STREAM_LOG` is set to `true`.
+     */
+    protected ?bool $addTimestampToMessage;
+
+    /**
+     * @var string
+     * @see Logger::$name
+     */
     protected string $name;
+
+    /**
+     * @var int The maximum number of files to keep in rotation.
+     * @see RotatingFileHandler::$maxFiles
+     */
     protected int $maxFiles = 5;
-    protected string $level = LogLevel::WARNING;
+
+    /**
+     * @var FormatterInterface|null The Monolog formatter. Defaults to `LineFormatter`.
+     */
     protected ?FormatterInterface $formatter = null;
+
+    /**
+     * @var ProcessorInterface|null The Monolog processor.
+     * Defaults to `StreamHandler` if CRAFT_STREAM_LOG is set to `true`, otherwise `RotatingFileHandler`.
+     */
     protected ?ProcessorInterface $processor = null;
+
+    /**
+     * @var Logger $logger
+     */
     protected $logger;
 
     /**
@@ -77,14 +131,12 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-
+        $this->level = $this->level ?? (YII_DEBUG ? LogLevel::DEBUG : LogLevel::WARNING);
         $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
         $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
-        $this->except = $generalConfig->filterLogCategories;
-
         $this->formatter = $this->formatter ?? new LineFormatter(
             format: $this->addTimestampToMessage ? null : "%channel%.%level_name%: %message% %context% %extra%\n",
-            allowInlineLineBreaks: $generalConfig->allowLogLineBreaks,
+            allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
 
@@ -101,7 +153,7 @@ class MonologTarget extends PsrTarget
      */
     public function setLogger(LoggerInterface $logger): void
     {
-        throw new InvalidConfigException('Logger may not be configured directly. Use "samdark\log\PsrTarget".');
+        throw new InvalidConfigException('Logger may not be configured directly.');
     }
 
     /**

@@ -19,8 +19,6 @@ use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
-use craft\log\Dispatcher;
-use craft\log\MonologTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -34,13 +32,10 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
-use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
-use yii\log\Dispatcher as YiiDispatcher;
-use yii\log\Target;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
 
@@ -855,75 +850,6 @@ class App
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
         ];
-    }
-
-    /**
-     * Returns the `log` component config.
-     *
-     * @return array|null
-     * @since 3.0.18
-     * @deprecated in 3.6.0. Override `components.log.targets` instead
-     */
-    public static function logConfig(): ?array
-    {
-        // Using Yii's Dispatcher class here is intentional
-        return [
-            'class' => YiiDispatcher::class,
-            'targets' => array_values(static::defaultLogTargets()),
-        ];
-    }
-
-    /**
-     * Returns the default log targets.
-     *
-     * @return Target[]
-     * @since 3.6.14
-     */
-    public static function defaultLogTargets(): array
-    {
-        // Warning - Don't do anything that could cause something to get logged from here!
-        // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
-        // targets haven’t been instantiated yet.
-
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-
-        // Only log console requests and web requests that aren't getAuthTimeout requests
-        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
-            return [];
-        }
-
-        $targets = Collection::make([
-            Dispatcher::TARGET_WEB,
-            Dispatcher::TARGET_CONSOLE,
-            Dispatcher::TARGET_QUEUE,
-        ])->mapWithKeys(function($name) {
-            $config = [
-                'name' => $name,
-                'enabled' => false,
-            ];
-
-            if (YII_DEBUG) {
-                $config['level'] = Craft::$app->getConfig()->getGeneral()->devModeLogLevel;
-            }
-
-            return [$name => new MonologTarget($config)];
-        });
-
-        // Enabled via QueueLogBehavior
-        if (!YII_DEBUG) {
-            $queueTarget = $targets->get(self::TARGET_QUEUE);
-            // TODO: Ask about except/levels
-            $queueTarget->except = ['yii\*'];
-            $queueTarget->setLevels(['info', 'warning', 'error']);
-        }
-
-        if ($isConsoleRequest) {
-            $targets->get(Dispatcher::TARGET_CONSOLE)->enabled = true;
-        } else {
-            $targets->get(Dispatcher::TARGET_WEB)->enabled = true;
-        }
-
-        return $targets->all();
     }
 
     /**

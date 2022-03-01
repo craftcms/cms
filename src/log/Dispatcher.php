@@ -8,16 +8,7 @@
 namespace craft\log;
 
 use Craft;
-use craft\helpers\App;
 use Illuminate\Support\Collection;
-use Monolog\Formatter\FormatterInterface;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\RotatingFileHandler;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use yii\i18n\PhpMessageSource;
-use yii\log\Target;
-use yii\web\HttpException;
 
 /**
  * Class Dispatcher
@@ -37,11 +28,64 @@ class Dispatcher extends \yii\log\Dispatcher
     public const TARGET_QUEUE = 'queue';
 
     /**
+     * @var array Config to pass to each MonologTarget
+     * @since 4.0.0
+     */
+    public array $targetConfig = [];
+
+    /**
      * @inheritdoc
      */
     public function init(): void
     {
         parent::init();
-        $this->targets = array_merge(App::defaultLogTargets(), $this->targets);
+
+        $this->targets = array_merge($this->getTargets(), $this->targets);
+    }
+
+    /**
+     * @return MonologTarget[]
+     */
+    public function getTargets(): array
+    {
+        // Warning - Don't do anything that could cause something to get logged from here!
+        // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
+        // targets haven’t been instantiated yet.
+
+        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+
+        // Only log console requests and web requests that aren't getAuthTimeout requests
+        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
+            return [];
+        }
+
+        $targets = Collection::make([
+            static::TARGET_WEB,
+            static::TARGET_CONSOLE,
+            static::TARGET_QUEUE,
+        ])->mapWithKeys(function($name) {
+            $config = array_merge($this->targetConfig, [
+                'name' => $name,
+                'enabled' => false,
+            ]);
+
+            return [$name => new MonologTarget($config)];
+        });
+
+        // Enabled via QueueLogBehavior
+        if (!YII_DEBUG) {
+            $queueTarget = $targets->get(static::TARGET_QUEUE);
+            // TODO: Ask about except/levels
+            $queueTarget->except = ['yii\*'];
+            $queueTarget->setLevels(['info', 'warning', 'error']);
+        }
+
+        if ($isConsoleRequest) {
+            $targets->get(static::TARGET_CONSOLE)->enabled = true;
+        } else {
+            $targets->get(static::TARGET_WEB)->enabled = true;
+        }
+
+        return $targets->all();
     }
 }

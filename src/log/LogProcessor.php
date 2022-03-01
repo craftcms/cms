@@ -10,16 +10,14 @@ namespace craft\log;
 use Craft;
 use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
-use yii\base\InvalidConfigException;
-use yii\log\LogRuntimeException;
 use yii\web\Request;
 use yii\web\Session;
 
 /**
- * Class StreamLogTarget
+ * Class LogProcessor
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
+ * @since 4.0.0
  */
 class LogProcessor implements ProcessorInterface
 {
@@ -59,7 +57,6 @@ class LogProcessor implements ProcessorInterface
             !empty($body = file_get_contents('php://input'))
         ) {
             // Log the raw request body instead
-            // TODO: why?
             $this->contextVars = array_merge($this->contextVars);
             array_splice($this->contextVars, $postPos, 1);
             $record['extra']['body'] = $body;
