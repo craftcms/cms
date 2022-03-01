@@ -35,10 +35,11 @@ export default {
           name: 'Plugins',
           handle: 'plugins',
         },
-        {
-          name: 'Developers',
-          handle: 'developers',
-        },
+        // TODO: Enable developer search
+        // {
+        //   name: 'Developers',
+        //   handle: 'developers',
+        // },
       ],
     }
   }
