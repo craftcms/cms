@@ -31,7 +31,7 @@ class ShellCommandException extends Exception
     /**
      * @var string|null The command’s error output
      */
-    public ?string $error;
+    public ?string $error = null;
 
     /**
      * Creates a ShellCommandException from a [[Command]] object
@@ -39,7 +39,7 @@ class ShellCommandException extends Exception
      * @param Command $command The failed Command object
      * @return static|false
      */
-    public static function createFromCommand(Command $command)
+    public static function createFromCommand(Command $command): self|false
     {
         $execCommand = $command->getExecCommand();
 

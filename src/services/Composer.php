@@ -425,7 +425,7 @@ class Composer extends Component
      * @param array $config
      * @return int|string|false The key in `$config['repositories']` referencing composer.craftcms.com
      */
-    private function _findCraftRepo(array $config)
+    private function _findCraftRepo(array $config): int|string|false
     {
         if (!isset($config['repositories'])) {
             return false;

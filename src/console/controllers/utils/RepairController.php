@@ -301,7 +301,7 @@ class RepairController extends Controller
      * @param mixed $value
      * @return mixed
      */
-    private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, $value)
+    private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, mixed $value): mixed
     {
         if (is_array($value)) {
             // Is this a packed array?

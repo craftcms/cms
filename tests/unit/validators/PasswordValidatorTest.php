@@ -12,7 +12,6 @@ use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\UserPasswordValidator;
 use UnitTester;
-use yii\base\ErrorException;
 
 /**
  * Class PasswordValidatorTest.
@@ -112,7 +111,6 @@ class PasswordValidatorTest extends Unit
             $passVal->isEmpty = 'craft_increment';
             $passVal->isEmpty(1);
         });
-
     }
 
     /**

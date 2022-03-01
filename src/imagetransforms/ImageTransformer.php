@@ -33,6 +33,8 @@ use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GeneratePendingTransforms;
 use craft\services\ImageTransforms;
+use Exception;
+use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -300,7 +302,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
             // Let's cook up a new one.
             try {
                 $volume->getFs()->deleteFile($transformPath);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
         }
@@ -482,7 +484,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
                 }
 
                 $this->storeTransformIndexData($index);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $index->inProgress = false;
                 $index->fileExists = false;
                 $index->error = true;
@@ -506,7 +508,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      * @return ImageTransformIndex
      * @throws ImageTransformException if the transform cannot be found by the handle
      */
-    protected function getTransformIndex(Asset $asset, $transform): ImageTransformIndex
+    protected function getTransformIndex(Asset $asset, mixed $transform): ImageTransformIndex
     {
         $transform = TransformHelper::normalizeTransform($transform);
 
@@ -580,10 +582,10 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      *
      * @param array $result
      * @param ImageTransform $transform
-     * @param Asset|array $asset The asset object or a raw database result
+     * @param array|Asset $asset The asset object or a raw database result
      * @return bool Whether the index result is still valid
      */
-    protected function validateTransformIndexResult(array $result, ImageTransform $transform, $asset): bool
+    protected function validateTransformIndexResult(array $result, ImageTransform $transform, array|Asset $asset): bool
     {
         // If the transform hasn't been generated yet, it's probably not yet invalid.
         if (empty($result['dateIndexed'])) {
@@ -638,7 +640,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
                 'id' => $index->id,
             ], [], true, $db);
         } else {
-            Db::insert(Table::IMAGETRANSFORMINDEX, $values, true, $db);
+            Db::insert(Table::IMAGETRANSFORMINDEX, $values, $db);
             $index->id = (int)$db->getLastInsertID(Table::IMAGETRANSFORMINDEX);
         }
 

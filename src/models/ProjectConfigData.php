@@ -126,7 +126,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      * @param $path
      * @return mixed|null
      */
-    protected function delete($path)
+    protected function delete($path): mixed
     {
         return $this->traverseDataArray($this->data, $path, null, true);
     }

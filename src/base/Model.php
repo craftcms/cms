@@ -116,9 +116,9 @@ abstract class Model extends \yii\base\Model
     /**
      * Normalizes a validation rule.
      *
-     * @param Validator|array $rule
+     * @param array|Validator $rule
      */
-    private function _normalizeRule(&$rule): void
+    private function _normalizeRule(array|Validator &$rule): void
     {
         if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof Closure) {
             // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model

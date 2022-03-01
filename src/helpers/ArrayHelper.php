@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Closure;
 use Craft;
 use Illuminate\Support\Collection;
-use Traversable;
 
 /**
  * Class ArrayHelper
@@ -96,7 +95,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param mixed $value the value to prepend/append to the array
      * @param bool $prepend `true` will prepend the value; `false` will append it
      */
-    public static function prependOrAppend(array &$array, $value, bool $prepend): void
+    public static function prependOrAppend(array &$array, mixed $value, bool $prepend): void
     {
         if ($prepend) {
             array_unshift($array, $value);
@@ -111,15 +110,15 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * Array keys are preserved by default.
      *
-     * @param array|Traversable $array the array that needs to be indexed or grouped
-     * @param string|Closure $key the column name or anonymous function which result will be used to index the array
+     * @param iterable $array the array that needs to be indexed or grouped
+     * @param Closure|string $key the column name or anonymous function which result will be used to index the array
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
      * will be re-indexed with integers.
      * @return array the filtered array
      */
-    public static function where($array, $key, $value = true, bool $strict = false, bool $keepKeys = true): array
+    public static function where(iterable $array, Closure|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
     {
         $result = [];
 
@@ -144,16 +143,16 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * Array keys are preserved by default.
      *
-     * @param array|Traversable $array the array that needs to be indexed or grouped
-     * @param string|Closure $key the column name or anonymous function which result will be used to index the array
-     * @param mixed[] $values the range of values that `$key` should be compared with
+     * @param iterable $array the array that needs to be indexed or grouped
+     * @param Closure|string $key the column name or anonymous function which result will be used to index the array
+     * @param array $values the range of values that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
      * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
      * will be re-indexed with integers.
      * @return array the filtered array
      * @since 3.5.8
      */
-    public static function whereIn($array, $key, array $values, bool $strict = false, bool $keepKeys = true): array
+    public static function whereIn(iterable $array, Closure|string $key, array $values, bool $strict = false, bool $keepKeys = true): array
     {
         $result = [];
 
@@ -192,13 +191,13 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * ```
      *
-     * @param array|Traversable $array the array that needs to be indexed or grouped
+     * @param iterable $array the array that needs to be indexed or grouped
      * @param array $conditions An array of key/value pairs of allowed values. Values can be arrays to allow multiple values.
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return array the filtered array
      * @since 3.3.0
      */
-    public static function whereMultiple($array, array $conditions, bool $strict = false): array
+    public static function whereMultiple(iterable $array, array $conditions, bool $strict = false): array
     {
         $result = [];
 
@@ -231,14 +230,14 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns the first value in a given array where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
      *
-     * @param array|Traversable $array the array that the value will be searched for in
-     * @param string|Closure $key the column name or anonymous function which must be set to $value
+     * @param iterable $array the array that the value will be searched for in
+     * @param Closure|string $key the column name or anonymous function which must be set to $value
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return mixed the value, or null if it can't be found
      * @since 3.1.0
      */
-    public static function firstWhere($array, $key, $value = true, bool $strict = false)
+    public static function firstWhere(iterable $array, Closure|string $key, mixed $value = true, bool $strict = false): mixed
     {
         foreach ($array as $i => $element) {
             $elementValue = static::getValue($element, $key);
@@ -255,14 +254,14 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns whether the given array contains any values where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
      *
-     * @param array|Traversable $array the array that the value will be searched for in
-     * @param string|Closure $key the column name or anonymous function which must be set to $value
+     * @param iterable $array the array that the value will be searched for in
+     * @param Closure|string $key the column name or anonymous function which must be set to $value
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return bool whether the value exists in the array
      * @since 3.4.0
      */
-    public static function contains($array, $key, $value = true, bool $strict = false): bool
+    public static function contains(iterable $array, Closure|string $key, mixed $value = true, bool $strict = false): bool
     {
         foreach ($array as $i => $element) {
             $elementValue = static::getValue($element, $key);
@@ -294,7 +293,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array
      * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $array isn’t an array, or is empty.
      */
-    public static function firstKey(array $array)
+    public static function firstKey(array $array): int|string|null
     {
         /** @noinspection LoopWhichDoesNotLoopInspection */
         foreach ($array as $key => $value) {
@@ -310,7 +309,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array
      * @return mixed The first value, or null if $array isn’t an array, or is empty.
      */
-    public static function firstValue(array $array)
+    public static function firstValue(array $array): mixed
     {
         return !empty($array) ? reset($array) : null;
     }
@@ -322,9 +321,9 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array the array to extract value from
      * @param string $oldKey old key name of the array element
      * @param string $newKey new key name of the array element
-     * @param mixed $default the default value to be set if the specified old key does not exist
+     * @param mixed|null $default the default value to be set if the specified old key does not exist
      */
-    public static function rename(array &$array, string $oldKey, string $newKey, $default = null): void
+    public static function rename(array &$array, string $oldKey, string $newKey, mixed $default = null): void
     {
         if (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array)) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
@@ -352,7 +351,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param mixed $value
      * @return array
      */
-    public static function withoutValue(array $array, $value): array
+    public static function withoutValue(array $array, mixed $value): array
     {
         static::removeValue($array, $value);
         return $array;

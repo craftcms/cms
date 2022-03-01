@@ -31,9 +31,9 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  *
- * @property-read \CommerceGuys\Addressing\AddressFormat\AddressFormatRepository $addressFormatRepository
- * @property-read \CommerceGuys\Addressing\Country\CountryRepository $countryRepository
- * @property-read \CommerceGuys\Addressing\Subdivision\SubdivisionRepository $subdivisionRepository
+ * @property-read AddressFormatRepository $addressFormatRepository
+ * @property-read CountryRepository $countryRepository
+ * @property-read SubdivisionRepository $subdivisionRepository
  */
 class Addresses extends Component
 {

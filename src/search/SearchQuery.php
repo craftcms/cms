@@ -134,7 +134,7 @@ class SearchQuery
             }
 
             if ($token) {
-                if (substr($token, -1) === '*') {
+                if (str_ends_with($token, '*')) {
                     $term->subRight = true;
                     $token = mb_substr($token, 0, -1);
                 }

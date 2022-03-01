@@ -33,7 +33,7 @@ class PruneRevisionsController extends Controller
      * @var bool Whether this is a dry run.
      * @since 3.7.9
      */
-    public $dryRun = false;
+    public bool $dryRun = false;
 
     /**
      * @inheritdoc

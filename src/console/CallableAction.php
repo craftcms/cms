@@ -32,7 +32,7 @@ class CallableAction extends Action
      * @param array $params action parameters
      * @return mixed the result of the action
      */
-    public function runWithParams($params)
+    public function runWithParams($params): mixed
     {
         $args = $this->_bindActionParams($params);
         Craft::debug('Running callable action', __METHOD__);

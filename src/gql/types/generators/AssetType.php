@@ -32,7 +32,7 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
         $gqlTypes = [];
@@ -55,7 +55,7 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
         /** @var Volume $volume */
         $typeName = AssetElement::gqlTypeNameByContext($context);

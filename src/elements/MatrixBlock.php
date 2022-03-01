@@ -119,7 +119,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
         $handleParts = explode(':', $handle);
@@ -157,7 +157,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var MatrixBlockTypeModel $context */
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
@@ -473,14 +473,14 @@ class MatrixBlock extends Element implements BlockElementInterface
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
                         'sortOrder' => $this->sortOrder ?? 0,
-                    ], false);
+                    ]);
                 } else {
                     Db::update(Table::MATRIXBLOCKS_OWNERS, [
                         'sortOrder' => $this->sortOrder ?? 0,
                     ], [
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
-                    ], [], false);
+                    ]);
                 }
             }
         }

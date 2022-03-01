@@ -92,7 +92,7 @@ class MailerHelper
      * @return array
      * @since 3.5.0
      */
-    public static function normalizeEmails($emails): array
+    public static function normalizeEmails(mixed $emails): array
     {
         if (empty($emails)) {
             return [];

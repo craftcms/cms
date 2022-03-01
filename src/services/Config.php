@@ -121,16 +121,12 @@ class Config extends Component
     {
         $config = $this->getConfigFromFile($category);
 
-        switch ($category) {
-            case self::CATEGORY_CUSTOM:
-                return (object)$config;
-            case self::CATEGORY_DB:
-                return new DbConfig($config);
-            case self::CATEGORY_GENERAL:
-                return new GeneralConfig($config);
-            default:
-                throw new InvalidArgumentException("Invalid config category: $category");
-        }
+        return match ($category) {
+            self::CATEGORY_CUSTOM => (object)$config,
+            self::CATEGORY_DB => new DbConfig($config),
+            self::CATEGORY_GENERAL => new GeneralConfig($config),
+            default => throw new InvalidArgumentException("Invalid config category: $category"),
+        };
     }
 
     /**
@@ -316,23 +312,12 @@ class Config extends Component
      */
     public function setBooleanDotEnvVar(string $name, bool $value): void
     {
-        switch (strtolower((string)App::env($name))) {
-            case 'yes':
-            case 'no':
-                $value = $value ? 'yes' : 'no';
-                break;
-            case 'on':
-            case 'off':
-                $value = $value ? 'on' : 'off';
-                break;
-            case '1':
-            case '0':
-                $value = $value ? '1' : '0';
-                break;
-            default:
-                $value = $value ? 'true' : 'false';
-                break;
-        }
+        $value = match (strtolower((string)App::env($name))) {
+            'yes', 'no' => $value ? 'yes' : 'no',
+            'on', 'off' => $value ? 'on' : 'off',
+            '1', '0' => $value ? '1' : '0',
+            default => $value ? 'true' : 'false',
+        };
 
         $this->setDotEnvVar($name, $value);
     }

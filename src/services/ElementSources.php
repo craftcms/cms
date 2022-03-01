@@ -304,7 +304,8 @@ class ElementSources extends Component
     /**
      * Returns the native sources for a given element type and context, normalized with `type` keys.
      *
-     * @param string
+     * @param string $elementType
+     * @param string $context
      * @return array[]
      */
     private function _nativeSources(string $elementType, string $context): array

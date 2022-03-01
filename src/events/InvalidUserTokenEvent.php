@@ -21,5 +21,5 @@ class InvalidUserTokenEvent extends Event
     /**
      * @var User|null The user account the request is associated with, if a valid user UID was passed.
      */
-    public ?User $user;
+    public ?User $user = null;
 }

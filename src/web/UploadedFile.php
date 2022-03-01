@@ -85,7 +85,7 @@ class UploadedFile extends \yii\web\UploadedFile
      * @return string|false the path to the temp file, or false if the file wasn't saved successfully
      * @see error
      */
-    public function saveAsTempFile(bool $deleteTempFile = true)
+    public function saveAsTempFile(bool $deleteTempFile = true): string|false
     {
         if ($this->error != UPLOAD_ERR_OK) {
             return false;

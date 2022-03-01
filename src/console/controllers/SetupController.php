@@ -75,7 +75,7 @@ class SetupController extends Controller
      * @var bool Whether existing environment variables should be used as the default values by the `db-creds` command.
      * @see _env()
      */
-    private $_useEnvDefaults = true;
+    private bool $_useEnvDefaults = true;
 
     /**
      * @inheritdoc

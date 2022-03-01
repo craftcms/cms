@@ -32,7 +32,7 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $categoryGroups = Craft::$app->getCategories()->getAllGroups();
         $gqlTypes = [];
@@ -55,7 +55,7 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
         /** @var CategoryGroup $categoryGroup */
         $typeName = CategoryElement::gqlTypeNameByContext($context);

@@ -11,7 +11,6 @@ use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
-use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
 use yii\di\Instance;
 
@@ -58,9 +57,9 @@ class Paginator extends BaseObject
     public int $pageSize = 100;
 
     /**
-     * @var QueryInterface|YiiQuery The query being paginated
+     * @var QueryInterface The query being paginated
      */
-    protected $query;
+    protected QueryInterface $query;
 
     /**
      * @var int The total query count
@@ -121,7 +120,7 @@ class Paginator extends BaseObject
      *
      * @return int|float
      */
-    public function getTotalResults()
+    public function getTotalResults(): float|int
     {
         if (isset($this->totalResults)) {
             return $this->totalResults;
@@ -234,7 +233,7 @@ class Paginator extends BaseObject
      *
      * @return int|float
      */
-    public function getPageOffset()
+    public function getPageOffset(): float|int
     {
         return $this->pageSize * ($this->currentPage - 1);
     }

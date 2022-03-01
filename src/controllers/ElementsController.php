@@ -46,33 +46,33 @@ use yii\web\ServerErrorHttpException;
 class ElementsController extends Controller
 {
     private array $_attributes;
-    private ?string $_elementType;
-    private ?int $_elementId;
-    private ?string $_elementUid;
-    private ?int $_draftId;
-    private ?int $_revisionId;
-    private ?int $_siteId;
+    private ?string $_elementType = null;
+    private ?int $_elementId = null;
+    private ?string $_elementUid = null;
+    private ?int $_draftId = null;
+    private ?int $_revisionId = null;
+    private ?int $_siteId = null;
 
-    private ?bool $_enabled;
+    private ?bool $_enabled = null;
     /**
      * @var bool|bool[]|null
      */
-    private $_enabledForSite;
-    private ?string $_slug;
+    private array|bool|null $_enabledForSite = null;
+    private ?string $_slug = null;
     private bool $_fresh;
-    private ?string $_draftName;
-    private ?string $_notes;
+    private ?string $_draftName = null;
+    private ?string $_notes = null;
     private string $_fieldsLocation;
     private bool $_provisional;
     private bool $_dropProvisional;
     private bool $_addAnother;
     private array $_visibleLayoutElements;
-    private ?string $_selectedTab;
+    private ?string $_selectedTab = null;
     private bool $_prevalidate;
-    private ?string $_context;
-    private ?string $_thumbSize;
-    private ?string $_viewMode;
-    private ?string $_includeTableAttributesForSource;
+    private ?string $_context = null;
+    private ?string $_thumbSize = null;
+    private ?string $_viewMode = null;
+    private ?string $_includeTableAttributesForSource = null;
 
     /**
      * @inheritdoc
@@ -126,7 +126,7 @@ class ElementsController extends Controller
      * @param string $name
      * @return mixed
      */
-    private function _param(string $name)
+    private function _param(string $name): mixed
     {
         return ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
     }
@@ -701,17 +701,13 @@ class ElementsController extends Controller
         callable $jsSettingsFn
     ) {
         $fieldLayout = $element->getFieldLayout();
-        if ($fieldLayout) {
-            $form = $fieldLayout->createForm($element, !$canSave, [
-                'registerDeltas' => true,
-            ]);
-        } else {
-            $form = null;
-        }
+        $form = $fieldLayout?->createForm($element, !$canSave, [
+            'registerDeltas' => true,
+        ]);
 
         /** @var Response|CpScreenResponseBehavior $response */
         $response
-            ->tabs($form ? $form->getTabMenu() : null)
+            ->tabs($form?->getTabMenu())
             ->content($contentFn($form))
             ->sidebar($sidebarFn($form));
 
@@ -1232,7 +1228,7 @@ JS;
                 'canonicalId' => $element->getCanonicalId(),
                 'draftId' => $element->draftId,
                 'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
-                'creator' => $creator ? $creator->getName() : null,
+                'creator' => $creator?->getName(),
                 'draftName' => $element->draftName,
                 'draftNotes' => $element->draftNotes,
                 'docTitle' => $docTitle,
@@ -1475,7 +1471,7 @@ JS;
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    private function _element(?int $elementId = null, ?string $elementUid = null, ?bool $provisional = null, bool $strictSite = true)
+    private function _element(?int $elementId = null, ?string $elementUid = null, ?bool $provisional = null, bool $strictSite = true): ElementInterface|Response|null
     {
         $elementId = $elementId ?? $this->_elementId;
         $elementUid = $elementUid ?? $this->_elementUid;
@@ -1702,7 +1698,7 @@ JS;
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      * @throws ServerErrorHttpException
      */
     private function _asSuccess(string $message, ElementInterface $element, array $data = [], bool $addAnother = false): Response

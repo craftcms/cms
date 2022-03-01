@@ -30,7 +30,7 @@ class VolumeFolder extends Model
     /**
      * @var int|string|null Parent ID
      */
-    public $parentId;
+    public string|int|null $parentId = null;
 
     /**
      * @var int|null Volume ID

@@ -27,7 +27,7 @@ class CustomField extends BaseField
     /**
      * @var FieldInterface|null The custom field this layout field is based on.
      */
-    private ?FieldInterface $_field;
+    private ?FieldInterface $_field = null;
 
     /**
      * @inheritdoc
@@ -51,12 +51,9 @@ class CustomField extends BaseField
      * @inheritdoc
      * @since 3.5.2
      */
-    protected function value(?ElementInterface $element = null)
+    protected function value(?ElementInterface $element = null): mixed
     {
-        if (!$element) {
-            return null;
-        }
-        return $element->getFieldValue($this->_field->handle);
+        return $element?->getFieldValue($this->_field->handle);
     }
 
     /**

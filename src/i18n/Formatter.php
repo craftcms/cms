@@ -199,7 +199,7 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * @inheritdoc
      */
-    public function asPercent($value, $decimals = null, $options = [], $textOptions = [])
+    public function asPercent($value, $decimals = null, $options = [], $textOptions = []): string
     {
         if (empty($value)) {
             $value = 0;
@@ -264,7 +264,7 @@ class Formatter extends \yii\i18n\Formatter
      * @see isNormalizedValueMispresented()
      * @since 3.7.24
      */
-    public function willBeMisrepresented($value): bool
+    public function willBeMisrepresented(mixed $value): bool
     {
         if ($value === null) {
             return false;
@@ -281,7 +281,7 @@ class Formatter extends \yii\i18n\Formatter
      * @param string $type 'date', 'time', or 'datetime'.
      * @return string
      */
-    private function _formatDateTimeValueWithPhpFormat($value, string $format, string $type): string
+    private function _formatDateTimeValueWithPhpFormat(mixed $value, string $format, string $type): string
     {
         // special cases for PHP format characters not supported by ICU
         $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);

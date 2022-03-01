@@ -102,7 +102,7 @@ class ArgumentManager extends Component
      * @param string $argumentName
      * @param string|ArgumentHandlerInterface $handler
      */
-    public function setHandler(string $argumentName, $handler): void
+    public function setHandler(string $argumentName, ArgumentHandlerInterface|string $handler): void
     {
         if (is_string($handler)) {
             $handler = $this->createHandler($handler);
@@ -160,7 +160,7 @@ class ArgumentManager extends Component
      * @param string $handler
      * @return ArgumentHandlerInterface|string
      */
-    protected function createHandler(string $handler)
+    protected function createHandler(string $handler): ArgumentHandlerInterface|string
     {
         if (is_a($handler, ArgumentHandlerInterface::class, true)) {
             /** @var ArgumentHandlerInterface $handler */

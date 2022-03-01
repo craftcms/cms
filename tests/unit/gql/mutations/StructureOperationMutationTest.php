@@ -51,8 +51,8 @@ class StructureOperationMutationTest extends TestCase
 
         $this->tester->mockCraftMethods('structures', $methods);
         $this->tester->mockCraftMethods('elements', [
-            'getElementById' => function ($elementId) {
-                return $elementId > 0 ? new Category() : null ;
+            'getElementById' => function($elementId) {
+                return $elementId > 0 ? new Category() : null;
             }
         ]);
 

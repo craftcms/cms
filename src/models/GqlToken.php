@@ -82,7 +82,7 @@ class GqlToken extends Model
     /**
      * @var GqlSchema The schema for this token.
      */
-    private $_schema;
+    private GqlSchema $_schema;
 
     /**
      * @var bool Whether this is a temporary token
@@ -203,7 +203,7 @@ class GqlToken extends Model
      *
      * @return mixed
      */
-    public function getScope()
+    public function getScope(): mixed
     {
         if (!isset($this->_scope)) {
             $schema = $this->getSchema();

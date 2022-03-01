@@ -62,7 +62,7 @@ class ResaveController extends Controller
     /**
      * @var int|string The ID(s) of the elements to resave.
      */
-    public $elementId;
+    public string|int $elementId;
 
     /**
      * @var string|null The UUID(s) of the elements to resave.

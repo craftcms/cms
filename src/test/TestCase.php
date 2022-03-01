@@ -73,7 +73,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L176
      */
-    protected function getInaccessibleProperty($object, $propertyName, bool $revoke = true)
+    protected function getInaccessibleProperty($object, $propertyName, bool $revoke = true): mixed
     {
         $class = new ReflectionClass($object);
 
@@ -103,7 +103,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeMethod($object, $method, array $args = [], bool $revoke = true)
+    protected function invokeMethod($object, $method, array $args = [], bool $revoke = true): mixed
     {
         $method = (new ReflectionObject($object))->getMethod($method);
         return $this->_invokeMethodInternal($method, $object, $args, $revoke);
@@ -112,7 +112,7 @@ class TestCase extends Unit
     /**
      * Invokes an inaccessible static method on a class
      *
-     * @param $object
+     * @param $className
      * @param $method
      * @param array $args
      * @param bool $revoke whether to make method inaccessible after execution
@@ -120,7 +120,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeStaticMethod($className, $method, array $args = [], bool $revoke = true)
+    protected function invokeStaticMethod($className, $method, array $args = [], bool $revoke = true): mixed
     {
         $method = (new ReflectionClass($className))->getMethod($method);
         return $this->_invokeMethodInternal($method, null, $args, $revoke);
@@ -134,7 +134,7 @@ class TestCase extends Unit
      * @return mixed
      * @throws ReflectionException
      */
-    private function _invokeMethodInternal(ReflectionMethod $method, $object = null, array $args = [], bool $revoke = true)
+    private function _invokeMethodInternal(ReflectionMethod $method, $object = null, array $args = [], bool $revoke = true): mixed
     {
         $method->setAccessible(true);
         $result = $method->invokeArgs($object, $args);

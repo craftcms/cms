@@ -56,7 +56,7 @@ class App
      * @var string[]
      * @see isPathAllowed()
      */
-    private static $_basePaths;
+    private static array $_basePaths;
 
     /**
      * Returns an environment variable, falling back to a PHP constant of the same name.
@@ -101,7 +101,7 @@ class App
      * reference an environment variable and/or alias.
      * @since 3.7.29
      */
-    public static function parseEnv(?string $value)
+    public static function parseEnv(?string $value): bool|string|null
     {
         if ($value === null) {
             return null;
@@ -139,7 +139,7 @@ class App
      * @return bool|null
      * @since 3.7.29
      */
-    public static function parseBooleanEnv($value): ?bool
+    public static function parseBooleanEnv(mixed $value): ?bool
     {
         if (is_bool($value)) {
             return $value;
@@ -256,14 +256,11 @@ class App
      */
     public static function editionHandle(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'solo';
-            case Craft::Pro:
-                return 'pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'solo',
+            Craft::Pro => 'pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -274,14 +271,11 @@ class App
      */
     public static function editionName(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'Solo';
-            case Craft::Pro:
-                return 'Pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'Solo',
+            Craft::Pro => 'Pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -294,14 +288,11 @@ class App
      */
     public static function editionIdByHandle(string $handle): int
     {
-        switch ($handle) {
-            case 'solo':
-                return Craft::Solo;
-            case 'pro':
-                return Craft::Pro;
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle);
-        }
+        return match ($handle) {
+            'solo' => Craft::Solo,
+            'pro' => Craft::Pro,
+            default => throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle),
+        };
     }
 
     /**
@@ -310,7 +301,7 @@ class App
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
      */
-    public static function isValidEdition($edition): bool
+    public static function isValidEdition(mixed $edition): bool
     {
         if ($edition === false || $edition === null) {
             return false;
@@ -395,7 +386,7 @@ class App
      * @return int|float The value normalized into bytes.
      * @since 3.0.38
      */
-    public static function phpConfigValueInBytes(string $var)
+    public static function phpConfigValueInBytes(string $var): float|int
     {
         $value = trim(ini_get($var));
         return static::phpSizeToBytes($value);
@@ -408,7 +399,7 @@ class App
      * @return int|float The value normalized into bytes.
      * @since 3.6.0
      */
-    public static function phpSizeToBytes(string $value)
+    public static function phpSizeToBytes(string $value): float|int
     {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int)$value;

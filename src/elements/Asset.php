@@ -91,16 +91,16 @@ use yii\validators\RequiredValidator;
  * @property-read bool $hasCheckeredThumb
  * @property-read bool $supportsImageEditor
  * @property-read array $previewTargets
- * @property-read \craft\base\FsInterface $fs
+ * @property-read FsInterface $fs
  * @property-read string $titleTranslationKey
  * @property-read null|string $titleTranslationDescription
  * @property-read string $dataUrl
  * @property-read bool $isTitleTranslatable
  * @property-read string $previewHtml
  * @property-read string $imageTransformSourcePath
- * @property \craft\elements\User|null $uploader
+ * @property User|null $uploader
  * @property-read resource $stream
- * @property-write null|string|array|\craft\models\ImageTransform $transform
+ * @property-write null|string|array|ImageTransform $transform
  * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -249,7 +249,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.4.0
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         if ($handle === 'uploader') {
             // Get the source element IDs
@@ -288,7 +288,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         return $context->handle . '_Asset';
     }
@@ -297,7 +297,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         return ['volumes.' . $context->uid];
     }
@@ -306,7 +306,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var Volume $context */
         return 'save_' . $context->handle . '_Asset';
@@ -698,12 +698,12 @@ class Asset extends Element
     /**
      * @var int|float|null Width
      */
-    private $_width;
+    private int|float|null $_width = null;
 
     /**
      * @var int|float|null Height
      */
-    private $_height;
+    private int|float|null $_height = null;
 
     /**
      * @var array|null Focal point
@@ -1167,13 +1167,13 @@ JS;
     /**
      * Returns an `<img>` tag based on this asset.
      *
-     * @param mixed $transform The transform to use when generating the html.
+     * @param ImageTransform|string|array|null $transform The transform to use when generating the html.
      * @param string[]|null $sizes The widths/x-descriptors that should be used for the `srcset` attribute
      * (see [[getSrcset()]] for example syntaxes)
      * @return Markup|null
      * @throws InvalidArgumentException
      */
-    public function getImg($transform = null, ?array $sizes = null): ?Markup
+    public function getImg(mixed $transform = null, ?array $sizes = null): ?Markup
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return null;
@@ -1229,7 +1229,7 @@ JS;
      * @throws InvalidArgumentException
      * @since 3.5.0
      */
-    public function getSrcset(array $sizes, $transform = null)
+    public function getSrcset(array $sizes, mixed $transform = null): string|false
     {
         $urls = $this->getUrlsBySize($sizes, $transform);
 
@@ -1277,7 +1277,7 @@ JS;
      * @return array
      * @since 3.7.16
      */
-    public function getUrlsBySize(array $sizes, $transform = null): array
+    public function getUrlsBySize(array $sizes, mixed $transform = null): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
             return [];
@@ -1458,7 +1458,7 @@ JS;
      * @return Asset
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
-    public function setTransform($transform): Asset
+    public function setTransform(mixed $transform): Asset
     {
         $this->_transform = ImageTransforms::normalizeTransform($transform);
 
@@ -1468,13 +1468,13 @@ JS;
     /**
      * Returns the element’s full URL.
      *
-     * @param string|array|null $transform A transform handle or configuration that should be applied to the
+     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl($transform = null): ?string
+    public function getUrl(mixed $transform = null): ?string
     {
         $volume = $this->getVolume();
 
@@ -1555,8 +1555,8 @@ JS;
     /**
      * Returns preview thumb image HTML.
      *
-     * @param int $width
-     * @param int $height
+     * @param int $desiredWidth
+     * @param int $desiredHeight
      * @return string
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @since 3.4.0
@@ -1650,7 +1650,7 @@ JS;
      * @return int|float|null
      */
 
-    public function getHeight($transform = null)
+    public function getHeight(mixed $transform = null): float|int|null
     {
         return $this->_dimensions($transform)[1];
     }
@@ -1658,9 +1658,9 @@ JS;
     /**
      * Sets the image height.
      *
-     * @param int|float|null $height the image height
+     * @param float|int|null $height the image height
      */
-    public function setHeight($height): void
+    public function setHeight(float|int|null $height): void
     {
         $this->_height = $height;
     }
@@ -1668,10 +1668,10 @@ JS;
     /**
      * Returns the image width.
      *
-     * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
+     * @param array|string|ImageTransform|null $transform A transform handle or configuration that should be applied to the image
      * @return int|float|null
      */
-    public function getWidth($transform = null)
+    public function getWidth(array|string|ImageTransform $transform = null): float|int|null
     {
         return $this->_dimensions($transform)[0];
     }
@@ -1679,9 +1679,9 @@ JS;
     /**
      * Sets the image width.
      *
-     * @param int|float|null $width the image width
+     * @param float|int|null $width the image width
      */
-    public function setWidth($width): void
+    public function setWidth(float|int|null $width): void
     {
         $this->_width = $width;
     }
@@ -1848,7 +1848,7 @@ JS;
      * @param bool $asCss whether the value should be returned in CSS syntax ("50% 25%") instead
      * @return array|string|null
      */
-    public function getFocalPoint(bool $asCss = false)
+    public function getFocalPoint(bool $asCss = false): array|string|null
     {
         if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return null;
@@ -1866,10 +1866,10 @@ JS;
     /**
      * Sets the asset's focal point.
      *
-     * @param $value string|array|null
+     * @param array|string|null $value
      * @throws \InvalidArgumentException if $value is invalid
      */
-    public function setFocalPoint($value): void
+    public function setFocalPoint(array|string|null $value): void
     {
         if (is_array($value)) {
             if (!isset($value['x'], $value['y'])) {
@@ -2176,7 +2176,7 @@ JS;
      * @return Asset
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
-    public function copyWithTransform($transform): Asset
+    public function copyWithTransform(mixed $transform): Asset
     {
         $model = clone $this;
         $model->setFieldValues($this->getFieldValues());
@@ -2412,7 +2412,7 @@ JS;
      * @param ImageTransform|string|array|null $transform
      * @return array
      */
-    private function _dimensions($transform = null): array
+    private function _dimensions(mixed $transform = null): array
     {
         if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
             return [null, null];
@@ -2480,7 +2480,7 @@ JS;
         $tempPath = null;
 
         $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
-        $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
+        $oldVolume = $oldFolder?->getVolume();
 
         $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
         $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
@@ -2638,9 +2638,9 @@ JS;
      * Returns a normalized temp path or false, if realpath fails.
      *
      * @param string|false $path
-     * @return false|string
+     * @return string|false
      */
-    private function _normalizeTempPath($path)
+    private function _normalizeTempPath(string|false $path): string|false
     {
         if (!$path || !($path = realpath($path))) {
             return false;

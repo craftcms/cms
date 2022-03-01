@@ -275,7 +275,7 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function getFileStream(string $uriPath)
+    public function getFileStream(string $uriPath): bool
     {
         return @fopen($this->prefixPath($uriPath), 'rb');
     }

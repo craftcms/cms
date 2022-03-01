@@ -16,6 +16,7 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Entry
@@ -66,7 +67,7 @@ class Entry extends Query
      * Return the query fields for section level queries.
      *
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     protected static function getSectionLevelFields(): array
     {

@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
 use craft\errors\GqlException;
@@ -625,8 +626,7 @@ class Gql extends Component
      */
     public function getPublicSchema(): ?GqlSchema
     {
-        $token = $this->getPublicToken();
-        return $token ? $token->getSchema() : null;
+        return $this->getPublicToken()?->getSchema();
     }
 
     /**
@@ -861,7 +861,7 @@ class Gql extends Component
         // Public token information is stored in the project config
         if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
             $data = [
-                'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
+                'expiryDate' => $token->expiryDate?->getTimestamp(),
                 'enabled' => $token->enabled,
             ];
 
@@ -1144,6 +1144,7 @@ class Gql extends Component
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
+        /** @var FieldLayoutBehavior[] $contexts */
         /** @var string|BaseElementInterface $elementType */
         if (!array_key_exists($elementType, $this->_contentFieldCache)) {
             $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
@@ -1154,7 +1155,7 @@ class Gql extends Component
                     continue;
                 }
 
-                foreach ($context->getFields() as $contentField) {
+                foreach ($context->getCustomFields() as $contentField) {
                     if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField->handle)) {
                         $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
                     }
@@ -1239,8 +1240,8 @@ class Gql extends Component
     private function _getCacheKey(
         GqlSchema $schema,
         string $query,
-        $rootValue,
-        $context,
+        mixed $rootValue,
+        mixed $context,
         ?array $variables = null,
         ?string $operationName = null
     ): ?string {

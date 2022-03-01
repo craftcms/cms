@@ -24,7 +24,7 @@ class Session
      * @param string $key the session variable name
      * @return mixed the session variable value, or `null` if it doesn’t exist
      */
-    public static function get(string $key)
+    public static function get(string $key): mixed
     {
         if (!static::exists()) {
             return null;
@@ -40,7 +40,7 @@ class Session
      * @param string $key the session variable name
      * @param mixed $value the session variable value
      */
-    public static function set(string $key, $value): void
+    public static function set(string $key, mixed $value): void
     {
         self::session()->set($key, $value);
     }
@@ -51,7 +51,7 @@ class Session
      * @param string $key the session variable name
      * @return mixed the old value, or `null` if it didn’t exist
      */
-    public static function remove(string $key)
+    public static function remove(string $key): mixed
     {
         if (!static::exists()) {
             return null;

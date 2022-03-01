@@ -28,7 +28,7 @@ class CreateFieldLayoutFormEvent extends Event
     /**
      * @var ElementInterface|null The element the form is being rendered for
      */
-    public ?ElementInterface $element;
+    public ?ElementInterface $element = null;
 
     /**
      * @var bool Whether the form should be static (non-interactive)
