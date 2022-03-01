@@ -32,6 +32,7 @@ use yii\base\ExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -294,7 +295,7 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?BaseResponse
     {
         $result = parent::runAction($route, $params);
 

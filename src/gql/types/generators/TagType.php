@@ -32,7 +32,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
         $gqlTypes = [];
@@ -55,7 +55,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
         /** @var TagGroup $tagGroup */
         $typeName = TagElement::gqlTypeNameByContext($context);

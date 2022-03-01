@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpHierarchyChecksInspection */
+<?php
 
 /**
  * @link https://craftcms.com/

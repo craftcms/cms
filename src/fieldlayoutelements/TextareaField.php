@@ -21,7 +21,7 @@ class TextareaField extends BaseNativeField
     /**
      * @var string|string[]|null The input’s `class` attribute value.
      */
-    public $class;
+    public string|array|null $class = null;
 
     /**
      * @var int|null The input’s `rows` attribute value.

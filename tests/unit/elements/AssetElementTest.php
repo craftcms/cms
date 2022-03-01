@@ -51,7 +51,7 @@ class AssetElementTest extends TestCase
                 'width' => 400,
                 'height' => 200,
                 'getImageTransformer' => $this->make(ImageTransformer::class, [
-                    'getTransformUrl' => fn (Asset $asset, ImageTransform $transform) => 'w='.$transform->width.'&h='.$transform->height
+                    'getTransformUrl' => fn(Asset $asset, ImageTransform $transform) => 'w=' . $transform->width . '&h=' . $transform->height
                 ])
             ])
         ]);

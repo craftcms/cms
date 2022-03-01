@@ -83,10 +83,10 @@ abstract class Image extends BaseObject
      * @param int|null $targetWidth
      * @param int|null $targetHeight
      * @param bool $scaleIfSmaller
-     * @param mixed $cropPosition
+     * @param string|string[] $cropPosition
      * @return static Self reference
      */
-    abstract public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self;
+    abstract public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self;
 
     /**
      * Resizes the image.
@@ -120,7 +120,7 @@ abstract class Image extends BaseObject
      * @param int|string|null $width
      * @param int|string|null $height
      */
-    protected function normalizeDimensions(&$width, &$height): void
+    protected function normalizeDimensions(int|string|null &$width, int|string|null &$height): void
     {
         // See if $width is in "XxY" format
         if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', (string)$width, $matches)) {

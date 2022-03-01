@@ -64,17 +64,17 @@ class Craft extends Yii2
     /**
      * @var self The current instance
      */
-    public static $instance;
+    public static self $instance;
 
     /**
      * @var TestInterface
      */
-    public static $currentTest;
+    public static TestInterface $currentTest;
 
     /**
      * @var array Application config file must be set.
      */
-    protected $addedConfig = [
+    protected array $addedConfig = [
         'migrations' => [],
         'plugins' => [],
         'dbSetup' => null,
@@ -86,12 +86,12 @@ class Craft extends Yii2
     /**
      * @var array For expecting events code
      */
-    protected $triggeredEvents = [];
+    protected array $triggeredEvents = [];
 
     /**
      * @var array For expecting events code
      */
-    protected $requiredEvents = [];
+    protected array $requiredEvents = [];
 
     /**
      * Craft constructor.
@@ -292,7 +292,7 @@ class Craft extends Yii2
     public function installPlugin(array $plugin): void
     {
         if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
-            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle'] . '');
+            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle']);
         }
     }
 
@@ -308,7 +308,7 @@ class Craft extends Yii2
      * @param $path
      * @return string|false
      */
-    public static function normalizePathSeparators($path)
+    public static function normalizePathSeparators($path): string|false
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
     }

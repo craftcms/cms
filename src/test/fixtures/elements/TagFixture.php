@@ -24,7 +24,7 @@ abstract class TagFixture extends BaseElementFixture
     /**
      * @var array
      */
-    protected $groupIds = [];
+    protected array $groupIds = [];
 
     /**
      * @inheritdoc

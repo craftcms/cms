@@ -605,7 +605,6 @@ class DbHelperTest extends Unit
         return [
             [-2147483648, 'integer(9)'],
             [false, 'stuff(9)'],
-            [-9223372036854775808, 'bigint(9223372036854775807)']
         ];
     }
 

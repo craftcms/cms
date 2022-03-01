@@ -23,5 +23,5 @@ interface SingleGeneratorInterface
      * @return mixed
      * @since 3.5.0
      */
-    public static function generateType($context);
+    public static function generateType(mixed $context): mixed;
 }

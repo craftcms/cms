@@ -136,7 +136,7 @@ class Assets extends Component
      * @param mixed $criteria
      * @return int
      */
-    public function getTotalAssets($criteria = null): int
+    public function getTotalAssets(mixed $criteria = null): int
     {
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
@@ -306,11 +306,11 @@ class Assets extends Component
     /**
      * Deletes a folder by its ID.
      *
-     * @param array|int $folderIds
+     * @param int|array $folderIds
      * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      * @throws InvalidConfigException if the volume cannot be fetched from folder.
      */
-    public function deleteFoldersByIds($folderIds, bool $deleteDir = true): void
+    public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
         $folders = [];
 
@@ -452,10 +452,10 @@ class Assets extends Component
     /**
      * Finds folders that match a given criteria.
      *
-     * @param mixed $criteria
+     * @param mixed|null $criteria
      * @return VolumeFolder[]
      */
-    public function findFolders($criteria = null): array
+    public function findFolders(mixed $criteria = null): array
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -525,10 +525,10 @@ class Assets extends Component
     /**
      * Finds the first folder that matches a given criteria.
      *
-     * @param mixed $criteria
+     * @param mixed|null $criteria
      * @return VolumeFolder|null
      */
-    public function findFolder($criteria = null): ?VolumeFolder
+    public function findFolder(mixed $criteria = null): ?VolumeFolder
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -564,7 +564,7 @@ class Assets extends Component
      * @param mixed $criteria
      * @return int
      */
-    public function getTotalFolders($criteria): int
+    public function getTotalFolders(mixed $criteria): int
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -590,7 +590,7 @@ class Assets extends Component
      * @throws VolumeException
      * @throws ImageTransformException
      */
-    public function getAssetUrl(Asset $asset, $transform = null): ?string
+    public function getAssetUrl(Asset $asset, mixed $transform = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new DefineAssetUrlEvent([
@@ -667,7 +667,7 @@ class Assets extends Component
      * @throws FsObjectNotFoundException
      * @see getThumbUrl()
      */
-    public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true)
+    public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true): string|false
     {
         // Maybe a plugin wants to do something here
         $event = new AssetThumbEvent([
@@ -1032,23 +1032,13 @@ class Assets extends Component
         }
 
         // These are our default preview handlers if one is not supplied
-        switch ($asset->kind) {
-            case Asset::KIND_IMAGE:
-                return new ImagePreview($asset);
-            case Asset::KIND_PDF:
-                return new Pdf($asset);
-            case Asset::KIND_VIDEO:
-                return new Video($asset);
-            case Asset::KIND_HTML:
-            case Asset::KIND_JAVASCRIPT:
-            case Asset::KIND_JSON:
-            case Asset::KIND_PHP:
-            case Asset::KIND_TEXT:
-            case Asset::KIND_XML:
-                return new Text($asset);
-        }
-
-        return null;
+        return match ($asset->kind) {
+            Asset::KIND_IMAGE => new ImagePreview($asset),
+            Asset::KIND_PDF => new Pdf($asset),
+            Asset::KIND_VIDEO => new Video($asset),
+            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
+            default => null,
+        };
     }
 
     /**

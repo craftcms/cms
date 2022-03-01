@@ -7,14 +7,9 @@
 
 namespace crafttests\unit\i18n;
 
-use Craft;
 use Codeception\Test\Unit;
-use craft\elements\User;
-use craft\helpers\Cp;
-use craft\web\twig\TemplateLoaderException;
-use crafttests\fixtures\SitesFixture;
+use Craft;
 use UnitTester;
-use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the Formatter class.

@@ -131,22 +131,15 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
         [$minBytes, $maxBytes] = $this->_byteRange();
 
-        switch ($this->operator) {
-            case self::OPERATOR_EQ:
-                return $element->size >= $minBytes && $element->size <= $maxBytes;
-            case self::OPERATOR_NE:
-                return $element->size < $minBytes || $element->size > $maxBytes;
-            case self::OPERATOR_LT:
-                return $element->size < $minBytes;
-            case self::OPERATOR_LTE:
-                return $element->size <= $minBytes;
-            case self::OPERATOR_GT:
-                return $element->size > $maxBytes;
-            case self::OPERATOR_GTE:
-                return $element->size >= $maxBytes;
-            default:
-                throw new InvalidValueException("Invalid file size operator: $this->operator");
-        }
+        return match ($this->operator) {
+            self::OPERATOR_EQ => $element->size >= $minBytes && $element->size <= $maxBytes,
+            self::OPERATOR_NE => $element->size < $minBytes || $element->size > $maxBytes,
+            self::OPERATOR_LT => $element->size < $minBytes,
+            self::OPERATOR_LTE => $element->size <= $minBytes,
+            self::OPERATOR_GT => $element->size > $maxBytes,
+            self::OPERATOR_GTE => $element->size >= $maxBytes,
+            default => throw new InvalidValueException("Invalid file size operator: $this->operator"),
+        };
     }
 
     /**

@@ -55,7 +55,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @var WebApplication|ConsoleApplication|null The Craft application class
      */
-    public $app;
+    public null|WebApplication|ConsoleApplication $app = null;
 
     /**
      * @inheritdoc

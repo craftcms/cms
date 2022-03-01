@@ -163,7 +163,7 @@ class ElementFieldResolverTest extends Unit
                     return $property == 'plainTextField' ? 'ok' : $this->$property;
                 },
                 'getGroup' => function() use ($groupHandle) {
-                    return $this->make(CategoryGroup::class, ['handle' =>$groupHandle]);
+                    return $this->make(CategoryGroup::class, ['handle' => $groupHandle]);
                 },
             ]
         );
@@ -279,7 +279,7 @@ class ElementFieldResolverTest extends Unit
     public function testAssetUrlTransform($fieldArguments, $expectedArguments, $generateNow = null)
     {
         $assetService = $this->make(Assets::class, [
-            'getAssetUrl' => function ($asset, $transformArguments, $generateImmediately) use ($fieldArguments, $expectedArguments, $generateNow) {
+            'getAssetUrl' => function($asset, $transformArguments, $generateImmediately) use ($fieldArguments, $expectedArguments, $generateNow) {
                 self::assertEquals($expectedArguments, $transformArguments);
 
                 if (is_bool($generateNow)) {
@@ -365,8 +365,8 @@ class ElementFieldResolverTest extends Unit
             [CategoryGqlType::class, 'plainTextField', true],
             [
                 CategoryGqlType::class, 'groupHandle', function($source) {
-                    return $source->getGroup()->handle;
-                }
+                return $source->getGroup()->handle;
+            }
             ],
         ];
     }
@@ -378,8 +378,8 @@ class ElementFieldResolverTest extends Unit
             [TagGqlType::class, 'plainTextField', true],
             [
                 TagGqlType::class, 'groupHandle', function($source) {
-                    return $source->getGroup()->handle;
-                }
+                return $source->getGroup()->handle;
+            }
             ],
         ];
     }

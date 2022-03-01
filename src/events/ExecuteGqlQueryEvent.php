@@ -21,7 +21,7 @@ class ExecuteGqlQueryEvent extends Event
      * @var int|null The id of the schema used for this request.
      * @since 3.4.0
      */
-    public ?int $schemaId;
+    public ?int $schemaId = null;
 
     /**
      * @var string The GraphQL query being executed
@@ -31,22 +31,22 @@ class ExecuteGqlQueryEvent extends Event
     /**
      * @var array|null The variables used for this query.
      */
-    public ?array $variables;
+    public ?array $variables = null;
 
     /**
      * @var string|null The name of the operation to use if requestString contains multiple possible operations.
      */
-    public ?string $operationName;
+    public ?string $operationName = null;
 
     /**
      * @var mixed The context that is shared between all resolvers.
      */
-    public $context;
+    public mixed $context = null;
 
     /**
      * @var mixed The root value to use when resolving the top-level object fields.
      */
-    public $rootValue;
+    public mixed $rootValue = null;
 
     /**
      * @var array|null The query result to be returned.

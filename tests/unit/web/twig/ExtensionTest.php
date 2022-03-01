@@ -20,6 +20,7 @@ use crafttests\fixtures\GlobalSetFixture;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use TypeError;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -671,12 +672,6 @@ class ExtensionTest extends Unit
      */
     public function testGroupFilter()
     {
-        // deprecated element query
-        $this->testRenderResult(
-            TestSetup::USERNAME,
-            '{{ craft.users().id(1)|group("username")|keys|join(",") }}'
-        );
-
         $this->testRenderResult(
             TestSetup::USERNAME,
             '{{ craft.users().id(1).all()|group("username")|keys|join(",") }}'
@@ -688,7 +683,7 @@ class ExtensionTest extends Unit
         );
 
         // invalid value
-        self::expectException(RuntimeError::class);
+        self::expectException(TypeError::class);
         $this->view->renderString('{% do "foo"|group("bar") %}');
     }
 

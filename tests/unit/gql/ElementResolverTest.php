@@ -37,7 +37,6 @@ class ElementResolverTest extends Unit
                 ])
             ]
         );
-
     }
 
     protected function _after()

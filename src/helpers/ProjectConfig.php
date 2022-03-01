@@ -238,7 +238,7 @@ class ProjectConfig
      * @return mixed
      * @throws InvalidConfigException
      */
-    private static function _cleanupConfigValue($value)
+    private static function _cleanupConfigValue(mixed $value): mixed
     {
         // Only scalars, arrays and simple objects allowed.
         if ($value instanceof StdClass) {

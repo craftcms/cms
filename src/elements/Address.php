@@ -19,7 +19,6 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
-use craft\validators\RequiredFieldAddressValidator;
 use yii\base\InvalidConfigException;
 use yii\validators\RequiredValidator;
 
@@ -347,14 +346,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function getSortingCode(): ?string
     {
         return $this->sortingCode;
-    }
-
-    /**
-     * @param string|null $sortingCode
-     */
-    public function setSortingCode(?string $sortingCode): void
-    {
-        $this->_sortingCode = $sortingCode;
     }
 
     /**

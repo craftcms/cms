@@ -41,7 +41,7 @@ class GraphqlController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['api'];
+    protected array|bool|int $allowAnonymous = ['api'];
 
     /**
      * @inheritdoc
@@ -464,7 +464,7 @@ class GraphqlController extends Controller
         }
 
         if (!$gqlService->saveToken($token)) {
-            return $this->asError(
+            return $this->asFailure(
                 Craft::t('app', 'Couldn’t save token.'),
                 routeParams: [
                     'token' => $token,

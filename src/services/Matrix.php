@@ -1160,11 +1160,11 @@ SQL
     /**
      * Returns a block type record by its model or UID or creates a new one.
      *
-     * @param MatrixBlockType|string $blockType
+     * @param string|MatrixBlockType $blockType
      * @return MatrixBlockTypeRecord
      * @throws MatrixBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord($blockType): MatrixBlockTypeRecord
+    private function _getBlockTypeRecord(string|MatrixBlockType $blockType): MatrixBlockTypeRecord
     {
         if (is_string($blockType)) {
             $blockTypeRecord = MatrixBlockTypeRecord::findOne(['uid' => $blockType]) ?? new MatrixBlockTypeRecord();

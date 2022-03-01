@@ -25,9 +25,9 @@ use craft\services\Elements;
 class PropagateElements extends BaseJob
 {
     /**
-     * @var string|ElementInterface The element type that should be propagated
+     * @var string The element type that should be propagated
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var array|null The element criteria that determines which elements should be propagated
@@ -39,7 +39,7 @@ class PropagateElements extends BaseJob
      *
      * If this is `null`, then elements will be propagated to all supported sites, except the one they were queried in.
      */
-    public $siteId;
+    public array|int|null $siteId = null;
 
     /**
      * @inheritdoc

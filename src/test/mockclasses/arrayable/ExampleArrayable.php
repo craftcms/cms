@@ -17,19 +17,19 @@ use yii\base\ArrayableTrait;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0
  */
-class ExampleArrayble implements Arrayable
+class ExampleArrayable implements Arrayable
 {
     use ArrayableTrait;
 
     /**
      * @var string
      */
-    public $exampleArrayableParam;
+    public string $exampleArrayableParam;
 
     /**
      * @var string
      */
-    public $extraField;
+    public string $extraField;
 
     /**
      * @return array

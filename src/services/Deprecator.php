@@ -48,7 +48,7 @@ class Deprecator extends Component
      *
      * @since 3.0.7
      */
-    public $logTarget = 'db';
+    public string|false $logTarget = 'db';
 
     /**
      * @var DeprecationError[] The deprecation errors that were logged in the current request

@@ -149,7 +149,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_array($value) && isset($value['value'])) {
             $type = $value['type'] ?? self::TYPE_URL;
@@ -193,7 +193,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         if (is_string($value)) {
             $valueType = $this->_urlType($value);
@@ -322,7 +322,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return TextFieldConditionRule::class;
     }
@@ -330,7 +330,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';

@@ -20,5 +20,5 @@ class ReorderSitesEvent extends Event
     /**
      * @var int[] The site IDs in their new order
      */
-    public ?array $siteIds;
+    public ?array $siteIds = null;
 }

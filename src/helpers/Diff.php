@@ -157,7 +157,7 @@ class Diff
      * @return bool
      * @since 3.6.0
      */
-    public static function compare($a, $b, bool $strict = true): bool
+    public static function compare(mixed $a, mixed $b, bool $strict = true): bool
     {
         if (!is_array($a) || !is_array($b)) {
             return $strict ? $a === $b : $a == $b;

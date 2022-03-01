@@ -724,14 +724,11 @@ class FileHelper extends \yii\helpers\FileHelper
         $extension = reset($extensions);
 
         // Manually correct for some types.
-        switch ($extension) {
-            case 'svgz':
-                return 'svg';
-            case 'jpe':
-                return 'jpg';
-        }
-
-        return $extension;
+        return match ($extension) {
+            'svgz' => 'svg',
+            'jpe' => 'jpg',
+            default => $extension,
+        };
     }
 
     /**

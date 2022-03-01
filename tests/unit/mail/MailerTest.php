@@ -105,6 +105,7 @@ class MailerTest extends TestCase
         // Since the mock mailer simply stores the data, we won't trigger an exception until we try to unpack the message
         $this->tester->grabLastSentEmail()->toString();
     }
+
     /**
      *
      */

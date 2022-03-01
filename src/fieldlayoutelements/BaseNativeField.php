@@ -53,9 +53,9 @@ abstract class BaseNativeField extends BaseField
     public array $inputContainerAttributes = [];
 
     /**
-     * @var string|null The ID of the field label
+     * @var array HTML attributes for the field label
      */
-    public $labelAttributes = [];
+    public array $labelAttributes = [];
 
     /**
      * @var string|null The field’s orientation (`ltr` or `rtl`)
@@ -156,5 +156,3 @@ abstract class BaseNativeField extends BaseField
         return $this->translatable;
     }
 }
-
-class_alias(BaseNativeField::class, StandardField::class);

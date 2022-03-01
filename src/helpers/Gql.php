@@ -40,7 +40,7 @@ class Gql
      * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
      * @return bool
      */
-    public static function isSchemaAwareOf($components, ?GqlSchema $schema = null): bool
+    public static function isSchemaAwareOf(array|string $components, ?GqlSchema $schema = null): bool
     {
         try {
             $schema = static::_schema($schema);
@@ -279,7 +279,7 @@ class Gql
      * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
-    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null)
+    public static function getUnionType(string $typeName, array $includedTypes, ?callable $resolveFunction = null): mixed
     {
         if (!$resolveFunction) {
             $resolveFunction = function(ElementInterface $value) {
@@ -300,7 +300,7 @@ class Gql
      * @param $type
      * @return mixed
      */
-    public static function wrapInNonNull($type)
+    public static function wrapInNonNull($type): mixed
     {
         if ($type instanceof NonNull) {
             return $type;
@@ -356,7 +356,7 @@ class Gql
      * @param $value
      * @return mixed
      */
-    public static function applyDirectives($source, ResolveInfo $resolveInfo, $value)
+    public static function applyDirectives($source, ResolveInfo $resolveInfo, $value): mixed
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
@@ -388,7 +388,7 @@ class Gql
      * @return array|string
      * @since 3.5.3
      */
-    public static function prepareTransformArguments(array $arguments)
+    public static function prepareTransformArguments(array $arguments): array|string
     {
         unset($arguments['immediately']);
 
@@ -443,11 +443,11 @@ class Gql
     }
 
     /**
-     * @param ValueNode|VariableNode $value
+     * @param mixed $value
      * @param array $variableValues
      * @return mixed
      */
-    private static function _convertArgumentValue($value, array $variableValues = [])
+    private static function _convertArgumentValue(mixed $value, array $variableValues = []): mixed
     {
         if ($value instanceof VariableNode) {
             return $variableValues[$value->name->value];

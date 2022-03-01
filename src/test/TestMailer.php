@@ -7,7 +7,7 @@
 
 namespace craft\test;
 
-use Closure;
+use craft\elements\User;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use yii\mail\MessageInterface;
@@ -27,11 +27,11 @@ class TestMailer extends Mailer
     public $messageClass = Message::class;
 
     /**
-     * @var Closure
+     * @var callable
      */
     public $callback;
 
-    public $from = 'test@test.craft';
+    public User|string|array|null $from = 'test@test.craft';
 
     /**
      * @param $message

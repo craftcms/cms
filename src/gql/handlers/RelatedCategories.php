@@ -23,7 +23,7 @@ class RelatedCategories extends RelationArgumentHandler
     /**
      * @inheritdoc
      */
-    protected function handleArgument($argumentValue)
+    protected function handleArgument($argumentValue): mixed
     {
         $argumentValue = parent::handleArgument($argumentValue);
         return $this->getIds(Category::class, $argumentValue);

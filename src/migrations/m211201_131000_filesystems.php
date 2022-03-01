@@ -24,7 +24,7 @@ class m211201_131000_filesystems extends Migration
 
         $this->update(Table::VOLUMES, [
             'fs' => new Expression('[[handle]]'),
-        ], '', [], false);
+        ], updateTimestamp: false);
 
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres

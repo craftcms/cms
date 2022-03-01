@@ -34,7 +34,7 @@ class AddressQuery extends ElementQuery
      * @used-by owner()
      * @used-by ownerId()
      */
-    public $ownerId;
+    public mixed $ownerId = null;
 
     /**
      * @var string[]|string|null The address countryCode(s) that the resulting address must be in.
@@ -54,7 +54,7 @@ class AddressQuery extends ElementQuery
      * @used-by countryCode()
      * @used-by countryCode()
      */
-    public $countryCode;
+    public mixed $countryCode = null;
 
     /**
      * Sets the [[ownerId()]] parameter based on a given owner element.
@@ -117,7 +117,7 @@ class AddressQuery extends ElementQuery
      * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId($value): self
+    public function ownerId(array|int|null $value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -155,7 +155,7 @@ class AddressQuery extends ElementQuery
      * @return self self reference
      * @uses $countryCode
      */
-    public function countryCode($value): self
+    public function countryCode(array|string|null $value): self
     {
         $this->countryCode = $value;
 
