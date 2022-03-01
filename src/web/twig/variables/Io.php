@@ -22,7 +22,7 @@ class Io
      *
      * @return int|float
      */
-    public function getMaxUploadSize()
+    public function getMaxUploadSize(): float|int
     {
         return Assets::getMaxUploadSize();
     }

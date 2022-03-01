@@ -455,7 +455,7 @@ class DashboardController extends Controller
      * @param WidgetInterface $widget
      * @return array|false
      */
-    private function _getWidgetInfo(WidgetInterface $widget)
+    private function _getWidgetInfo(WidgetInterface $widget): array|false
     {
         $view = $this->getView();
 

@@ -122,7 +122,7 @@ class DbConfig extends BaseObject
      *
      * @since 3.7.27
      */
-    public $setSchemaOnConnect = false;
+    public bool $setSchemaOnConnect = false;
 
     /**
      * @var string|null If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
@@ -170,7 +170,7 @@ class DbConfig extends BaseObject
     /**
      * @var int|string The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public $port;
+    public string|int $port;
 
     /**
      * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of

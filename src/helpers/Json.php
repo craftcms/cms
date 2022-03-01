@@ -36,7 +36,7 @@ class Json extends \yii\helpers\Json
      * @param bool $asArray Whether to return objects in terms of associative arrays.
      * @return mixed The PHP data, or the given string if it wasn’t valid JSON.
      */
-    public static function decodeIfJson($str, bool $asArray = true)
+    public static function decodeIfJson(mixed $str, bool $asArray = true): mixed
     {
         try {
             return static::decode($str, $asArray);

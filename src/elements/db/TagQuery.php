@@ -63,7 +63,7 @@ class TagQuery extends ElementQuery
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @inheritdoc
@@ -110,7 +110,7 @@ class TagQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function group($value): self
+    public function group(mixed $value): self
     {
         if ($value instanceof TagGroup) {
             $this->groupId = [$value->id];
@@ -159,7 +159,7 @@ class TagQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value): self
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;

@@ -116,8 +116,6 @@ class AppHelperTest extends TestCase
 
         self::expectException(InvalidArgumentException::class);
         App::cliOption('no-dash');
-
-
     }
 
     /**

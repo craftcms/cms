@@ -10,8 +10,8 @@ namespace craftunit\gql;
 use Codeception\Test\Unit;
 use Craft;
 use craft\config\GeneralConfig;
-use craft\console\Application;
 use craft\elements\Asset;
+use craft\fs\Local;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
@@ -27,7 +27,6 @@ use craft\models\Volume;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
-use craft\fs\Local;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 

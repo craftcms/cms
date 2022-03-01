@@ -21,7 +21,7 @@ class DefineFieldKeywordsEvent extends Event
     /**
      * @var mixed The field’s value
      */
-    public $value;
+    public mixed $value = null;
 
     /**
      * @var ElementInterface $element The element

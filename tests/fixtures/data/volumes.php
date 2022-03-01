@@ -5,9 +5,6 @@
  * @license https://craftcms.github.io/license/
  */
 
-use craft\fs\Local;
-use crafttests\fixtures\VolumesFixture;
-
 return [
     'basic-volume' => [
         'id' => '1000',

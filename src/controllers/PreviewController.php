@@ -27,7 +27,7 @@ class PreviewController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 

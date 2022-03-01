@@ -102,10 +102,7 @@ class AssetsHelperTest extends Unit
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
         self::assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
-        self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
-
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = false;
         self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 

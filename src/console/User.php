@@ -24,7 +24,7 @@ class User extends Component
     /**
      * @var UserElement|IdentityInterface|false
      */
-    private $_identity = false;
+    private IdentityInterface|UserElement|false $_identity = false;
 
     /**
      * Returns whether the current user is an admin.
@@ -57,7 +57,7 @@ class User extends Component
      * @param bool $autoRenew
      * @return UserElement|null
      */
-    public function getIdentity(bool $autoRenew = true)
+    public function getIdentity(bool $autoRenew = true): bool|UserElement|IdentityInterface|null
     {
         return $this->_identity ?: null;
     }
@@ -100,6 +100,6 @@ class User extends Component
     {
         $identity = $this->getIdentity();
 
-        return $identity !== null ? $identity->getId() : null;
+        return $identity?->getId();
     }
 }

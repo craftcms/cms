@@ -292,7 +292,7 @@ class GeneralMutationResolverTest extends TestCase
             'normalizeValue' => $normalizer
         ]));
 
-        $query  = $this->make(EntryQuery::class, [
+        $query = $this->make(EntryQuery::class, [
             'one' => $entry
         ]);
 
@@ -333,7 +333,7 @@ class GeneralMutationResolverTest extends TestCase
                 ]
             ]
         ];
-        
+
         // Finally, do that ONE thing
         $mutationResolver->saveEntry(null, $arguments, null, $resolveInfo);
 

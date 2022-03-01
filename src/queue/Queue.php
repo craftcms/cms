@@ -44,13 +44,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * @var Connection|array|string The database connection to use
      * @since 3.4.0
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var Mutex|array|string The mutex component to use
      * @since 3.4.0
      */
-    public $mutex = 'mutex';
+    public Mutex|string|array $mutex = 'mutex';
 
     /**
      * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
@@ -422,7 +422,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function getTotalJobs()
+    public function getTotalJobs(): int
     {
         return $this->db->usePrimary(function() {
             return $this->_createJobQuery()
@@ -573,7 +573,7 @@ EOD;
             'ttr' => $ttr,
             'delay' => $delay,
             'priority' => $priority ?: 1024,
-        ], false, $this->db);
+        ], $this->db);
 
         return $this->db->getLastInsertID($this->tableName);
     }
@@ -628,7 +628,7 @@ EOD;
      * @param string|resource $job
      * @return string
      */
-    private function _jobData($job): string
+    private function _jobData(mixed $job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);
@@ -746,7 +746,7 @@ EOD;
      * @param array|false $payload
      * @return int
      */
-    private function _status($payload): int
+    private function _status(array|false $payload): int
     {
         if (!$payload) {
             return self::STATUS_DONE;

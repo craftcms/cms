@@ -46,7 +46,7 @@ class RecentEntries extends Widget
     /**
      * @var string|int[] The section IDs that the widget should pull entries from
      */
-    public $section = '*';
+    public string|array $section = '*';
 
     /**
      * @var int The total number of entries that the widget should show
@@ -210,7 +210,7 @@ class RecentEntries extends Widget
      *
      * @return string|false
      */
-    private function _getTargetSiteId()
+    private function _getTargetSiteId(): string|false
     {
         if (!Craft::$app->getIsMultiSite()) {
             return $this->siteId;

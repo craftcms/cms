@@ -23,7 +23,7 @@ class DefineGqlValidationRulesEvent extends Event
     public array $validationRules = [];
 
     /**
-     * @var array Whether debug rules should be allowed
+     * @var bool Whether debug rules should be allowed
      */
-    public $debug = false;
+    public bool $debug = false;
 }

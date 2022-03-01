@@ -19,6 +19,7 @@ use IntlException;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\base\Response as BaseResponse;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
@@ -67,7 +68,7 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?BaseResponse
     {
         if (!$this->getIsInstalled()) {
             [$firstSeg] = explode('/', $route, 2);

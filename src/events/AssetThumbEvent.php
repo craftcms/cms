@@ -44,5 +44,5 @@ class AssetThumbEvent extends Event
      * [[generate]] is `false`. Leave `null` if Craft’s thumbnail generation
      * should be used.
      */
-    public $path;
+    public string|false|null $path = null;
 }

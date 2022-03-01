@@ -72,7 +72,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param ElementInterface|null $element
      * @return mixed
      */
-    protected function value(?ElementInterface $element = null)
+    protected function value(?ElementInterface $element = null): mixed
     {
         return $element->{$this->attribute()} ?? null;
     }

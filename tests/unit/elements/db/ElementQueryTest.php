@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\elements\db;
 
-use craft\elements\db\ElementRelationParamParser;
 use craft\elements\Entry;
 use craft\test\TestCase;
 use yii\base\NotSupportedException;

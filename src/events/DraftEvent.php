@@ -37,15 +37,15 @@ class DraftEvent extends Event
     /**
      * @var string|null The draft name
      */
-    public ?string $draftName;
+    public ?string $draftName = null;
 
     /**
      * @var string|null The draft notes
      */
-    public ?string $draftNotes;
+    public ?string $draftNotes = null;
 
     /**
      * @var ElementInterface|DraftBehavior|null The draft associated with the event (if it exists yet)
      */
-    public $draft;
+    public ElementInterface|null $draft = null;
 }

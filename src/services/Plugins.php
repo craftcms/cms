@@ -136,7 +136,7 @@ class Plugins extends Component
     /**
      * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting
      */
-    private $_forceDisabledPlugins;
+    private string|array|null $_forceDisabledPlugins = null;
 
     /**
      * @var string[] Cache for [[getPluginHandleByClass()]]

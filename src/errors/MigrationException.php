@@ -27,7 +27,7 @@ class MigrationException extends Exception
     /**
      * @var string|null The migration output
      */
-    public ?string $output;
+    public ?string $output = null;
 
     /**
      * Constructor.

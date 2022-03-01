@@ -34,6 +34,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\di\Instance;
 
 /**
@@ -91,7 +92,7 @@ class ImageTransforms extends Component
     /**
      * @var Connection|array|string The database connection to use
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var MemoizableArray<ImageTransform>|null
@@ -102,7 +103,7 @@ class ImageTransforms extends Component
     /**
      * @var ImageTransformerInterface[]
      */
-    private $_imageTransformers = [];
+    private array $_imageTransformers = [];
 
     /**
      * Serializer
@@ -312,7 +313,7 @@ class ImageTransforms extends Component
      *
      * @param int $transformId The transform's ID
      * @return bool Whether the transform was deleted.
-     * @throws \yii\db\Exception on DB error
+     * @throws Exception on DB error
      */
     public function deleteTransformById(int $transformId): bool
     {
@@ -330,9 +331,8 @@ class ImageTransforms extends Component
      *
      * Note that passing an ID to this function is now deprecated. Use [[deleteTransformById()]] instead.
      *
-     * @param int|ImageTransform $transform The transform
+     * @param ImageTransform $transform The transform
      * @return bool Whether the transform was deleted
-     * @throws \yii\db\Exception on DB error
      */
     public function deleteTransform(ImageTransform $transform): bool
     {

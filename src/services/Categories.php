@@ -693,7 +693,7 @@ class Categories extends Component
      * @param array $criteria
      * @return Category|null
      */
-    public function getCategoryById(int $categoryId, $siteId = null, array $criteria = []): ?Category
+    public function getCategoryById(int $categoryId, mixed $siteId = null, array $criteria = []): ?Category
     {
         if (!$categoryId) {
             return null;

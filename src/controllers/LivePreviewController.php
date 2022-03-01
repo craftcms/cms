@@ -28,7 +28,7 @@ class LivePreviewController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['preview'];
+    protected array|bool|int $allowAnonymous = ['preview'];
 
     /**
      * @inheritdoc
@@ -85,7 +85,7 @@ class LivePreviewController extends Controller
      * @throws ServerErrorHttpException
      * @throws Exception
      */
-    public function actionPreview(string $previewAction, int $userId)
+    public function actionPreview(string $previewAction, int $userId): mixed
     {
         $this->requireToken();
 

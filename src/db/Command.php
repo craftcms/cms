@@ -10,6 +10,7 @@ namespace craft\db;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use DateTime;
+use yii\db\Query as YiiQuery;
 
 /**
  * @inheritdoc
@@ -21,134 +22,114 @@ class Command extends \yii\db\Command
 {
     /**
      * @inheritdoc
-     * @param string $table The table that new rows will be inserted into.
-     * @param array $columns The column data (name => value) to be inserted into the table.
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to `$columns`, if they exist on the table.
-     * @return static the command object itself
+     *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
      */
-    public function insert($table, $columns, bool $includeAuditColumns = true): Command
+    public function insert($table, $columns): Command
     {
-        if ($includeAuditColumns) {
-            $tableSchema = $this->db->getTableSchema($table);
+        if (!isset($columns['dateCreated']) && $this->db->columnExists($table, 'dateCreated')) {
             $now = Db::prepareDateForDb(new DateTime());
-
-            if (isset($tableSchema->columns['dateCreated']) && empty($columns['dateCreated'])) {
-                $columns['dateCreated'] = $now;
-            }
-            if (isset($tableSchema->columns['dateUpdated']) && empty($columns['dateUpdated'])) {
-                $columns['dateUpdated'] = $now;
-            }
-            if (isset($tableSchema->columns['uid']) && empty($columns['uid'])) {
-                $columns['uid'] = StringHelper::UUID();
-            }
+            $columns['dateCreated'] = $now;
         }
 
-        parent::insert($table, $columns);
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     * @param string $table The table that new rows will be inserted into.
-     * @param array $columns The column names.
-     * @param array $rows The rows to be batch inserted into the table.
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to `$columns`, if they exist on the table.
-     * @return static The command object itself.
-     */
-    public function batchInsert($table, $columns, $rows, bool $includeAuditColumns = true): Command
-    {
-        if (empty($rows)) {
-            return $this;
+        if (!isset($columns['dateUpdated']) && $this->db->columnExists($table, 'dateUpdated')) {
+            $columns['dateUpdated'] = $now ?? Db::prepareDateForDb(new DateTime());
         }
 
-        if ($includeAuditColumns) {
-            $tableSchema = $this->db->getTableSchema($table);
-            $hasDateCreated = isset($tableSchema->columns['dateCreated']);
-            $hasDateUpdated = isset($tableSchema->columns['dateUpdated']);
-            $hasUid = isset($tableSchema->columns['uid']);
-
-            if ($hasDateCreated || $hasDateUpdated || $hasUid) {
-                if ($hasDateCreated) {
-                    $columns[] = 'dateCreated';
-                }
-                if ($hasDateUpdated) {
-                    $columns[] = 'dateUpdated';
-                }
-                if ($hasUid) {
-                    $columns[] = 'uid';
-                }
-
-                $date = Db::prepareDateForDb(new DateTime());
-
-                foreach ($rows as &$row) {
-                    if ($hasDateCreated) {
-                        $row[] = $date;
-                    }
-                    if ($hasDateUpdated) {
-                        $row[] = $date;
-                    }
-                    if ($hasUid) {
-                        $row[] = StringHelper::UUID();
-                    }
-                }
-                unset($row);
-            }
+        if (!isset($columns['uid']) && $this->db->columnExists($table, 'uid')) {
+            $columns['uid'] = StringHelper::UUID();
         }
 
-        parent::batchInsert($table, $columns, $rows);
-
-        return $this;
+        return parent::insert($table, $columns);
     }
 
     /**
      * @inheritdoc
      *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
+     */
+    public function batchInsert($table, $columns, $rows): Command
+    {
+        if (empty($rows)) {
+            return $this;
+        }
+
+        if (!in_array('dateCreated', $columns) && $this->db->columnExists($table, 'dateCreated')) {
+            $columns[] = 'dateCreated';
+            $now = Db::prepareDateForDb(new DateTime());
+            foreach ($rows as &$row) {
+                $row[] = $now;
+            }
+        }
+
+        if (!in_array('dateUpdated', $columns) && $this->db->columnExists($table, 'dateUpdated')) {
+            $columns[] = 'dateUpdated';
+            $now = $now ?? Db::prepareDateForDb(new DateTime());
+            foreach ($rows as &$row) {
+                $row[] = $now;
+            }
+        }
+
+        if (!in_array('uid', $columns) && $this->db->columnExists($table, 'uid')) {
+            $columns[] = 'uid';
+            foreach ($rows as &$row) {
+                $row[] = StringHelper::UUID();
+            }
+        }
+
+        return parent::batchInsert($table, $columns, $rows);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * for new rows automatically, if not already set.
+     *
      * @param string $table the table that new rows will be inserted into/updated in.
-     * @param array|Query $insertColumns the column data (name => value) to be inserted into the table or instance
-     * of [[Query]] to perform `INSERT INTO ... SELECT` SQL statement.
+     * @param array|YiiQuery $insertColumns the column data (name => value) to be inserted into the table or instance
+     * of [[YiiQuery]] to perform `INSERT INTO ... SELECT` SQL statement.
      * @param array|bool $updateColumns the column data (name => value) to be updated if they already exist.
      * If `true` is passed, the column data will be updated to match the insert column data.
      * If `false` is passed, no update will be performed if the column data already exists.
      * @param array $params the parameters to be bound to the command.
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to `$columns`, if they exist on the table.
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated for existing rows, if the table has one.
      * @return $this the command object itself.
      */
-    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): Command
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $updateTimestamp = true): Command
     {
-        if ($updateColumns === true) {
-            $updateColumns = array_merge($insertColumns);
-        }
-
-        if ($includeAuditColumns) {
-            $tableSchema = $this->db->getTableSchema($table);
-            $now = Db::prepareDateForDb(new DateTime());
-
-            $defaultValues = [];
-
-            // Make a list of columns and default values
-            if (isset($tableSchema->columns['dateCreated'])) {
-                $defaultValues['dateCreated'] = $now;
-            }
-            if (isset($tableSchema->columns['dateUpdated'])) {
-                $defaultValues['dateUpdated'] = $now;
-            }
-            if (isset($tableSchema->columns['uid'])) {
-                $defaultValues['uid'] = StringHelper::UUID();
+        if (is_array($insertColumns)) {
+            if (!isset($insertColumns['dateCreated']) && $this->db->columnExists($table, 'dateCreated')) {
+                $now = Db::prepareDateForDb(new DateTime());
+                $insertColumns['dateCreated'] = $now;
             }
 
-            // Loop through default values and set the values, if no value exist.
-            foreach ($defaultValues as $column => $defaultValue) {
-                $insertColumns[$column] = $insertColumns[$column] ?? $defaultValue;
+            if (!isset($insertColumns['dateUpdated']) && $this->db->columnExists($table, 'dateUpdated')) {
+                $now = $now ?? Db::prepareDateForDb(new DateTime());
+                $insertColumns['dateUpdated'] = $now;
+            }
 
-                if ($updateColumns !== false) {
-                    $updateColumns[$column] = $updateColumns[$column] ?? $defaultValue;
+            if (!isset($insertColumns['uid']) && $this->db->columnExists($table, 'uid')) {
+                $insertColumns['uid'] = StringHelper::UUID();
+            }
+
+            if (
+                $updateColumns !== false &&
+                !isset($updateColumns['dateUpdated']) &&
+                $this->_updateTimestamp($updateTimestamp, $table)
+            ) {
+                if ($updateColumns === true) {
+                    $updateColumns = array_merge($insertColumns);
+                    unset($updateColumns['dateCreated'], $updateColumns['uid']);
                 }
+
+                $updateColumns['dateUpdated'] = $now ?? Db::prepareDateForDb(new DateTime());
             }
         }
 
-        parent::upsert($table, $insertColumns, $updateColumns, $params);
-        return $this;
+        return parent::upsert($table, $insertColumns, $updateColumns, $params);
     }
 
     /**
@@ -158,22 +139,28 @@ class Command extends \yii\db\Command
      * @param string|array $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
-     * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to `$columns`, if it exists on the table.
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated, if the table has one.
      * @return static The command object itself.
      */
-    public function update($table, $columns, $condition = '', $params = [], bool $includeAuditColumns = true): Command
+    public function update($table, $columns, $condition = '', $params = [], bool $updateTimestamp = true): Command
     {
-        if (
-            $includeAuditColumns &&
-            !isset($columns['dateUpdated']) &&
-            isset($this->db->getTableSchema($table)->columns['dateUpdated'])
-        ) {
+        if (!isset($columns['dateUpdated']) && $this->_updateTimestamp($updateTimestamp, $table)) {
             $columns['dateUpdated'] = Db::prepareDateForDb(new DateTime());
         }
 
-        parent::update($table, $columns, $condition, $params);
+        return parent::update($table, $columns, $condition, $params);
+    }
 
-        return $this;
+    /**
+     * Returns whether a table’s `dateUpdated` column should be updated.
+     *
+     * @param bool $updateTimestamp
+     * @param string $table
+     * @return bool
+     */
+    private function _updateTimestamp(bool $updateTimestamp, string $table): bool
+    {
+        return $updateTimestamp && $this->db->columnExists($table, 'dateUpdated');
     }
 
     /**
@@ -208,12 +195,12 @@ class Command extends \yii\db\Command
      * @param string $column The column to be searched.
      * @param string $find The text to be searched for.
      * @param string $replace The replacement text.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return Command The command object itself.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): Command
+    public function replace(string $table, string $column, string $find, string $replace, array|string $condition = '', array $params = []): Command
     {
         $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $condition, $params);
 
@@ -251,13 +238,13 @@ class Command extends \yii\db\Command
      * Creates a SQL statement for soft-deleting a row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
      * @since 3.1.0
      */
-    public function softDelete(string $table, $condition = '', array $params = []): Command
+    public function softDelete(string $table, array|string $condition = '', array $params = []): Command
     {
         return $this->update($table, [
             'dateDeleted' => Db::prepareDateForDb(new DateTime()),
@@ -268,13 +255,13 @@ class Command extends \yii\db\Command
      * Creates a SQL statement for restoring a soft-deleted row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
      * @since 3.1.0
      */
-    public function restore(string $table, $condition = '', array $params = []): Command
+    public function restore(string $table, array|string $condition = '', array $params = []): Command
     {
         return $this->update($table, [
             'dateDeleted' => null,

@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use Throwable;
 
 /**
  * SuspendUsers represents a Suspend Users element action.
@@ -85,7 +86,7 @@ JS;
         $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
             try {
                 return $usersService->canSuspend($currentUser, $user) && $usersService->suspendUser($user);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 return false;
             }
         }));

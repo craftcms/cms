@@ -26,12 +26,12 @@ class MoneyValidator extends Validator
     /**
      * @var int|float|null
      */
-    public $max;
+    public int|null|float $max = null;
 
     /**
      * @var int|float|null
      */
-    public $min;
+    public int|null|float $min = null;
 
     /**
      * @inheritdoc

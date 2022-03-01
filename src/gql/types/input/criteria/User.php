@@ -22,7 +22,7 @@ class User extends InputObjectType
     /**
      * @return mixed
      */
-    public static function getType()
+    public static function getType(): mixed
     {
         $typeName = 'UserCriteriaInput';
 

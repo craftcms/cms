@@ -53,7 +53,7 @@ abstract class Controller extends \yii\web\Controller
      * - An array of action ID/bitwise pairs (e.g. `['save-guest-entry' => self::ALLOW_ANONYMOUS_OFFLINE]` – indicates
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
     /**
      * @inheritdoc
@@ -278,6 +278,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
+     * @param array $routeParams Additional route params that should be set for the next controller action
      * @return YiiResponse|null
      * @since 4.0.0
      */
@@ -311,7 +312,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
      * @param string|null $redirect The default URL to redirect the request
-     * @return YiiResponse|null
+     * @return YiiResponse
      * @since 4.0.0
      */
     public function asModelSuccess(
@@ -570,7 +571,7 @@ abstract class Controller extends \yii\web\Controller
      * @see YiiResponse::FORMAT_JSONP
      * @see JsonResponseFormatter
      */
-    public function asJsonP($data): YiiResponse
+    public function asJsonP(mixed $data): YiiResponse
     {
         $this->response->data = $data;
         $this->response->format = YiiResponse::FORMAT_JSONP;
@@ -586,7 +587,7 @@ abstract class Controller extends \yii\web\Controller
      * @see YiiResponse::$format
      * @see YiiResponse::FORMAT_RAW
      */
-    public function asRaw($data): YiiResponse
+    public function asRaw(mixed $data): YiiResponse
     {
         $this->response->data = $data;
         $this->response->format = YiiResponse::FORMAT_RAW;

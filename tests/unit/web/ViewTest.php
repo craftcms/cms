@@ -12,7 +12,7 @@ use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\Json;
 use craft\test\Craft as CraftTest;
-use craft\test\mockclasses\arrayable\ExampleArrayble;
+use craft\test\mockclasses\arrayable\ExampleArrayable;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
@@ -523,7 +523,7 @@ TWIG;
         $model = new ExampleModel();
         $model->exampleParam = 'Example Param';
 
-        $arrayable = new ExampleArrayble();
+        $arrayable = new ExampleArrayable();
         $arrayable->exampleArrayableParam = 'Example param';
         $arrayable->extraField = 'ExtraField';
 

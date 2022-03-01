@@ -20,12 +20,12 @@ class OptionData implements Serializable
     /**
      * @var string|null
      */
-    public ?string $label;
+    public ?string $label = null;
 
     /**
      * @var string|null
      */
-    public ?string $value;
+    public ?string $value = null;
 
     /**
      * @var bool
@@ -65,7 +65,7 @@ class OptionData implements Serializable
     /**
      * @inheritdoc
      */
-    public function serialize()
+    public function serialize(): mixed
     {
         return $this->value;
     }

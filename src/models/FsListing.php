@@ -97,7 +97,7 @@ class FsListing extends Model
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getDateModified(): ?int
     {

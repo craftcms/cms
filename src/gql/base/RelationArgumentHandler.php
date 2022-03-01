@@ -86,7 +86,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
     /**
      * @inheritdoc
      */
-    protected function handleArgument($argumentValue)
+    protected function handleArgument($argumentValue): mixed
     {
         // Recursively parse nested arguments.
         if (ArrayHelper::isAssociative($argumentValue)) {

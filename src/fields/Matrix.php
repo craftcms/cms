@@ -265,9 +265,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * Sets the block types.
      *
-     * @param MatrixBlockType|array $blockTypes The block type settings or actual MatrixBlockType model instances
+     * @param array|MatrixBlockType $blockTypes The block type settings or actual MatrixBlockType model instances
      */
-    public function setBlockTypes($blockTypes): void
+    public function setBlockTypes(array|MatrixBlockType $blockTypes): void
     {
         $this->_blockTypes = [];
         $defaultFieldConfig = [
@@ -488,7 +488,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
@@ -544,7 +544,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         /** @var MatrixBlockQuery $value */
         $serialized = [];
@@ -574,7 +574,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         /** @var ElementQuery $query */
         if ($value === null) {
@@ -661,10 +661,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle);
+            $value = $element->getEagerLoadedElements($this->handle)->all();
         }
 
         if ($value instanceof MatrixBlockQuery) {
@@ -753,7 +753,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var MatrixBlockQuery $value */
         return $value->count() === 0;
@@ -819,7 +819,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var MatrixBlockQuery $value */
         /** @var MatrixBlock $block */
@@ -841,7 +841,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var MatrixBlockQuery $value */
         $value = $value->all();
@@ -866,7 +866,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap(array $sourceElements)
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
         // Get the source element IDs
         $sourceElementIds = [];
@@ -906,7 +906,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         $typeArray = MatrixBlockTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_MatrixField';
@@ -924,7 +924,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return MatrixInputType::getType($this);
     }

@@ -62,7 +62,7 @@ class EntriesController extends BaseEntriesController
         $sitesService = Craft::$app->getSites();
 
         if (!in_array($site->id, $editableSiteIds)) {
-            // If there's more than one possibility and entries doen’t propagate to all sites, let the user choose
+            // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
                 return $this->renderTemplate('_special/sitepicker', [
                     'siteIds' => $editableSiteIds,

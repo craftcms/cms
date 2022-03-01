@@ -466,7 +466,7 @@ class Sites extends Component
      * @param Site|string|int|null $site the current site, or its handle/ID, or null
      * @throws InvalidArgumentException if $site is invalid
      */
-    public function setCurrentSite($site): void
+    public function setCurrentSite(mixed $site): void
     {
         // In case this was called from the constructor...
         $this->_loadAllSites();
@@ -1210,7 +1210,7 @@ class Sites extends Component
      * @param bool $withTrashed Whether to include trashed site groups in search
      * @return SiteGroupRecord
      */
-    private function _getGroupRecord($criteria, bool $withTrashed = false): SiteGroupRecord
+    private function _getGroupRecord(mixed $criteria, bool $withTrashed = false): SiteGroupRecord
     {
         $query = $withTrashed ? SiteGroupRecord::findWithTrashed() : SiteGroupRecord::find();
         if (is_numeric($criteria)) {
@@ -1249,7 +1249,7 @@ class Sites extends Component
      * @param bool $withTrashed Whether to include trashed sites in search
      * @return SiteRecord
      */
-    private function _getSiteRecord($criteria, bool $withTrashed = false): SiteRecord
+    private function _getSiteRecord(mixed $criteria, bool $withTrashed = false): SiteRecord
     {
         $query = $withTrashed ? SiteRecord::findWithTrashed() : SiteRecord::find();
         if (is_numeric($criteria)) {

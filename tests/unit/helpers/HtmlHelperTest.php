@@ -262,20 +262,32 @@ class HtmlHelperTest extends Unit
     public function parseTagDataProvider(): array
     {
         return [
-            [['p', ['class' => ['foo']], [
-                ['text', 'Hello'],
-                ['br', [], []],
-                ['text', 'there'],
-            ]], '<p class="foo">Hello<br>there</p>'],
-            [['div', [], [
-                ['div', [], [['text', 'Nested']]],
-            ]], '<div><div>Nested</div></div>'],
+            [
+                [
+                    'p', ['class' => ['foo']], [
+                    ['text', 'Hello'],
+                    ['br', [], []],
+                    ['text', 'there'],
+                ]
+                ], '<p class="foo">Hello<br>there</p>'
+            ],
+            [
+                [
+                    'div', [], [
+                    ['div', [], [['text', 'Nested']]],
+                ]
+                ], '<div><div>Nested</div></div>'
+            ],
             [['br', [], []], '<br>'],
             [['br', [], []], '<br />'],
             [['div', [], []], '<div />'],
-            [['script', ['type' => 'text/javascript'], [
-                ['text', "var \$p = $('<p>Hello</p>');\n"],
-            ]], "<script type=\"text/javascript\">var \$p = $('<p>Hello</p>');\n</script>"],
+            [
+                [
+                    'script', ['type' => 'text/javascript'], [
+                    ['text', "var \$p = $('<p>Hello</p>');\n"],
+                ]
+                ], "<script type=\"text/javascript\">var \$p = $('<p>Hello</p>');\n</script>"
+            ],
             [false, '<div>'],
         ];
     }

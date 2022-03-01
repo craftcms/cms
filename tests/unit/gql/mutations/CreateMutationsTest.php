@@ -26,7 +26,6 @@ use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\TagGroup;
-use craft\fs\Local;
 use craft\models\Volume;
 
 class CreateMutationsTest extends Unit
@@ -76,7 +75,6 @@ class CreateMutationsTest extends Unit
                 ])
             ]
         ]);
-
     }
 
     protected function _after()
@@ -92,42 +90,42 @@ class CreateMutationsTest extends Unit
      * @dataProvider assetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateAssetMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateAssetMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = AssetMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = AssetMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given volume has expected arguments and returns a certain type
      */
-   public function testCreateAssetSaveMutation()
-   {
-       $volume = $this->make(Volume::class, [
-               '__call' => function($name, $args) {
-                   return [
-                       new Number(['handle' => 'someNumberField']),
-                   ];
-               }
-           ]
-       );
+    public function testCreateAssetSaveMutation()
+    {
+        $volume = $this->make(Volume::class, [
+                '__call' => function($name, $args) {
+                    return [
+                        new Number(['handle' => 'someNumberField']),
+                    ];
+                }
+            ]
+        );
 
-       $mutation = AssetMutations::createSaveMutation($volume);
+        $mutation = AssetMutations::createSaveMutation($volume);
 
-       self::assertInstanceOf(AssetGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someNumberField', $mutation['args']);
-       self::assertArrayHasKey('id', $mutation['args']);
-       self::assertArrayHasKey('_file', $mutation['args']);
-   }
+        self::assertInstanceOf(AssetGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someNumberField', $mutation['args']);
+        self::assertArrayHasKey('id', $mutation['args']);
+        self::assertArrayHasKey('_file', $mutation['args']);
+    }
 
     /**
      * For a list of scopes, test whether the right Category mutations are created.
@@ -138,42 +136,42 @@ class CreateMutationsTest extends Unit
      * @dataProvider categoryMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateCategoryMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateCategoryMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = CategoryMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = CategoryMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given category group has expected arguments and returns a certain type
      */
-   public function testCreateCategorySaveMutation()
-   {
-       $categoryGroup = $this->make(CategoryGroup::class, [
-               '__call' => function($name, $args) {
-                   return [
-                       new PlainText(['handle' => 'someTextField']),
-                   ];
-               }
-           ]
-       );
+    public function testCreateCategorySaveMutation()
+    {
+        $categoryGroup = $this->make(CategoryGroup::class, [
+                '__call' => function($name, $args) {
+                    return [
+                        new PlainText(['handle' => 'someTextField']),
+                    ];
+                }
+            ]
+        );
 
-       $mutation = CategoryMutations::createSaveMutation($categoryGroup);
+        $mutation = CategoryMutations::createSaveMutation($categoryGroup);
 
-       self::assertInstanceOf(CategoryGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someTextField', $mutation['args']);
-       self::assertArrayHasKey('prependToRoot', $mutation['args']);
-       self::assertArrayHasKey('title', $mutation['args']);
-   }
+        self::assertInstanceOf(CategoryGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someTextField', $mutation['args']);
+        self::assertArrayHasKey('prependToRoot', $mutation['args']);
+        self::assertArrayHasKey('title', $mutation['args']);
+    }
 
     /**
      * For a list of scopes, test whether the right Tag mutations are created.
@@ -184,41 +182,41 @@ class CreateMutationsTest extends Unit
      * @dataProvider tagMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateTagMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateTagMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = TagMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = TagMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given tag group has expected arguments and returns a certain type
      */
-   public function testCreateTagSaveMutation()
-   {
-       $tagGroup = $this->make(TagGroup::class, [
-               '__call' => function($name, $args) {
-                   return [
-                       new PlainText(['handle' => 'someTextField']),
-                   ];
-               }
-           ]
-       );
+    public function testCreateTagSaveMutation()
+    {
+        $tagGroup = $this->make(TagGroup::class, [
+                '__call' => function($name, $args) {
+                    return [
+                        new PlainText(['handle' => 'someTextField']),
+                    ];
+                }
+            ]
+        );
 
-       $mutation = TagMutations::createSaveMutation($tagGroup);
+        $mutation = TagMutations::createSaveMutation($tagGroup);
 
-       self::assertInstanceOf(TagGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someTextField', $mutation['args']);
-       self::assertArrayHasKey('uid', $mutation['args']);
-   }
+        self::assertInstanceOf(TagGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someTextField', $mutation['args']);
+        self::assertArrayHasKey('uid', $mutation['args']);
+    }
 
     /**
      * For a list of scopes, test whether the right global set mutations are created.
@@ -229,41 +227,41 @@ class CreateMutationsTest extends Unit
      * @dataProvider globalSetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateGlobalSetMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateGlobalSetMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = GlobalSetMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = GlobalSetMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given global set has expected arguments and returns a certain type
      */
-   public function testCreateGlobalSetSaveMutation()
-   {
-       $globalSet = $this->make(GlobalSet::class, [
-               '__call' => function($name, $args) {
-                   return [
-                       new PlainText(['handle' => 'someTextField']),
-                   ];
-               }
-           ]
-       );
+    public function testCreateGlobalSetSaveMutation()
+    {
+        $globalSet = $this->make(GlobalSet::class, [
+                '__call' => function($name, $args) {
+                    return [
+                        new PlainText(['handle' => 'someTextField']),
+                    ];
+                }
+            ]
+        );
 
-       $mutation = GlobalSetMutations::createSaveMutation($globalSet);
+        $mutation = GlobalSetMutations::createSaveMutation($globalSet);
 
-       self::assertInstanceOf(GlobalSetGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someTextField', $mutation['args']);
-       self::assertArrayNotHasKey('uid', $mutation['args']);
-   }
+        self::assertInstanceOf(GlobalSetGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someTextField', $mutation['args']);
+        self::assertArrayNotHasKey('uid', $mutation['args']);
+    }
 
 
     /**
