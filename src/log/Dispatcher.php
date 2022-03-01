@@ -31,7 +31,7 @@ class Dispatcher extends \yii\log\Dispatcher
      * @var array Config to pass to each MonologTarget
      * @since 4.0.0
      */
-    public array $targetConfig = [];
+    public array $monologTargetConfig = [];
 
     /**
      * @inheritdoc
@@ -64,7 +64,7 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
-            $config = array_merge($this->targetConfig, [
+            $config = array_merge($this->monologTargetConfig, [
                 'name' => $name,
                 'enabled' => false,
             ]);
