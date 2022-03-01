@@ -16,6 +16,7 @@
 - Fixed a bug where moving files and folders from the Assets index page wouldn’t ever resolve properly if there was an unexpected server error.
 - Fixed a bug where disclosure menus could be shorter than their contents. ([#10639](https://github.com/craftcms/cms/issues/10639))
 - Fixed potential race conditions that could result in old project config data getting cached. ([#7795](https://github.com/craftcms/cms/issues/7795))
+- Fixed a bug where project config rebuild could sometimes result in equivalent but not equal data set. ([#10512](https://github.com/craftcms/cms/issues/10512))
 
 ## 3.7.34 - 2022-02-22
 
