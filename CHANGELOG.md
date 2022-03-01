@@ -7,6 +7,7 @@
 - Added `craft\errors\StaleResourceException`.
 
 ### Changed
+- Improved Live Preview accessibility. ([#7476](https://github.com/craftcms/cms/issues/7476))
 - The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
 
 ### Fixed
