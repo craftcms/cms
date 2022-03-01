@@ -63,7 +63,14 @@
             },
         },
     }) }}
-    <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
+    {{ tag('button', {
+        role: 'button',
+        class: 'clear hidden',
+        title: 'Clear {label}'|t('app', { label: 'Search'|t('app') }),
+        aria: {
+            label: 'Clear {label}'|t('app', { label: 'Search'|t('app') }),
+        }
+    }) }}
 </div>
 <div>
     <label id="{{ idPrefix }}sort-by-label" class="visually-hidden">{{ 'Sort by'|t('app') }}</label>

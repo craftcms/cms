@@ -255,6 +255,7 @@ return [
     'Clear all' => 'Clear all',
     'Clear caches' => 'Clear caches',
     'Clear' => 'Clear',
+    'Clear {label}' => 'Clear {label}',
     'Clearing cache:' => 'Clearing cache:',
     'Close Preview' => 'Close Preview',
     'Close' => 'Close',

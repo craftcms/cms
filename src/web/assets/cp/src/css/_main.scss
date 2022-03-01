@@ -64,6 +64,8 @@
   --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)), 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+
+  --button-size: 34px; /* Minimum recommended touch target size */
 }
 
 body,
@@ -704,7 +706,8 @@ td.right {
 .clear {
   display: block;
   clear: both;
-  height: 0;
+  height: var(--button-size);
+  width: var(--button-size);
 }
 
 .fullwidth {
@@ -5303,13 +5306,13 @@ body.reduce-focus-visibility {
   }
 
   &.clearable .text {
-    @include padding-right(22px);
+    @include padding-right(var(--touch-target-size));
   }
 
   .clear {
     position: absolute;
-    top: 6px;
-    @include right(9px);
+    top: 0px;
+    @include right(0);
     color: var(--ui-control-color);
     cursor: pointer;
 
