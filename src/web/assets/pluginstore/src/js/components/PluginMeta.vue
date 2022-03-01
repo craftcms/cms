@@ -142,7 +142,7 @@
           {{ "Last release"|t('app') }}
         </template>
         <template #content>
-
+          {{ plugin.lastUpdate | formatDate }}
         </template>
       </meta-stat>
 
