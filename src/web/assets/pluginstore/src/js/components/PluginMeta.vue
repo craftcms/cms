@@ -176,13 +176,15 @@
         </template>
       </meta-stat>
 
-      <!-- Activity -->
+      <!-- TODO: Enable GitHub Activity -->
+      <!--
       <github-activity
         :closed-issues="plugin.githubStats.closedIssues"
         :new-issues="plugin.githubStats.newIssues"
         :merged-pull-requests="plugin.githubStats.mergedPullRequests"
         :open-pull-requests="plugin.githubStats.openPullRequests"
       />
+      -->
 
       <!-- Report an issue -->
       <ul class="tw-list-reset tw-space-y-2 tw-mt-8">
@@ -209,13 +211,13 @@ import MetaStat from './MetaStat';
 import PluginMetaBuyButton from './PluginMetaBuyButton';
 import {mapState} from 'vuex';
 import ComposerInstall from './ComposerInstall';
-import GithubActivity from './github-activity/GithubActivity';
+// import GithubActivity from './github-activity/GithubActivity';
 // import ActiveInstalls from './ActiveInstalls';
 
 export default {
   components: {
     // ActiveInstalls,
-    GithubActivity,
+    // GithubActivity,
     ComposerInstall,
     PluginMetaBuyButton,
     MetaStat
