@@ -47,6 +47,8 @@ class Temp extends Local
         if ($this->name === null) {
             $this->name = Craft::t('app', 'Temporary source');
         }
+
+        $this->uid = 'temp-volume';
     }
 
     /**

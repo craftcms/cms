@@ -11,7 +11,9 @@ use Craft;
 use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
 
-Craft::$app->requireEdition(Craft::Pro);
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
+    Craft::$app->requireEdition(Craft::Pro);
+}
 
 /**
  * User group functions.

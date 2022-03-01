@@ -51,11 +51,11 @@ use yii\web\UnauthorizedHttpException;
  * @property Session $session The session component
  * @property UrlManager $urlManager The URL manager for this application
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method \craft\web\Response getResponse()     Returns the response component.
- * @method Session getSession()      Returns the session component.
- * @method UrlManager getUrlManager()   Returns the URL manager for this application.
- * @method User getUser()         Returns the user component.
+ * @method Request getRequest() Returns the request component.
+ * @method \craft\web\Response getResponse() Returns the response component.
+ * @method Session getSession() Returns the session component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
+ * @method User getUser() Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

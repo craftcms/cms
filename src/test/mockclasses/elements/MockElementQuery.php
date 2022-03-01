@@ -12,7 +12,7 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
 
 /**
- * MockElementQuery is used to mimic element query and help mocking element query results.
+ * MockElementQuery is used to mimic element queries and mock their results
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.5

@@ -3,12 +3,34 @@
 ## Unreleased
 
 ### Added
+- Added `craft\errors\BusyResourceException`.
+- Added `craft\errors\StaleResourceException`.
+
+### Changed
+- Improved Live Preview accessibility. ([#7476](https://github.com/craftcms/cms/issues/7476))
+- The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
+
+### Fixed
+- Fixed an error that occurred when initializing an element with custom field values that weren’t included in its field layout. ([#10622](https://github.com/craftcms/cms/issues/10622))
+- Fixed a PHP 8 compatibility bug.
+- Fixed a bug where drafts weren’t getting propagated when a section was enabled for new sites. ([#10634](https://github.com/craftcms/cms/issues/10634))
+- Fixed a bug where moving files and folders from the Assets index page wouldn’t ever resolve properly if there was an unexpected server error.
+- Fixed a bug where disclosure menus could be shorter than their contents. ([#10639](https://github.com/craftcms/cms/issues/10639))
+- Fixed potential race conditions that could result in old project config data getting cached. ([#7795](https://github.com/craftcms/cms/issues/7795))
+- Fixed a bug where project config rebuild could sometimes result in equivalent but not equal data set. ([#10512](https://github.com/craftcms/cms/issues/10512))
+
+## 3.7.34 - 2022-02-22
+
+### Added
 - Added `craft\helpers\App::phpConfigValueAsPaths()`.
 - Added `craft\helpers\App::normalizePhpPaths()`.
 - Added `craft\helpers\App::isPathAllowed()`.
 
 ### Changed
 - Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+- Craft no longer attempts to write a license key file when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer attempts to write project config YAML files when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer publishes asset bundles when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
 
 ### Fixed
 - Fixed a bug where Date fields weren’t displaying properly.
@@ -17,6 +39,8 @@
 - Fixed a bug where Matrix action menus were causing horizontal scrollbars within Live Preview. ([#10601](https://github.com/craftcms/cms/issues/10601))
 - Fixed a PHP warning that would occur when running Craft in Dev Mode, if the `open_basedir` PHP setting was set. ([#10581](https://github.com/craftcms/cms/issues/10581))
 - Fixed a bug where the “View” button on Edit Category pages wasn’t getting linked to a tokenized preview page for disabled sites.
+- Fixed a bug where asset subfolder toggles weren’t visible when their source was focused. ([#10617](https://github.com/craftcms/cms/issues/10617))
+- Fixed a bug where Live Preview would close when the <kbd>Esc</kbd> key was pressed, when a modal window was open. ([#10623](https://github.com/craftcms/cms/issues/10623))
 
 ### Security
 - Craft now HTML-encodes user’ names in the default system email messages.
