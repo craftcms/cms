@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.35 - 2022-03-01
 
 ### Added
 - Added `craft\errors\BusyResourceException`.
