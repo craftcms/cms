@@ -10,7 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
+use craft\errors\StaleResourceException;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -261,7 +263,12 @@ class AppController extends Controller
 
             // Sync project.yaml?
             if ($applyProjectConfigChanges) {
-                $projectConfigService->applyYamlChanges();
+                try {
+                    $projectConfigService->applyYamlChanges();
+                } catch (BusyResourceException|StaleResourceException $e) {
+                    Craft::$app->getErrorHandler()->logException($e);
+                    Craft::warning("Couldn’t apply project config YAML changes: {$e->getMessage()}", __METHOD__);
+                }
             }
 
             $transaction->commit();

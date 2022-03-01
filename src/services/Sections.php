@@ -739,6 +739,8 @@ class Sections extends Component
                             'preferSites' => [Craft::$app->getSites()->getPrimarySite()->id],
                             'unique' => true,
                             'status' => null,
+                            'drafts' => null,
+                            'provisionalDrafts' => null,
                         ],
                         'updateSearchIndex' => $hasNewSite,
                     ]));

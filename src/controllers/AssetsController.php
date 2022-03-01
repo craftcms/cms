@@ -275,8 +275,8 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('No file was uploaded');
         }
 
-        $folderId = $this->request->getBodyParam('folderId');
-        $fieldId = $this->request->getBodyParam('fieldId');
+        $folderId = (int)$this->request->getBodyParam('folderId') ?: null;
+        $fieldId = (int)$this->request->getBodyParam('fieldId') ?: null;
 
         if (!$folderId && !$fieldId) {
             throw new BadRequestHttpException('No target destination provided for uploading');

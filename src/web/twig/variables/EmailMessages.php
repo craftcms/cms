@@ -10,7 +10,9 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\models\SystemMessage;
 
-Craft::$app->requireEdition(Craft::Pro);
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
+    Craft::$app->requireEdition(Craft::Pro);
+}
 
 /**
  * Email functions.

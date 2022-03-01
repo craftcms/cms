@@ -1,5 +1,24 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.35 - 2022-03-01
+
+### Added
+- Added `craft\errors\BusyResourceException`.
+- Added `craft\errors\StaleResourceException`.
+
+### Changed
+- Improved Live Preview accessibility. ([#7476](https://github.com/craftcms/cms/issues/7476))
+- The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
+
+### Fixed
+- Fixed an error that occurred when initializing an element with custom field values that weren’t included in its field layout. ([#10622](https://github.com/craftcms/cms/issues/10622))
+- Fixed a PHP 8 compatibility bug.
+- Fixed a bug where drafts weren’t getting propagated when a section was enabled for new sites. ([#10634](https://github.com/craftcms/cms/issues/10634))
+- Fixed a bug where moving files and folders from the Assets index page wouldn’t ever resolve properly if there was an unexpected server error.
+- Fixed a bug where disclosure menus could be shorter than their contents. ([#10639](https://github.com/craftcms/cms/issues/10639))
+- Fixed potential race conditions that could result in old project config data getting cached. ([#7795](https://github.com/craftcms/cms/issues/7795))
+- Fixed a bug where numerically-indexed array keys weren’t always consecutive after the project config was rebuilt. ([#10512](https://github.com/craftcms/cms/issues/10512))
+
 ## 3.7.34 - 2022-02-22
 
 ### Added

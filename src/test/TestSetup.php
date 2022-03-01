@@ -281,8 +281,7 @@ class TestSetup
     }
 
     /**
-     * Determine the app type. If the parent is `craft\test\console\ConsoleTest`.
-     * Its a console test. Else, web.
+     * Determine the app type (console or web).
      *
      * @return string
      */
