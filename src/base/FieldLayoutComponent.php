@@ -107,7 +107,7 @@ abstract class FieldLayoutComponent extends Model
      *
      * @param UserCondition|string|array{class: string}|null $userCondition
      */
-    public function setUserCondition($userCondition): void
+    public function setUserCondition(mixed $userCondition): void
     {
         $this->_userCondition = $this->_normalizeCondition($userCondition);
     }
@@ -127,7 +127,7 @@ abstract class FieldLayoutComponent extends Model
      *
      * @param ElementConditionInterface|string|array{class: string}|null $elementCondition
      */
-    public function setElementCondition($elementCondition): void
+    public function setElementCondition(mixed $elementCondition): void
     {
         $this->_elementCondition = $this->_normalizeCondition($elementCondition);
     }
@@ -138,7 +138,7 @@ abstract class FieldLayoutComponent extends Model
      * @param ConditionInterface|string|array{class: string}|null $condition
      * @return ConditionInterface|null
      */
-    private function _normalizeCondition($condition): ?ConditionInterface
+    private function _normalizeCondition(mixed $condition): ?ConditionInterface
     {
         if ($condition !== null) {
             if (!$condition instanceof ConditionInterface) {

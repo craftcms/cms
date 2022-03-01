@@ -9,17 +9,6 @@ namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\db\ActiveRecord;
-use craft\helpers\StringHelper;
-use craft\records\Session;
-use craft\records\Volume;
-use craft\test\mockclasses\serializable\Serializable;
-use craft\fs\Local;
-use DateTime;
-use DateTimeZone;
-use Exception;
-use stdClass;
-use UnitTester;
 use yii\db\Schema;
 
 /**

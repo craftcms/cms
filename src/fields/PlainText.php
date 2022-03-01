@@ -201,7 +201,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value !== null) {
             $value = LitEmoji::shortcodeToUnicode($value);
@@ -214,7 +214,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input', [
             'id' => $this->getInputId(),
@@ -242,7 +242,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value !== null) {
             $value = LitEmoji::unicodeToShortcode($value);
@@ -253,7 +253,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         $value = (string)$value;
         return LitEmoji::unicodeToShortcode($value);

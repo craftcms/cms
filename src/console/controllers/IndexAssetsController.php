@@ -183,7 +183,7 @@ class IndexAssetsController extends Controller
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     continue;
-                } catch (AssetDisallowedExtensionException | AssetNotIndexableException $e) {
+                } catch (AssetDisallowedExtensionException|AssetNotIndexableException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 } catch (Throwable $e) {

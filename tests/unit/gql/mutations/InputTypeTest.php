@@ -134,85 +134,91 @@ class InputTypeTest extends Unit
     {
         return [
             [
-                ['blocks' =>
-                    [
-                        ['blockType' => ['id' => 2, 'one', 'two']],
-                        ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']]
-                    ]
+                [
+                    'blocks' =>
+                        [
+                            ['blockType' => ['id' => 2, 'one', 'two']],
+                            ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']]
+                        ]
                 ],
-                ['blocks' =>
-                    [
-                        2 => [
-                            'type' => 'blockType',
-                            'fields' => [
-                                'one',
-                                'two'
-                            ]
-                        ],
-                        'new:1' => [
-                            'type' => 'blockTypeA',
-                            'fields' => [
-                                'snap' => 1,
-                                'crackle' => 2,
-                                'pop' => 3
+                [
+                    'blocks' =>
+                        [
+                            2 => [
+                                'type' => 'blockType',
+                                'fields' => [
+                                    'one',
+                                    'two'
+                                ]
+                            ],
+                            'new:1' => [
+                                'type' => 'blockTypeA',
+                                'fields' => [
+                                    'snap' => 1,
+                                    'crackle' => 2,
+                                    'pop' => 3
+                                ]
                             ]
                         ]
-                    ]
                 ],
             ],
             [
-                ['blocks' =>
-                    [
-                        ['blockType' => ['id' => 2, 'one', 'two']],
-                        ['blockTypeB' => ['id' => 88, 'stuff' => 'ok'], 'blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3]]
-                    ]
+                [
+                    'blocks' =>
+                        [
+                            ['blockType' => ['id' => 2, 'one', 'two']],
+                            ['blockTypeB' => ['id' => 88, 'stuff' => 'ok'], 'blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3]]
+                        ]
                 ],
-                ['blocks' =>
-                    [
-                        2 => [
-                            'type' => 'blockType',
-                            'fields' => [
-                                'one',
-                                'two'
-                            ]
-                        ],
-                        88 => [
-                            'type' => 'blockTypeB',
-                            'fields' => [
-                                'stuff' => 'ok',
+                [
+                    'blocks' =>
+                        [
+                            2 => [
+                                'type' => 'blockType',
+                                'fields' => [
+                                    'one',
+                                    'two'
+                                ]
+                            ],
+                            88 => [
+                                'type' => 'blockTypeB',
+                                'fields' => [
+                                    'stuff' => 'ok',
+                                ]
                             ]
                         ]
-                    ]
                 ],
             ],
             [
-                ['blocks' =>
-                    [
-                        ['blockType' => ['one']],
-                        ['blockType' => ['two']],
-                        ['blockType' => ['three']],
-                        ['blockType' => ['four']],
-                    ]
-                ],
-                ['blocks' =>
-                    [
-                        'new:1' => [
-                            'type' => 'blockType',
-                            'fields' => ['one']
-                        ],
-                        'new:2' => [
-                            'type' => 'blockType',
-                            'fields' => ['two']
-                        ],
-                        'new:3' => [
-                            'type' => 'blockType',
-                            'fields' => ['three']
-                        ],
-                        'new:4' => [
-                            'type' => 'blockType',
-                            'fields' => ['four']
+                [
+                    'blocks' =>
+                        [
+                            ['blockType' => ['one']],
+                            ['blockType' => ['two']],
+                            ['blockType' => ['three']],
+                            ['blockType' => ['four']],
                         ]
-                    ]
+                ],
+                [
+                    'blocks' =>
+                        [
+                            'new:1' => [
+                                'type' => 'blockType',
+                                'fields' => ['one']
+                            ],
+                            'new:2' => [
+                                'type' => 'blockType',
+                                'fields' => ['two']
+                            ],
+                            'new:3' => [
+                                'type' => 'blockType',
+                                'fields' => ['three']
+                            ],
+                            'new:4' => [
+                                'type' => 'blockType',
+                                'fields' => ['four']
+                            ]
+                        ]
                 ],
             ]
         ];

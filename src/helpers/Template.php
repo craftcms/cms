@@ -67,7 +67,7 @@ class Template
      * @throws RuntimeError if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
      * @internal
      */
-    public static function attribute(Environment $env, Source $source, $object, $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
+    public static function attribute(Environment $env, Source $source, mixed $object, mixed $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false): mixed
     {
         // Include this element in any active caches
         if ($object instanceof ElementInterface) {

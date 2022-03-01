@@ -57,7 +57,7 @@ class MatrixBlockQuery extends ElementQuery
      * @var int|int[]|string|false|null The field ID(s) that the resulting Matrix blocks must belong to.
      * @used-by fieldId()
      */
-    public $fieldId;
+    public mixed $fieldId = null;
 
     /**
      * @var int|int[]|null The primary owner element ID(s) that the resulting Matrix blocks must belong to.
@@ -65,14 +65,14 @@ class MatrixBlockQuery extends ElementQuery
      * @used-by primaryOwnerId()
      * @since 4.0.0
      */
-    public $primaryOwnerId;
+    public mixed $primaryOwnerId = null;
 
     /**
      * @var int|int[]|null The owner element ID(s) that the resulting Matrix blocks must belong to.
      * @used-by owner()
      * @used-by ownerId()
      */
-    public $ownerId;
+    public mixed $ownerId = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
@@ -106,7 +106,7 @@ class MatrixBlockQuery extends ElementQuery
      * @used-by MatrixBlockQuery::type()
      * @used-by typeId()
      */
-    public $typeId;
+    public mixed $typeId = null;
 
     /**
      * @inheritdoc
@@ -171,7 +171,7 @@ class MatrixBlockQuery extends ElementQuery
      * @uses $fieldId
      * @since 3.4.0
      */
-    public function field($value): self
+    public function field(mixed $value): self
     {
         if ($value instanceof MatrixField) {
             $this->fieldId = [$value->id];
@@ -231,7 +231,7 @@ class MatrixBlockQuery extends ElementQuery
      * @return self self reference
      * @uses $fieldId
      */
-    public function fieldId($value): self
+    public function fieldId(mixed $value): self
     {
         $this->fieldId = $value;
         return $this;
@@ -270,7 +270,7 @@ class MatrixBlockQuery extends ElementQuery
      * @uses $primaryOwnerId
      * @since 4.0.0
      */
-    public function primaryOwnerId($value): self
+    public function primaryOwnerId(mixed $value): self
     {
         $this->primaryOwnerId = $value;
         return $this;
@@ -339,7 +339,7 @@ class MatrixBlockQuery extends ElementQuery
      * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId($value): self
+    public function ownerId(mixed $value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -450,7 +450,7 @@ class MatrixBlockQuery extends ElementQuery
      * @return self self reference
      * @uses $typeId
      */
-    public function type($value): self
+    public function type(mixed $value): self
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
@@ -499,7 +499,7 @@ class MatrixBlockQuery extends ElementQuery
      * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value): self
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;

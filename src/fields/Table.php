@@ -353,7 +353,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -395,7 +395,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
@@ -431,7 +431,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (!is_array($value) || empty($this->columns)) {
             return null;
@@ -459,7 +459,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         if (!is_array($value) || empty($this->columns)) {
             return '';
@@ -481,7 +481,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
     }
@@ -490,7 +490,7 @@ class Table extends Field
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         $type = TableRowTypeGenerator::generateType($this);
         return Type::listOf($type);
@@ -500,7 +500,7 @@ class Table extends Field
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         $typeName = $this->handle . '_TableRowInput';
 
@@ -528,7 +528,7 @@ class Table extends Field
      * @return mixed
      * @see normalizeValue()
      */
-    private function _normalizeCellValue(string $type, $value)
+    private function _normalizeCellValue(string $type, mixed $value): mixed
     {
         switch ($type) {
             case 'color':
@@ -575,7 +575,7 @@ class Table extends Field
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
-    private function _validateCellValue(string $type, $value, ?string &$error = null): bool
+    private function _validateCellValue(string $type, mixed $value, ?string &$error = null): bool
     {
         if ($value === null || $value === '') {
             return true;
@@ -609,7 +609,7 @@ class Table extends Field
      * @param bool $static
      * @return string
      */
-    private function _getInputHtml($value, ?ElementInterface $element, bool $static): string
+    private function _getInputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
         if (empty($this->columns)) {
             return '';

@@ -9,7 +9,6 @@ namespace crafttests\functional\users;
 
 use Craft;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use FunctionalTester;
 
 /**

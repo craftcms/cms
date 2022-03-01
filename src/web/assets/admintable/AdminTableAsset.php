@@ -22,9 +22,9 @@ class AdminTableAsset extends AssetBundle
     private bool $useDevServer = false;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $devServerBaseUrl = 'http://localhost:8082/';
+    private string $devServerBaseUrl = 'http://localhost:8082/';
 
     /**
      * @inheritdoc

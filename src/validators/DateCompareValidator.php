@@ -7,6 +7,7 @@
 
 namespace craft\validators;
 
+use Closure;
 use Craft;
 use craft\i18n\Formatter;
 use DateTime;
@@ -68,28 +69,15 @@ class DateCompareValidator extends Validator
         parent::init();
 
         if (!isset($this->message)) {
-            switch ($this->operator) {
-                case '==':
-                    $this->message = Craft::t('yii', '{attribute} must be equal to "{compareValueOrAttribute}".');
-                    break;
-                case '!=':
-                    $this->message = Craft::t('yii', '{attribute} must not be equal to "{compareValueOrAttribute}".');
-                    break;
-                case '>':
-                    $this->message = Craft::t('yii', '{attribute} must be greater than "{compareValueOrAttribute}".');
-                    break;
-                case '>=':
-                    $this->message = Craft::t('yii', '{attribute} must be greater than or equal to "{compareValueOrAttribute}".');
-                    break;
-                case '<':
-                    $this->message = Craft::t('yii', '{attribute} must be less than "{compareValueOrAttribute}".');
-                    break;
-                case '<=':
-                    $this->message = Craft::t('yii', '{attribute} must be less than or equal to "{compareValueOrAttribute}".');
-                    break;
-                default:
-                    throw new InvalidConfigException("Unknown operator: $this->operator");
-            }
+            $this->message = match ($this->operator) {
+                '==' => Craft::t('yii', '{attribute} must be equal to "{compareValueOrAttribute}".'),
+                '!=' => Craft::t('yii', '{attribute} must not be equal to "{compareValueOrAttribute}".'),
+                '>' => Craft::t('yii', '{attribute} must be greater than "{compareValueOrAttribute}".'),
+                '>=' => Craft::t('yii', '{attribute} must be greater than or equal to "{compareValueOrAttribute}".'),
+                '<' => Craft::t('yii', '{attribute} must be less than "{compareValueOrAttribute}".'),
+                '<=' => Craft::t('yii', '{attribute} must be less than or equal to "{compareValueOrAttribute}".'),
+                default => throw new InvalidConfigException("Unknown operator: $this->operator"),
+            };
         }
     }
 
@@ -105,7 +93,7 @@ class DateCompareValidator extends Validator
         $value = $model->$attribute;
 
         if (isset($this->compareValue)) {
-            if ($this->compareValue instanceof \Closure) {
+            if ($this->compareValue instanceof Closure) {
                 $this->compareValue = call_user_func($this->compareValue);
             }
             $compareValue = $this->compareValue;
@@ -137,7 +125,7 @@ class DateCompareValidator extends Validator
             throw new InvalidConfigException('CompareValidator::compareValue must be set.');
         }
 
-        if ($this->compareValue instanceof \Closure) {
+        if ($this->compareValue instanceof Closure) {
             $this->compareValue = call_user_func($this->compareValue);
         }
 
@@ -169,21 +157,14 @@ class DateCompareValidator extends Validator
      */
     protected function compareValues(string $operator, DateTime $value, DateTime $compareValue): bool
     {
-        switch ($operator) {
-            case '==':
-                return $value == $compareValue;
-            case '!=':
-                return $value != $compareValue;
-            case '>':
-                return $value > $compareValue;
-            case '>=':
-                return $value >= $compareValue;
-            case '<':
-                return $value < $compareValue;
-            case '<=':
-                return $value <= $compareValue;
-            default:
-                return false;
-        }
+        return match ($operator) {
+            '==' => $value == $compareValue,
+            '!=' => $value != $compareValue,
+            '>' => $value > $compareValue,
+            '>=' => $value >= $compareValue,
+            '<' => $value < $compareValue,
+            '<=' => $value <= $compareValue,
+            default => false,
+        };
     }
 }

@@ -23,7 +23,7 @@ class OptionField extends Resolver
     /**
      * @inheritdoc
      */
-    public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $fieldName = $resolveInfo->fieldName;
         $optionFieldData = $source->{$fieldName};

@@ -140,7 +140,7 @@ class Fs extends Component
      * @param FsInterface $fs the filesystem to be saved.
      * @param bool $runValidation Whether the filesystem should be validated
      * @return bool Whether the filesystem was saved successfully
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
     {
@@ -169,11 +169,11 @@ class Fs extends Component
      * @param mixed $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
      * @return FsInterface The filesystem
      */
-    public function createFilesystem($config): FsInterface
+    public function createFilesystem(mixed $config): FsInterface
     {
         try {
             return ComponentHelper::createComponent($config, FsInterface::class);
-        } catch (MissingComponentException | InvalidConfigException $e) {
+        } catch (MissingComponentException|InvalidConfigException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);

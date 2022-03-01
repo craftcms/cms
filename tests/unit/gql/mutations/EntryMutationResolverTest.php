@@ -57,7 +57,7 @@ class EntryMutationResolverTest extends TestCase
     public function testSavingNewEntryDoesNotSearchForIt($arguments, $identifyCalled)
     {
         $entry = new Entry();
-        $query  = $this->make(EntryQuery::class, [
+        $query = $this->make(EntryQuery::class, [
             'one' => $entry
         ]);
 
@@ -84,6 +84,7 @@ class EntryMutationResolverTest extends TestCase
             [['id' => 5, 'enabled' => false], Element::SCENARIO_DEFAULT],
         ];
     }
+
     public function saveNewEntryDataProvider()
     {
         return [

@@ -26,7 +26,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * @var string|null The element type being queried.
      */
-    public ?string $elementType;
+    public ?string $elementType = null;
 
     /**
      * @var string The field context that should be used when fetching custom fields’ condition rule types.

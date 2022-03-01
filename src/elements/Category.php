@@ -146,7 +146,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var CategoryGroup $context */
         return $context->handle . '_Category';
@@ -156,7 +156,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var CategoryGroup $context */
         return ['categorygroups.' . $context->uid];
@@ -166,7 +166,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var CategoryGroup $context */
         return 'save_' . $context->handle . '_Category';
@@ -443,7 +443,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function route()
+    protected function route(): array|string|null
     {
         // Make sure the category group is set to have URLs for this site
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;

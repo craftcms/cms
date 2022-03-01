@@ -26,27 +26,27 @@ abstract class AssetFixture extends BaseElementFixture
     /**
      * @var array
      */
-    protected $volumeIds = [];
+    protected array $volumeIds = [];
 
     /**
      * @var array
      */
-    protected $folderIds = [];
+    protected array $folderIds = [];
 
     /**
      * @var array Used to track the files the fixture data file defines.
      */
-    protected $files = [];
+    protected array $files = [];
 
     /**
      * @var string
      */
-    protected $sourceAssetPath;
+    protected string $sourceAssetPath;
 
     /**
      * @var string
      */
-    protected $destinationAssetPath;
+    protected string $destinationAssetPath;
 
     /**
      * @inheritdoc

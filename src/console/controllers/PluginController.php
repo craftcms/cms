@@ -126,7 +126,7 @@ class PluginController extends Controller
 
         try {
             $success = Craft::$app->getPlugins()->installPlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         } finally {
             if (!$success) {
@@ -274,7 +274,7 @@ class PluginController extends Controller
      * @param callable|null $filterCallback
      * @return string|int
      */
-    private function _pluginPrompt(string $tableMessage, string $noPlugins, string $prompt, ?callable $filterCallback)
+    private function _pluginPrompt(string $tableMessage, string $noPlugins, string $prompt, ?callable $filterCallback): int|string
     {
         if (!$this->interactive) {
             $this->stderr('A plugin handle must be specified.' . PHP_EOL, Console::FG_RED);

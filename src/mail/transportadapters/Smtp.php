@@ -10,6 +10,7 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
+use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -60,7 +61,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @var string The timeout duration (in seconds)
      */
-    public $timeout = 10;
+    public string|int $timeout = 10;
 
     /**
      * @inheritdoc
@@ -147,7 +148,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function defineTransport()
+    public function defineTransport(): array|AbstractTransport
     {
         $config = [
             'scheme' => 'smtp',

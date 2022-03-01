@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -116,7 +117,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_array($value)) {
             /** @var Category[] $categories */
@@ -144,7 +145,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
@@ -161,7 +162,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
+    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
         $variables['branchLimit'] = $this->branchLimit;
@@ -169,7 +170,7 @@ class Categories extends BaseRelationField
         return $variables;
     }
 
-    public function getEagerLoadingMap(array $sourceElements)
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
         $map = parent::getEagerLoadingMap($sourceElements);
         $map['criteria']['orderBy'] = ['structureelements.lft' => SORT_ASC];
@@ -188,7 +189,7 @@ class Categories extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,

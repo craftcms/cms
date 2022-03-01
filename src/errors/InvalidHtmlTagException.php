@@ -20,22 +20,22 @@ class InvalidHtmlTagException extends InvalidArgumentException
     /**
      * @var string|null The tag type
      */
-    public ?string $type;
+    public ?string $type = null;
 
     /**
      * @var array|null The tag attributes
      */
-    public ?array $attributes;
+    public ?array $attributes = null;
 
     /**
      * @var int|null The tag’s starting position
      */
-    public ?int $start;
+    public ?int $start = null;
 
     /**
      * @var int|null The tag’s inner HTML starting position
      */
-    public ?int $htmlStart;
+    public ?int $htmlStart = null;
 
     /**
      * Constructor.

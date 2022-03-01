@@ -37,7 +37,7 @@ class ClearCacheAction extends Action
     /**
      * @var array|null
      */
-    public ?array $params;
+    public ?array $params = null;
 
     /**
      * Clears the caches.

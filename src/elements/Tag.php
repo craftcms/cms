@@ -142,7 +142,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var TagGroup $context */
         return $context->handle . '_Tag';
@@ -152,7 +152,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var TagGroup $context */
         return ['taggroups.' . $context->uid];
@@ -162,7 +162,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var TagGroup $context */
         return 'save_' . $context->handle . '_Tag';

@@ -420,7 +420,7 @@ JS;
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
             'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
-            'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
+            'firstDay' => (int)(($currentUser?->getPreference('weekStartDay')) ?? $generalConfig->defaultWeekStartDay),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
@@ -480,9 +480,9 @@ JS;
 
     /**
      * @param GeneralConfig $generalConfig
-     * @return array|false|null
+     * @return array|null|false
      */
-    private function _previewIframeResizerOptions(GeneralConfig $generalConfig)
+    private function _previewIframeResizerOptions(GeneralConfig $generalConfig): array|null|false
     {
         if (!$generalConfig->useIframeResizer) {
             return false;

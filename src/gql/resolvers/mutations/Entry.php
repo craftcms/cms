@@ -124,7 +124,7 @@ class Entry extends ElementMutationResolver
      * @return mixed
      * @throws Throwable if reasons.
      */
-    public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
     {
         $entryId = $arguments['id'];
 
@@ -142,7 +142,7 @@ class Entry extends ElementMutationResolver
         $draftNotes = $arguments['notes'] ?? '';
         $provisional = $arguments['provisional'] ?? false;
 
-        /** @var Entry|DraftBehavior $draft */
+        /** @var EntryElement|DraftBehavior $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 
         return $draft->draftId;

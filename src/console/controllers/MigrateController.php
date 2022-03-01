@@ -99,7 +99,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself.
      */
-    public $plugin;
+    public PluginInterface|string|null $plugin = null;
 
     /**
      * @var bool Exclude pending content migrations.
@@ -323,16 +323,11 @@ class MigrateController extends BaseMigrateController
         foreach ($migrationsByTrack as $track => $migrations) {
             $n = count($migrations);
 
-            switch ($track) {
-                case MigrationManager::TRACK_CRAFT:
-                    $which = 'Craft';
-                    break;
-                case MigrationManager::TRACK_CONTENT:
-                    $which = 'content';
-                    break;
-                default:
-                    $which = $plugins[substr($track, 7)]->name;
-            }
+            $which = match ($track) {
+                MigrationManager::TRACK_CRAFT => 'Craft',
+                MigrationManager::TRACK_CONTENT => 'content',
+                default => $plugins[substr($track, 7)]->name,
+            };
 
             $this->stdout("Total $n new $which " . ($n === 1 ? 'migration' : 'migrations') . ' to be applied:' . PHP_EOL, Console::FG_YELLOW);
             foreach ($migrations as $migration) {
@@ -550,7 +545,7 @@ class MigrateController extends BaseMigrateController
     /**
      * Not supported.
      */
-    public function actionFresh()
+    public function actionFresh(): int
     {
         $this->stderr('This command is not supported.' . PHP_EOL, Console::FG_RED);
         return ExitCode::OK;
@@ -567,7 +562,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function stdout($string)
+    public function stdout($string): bool|int
     {
         if (str_starts_with($string, 'Yii Migration Tool')) {
             return false;

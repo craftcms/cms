@@ -71,6 +71,7 @@ class ScalarTypesTest extends Unit
 
     /**
      * Test DateTime parsing value correctly.
+     *
      * @throws \GraphQL\Error\Error
      */
     public function testDateTimeParseValueAndLiteral()
@@ -121,7 +122,9 @@ class ScalarTypesTest extends Unit
         ]);
         $resolver = $dateField->getContentGqlType()['resolve'];
         $element = $this->make(Entry::class, [
-            'getFieldValue' => function () use ($dateTime) { return clone $dateTime; }
+            'getFieldValue' => function() use ($dateTime) {
+                return clone $dateTime;
+            }
         ]);
 
         $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;

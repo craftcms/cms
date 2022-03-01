@@ -35,7 +35,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         /** @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;

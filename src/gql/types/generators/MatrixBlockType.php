@@ -31,7 +31,7 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         // If we need matrix block types for a specific Matrix field, fetch those.
         if ($context) {
@@ -54,7 +54,7 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
         /** @var MatrixBlockTypeModel $matrixBlockType */
         $typeName = MatrixBlockElement::gqlTypeNameByContext($context);

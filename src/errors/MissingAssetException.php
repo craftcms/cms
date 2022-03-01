@@ -45,7 +45,7 @@ class MissingAssetException extends Exception
      * Constructor
      *
      * @param AssetIndexData $indexEntry
-     * @param VolumeInterface $volume
+     * @param Volume $volume
      * @param VolumeFolder $folder
      * @param string $filename
      * @param string $message

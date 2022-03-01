@@ -261,7 +261,7 @@ trait PrimaryReplicaTrait
      * @return mixed the return value of the callback
      * @throws Throwable if there is any exception thrown from the callback
      */
-    public function usePrimary(callable $callback)
+    public function usePrimary(callable $callback): mixed
     {
         return $this->useMaster($callback);
     }

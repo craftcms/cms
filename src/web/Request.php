@@ -79,13 +79,13 @@ class Request extends \yii\web\Request
      * @var GeneralConfig|array|string
      * @since 3.5.10
      */
-    public $generalConfig;
+    public GeneralConfig|string|array $generalConfig;
 
     /**
      * @var Sites|array|string|null
      * @since 3.5.10
      */
-    public $sites = 'sites';
+    public string|array|null|Sites $sites = 'sites';
 
     /**
      * @var string
@@ -867,7 +867,7 @@ class Request extends \yii\web\Request
      * @see getBodyParams()
      * @see setBodyParams()
      */
-    public function getBodyParam($name, $defaultValue = null)
+    public function getBodyParam($name, $defaultValue = null): mixed
     {
         return $this->_getParam($name, $defaultValue, $this->getBodyParams());
     }
@@ -897,7 +897,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the body param
      * @see getBodyParam()
      */
-    public function getRequiredBodyParam(string $name)
+    public function getRequiredBodyParam(string $name): mixed
     {
         $value = $this->getBodyParam($name);
 
@@ -929,7 +929,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @param string $name The parameter name.
-     * @return string The parameter value
+     * @return string|null The parameter value
      * @throws BadRequestHttpException if the param value doesn’t pass validation
      * @see getBodyParam()
      */
@@ -990,7 +990,7 @@ class Request extends \yii\web\Request
      * @return mixed The GET parameter value.
      * @see getBodyParam()
      */
-    public function getQueryParam($name, $defaultValue = null)
+    public function getQueryParam($name, $defaultValue = null): mixed
     {
         return $this->_getParam($name, $defaultValue, $this->getQueryParams());
     }
@@ -1020,7 +1020,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the query param
      * @see getQueryParam()
      */
-    public function getRequiredQueryParam(string $name)
+    public function getRequiredQueryParam(string $name): mixed
     {
         $value = $this->getQueryParam($name);
 
@@ -1037,12 +1037,12 @@ class Request extends \yii\web\Request
      * If the parameter does not exist, the second parameter to this method will be returned.
      *
      * @param string $name The parameter name.
-     * @param mixed $defaultValue The default parameter value if the parameter does not exist.
+     * @param mixed|null $defaultValue The default parameter value if the parameter does not exist.
      * @return mixed The parameter value.
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getParam(string $name, $defaultValue = null)
+    public function getParam(string $name, mixed $defaultValue = null): mixed
     {
         if (($value = $this->getQueryParam($name)) !== null) {
             return $value;
@@ -1065,7 +1065,7 @@ class Request extends \yii\web\Request
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getRequiredParam(string $name)
+    public function getRequiredParam(string $name): mixed
     {
         $value = $this->getParam($name);
 
@@ -1696,10 +1696,10 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * @param array|string $value
-     * @return array|string
+     * @param mixed $value
+     * @return mixed
      */
-    private function _utf8Value($value)
+    private function _utf8Value(mixed $value): mixed
     {
         if (is_array($value)) {
             return $this->_utf8AllTheThings($value);
@@ -1722,7 +1722,7 @@ class Request extends \yii\web\Request
      * @param array $params
      * @return mixed
      */
-    private function _getParam(?string $name, $defaultValue, array $params)
+    private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         // Do they just want the whole array?
         if ($name === null) {

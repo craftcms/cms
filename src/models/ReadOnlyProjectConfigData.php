@@ -31,7 +31,7 @@ class ReadOnlyProjectConfigData extends Model
         return $this->traverseDataArray($this->data, $path);
     }
 
-    public function export()
+    public function export(): array
     {
         return $this->data;
     }
@@ -41,11 +41,11 @@ class ReadOnlyProjectConfigData extends Model
      *
      * @param array $data A nested array of data to traverse
      * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
-     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
+     * @param mixed|null $value Value to set at the destination. If null, will return the value, unless deleting
      * @param bool $delete Whether to delete the value at the destination or not.
      * @return mixed
      */
-    protected function traverseDataArray(array &$data, $path, $value = null, bool $delete = false)
+    protected function traverseDataArray(array &$data, array|string $path, mixed $value = null, bool $delete = false): mixed
     {
         if (is_string($path)) {
             $path = explode('.', $path);

@@ -135,6 +135,7 @@ class FsController extends Controller
         $fsService = Craft::$app->getFs();
         $type = $this->request->getBodyParam('type');
 
+        /** @var FsInterface|Fs $fs */
         $fs = $fsService->createFilesystem([
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),

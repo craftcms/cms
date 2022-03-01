@@ -334,22 +334,15 @@ class UpdaterController extends BaseUpdaterController
      */
     protected function actionStatus(string $action): string
     {
-        switch ($action) {
-            case self::ACTION_FORCE_UPDATE:
-                return Craft::t('app', 'Updating…');
-            case self::ACTION_BACKUP:
-                return Craft::t('app', 'Backing-up database…');
-            case self::ACTION_RESTORE_DB:
-                return Craft::t('app', 'Restoring database…');
-            case self::ACTION_MIGRATE:
-                return Craft::t('app', 'Updating database…');
-            case self::ACTION_REVERT:
-                return Craft::t('app', 'Reverting update (this may take a minute)…');
-            case self::ACTION_SERVER_CHECK:
-                return Craft::t('app', 'Checking server requirements…');
-            default:
-                return parent::actionStatus($action);
-        }
+        return match ($action) {
+            self::ACTION_FORCE_UPDATE => Craft::t('app', 'Updating…'),
+            self::ACTION_BACKUP => Craft::t('app', 'Backing-up database…'),
+            self::ACTION_RESTORE_DB => Craft::t('app', 'Restoring database…'),
+            self::ACTION_MIGRATE => Craft::t('app', 'Updating database…'),
+            self::ACTION_REVERT => Craft::t('app', 'Reverting update (this may take a minute)…'),
+            self::ACTION_SERVER_CHECK => Craft::t('app', 'Checking server requirements…'),
+            default => parent::actionStatus($action),
+        };
     }
 
     /**

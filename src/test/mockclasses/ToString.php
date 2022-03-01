@@ -19,7 +19,7 @@ class ToString
     /**
      * @var string
      */
-    private $_string;
+    private string $_string;
 
     /**
      * ToString constructor.

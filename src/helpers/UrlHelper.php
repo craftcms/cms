@@ -98,7 +98,7 @@ class UrlHelper
      * @param array|string $params
      * @return string
      */
-    public static function urlWithParams(string $url, $params): string
+    public static function urlWithParams(string $url, array|string $params): string
     {
         if (empty($params)) {
             return $url;
@@ -238,7 +238,7 @@ class UrlHelper
      * By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      * @return string
      */
-    public static function url(string $path = '', $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -280,7 +280,7 @@ class UrlHelper
      * @param string|null $scheme
      * @return string
      */
-    public static function cpUrl(string $path = '', $params = null, ?string $scheme = null): string
+    public static function cpUrl(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         // If this is already an absolute or root-relative URL, don't change it
         if (static::isAbsoluteUrl($path) || static::isRootRelativeUrl($path)) {
@@ -303,7 +303,7 @@ class UrlHelper
      * @return string
      * @throws Exception if|null $siteId is invalid
      */
-    public static function siteUrl(string $path = '', $params = null, ?string $scheme = null, ?int $siteId = null): string
+    public static function siteUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isAbsoluteUrl($path) || static::isProtocolRelativeUrl($path)) {
@@ -355,7 +355,7 @@ class UrlHelper
      * it’s only safe to set this to `false` for URLs that will be used for GET requests.
      * @return string
      */
-    public static function actionUrl(string $path = '', $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
@@ -579,7 +579,7 @@ class UrlHelper
      * @param bool|null $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
+    private static function _createUrl(string $path, array|string|null $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -692,7 +692,7 @@ class UrlHelper
      * @param string|array|null $params
      * @return array
      */
-    private static function _normalizeParams($params): array
+    private static function _normalizeParams(array|string|null $params): array
     {
         // If it's already an array, just split out the fragment and return
         if (is_array($params)) {

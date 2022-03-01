@@ -110,7 +110,7 @@ class UsersController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -670,7 +670,7 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, ?User $user = null, ?array $errors = null): Response
+    public function actionEditUser(mixed $userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
             $this->setFailFlash(implode(', ', reset($errors)));
@@ -1612,7 +1612,7 @@ JS,
     /**
      * Returns a summary of the content that is owned by a given user ID(s).
      *
-     * @return Response|null
+     * @return Response
      * @since 3.0.13
      */
     public function actionUserContentSummary(): Response
@@ -2134,7 +2134,7 @@ JS,
     /**
      * @return array|Response
      */
-    private function _processTokenRequest()
+    private function _processTokenRequest(): Response|array
     {
         $uid = $this->request->getRequiredParam('id');
         $code = $this->request->getRequiredParam('code');
