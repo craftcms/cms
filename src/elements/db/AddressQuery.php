@@ -57,6 +57,65 @@ class AddressQuery extends ElementQuery
     public mixed $countryCode = null;
 
     /**
+     * @var string[]|string|null The address administrativeArea(s) that the resulting address must be in.
+     * ---
+     * ```php
+     * // fetch addresses that are located in AU
+     * $addresses = \craft\elements\Address::find()
+     *     ->administrativeArea('AU')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses that are located in AU #}
+     * {% set addresses = craft.addresses()
+     *   .administrativeArea('AU')
+     *   .all() %}
+     * ```
+     * @used-by administrativeArea()
+     * @used-by administrativeArea()
+     */
+    public mixed $administrativeArea = null;
+
+    /**
+     * Narrows the query results based on the administrative area the assets belong to.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `'AU'` | with a administrativeArea of `AU`.
+     * | `'not US'` | not in a administrativeArea of `US`.
+     * | `['AU', 'US']` | in a administrativeArea of `AU` or `US`.
+     * | `['not', 'AU', 'US']` | not in a administrativeArea of `AU` or `US`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses in the AU #}
+     * {% set {elements-var} = {twig-method}
+     *   .administrativeArea('AU')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses in the AU
+     * ${elements-var} = {php-method}
+     *     ->administrativeArea('AU')
+     *     ->all();
+     * ```
+     *
+     * @param string|string[]|null $value The property value
+     * @return self self reference
+     * @uses $administrativeArea
+     */
+    public function administrativeArea(array|string|null $value): self
+    {
+        $this->administrativeArea = $value;
+
+        return $this;
+    }
+
+    /**
      * Sets the [[ownerId()]] parameter based on a given owner element.
      *
      * ---
@@ -200,6 +259,10 @@ class AddressQuery extends ElementQuery
 
         if ($this->countryCode) {
             $this->subQuery->andWhere(['addresses.countryCode' => $this->countryCode]);
+        }
+
+        if ($this->administrativeArea) {
+            $this->subQuery->andWhere(['addresses.administrativeArea' => $this->administrativeArea]);
         }
 
         return parent::beforePrepare();
