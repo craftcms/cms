@@ -44,7 +44,7 @@ class ShellCommandException extends Exception
         $execCommand = $command->getExecCommand();
 
         if ($execCommand !== false) {
-            return new self($execCommand, $command->getExitCode(), $command->getStdErr());
+            return new static($execCommand, $command->getExitCode(), $command->getStdErr());
         }
 
         return false;

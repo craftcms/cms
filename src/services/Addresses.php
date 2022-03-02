@@ -40,17 +40,17 @@ class Addresses extends Component
     /**
      * @var CountryRepository
      */
-    public CountryRepository $_countryRepository;
+    private CountryRepository $_countryRepository;
 
     /**
      * @var SubdivisionRepository
      */
-    public SubdivisionRepository $_subdivisionRepository;
+    private SubdivisionRepository $_subdivisionRepository;
 
     /**
      * @var AddressFormatRepository
      */
-    public AddressFormatRepository $_addressFormatRepository;
+    private AddressFormatRepository $_addressFormatRepository;
 
     /**
      * @inheritdoc
