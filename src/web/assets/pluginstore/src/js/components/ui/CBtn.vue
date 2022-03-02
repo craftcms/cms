@@ -23,9 +23,9 @@
                 'disabled:tw-opacity-50 disabled:tw-cursor-default': true,
 
                 // Variants
-                'tw-text-white': (kind === 'primary' || kind === 'danger') && !outline,
-                'hover:tw-text-white': (kind === 'primary' || kind === 'danger') && !outline,
-                'active:tw-text-white': (kind === 'primary' || kind === 'danger') && !outline,
+                'tw-text-white': (kind === 'primary') && !outline,
+                'hover:tw-text-white': (kind === 'primary') && !outline,
+                'active:tw-text-white': (kind === 'primary') && !outline,
 
                 // Default
                 'tw-text-black': kind === 'default',
