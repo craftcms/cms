@@ -3801,13 +3801,16 @@ ul.tree,
     height: calc(100% - 16px);
     border-radius: $largeBorderRadius;
 
-    body.ltr & {
-      transition: left linear 250ms;
-      will-change: left;
-    }
-    body.rtl & {
-      transition: right linear 250ms;
-      will-change: right;
+    @media screen and (prefers-reduced-motion: no-preference) {
+      body.ltr & {
+        transition: left linear 250ms;
+        will-change: left;
+      }
+
+      body.rtl & {
+        transition: right linear 250ms;
+        will-change: right;
+      }
     }
   }
 }
