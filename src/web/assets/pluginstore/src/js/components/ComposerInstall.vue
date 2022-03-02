@@ -56,7 +56,7 @@ export default {
 
   computed: {
     copyValue() {
-      return `composer require ${this.plugin.packageName}; ./craft plugin/install ${this.plugin.handle}`
+      return `composer require ${this.plugin.packageName} && ./craft plugin/install ${this.plugin.handle}`
     }
   },
 
