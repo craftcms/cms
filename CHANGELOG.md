@@ -8,6 +8,7 @@
 
 ### Changed
 - Improved Live Preview accessibility. ([#7476](https://github.com/craftcms/cms/issues/7476))
+- Improved error reporting when trying to upload an Asset from a disallowed location. ([#10633](https://github.com/craftcms/cms/issues/10633))
 - The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
 
 ### Fixed
