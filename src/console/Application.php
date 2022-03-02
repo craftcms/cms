@@ -68,7 +68,7 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function runAction($route, $params = []): ?BaseResponse
+    public function runAction($route, $params = []): int|BaseResponse|null
     {
         if (!$this->getIsInstalled()) {
             [$firstSeg] = explode('/', $route, 2);
