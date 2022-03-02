@@ -166,7 +166,7 @@
               >
                 <nuxt-link
                   :key="key"
-                  class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-medium tw-rounded-full"
+                  class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-medium tw-rounded-full tw-cursor-pointer"
                   :class="{
                     'tw-bg-blue-50 hover:tw-bg-blue-600': true,
                     'hover:tw-text-white': true,
