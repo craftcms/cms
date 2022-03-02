@@ -571,7 +571,7 @@
             this.$fieldsContainer.velocity('stop');
             this.$container.velocity('stop');
 
-            if (animate) {
+            if (animate && !Garnish.prefersReducedMotion()) {
                 this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
                 this.$container.velocity({height: 16}, 'fast');
             } else {
@@ -616,7 +616,9 @@
             var displayValue = this.$fieldsContainer.css('display') || 'block';
             this.$container.height(collapsedContainerHeight);
             this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast', display: displayValue});
-            this.$container.velocity({height: expandedContainerHeight}, 'fast', () => {
+
+            const animationDuration = Garnish.prefersReducedMotion() ? 0 : 'fast';
+            this.$container.velocity({height: expandedContainerHeight}, animationDuration, () => {
                 this.$previewContainer.html('');
                 this.$container.height('auto');
             });
