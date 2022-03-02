@@ -33,7 +33,7 @@ class Paginate extends BaseObject
         $pageResults = $paginator->getPageResults();
         $pageOffset = $paginator->getPageOffset();
 
-        return new self([
+        return new static([
             'first' => $pageOffset + 1,
             'last' => $pageOffset + count($pageResults),
             'total' => $paginator->getTotalResults(),

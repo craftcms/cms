@@ -12,6 +12,7 @@ use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
 use yii\db\QueryInterface;
+use yii\db\Query as YiiQuery;
 use yii\di\Instance;
 
 /**
@@ -126,14 +127,17 @@ class Paginator extends BaseObject
             return $this->totalResults;
         }
 
-        $this->totalResults = $this->query->count('*', $this->db);
+        /** @var YiiQuery $query */
+        $query = $this->query;
+
+        $this->totalResults = $query->count('*', $this->db);
 
         // Factor in the offset and limit
-        if ($this->query->offset) {
-            $this->totalResults = max(0, $this->totalResults - $this->query->offset);
+        if ($query->offset) {
+            $this->totalResults = max(0, $this->totalResults - $query->offset);
         }
-        if ($this->query->limit && $this->totalResults > $this->query->limit) {
-            $this->totalResults = $this->query->limit;
+        if ($query->limit && $this->totalResults > $query->limit) {
+            $this->totalResults = $query->limit;
         }
 
         return $this->totalResults;
@@ -190,7 +194,10 @@ class Paginator extends BaseObject
             return $this->_pageResults;
         }
 
-        $pageOffset = ($this->query->offset ?? 0) + $this->getPageOffset();
+        /** @var YiiQuery $query */
+        $query = $this->query;
+
+        $pageOffset = ($query->offset ?? 0) + $this->getPageOffset();
 
         // Have we reached the last page, and would the default page size bleed past the total results?
         if ($this->pageSize * $this->currentPage > $this->getTotalResults()) {
@@ -203,16 +210,16 @@ class Paginator extends BaseObject
             return [];
         }
 
-        $limit = $this->query->limit;
-        $offset = $this->query->offset;
+        $limit = $query->limit;
+        $offset = $query->offset;
 
-        $this->_pageResults = $this->query
+        $this->_pageResults = $query
             ->offset($pageOffset)
             ->limit($pageLimit)
             ->all($this->db);
 
-        $this->query->limit = $limit;
-        $this->query->offset = $offset;
+        $query->limit = $limit;
+        $query->offset = $offset;
 
         return $this->_pageResults;
     }

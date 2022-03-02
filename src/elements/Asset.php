@@ -2495,7 +2495,7 @@ JS;
         } else {
             if (!$this->_validateTempFilePath()) {
                 Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
-                $this->tempFilePath = null;
+                throw new FileException(Craft::t('app', "There was an error relocating the file."));
             }
 
             // Get the temp path
