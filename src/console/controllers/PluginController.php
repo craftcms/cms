@@ -73,6 +73,7 @@ class PluginController extends Controller
             $row = [
                 $info['name'],
                 $handle,
+                $info['packageName'],
                 $info['version'],
                 $this->_boolToString($info['isInstalled']),
                 $this->_boolToString($info['isEnabled']),
@@ -92,7 +93,7 @@ class PluginController extends Controller
         }
 
         $this->stdout(PHP_EOL);
-        $this->table(['Name', 'Handle', 'Version', 'Installed', 'Enabled'], $tableData);
+        $this->table(['Name', 'Handle', 'Package Name', 'Version', 'Installed', 'Enabled'], $tableData);
         $this->stdout(PHP_EOL);
 
         return ExitCode::OK;

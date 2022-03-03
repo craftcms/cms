@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.36 - 2022-03-03
+
+### Changed
+- `{% js %}` and `{% css %}` tags can now import URLs that don’t end in `.js` or `.css`, so long as they begin with `https://` or `http://`. ([#10666](https://github.com/craftcms/cms/discussions/10666))
+- The `plugin/list` command now shows plugins’ package names. ([#10667](https://github.com/craftcms/cms/discussions/10667))
+
+### Fixed
+- Fixed a bug that prevented moving assets between volumes. ([#10668](https://github.com/craftcms/cms/issues/10668))
+
 ## 3.7.35 - 2022-03-01
 
 ### Added
@@ -8,6 +17,7 @@
 
 ### Changed
 - Improved Live Preview accessibility. ([#7476](https://github.com/craftcms/cms/issues/7476))
+- Improved error reporting when trying to upload an Asset from a disallowed location. ([#10633](https://github.com/craftcms/cms/issues/10633))
 - The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
 
 ### Fixed
