@@ -4,6 +4,7 @@
 
 ### Changed
 - `{% js %}` and `{% css %}` tags can now import URLs that don’t end in `.js` or `.css`, so long as they begin with `https://` or `http://`. ([#10666](https://github.com/craftcms/cms/discussions/10666))
+- The `plugin/list` command now shows plugins’ package names. ([#10667](https://github.com/craftcms/cms/discussions/10667))
 
 ### Fixed
 - Fixed a bug that prevented moving assets between volumes. ([#10668](https://github.com/craftcms/cms/issues/10668))
