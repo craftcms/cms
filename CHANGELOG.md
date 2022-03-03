@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.36 - 2022-03-03
 
 ### Changed
 - `{% js %}` and `{% css %}` tags can now import URLs that don’t end in `.js` or `.css`, so long as they begin with `https://` or `http://`. ([#10666](https://github.com/craftcms/cms/discussions/10666))
