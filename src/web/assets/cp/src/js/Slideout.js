@@ -85,7 +85,7 @@
 
             this.enable();
             Garnish.uiLayerManager.addLayer(this.$outerContainer);
-            Garnish.hideModalBackgroundLayers(this.$outerContainer);
+            Garnish.hideModalBackgroundLayers();
 
             if (this.settings.closeOnEsc) {
                 Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
@@ -123,7 +123,7 @@
 
             Craft.Slideout.removePanel(this);
             Garnish.uiLayerManager.removeLayer();
-            Garnish.resetModalBackgroundLayerVisibility(this.$outerContainer);
+            Garnish.resetModalBackgroundLayerVisibility();
             this.$container.one('transitionend.slideout', () => {
                 this.$outerContainer.addClass('hidden');
                 this.trigger('close');
