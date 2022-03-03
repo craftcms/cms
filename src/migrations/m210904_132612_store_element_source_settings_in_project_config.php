@@ -31,8 +31,6 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
             $newSettings = [];
 
             foreach ($dbSettings as $elementType => $settings) {
-                /** @var string|ElementInterface $elementType */
-                $nativeSources = $elementType::sources('index');
                 $settings = Json::decode($settings);
                 $sourceConfigs = [];
                 $indexedSourceConfigs = [];
@@ -52,37 +50,6 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
                                     'key' => $value,
                                 ];
                                 break;
-                        }
-                    }
-
-                    // Make sure all native sources are accounted for
-                    $missingSources = array_filter($nativeSources, fn($s) => isset($s['key']) && !isset($indexedSourceConfigs[$s['key']]));
-                    if (!empty($missingSources)) {
-                        if (!empty($sourceConfigs)) {
-                            $sourceConfigs[] = [
-                                'type' => ElementSources::TYPE_HEADING,
-                                'heading' => '',
-                            ];
-                        }
-                        foreach ($missingSources as $source) {
-                            $sourceConfigs[] = $indexedSourceConfigs[$source['key']] = [
-                                'type' => ElementSources::TYPE_NATIVE,
-                                'key' => $source['key'],
-                            ];
-                        }
-                    }
-                } else {
-                    foreach ($nativeSources as $source) {
-                        if (array_key_exists('heading', $source)) {
-                            $sourceConfigs[] = [
-                                'type' => ElementSources::TYPE_HEADING,
-                                'heading' => $source['heading'],
-                            ];
-                        } else if (isset($source['key'])) {
-                            $sourceConfigs[] = $indexedSourceConfigs[$source['key']] = [
-                                'type' => ElementSources::TYPE_NATIVE,
-                                'key' => $source['key'],
-                            ];
                         }
                     }
                 }
