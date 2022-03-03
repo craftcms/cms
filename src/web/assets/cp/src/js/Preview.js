@@ -12,6 +12,7 @@ Craft.Preview = Garnish.Base.extend({
     $spinner: null,
     $statusIcon: null,
     $dragHandle: null,
+    $previewWrapper: null,
     $previewContainer: null,
     $iframeContainer: null,
     $previewHeader: null,
@@ -114,8 +115,10 @@ Craft.Preview = Garnish.Base.extend({
 
         if (!this.$editor) {
             this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
-            this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
-            this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
+            this.$previewWrapper = $('<div/>', {'role': 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'lp-preview-heading'}).appendTo(Garnish.$bod);
+            this.$modalLabel = $('<h2/>', {'id': 'lp-preview-heading', 'class': 'visually-hidden', 'html': Craft.t('app', 'Preview')}).appendTo(this.$previewWrapper);
+            this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(this.$previewWrapper);
+            this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(this.$previewWrapper);
 
             var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
             this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
@@ -421,7 +424,10 @@ Craft.Preview = Garnish.Base.extend({
 
         this.isVisible = true;
 
-        Garnish.uiLayerManager.addLayer(this.$sidebar);
+        Garnish.uiLayerManager.addLayer(this.$previewWrapper);
+        Garnish.hideModalBackgroundLayers();
+        Craft.setFocusWithin(this.$previewWrapper);
+        Craft.trapFocusWithin(this.$previewWrapper);
         Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
             this.close();
         });
@@ -438,6 +444,7 @@ Craft.Preview = Garnish.Base.extend({
 
         this.removeListener(Garnish.$win, 'resize');
         Garnish.uiLayerManager.removeLayer();
+        Garnish.resetModalBackgroundLayerVisibility();
 
         // Remove our temporary input and move the preview fields back into place
         this.$tempInput.detach();
@@ -463,6 +470,10 @@ Craft.Preview = Garnish.Base.extend({
         Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
+
+        if (this.draftEditor.$previewBtn) {
+            this.draftEditor.$previewBtn.focus();
+        }
 
         this.isActive = false;
         this.isVisible = false;

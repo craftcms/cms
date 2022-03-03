@@ -9,6 +9,7 @@ Craft.DraftEditor = Garnish.Base.extend({
     $spinner: null,
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
+    $previewBtn: null,
 
     $editMetaBtn: null,
     metaHud: null,
@@ -69,6 +70,7 @@ Craft.DraftEditor = Garnish.Base.extend({
         this.$expandSiteStatusesBtn = $('#expand-status-btn');
         this.$statusIcon = $('#revision-status');
         this.$statusMessage = $('#revision-status-message');
+        this.$previewBtn = $('#preview-btn');
 
         if (this.settings.canEditMultipleSites) {
             this.addListener(this.$expandSiteStatusesBtn, 'click', 'expandSiteStatuses');
@@ -76,7 +78,7 @@ Craft.DraftEditor = Garnish.Base.extend({
 
         if (this.settings.previewTargets.length) {
             if (this.settings.enablePreview) {
-                this.addListener($('#preview-btn'), 'click', 'openPreview');
+                this.addListener(this.$previewBtn, 'click', 'openPreview');
             }
 
             const $previewBtnContainer = $('#preview-btn-container');
