@@ -27,6 +27,7 @@ use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
+use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
@@ -345,6 +346,20 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.7.0
      */
     public const EVENT_DEFINE_METADATA = 'defineMetadata';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when determining whether the element should be editable by the current user.
+     * @see getIsEditable()
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_IS_EDITABLE = 'defineIsEditable';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when determining whether the element should be deletable by the current user.
+     * @see getIsDeletable()
+     * @since 3.7.0
+     */
+    const EVENT_DEFINE_IS_DELETABLE = 'defineIsDeletable';
 
     /**
      * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
@@ -2722,6 +2737,53 @@ abstract class Element extends Component implements ElementInterface
     public function getRef(): ?string
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsEditable(): bool
+    {
+        $event = new DefineValueEvent([
+            'value' => $this->isEditable(),
+        ]);
+        $this->trigger(self::EVENT_DEFINE_IS_EDITABLE, $event);
+        return $event->value;
+    }
+
+    /**
+     * Returns whether the current user can edit the element.
+     *
+     * @return bool
+     * @since 3.7.0
+     */
+    protected function isEditable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsDeletable(): bool
+    {
+        $event = new DefineValueEvent([
+            'value' => $this->isDeletable(),
+        ]);
+        $this->trigger(self::EVENT_DEFINE_IS_DELETABLE, $event);
+        return $event->value;
+    }
+
+    /**
+     * Returns whether the current user can delete the element.
+     *
+     * @return bool
+     * @since 3.5.12
+     */
+    protected function isDeletable(): bool
+    {
+        // todo: change to false in 4.0
+        return true;
     }
 
     /**
