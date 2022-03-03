@@ -31,6 +31,8 @@ Craft.Preview = Garnish.Base.extend({
     isVisible: false,
     activeTarget: 0,
 
+    animationDuration: 'slow',
+
     currentDeviceType: 'desktop',
     deviceOrientation: null,
     deviceWidth: '',
@@ -71,6 +73,7 @@ Craft.Preview = Garnish.Base.extend({
 
         // Set the initial editor width
         this.editorWidth = Craft.getLocalStorage('LivePreview.editorWidth', Craft.Preview.defaultEditorWidth);
+        this.setAnimationDuration();
     },
 
     get editorWidth() {
@@ -102,11 +105,20 @@ Craft.Preview = Garnish.Base.extend({
         this._editorWidthInPx = inPx;
     },
 
+    setAnimationDuration: function() {
+        if (Garnish.prefersReducedMotion()) {
+            this.animationDuration = 0;
+        } else {
+            this.animationDuration = 'slow';
+        }
+    },
+
     open: function() {
         if (this.isActive) {
             return;
         }
 
+        this.setAnimationDuration();
         this.isActive = true;
         this.trigger('beforeOpen');
 
@@ -412,12 +424,12 @@ Craft.Preview = Garnish.Base.extend({
         $('html').addClass('noscroll');
         this.$shade.velocity('fadeIn');
 
-        this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', () => {
+        this.$editorContainer.show().velocity('stop').animateLeft(0, this.animationDuration, () => {
             this.trigger('slideIn');
             Garnish.$win.trigger('resize');
         });
 
-        this.$previewContainer.show().velocity('stop').animateRight(0, 'slow');
+        this.$previewContainer.show().velocity('stop').animateRight(0, this.animationDuration);
 
         this.isVisible = true;
 
@@ -432,6 +444,7 @@ Craft.Preview = Garnish.Base.extend({
             return;
         }
 
+        this.setAnimationDuration();
         this.trigger('beforeClose');
 
         $('html').removeClass('noscroll');
@@ -443,9 +456,14 @@ Craft.Preview = Garnish.Base.extend({
         this.$tempInput.detach();
         this.moveFieldsBack();
 
-        this.$shade.delay(200).velocity('fadeOut');
+        // Delay shade fade-out when animation is present
+        if (Garnish.prefersReducedMotion()) {
+            this.$shade.velocity('fadeOut');
+        } else {
+            this.$shade.delay(200).velocity('fadeOut');
+        }
 
-        this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', () => {
+        this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, this.animationDuration, () => {
             for (var i = 0; i < this.fields.length; i++) {
                 this.fields[i].$newClone.remove();
             }
@@ -453,7 +471,7 @@ Craft.Preview = Garnish.Base.extend({
             this.trigger('slideOut');
         });
 
-        this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', () => {
+        this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), this.animationDuration, () => {
             this.$iframeContainer.removeClass('lp-iframe-container--rotating');
             this.$previewContainer.hide();
         });
