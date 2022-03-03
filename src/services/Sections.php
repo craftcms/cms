@@ -870,6 +870,7 @@ class Sections extends Component
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
                 foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
+                    /** @var Entry $entry */
                     $elementsService->deleteElement($entry);
                 }
             }
@@ -1543,6 +1544,7 @@ class Sections extends Component
             ->status(null);
 
         foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
+            /** @var Entry $entryToDelete */
             if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
                 $elementsService->deleteElement($entryToDelete, true);
             }
@@ -1573,8 +1575,8 @@ class Sections extends Component
 
         $structuresService = Craft::$app->getStructures();
 
-        /** @var Entry $entry */
         foreach (Db::each($query) as $entry) {
+            /** @var Entry $entry */
             $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }
     }

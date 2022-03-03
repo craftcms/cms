@@ -1143,6 +1143,7 @@ class Users extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $user) {
+            /** @var User $user */
             $elementsService->deleteElement($user);
             Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
         }

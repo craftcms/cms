@@ -10,6 +10,7 @@ namespace craft\elements\exporters;
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementExporter;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
@@ -49,6 +50,7 @@ class Expanded extends ElementExporter
         $query->with($eagerLoadableFields);
 
         foreach (Db::each($query) as $element) {
+            /** @var ElementInterface $element */
             // Get the basic array representation excluding custom fields
             $attributes = array_flip($element->attributes());
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
