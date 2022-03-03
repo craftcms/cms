@@ -516,6 +516,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getFields()->getLayoutByType(self::class);
+        return Craft::$app->getAddresses()->getLayout();
     }
 }
