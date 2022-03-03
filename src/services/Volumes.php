@@ -632,12 +632,11 @@ class Volumes extends Component
      */
     private function _createVolumeQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'name',
                 'handle',
-                'fs',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
@@ -647,6 +646,13 @@ class Volumes extends Component
             ->from([Table::VOLUMES])
             ->where(['dateDeleted' => null])
             ->orderBy(['sortOrder' => SORT_ASC]);
+
+        $schemaVersion =  Craft::$app->getProjectConfig()->get('system.schemaVersion', true);
+        if (version_compare($schemaVersion, '4.0.0', '>=')) {
+            $query->addSelect(['fs']);
+        }
+
+        return $query;
     }
 
     /**
