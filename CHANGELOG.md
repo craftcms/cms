@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where two users could be created with the same username and email, if the **Save** button was double-clicked. ([#9835](https://github.com/craftcms/cms/issues/9835), [#10661](https://github.com/craftcms/cms/issues/10661))
+
 ## 3.7.36 - 2022-03-03
 
 ### Changed
