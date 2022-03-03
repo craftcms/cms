@@ -1245,10 +1245,9 @@ JS;
         }
 
         // Manually validate the user so we can pass $clearErrors=false
-        if (
-            !$user->validate(null, false) ||
-            !Craft::$app->getElements()->saveElement($user, false)
-        ) {
+        $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
+
+        if (!$success) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
             if ($isPublicRegistration) {
