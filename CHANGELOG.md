@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where it was impossible to move an asset between volumes. ([#10668](https://github.com/craftcms/cms/issues/10668))
+- Fixed a bug that prevented moving assets between volumes. ([#10668](https://github.com/craftcms/cms/issues/10668))
 
 ## 3.7.35 - 2022-03-01
 
