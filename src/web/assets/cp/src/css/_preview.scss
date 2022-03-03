@@ -254,14 +254,16 @@
     }
 
     // Animate rotations
-    &--rotating {
-      .lp-device-mask {
-        transition-duration: .3s;
-        transition-property: transform;
-      }
-      .lp-device-preview-container {
-        opacity: 0;
-        transition: opacity 0s;
+    @media screen and (prefers-reduced-motion: no-preference) {
+      &--rotating {
+        .lp-device-mask {
+          transition-duration: .3s;
+          transition-property: transform;
+        }
+        .lp-device-preview-container {
+          opacity: 0;
+          transition: opacity 0s;
+        }
       }
     }
   }

@@ -106,11 +106,7 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     setAnimationDuration: function() {
-        if (Garnish.prefersReducedMotion()) {
-            this.animationDuration = 0;
-        } else {
-            this.animationDuration = 'slow';
-        }
+        this.animationDuration = Garnish.prefersReducedMotion() ? 0 : 'slow';
     },
 
     open: function() {
