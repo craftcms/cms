@@ -954,6 +954,7 @@ class Elements extends Component
 
         try {
             foreach (Db::each($query) as $element) {
+                /** @var ElementInterface $element */
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -1048,6 +1049,7 @@ class Elements extends Component
 
         try {
             foreach (Db::each($query) as $element) {
+                /** @var ElementInterface $element */
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
