@@ -6,6 +6,8 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\services\ElementSources;
 use craft\services\ProjectConfig;
@@ -57,7 +59,20 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
                 if (!empty($settings['sources'])) {
                     foreach ($settings['sources'] as $key => $sourceSettings) {
                         if (isset($sourceConfigs[$key]) && !empty($sourceSettings['tableAttributes'])) {
-                            $sourceConfigs[$key]['tableAttributes'] = array_values($sourceSettings['tableAttributes']);
+                            $tableAttributes = [];
+                            foreach ($sourceSettings['tableAttributes'] as $attribute) {
+                                // field:id => field:uid
+                                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                                    $fieldUid = Db::uidById(Table::FIELDS, $matches[1]);
+                                    if ($fieldUid) {
+                                        $tableAttributes[] = "field:$fieldUid";
+                                    }
+                                } else {
+                                    $tableAttributes[] = $attribute;
+                                }
+                            }
+
+                            $sourceConfigs[$key]['tableAttributes'] = $tableAttributes;
                         }
                     }
                 }
