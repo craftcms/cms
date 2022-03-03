@@ -36,17 +36,13 @@
                 'hover:tw-bg-blue-700 hover:tw-border-blue-700 active:hover:tw-bg-blue-600 active:hover:tw-border-blue-600': kind === 'primary' && !outline,
                 'active:tw-bg-blue-800 active:tw-border-blue-800': kind === 'primary' && !outline,
                 'disabled:tw-bg-blue-600 disabled:tw-border-blue-600': kind === 'primary' && !outline,
-                'tw-text-blue-600': kind === 'primary' && outline,
-                'hover:tw-bg-blue-600': kind === 'primary' && outline,
-                'active:tw-bg-blue-800': kind === 'primary' && outline,
+                'tw-text-blue-600 hover:tw-bg-blue-600 active:tw-bg-blue-800': kind === 'primary' && outline,
 
                 // Secondary
                 'tw-border-gray-200 tw-text-blue-600': kind === 'secondary',
                 'hover:tw-cursor-pointer hover:tw-bg-gray-50 hover:tw-border-gray-200': kind === 'secondary',
                 'active:tw-cursor-pointer active:tw-bg-gray-100 active:tw-border-gray-300': kind === 'secondary',
-                'tw-bg-white': kind === 'secondary' && !outline,
-                'tw-text-blue-600': kind === 'secondary' && !outline,
-                'tw-shadow-gray-600/7': kind === 'secondary' && !outline,
+                'tw-text-blue-600 tw-bg-white tw-shadow-gray-600/7': kind === 'secondary' && !outline,
 
                 // Danger
                 'tw-text-red-600 tw-bg-white tw-border-gray-200': kind === 'danger',
@@ -67,7 +63,6 @@
         class="tw-mr-1"
         :icon="icon"
         size="3" />
-
       <slot></slot>
 
       <c-icon

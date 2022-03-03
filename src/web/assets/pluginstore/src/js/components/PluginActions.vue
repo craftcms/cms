@@ -11,7 +11,7 @@
           icon="check"
           block
           large
-          outline
+          disabled
           @click="$root.openModal('cart')">{{
             "Already in your cart"|t('app')
           }}
