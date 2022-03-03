@@ -33,7 +33,6 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
             foreach ($dbSettings as $elementType => $settings) {
                 $settings = Json::decode($settings);
                 $sourceConfigs = [];
-                $indexedSourceConfigs = [];
 
                 if (!empty($settings['sourceOrder'])) {
                     foreach ($settings['sourceOrder'] as [$sourceType, $value]) {
@@ -45,7 +44,7 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
                                 ];
                                 break;
                             case 'key':
-                                $sourceConfigs[] = $indexedSourceConfigs[$value] = [
+                                $sourceConfigs[$value] = [
                                     'type' => ElementSources::TYPE_NATIVE,
                                     'key' => $value,
                                 ];
@@ -57,13 +56,13 @@ class m210904_132612_store_element_source_settings_in_project_config extends Mig
                 // Merge in any custom table attribute selections
                 if (!empty($settings['sources'])) {
                     foreach ($settings['sources'] as $key => $sourceSettings) {
-                        if (isset($indexedSourceConfigs[$key]) && !empty($sourceSettings['tableAttributes'])) {
-                            $indexedSourceConfigs[$key]['tableAttributes'] = array_values($sourceSettings['tableAttributes']);
+                        if (isset($sourceConfigs[$key]) && !empty($sourceSettings['tableAttributes'])) {
+                            $sourceConfigs[$key]['tableAttributes'] = array_values($sourceSettings['tableAttributes']);
                         }
                     }
                 }
 
-                $newSettings[$elementType] = $sourceConfigs;
+                $newSettings[$elementType] = array_values($sourceConfigs);
             }
 
             $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES, $newSettings);
