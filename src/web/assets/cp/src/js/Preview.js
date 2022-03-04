@@ -14,7 +14,9 @@ Craft.Preview = Garnish.Base.extend({
     $dragHandle: null,
     $previewWrapper: null,
     $previewContainer: null,
+    $previewSkipLink: null,
     $bumperLink: null,
+    $notifier: null,
     $iframeContainer: null,
     $previewHeader: null,
     $targetBtn: null,
@@ -125,6 +127,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$modalLabel = $('<h2/>', {'id': 'lp-preview-heading', 'class': 'visually-hidden', 'html': Craft.t('app', 'Preview')}).appendTo(this.$previewWrapper);
             this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(this.$previewWrapper);
             this.$previewContainer = $('<div/>', {'class': 'lp-preview-container', 'id': 'lp-preview-container'}).appendTo(this.$previewWrapper);
+            this.$notifier = $('<span/>', {'class': 'visually-hidden', 'aria-live': 'assertive'}).appendTo(this.$previewContainer);
 
             var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
             this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
@@ -280,6 +283,22 @@ Craft.Preview = Garnish.Base.extend({
         this.trigger('open');
     },
 
+    _getDeviceTypeTranslation: function(type) {
+        let translation;
+        switch (type) {
+            case 'mobile':
+                translation = Craft.t('app', 'Mobile');
+                break;
+            case 'tablet':
+                translation = Craft.t('app', 'Tablet');
+                break;
+            default:
+                translation = Craft.t('app', 'Desktop');
+                break;
+        }
+        return translation;
+    },
+
     _buildDeviceTypeFieldset: function() {
         this.$deviceTypeContainer = $('<fieldset/>', {
             class: 'lp-device-type',
@@ -315,12 +334,12 @@ Craft.Preview = Garnish.Base.extend({
         const $desktopLabel = $('<label/>', {
             for: 'device-desktop',
             class: 'btn lp-device-type__label lp-device-type__label--desktop active',
-            title: Craft.t('app', 'Desktop'),
+            title: this._getDeviceTypeTranslation('desktop'),
         }).appendTo($desktopWrapper);
 
         $('<span/>', {
             class: 'visually-hidden',
-            text: Craft.t('app', 'Desktop'),
+            text: this._getDeviceTypeTranslation('desktop'),
         }).appendTo($desktopLabel);
 
         // Tablet
@@ -343,12 +362,12 @@ Craft.Preview = Garnish.Base.extend({
         const $tabletLabel = $('<label/>', {
             for: 'device-tablet',
             class: 'btn lp-device-type__label lp-device-type__label--tablet',
-            title: Craft.t('app', 'Tablet'),
+            title: this._getDeviceTypeTranslation('tablet'),
         }).appendTo($tabletWrapper);
 
         $('<span/>', {
             class: 'visually-hidden',
-            text: Craft.t('app', 'Tablet'),
+            text: this._getDeviceTypeTranslation('tablet'),
         }).appendTo($tabletLabel);
 
         // Mobile
@@ -371,12 +390,12 @@ Craft.Preview = Garnish.Base.extend({
         const $mobileLabel = $('<label/>', {
             for: 'device-phone',
             class: 'btn lp-device-type__label lp-device-type__label--phone',
-            title: Craft.t('app', 'Mobile'),
+            title: this._getDeviceTypeTranslation('mobile'),
         }).appendTo($mobileWrapper);
 
         $('<span/>', {
             class: 'visually-hidden',
-            text: Craft.t('app', 'Mobile'),
+            text: this._getDeviceTypeTranslation('mobile'),
         }).appendTo($mobileLabel);
     },
 
@@ -685,6 +704,11 @@ Craft.Preview = Garnish.Base.extend({
         } else {
             this.$iframeContainer.removeClass('lp-iframe-container--tablet');
         }
+        
+        // Update screen reader text
+        const updateText = Craft.t('app', 'Preview updated to {type} device type', {type: this._getDeviceTypeTranslation(newDeviceType)});
+        this.$notifier.html = '';
+        this.$notifier.text(updateText);
 
         if (this.currentDeviceType !== 'desktop') {
             this.updateDevicePreview();

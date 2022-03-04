@@ -1047,6 +1047,7 @@ return [
     'Preview file' => 'Preview file',
     'Preview not available.' => 'Preview not available.',
     'Preview' => 'Preview',
+    'Preview updated to {type} device type' => 'Preview updated to {type} device type',
     'Previous Page' => 'Previous Page',
     'Price includes 1 year of updates.' => 'Price includes 1 year of updates.',
     'Primary {type} page' => 'Primary {type} page',
