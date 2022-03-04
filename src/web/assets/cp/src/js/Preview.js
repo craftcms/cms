@@ -299,6 +299,10 @@ Craft.Preview = Garnish.Base.extend({
         return translation;
     },
 
+    _getDeviceOrientationTranslation: function(orientation) {
+      return orientation === 'portrait' ? Craft.t('app','Portrait') : Craft.t('app', 'Landscape');
+    },
+
     _buildDeviceTypeFieldset: function() {
         this.$deviceTypeContainer = $('<fieldset/>', {
             class: 'lp-device-type',
@@ -669,15 +673,11 @@ Craft.Preview = Garnish.Base.extend({
 
         if (this.currentDeviceType !== 'desktop') {
             params = {...params, ...{
-                orientation: this.deviceOrientation,
+                orientation: this._getDeviceOrientationTranslation(this.deviceOrientation),
             }};
         }
 
-        console.log(params);
-
         const message = Craft.t('app', translation, params);
-
-        console.log(message);
 
         setTimeout(() => {
             this.$notifier.text(message);
