@@ -128,7 +128,7 @@
                 .then((response) => {
                     $('#token-spinner').addClass('hidden');
                     $headerInput
-                        .val('Authorization: Bearer ' + response.accessToken)
+                        .val('Authorization: Bearer ' + response.data.accessToken)
                         .removeClass('disabled');
                     copyHeader();
                 })
@@ -150,11 +150,11 @@
         Craft.sendActionRequest('POST', 'graphql/generate-token')
             .then((response) => {
                 $headerInput
-                .val('Authorization: Bearer ' + response.accessToken)
-                .removeClass('disabled');
+                    .val('Authorization: Bearer ' + response.data.accessToken)
+                    .removeClass('disabled');
                 $tokenInput
-                .val(response.accessToken)
-                .prop('disabled', false);
+                    .val(response.data.accessToken)
+                    .prop('disabled', false);
                 $regenBtn.removeClass('active');
                 regenerating = false;
             })
