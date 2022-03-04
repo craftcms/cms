@@ -118,11 +118,15 @@ class Asset extends Element
      */
     public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
-
     /**
      * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
      */
     public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
+
+    /**
+     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     */
+    public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
     // Location error codes
     // -------------------------------------------------------------------------
@@ -1536,8 +1540,19 @@ JS;
                     }
                 }
 
+                $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
 
-                return $imageTransformer->getTransformUrl($this, $transform, $immediately);
+                if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
+                    $event = new GenerateTransformEvent([
+                        'asset' => $this,
+                        'transform' => $transform,
+                        'url' => $url
+                    ]);
+
+                    $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
+                }
+
+                return $url;
             } catch (ImageTransformException $e) {
                 Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);

@@ -116,6 +116,8 @@
 - Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
+- Added `craft\elements\Asset::EVENT_GENERATE_TRANSFORM`.
+- Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
 - Added `craft\elements\conditions\addresses\AddressCondition`.
 - Added `craft\elements\conditions\addresses\CountryConditionRule`.
 - Added `craft\elements\conditions\assets\AssetCondition`.
