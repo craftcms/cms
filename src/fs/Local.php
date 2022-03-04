@@ -13,6 +13,7 @@ use craft\base\Fs;
 use craft\base\LocalFsInterface;
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
+use craft\errors\InvalidFsException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
@@ -275,9 +276,14 @@ class Local extends Fs implements LocalFsInterface
     /**
      * @inheritdoc
      */
-    public function getFileStream(string $uriPath): bool
+    public function getFileStream(string $uriPath)
     {
-        return @fopen($this->prefixPath($uriPath), 'rb');
+        $path = $this->prefixPath($uriPath);
+        $file = @fopen($path, 'rb');
+        if (!$file) {
+            throw new FsObjectNotFoundException("Unable to open $path.");
+        }
+        return $file;
     }
 
     /**

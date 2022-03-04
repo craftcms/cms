@@ -693,6 +693,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             fileuploadstart: this._onUploadStart.bind(this),
             fileuploadprogressall: this._onUploadProgress.bind(this),
             fileuploaddone: this._onUploadComplete.bind(this),
+            fileuploadfail: this._onUploadFailure.bind(this),
         };
 
         if (this.settings.criteria && typeof this.settings.criteria.kind !== 'undefined') {
@@ -880,38 +881,37 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     /**
+     * On Upload Failure.
+     */
+    _onUploadFailure: function(event, data) {
+        const {result} = data;
+        const {message, filename} = result;
+        if (message) {
+            alert(Craft.t('app', 'Upload failed. The error message was: “{message}”', {message}));
+        } else {
+            alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
+        }
+    },
+        /**
      * On Upload Complete.
      */
     _onUploadComplete: function(event, data) {
-        var response = data.result;
-        var filename = data.files[0].name;
+        const {result} = data;
 
-        var doReload = true;
+        // Add the uploaded file to the selected ones, if appropriate
+        this._uploadedAssetIds.push(result.assetId);
 
-        if (response.success || response.conflict) {
-            // Add the uploaded file to the selected ones, if appropriate
-            this._uploadedAssetIds.push(response.assetId);
+        // If there is a prompt, add it to the queue
+        if (result.conflict) {
+            result.prompt = {
+                message: Craft.t('app', result.conflict, {file: result.filename}),
+                choices: this._fileConflictTemplate.choices
+            };
 
-            // If there is a prompt, add it to the queue
-            if (response.conflict) {
-                response.prompt = {
-                    message: Craft.t('app', response.conflict, {file: response.filename}),
-                    choices: this._fileConflictTemplate.choices
-                };
-
-                this.promptHandler.addPrompt(response);
-            }
-
-            Craft.cp.runQueue();
-        } else {
-            if (response.error) {
-                alert(Craft.t('app', 'Upload failed. The error message was: “{error}”', {error: response.error}));
-            } else {
-                alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
-            }
-
-            doReload = false;
+            this.promptHandler.addPrompt(result);
         }
+
+        Craft.cp.runQueue();
 
         // For the last file, display prompts, if any. If not - just update the element view.
         if (this.uploader.isLastUpload()) {
@@ -921,9 +921,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             if (this.promptHandler.getPromptCount()) {
                 this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
             } else {
-                if (doReload) {
-                    this._updateAfterUpload();
-                }
+                this._updateAfterUpload();
             }
         }
     },

@@ -31,6 +31,7 @@ use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
 use craft\errors\FileException;
+use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
@@ -1788,7 +1789,7 @@ JS;
      *
      * @return resource
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws VolumeException if a stream cannot be created
+     * @throws FsException if a stream cannot be created
      */
     public function getStream()
     {
@@ -2492,13 +2493,13 @@ JS;
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
             $oldVolume->getFs()->renameFile($oldPath, $newPath);
         } else {
-            if (!$this->_validateTempFilePath()) {
-                Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
-                $this->tempFilePath = null;
-            }
-
             // Get the temp path
             if (isset($this->tempFilePath)) {
+                if (!$this->_validateTempFilePath()) {
+                    Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
+                    throw new FileException(Craft::t('app', "There was an error relocating the file."));
+                }
+
                 $tempPath = $this->tempFilePath;
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);

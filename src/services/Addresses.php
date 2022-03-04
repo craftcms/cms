@@ -22,6 +22,7 @@ use craft\events\ConfigEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use yii\base\Component;
 
 /**
@@ -40,17 +41,17 @@ class Addresses extends Component
     /**
      * @var CountryRepository
      */
-    public CountryRepository $_countryRepository;
+    private CountryRepository $_countryRepository;
 
     /**
      * @var SubdivisionRepository
      */
-    public SubdivisionRepository $_subdivisionRepository;
+    private SubdivisionRepository $_subdivisionRepository;
 
     /**
      * @var AddressFormatRepository
      */
-    public AddressFormatRepository $_addressFormatRepository;
+    private AddressFormatRepository $_addressFormatRepository;
 
     /**
      * @inheritdoc
@@ -178,6 +179,30 @@ class Addresses extends Component
     }
 
     /**
+     * Returns the address field layout.
+     *
+     * @return FieldLayout
+     */
+    public function getLayout(): FieldLayout
+    {
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class);
+
+        // Ensure it has at least one tab.
+        // (The only reason this could possibly be null is if a module is removing all our own native fields
+        // via EVENT_DEFINE_NATIVE_FIELDS.)
+        $firstTab = $fieldLayout->getTabs()[0] ?? null;
+        if (!$firstTab) {
+            $firstTab = new FieldLayoutTab([
+                'layout' => $fieldLayout,
+                'name' => Craft::t('app', 'Content'),
+            ]);
+            $fieldLayout->setTabs([$firstTab]);
+        }
+
+        return $fieldLayout;
+    }
+
+    /**
      * Save the address field layout
      *
      * @param FieldLayout $layout
@@ -220,7 +245,7 @@ class Addresses extends Component
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig($config);
-        $layout->id = $fieldsService->getLayoutByType(Address::class)->id;
+        $layout->id = $this->getLayout()->id;
         $layout->type = Address::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout);

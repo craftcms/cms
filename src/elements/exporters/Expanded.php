@@ -10,6 +10,7 @@ namespace craft\elements\exporters;
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementExporter;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
@@ -33,7 +34,7 @@ class Expanded extends ElementExporter
     /**
      * @inheritdoc
      */
-    public function export(ElementQueryInterface $query): array
+    public function export(ElementQueryInterface $query): mixed
     {
         // Eager-load as much as we can
         $eagerLoadableFields = [];
@@ -49,16 +50,17 @@ class Expanded extends ElementExporter
         $query->with($eagerLoadableFields);
 
         foreach (Db::each($query) as $element) {
+            /** @var ElementInterface $element */
             // Get the basic array representation excluding custom fields
             $attributes = array_flip($element->attributes());
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
-                foreach ($fieldLayout->getFields() as $field) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
                     unset($attributes[$field->handle]);
                 }
             }
             $elementArr = $element->toArray(array_keys($attributes));
             if ($fieldLayout !== null) {
-                foreach ($fieldLayout->getFields() as $field) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
                     $value = $element->getFieldValue($field->handle);
                     $elementArr[$field->handle] = $field->serializeValue($value, $element);
                 }
