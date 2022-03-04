@@ -216,7 +216,7 @@ Craft.Preview = Garnish.Base.extend({
 
             /* Prevents focus trap bug caused by iframe as last element */
             this.$bumperLink = $('<a/>', {
-                'class': 'skip-link btn lp-preview-container__skip-link',
+                'class': 'skip-link btn lp-preview-container__bumper-link',
                 'html': previewSkipLinkText,
                 'href': '#lp-preview-container'});
             this.$bumperLink.appendTo(this.$previewContainer);
