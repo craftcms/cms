@@ -973,6 +973,7 @@ return [
     'Only save entries to the site they were created in' => 'Only save entries to the site they were created in',
     'Only up to {version} is compatible with your version of Craft.' => 'Only up to {version} is compatible with your version of Craft.',
     'Oops!' => 'Oops!',
+    'Open in a new tab' => 'Open in a new tab',
     'Open the full edit page in a new tab' => 'Open the full edit page in a new tab',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Option Label',

@@ -14,6 +14,7 @@ Craft.Preview = Garnish.Base.extend({
     $dragHandle: null,
     $previewWrapper: null,
     $previewContainer: null,
+    $viewPreviewLink: null,
     $iframeContainer: null,
     $previewHeader: null,
     $targetBtn: null,
@@ -117,10 +118,13 @@ Craft.Preview = Garnish.Base.extend({
             const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {title: Craft.t('app', 'Preview')});
 
             this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
-            this.$previewWrapper = $('<div/>', {'role': 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'lp-preview-heading'}).appendTo(Garnish.$bod);
+            this.$previewWrapper = $('<div/>', {
+                'role': 'dialog', 'aria-modal': 'true',
+                'aria-labelledby': 'lp-preview-heading'
+            }).appendTo(Garnish.$bod);
             this.$modalLabel = $('<h2/>', {'id': 'lp-preview-heading', 'class': 'visually-hidden', 'html': Craft.t('app', 'Preview')}).appendTo(this.$previewWrapper);
             this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(this.$previewWrapper);
-            this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(this.$previewWrapper);
+            this.$previewContainer = $('<div/>', {'class': 'lp-preview-container', 'id': 'lp-preview-container'}).appendTo(this.$previewWrapper);
 
             var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
             this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
@@ -134,12 +138,10 @@ Craft.Preview = Garnish.Base.extend({
             this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
             this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
             this.$statusMessage = $('<span/>', {'class': 'visually-hidden', 'aria-live': 'polite'}).appendTo($editorHeader);
-            this.$previewSkipLink = $('<a/>', {'class': 'skip-link btn', 'href': '#preview-container', 'html': previewSkipLinkText}).appendTo($editorHeader);
+            this.$previewSkipLink = $('<a/>', {'class': 'skip-link btn', 'href': '#lp-preview-container', 'html': previewSkipLinkText}).appendTo($editorHeader);
 
             if (Craft.Pro) {
-                const deviceSkipLinkText = Craft.t('app', 'Skip to {title}', {title: Craft.t('app', 'Device type')});
-                this.$deviceSkipLink = $('<a/>', {'class': 'skip-link btn', 'href': '#device-header', 'html': deviceSkipLinkText}).insertBefore(this.$previewSkipLink);
-                this.$previewHeader = $('<header/>', {'class': 'lp-preview-header', 'id': 'device-header'}).appendTo(this.$previewContainer);
+                this.$previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
 
                 // Preview targets
                 if (this.draftEditor.settings.previewTargets.length > 1) {
@@ -178,7 +180,7 @@ Craft.Preview = Garnish.Base.extend({
                     type: 'button',
                     'class': 'btn disabled',
                     'data-icon': 'rotate',
-                    disabled: '',
+                    'aria-disabled': 'false',
                     'text': Craft.t('app', 'Rotate'),
                     'aria-label': Craft.t('app', 'Rotate'),
                 }).appendTo($buttonContainer);
@@ -207,11 +209,18 @@ Craft.Preview = Garnish.Base.extend({
             this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
             this.$devicePreviewContainer = $('<div/>', {
                 'class': 'lp-device-preview-container',
-                'id': 'preview-container',
             }).appendTo(this.$iframeContainer);
             this.$deviceMask = $('<div/>', {
                 'class': 'lp-device-mask',
             }).appendTo(this.$iframeContainer);
+
+            /* Prevents focus trap bug caused by iframe as last element */
+            this.$openPreviewLink = $('<a/>', {
+                'class': 'skip-link btn',
+                'html': Craft.t('app', 'Open in a new tab'),
+                'target': '_blank',
+                'href': '#'});
+            this.$openPreviewLink.appendTo(this.$previewContainer);
 
             this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                 axis: Garnish.X_AXIS,
@@ -614,6 +623,7 @@ Craft.Preview = Garnish.Base.extend({
 
             this.url = url;
             this.$iframe = $iframe;
+            this.$openPreviewLink.attr('href', this.url);
 
             if (this._devicePreviewIsActive()) {
                 this.updateDevicePreview();
@@ -659,14 +669,14 @@ Craft.Preview = Garnish.Base.extend({
             // Disable the orientation button
             this.$orientationBtn
                 .addClass('disabled')
-                .attr('disabled', '');
+                .attr('aria-disabled', 'true');
 
             this.$iframeContainer.removeClass('lp-iframe-container--has-device-preview');
         } else {
             // Enable the orientation button
             this.$orientationBtn
                 .removeClass('disabled')
-                .removeAttr('disabled');
+                .removeAttr('aria-disabled');
 
             this.$iframeContainer.addClass('lp-iframe-container--has-device-preview');
         }
