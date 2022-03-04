@@ -289,7 +289,7 @@ class ElementSources extends Component
                     $field instanceof PreviewableFieldInterface &&
                     !isset($processedFieldIds[$field->id])
                 ) {
-                    $event->attributes["field:$field->id"] = [
+                    $event->attributes["field:$field->uid"] = [
                         'label' => Craft::t('site', $field->name),
                     ];
                     $processedFieldIds[$field->id] = true;

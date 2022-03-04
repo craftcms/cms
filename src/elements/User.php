@@ -1812,6 +1812,7 @@ class User extends Element implements IdentityInterface
                     ->status(null);
 
                 foreach (Db::each($entryQuery) as $entry) {
+                    /** @var Entry $entry */
                     $elementsService->deleteElement($entry);
                 }
             }

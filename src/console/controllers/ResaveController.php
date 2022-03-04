@@ -29,6 +29,8 @@ use yii\helpers\Console;
 
 /**
  * Allows you to bulk-save elements.
+ * 
+ * See [Bulk-Resaving Elements](https://craftcms.com/knowledge-base/bulk-resaving-elements) for examples.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.15

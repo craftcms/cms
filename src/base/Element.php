@@ -1008,9 +1008,9 @@ abstract class Element extends Component implements ElementInterface
     {
         /** @var ElementQuery $elementQuery */
         // Is this a custom field?
-        if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-            $fieldId = $matches[1];
-            Craft::$app->getFields()->getFieldById($fieldId)?->modifyElementIndexQuery($elementQuery);
+        if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+            $fieldUid = $matches[1];
+            Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
         }
     }
 
@@ -4196,9 +4196,9 @@ abstract class Element extends Component implements ElementInterface
 
             default:
                 // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+                    $fieldUid = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
 
                     if ($field) {
                         if ($field instanceof PreviewableFieldInterface) {

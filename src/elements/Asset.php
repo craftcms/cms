@@ -2493,13 +2493,13 @@ JS;
         if (!isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
             $oldVolume->getFs()->renameFile($oldPath, $newPath);
         } else {
-            if (!$this->_validateTempFilePath()) {
-                Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
-                throw new FileException(Craft::t('app', "There was an error relocating the file."));
-            }
-
             // Get the temp path
             if (isset($this->tempFilePath)) {
+                if (!$this->_validateTempFilePath()) {
+                    Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
+                    throw new FileException(Craft::t('app', "There was an error relocating the file."));
+                }
+
                 $tempPath = $this->tempFilePath;
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);

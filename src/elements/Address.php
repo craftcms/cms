@@ -407,6 +407,32 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function beforeValidate()
+    {
+        $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
+        $usedFields = array_unique([
+            ...$formatter->getUsedFields(),
+            'fullName',
+            'latLong',
+            'organizationTaxId',
+            'organization',
+            'countryCode',
+        ]);
+        $nullFields = array_filter(
+            array_diff(self::_addressAttributes(), $usedFields),
+            fn(string $attribute) => !in_array($attribute, ['givenName', 'familyName', 'additionalName']),
+        );
+
+        foreach ($nullFields as $field) {
+            $this->$field = null;
+        }
+
+        return parent::beforeValidate();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -516,6 +542,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getFields()->getLayoutByType(self::class);
+        return Craft::$app->getAddresses()->getLayout();
     }
 }
