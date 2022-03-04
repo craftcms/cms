@@ -164,18 +164,18 @@
                 :key="key"
                 class="tw-inline-block tw-mr-2 tw-my-1.5"
               >
-                <nuxt-link
+                <router-link
                   :key="key"
-                  class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-medium tw-rounded-full tw-cursor-pointer"
+                  class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-medium tw-rounded-full tw-cursor-pointer hover:tw-no-underline"
                   :class="{
                     'tw-bg-blue-50 hover:tw-bg-blue-600': true,
                     'hover:tw-text-white': true,
                   }"
-                  :to="'/categories/'+category.slug"
+                  :to="'/categories/'+category.id"
                   :title="category.title + ' plugins for Craft CMS'"
                 >
                   {{ category.title }}
-                </nuxt-link>
+                </router-link>
               </li>
             </template>
           </ul>
