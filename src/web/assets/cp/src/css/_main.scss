@@ -4897,6 +4897,7 @@ ul.tree,
         @include menu-option-styles;
         font-size: 14px;
         cursor: default;
+        -webkit-appearance: none;
 
         &:not(.flex) {
           display: block !important;
