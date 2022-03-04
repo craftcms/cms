@@ -164,6 +164,11 @@
     }
   }
 
+  .lp-preview-container__skip-link {
+    top: unset;
+    bottom: 0;
+  }
+
   .lp-device-type__item:not(:first-child) .btn {
     body.ltr & {
       border-top-left-radius: 0;

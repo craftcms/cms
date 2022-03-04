@@ -14,7 +14,7 @@ Craft.Preview = Garnish.Base.extend({
     $dragHandle: null,
     $previewWrapper: null,
     $previewContainer: null,
-    $viewPreviewLink: null,
+    $bumperLink: null,
     $iframeContainer: null,
     $previewHeader: null,
     $targetBtn: null,
@@ -115,7 +115,7 @@ Craft.Preview = Garnish.Base.extend({
         $(document.activeElement).trigger('blur');
 
         if (!this.$editor) {
-            const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {title: Craft.t('app', 'Preview')});
+            const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {title: Craft.t('app', 'Top of Preview')});
 
             this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
             this.$previewWrapper = $('<div/>', {
@@ -215,12 +215,11 @@ Craft.Preview = Garnish.Base.extend({
             }).appendTo(this.$iframeContainer);
 
             /* Prevents focus trap bug caused by iframe as last element */
-            this.$openPreviewLink = $('<a/>', {
-                'class': 'skip-link btn',
-                'html': Craft.t('app', 'Open in a new tab'),
-                'target': '_blank',
-                'href': '#'});
-            this.$openPreviewLink.appendTo(this.$previewContainer);
+            this.$bumperLink = $('<a/>', {
+                'class': 'skip-link btn lp-preview-container__skip-link',
+                'html': previewSkipLinkText,
+                'href': '#lp-preview-container'});
+            this.$bumperLink.appendTo(this.$previewContainer);
 
             this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                 axis: Garnish.X_AXIS,
@@ -623,7 +622,6 @@ Craft.Preview = Garnish.Base.extend({
 
             this.url = url;
             this.$iframe = $iframe;
-            this.$openPreviewLink.attr('href', this.url);
 
             if (this._devicePreviewIsActive()) {
                 this.updateDevicePreview();
