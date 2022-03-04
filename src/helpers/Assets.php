@@ -79,20 +79,20 @@ class Assets
     }
 
     /**
-     * Generates a URL for a given Assets file in a Source Type.
+     * Generates a URL for a given Assets file on a filesystem.
      *
-     * @param Volume $volume
+     * @param FsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      * @throws InvalidConfigException
      */
-    public static function generateUrl(Volume $volume, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $baseUrl = $volume->getFs()->getRootUrl();
+        $baseUrl = $fs->getRootUrl();
         $folderPath = $asset->folderPath;
-        $appendix = static::urlAppendix($volume, $asset, $dateUpdated);
+        $appendix = static::urlAppendix($asset, $dateUpdated);
 
         return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->getFilename()) . $appendix);
     }
@@ -100,12 +100,11 @@ class Assets
     /**
      * Get appendix for a URL based on its Source caching settings.
      *
-     * @param Volume $volume
      * @param Asset $asset
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      */
-    public static function urlAppendix(Volume $volume, Asset $asset, ?DateTime $dateUpdated = null): string
+    public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return '';

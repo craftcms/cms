@@ -35,6 +35,7 @@ use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
@@ -116,6 +117,12 @@ class Asset extends Element
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
      */
     public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
+
+
+    /**
+     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     */
+    public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     // Location error codes
     // -------------------------------------------------------------------------
@@ -1479,7 +1486,14 @@ JS;
     {
         $volume = $this->getVolume();
 
-        if (!$volume->getFs()->hasUrls || !$this->folderId) {
+        // Normalize empty transform values
+        $transform = $transform ?? $this->_transform;
+
+        $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
+        $noFolder = !$this->folderId;
+        $transformNoUrl = $transform && !$volume->getTransformFs()->hasUrls;
+
+        if ($fsNoUrls || $noFolder || $transformNoUrl) {
             return null;
         }
 
@@ -1490,12 +1504,8 @@ JS;
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return Assets::generateUrl($volume, $this);
+            return Assets::generateUrl($volume->getFs(), $this);
         }
-
-        // Normalize empty transform values
-        $transform = $transform ?? $this->_transform;
-
 
         if ($transform) {
             if (is_array($transform)) {
@@ -1512,6 +1522,21 @@ JS;
             $imageTransformer = $transform->getImageTransformer();
 
             try {
+                if ($this->hasEventHandlers(self::EVENT_GENERATE_TRANSFORM)) {
+                    $event = new GenerateTransformEvent([
+                        'asset' => $this,
+                        'transform' => $transform,
+                    ]);
+
+                    $this->trigger(self::EVENT_GENERATE_TRANSFORM, $event);
+
+                    // If a plugin set the url, we'll just use that.
+                    if ($event->url !== null) {
+                        return $event->url;
+                    }
+                }
+
+
                 return $imageTransformer->getTransformUrl($this, $transform, $immediately);
             } catch (ImageTransformException $e) {
                 Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
@@ -1520,7 +1545,7 @@ JS;
             }
         }
 
-        return Assets::generateUrl($volume, $this);
+        return Assets::generateUrl($volume->getFs(), $this);
     }
 
     /**

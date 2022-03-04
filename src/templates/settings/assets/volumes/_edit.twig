@@ -36,6 +36,8 @@
 
     <hr>
 
+    {% set fsOptions = craft.cp.getFsOptions() %}
+
     {{ forms.fsField({
         label: 'Filesystem'|t('app'),
         instructions: 'Choose which filesystem the volume should connect to.'|t('app'),
@@ -43,6 +45,17 @@
         name: 'fsHandle',
         includeEnvVars: true,
         value: volume.getFsHandle(false),
+        options: fsOptions
+    }) }}
+
+    {{ forms.fsField({
+        label: 'Transform filesystem'|t('app'),
+        instructions: 'Choose which filesystem the volume should use to store all transforms.'|t('app'),
+        id: 'transform-fs-handle',
+        name: 'transformFsHandle',
+        includeEnvVars: true,
+        value: volume.transformFsHandle(false),
+        options: [{label: "Same as volume filesystem"|t('app'), value: null}]|merge(fsOptions)
     }) }}
 
     {% if craft.app.getIsMultiSite() %}

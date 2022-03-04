@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\Asset;
+use craft\models\ImageTransform;
 use yii\base\Event;
 
 /**
@@ -24,14 +25,9 @@ class DefineAssetThumbUrlEvent extends Event
     public Asset $asset;
 
     /**
-     * @var int Requested thumbnail width
+     * @var ImageTransform Image transform representing the thumbnail
      */
-    public int $width;
-
-    /**
-     * @var int Requested thumbnail height
-     */
-    public int $height;
+    public ImageTransform $transform;
 
     /**
      * @var bool Whether the thumbnail should be generated if it doesn't exist yet.
