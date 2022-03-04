@@ -34,9 +34,9 @@ class GqlToken extends Model
     public ?int $id = null;
 
     /**
-     * @var string Token name
+     * @var string|null Token name
      */
-    public string $name;
+    public ?string $name = null;
 
     /**
      * @var int|null ID of the associated schema.
