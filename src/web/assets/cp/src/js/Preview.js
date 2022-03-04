@@ -286,7 +286,7 @@ Craft.Preview = Garnish.Base.extend({
     _getDeviceTypeTranslation: function(type) {
         let translation;
         switch (type) {
-            case 'mobile':
+            case 'phone':
                 translation = Craft.t('app', 'Mobile');
                 break;
             case 'tablet':
@@ -659,6 +659,31 @@ Craft.Preview = Garnish.Base.extend({
         return this.currentDeviceType !== 'desktop';
     },
 
+    _updateNotifier: function() {
+        this.$notifier.html = '';
+
+        const translation = this.currentDeviceType === 'desktop' ? 'Previewing {type} device' : 'Previewing {type} device in {orientation}';
+        let params = {
+            type: this._getDeviceTypeTranslation(this.currentDeviceType),
+        };
+
+        if (this.currentDeviceType !== 'desktop') {
+            params = {...params, ...{
+                orientation: this.deviceOrientation,
+            }};
+        }
+
+        console.log(params);
+
+        const message = Craft.t('app', translation, params);
+
+        console.log(message);
+
+        setTimeout(() => {
+            this.$notifier.text(message);
+        }, 200);
+    },
+
     switchDeviceType: function(ev) {
         this.$iframeContainer.removeClass('lp-iframe-container--rotating');
 
@@ -704,11 +729,8 @@ Craft.Preview = Garnish.Base.extend({
         } else {
             this.$iframeContainer.removeClass('lp-iframe-container--tablet');
         }
-        
-        // Update screen reader text
-        const updateText = Craft.t('app', 'Preview updated to {type} device type', {type: this._getDeviceTypeTranslation(newDeviceType)});
-        this.$notifier.html = '';
-        this.$notifier.text(updateText);
+
+        this._updateNotifier();
 
         if (this.currentDeviceType !== 'desktop') {
             this.updateDevicePreview();
@@ -736,6 +758,7 @@ Craft.Preview = Garnish.Base.extend({
 
         // Update the device preview
         this.updateDevicePreview();
+        this._updateNotifier();
 
         setTimeout(() => {
             this.$iframeContainer.removeClass('lp-iframe-container--rotating');
