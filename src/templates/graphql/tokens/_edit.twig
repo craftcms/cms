@@ -122,19 +122,22 @@
             copyHeader();
         } else {
             Craft.elevatedSessionManager.requireElevatedSession(function() {
-                $('#token-spinner').removeClass('hidden');
-                var data = {{ {tokenUid: token.uid}|json_encode|raw }};
-                Craft.sendActionRequest('POST', 'graphql/fetch-token', {data})
-                    .then((response) => {
-                        $('#token-spinner').addClass('hidden');
-                        $headerInput
-                            .val('Authorization: Bearer ' + response.accessToken)
-                            .removeClass('disabled');
-                        copyHeader();
-                    })
-                    .catch(({response}) => {
-                        $('#token-spinner').addClass('hidden');
-                    });
+            $('#token-spinner').removeClass('hidden');
+            var data = {{ {tokenUid: token.uid}|json_encode|raw }};
+            Craft.sendActionRequest('POST', 'graphql/fetch-token', {data})
+                .then((response) => {
+                    $('#token-spinner').addClass('hidden');
+                    $headerInput
+                        .val('Authorization: Bearer ' + response.accessToken)
+                        .removeClass('disabled');
+                    copyHeader();
+                })
+                .finally(() => {
+                    $('#token-spinner').addClass('hidden');
+                });
+            });
+        }
+    });
 
     $regenBtn.on('click', function() {
         if (regenerating) {
@@ -145,21 +148,20 @@
         $regenBtn.addClass('active');
 
         Craft.sendActionRequest('POST', 'graphql/generate-token')
-        .then((response) => {
-            $('#token-spinner').addClass('hidden');
-            $headerInput
+            .then((response) => {
+                $headerInput
                 .val('Authorization: Bearer ' + response.accessToken)
                 .removeClass('disabled');
-            $tokenInput
+                $tokenInput
                 .val(response.accessToken)
                 .prop('disabled', false);
-            $regenBtn.removeClass('active');
-            regenerating = false;
-        })
-        .catch(() => {
-            $('#token-spinner').addClass('hidden');
+                $regenBtn.removeClass('active');
+                regenerating = false;
+            })
+            .finally(() => {
+                $('#token-spinner').addClass('hidden');
+            });
         });
-    });
 
     new Craft.ElevatedSessionForm('#main-form');
 {% endjs %}
