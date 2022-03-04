@@ -114,6 +114,8 @@ Craft.Preview = Garnish.Base.extend({
         $(document.activeElement).trigger('blur');
 
         if (!this.$editor) {
+            const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {title: Craft.t('app', 'Preview')});
+
             this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
             this.$previewWrapper = $('<div/>', {'role': 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'lp-preview-heading'}).appendTo(Garnish.$bod);
             this.$modalLabel = $('<h2/>', {'id': 'lp-preview-heading', 'class': 'visually-hidden', 'html': Craft.t('app', 'Preview')}).appendTo(this.$previewWrapper);
@@ -132,9 +134,12 @@ Craft.Preview = Garnish.Base.extend({
             this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
             this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
             this.$statusMessage = $('<span/>', {'class': 'visually-hidden', 'aria-live': 'polite'}).appendTo($editorHeader);
+            this.$previewSkipLink = $('<a/>', {'class': 'skip-link btn', 'href': '#preview-container', 'html': previewSkipLinkText}).appendTo($editorHeader);
 
             if (Craft.Pro) {
-                this.$previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
+                const deviceSkipLinkText = Craft.t('app', 'Skip to {title}', {title: Craft.t('app', 'Device type')});
+                this.$deviceSkipLink = $('<a/>', {'class': 'skip-link btn', 'href': '#device-header', 'html': deviceSkipLinkText}).insertBefore(this.$previewSkipLink);
+                this.$previewHeader = $('<header/>', {'class': 'lp-preview-header', 'id': 'device-header'}).appendTo(this.$previewContainer);
 
                 // Preview targets
                 if (this.draftEditor.settings.previewTargets.length > 1) {
@@ -202,6 +207,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
             this.$devicePreviewContainer = $('<div/>', {
                 'class': 'lp-device-preview-container',
+                'id': 'preview-container',
             }).appendTo(this.$iframeContainer);
             this.$deviceMask = $('<div/>', {
                 'class': 'lp-device-mask',
