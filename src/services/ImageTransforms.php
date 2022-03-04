@@ -20,6 +20,7 @@ use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
 use craft\events\AssetGetThumbnailUrlEvent;
 use craft\events\ConfigEvent;
+use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -521,19 +522,19 @@ class ImageTransforms extends Component
      */
     public function getSimpleTransformUrlForAsset(Asset $asset, int $width, int $height, string $mode = 'crop'): string
     {
-        $event = new AssetGetThumbnailUrlEvent([
-            'asset' => $asset,
-            'transformer' => ImageTransformer::class
-        ]);
-
-        $this->trigger(self::EVENT_GET_THUMB_URL, $event);
 
         $transform = new ImageTransform([
             'width' => $width,
             'height' => $height,
             'mode' => $mode,
-            'transformer' => $event->transformer
         ]);
+
+        $event = new DefineAssetThumbUrlEvent([
+            'asset' => $asset,
+            'transform' => $transform
+        ]);
+
+        $this->trigger(self::EVENT_GET_THUMB_URL, $event);
 
         return $transform->getImageTransformer()->getTransformUrl($asset, $transform, true);
     }
