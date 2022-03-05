@@ -50,7 +50,7 @@ class ErrorHandlerTest extends TestCase
         $this->errorHandler = Stub::construct(ErrorHandler::class, [], [
             'logException' => self::assertObjectIsInstanceOfClassCallback(Exception::class),
             'clearOutput' => null,
-            'renderException' => self::assertObjectIsInstanceOfClassCallback(Exception::class)
+            'renderException' => self::assertObjectIsInstanceOfClassCallback(Exception::class),
         ]);
 
         $exception = new RuntimeError('A Twig error occurred');
@@ -141,7 +141,7 @@ class ErrorHandlerTest extends TestCase
             [true, $vendorPath . '/twig/twig/composer.json'],
 
             [false, $craftPath . '/web/twig'],
-            [false, __DIR__]
+            [false, __DIR__],
         ];
     }
 

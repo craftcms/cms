@@ -413,7 +413,7 @@ class UserQuery extends ElementQuery
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
@@ -816,7 +816,7 @@ class UserQuery extends ElementQuery
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ENTRIES)
-                    ->where(['authorId' => new Expression('[[elements.id]]')])
+                    ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }
 
@@ -825,7 +825,7 @@ class UserQuery extends ElementQuery
                 $this->assetUploaders ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ASSETS)
-                    ->where(['uploaderId' => new Expression('[[elements.id]]')])
+                    ->where(['uploaderId' => new Expression('[[elements.id]]')]),
             ]);
         }
 

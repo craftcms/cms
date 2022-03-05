@@ -73,9 +73,9 @@ class FieldLayoutBehavior extends Behavior
 
         if (isset($this->idAttribute)) {
             $id = $this->owner->{$this->idAttribute};
-        } else if (is_callable($this->_fieldLayoutId)) {
+        } elseif (is_callable($this->_fieldLayoutId)) {
             $id = call_user_func($this->_fieldLayoutId);
-        } else if (is_string($this->_fieldLayoutId)) {
+        } elseif (is_string($this->_fieldLayoutId)) {
             $id = $this->owner->{$this->_fieldLayoutId}();
         }
 

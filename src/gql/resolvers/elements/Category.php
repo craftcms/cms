@@ -30,7 +30,7 @@ class Category extends ElementResolver
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = CategoryElement::find();
-            // If not, get the prepared element query
+        // If not, get the prepared element query
         } else {
             $query = $source->$fieldName;
         }

@@ -170,8 +170,8 @@ class MoneyTest extends Unit
             'array-passed' => [
                 [
                     'value' => '1,23',
-                    'locale' => 'nl'
-                ], '123', 'USD', null, null
+                    'locale' => 'nl',
+                ], '123', 'USD', null, null,
             ],
         ];
     }

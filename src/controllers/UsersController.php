@@ -616,7 +616,7 @@ class UsersController extends Controller
                     'email' => $user->unverifiedEmail,
                 ]);
             }
-        } else if ($pending) {
+        } elseif ($pending) {
             // No unverified email so just get on with activating their account
             $usersService->activateUser($user);
         }
@@ -690,7 +690,7 @@ class UsersController extends Controller
                     ->id($userId === 'current' ? $currentUser->id : $userId)
                     ->status(null)
                     ->one();
-            } else if ($edition === Craft::Pro) {
+            } elseif ($edition === Craft::Pro) {
                 // Registering a new user
                 $user = new User();
             }
@@ -867,7 +867,7 @@ class UsersController extends Controller
         if (!$isNewUser) {
             if ($isCurrentUser) {
                 $title = Craft::t('app', 'My Account');
-            } else if ($name) {
+            } elseif ($name) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
                 $title = Craft::t('app', 'Edit User');
@@ -1348,7 +1348,7 @@ JS,
             if ($isPublicRegistration) {
                 // Assign them to the default user group
                 Craft::$app->getUsers()->assignUserToDefaultGroup($user);
-            } else if ($currentUser) {
+            } elseif ($currentUser) {
                 // Fire an 'afterBeforeGroupsAndPermissions' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                     $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
@@ -1992,7 +1992,7 @@ JS,
             move_uploaded_file($photo->tempName, $fileLocation);
             $filename = $photo->name;
             $newPhoto = true;
-        } else if (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
+        } elseif (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
             // base64-encoded photo
             $matches = [];
 

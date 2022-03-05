@@ -338,7 +338,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         if (!Craft::$app->getIsMultiSite()) {
             // Only one site so use its language
             $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
-        } else if (!$element || !$this->getIsTranslatable($element)) {
+        } elseif (!$element || !$this->getIsTranslatable($element)) {
             // Not translatable, so use the user’s language
             $locale = Craft::$app->getLocale();
         } else {

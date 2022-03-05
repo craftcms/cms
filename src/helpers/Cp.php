@@ -96,7 +96,7 @@ class Cp
                 // Invalid license?
                 if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
                     $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
-                } else if (Craft::$app->getHasWrongEdition()) {
+                } elseif (Craft::$app->getHasWrongEdition()) {
                     $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                             'edition' => Craft::$app->getEditionName(),
                             'licensedEdition' => Craft::$app->getLicensedEditionName(),
@@ -1044,7 +1044,7 @@ class Cp
                     Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/4.x/config/#environmental-configuration', [
                         'class' => 'go',
                     ]);
-            } else if (
+            } elseif (
                 !isset($config['warning']) &&
                 ($value === '@web' || str_starts_with($value, '@web/')) &&
                 Craft::$app->getRequest()->isWebAliasSetDynamically
@@ -1081,7 +1081,7 @@ JS, [
             [
                 'ownerId' => $config['ownerId'],
                 'maxAddresses' => $config['maxAddresses'],
-            ]
+            ],
         ]);
 
         return
@@ -1378,7 +1378,7 @@ JS;
                     'tab',
                     'sel',
                     $customizable ? 'draggable' : null,
-                ])
+                ]),
             ]) .
             Html::tag('span', $tab->name) .
             ($customizable
@@ -1453,7 +1453,7 @@ JS;
                 'settings-namespace' => $settingsNamespace,
                 'settings-html' => $settingsHtml ?: false,
                 'settings-js' => $settingsJs ?: false,
-            ]
+            ],
         ]);
 
         return Html::modifyTagAttributes($element->selectorHtml(), $attr);

@@ -353,7 +353,7 @@ class UserPermissions extends Component
                         'performUpdates' => [
                             'label' => Craft::t('app', 'Perform Craft CMS and plugin updates'),
                         ],
-                    ], $pluginPermissions)
+                    ], $pluginPermissions),
                 ],
             ],
         ];
@@ -402,7 +402,7 @@ class UserPermissions extends Component
                             ],
                         ],
                         $assignGroupPermissions
-                    )
+                    ),
                 ],
                 'deleteUsers' => [
                     'label' => Craft::t('app', 'Delete users'),

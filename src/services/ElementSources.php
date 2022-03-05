@@ -163,7 +163,7 @@ class ElementSources extends Component
         foreach ($attributes as $key => $info) {
             if (!is_array($info)) {
                 $attributes[$key] = ['label' => $info];
-            } else if (!isset($info['label'])) {
+            } elseif (!isset($info['label'])) {
                 $attributes[$key]['label'] = '';
             }
         }
@@ -316,10 +316,10 @@ class ElementSources extends Component
         foreach ($sources as $source) {
             if (isset($source['type'])) {
                 $normalized[] = $source;
-            } else if (array_key_exists('heading', $source)) {
+            } elseif (array_key_exists('heading', $source)) {
                 $source['type'] = self::TYPE_HEADING;
                 $normalized[] = $source;
-            } else if (isset($source['key'])) {
+            } elseif (isset($source['key'])) {
                 $source['type'] = self::TYPE_NATIVE;
                 $normalized[] = $source;
             }

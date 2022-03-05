@@ -303,7 +303,7 @@ class EntryQuery extends ElementQuery
             } else {
                 $this->withStructure = false;
             }
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
@@ -393,7 +393,7 @@ class EntryQuery extends ElementQuery
     {
         if ($value instanceof EntryType) {
             $this->typeId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
@@ -929,9 +929,9 @@ class EntryQuery extends ElementQuery
     {
         if (empty($this->typeId)) {
             $this->typeId = is_array($this->typeId) ? [] : null;
-        } else if (is_numeric($this->typeId)) {
+        } elseif (is_numeric($this->typeId)) {
             $this->typeId = [$this->typeId];
-        } else if (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
+        } elseif (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
@@ -971,9 +971,9 @@ class EntryQuery extends ElementQuery
     {
         if (empty($this->sectionId)) {
             $this->sectionId = is_array($this->sectionId) ? [] : null;
-        } else if (is_numeric($this->sectionId)) {
+        } elseif (is_numeric($this->sectionId)) {
             $this->sectionId = [$this->sectionId];
-        } else if (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
+        } elseif (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
@@ -1035,7 +1035,7 @@ class EntryQuery extends ElementQuery
             foreach ($this->typeId as $typeId) {
                 $tags[] = "entryType:$typeId";
             }
-        } else if ($this->sectionId) {
+        } elseif ($this->sectionId) {
             foreach ($this->sectionId as $sectionId) {
                 $tags[] = "section:$sectionId";
             }

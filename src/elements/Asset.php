@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -550,7 +551,7 @@ class Asset extends Element
 
         if ($volume instanceof Temp) {
             $volumeHandle = 'temp';
-        } else if (!$folder->parentId) {
+        } elseif (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
         } else {
             $volumeHandle = false;
@@ -1880,7 +1881,7 @@ JS;
                 'x' => (float)$value['x'],
                 'y' => (float)$value['y'],
             ];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $focal = explode(';', $value);
             if (count($focal) !== 2) {
                 throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');

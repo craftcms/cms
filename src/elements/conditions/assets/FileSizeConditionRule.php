@@ -154,7 +154,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
                 self::UNIT_KB,
                 self::UNIT_MB,
                 self::UNIT_GB,
-            ]
+            ],
         ];
         return $rules;
     }

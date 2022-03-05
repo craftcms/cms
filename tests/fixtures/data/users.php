@@ -37,5 +37,5 @@ return [
         'username' => 'user4',
         'email' => 'user4@someemail.com',
         'shortBio' => 'foo',
-    ]
+    ],
 ];

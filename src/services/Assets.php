@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -760,7 +761,7 @@ class Assets extends Component
         $extLength = strlen($ext);
         if ($extLength <= 3) {
             $textSize = '20';
-        } else if ($extLength === 4) {
+        } elseif ($extLength === 4) {
             $textSize = '17';
         } else {
             if ($extLength > 5) {
@@ -958,7 +959,7 @@ class Assets extends Component
 
         if ($user) {
             $folderName = 'user_' . $user->id;
-        } else if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        } elseif (Craft::$app->getRequest()->getIsConsoleRequest()) {
             // For console requests, just make up a folder name.
             $folderName = 'temp_' . sha1((string)time());
         } else {

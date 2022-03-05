@@ -52,8 +52,8 @@ class ViewTest extends TestCase
     {
         return [
             'sites' => [
-                'class' => SitesFixture::class
-            ]
+                'class' => SitesFixture::class,
+            ],
         ];
     }
 
@@ -268,8 +268,8 @@ class ViewTest extends TestCase
                 },
                 function($val) {
                     return $val[0];
-                }
-            ]
+                },
+            ],
         ]);
 
         $var = ['333'];
@@ -380,7 +380,7 @@ class ViewTest extends TestCase
             ],
             View::POS_BEGIN => [
                 'bar' => 'var bar = true;',
-            ]
+            ],
         ], $view->clearJsBuffer(false, false));
     }
 
@@ -663,7 +663,7 @@ TWIG;
                 'registerJs' => function($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
                     self::assertSame($desiredJs, $inputJs);
                     self::assertSame($desiredPosition, $inputPosition);
-                }
+                },
             ]
         );
     }

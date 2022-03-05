@@ -35,21 +35,21 @@ class ProjectConfigTest extends TestCase
     protected $internal = [
         'a' => 'b',
         'b' => [
-            'c' => 'd'
+            'c' => 'd',
         ],
         'e' => [1, 2, 3],
         'f' => 'g',
         'randomString' => 'Entirely random',
-        'dateModified' => 1609452000
+        'dateModified' => 1609452000,
     ];
 
     protected $external = [
         'aa' => 'bb',
         'bb' => [
-            'vc' => 'dd'
+            'vc' => 'dd',
         ],
         'ee' => [11, 22, 33],
-        'f' => 'g'
+        'f' => 'g',
     ];
 
     private YiiMutex $_originalMutex;
@@ -161,14 +161,14 @@ class ProjectConfigTest extends TestCase
         $internal = [
             'common' => [
                 'foo' => 'bar',
-                'bar' => 'baz'
-            ]
+                'bar' => 'baz',
+            ],
         ];
 
         $external = [
             'common' => [
                 'box' => 'bax',
-            ]
+            ],
         ];
         $pc = $this->getProjectConfig($internal, $external);
 
@@ -226,7 +226,7 @@ class ProjectConfigTest extends TestCase
                     'a' => null,
                     'b' => 'c',
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -237,7 +237,7 @@ class ProjectConfigTest extends TestCase
                     'a' => 'b',
                     'b' => null,
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -248,7 +248,7 @@ class ProjectConfigTest extends TestCase
                     'a' => null,
                     'b' => null,
                     'c' => 'a',
-                ]
+                ],
             ],
         ];
     }
@@ -258,12 +258,12 @@ class ProjectConfigTest extends TestCase
         return [
             [
                 'a.b.c',
-                ['foo' => 'bar']
+                ['foo' => 'bar'],
             ],
             [
                 'a.b',
-                ['foo' => 'bar', 'bar' => ['baz']]
-            ]
+                ['foo' => 'bar', 'bar' => ['baz']],
+            ],
         ];
     }
 

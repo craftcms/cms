@@ -189,7 +189,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
 
         if ($this->byteLimit) {
             $bytes = $this->byteLimit;
-        } else if ($this->charLimit) {
+        } elseif ($this->charLimit) {
             $bytes = $this->charLimit * 4;
         } else {
             return Schema::TYPE_TEXT;

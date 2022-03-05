@@ -51,23 +51,23 @@ class UserPermissionsTest extends TestCase
     {
         return [
             'user-groups' => [
-                'class' => UserGroupsFixture::class
+                'class' => UserGroupsFixture::class,
             ],
             'users' => [
-                'class' => UserFixture::class
+                'class' => UserFixture::class,
             ],
             'sites' => [
-                'class' => SitesFixture::class
+                'class' => SitesFixture::class,
             ],
             'sections' => [
-                'class' => SectionsFixture::class
+                'class' => SectionsFixture::class,
             ],
             'globals' => [
                 'class' => GlobalSetFixture::class,
             ],
             'volumes' => [
-                'class' => VolumesFixture::class
-            ]
+                'class' => VolumesFixture::class,
+            ],
         ];
     }
 

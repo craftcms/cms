@@ -65,8 +65,8 @@ class PrepareQueryTest extends Unit
                         'globalsets.' . self::GLOBAL_SET_UID . ':read',
                         'taggroups.' . self::TAG_GROUP_UID . ':read',
                         'usergroups.' . self::USER_GROUP_UID . ':read',
-                    ]
-                ])
+                    ],
+                ]),
             ]
         );
 
@@ -139,105 +139,105 @@ class PrepareQueryTest extends Unit
             // Assets
             [
                 AssetResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                },
             ],
             [
                 AssetResolver::class, [null, ['volumeId' => 2, 'folderId' => 5]], function($result) {
-                return $result->volumeId == 2 && $result->folderId == 5;
-            }
+                    return $result->volumeId == 2 && $result->folderId == 5;
+                },
             ],
             [
                 AssetResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            }
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                },
             ],
 
             // Category
             [
                 CategoryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                },
             ],
             [
                 CategoryResolver::class, [null, ['groupId' => 2]], function($result) {
-                return $result->groupId == 2;
-            }
+                    return $result->groupId == 2;
+                },
             ],
             [
                 CategoryResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            },
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                },
             ],
 
             // Entries
             [
                 EntryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                },
             ],
             [
                 EntryResolver::class, [null, ['sectionId' => 2, 'typeId' => 5]], function($result) {
-                return $result->sectionId == 2 && $result->typeId == 5;
-            }
+                    return $result->sectionId == 2 && $result->typeId == 5;
+                },
             ],
             [
                 EntryResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'and' && !empty($result->where[2]);
-            }
+                    return $result->where[0] === 'and' && !empty($result->where[2]);
+                },
             ],
 
             // Global Sets
             [
                 GlobalSetResolver::class, [null, ['handle' => 'foo']], function($result) {
-                return $result->handle == 'foo';
-            }
+                    return $result->handle == 'foo';
+                },
             ],
             [
                 GlobalSetResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            },
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                },
             ],
 
             // Tags
             [
                 TagResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                },
             ],
             [
                 TagResolver::class, [null, ['groupId' => 2]], function($result) {
-                return $result->groupId == 2;
-            }
+                    return $result->groupId == 2;
+                },
             ],
             [
                 TagResolver::class, [null, []], function($result) {
-                return $result->where[0] === 'in' && !empty($result->where[2]);
-            },
+                    return $result->where[0] === 'in' && !empty($result->where[2]);
+                },
             ],
 
             // Users
             [
                 UserResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                },
             ],
             [
                 UserResolver::class, [null, []], function($result) {
-                return !empty($result->groupId);
-            }
+                    return !empty($result->groupId);
+                },
             ],
 
             // Matrix Blocks
             [
                 MatrixBlockResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
-                return $result === ['foo', 'bar'];
-            }
+                    return $result === ['foo', 'bar'];
+                },
             ],
             [
                 MatrixBlockResolver::class, [null, ['fieldId' => 2, 'typeId' => 5]], function($result) {
-                return $result->fieldId == 2 && $result->typeId == 5;
-            }
+                    return $result->fieldId == 2 && $result->typeId == 5;
+                },
             ],
 
         ];
@@ -249,7 +249,7 @@ class PrepareQueryTest extends Unit
             'uid' => self::VOLUME_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
-            'fs' => 'fake'
+            'fs' => 'fake',
         ]);
 
         $this->_volume->save();

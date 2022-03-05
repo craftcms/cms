@@ -262,7 +262,7 @@ class AssetQuery extends ElementQuery
     {
         if ($value instanceof Volume) {
             $this->volumeId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])
@@ -394,7 +394,7 @@ class AssetQuery extends ElementQuery
     {
         if ($value instanceof User) {
             $this->uploaderId = $value->id;
-        } else if (is_numeric($value)) {
+        } elseif (is_numeric($value)) {
             $this->uploaderId = $value;
         } else {
             throw new InvalidArgumentException('Invalid uploader value');
@@ -886,9 +886,9 @@ class AssetQuery extends ElementQuery
 
         if (empty($this->volumeId)) {
             $this->volumeId = is_array($this->volumeId) ? [] : null;
-        } else if (is_numeric($this->volumeId)) {
+        } elseif (is_numeric($this->volumeId)) {
             $this->volumeId = [$this->volumeId];
-        } else if (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
+        } elseif (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])

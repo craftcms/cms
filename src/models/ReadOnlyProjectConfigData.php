@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -57,7 +58,7 @@ class ReadOnlyProjectConfigData extends Model
         if (count($path) === 0) {
             if ($delete) {
                 unset($data[$nextSegment]);
-            } else if ($value === null) {
+            } elseif ($value === null) {
                 return $data[$nextSegment] ?? null;
             } else {
                 $data[$nextSegment] = $value;
@@ -70,7 +71,7 @@ class ReadOnlyProjectConfigData extends Model
                 }
 
                 $data[$nextSegment] = [];
-            } else if (!is_array($data[$nextSegment])) {
+            } elseif (!is_array($data[$nextSegment])) {
                 // If the next part is not an array, but we have to travel further, make it an array.
                 $data[$nextSegment] = [];
             }

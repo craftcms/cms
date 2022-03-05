@@ -350,7 +350,7 @@ trait ApplicationTrait
         if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
-        } else if (isset($this->_isInstalled)) {
+        } elseif (isset($this->_isInstalled)) {
             return $this->_isInstalled;
         }
 
@@ -436,7 +436,7 @@ trait ApplicationTrait
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
                     ->from([
-                        'x' => (new Query)
+                        'x' => (new Query())
                             ->select([new Expression('1')])
                             ->from([Table::SITES])
                             ->limit(2),
@@ -746,7 +746,6 @@ trait ApplicationTrait
      */
     public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
-
         if ($attributeNames === null) {
             $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
         }

@@ -33,7 +33,7 @@ class CpHelperTest extends Unit
     {
         return [
             'sites' => [
-                'class' => SitesFixture::class
+                'class' => SitesFixture::class,
             ],
         ];
     }
@@ -103,7 +103,7 @@ class CpHelperTest extends Unit
     {
         self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
         self::assertStringContainsString('<label id="id-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
-        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__',]));
+        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__', ]));
         // invalid site ID
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Cp::fieldHtml('<input>', ['siteId' => -1]);
@@ -161,7 +161,7 @@ class CpHelperTest extends Unit
             [
                 'editable', 'editableTableFieldHtml', [
                 'name' => 'test',
-            ]
+            ],
             ],
             ['lightswitch', 'lightswitchFieldHtml'],
             ['<select', 'selectFieldHtml'],
@@ -169,7 +169,7 @@ class CpHelperTest extends Unit
             [
                 '<div class="label light">Test unit</div>', 'textFieldHtml', [
                 'unit' => 'Test unit',
-            ]
+            ],
             ],
             ['<textarea', 'textareaFieldHtml'],
         ];

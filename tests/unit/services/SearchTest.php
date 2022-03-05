@@ -46,7 +46,7 @@ class SearchTest extends Unit
         return [
             'users' => [
                 'class' => UserFixture::class,
-            ]
+            ],
         ];
     }
 
