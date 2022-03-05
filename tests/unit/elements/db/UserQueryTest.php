@@ -59,8 +59,8 @@ class UserQueryTest extends TestCase
     {
         return [
             'user-groups' => [
-                'class' => UserGroupsFixture::class
-            ]
+                'class' => UserGroupsFixture::class,
+            ],
         ];
     }
 
@@ -217,7 +217,7 @@ class UserQueryTest extends TestCase
                 'username' => 'pendingUser',
                 'unverifiedEmail' => 'pending@user.com',
                 'email' => 'pending@user.com',
-                'pending' => true
+                'pending' => true,
             ]
         );
 
@@ -229,7 +229,7 @@ class UserQueryTest extends TestCase
                 'email' => 'locked@user.com',
                 'locked' => true,
                 'invalidLoginCount' => 2,
-                'lockoutDate' => Db::prepareDateForDb(new DateTime('now'))
+                'lockoutDate' => Db::prepareDateForDb(new DateTime('now')),
             ]
         );
 
@@ -248,7 +248,7 @@ class UserQueryTest extends TestCase
                 'lastName' => 'user',
                 'username' => 'suspendedUser',
                 'email' => 'suspended@user.com',
-                'suspended' => true
+                'suspended' => true,
             ]
         );
 

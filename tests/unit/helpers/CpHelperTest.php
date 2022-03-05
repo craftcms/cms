@@ -33,7 +33,7 @@ class CpHelperTest extends Unit
     {
         return [
             'sites' => [
-                'class' => SitesFixture::class
+                'class' => SitesFixture::class,
             ],
         ];
     }
@@ -161,7 +161,7 @@ class CpHelperTest extends Unit
             [
                 'editable', 'editableTableFieldHtml', [
                 'name' => 'test',
-            ]
+            ],
             ],
             ['lightswitch', 'lightswitchFieldHtml'],
             ['<select', 'selectFieldHtml'],
@@ -169,7 +169,7 @@ class CpHelperTest extends Unit
             [
                 '<div class="label light">Test unit</div>', 'textFieldHtml', [
                 'unit' => 'Test unit',
-            ]
+            ],
             ],
             ['<textarea', 'textareaFieldHtml'],
         ];

@@ -1777,7 +1777,7 @@ class StringHelperTest extends Unit
             ['Craftcms', 'craftcms'],
             ['2craftcms', '2craftcms'],
             [' craftcms', ' craftcms'],
-            [' ', ' ']
+            [' ', ' '],
         ];
     }
 
@@ -1800,7 +1800,7 @@ class StringHelperTest extends Unit
             [false, ' '],
             [false, '!@#$%^&*()'],
             [false, '469e6ed2-🎧𢵌😀😘-458a-a80e-173821fee715'],
-            [false, '&*%!$^!#-5b98-4048-8106-8cc2de4af159']
+            [false, '&*%!$^!#-5b98-4048-8106-8cc2de4af159'],
         ];
     }
 
@@ -1878,7 +1878,7 @@ class StringHelperTest extends Unit
             [false, '!@#$%^&*()_'],
             [false, '⛄'],
             [false, ''],
-            [true, '𨳊']
+            [true, '𨳊'],
         ];
     }
 
@@ -1976,7 +1976,7 @@ class StringHelperTest extends Unit
             ['!@#$%^&*()_{}|:"<>?', 8],
             ['                           ', 8],
             'tabs' => ['              ', 4],
-            ['asdfghjklxcvbnmqwertyuiop', 10]
+            ['asdfghjklxcvbnmqwertyuiop', 10],
         ];
     }
 
@@ -1992,7 +1992,7 @@ class StringHelperTest extends Unit
             ['&#x102cd;', '𐋍'],
             ['asdfghjklqwertyuiop1234567890!@#$%^&*()_+', 'asdfghjklqwertyuiop1234567890!@#$%^&*()_+'],
             ['&#x102cd;&#x1f1e6;&#x1f1fa;&#x1f525;', '𐋍🇦🇺🔥'],
-            'ensure-non-mb4-is-ignored' => ['&#x102cd;1234567890&#x1f1e6;&#x1f1fa; &#x1f525;', '𐋍1234567890🇦🇺 🔥']
+            'ensure-non-mb4-is-ignored' => ['&#x102cd;1234567890&#x1f1e6;&#x1f1fa; &#x1f525;', '𐋍1234567890🇦🇺 🔥'],
         ];
     }
 
@@ -2007,7 +2007,7 @@ class StringHelperTest extends Unit
             ['craftcms', 'craftcms'],
             ['😂😁', '😂😁'],
             ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
-            ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±']
+            ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
         ];
     }
 
@@ -2019,7 +2019,7 @@ class StringHelperTest extends Unit
         return [
             ['1234567890asdfghjkl'],
             ['😂😁'],
-            ['!@#$%^&*()_+{}|:"<>?']
+            ['!@#$%^&*()_+{}|:"<>?'],
         ];
     }
 
@@ -2184,13 +2184,13 @@ class StringHelperTest extends Unit
                 4, 'test
              
              
-             test'
+             test',
             ],
             [1, 'test <br> test'],
             [1, 'thesearetabs       notspaces'],
             [
                 2, '😂
-            😁'
+            😁',
             ],
             [
                 11, '
@@ -2203,8 +2203,8 @@ class StringHelperTest extends Unit
             
             
             
-            '
-            ]
+            ',
+            ],
         ];
     }
 
@@ -2238,7 +2238,7 @@ class StringHelperTest extends Unit
             ['😘', '😘'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
             ['\x09Example string\x0A', '\x09Example string\x0A'],
-            ['\t\tThese are a few words :) ...', '\t\tThese are a few words :) ...  ']
+            ['\t\tThese are a few words :) ...', '\t\tThese are a few words :) ...  '],
         ];
     }
 

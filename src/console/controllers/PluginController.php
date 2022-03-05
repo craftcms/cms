@@ -306,7 +306,7 @@ class PluginController extends Controller
         return $this->prompt($prompt, [
             'validator' => function(string $input) use ($uninstalledPluginInfo) {
                 return isset($uninstalledPluginInfo[$input]);
-            }
+            },
         ]);
     }
 

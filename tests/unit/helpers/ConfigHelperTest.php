@@ -104,7 +104,7 @@ class ConfigHelperTest extends Unit
             [
                 'imahandle', function($handle) {
                     return $handle;
-                }, 'imahandle'
+                }, 'imahandle',
             ],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
             ['string', 'string'],

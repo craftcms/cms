@@ -45,7 +45,7 @@ class JsonHelperTest extends Test
         return [
             ['{"test":"test"', '{"test":"test"'],
             [$basicArray, json_encode($basicArray)],
-            [null, '']
+            [null, ''],
         ];
     }
 

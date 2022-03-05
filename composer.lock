@@ -6375,12 +6375,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/ecs.git",
-                "reference": "a3fac9f2a070150fc7619fd51673ef5d2b032247"
+                "reference": "3c3a418d7fd2175629730043fe4dfe37accbfdbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/ecs/zipball/a3fac9f2a070150fc7619fd51673ef5d2b032247",
-                "reference": "a3fac9f2a070150fc7619fd51673ef5d2b032247",
+                "url": "https://api.github.com/repos/craftcms/ecs/zipball/3c3a418d7fd2175629730043fe4dfe37accbfdbf",
+                "reference": "3c3a418d7fd2175629730043fe4dfe37accbfdbf",
                 "shasum": ""
             },
             "require": {
@@ -6400,7 +6400,7 @@
                 "issues": "https://github.com/craftcms/ecs/issues",
                 "source": "https://github.com/craftcms/ecs/tree/main"
             },
-            "time": "2022-03-05T21:01:03+00:00"
+            "time": "2022-03-05T21:14:46+00:00"
         },
         {
             "name": "doctrine/instantiator",

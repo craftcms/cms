@@ -18,7 +18,7 @@ return [
         'hasUrls' => true,
         'settings' => json_encode([
             'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => VolumesFixture::BASE_URL
+            'url' => VolumesFixture::BASE_URL,
         ]),
         'sortOrder' => 5,
         'fieldLayoutType' => 'volume_field_layout',
@@ -33,13 +33,13 @@ return [
         'url' => null,
         'settings' => json_encode([
             'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => VolumesFixture::BASE_URL
+            'url' => VolumesFixture::BASE_URL,
         ]),
         'hasUrls' => true,
         'sortOrder' => 6,
         'fieldLayoutType' => 'volume_field_layout',
         'uid' => 'volume-1001----------------------uid',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
     ],
 
     'deleted2' => [
@@ -50,13 +50,13 @@ return [
         'url' => null,
         'settings' => json_encode([
             'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => VolumesFixture::BASE_URL
+            'url' => VolumesFixture::BASE_URL,
         ]),
         'hasUrls' => true,
         'sortOrder' => 7,
         'fieldLayoutType' => 'volume_field_layout',
         'uid' => 'volume-1002----------------------uid',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
 
     ],
 ];

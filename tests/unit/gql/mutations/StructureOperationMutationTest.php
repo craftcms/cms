@@ -53,7 +53,7 @@ class StructureOperationMutationTest extends TestCase
         $this->tester->mockCraftMethods('elements', [
             'getElementById' => function($elementId) {
                 return $elementId > 0 ? new Category() : null;
-            }
+            },
         ]);
 
         if ($exception) {
@@ -102,7 +102,7 @@ class StructureOperationMutationTest extends TestCase
                 ['structureId' => 2],
                 ['prependTo' => -1],
                 '',
-                'Unable to move element in a structure'
+                'Unable to move element in a structure',
             ],
         ];
     }

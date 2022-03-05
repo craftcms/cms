@@ -90,27 +90,27 @@ class PgsqlDbHelperTest extends Unit
                 [
                     'or',
                     ['not', ['content_table' => null], ],
-                    ['!=', 'content_table', 'field_2']
+                    ['!=', 'content_table', 'field_2'],
                 ],
-                'content_table', ':empty:, field_2', '!='
+                'content_table', ':empty:, field_2', '!=',
             ],
             [
-                ['foo' => null], 'foo', ':empty:'
+                ['foo' => null], 'foo', ':empty:',
             ],
             [
-                ['foo' => null], 'foo', ':EMPTY:'
+                ['foo' => null], 'foo', ':EMPTY:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', ':notempty:'
+                ['not', ['foo' => null]], 'foo', ':notempty:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', ':NOTEMPTY:'
+                ['not', ['foo' => null]], 'foo', ':NOTEMPTY:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', 'not :empty:'
+                ['not', ['foo' => null]], 'foo', 'not :empty:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', 'NOT :EMPTY:'
+                ['not', ['foo' => null]], 'foo', 'NOT :EMPTY:',
             ],
         ];
     }

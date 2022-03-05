@@ -100,7 +100,7 @@ class ColorValidatorTest extends Unit
             ['#!!@@##', '!@#'],
             'three-chars-becomes-six' => ['#aassdd', 'asd'],
             ['#aassdd', 'ASD'],
-            ['#a22d', 'a22d']
+            ['#a22d', 'a22d'],
         ];
     }
 
@@ -122,7 +122,7 @@ class ColorValidatorTest extends Unit
             ['#f', false],
             ['#', false],
             ['rgba(255, 0, 0, 0.2)', false],
-            ['255, 0, 0, 0.2', false]
+            ['255, 0, 0, 0.2', false],
         ];
     }
 

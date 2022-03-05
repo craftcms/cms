@@ -12,7 +12,7 @@ return static function(ContainerConfigurator $containerConfigurator): void {
         __DIR__ . '/bootstrap',
         __DIR__ . '/src',
         __DIR__ . '/tests',
-        __FILE__
+        __FILE__,
     ]);
 
     $containerConfigurator->import(SetList::CRAFT_CMS_3);

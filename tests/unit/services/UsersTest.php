@@ -73,8 +73,8 @@ class UsersTest extends TestCase
     {
         return [
             'user-groups' => [
-                'class' => UserGroupsFixture::class
-            ]
+                'class' => UserGroupsFixture::class,
+            ],
         ];
     }
 
@@ -284,7 +284,7 @@ class UsersTest extends TestCase
     {
         Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
-            'getUserIP' => '127.0.0.1'
+            'getUserIP' => '127.0.0.1',
         ]);
 
         $this->users->handleInvalidLogin($this->activeUser);
@@ -301,7 +301,7 @@ class UsersTest extends TestCase
         Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = false;
         Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
-            'getUserIP' => '127.0.0.1'
+            'getUserIP' => '127.0.0.1',
         ]);
 
         $this->users->handleInvalidLogin($this->activeUser);
@@ -378,9 +378,9 @@ class UsersTest extends TestCase
                 'desiredClass' => User::class,
                 'desiredValue' => [
                     'id' => $this->activeUser->id,
-                    'locked' => true
-                ]
-            ]
+                    'locked' => true,
+                ],
+            ],
         ]));
     }
 
@@ -405,7 +405,7 @@ class UsersTest extends TestCase
     public function testHandleValidLoginIpCollection()
     {
         $this->tester->mockCraftMethods('request', [
-            'getUserIP' => '127.0.0.1'
+            'getUserIP' => '127.0.0.1',
         ]);
 
         Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
@@ -444,7 +444,7 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The past.
             'verificationCodeIssuedDate' => '2018-06-06 20:00:00',
-            'verificationCode' => 'irrelevant_code'
+            'verificationCode' => 'irrelevant_code',
         ], ['id' => $this->activeUser->id]);
 
         self::assertFalse(
@@ -455,7 +455,7 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The present.
             'verificationCodeIssuedDate' => Db::prepareDateForDb(new DateTime('now')),
-            'verificationCode' => 'irrelevant_code'
+            'verificationCode' => 'irrelevant_code',
         ], ['id' => $this->activeUser->id]);
 
         self::assertTrue(
@@ -467,7 +467,7 @@ class UsersTest extends TestCase
     {
         // Ensure we know what the unhashed code is - so we can compare against it later.
         $this->tester->mockCraftMethods('security', [
-            'generateRandomString' => $string = StringHelper::randomString(32)
+            'generateRandomString' => $string = StringHelper::randomString(32),
         ]);
 
         // Test send activation email with password null
@@ -520,7 +520,7 @@ class UsersTest extends TestCase
     protected function ensurePasswordValidationReturns(bool $result)
     {
         $this->tester->mockCraftMethods('security', [
-            'validatePassword' => $result
+            'validatePassword' => $result,
         ]);
     }
 
@@ -576,7 +576,7 @@ class UsersTest extends TestCase
                 'username' => 'jsmith',
                 'unverifiedEmail' => 'jsmith@gmail.com',
                 'email' => 'jsmith@gmail.com',
-                'pending' => true
+                'pending' => true,
             ]
         );
 
@@ -588,7 +588,7 @@ class UsersTest extends TestCase
                 'email' => 'locked@user.com',
                 'locked' => true,
                 'invalidLoginCount' => 2,
-                'lockoutDate' => Db::prepareDateForDb(new DateTime('now'))
+                'lockoutDate' => Db::prepareDateForDb(new DateTime('now')),
             ]
         );
 
@@ -607,7 +607,7 @@ class UsersTest extends TestCase
                 'lastName' => 'user',
                 'username' => 'suspendedUser',
                 'email' => 'suspended@user.com',
-                'suspended' => true
+                'suspended' => true,
             ]
         );
 

@@ -152,7 +152,7 @@ class DateCompareValidator extends Validator
                     'compareAttribute' => $formattedCompareValue,
                     'compareValue' => $formattedCompareValue,
                     'compareValueOrAttribute' => $formattedCompareValue,
-                ]
+                ],
             ];
         }
 

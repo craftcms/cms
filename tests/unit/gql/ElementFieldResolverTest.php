@@ -53,8 +53,8 @@ class ElementFieldResolverTest extends Unit
                     'scope' => [
                         'usergroups.group-1-uid:read',
                         'usergroups.group-2-uid:read',
-                    ]
-                ])
+                    ],
+                ]),
             ]
         );
     }
@@ -89,7 +89,7 @@ class ElementFieldResolverTest extends Unit
                 },
                 'getType' => function() use ($typeHandle) {
                     return $this->make(EntryType::class, ['handle' => $typeHandle]);
-                }
+                },
             ]
         );
 
@@ -112,7 +112,7 @@ class ElementFieldResolverTest extends Unit
                 '__get' => function($property) {
                     // Assume a content field named 'plainTextField'
                     return in_array($property, ['imageDescription', 'volumeAndMass'], false) ? 'ok' : $this->$property;
-                }
+                },
             ]
         );
 
@@ -136,7 +136,7 @@ class ElementFieldResolverTest extends Unit
                     // Assume a content field named 'plainTextField'
                     return $property == 'plainTextField' ? 'ok' : $this->$property;
                 },
-                'handle' => 'aHandle'
+                'handle' => 'aHandle',
             ]
         );
 
@@ -223,7 +223,7 @@ class ElementFieldResolverTest extends Unit
                 'typeId' => 99,
                 'getType' => function() use ($typeHandle) {
                     return $this->make(MatrixBlockType::class, ['handle' => $typeHandle]);
-                }
+                },
             ]
         );
 
@@ -251,7 +251,7 @@ class ElementFieldResolverTest extends Unit
                 'getPreferences' => function() {
                     return [
                         'aPreference' => 'value',
-                        'timeZone' => 'Fiji'
+                        'timeZone' => 'Fiji',
                     ];
                 },
                 'getGroups' => function() {
@@ -260,7 +260,7 @@ class ElementFieldResolverTest extends Unit
                         new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
                         new UserGroup(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
                     ];
-                }
+                },
             ]
         );
 
@@ -285,7 +285,7 @@ class ElementFieldResolverTest extends Unit
                 if (is_bool($generateNow)) {
                     self::assertSame($generateNow, $fieldArguments['immediately']);
                 }
-            }
+            },
         ]);
 
         Craft::$app->set('assets', $assetService);
@@ -325,12 +325,12 @@ class ElementFieldResolverTest extends Unit
             [
                 EntryGqlType::class, 'sectionHandle', function($source) {
                     return $source->getSection()->handle;
-                }
+                },
             ],
             [
                 EntryGqlType::class, 'typeHandle', function($source) {
                     return $source->getType()->handle;
-                }
+                },
             ],
             [EntryGqlType::class, 'typeface', true],
             [EntryGqlType::class, 'missingProperty', false],
@@ -366,7 +366,7 @@ class ElementFieldResolverTest extends Unit
             [
                 CategoryGqlType::class, 'groupHandle', function($source) {
                     return $source->getGroup()->handle;
-                }
+                },
             ],
         ];
     }
@@ -379,7 +379,7 @@ class ElementFieldResolverTest extends Unit
             [
                 TagGqlType::class, 'groupHandle', function($source) {
                     return $source->getGroup()->handle;
-                }
+                },
             ],
         ];
     }
@@ -396,7 +396,7 @@ class ElementFieldResolverTest extends Unit
             [
                 MatrixBlockGqlType::class, 'typeHandle', function($source) {
                     return $source->getType()->handle;
-                }
+                },
             ],
         ];
     }
@@ -410,7 +410,7 @@ class ElementFieldResolverTest extends Unit
             [
                 UserGqlType::class, 'preferences', function($source) {
                     return Json::encode($source->getPreferences());
-                }
+                },
             ],
         ];
     }

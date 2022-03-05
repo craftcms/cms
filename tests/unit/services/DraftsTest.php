@@ -61,7 +61,7 @@ class DraftsTest extends Unit
     {
         return [
             'entries' => [
-                'class' => EntryFixture::class
+                'class' => EntryFixture::class,
             ],
         ];
     }

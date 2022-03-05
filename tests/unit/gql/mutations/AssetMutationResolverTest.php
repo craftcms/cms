@@ -34,14 +34,14 @@ class AssetMutationResolverTest extends TestCase
         $resolver = $this->make(Asset::class, [
             'requireSchemaAction' => null,
             'saveElement' => new Asset(),
-            'recursivelyNormalizeArgumentValues' => $arguments
+            'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
         $resolver->setResolutionData('volume', new Volume(['id' => 1]));
 
         $folder = new VolumeFolder(['id' => 1, 'volumeId' => 1]);
         \Craft::$app->set('assets', $this->make(Assets::class, [
             'getRootFolderByVolumeId' => $folder,
-            'getFolderById' => $folder
+            'getFolderById' => $folder,
         ]));
 
 
@@ -56,7 +56,7 @@ class AssetMutationResolverTest extends TestCase
     {
         return [
             [['filename' => 'fake.jpg'], 'Impossible to create an asset without providing a file'],
-            [['filename' => 'fake.jpg', '_file' => ['fileData' => 'this is not real base64 data']], 'Invalid file data provided']
+            [['filename' => 'fake.jpg', '_file' => ['fileData' => 'this is not real base64 data']], 'Invalid file data provided'],
         ];
     }
 }

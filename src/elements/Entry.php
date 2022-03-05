@@ -606,7 +606,7 @@ class Entry extends Element
             $map = array_map(function(Entry $entry) {
                 return [
                     'source' => $entry->id,
-                    'target' => $entry->authorId
+                    'target' => $entry->authorId,
                 ];
             }, $sourceElementsWithAuthors);
 
