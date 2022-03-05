@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers;
 
-use Craft;
 use Codeception\Test\Unit;
+use Craft;
 use craft\elements\User;
 use craft\helpers\Cp;
 use craft\web\twig\TemplateLoaderException;
@@ -103,7 +103,7 @@ class CpHelperTest extends Unit
     {
         self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
         self::assertStringContainsString('<label id="id-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
-        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__',]));
+        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__', ]));
         // invalid site ID
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Cp::fieldHtml('<input>', ['siteId' => -1]);

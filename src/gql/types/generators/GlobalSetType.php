@@ -79,5 +79,4 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
             },
         ]));
     }
-
 }

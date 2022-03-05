@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\services\images;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;

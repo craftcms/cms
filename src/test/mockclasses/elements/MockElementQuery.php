@@ -66,7 +66,7 @@ class MockElementQuery extends ElementQuery
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $prefix . '.php';
         file_put_contents($tempPath, $classData);
         include($tempPath);
-        $instance = new $className;
+        $instance = new $className();
         unlink($tempPath);
 
         return $instance;

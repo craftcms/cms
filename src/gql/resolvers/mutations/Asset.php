@@ -173,7 +173,6 @@ class Asset extends ElementMutationResolver
         $filename = null;
 
         if (!empty($fileInformation['fileData'])) {
-
             $dataString = $fileInformation['fileData'];
             $fileData = null;
 
@@ -206,7 +205,7 @@ class Asset extends ElementMutationResolver
             } else {
                 throw new UserError('Invalid file data provided');
             }
-        } else if (!empty($fileInformation['url'])) {
+        } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
             if (empty($fileInformation['filename'])) {
@@ -242,5 +241,4 @@ class Asset extends ElementMutationResolver
     {
         return Craft::createGuzzleClient();
     }
-
 }

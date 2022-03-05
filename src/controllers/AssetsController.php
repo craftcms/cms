@@ -408,7 +408,7 @@ class AssetsController extends Controller
                 $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
                 $filename = Assets::prepareAssetName($uploadedFile->name);
                 $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
-            } else if (!empty($sourceAsset)) {
+            } elseif (!empty($sourceAsset)) {
                 // Or replace using an existing Asset
 
                 // See if we can find an Asset to replace.
@@ -774,7 +774,7 @@ class AssetsController extends Controller
                                 $targetPrefixLength)] = $existingFolder->id;
                         }
                     }
-                } else if ($existingFolder && $force) {
+                } elseif ($existingFolder && $force) {
                     // An un-indexed folder is conflicting. If we're forcing things, just remove it.
                     $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
                 }
@@ -990,7 +990,7 @@ class AssetsController extends Controller
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
                     $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
-                } else if ($focalChanged) {
+                } elseif ($focalChanged) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
             } else {

@@ -85,7 +85,6 @@ class AssetElementTest extends TestCase
         Craft::$app->set('assetTransforms', $assetTransforms);
 
         $result = $asset->{$methodName}($transformData);
-
     }
 
     public function normalizingExtendsTransformProvider()

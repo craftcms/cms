@@ -114,7 +114,6 @@ class PasswordValidatorTest extends Unit
             $passVal->isEmpty = 'craft_increment';
             $passVal->isEmpty(1);
         });
-
     }
 
     /**

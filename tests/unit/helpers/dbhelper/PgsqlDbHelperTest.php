@@ -89,7 +89,7 @@ class PgsqlDbHelperTest extends Unit
             'multi-:empty:-param' => [
                 [
                     'or',
-                    ['not', ['content_table' => null],],
+                    ['not', ['content_table' => null], ],
                     ['!=', 'content_table', 'field_2']
                 ],
                 'content_table', ':empty:, field_2', '!='
@@ -168,5 +168,4 @@ class PgsqlDbHelperTest extends Unit
             $this->markTestSkipped();
         }
     }
-
 }

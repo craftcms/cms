@@ -169,9 +169,9 @@ class GqlHelperTest extends Unit
 
         return [
             [Type::boolean(), Type::nonNull(Type::boolean())],
-            [Type::string(),Type::nonNull(Type::string())],
-            [Type::id(),Type::nonNull(Type::id())],
-            [Type::nonNull(Type::int()),Type::nonNull(Type::int())],
+            [Type::string(), Type::nonNull(Type::string())],
+            [Type::id(), Type::nonNull(Type::id())],
+            [Type::nonNull(Type::int()), Type::nonNull(Type::int())],
             [$typeDef, $nonNulledTypeDef],
         ];
     }

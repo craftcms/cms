@@ -387,7 +387,7 @@ class Gql
 
         if (!empty($arguments['handle'])) {
             $transform = $arguments['handle'];
-        } else if (!empty($arguments['transform'])) {
+        } elseif (!empty($arguments['transform'])) {
             $transform = $arguments['transform'];
         } else {
             $transform = $arguments;

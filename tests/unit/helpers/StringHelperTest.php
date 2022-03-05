@@ -46,13 +46,13 @@ class StringHelperTest extends Unit
             'é' => 'e',
         ];
 
-        $mapByAscii =  StringHelper::asciiCharMap(false, 'de');
+        $mapByAscii = StringHelper::asciiCharMap(false, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($ascii, $mapByAscii);
             self::assertContains($char, $mapByAscii[$ascii]);
         }
 
-        $mapByChar =  StringHelper::asciiCharMap(true, 'de');
+        $mapByChar = StringHelper::asciiCharMap(true, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($char, $mapByChar);
             self::assertSame($ascii, $mapByChar[$char]);
@@ -1121,7 +1121,8 @@ class StringHelperTest extends Unit
     public function testShuffle($string)
     {
         $encoding = mb_internal_encoding();
-        $result = StringHelper::shuffle($string);;
+        $result = StringHelper::shuffle($string);
+        ;
 
         self::assertSame(
             mb_strlen($string, $encoding),
@@ -2588,7 +2589,7 @@ class StringHelperTest extends Unit
             ['foo/foobar', 'foobar', 'foo/'],
             ['http://foobar', 'foobar', 'http://'],
             ['http://foobar', 'http://foobar', 'http://'],
-            ['fòôbàř', 'fòôbàř', 'f',],
+            ['fòôbàř', 'fòôbàř', 'f', ],
             ['fòôbàř', 'fòôbàř', 'fòô'],
             ['fòô/fòôbàř', 'fòôbàř', 'fòô/'],
             ['http://fòôbàř', 'fòôbàř', 'http://'],
@@ -3154,9 +3155,9 @@ class StringHelperTest extends Unit
             ['foo bar  ', 'foo bar', 9],
             ['foo bar_*', 'foo bar', 9, '_*'],
             ['foo bar_*_', 'foo bar', 10, '_*'],
-            ['fòô bàř  ', 'fòô bàř', 9, ' ',],
-            ['fòô bàř¬ø', 'fòô bàř', 9, '¬ø',],
-            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø',],
+            ['fòô bàř  ', 'fòô bàř', 9, ' ', ],
+            ['fòô bàř¬ø', 'fòô bàř', 9, '¬ø', ],
+            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø', ],
             ['fòô bàř¬ø¬ø', 'fòô bàř', 11, '¬ø'],
         ];
     }
@@ -4130,7 +4131,7 @@ class StringHelperTest extends Unit
             ["What Is AT&T's Problem?", "What is AT&T's problem?"],
             ['Apple Deal With AT&T Falls Through', 'Apple deal with AT&T falls through'],
             ['This v That', 'this v that'],
-            ['This vs That', 'this vs that',],
+            ['This vs That', 'this vs that', ],
             ['This v. That', 'this v. that'],
             ['This vs. That', 'this vs. that'],
             ["The SEC's Apple Probe: What You Need to Know", "The SEC's Apple probe: what you need to know"],
@@ -4160,7 +4161,7 @@ class StringHelperTest extends Unit
             ['This Is Trimming', '  this is trimming'],
             ['This Is Trimming', 'this is trimming  '],
             ['This Is Trimming', '  this is trimming  '],
-            ['If It’s All Caps, Fix It', 'IF IT’S ALL CAPS, FIX IT',],
+            ['If It’s All Caps, Fix It', 'IF IT’S ALL CAPS, FIX IT', ],
             ['What Could/Should Be Done About Slashes?', 'What could/should be done about slashes?'],
             [
                 'Never Touch Paths Like /var/run Before/After /boot',

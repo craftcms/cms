@@ -515,7 +515,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // error or we're loading an entry revision.
         if ($value === '') {
             $query->setCachedResult([]);
-        } else if ($element && is_array($value)) {
+        } elseif ($element && is_array($value)) {
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
@@ -955,7 +955,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // Ensure the block type has a UID
             if ($blockType->getIsNew()) {
                 $blockType->uid = StringHelper::UUID();
-            } else if (!$blockType->uid) {
+            } elseif (!$blockType->uid) {
                 $blockType->uid = Db::uidById(DbTable::MATRIXBLOCKTYPES, $blockType->id);
             }
 
@@ -1032,9 +1032,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($element->duplicateOf !== null) {
             $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true);
             $resetValue = true;
-        } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
+        } elseif ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $matrixService->saveField($this, $element);
-        } else if ($element->mergingCanonicalChanges) {
+        } elseif ($element->mergingCanonicalChanges) {
             $matrixService->mergeCanonicalChanges($this, $element);
             $resetValue = true;
         }
@@ -1247,7 +1247,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         foreach ($newSortOrder as $blockId) {
             if (isset($newBlockData[$blockId])) {
                 $blockData = $newBlockData[$blockId];
-            } else if (
+            } elseif (
                 isset(Elements::$duplicatedElementSourceIds[$blockId]) &&
                 isset($newBlockData[Elements::$duplicatedElementSourceIds[$blockId]])
             ) {

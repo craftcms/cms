@@ -8,7 +8,6 @@
 
 namespace crafttests\unit\services;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\behaviors\DraftBehavior;

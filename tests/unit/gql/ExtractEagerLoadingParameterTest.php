@@ -180,15 +180,22 @@ GQL;
         $complexResult = [
             'with' => [
                 new EagerLoadPlan(['handle' => 'neverAllowed', 'alias' => 'neverAllowed', 'criteria' => ['id' => ['and', 1, 2]]]),
-                new EagerLoadPlan(['handle' => 'matrixField', 'alias' => 'matrixField', 'when' => function () {}, 'nested' => [
-                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
-                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
-                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:entriesInMatrix', 'alias' => 'mockedBlockHandle:entriesInMatrix',  'criteria' => ['id' => 80], 'when' => function () {}, 'nested' => [
-                        new EagerLoadPlan(['handle' => 'linkedEntriesThroughMatrix', 'alias' => 'linkedEntriesThroughMatrix', 'when' => function () {}, 'criteria' => ['id' => 99]]),
+                new EagerLoadPlan(['handle' => 'matrixField', 'alias' => 'matrixField', 'when' => function() {
+                }, 'nested' => [
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function() {
+                    }]),
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function() {
+                    }]),
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:entriesInMatrix', 'alias' => 'mockedBlockHandle:entriesInMatrix',  'criteria' => ['id' => 80], 'when' => function() {
+                    }, 'nested' => [
+                        new EagerLoadPlan(['handle' => 'linkedEntriesThroughMatrix', 'alias' => 'linkedEntriesThroughMatrix', 'when' => function() {
+                        }, 'criteria' => ['id' => 99]]),
                     ]]),
                 ]]),
-                new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'when' => function () {}, 'criteria' => ['sectionId' => [5], 'typeId' => [2]]]),
-                new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'when' => function () {}, 'criteria' => ['volumeId' => [5]]]),
+                new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'when' => function() {
+                }, 'criteria' => ['sectionId' => [5], 'typeId' => [2]]]),
+                new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'when' => function() {
+                }, 'criteria' => ['volumeId' => [5]]]),
             ]
         ];
 
@@ -336,7 +343,6 @@ GQL;
      */
     private function _buildResolveInfo(DocumentNode $documentNode, array $variables, $returnType)
     {
-
         $fragments = [];
 
         foreach ($documentNode->definitions as $definition) {

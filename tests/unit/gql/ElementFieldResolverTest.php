@@ -163,7 +163,7 @@ class ElementFieldResolverTest extends Unit
                     return $property == 'plainTextField' ? 'ok' : $this->$property;
                 },
                 'getGroup' => function() use ($groupHandle) {
-                    return $this->make(CategoryGroup::class, ['handle' =>$groupHandle]);
+                    return $this->make(CategoryGroup::class, ['handle' => $groupHandle]);
                 },
             ]
         );
@@ -279,7 +279,7 @@ class ElementFieldResolverTest extends Unit
     public function testAssetUrlTransform($fieldArguments, $expectedArguments, $generateNow = null)
     {
         $assetService = $this->make(Assets::class, [
-            'getAssetUrl' => function ($asset, $transformArguments, $generateImmediately) use ($fieldArguments, $expectedArguments, $generateNow) {
+            'getAssetUrl' => function($asset, $transformArguments, $generateImmediately) use ($fieldArguments, $expectedArguments, $generateNow) {
                 self::assertEquals($expectedArguments, $transformArguments);
 
                 if (is_bool($generateNow)) {
@@ -310,7 +310,7 @@ class ElementFieldResolverTest extends Unit
 
         if (is_callable($result)) {
             self::assertEquals($result($element), $resolve());
-        } else if ($result === true) {
+        } elseif ($result === true) {
             self::assertEquals($element->$propertyName, $resolve());
             self::assertNotNull($element->$propertyName);
         } else {
@@ -324,13 +324,13 @@ class ElementFieldResolverTest extends Unit
             // Entries
             [
                 EntryGqlType::class, 'sectionHandle', function($source) {
-                return $source->getSection()->handle;
-            }
+                    return $source->getSection()->handle;
+                }
             ],
             [
                 EntryGqlType::class, 'typeHandle', function($source) {
-                return $source->getType()->handle;
-            }
+                    return $source->getType()->handle;
+                }
             ],
             [EntryGqlType::class, 'typeface', true],
             [EntryGqlType::class, 'missingProperty', false],
@@ -395,8 +395,8 @@ class ElementFieldResolverTest extends Unit
             [MatrixBlockGqlType::class, 'typeId', true],
             [
                 MatrixBlockGqlType::class, 'typeHandle', function($source) {
-                return $source->getType()->handle;
-            }
+                    return $source->getType()->handle;
+                }
             ],
         ];
     }
@@ -409,8 +409,8 @@ class ElementFieldResolverTest extends Unit
             [UserGqlType::class, 'username', true],
             [
                 UserGqlType::class, 'preferences', function($source) {
-                return Json::encode($source->getPreferences());
-            }
+                    return Json::encode($source->getPreferences());
+                }
             ],
         ];
     }
@@ -426,6 +426,4 @@ class ElementFieldResolverTest extends Unit
 
         ];
     }
-
-
 }

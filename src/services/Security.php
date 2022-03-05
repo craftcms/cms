@@ -194,7 +194,7 @@ class Security extends \yii\base\Security
             foreach ($value as $n => &$v) {
                 $v = $this->redactIfSensitive($n, $v);
             }
-        } else if (is_string($value) && $this->isSensitive($key)) {
+        } elseif (is_string($value) && $this->isSensitive($key)) {
             $value = str_repeat('•', strlen($value));
         }
 

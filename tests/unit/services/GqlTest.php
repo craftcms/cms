@@ -375,7 +375,6 @@ class GqlTest extends Unit
         self::assertNotEmpty($allSchemaComponents['mutations']['Global sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Tags'] ?? []);
-
     }
 
     /**

@@ -75,7 +75,7 @@ class ElementsController extends BaseElementsController
                 if (isset($source['heading'])) {
                     // Queue the heading up to be included only if one of the following sources were requested
                     $nextHeading = $source;
-                } else if (isset($sourceKeys[$source['key']])) {
+                } elseif (isset($sourceKeys[$source['key']])) {
                     if ($nextHeading !== null) {
                         $sources[] = $nextHeading;
                         $nextHeading = null;

@@ -139,12 +139,12 @@ class ArgumentHandlerTest extends Unit
                 $handlers,
                 [
                     'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3, 4]]],
-                    'relatedToAssets' => ['expected' => Asset::class, 'return' => [[9,10]]]
+                    'relatedToAssets' => ['expected' => Asset::class, 'return' => [[9, 10]]]
                 ],
                 [
                     'and',
                     ['element' => [3, 4]],
-                    ['element' => [9,10]]
+                    ['element' => [9, 10]]
                 ],
             ],
             [

@@ -356,7 +356,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $params = $category;
             $category = 'site';
-        } else if ($category === null) {
+        } elseif ($category === null) {
             $category = 'site';
         }
 
@@ -1100,9 +1100,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         if (is_string($haystack)) {
             $index = strpos($haystack, $needle);
-        } else if (is_array($haystack)) {
+        } elseif (is_array($haystack)) {
             $index = array_search($needle, $haystack, false);
-        } else if (is_object($haystack) && $haystack instanceof \IteratorAggregate) {
+        } elseif (is_object($haystack) && $haystack instanceof \IteratorAggregate) {
             $index = false;
 
             foreach ($haystack as $i => $item) {
@@ -1433,7 +1433,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
-        } else if (stripos($svg, '<svg') === false) {
+        } elseif (stripos($svg, '<svg') === false) {
             // No <svg> tag, so it's probably a file path
             try {
                 $svg = Craft::getAlias($svg);

@@ -11,7 +11,6 @@ use craft\db\Table;
  */
 class m210613_184103_announcements extends Migration
 {
-
     /**
      * @inheritdoc
      */

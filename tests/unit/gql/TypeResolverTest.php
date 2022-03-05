@@ -103,7 +103,7 @@ class TypeResolverTest extends Unit
         ];
 
         foreach ($data as $testData) {
-            $this->_runResolverTest(... $testData);
+            $this->_runResolverTest(...$testData);
         }
     }
 

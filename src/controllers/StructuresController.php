@@ -110,7 +110,7 @@ class StructuresController extends Controller
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->siteId);
             $success = $structuresService->moveAfter($this->_structure->id, $this->_element, $prevElement);
-        } else if ($parentElementId) {
+        } elseif ($parentElementId) {
             $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->siteId);
             $success = $structuresService->prepend($this->_structure->id, $this->_element, $parentElement);
         } else {

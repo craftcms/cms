@@ -380,7 +380,7 @@ class EntriesController extends BaseEntriesController
         if ($entry->enabled) {
             if ($entry->id) {
                 $this->requirePermission('publishEntries:' . $entry->getSection()->uid);
-            } else if (!$currentUser->can('publishEntries:' . $entry->getSection()->uid)) {
+            } elseif (!$currentUser->can('publishEntries:' . $entry->getSection()->uid)) {
                 $entry->enabled = false;
             }
         }
@@ -622,7 +622,7 @@ class EntriesController extends BaseEntriesController
 
         if (!empty($variables['sectionHandle'])) {
             $variables['section'] = Craft::$app->getSections()->getSectionByHandle($variables['sectionHandle']);
-        } else if (!empty($variables['sectionId'])) {
+        } elseif (!empty($variables['sectionId'])) {
             $variables['section'] = Craft::$app->getSections()->getSectionById($variables['sectionId']);
         }
 

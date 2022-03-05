@@ -110,7 +110,7 @@ class Duplicate extends ElementAction
             if ($newParent) {
                 // Append it to the duplicate of $element's parent
                 $structuresService->append($element->structureId, $duplicate, $newParent);
-            } else if ($element->structureId) {
+            } elseif ($element->structureId) {
                 // Place it right next to the original element
                 $structuresService->moveAfter($element->structureId, $duplicate, $element);
             }

@@ -85,7 +85,7 @@ class Cp
                 // Invalid license?
                 if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
                     $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
-                } else if (Craft::$app->getHasWrongEdition()) {
+                } elseif (Craft::$app->getHasWrongEdition()) {
                     $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                             'edition' => Craft::$app->getEditionName(),
                             'licensedEdition' => Craft::$app->getLicensedEditionName(),
@@ -874,7 +874,7 @@ class Cp
                     Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/3.x/config/#environmental-configuration', [
                         'class' => 'go',
                     ]);
-            } else if (
+            } elseif (
                 !isset($config['warning']) &&
                 ($value === '@web' || strpos($value, '@web/') === 0) &&
                 Craft::$app->getRequest()->isWebAliasSetDynamically
@@ -951,7 +951,7 @@ class Cp
             } else {
                 $docTitle .= " ($element->draftName)";
             }
-        } else if ($element->getIsRevision()) {
+        } elseif ($element->getIsRevision()) {
             /** @var ElementInterface|RevisionBehavior $element */
             $docTitle .= ' (' . $element->getRevisionLabel() . ')';
         }

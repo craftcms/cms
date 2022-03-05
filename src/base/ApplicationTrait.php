@@ -306,7 +306,7 @@ trait ApplicationTrait
         if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
-        } else if ($this->_isInstalled !== null) {
+        } elseif ($this->_isInstalled !== null) {
             return $this->_isInstalled;
         }
 
@@ -394,7 +394,7 @@ trait ApplicationTrait
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
                     ->from([
-                        'x' => (new Query)
+                        'x' => (new Query())
                             ->select([new Expression('1')])
                             ->from([Table::SITES])
                             ->limit(2),

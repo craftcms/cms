@@ -635,7 +635,7 @@ class CategoriesController extends Controller
 
         if (!empty($variables['groupHandle'])) {
             $variables['group'] = Craft::$app->getCategories()->getGroupByHandle($variables['groupHandle']);
-        } else if (!empty($variables['groupId'])) {
+        } elseif (!empty($variables['groupId'])) {
             $variables['group'] = Craft::$app->getCategories()->getGroupById($variables['groupId']);
         }
 

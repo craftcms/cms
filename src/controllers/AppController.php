@@ -293,7 +293,7 @@ class AppController extends Controller
             $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
-            } else if (isset($restoreException)) {
+            } elseif (isset($restoreException)) {
                 $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
             } else {
                 $error .= ' The database has not been restored.';
@@ -503,7 +503,7 @@ class AppController extends Controller
                         'name' => $update->replacementName,
                     ]);
             }
-        } else if ($update->status === Update::STATUS_EXPIRED) {
+        } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
             ]);

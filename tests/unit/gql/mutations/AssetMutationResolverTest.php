@@ -23,7 +23,7 @@ class AssetMutationResolverTest extends TestCase
 {
     /**
      * Test whether various argument combos set the correct scenario on the element.
-     * 
+     *
      * @param $arguments
      * @param $scenario
      * @throws \Throwable

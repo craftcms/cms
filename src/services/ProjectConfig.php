@@ -739,7 +739,7 @@ class ProjectConfig extends Component
             if (strpos("$path.", "$thisPath.") === 0) {
                 if ($path === $thisPath) {
                     $oldValue = $thisOldValue;
-                } else if (is_array($thisOldValue)) {
+                } elseif (is_array($thisOldValue)) {
                     $oldValue = $this->_traverseDataArray($thisOldValue, substr($path, strlen($thisPath) + 1));
                 } else {
                     $oldValue = null;
@@ -753,7 +753,7 @@ class ProjectConfig extends Component
 
         if ($newValue === null && is_array($oldValue)) {
             $this->_removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
-        } else if (is_array($newValue)) {
+        } elseif (is_array($newValue)) {
             $this->_setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
         }
 
@@ -762,7 +762,7 @@ class ProjectConfig extends Component
             if ($newValue === null && $oldValue !== null) {
                 // Fire a 'removeItem' event
                 $this->trigger(self::EVENT_REMOVE_ITEM, $event);
-            } else if ($oldValue === null && $newValue !== null) {
+            } elseif ($oldValue === null && $newValue !== null) {
                 // Fire an 'addItem' event
                 $this->trigger(self::EVENT_ADD_ITEM, $event);
             } else {
@@ -897,13 +897,13 @@ class ProjectConfig extends Component
                                 // Ensure types
                                 if (is_bool($value)) {
                                     $changeSet['removed'][$key] = (bool)$changeSet['removed'][$key];
-                                } else if (is_int($value)) {
+                                } elseif (is_int($value)) {
                                     $changeSet['removed'][$key] = (int)$changeSet['removed'][$key];
                                 }
 
                                 if ($changeSet['removed'][$key] === $value) {
                                     unset($changeSet['removed'][$key], $changeSet['added'][$key]);
-                                } else if (array_key_exists($key, $changeSet['removed'])) {
+                                } elseif (array_key_exists($key, $changeSet['removed'])) {
                                     $changeSet['changed'][$key] = [
                                         'from' => $changeSet['removed'][$key],
                                         'to' => $changeSet['added'][$key],
@@ -1467,7 +1467,7 @@ class ProjectConfig extends Component
                     return true;
                 }
                 $newItems[] = $immediateParent;
-            } else if ($this->forceUpdate || $flatCurrent[$key] !== $value) {
+            } elseif ($this->forceUpdate || $flatCurrent[$key] !== $value) {
                 if ($existsOnly) {
                     return true;
                 }
@@ -1593,7 +1593,7 @@ class ProjectConfig extends Component
         if (count($path) === 0) {
             if ($delete) {
                 unset($data[$nextSegment]);
-            } else if ($value === null) {
+            } elseif ($value === null) {
                 return $data[$nextSegment] ?? null;
             } else {
                 $data[$nextSegment] = $value;
@@ -1606,7 +1606,7 @@ class ProjectConfig extends Component
                 }
 
                 $data[$nextSegment] = [];
-            } else if (!is_array($data[$nextSegment])) {
+            } elseif (!is_array($data[$nextSegment])) {
                 // If the next part is not an array, but we have to travel further, make it an array.
                 $data[$nextSegment] = [];
             }

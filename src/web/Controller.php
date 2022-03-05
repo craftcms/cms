@@ -66,7 +66,7 @@ abstract class Controller extends \yii\web\Controller
         // Normalize $allowAnonymous
         if (is_bool($this->allowAnonymous)) {
             $this->allowAnonymous = (int)$this->allowAnonymous;
-        } else if (is_array($this->allowAnonymous)) {
+        } elseif (is_array($this->allowAnonymous)) {
             $normalized = [];
             foreach ($this->allowAnonymous as $k => $v) {
                 if (
@@ -82,7 +82,7 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
             $this->allowAnonymous = $normalized;
-        } else if (!is_int($this->allowAnonymous)) {
+        } elseif (!is_int($this->allowAnonymous)) {
             throw new InvalidConfigException('Invalid $allowAnonymous value');
         }
 
@@ -149,7 +149,7 @@ abstract class Controller extends \yii\web\Controller
             if ($this->request->getIsCpRequest()) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
-            } else if (Craft::$app->getUser()->getIsGuest()) {
+            } elseif (Craft::$app->getUser()->getIsGuest()) {
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
@@ -420,7 +420,7 @@ abstract class Controller extends \yii\web\Controller
             } else {
                 $url = $this->request->getPathInfo();
             }
-        } else if ($object) {
+        } elseif ($object) {
             $url = $this->getView()->renderObjectTemplate($url, $object);
         }
 
@@ -477,7 +477,6 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirect($url, $statusCode = 302): YiiResponse
     {
-
         if ($url !== null) {
             return $this->response->redirect($url, $statusCode);
         }

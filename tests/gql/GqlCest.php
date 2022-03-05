@@ -102,7 +102,6 @@ class GqlCest
      */
     public function testQuerying(FunctionalTester $I)
     {
-
         $queryTypes = [
             'entries',
             'users',
