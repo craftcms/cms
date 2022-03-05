@@ -601,7 +601,7 @@ class ElementsController extends Controller
         ElementInterface $element,
         bool $isMultiSiteElement,
         bool $isUnpublishedDraft,
-        array $propSiteIds
+        array $propSiteIds,
     ): ?string {
         $showDrafts = !$isUnpublishedDraft;
 
@@ -631,7 +631,7 @@ class ElementsController extends Controller
         bool $enablePreview,
         bool $isCurrent,
         bool $isUnpublishedDraft,
-        bool $isDraft
+        bool $isDraft,
     ): string {
         $components = [];
 
@@ -698,7 +698,7 @@ class ElementsController extends Controller
         string $containerId,
         callable $contentFn,
         callable $sidebarFn,
-        callable $jsSettingsFn
+        callable $jsSettingsFn,
     ) {
         $fieldLayout = $element->getFieldLayout();
         $form = $fieldLayout?->createForm($element, !$canSave, [
@@ -722,7 +722,7 @@ JS;
         ElementInterface $element,
         bool $isUnpublishedDraft,
         bool $canSave,
-        ?FieldLayoutForm $form
+        ?FieldLayoutForm $form,
     ): string {
         $components = [];
 
@@ -757,7 +757,7 @@ JS;
         bool $canSave,
         bool $isCurrent,
         bool $isMultiSiteElement,
-        bool $canEditMultipleSites
+        bool $canEditMultipleSites,
     ): string {
         $components = [];
 

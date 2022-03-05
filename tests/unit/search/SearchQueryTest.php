@@ -26,7 +26,7 @@ use craft\search\SearchQueryTermGroup;
  */
 class SearchQueryTest extends Unit
 {
-    const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
+    public const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,
         'exact' => false,
         'subLeft' => false,

@@ -94,13 +94,13 @@ class PrepareQueryTest extends Unit
         $this->_userGroup->delete();
     }
 
-    const VOLUME_UID = 'volume-uid';
-    const CATEGORY_GROUP_UID = 'categoryGroup-uid';
-    const SECTION_UID = 'section-uid';
-    const ENTRY_TYPE_UID = 'entryType-uid';
-    const GLOBAL_SET_UID = 'globalSet-uid';
-    const TAG_GROUP_UID = 'tagGroup-uid';
-    const USER_GROUP_UID = 'userGroup-uid';
+    public const VOLUME_UID = 'volume-uid';
+    public const CATEGORY_GROUP_UID = 'categoryGroup-uid';
+    public const SECTION_UID = 'section-uid';
+    public const ENTRY_TYPE_UID = 'entryType-uid';
+    public const GLOBAL_SET_UID = 'globalSet-uid';
+    public const TAG_GROUP_UID = 'tagGroup-uid';
+    public const USER_GROUP_UID = 'userGroup-uid';
 
     /**
      * Test relational field query preparation

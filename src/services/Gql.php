@@ -458,7 +458,7 @@ class Gql extends Component
         string $query,
         ?array $variables = null,
         ?string $operationName = null,
-        bool $debugMode = false
+        bool $debugMode = false,
     ): array {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
@@ -1243,7 +1243,7 @@ class Gql extends Component
         mixed $rootValue,
         mixed $context,
         ?array $variables = null,
-        ?string $operationName = null
+        ?string $operationName = null,
     ): ?string {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();

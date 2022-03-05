@@ -23,13 +23,13 @@ use yii\base\Exception;
  */
 class UrlHelperTest extends Unit
 {
-    const ABSOLUTE_URL = 'http://craftcms.com/';
-    const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
-    const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
-    const ABSOLUTE_URL_HTTPS_WWW = 'https://www.craftcms.com/';
-    const NON_ABSOLUTE_URL = 'craftcms.com/';
-    const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
-    const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
+    public const ABSOLUTE_URL = 'http://craftcms.com/';
+    public const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
+    public const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
+    public const ABSOLUTE_URL_HTTPS_WWW = 'https://www.craftcms.com/';
+    public const NON_ABSOLUTE_URL = 'craftcms.com/';
+    public const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
+    public const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
 
     /**
      * @var UnitTester

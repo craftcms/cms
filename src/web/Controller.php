@@ -253,7 +253,7 @@ abstract class Controller extends \yii\web\Controller
     public function asSuccess(
         ?string $message = null,
         array $data = [],
-        ?string $redirect = null
+        ?string $redirect = null,
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
@@ -320,7 +320,7 @@ abstract class Controller extends \yii\web\Controller
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
-        ?string $redirect = null
+        ?string $redirect = null,
     ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,

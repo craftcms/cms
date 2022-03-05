@@ -21,10 +21,10 @@ use yii\base\InvalidValueException;
  */
 class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
-    const UNIT_B = 'B';
-    const UNIT_KB = 'KB';
-    const UNIT_MB = 'MB';
-    const UNIT_GB = 'GB';
+    public const UNIT_B = 'B';
+    public const UNIT_KB = 'KB';
+    public const UNIT_MB = 'MB';
+    public const UNIT_GB = 'GB';
 
     /**
      * @var string The size unit

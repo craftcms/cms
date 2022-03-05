@@ -29,7 +29,7 @@ use yii\db\Schema;
  */
 class DbHelperTest extends Unit
 {
-    const MULTI_PARSEPARAM_NOT = [
+    public const MULTI_PARSEPARAM_NOT = [
         'or',
         [
             '!=',
@@ -43,7 +43,7 @@ class DbHelperTest extends Unit
         ],
     ];
 
-    const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
+    public const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
 
     /**
      * @var UnitTester

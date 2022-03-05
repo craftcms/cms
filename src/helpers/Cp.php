@@ -258,7 +258,7 @@ class Cp
         bool $showThumb = true,
         bool $showLabel = true,
         bool $showDraftName = true,
-        bool $single = false
+        bool $single = false,
     ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
@@ -437,7 +437,7 @@ class Cp
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true,
-        bool $showDraftName = true
+        bool $showDraftName = true,
     ): string {
         if (empty($elements)) {
             return '';

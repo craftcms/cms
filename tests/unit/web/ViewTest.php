@@ -118,7 +118,7 @@ class ViewTest extends TestCase
         string $basePath,
         string $name,
         ?array $defaultTemplateExtensions = null,
-        ?array $indexTemplateFilenames = null
+        ?array $indexTemplateFilenames = null,
     ) {
         // If the data wants to set something custom? Set it as a prop.
         if ($defaultTemplateExtensions !== null) {
