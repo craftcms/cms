@@ -189,6 +189,13 @@ abstract class Model extends \yii\base\Model
         // Typecast them
         Typecast::properties(static::class, $values);
 
+        // Normalize the date/time attributes
+        foreach ($this->datetimeAttributes() as $name) {
+            if (isset($values[$name])) {
+                $values[$name] = DateTimeHelper::toDateTime($values[$name]) ?: null;
+            }
+        }
+
         parent::setAttributes($values, $safeOnly);
     }
 
