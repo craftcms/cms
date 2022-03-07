@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -103,14 +104,14 @@ class Volume extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => Asset::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Asset::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**

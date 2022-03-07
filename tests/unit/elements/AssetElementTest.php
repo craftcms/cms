@@ -40,8 +40,8 @@ class AssetElementTest extends TestCase
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
                 'getFs' => $this->make(Fs::class, [
-                    'hasUrls' => true
-                ])
+                    'hasUrls' => true,
+                ]),
             ]),
             'folderId' => 2,
             'filename' => 'foo.jpg',
@@ -51,9 +51,9 @@ class AssetElementTest extends TestCase
                 'width' => 400,
                 'height' => 200,
                 'getImageTransformer' => $this->make(ImageTransformer::class, [
-                    'getTransformUrl' => fn(Asset $asset, ImageTransform $transform) => 'w=' . $transform->width . '&h=' . $transform->height
-                ])
-            ])
+                    'getTransformUrl' => fn(Asset $asset, ImageTransform $transform) => 'w=' . $transform->width . '&h=' . $transform->height,
+                ]),
+            ]),
         ]);
 
         $previousValue = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;

@@ -302,9 +302,9 @@ class Entry extends Element
         $sections = [];
         if ($source === '*') {
             $sections = Craft::$app->getSections()->getAllSections();
-        } else if ($source === 'singles') {
+        } elseif ($source === 'singles') {
             $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
-        } else if (
+        } elseif (
             preg_match('/^section:(.+)$/', $source, $matches) &&
             $section = Craft::$app->getSections()->getSectionByUid($matches[1])
         ) {
@@ -350,7 +350,7 @@ class Entry extends Element
                     if (($section = Craft::$app->getSections()->getSectionById($matches[1])) !== null) {
                         $sections = [$section];
                     }
-                } else if (preg_match('/^section:(.+)$/', $source, $matches)) {
+                } elseif (preg_match('/^section:(.+)$/', $source, $matches)) {
                     if (($section = Craft::$app->getSections()->getSectionByUid($matches[1])) !== null) {
                         $sections = [$section];
                     }
@@ -419,7 +419,7 @@ class Entry extends Element
             if ($source === '*') {
                 // Delete
                 $actions[] = Delete::class;
-            } else if ($source !== 'singles') {
+            } elseif ($source !== 'singles') {
                 // Channel/Structure-only actions
                 $section = $sections[0];
 
@@ -622,7 +622,7 @@ class Entry extends Element
             $map = array_map(function(self $entry) {
                 return [
                     'source' => $entry->id,
-                    'target' => $entry->getAuthorId()
+                    'target' => $entry->getAuthorId(),
                 ];
             }, $sourceElementsWithAuthors);
 
@@ -795,17 +795,6 @@ class Entry extends Element
         $names[] = 'section';
         $names[] = 'type';
         return $names;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'postDate';
-        $attributes[] = 'expiryDate';
-        return $attributes;
     }
 
     /**

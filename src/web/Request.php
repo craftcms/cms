@@ -322,7 +322,7 @@ class Request extends \yii\web\Request
         // Is this query string-based pagination?
         if (str_starts_with($pageTrigger, '?')) {
             $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
-        } else if ($this->_path !== '') {
+        } elseif ($this->_path !== '') {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $pageTrigger = preg_quote($pageTrigger, '/');

@@ -112,7 +112,7 @@ class FileTargetTest extends TestCase
                 'getRequest' => $stubArray['request'],
                 'get' => function($type) use ($stubArray) {
                     return $stubArray[$type] ?? null;
-                }
+                },
             ]
         );
     }

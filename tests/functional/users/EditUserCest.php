@@ -69,5 +69,4 @@ class EditUserCest
                 ->one()->fullName
         );
     }
-
 }

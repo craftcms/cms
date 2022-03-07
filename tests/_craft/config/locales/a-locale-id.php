@@ -4,6 +4,6 @@ return [
     'english' => 'language',
     'spanish' => 'language',
     'french' => [
-        'language', 'france'
-    ]
+        'language', 'france',
+    ],
 ];

@@ -11,8 +11,8 @@ use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
-use yii\db\QueryInterface;
 use yii\db\Query as YiiQuery;
+use yii\db\QueryInterface;
 use yii\di\Instance;
 
 /**

@@ -44,8 +44,8 @@ class GlobalsTest extends Unit
             'oldValue' => [],
             'newValue' => [
                 'name' => 'Test ' . StringHelper::UUID(),
-                'handle' => 'test' . StringHelper::UUID()
-            ]
+                'handle' => 'test' . StringHelper::UUID(),
+            ],
         ]);
 
         $this->tester->mockMethods(Craft::$app, 'elements', ['saveElement' => false]);

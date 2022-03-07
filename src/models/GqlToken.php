@@ -34,9 +34,9 @@ class GqlToken extends Model
     public ?int $id = null;
 
     /**
-     * @var string Token name
+     * @var string|null Token name
      */
-    public string $name;
+    public ?string $name = null;
 
     /**
      * @var int|null ID of the associated schema.
@@ -101,17 +101,6 @@ class GqlToken extends Model
 
         unset($config['schema']);
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'expiryDate';
-        $attributes[] = 'lastUsed';
-        return $attributes;
     }
 
     /**

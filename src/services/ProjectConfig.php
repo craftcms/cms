@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -780,13 +781,13 @@ class ProjectConfig extends Component
                                 // Ensure types
                                 if (is_bool($value)) {
                                     $changeSet['removed'][$key] = (bool)$changeSet['removed'][$key];
-                                } else if (is_int($value)) {
+                                } elseif (is_int($value)) {
                                     $changeSet['removed'][$key] = (int)$changeSet['removed'][$key];
                                 }
 
                                 if ($changeSet['removed'][$key] === $value) {
                                     unset($changeSet['removed'][$key], $changeSet['added'][$key]);
-                                } else if (array_key_exists($key, $changeSet['removed'])) {
+                                } elseif (array_key_exists($key, $changeSet['removed'])) {
                                     $changeSet['changed'][$key] = [
                                         'from' => $changeSet['removed'][$key],
                                         'to' => $changeSet['added'][$key],
@@ -1371,7 +1372,7 @@ class ProjectConfig extends Component
                     return true;
                 }
                 $newItems[] = $immediateParent;
-            } else if ($this->forceUpdate || $flatCurrent[$key] !== $value) {
+            } elseif ($this->forceUpdate || $flatCurrent[$key] !== $value) {
                 if ($existsOnly) {
                     return true;
                 }

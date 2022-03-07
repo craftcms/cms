@@ -68,14 +68,14 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => MatrixBlock::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => MatrixBlock::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**

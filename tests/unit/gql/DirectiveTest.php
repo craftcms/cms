@@ -67,7 +67,7 @@ class DirectiveTest extends Unit
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'someField',
-            'fieldNodes' => $fieldNodes
+            'fieldNodes' => $fieldNodes,
         ]);
 
         self::assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
@@ -93,7 +93,7 @@ class DirectiveTest extends Unit
             'getVolume' => $this->make(Volume::class, [
                 'getFs' => $this->make(Local::class, [
                     'hasUrls' => true,
-                    'url' => 'http://domain.local/'
+                    'url' => 'http://domain.local/',
                 ]),
             ]),
             'folderId' => 7,
@@ -108,7 +108,7 @@ class DirectiveTest extends Unit
 
                 $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
                 return $transformed;
-            }
+            },
         ]);
 
         /** @var GqlAssetType $type */
@@ -118,7 +118,7 @@ class DirectiveTest extends Unit
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'url',
-            'fieldNodes' => $fieldNodes
+            'fieldNodes' => $fieldNodes,
         ]);
 
         unset($parameters['immediately']);
@@ -150,7 +150,7 @@ class DirectiveTest extends Unit
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'filename',
-            'fieldNodes' => $fieldNodes
+            'fieldNodes' => $fieldNodes,
         ]);
 
         self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
@@ -258,8 +258,8 @@ class DirectiveTest extends Unit
 
         Craft::$app->set('config', $this->make(Config::class, [
             'getGeneral' => $this->make(GeneralConfig::class, [
-                'gqlTypePrefix' => 'test'
-            ])
+                'gqlTypePrefix' => 'test',
+            ]),
         ]));
 
         if (!GqlEntityRegistry::getEntity($directiveName)) {

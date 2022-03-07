@@ -114,7 +114,7 @@ class TagQuery extends ElementQuery
     {
         if ($value instanceof TagGroup) {
             $this->groupId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])
@@ -198,9 +198,9 @@ class TagQuery extends ElementQuery
 
         if (empty($this->groupId)) {
             $this->groupId = null;
-        } else if (is_numeric($this->groupId)) {
+        } elseif (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
-        } else if (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])

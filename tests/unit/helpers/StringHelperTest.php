@@ -1121,7 +1121,8 @@ class StringHelperTest extends Unit
     public function testShuffle($string)
     {
         $encoding = mb_internal_encoding();
-        $result = StringHelper::shuffle($string);;
+        $result = StringHelper::shuffle($string);
+        ;
 
         self::assertSame(
             mb_strlen($string, $encoding),
@@ -1776,7 +1777,7 @@ class StringHelperTest extends Unit
             ['Craftcms', 'craftcms'],
             ['2craftcms', '2craftcms'],
             [' craftcms', ' craftcms'],
-            [' ', ' ']
+            [' ', ' '],
         ];
     }
 
@@ -1799,7 +1800,7 @@ class StringHelperTest extends Unit
             [false, ' '],
             [false, '!@#$%^&*()'],
             [false, '469e6ed2-🎧𢵌😀😘-458a-a80e-173821fee715'],
-            [false, '&*%!$^!#-5b98-4048-8106-8cc2de4af159']
+            [false, '&*%!$^!#-5b98-4048-8106-8cc2de4af159'],
         ];
     }
 
@@ -1877,7 +1878,7 @@ class StringHelperTest extends Unit
             [false, '!@#$%^&*()_'],
             [false, '⛄'],
             [false, ''],
-            [true, '𨳊']
+            [true, '𨳊'],
         ];
     }
 
@@ -1975,7 +1976,7 @@ class StringHelperTest extends Unit
             ['!@#$%^&*()_{}|:"<>?', 8],
             ['                           ', 8],
             'tabs' => ['              ', 4],
-            ['asdfghjklxcvbnmqwertyuiop', 10]
+            ['asdfghjklxcvbnmqwertyuiop', 10],
         ];
     }
 
@@ -1991,7 +1992,7 @@ class StringHelperTest extends Unit
             ['&#x102cd;', '𐋍'],
             ['asdfghjklqwertyuiop1234567890!@#$%^&*()_+', 'asdfghjklqwertyuiop1234567890!@#$%^&*()_+'],
             ['&#x102cd;&#x1f1e6;&#x1f1fa;&#x1f525;', '𐋍🇦🇺🔥'],
-            'ensure-non-mb4-is-ignored' => ['&#x102cd;1234567890&#x1f1e6;&#x1f1fa; &#x1f525;', '𐋍1234567890🇦🇺 🔥']
+            'ensure-non-mb4-is-ignored' => ['&#x102cd;1234567890&#x1f1e6;&#x1f1fa; &#x1f525;', '𐋍1234567890🇦🇺 🔥'],
         ];
     }
 
@@ -2006,7 +2007,7 @@ class StringHelperTest extends Unit
             ['craftcms', 'craftcms'],
             ['😂😁', '😂😁'],
             ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
-            ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±']
+            ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
         ];
     }
 
@@ -2018,7 +2019,7 @@ class StringHelperTest extends Unit
         return [
             ['1234567890asdfghjkl'],
             ['😂😁'],
-            ['!@#$%^&*()_+{}|:"<>?']
+            ['!@#$%^&*()_+{}|:"<>?'],
         ];
     }
 
@@ -2183,13 +2184,13 @@ class StringHelperTest extends Unit
                 4, 'test
              
              
-             test'
+             test',
             ],
             [1, 'test <br> test'],
             [1, 'thesearetabs       notspaces'],
             [
                 2, '😂
-            😁'
+            😁',
             ],
             [
                 11, '
@@ -2202,8 +2203,8 @@ class StringHelperTest extends Unit
             
             
             
-            '
-            ]
+            ',
+            ],
         ];
     }
 
@@ -2237,7 +2238,7 @@ class StringHelperTest extends Unit
             ['😘', '😘'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
             ['\x09Example string\x0A', '\x09Example string\x0A'],
-            ['\t\tThese are a few words :) ...', '\t\tThese are a few words :) ...  ']
+            ['\t\tThese are a few words :) ...', '\t\tThese are a few words :) ...  '],
         ];
     }
 
@@ -2588,7 +2589,7 @@ class StringHelperTest extends Unit
             ['foo/foobar', 'foobar', 'foo/'],
             ['http://foobar', 'foobar', 'http://'],
             ['http://foobar', 'http://foobar', 'http://'],
-            ['fòôbàř', 'fòôbàř', 'f',],
+            ['fòôbàř', 'fòôbàř', 'f', ],
             ['fòôbàř', 'fòôbàř', 'fòô'],
             ['fòô/fòôbàř', 'fòôbàř', 'fòô/'],
             ['http://fòôbàř', 'fòôbàř', 'http://'],
@@ -3154,9 +3155,9 @@ class StringHelperTest extends Unit
             ['foo bar  ', 'foo bar', 9],
             ['foo bar_*', 'foo bar', 9, '_*'],
             ['foo bar_*_', 'foo bar', 10, '_*'],
-            ['fòô bàř  ', 'fòô bàř', 9, ' ',],
-            ['fòô bàř¬ø', 'fòô bàř', 9, '¬ø',],
-            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø',],
+            ['fòô bàř  ', 'fòô bàř', 9, ' ', ],
+            ['fòô bàř¬ø', 'fòô bàř', 9, '¬ø', ],
+            ['fòô bàř¬ø¬', 'fòô bàř', 10, '¬ø', ],
             ['fòô bàř¬ø¬ø', 'fòô bàř', 11, '¬ø'],
         ];
     }
@@ -4130,7 +4131,7 @@ class StringHelperTest extends Unit
             ["What Is AT&T's Problem?", "What is AT&T's problem?"],
             ['Apple Deal With AT&T Falls Through', 'Apple deal with AT&T falls through'],
             ['This v That', 'this v that'],
-            ['This vs That', 'this vs that',],
+            ['This vs That', 'this vs that', ],
             ['This v. That', 'this v. that'],
             ['This vs. That', 'this vs. that'],
             ["The SEC's Apple Probe: What You Need to Know", "The SEC's Apple probe: what you need to know"],
@@ -4160,7 +4161,7 @@ class StringHelperTest extends Unit
             ['This Is Trimming', '  this is trimming'],
             ['This Is Trimming', 'this is trimming  '],
             ['This Is Trimming', '  this is trimming  '],
-            ['If It’s All Caps, Fix It', 'IF IT’S ALL CAPS, FIX IT',],
+            ['If It’s All Caps, Fix It', 'IF IT’S ALL CAPS, FIX IT', ],
             ['What Could/Should Be Done About Slashes?', 'What could/should be done about slashes?'],
             [
                 'Never Touch Paths Like /var/run Before/After /boot',

@@ -205,7 +205,7 @@ class App
                 } else {
                     $value = true;
                 }
-            } else if (str_starts_with($item, "$name=")) {
+            } elseif (str_starts_with($item, "$name=")) {
                 $value = substr($item, $nameLen + 1);
             } else {
                 continue;
@@ -841,6 +841,78 @@ class App
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
         ];
+    }
+
+    /**
+     * Returns the `log` component config.
+     *
+     * @return array|null
+     * @since 3.0.18
+     * @deprecated in 3.6.0. Override `components.log.targets` instead
+     */
+    public static function logConfig(): ?array
+    {
+        // Using Yii's Dispatcher class here is intentional
+        return [
+            'class' => YiiDispatcher::class,
+            'targets' => array_values(static::defaultLogTargets()),
+        ];
+    }
+
+    /**
+     * Returns the default log targets.
+     *
+     * @return Target[]
+     * @since 3.6.14
+     */
+    public static function defaultLogTargets(): array
+    {
+        // Warning - Don't do anything that could cause something to get logged from here!
+        // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
+        // targets haven’t been instantiated yet.
+
+        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+
+        // Only log console requests and web requests that aren't getAuthTimeout requests
+        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
+            return [];
+        }
+
+        $targets = [];
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $baseTargetConfig = [
+            'includeUserIp' => $generalConfig->storeUserIps,
+            'except' => [
+                PhpMessageSource::class . ':*',
+            ],
+        ];
+
+        if (self::isStreamLog()) {
+            $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
+                'class' => StreamLogTarget::class,
+                'url' => 'php://stderr',
+                'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
+            ]));
+
+            // Don't pollute console request output
+            if (!$isConsoleRequest && YII_DEBUG) {
+                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
+                    'class' => StreamLogTarget::class,
+                    'url' => 'php://stdout',
+                    'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
+                ]));
+            }
+        } else {
+            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
+                'class' => FileTarget::class,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
+                'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
+                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
+            ]));
+        }
+
+        return $targets;
     }
 
     /**

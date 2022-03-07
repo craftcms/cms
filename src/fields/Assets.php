@@ -214,23 +214,6 @@ class Assets extends BaseRelationField
             }
         }
 
-        // Config normalization
-        $nullables = [
-            'allowedKinds',
-            'defaultUploadLocationSource',
-            'defaultUploadLocationSubpath',
-            'restrictedDefaultUploadPath',
-            'restrictedLocationSource',
-            'restrictedLocationSubpath',
-            'singleUploadLocationSource',
-            'singleUploadLocationSubpath',
-        ];
-        foreach ($nullables as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
         // Default showUnpermittedVolumes to true for existing Assets fields
         if (isset($config['id']) && !isset($config['showUnpermittedVolumes'])) {
             $config['showUnpermittedVolumes'] = true;
@@ -972,8 +955,8 @@ class Assets extends BaseRelationField
         // If we have resolved everything to a temporary user folder, fine
         if ($userFolder !== null) {
             $folderId = $userFolder->id;
-            // But in all other cases, make it the default upload location, too
-        } else if (!$this->restrictLocation || $this->allowSubfolders) {
+        // But in all other cases, make it the default upload location, too
+        } elseif (!$this->restrictLocation || $this->allowSubfolders) {
             $this->_defaultUploadLocation = $this->_getSourcePathByFolderId($folderId);
         }
 

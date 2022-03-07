@@ -36,8 +36,8 @@ class ElementHelperTest extends Unit
     {
         return [
             'entries' => [
-                'class' => EntryFixture::class
-            ]
+                'class' => EntryFixture::class,
+            ],
         ];
     }
 
@@ -117,7 +117,7 @@ class ElementHelperTest extends Unit
                     ]);
                     $command->bindValues($params);
                     return $command;
-                }
+                },
             ]);
         }
 
@@ -154,7 +154,7 @@ class ElementHelperTest extends Unit
         try {
             $el = new ExampleElement([
                 'uriFormat' => 'test/{slug}',
-                'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssss22ssss'
+                'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssss22ssss',
             ]);
             ElementHelper::setUniqueUri($el);
             $result = true;
@@ -173,7 +173,7 @@ class ElementHelperTest extends Unit
         $editable = [
             $one = new ExampleElement(['id' => '1']),
             $two = new ExampleElement(['id' => '2']),
-            $three = new ExampleElement(['id' => '3'])
+            $three = new ExampleElement(['id' => '3']),
         ];
 
         ElementHelper::setNextPrevOnElements($editable);

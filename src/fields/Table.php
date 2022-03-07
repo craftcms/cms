@@ -94,17 +94,7 @@ class Table extends Field
      */
     public function __construct($config = [])
     {
-        // Config normalization
-        foreach (['minRows', 'maxRows', 'addRowLabel'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
-        if (!isset($config['addRowLabel'])) {
-            $config['addRowLabel'] = Craft::t('app', 'Add a row');
-        }
-
+        // Config normalization}
         if (array_key_exists('columns', $config)) {
             if (!is_array($config['columns'])) {
                 unset($config['columns']);
@@ -119,7 +109,7 @@ class Table extends Field
                     if ($column['type'] === 'select') {
                         if (!isset($column['options'])) {
                             $column['options'] = [];
-                        } else if (is_string($column['options'])) {
+                        } elseif (is_string($column['options'])) {
                             $column['options'] = Json::decode($column['options']);
                         }
                     } else {
@@ -158,6 +148,18 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->addRowLabel)) {
+            $this->addRowLabel = Craft::t('app', 'Add a row');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -181,7 +183,7 @@ class Table extends Field
                     $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
                         'handle' => $col['handle'],
                     ]);
-                } else if (preg_match('/^col\d+$/', $col['handle'])) {
+                } elseif (preg_match('/^col\d+$/', $col['handle'])) {
                     $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
                         'format' => 'colX',
                     ]);
@@ -399,7 +401,7 @@ class Table extends Field
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === null && $this->isFresh($element)) {
+        } elseif ($value === null && $this->isFresh($element)) {
             $value = array_values($this->defaults ?? []);
         }
 
@@ -412,7 +414,7 @@ class Table extends Field
             foreach ($this->columns as $colId => $col) {
                 if (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
-                } else if ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
                 } else {
                     $cellValue = null;
@@ -558,6 +560,7 @@ class Table extends Field
                     $value = LitEmoji::shortcodeToUnicode($value);
                     return trim(preg_replace('/\R/u', "\n", $value));
                 }
+                // no break
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;

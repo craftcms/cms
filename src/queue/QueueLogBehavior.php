@@ -75,16 +75,21 @@ class QueueLogBehavior extends VerboseBehavior
      */
     public function afterError(ExecEvent $event): void
     {
-        $duration = $this->_formattedDuration();
+        $message = sprintf('%s - Error', parent::jobTitle($event));
 
-        if (!$event->error) {
-            Craft::error(sprintf('%s - Error (time: %s)', parent::jobTitle($event), $duration), __METHOD__);
-            return;
+        if (isset($this->_jobStartedAt)) {
+            $message .= sprintf(' (time: %s)', $this->_formattedDuration());
         }
 
-        $error = $event->error->getMessage();
-        Craft::error(sprintf('%s - Error (time: %s): %s', parent::jobTitle($event), $duration, $error), __METHOD__);
-        Craft::$app->getErrorHandler()->logException($event->error);
+        if ($event->error) {
+            $message .= sprintf(': %s', $event->error->getMessage());
+        }
+
+        Craft::error($message, __METHOD__);
+
+        if ($event->error) {
+            Craft::$app->getErrorHandler()->logException($event->error);
+        }
     }
 
     /**

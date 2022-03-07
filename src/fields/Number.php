@@ -118,7 +118,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                 $config[$name] = $this->_normalizeNumber($config[$name]);
             }
         }
-        foreach (['defaultValue', 'max', 'decimals', 'size', 'prefix', 'suffix', 'previewCurrency'] as $name) {
+        foreach (['defaultValue', 'max', 'decimals'] as $name) {
             if (($config[$name] ?? null) === '') {
                 unset($config[$name]);
             }
@@ -240,7 +240,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                     $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
                 } catch (InvalidArgumentException $e) {
                 }
-            } else if ($this->decimals) {
+            } elseif ($this->decimals) {
                 // Just make sure we're using the right decimal symbol
                 $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
                 try {

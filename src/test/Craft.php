@@ -344,7 +344,7 @@ class Craft extends Yii2
         string $eventName,
         $callback,
         string $eventInstance = '',
-        array $eventValues = []
+        array $eventValues = [],
     ): void {
         // Add this event.
         $eventTriggered = false;

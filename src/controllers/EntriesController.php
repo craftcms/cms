@@ -162,7 +162,7 @@ class EntriesController extends BaseEntriesController
                     'structureId' => $section->structureId,
                 ]);
                 Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
-            } else if ($prevId = $this->request->getParam('after')) {
+            } elseif ($prevId = $this->request->getParam('after')) {
                 $prevEntry = Craft::$app->getEntries()->getEntryById($prevId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
@@ -253,7 +253,7 @@ class EntriesController extends BaseEntriesController
         if ($entry->enabled) {
             if ($entry->id) {
                 $this->requirePermission("saveEntries:$section->uid");
-            } else if (!$currentUser->can("saveEntries:$section->uid")) {
+            } elseif (!$currentUser->can("saveEntries:$section->uid")) {
                 $entry->enabled = false;
             }
         }

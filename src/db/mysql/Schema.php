@@ -275,7 +275,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     protected function loadTableSchema($name): ?TableSchema
     {
-        $table = new TableSchema;
+        $table = new TableSchema();
         $this->resolveTableNames($table, $name);
 
         if ($this->findColumns($table)) {

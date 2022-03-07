@@ -294,7 +294,7 @@ class CategoriesController extends Controller
                 'structureId' => $group->structureId,
             ]);
             Craft::$app->getStructures()->moveBefore($group->structureId, $category, $nextCategory);
-        } else if ($prevId = $this->request->getParam('after')) {
+        } elseif ($prevId = $this->request->getParam('after')) {
             $prevCategory = Craft::$app->getCategories()->getCategoryById($prevId, $site->id, [
                 'structureId' => $group->structureId,
             ]);

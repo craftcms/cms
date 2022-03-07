@@ -74,6 +74,7 @@ class PluginController extends Controller
             $row = [
                 $info['name'],
                 $handle,
+                $info['packageName'],
                 $info['version'],
                 $this->_boolToString($info['isInstalled']),
                 $this->_boolToString($info['isEnabled']),
@@ -81,7 +82,7 @@ class PluginController extends Controller
 
             if ($info['isEnabled']) {
                 $color = Console::FG_GREEN;
-            } else if ($info['isInstalled']) {
+            } elseif ($info['isInstalled']) {
                 $color = Console::FG_YELLOW;
             } else {
                 $color = Console::FG_GREY;
@@ -93,7 +94,7 @@ class PluginController extends Controller
         }
 
         $this->stdout(PHP_EOL);
-        $this->table(['Name', 'Handle', 'Version', 'Installed', 'Enabled'], $tableData);
+        $this->table(['Name', 'Handle', 'Package Name', 'Version', 'Installed', 'Enabled'], $tableData);
         $this->stdout(PHP_EOL);
 
         return ExitCode::OK;
@@ -306,7 +307,7 @@ class PluginController extends Controller
         return $this->prompt($prompt, [
             'validator' => function(string $input) use ($uninstalledPluginInfo) {
                 return isset($uninstalledPluginInfo[$input]);
-            }
+            },
         ]);
     }
 

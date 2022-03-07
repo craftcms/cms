@@ -35,8 +35,8 @@ class AssetsHelperTest extends Unit
     {
         return [
             'assets' => [
-                'class' => AssetFixture::class
-            ]
+                'class' => AssetFixture::class,
+            ],
         ];
     }
 
@@ -199,7 +199,7 @@ class AssetsHelperTest extends Unit
     public function generateUrlDataProvider(): array
     {
         return [
-            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
+            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']],
         ];
     }
 
@@ -245,7 +245,7 @@ class AssetsHelperTest extends Unit
             ['Audio', 'audio'],
             ['Text', 'text'],
             ['PHP', 'php'],
-            ['unknown', 'Raaa']
+            ['unknown', 'Raaa'],
         ];
     }
 
@@ -256,7 +256,7 @@ class AssetsHelperTest extends Unit
     {
         return [
             [[2, '.'], '{folder:2}.'],
-            [[2, '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
+            [[2, '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()'],
         ];
     }
 

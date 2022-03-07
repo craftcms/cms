@@ -33,13 +33,13 @@ class EntryMutationResolverTest extends TestCase
         $resolver = $this->make(EntryMutationResolver::class, [
             'getEntryElement' => $entry,
             'identifyEntry' => $this->make(EntryQuery::class, [
-                'one' => $entry
+                'one' => $entry,
             ]),
-            'recursivelyNormalizeArgumentValues' => $arguments
+            'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
 
         \Craft::$app->set('elements', $this->make(Elements::class, [
-            'saveElement' => true
+            'saveElement' => true,
         ]));
 
         $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
@@ -58,7 +58,7 @@ class EntryMutationResolverTest extends TestCase
     {
         $entry = new Entry();
         $query = $this->make(EntryQuery::class, [
-            'one' => $entry
+            'one' => $entry,
         ]);
 
         $resolver = $this->make(EntryMutationResolver::class, [
@@ -69,7 +69,7 @@ class EntryMutationResolverTest extends TestCase
 
         \Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
-            'createElementQuery' => $query
+            'createElementQuery' => $query,
         ]));
 
         $entry = $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));

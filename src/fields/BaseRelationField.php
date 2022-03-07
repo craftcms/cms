@@ -225,19 +225,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         // Config normalization
-        $nullables = [
-            'maxRelations',
-            'minRelations',
-            'selectionLabel',
-            'selectionLabel',
-            'source',
-            'targetSiteId',
-            'viewMode',
-        ];
-        foreach ($nullables as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
+        if (($config['source'] ?? null) === '') {
+            unset($config['source']);
         }
 
         if (array_key_exists('sources', $config) && empty($config['sources'])) {
@@ -467,7 +456,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
-        } else if ($value !== '' && $element && $element->id) {
+        } elseif ($value !== '' && $element && $element->id) {
             $query->innerJoin(
                 ['relations' => DbTable::RELATIONS],
                 [
@@ -1006,7 +995,7 @@ JS;
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value->all();
-        } else if (!is_array($value)) {
+        } elseif (!is_array($value)) {
             $value = [];
         }
 

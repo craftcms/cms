@@ -149,10 +149,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function __construct($config = [])
     {
         // Config normalization
-        foreach (['minBlocks', 'maxBlocks', 'propagationKeyFormat', 'contentTable'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
+        if (($config['contentTable'] ?? null) === '') {
+            unset($config['contentTable']);
         }
         if (array_key_exists('localizeBlocks', $config)) {
             $config['propagationMethod'] = $config['localizeBlocks'] ? 'none' : 'all';
@@ -501,7 +499,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // error or we're loading an entry revision.
         if ($value === '') {
             $query->setCachedResult([]);
-        } else if ($element && is_array($value)) {
+        } elseif ($element && is_array($value)) {
             $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
@@ -588,7 +586,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             ->innerJoin(["matrixblocks_owners_$ns" => DbTable::MATRIXBLOCKS_OWNERS], [
                 'and',
                 "[[matrixblocks_owners_$ns.blockId]] = [[elements_$ns.id]]",
-                "[[matrixblocks_owners_$ns.ownerId]] = [[elements.id]]"
+                "[[matrixblocks_owners_$ns.ownerId]] = [[elements.id]]",
             ])
             ->andWhere([
                 "matrixblocks_$ns.fieldId" => $this->id,
@@ -966,7 +964,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // Ensure the block type has a UID
             if ($blockType->getIsNew()) {
                 $blockType->uid = StringHelper::UUID();
-            } else if (!$blockType->uid) {
+            } elseif (!$blockType->uid) {
                 $blockType->uid = Db::uidById(DbTable::MATRIXBLOCKTYPES, $blockType->id);
             }
 
@@ -1044,15 +1042,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             // If this is a draft, just duplicate the relations
             if ($element->getIsDraft()) {
                 $matrixService->duplicateOwnership($this, $element->duplicateOf, $element);
-            } else if ($element->getIsRevision()) {
+            } elseif ($element->getIsRevision()) {
                 $matrixService->createRevisionBlocks($this, $element->duplicateOf, $element);
             } else {
                 $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true, !$isNew);
             }
             $resetValue = true;
-        } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
+        } elseif ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $matrixService->saveField($this, $element);
-        } else if ($element->mergingCanonicalChanges) {
+        } elseif ($element->mergingCanonicalChanges) {
             $matrixService->mergeCanonicalChanges($this, $element);
             $resetValue = true;
         }
@@ -1263,7 +1261,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         foreach ($newSortOrder as $blockId) {
             if (isset($newBlockData[$blockId])) {
                 $blockData = $newBlockData[$blockId];
-            } else if (
+            } elseif (
                 isset(Elements::$duplicatedElementSourceIds[$blockId]) &&
                 isset($newBlockData[Elements::$duplicatedElementSourceIds[$blockId]])
             ) {

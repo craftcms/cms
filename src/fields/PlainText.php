@@ -98,12 +98,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             unset($config['limitUnit'], $config['fieldLimit']);
         }
 
-        foreach (['charLimit', 'byteLimit', 'placeholder', 'columnType'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
         if (($config['columnType'] ?? null) === 'auto') {
             unset($config['columnType']);
         }
@@ -189,7 +183,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
 
         if ($this->byteLimit) {
             $bytes = $this->byteLimit;
-        } else if ($this->charLimit) {
+        } elseif ($this->charLimit) {
             $bytes = $this->charLimit * 4;
         } else {
             return Schema::TYPE_TEXT;

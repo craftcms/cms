@@ -56,7 +56,7 @@ trait NameTrait
             $name = (new NameParser())->parse($this->fullName);
             $this->firstName = $name->getFirstname() ?: null;
             $this->lastName = $name->getLastname() ?: null;
-        } else if ($this->firstName !== null || $this->lastName !== null) {
+        } elseif ($this->firstName !== null || $this->lastName !== null) {
             $this->fullName = trim("$this->firstName $this->lastName") ?: null;
         }
     }

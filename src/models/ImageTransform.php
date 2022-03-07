@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -212,16 +213,6 @@ class ImageTransform extends Model
             'fit' => Craft::t('app', 'Scale to fit'),
             'stretch' => Craft::t('app', 'Stretch to fit'),
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'parameterChangeTime';
-        return $attributes;
     }
 
     /**
