@@ -219,11 +219,8 @@ class Assets extends BaseRelationField
             'allowedKinds',
             'defaultUploadLocationSource',
             'defaultUploadLocationSubpath',
-            'restrictedDefaultUploadPath',
             'restrictedLocationSource',
             'restrictedLocationSubpath',
-            'singleUploadLocationSource',
-            'singleUploadLocationSubpath',
         ];
         foreach ($nullables as $name) {
             if (($config[$name] ?? null) === '') {
