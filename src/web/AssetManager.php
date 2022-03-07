@@ -13,6 +13,7 @@ use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use yii\db\Exception as DbException;
 
 /**
@@ -60,6 +61,8 @@ class AssetManager extends \yii\web\AssetManager
                     $url .= '?v=' . $timestamp;
                 }
             }
+
+            $url = $this->_addBuildIdParam($url);
         }
 
         return $url;
@@ -118,6 +121,20 @@ class AssetManager extends \yii\web\AssetManager
             $url .= '?v=' . $timestamp;
         }
 
-        return [$file, $url];
+        return [$file, $this->_addBuildIdParam($url)];
+    }
+
+    public function getAssetUrl($bundle, $asset, $appendTimestamp = null): string
+    {
+        return $this->_addBuildIdParam(
+            parent::getAssetUrl($bundle, $asset, $appendTimestamp),
+        );
+    }
+
+    private function _addBuildIdParam($url): string
+    {
+        return UrlHelper::urlWithParams($url, [
+            'buildId' => Craft::$app->getConfig()->getGeneral()->buildId,
+        ]);
     }
 }

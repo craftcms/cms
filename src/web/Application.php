@@ -488,12 +488,12 @@ class Application extends \yii\web\Application
         if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
         }
-        $expectedResourceHash = Craft::$app->getConfig()->getGeneral()->resourceHash;
+
+        $buildId = Craft::$app->getConfig()->getGeneral()->buildId;
+        $buildIdFromRequest = $request->getQueryParam('buildId');
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
-        $segments = explode('/', $resourceUri);
-        $resourceHash = $expectedResourceHash ? array_shift($segments) : null;
-        $hash = array_shift($segments);
-        $filePath = implode('/', $segments);
+        $slash = strpos($resourceUri, '/');
+        $hash = substr($resourceUri, 0, $slash);
 
         try {
             $sourcePath = (new Query())
@@ -509,6 +509,7 @@ class Application extends \yii\web\Application
             return;
         }
 
+        $filePath = substr($resourceUri, strlen($hash) + 1);
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
@@ -523,9 +524,9 @@ class Application extends \yii\web\Application
 
         $response = $this->getResponse();
 
-        // Only set cache headers if GeneralConfig::resourceHash is `null`, or its value matches the requested URI.
+        // Only set cache headers if GeneralConfig::buildId is `null`, or its value matches the requested URI.
         // This is to prevent caching a stale asset during a rolling deployment (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
-        if ($expectedResourceHash === $resourceHash) {
+        if ($buildId === $buildIdFromRequest) {
             $response->setCacheHeaders();
         }
 

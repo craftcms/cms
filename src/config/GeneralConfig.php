@@ -340,6 +340,14 @@ class GeneralConfig extends BaseObject
     public ?string $brokenImagePath = null;
 
     /**
+     * @var string|null A unique ID representing the current build of the codebase. In a load-balanced environment,
+     *                  this should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
+     *
+     * @group Environment
+     */
+    public string|null $buildId = null;
+
+    /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
@@ -1269,15 +1277,6 @@ class GeneralConfig extends BaseObject
      * @group Environment
      */
     public string $resourceBaseUrl = '@web/cpresources';
-
-    /**
-     * @var string|null A unique hash to determine whether control panel resources should be served with cache headers.
-     *                  In a load-balanced environment, this should be set to something unique to the deployment, e.g.
-     *                  a Git SHA or a deployment timestamp.
-     *
-     * @group Environment
-     */
-    public string|null $resourceHash = null;
 
     /**
      * @var string|null The shell command Craft should execute to restore a database backup.
