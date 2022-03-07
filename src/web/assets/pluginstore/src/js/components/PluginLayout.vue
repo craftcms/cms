@@ -22,17 +22,21 @@
               </div>
 
               <div class="name tw-ml-4 tw-self-center">
-                <h1 class="self-center tw-pb-0 tw-border-b-0 tw-mt-0 tw-mb-1">
+                <h1 class="self-center tw-pb-0 tw-border-b-0 tw-mt-0 tw-mb-1 align-middle">
                   {{ plugin.name }}
                 </h1>
 
-                <div class="developer">
+                <div class="developer tw-flex tw-items-center">
                   <router-link
                     :to="'/developer/'+plugin.developerId"
                     :title="plugin.developerName"
                   >
                     {{ plugin.developerName }}
                   </router-link>
+
+                  <craft-verified-badge
+                    class="tw-ml-2"
+                  />
                 </div>
               </div>
             </div>
@@ -75,8 +79,10 @@
 <script>
 import {mapState, mapGetters} from 'vuex'
 import {isPluginFree} from '../utils/plugins';
+import CraftVerifiedBadge from './partner/CraftVerifiedBadge';
 
 export default {
+  components: {CraftVerifiedBadge},
   computed: {
     ...mapState({
       plugin: state => state.pluginStore.plugin,

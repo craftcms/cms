@@ -9,8 +9,8 @@
         <template v-slot:header>
           <div
             v-if="developer"
-            class="developer-card tw-flex tw-pb-2 tw-items-center">
-            <div class="avatar tw-w-24 tw-h-24 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-6 tw-no-line-height">
+            class="developer-card tw-flex tw-pb-6 tw-items-center">
+            <div class="avatar tw-w-32   tw-h-32   tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-6 tw-no-line-height">
               <img
                 :src="developer.photoUrl"
                 class="tw-w-full tw-h-full"
@@ -18,21 +18,41 @@
             </div>
 
             <div class="tw-flex-1">
-              <h1 class="tw-text-lg tw-font-bold tw-mb-2">
+              <h1 class="tw-text-lg tw-font-bold">
                 {{ developer.developerName }}</h1>
 
-              <p
-                class="tw-mb-1"
-                v-if="developer.location">{{ developer.location }}</p>
+              <div
+                v-if="developer.location">{{ developer.location }}</div>
 
-              <ul v-if="developer.developerUrl">
-                <li class="tw-mr-4 tw-inline-block">
-                  <c-btn
-                    :href="developer.developerUrl"
-                    block>{{ "Website"|t('app') }}
-                  </c-btn>
-                </li>
-              </ul>
+              <div class="tw-mt-4">
+                <ul class="tw-flex tw-gap-6">
+                  <li class="tw-flex tw-items-center">
+                    <craft-verified-icon
+                      class="tw-w-6 tw-h-6 tw-mr-2"
+                    />
+                    Craft Verified
+                  </li>
+                  <li class="tw-flex tw-items-center">
+                    <craft-commerce-verified-icon
+                      class="tw-w-6 tw-h-6 tw-mr-2"
+                    />
+                    Craft Commerce Verified
+                  </li>
+                  <li class="tw-flex tw-items-center">
+                    <enterprise-verified-icon
+                      class="tw-w-6 tw-h-6 tw-mr-2"
+                    />
+                    Enterprise Verified
+                  </li>
+                </ul>
+              </div>
+
+              <div class="tw-mt-4" v-if="developer.developerUrl">
+                <c-btn
+                  :href="developer.developerUrl"
+                >{{ "Website"|t('app') }}
+                </c-btn>
+              </div>
             </div>
           </div>
         </template>
@@ -47,6 +67,9 @@
 <script>
 import {mapState} from 'vuex'
 import PluginIndex from '../../components/PluginIndex'
+import CraftVerifiedIcon from '../../components/partner/icons/CraftVerifiedIcon';
+import CraftCommerceVerifiedIcon from '../../components/partner/icons/CraftCommerceVerifiedIcon';
+import EnterpriseVerifiedIcon from '../../components/partner/icons/EnterpriseVerifiedIcon';
 
 export default {
   data() {
@@ -56,6 +79,9 @@ export default {
   },
 
   components: {
+    EnterpriseVerifiedIcon,
+    CraftCommerceVerifiedIcon,
+    CraftVerifiedIcon,
     PluginIndex,
   },
 

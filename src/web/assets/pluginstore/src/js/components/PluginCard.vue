@@ -22,8 +22,11 @@
 
     <div>
       <div class="plugin-details-header">
-        <div class="plugin-name">
+        <div class="plugin-name tw-flex tw-items-center">
           <strong>{{ plugin.name }}</strong>
+          <craft-verified-badge
+            class="tw-ml-2"
+          />
           <edition-badge
             v-if="trialMode && activeTrialPluginEdition && plugin.editions.length > 1"
             :name="activeTrialPluginEdition.name"></edition-badge>
@@ -53,11 +56,13 @@
 
 import {mapGetters} from 'vuex'
 import EditionBadge from './EditionBadge'
+import CraftVerifiedBadge from './partner/CraftVerifiedBadge';
 
 export default {
   props: ['plugin', 'trialMode'],
 
   components: {
+    CraftVerifiedBadge,
     EditionBadge,
   },
 
