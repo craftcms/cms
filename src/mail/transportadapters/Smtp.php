@@ -41,7 +41,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @var bool|string|null Whether to use authentication
      */
-    public ?bool $useAuthentication = null;
+    public bool|string|null $useAuthentication = null;
 
     /**
      * @var string|null The username that should be used
