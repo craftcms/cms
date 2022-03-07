@@ -47,7 +47,7 @@
                 </ul>
               </div>
 
-              <div class="tw-mt-4" v-if="developer.developerUrl">
+              <div class="developer-buttons tw-mt-4" v-if="developer.developerUrl">
                 <c-btn
                   :href="developer.developerUrl"
                 >{{ "Website"|t('app') }}
