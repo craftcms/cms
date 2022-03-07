@@ -133,8 +133,8 @@ class AssetManager extends \yii\web\AssetManager
 
     private function _addBuildIdParam($url): string
     {
-        return UrlHelper::urlWithParams($url, [
+        return UrlHelper::urlWithParams($url, array_filter([
             'buildId' => Craft::$app->getConfig()->getGeneral()->buildId,
-        ]);
+        ]));
     }
 }
