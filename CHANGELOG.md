@@ -475,9 +475,8 @@
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
-- `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
-- `craft\services\Assets::EVENT_GET_ASSET_URL` has been renamed to `EVENT_DEFINE_ASSET_URL`.
-- `craft\services\Assets::EVENT_GET_THUMB_PATH` has been renamed to `EVENT_DEFINE_THUMB_PATH`.
+- `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been moved to `craft\elements\Asset::EVENT_DEFINE_THUMB_URL`.
+- `craft\services\Assets::EVENT_GET_ASSET_URL` has been moved to `craft\elements\Asset::EVENT_DEFINE_ASSET_URL`.
 - `craft\services\AssetTransforms::CONFIG_TRANSFORM_KEY` has been moved to `craft\services\ProjectConfig::PATH_IMAGE_TRANSFORMS`.
 - `craft\services\Categories::CONFIG_CATEGORYROUP_KEY` has been moved to `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
 - `craft\services\Fields::CONFIG_FIELDGROUP_KEY` has been moved to `craft\services\ProjectConfig::PATH_FIELD_GROUPS`.
@@ -662,6 +661,7 @@
 - Removed `craft\services\AssetIndexer::getMissingFiles()`.
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
+- Removed `craft\services\Assets::EVENT_GET_THUMB_PATH`.
 - Removed `craft\services\AssetTransforms`.
 - Removed `craft\services\Composer::$disablePackagist`.
 - Removed `craft\services\Composer::optimize()`.

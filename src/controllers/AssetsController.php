@@ -763,7 +763,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        $url = Craft::$app->getImageTransforms()->getSimpleTransformUrlForAsset($asset, $size, $size, 'fit');
+        $url = $asset->getSimpleTransformUrl($size, $size, 'fit');
 
         return $this->response->redirect($url);
     }
@@ -1006,7 +1006,7 @@ class AssetsController extends Controller
         }
 
         try {
-            $url = Craft::$app->getImageTransforms()->getSimpleTransformUrlForAsset($asset, $width, $height);
+            $url = $asset->getSimpleTransformUrl($width, $height);
             return $this->response->redirect($url);
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);

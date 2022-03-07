@@ -76,27 +76,6 @@ class Assets extends Component
     public const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
-     * @see getAssetUrl()
-     * @since 4.0.0
-     */
-    public const EVENT_DEFINE_ASSET_URL = 'defineAssetUrl';
-
-    /**
-     * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an asset.
-     * @see getThumbUrl()
-     * @since 4.0.0
-     */
-    public const EVENT_DEFINE_THUMB_URL = 'defineThumbUrl';
-
-    /**
-     * @event AssetThumbEvent The event that is triggered when a thumbnail path is requested.
-     * @see getThumbPath()
-     * @since 4.0.0
-     */
-    public const EVENT_DEFINE_THUMB_PATH = 'defineThumbPath';
-
-    /**
      * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
      * @since 3.4.0
      */
@@ -111,11 +90,6 @@ class Assets extends Component
      * @var array
      */
     private array $_foldersByUid = [];
-
-    /**
-     * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
-     */
-    private bool $_queuedGeneratePendingTransformsJob = false;
 
     /**
      * Returns a file by its ID.
@@ -592,24 +566,6 @@ class Assets extends Component
      */
     public function getAssetUrl(Asset $asset, mixed $transform = null): ?string
     {
-        // Maybe a plugin wants to do something here
-        $event = new DefineAssetUrlEvent([
-            'transform' => $transform,
-            'asset' => $asset,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ASSET_URL, $event);
-
-        // If a plugin set the url, we'll just use that.
-        if ($event->url !== null) {
-            return $event->url;
-        }
-
-        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->getFilename(), PATHINFO_EXTENSION))) {
-            $volume = $asset->getVolume();
-
-            return AssetsHelper::generateUrl($volume, $asset);
-        }
-
         return $asset->getUrl($transform);
     }
 
@@ -619,124 +575,11 @@ class Assets extends Component
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb
      * @param int|null $height height of the returned thumb (defaults to $width if null)
-     * @param bool $generate whether to generate a thumb in none exists yet
      * @return string
      */
-    public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $generate = false): string
+    public function getThumbUrl(Asset $asset, int $width, ?int $height = null): string
     {
-        if ($height === null) {
-            $height = $width;
-        }
-
-        // Maybe a plugin wants to do something here
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
-            $event = new DefineAssetThumbUrlEvent([
-                'asset' => $asset,
-                'width' => $width,
-                'height' => $height,
-                'generate' => $generate,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
-
-            // If a plugin set the url, we'll just use that.
-            if ($event->url !== null) {
-                return $event->url;
-            }
-        }
-
-        return UrlHelper::actionUrl('assets/thumb', [
-            'uid' => $asset->uid,
-            'width' => $width,
-            'height' => $height,
-            'v' => $asset->dateModified->getTimestamp(),
-        ], null, false);
-    }
-
-    /**
-     * Returns the control panel thumbnail path for a given asset.
-     *
-     * @param Asset $asset asset to return a thumb for
-     * @param int $width width of the returned thumb
-     * @param int|null $height height of the returned thumb (defaults to $width if null)
-     * @param bool $generate whether to generate a thumb in none exists yet
-     * @param bool $fallbackToIcon whether to return the path to a generic icon if a thumbnail can't be generated
-     * @return string|false thumbnail path, or `false` if it doesn't exist and $generate is `false`
-     * @throws InvalidConfigException
-     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
-     * @throws VolumeException
-     * @throws FsObjectNotFoundException
-     * @see getThumbUrl()
-     */
-    public function getThumbPath(Asset $asset, int $width, ?int $height = null, bool $generate = true, bool $fallbackToIcon = true): string|false
-    {
-        // Maybe a plugin wants to do something here
-        $event = new AssetThumbEvent([
-            'asset' => $asset,
-            'width' => $width,
-            'height' => $height,
-            'generate' => $generate,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_THUMB_PATH, $event);
-
-        // If a plugin set the url, we'll just use that.
-        if ($event->path !== null) {
-            return $event->path;
-        }
-
-        $ext = $asset->getExtension();
-
-        // If it's not an image, return a generic file extension icon
-        if (!Image::canManipulateAsImage($ext)) {
-            if (!$fallbackToIcon) {
-                throw new NotSupportedException("A thumbnail can't be generated for the asset.");
-            }
-
-            return $this->getIconPath($asset);
-        }
-
-        if ($height === null) {
-            $height = $width;
-        }
-
-        // Make the thumb a JPG if the image format isn't safe for web
-        $ext = in_array($ext, Image::webSafeFormats(), true) ? $ext : 'jpg';
-
-        // Should we be rasteriszing the thumb?
-        $rasterize = strtolower($ext) === 'svg' && Craft::$app->getConfig()->getGeneral()->rasterizeSvgThumbs;
-        if ($rasterize) {
-            $ext = 'png';
-        }
-
-        $dir = Craft::$app->getPath()->getAssetThumbsPath() . DIRECTORY_SEPARATOR . $asset->id;
-        $path = $dir . DIRECTORY_SEPARATOR . "thumb-{$width}x$height.$ext";
-
-        if (!file_exists($path) || $asset->dateModified->getTimestamp() > filemtime($path)) {
-            // Bail if we're not ready to generate it yet
-            if (!$generate) {
-                return false;
-            }
-
-            // Generate it
-            FileHelper::createDirectory($dir);
-            $imageSource = ImageTransforms::getLocalImageSource($asset);
-
-            try {
-                $image = Craft::$app->getImages()->loadImage($imageSource, $rasterize, max($width, $height));
-
-                // Prevent resize of all layers
-                if ($image instanceof Raster) {
-                    $image->disableAnimation();
-                }
-
-                $image->scaleAndCrop($width, $height);
-                $image->saveAs($path);
-            } catch (ImageException $exception) {
-                Craft::warning("Unable to generate a thumbnail for asset $asset->id: {$exception->getMessage()}", __METHOD__);
-                return $this->getIconPath($asset);
-            }
-        }
-
-        return $path;
+        return $asset->getThumbUrl(max($width, (int)$height));
     }
 
     /**

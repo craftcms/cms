@@ -35,11 +35,14 @@ use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\events\DefineAssetThumbUrlEvent;
+use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -127,6 +130,20 @@ class Asset extends Element
      * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
      */
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
+
+    /**
+     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
+     * @see getUrl()
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_ASSET_URL = 'defineAssetUrl';
+
+    /**
+     * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an asset.
+     * @see getThumbUrl()
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_THUMB_URL = 'defineThumbUrl';
 
     // Location error codes
     // -------------------------------------------------------------------------
@@ -1318,7 +1335,7 @@ JS;
                 continue;
             }
 
-            [$value, $unit] = Assets::parseSrcsetSize($size);
+            [$value, $unit] = AssetsHelper::parseSrcsetSize($size);
 
             $sizeTransform = $transform ? $transform->toArray() : [];
 
@@ -1488,7 +1505,23 @@ JS;
      */
     public function getUrl(mixed $transform = null): ?string
     {
+        // Maybe a plugin wants to do something here
+        $event = new DefineAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $this,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_ASSET_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
         $volume = $this->getVolume();
+
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
+            return AssetsHelper::generateUrl($volume->getFs(), $this);
+        }
 
         // Normalize empty transform values
         $transform = $transform ?? $this->_transform;
@@ -1508,7 +1541,7 @@ JS;
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return Assets::generateUrl($volume->getFs(), $this);
+            return AssetsHelper::generateUrl($volume->getFs(), $this);
         }
 
         if ($transform) {
@@ -1560,7 +1593,7 @@ JS;
             }
         }
 
-        return Assets::generateUrl($volume->getFs(), $this);
+        return AssetsHelper::generateUrl($volume->getFs(), $this);
     }
 
     /**
@@ -1569,12 +1602,65 @@ JS;
     public function getThumbUrl(int $size): ?string
     {
         if ($this->getWidth() && $this->getHeight()) {
-            [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
+            [$width, $height] = AssetsHelper::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
 
-        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
+        $transform = new ImageTransform([
+            'width' => $width,
+            'height' => $height,
+            'mode' => 'crop',
+        ]);
+
+        // Maybe a plugin wants to do something here
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
+            $event = new DefineAssetThumbUrlEvent([
+                'asset' => $this,
+                'transform' => $transform,
+                'generate' => false
+            ]);
+            $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
+
+            // If a plugin set the url, we'll just use that.
+            if ($event->url !== null) {
+                return $event->url;
+            }
+        }
+
+        return UrlHelper::actionUrl('assets/thumb', [
+            'uid' => $this->uid,
+            'width' => $width,
+            'height' => $height,
+            'v' => $this->dateModified->getTimestamp(),
+        ], null, false);
+    }
+
+    /**
+     * Get a simple transform URL.
+     *
+     * @param int $width
+     * @param int|null $height
+     * @param string $mode
+     * @return string|null
+     */
+    public function getSimpleTransformUrl(int $width, ?int $height = null, string $mode = 'crop'): ?string
+    {
+        $transform = new ImageTransform([
+            'width' => $width,
+            'height' => $height,
+            'mode' => $mode,
+        ]);
+
+        $event = new DefineAssetThumbUrlEvent([
+            'asset' => $this,
+            'transform' => $transform,
+            'generate' => true
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
+
+        return $transform->getImageTransformer()->getTransformUrl($this, $transform, true);
     }
 
     /**
@@ -1606,7 +1692,7 @@ JS;
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
-        [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
+        [$width, $height] = AssetsHelper::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
@@ -1819,7 +1905,7 @@ JS;
     {
         $tempFilename = uniqid(pathinfo($this->_filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        Assets::downloadFile($this->getFs(), $this->getPath(), $tempPath);
+        AssetsHelper::downloadFile($this->getFs(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -1953,7 +2039,7 @@ JS;
                 ]);
 
             case 'kind':
-                return Assets::getFileKindLabel($this->kind);
+                return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
                 if (!isset($this->size)) {
@@ -2247,7 +2333,7 @@ JS;
 
         // Get the (new?) folder ID
         if (isset($this->newLocation)) {
-            [$folderId] = Assets::parseFileLocation($this->newLocation);
+            [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
         }
@@ -2265,12 +2351,12 @@ JS;
 
         // Set the kind based on filename, if not set already
         if (!isset($this->kind) && isset($this->_filename)) {
-            $this->kind = Assets::getFileKindByExtension($this->_filename);
+            $this->kind = AssetsHelper::getFileKindByExtension($this->_filename);
         }
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && !$this->title) {
-            $this->title = Assets::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
+            $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
         // Set the field layout
@@ -2295,7 +2381,7 @@ JS;
 
             if (
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
@@ -2510,7 +2596,7 @@ JS;
 
         // Get the (new?) folder ID & filename
         if (isset($this->newLocation)) {
-            [$folderId, $filename] = Assets::parseFileLocation($this->newLocation);
+            [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
             $filename = $this->_filename;
@@ -2544,7 +2630,7 @@ JS;
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                Assets::downloadFile($oldVolume->getFs(), $oldPath, $tempPath);
+                AssetsHelper::downloadFile($oldVolume->getFs(), $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -2596,7 +2682,7 @@ JS;
 
         // If there was a new file involved, update file data.
         if ($tempPath && file_exists($tempPath)) {
-            $this->kind = Assets::getFileKindByExtension($filename);
+            $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {
                 [$this->_width, $this->_height] = Image::imageSize($tempPath);

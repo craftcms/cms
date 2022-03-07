@@ -18,9 +18,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
-use craft\events\AssetGetThumbnailUrlEvent;
 use craft\events\ConfigEvent;
-use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -75,11 +73,6 @@ class ImageTransforms extends Component
      * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
      */
     public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
-
-    /**
-     * @event AssetGetThumbnailUrlEvent The event that is triggered when a transform is being generated for an Asset.
-     */
-    public const EVENT_GET_THUMB_URL = 'getThumbUrl';
 
     /**
      * @event AssetEvent The event that is triggered when a transform is being generated for an Asset.
@@ -509,34 +502,6 @@ class ImageTransforms extends Component
         }
 
         return $this->_imageTransformers[$type];
-    }
-
-    /**
-     * Return the URL for a simple transform. A simple transform only allows height/width modifications.
-     *
-     * @param Asset $asset
-     * @param int $width
-     * @param int $height
-     * @param string $mode
-     * @return string
-     */
-    public function getSimpleTransformUrlForAsset(Asset $asset, int $width, int $height, string $mode = 'crop'): string
-    {
-
-        $transform = new ImageTransform([
-            'width' => $width,
-            'height' => $height,
-            'mode' => $mode,
-        ]);
-
-        $event = new DefineAssetThumbUrlEvent([
-            'asset' => $asset,
-            'transform' => $transform
-        ]);
-
-        $this->trigger(self::EVENT_GET_THUMB_URL, $event);
-
-        return $transform->getImageTransformer()->getTransformUrl($asset, $transform, true);
     }
 
     /**
