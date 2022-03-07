@@ -118,7 +118,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                 $config[$name] = $this->_normalizeNumber($config[$name]);
             }
         }
-        foreach (['defaultValue', 'max', 'decimals', 'size', 'prefix', 'suffix', 'previewCurrency'] as $name) {
+        foreach (['defaultValue', 'max', 'decimals'] as $name) {
             if (($config[$name] ?? null) === '') {
                 unset($config[$name]);
             }

@@ -80,13 +80,6 @@ class QuickPost extends Widget
             unset($config['sections']);
         }
 
-        // Config normalization
-        foreach (['section', 'entryType', 'fields'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
         parent::__construct($config);
     }
 

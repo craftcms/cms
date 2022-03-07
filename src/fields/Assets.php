@@ -214,23 +214,6 @@ class Assets extends BaseRelationField
             }
         }
 
-        // Config normalization
-        $nullables = [
-            'allowedKinds',
-            'defaultUploadLocationSource',
-            'defaultUploadLocationSubpath',
-            'restrictedDefaultUploadPath',
-            'restrictedLocationSource',
-            'restrictedLocationSubpath',
-            'singleUploadLocationSource',
-            'singleUploadLocationSubpath',
-        ];
-        foreach ($nullables as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
         // Default showUnpermittedVolumes to true for existing Assets fields
         if (isset($config['id']) && !isset($config['showUnpermittedVolumes'])) {
             $config['showUnpermittedVolumes'] = true;

@@ -820,9 +820,10 @@ JS;
         ) {
             $components[] = Cp::textareaFieldHtml([
                 'label' => Craft::t('app', 'Notes about your changes:'),
-                'class' => 'nicetext',
+                'class' => ['nicetext', 'notes'],
                 'name' => 'notes',
                 'value' => $isCurrent ? $this->_notes : $element->draftNotes,
+                'rows' => 1,
                 'inputAttributes' => [
                     'aria' => [
                         'label' => Craft::t('app', 'Notes about your changes'),

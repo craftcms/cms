@@ -13,6 +13,11 @@ use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\Typecast;
+use DateTime;
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
 use yii\validators\Validator;
 
 /**
@@ -60,6 +65,9 @@ abstract class Model extends \yii\base\Model
 
     public function __construct($config = [])
     {
+        // Typecast the properties
+        Typecast::properties(static::class, $config);
+
         // Normalize the DateTime attributes
         foreach ($this->datetimeAttributes() as $attribute) {
             if (array_key_exists($attribute, $config) && $config[$attribute] !== null) {
@@ -87,9 +95,14 @@ abstract class Model extends \yii\base\Model
      */
     public function behaviors(): array
     {
-        // Fire a 'defineBehaviors' event
-        $event = new DefineBehaviorsEvent();
+        $behaviors = $this->defineBehaviors();
+        
+        // Give plugins a chance to modify them
+        $event = new DefineBehaviorsEvent([
+            'behaviors' => $behaviors,
+        ]);
         $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+
         return $event->behaviors;
     }
 
@@ -130,6 +143,22 @@ abstract class Model extends \yii\base\Model
     }
 
     /**
+     * Returns the behaviors to attach to this class.
+     *
+     * See [[behaviors()]] for details about what should be returned.
+     *
+     * Models should override this method instead of [[behaviors()]] so [[EVENT_DEFINE_BEHAVIORS]] handlers can modify the
+     * class-defined behaviors.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    protected function defineBehaviors(): array
+    {
+        return [];
+    }
+    
+    /**
      * Returns the validation rules for attributes.
      *
      * See [[rules()]] for details about what should be returned.
@@ -151,6 +180,7 @@ abstract class Model extends \yii\base\Model
      * @return string[]
      * @see init()
      * @see fields()
+     * @deprecated in 4.0.0. Use [[\DateTime]] type declarations instead.
      */
     public function datetimeAttributes(): array
     {
@@ -177,6 +207,9 @@ abstract class Model extends \yii\base\Model
      */
     public function setAttributes($values, $safeOnly = true): void
     {
+        // Typecast them
+        Typecast::properties(static::class, $values);
+
         // Normalize the date/time attributes
         foreach ($this->datetimeAttributes() as $name) {
             if (isset($values[$name])) {
@@ -194,8 +227,21 @@ abstract class Model extends \yii\base\Model
     {
         $fields = parent::fields();
 
+        $datetimeAttributes = [];
+        foreach ((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $type = $property->getType();
+                if ($type instanceof ReflectionNamedType && $type->getName() === DateTime::class) {
+                    $datetimeAttributes[] = $property->getName();
+                }
+            }
+        }
+
+        // Include datetimeAttributes() for now
+        $datetimeAttributes = array_unique(array_merge($datetimeAttributes, $this->datetimeAttributes()));
+
         // Have all DateTime attributes converted to ISO-8601 strings
-        foreach ($this->datetimeAttributes() as $attribute) {
+        foreach ($datetimeAttributes as $attribute) {
             $fields[$attribute] = function($model, $attribute) {
                 if (!empty($model->$attribute)) {
                     return DateTimeHelper::toIso8601($model->$attribute);

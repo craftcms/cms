@@ -35,7 +35,6 @@
 - Added the `categories/create` action.
 - Added the `elements/apply-draft` action.
 - Added the `elements/create` action.
-- Added the `elements/create` action.
 - Added the `elements/delete-draft` action.
 - Added the `elements/delete-for-site` action.
 - Added the `elements/delete` action.
@@ -94,6 +93,7 @@
 - Added `craft\base\imagetransforms\ImageEditorTransformerInterface`.
 - Added `craft\base\imagetransforms\ImageTransformerInterface`.
 - Added `craft\base\LocalFsInterface`.
+- Added `craft\base\Model::defineBehaviors()`. ([#10691](https://github.com/craftcms/cms/pull/10691))
 - Added `craft\base\NameTrait`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
@@ -168,6 +168,7 @@
 - Added `craft\elements\User::$fullName`.
 - Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
+- Added `craft\elements\User::getAddresses()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\FsException`.
 - Added `craft\errors\FsObjectExistsException`.
@@ -248,6 +249,7 @@
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\helpers\ProjectConfig::encodeValueAsString()`.
 - Added `craft\helpers\ProjectConfig::ensureAllSectionsProcessed()`.
+- Added `craft\helpers\Typecast`. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - Added `craft\i18n\Translation`.
 - Added `craft\imagetransforms\ImageTransformer`.
 - Added `craft\models\AssetIndexingSession`.
@@ -305,7 +307,6 @@
 - Added `craft\services\ProjectConfig::PATH_SCHEMA_VERSION`.
 - Added `craft\services\ProjectConfig::PATH_SYSTEM`.
 - Added `craft\services\ProjectConfig::rememberAppliedChanges()`.
-- Added `craft\services\UserAddresses`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
@@ -421,6 +422,7 @@
 - `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\ElementInterface::getSidebarHtml()` now has a `static` argument.
 - `craft\base\MemoizableArray` no longer extends `ArrayObject`, and now implements `IteratorAggregate` and `Countable` directly.
+- `craft\base\Model::__construct()` and `setAttributes()` now automatically typecast values that map to properties with `int`, `float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\behaviors\FieldLayoutBehavior::getFields()` has been renamed to `getCustomFields()`.
@@ -454,6 +456,7 @@
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Assets::generateUrl()` no longer accepts a `craft\models\Volume` as the first argument. A `craft\elements\Asset` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
+- `craft\helpers\Component::createComponent()` now automatically typecasts values that map to properties with `int`, `float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - `craft\helpers\Db::batchInsert()`, `craft\helpers\Db::insert()`, `craft\db\Command::batchInsert()`, `craft\db\Command::insert()`, `craft\db\Migration::batchInsert()`, and `craft\db\Migration::insert()` no longer have `$includeAuditColumns` arguments, and now check if the table has `dateCreated`, `dateUpdated`, and/or `uid` columns before setting their values.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
@@ -521,6 +524,7 @@
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
+- Deprecated `craft\base\Model::datetimeAttributes()`. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - Deprecated `craft\elements\User::getFullName()`. `$fullName` should be used instead.
 - Deprecated `craft\gql\TypeManager::flush()`. `craft\services\Gql::flushCaches()` should be used instead.
 - Deprecated `craft\gql\TypeManager::prepareFieldDefinitions()`. `craft\services\Gql::prepareFieldDefinitions()` should be used instead.

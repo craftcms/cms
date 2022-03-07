@@ -802,20 +802,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'lastLoginDate';
-        $attributes[] = 'lastInvalidLoginDate';
-        $attributes[] = 'lockoutDate';
-        $attributes[] = 'lastPasswordChangeDate';
-        $attributes[] = 'verificationCodeIssuedDate';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function attributeLabels(): array
     {
         $labels = parent::attributeLabels();
@@ -961,6 +947,7 @@ class User extends Element implements IdentityInterface
      * Gets the user's addresses.
      *
      * @return Address[]
+     * @since 4.0.0
      */
     public function getAddresses(): array
     {
