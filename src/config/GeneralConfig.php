@@ -1271,6 +1271,15 @@ class GeneralConfig extends BaseObject
     public string $resourceBaseUrl = '@web/cpresources';
 
     /**
+     * @var string|null A unique hash to determine whether control panel resources should be served with cache headers.
+     *                  In a load-balanced environment, this should be set to something unique to the deployment, e.g.
+     *                  a Git SHA or a deployment timestamp.
+     *
+     * @group Environment
+     */
+    public string|null $resourceHash = null;
+
+    /**
      * @var string|null The shell command Craft should execute to restore a database backup.
      *
      * By default Craft will run `mysql` or `psql`, provided those libraries are in the `$PATH` variable for the user the web server is running as.
