@@ -1959,13 +1959,13 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['customFields'] = [
-            'class' => CustomFieldBehavior::class,
+        return [
+            'customFields' => [
+                'class' => CustomFieldBehavior::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**

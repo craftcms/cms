@@ -49,16 +49,16 @@ class Sendmail extends BaseTransportAdapter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'command',
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'command',
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**
