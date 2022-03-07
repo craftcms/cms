@@ -1,15 +1,18 @@
 const {test, expect} = require('@playwright/test');
 
 test('Should show plugin details', async ({ page, baseURL }) => {
-  await page.goto(baseURL + '/plugin-store/commerce');
+  await page.goto(baseURL + '/plugin-store/sherlock');
+
+  // Wait plugin request to be done
+  await page.waitForResponse(response => response.url().includes('//api.craftcms.com/v1/plugin-store/plugin/sherlock'))
 
   // Developer name
   const title = page.locator('.plugin-details-header h1');
-  await expect(title).toContainText('Craft Commerce');
+  await expect(title).toContainText('Sherlock');
 
   // Developer name
   const website = page.locator('.plugin-details-header .developer');
-  await expect(website).toContainText('Pixel & Tonic');
+  await expect(website).toContainText('PutYourLightsOn');
 
   // Tabs
   const tabsLength = await page.locator('.plugin-details-header .tabs ul li').count();
