@@ -109,7 +109,7 @@ class Entry extends Query
                     'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) use ($sectionHandle) {
                         $arguments['section'] = $sectionHandle;
                         return EntryResolver::resolve(null, $arguments, $context, $resolveInfo);
-                    }
+                    },
                 ];
             }
 

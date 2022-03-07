@@ -272,7 +272,7 @@ class ElementsController extends Controller
         // Is this a new site that isn’t supported by the canonical element yet?
         if ($isUnpublishedDraft) {
             $isNewSite = true;
-        } else if ($isDraft) {
+        } elseif ($isDraft) {
             $isNewSite = !$element::find()
                 ->id($element->getCanonicalId())
                 ->siteId($element->siteId)
@@ -316,7 +316,7 @@ class ElementsController extends Controller
         if ($previewTargets) {
             if ($isDraft && !$element->isProvisionalDraft) {
                 Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
-            } else if ($isRevision) {
+            } elseif ($isRevision) {
                 Craft::$app->getSession()->authorize("previewRevision:$element->revisionId");
             } else {
                 Craft::$app->getSession()->authorize("previewElement:$canonical->id");
@@ -429,11 +429,11 @@ class ElementsController extends Controller
                         ->action('elements/save-draft')
                         ->redirectUrl("$redirectUrl#");
                 }
-            } else if ($element->isProvisionalDraft) {
+            } elseif ($element->isProvisionalDraft) {
                 $response
                     ->action('elements/apply-draft')
                     ->redirectUrl("$redirectUrl#");
-            } else if ($isDraft) {
+            } elseif ($isDraft) {
                 $response
                     ->submitButtonLabel(Craft::t('app', 'Save {type}', [
                         'type' => Craft::t('app', 'draft'),
@@ -487,7 +487,7 @@ class ElementsController extends Controller
                             'redirect' => "$redirectUrl#",
                             'eventData' => ['autosave' => false],
                         ]);
-                    } else if ($canDuplicateCanonical) {
+                    } elseif ($canDuplicateCanonical) {
                         $response->addAltAction(Craft::t('app', 'Save as a new {type}', compact('type')), [
                             'action' => 'elements/duplicate', // todo
                             'redirect' => '{cpEditUrl}',
@@ -520,7 +520,7 @@ class ElementsController extends Controller
                         ]),
                     ]);
                 }
-            } else if ($isDraft) {
+            } elseif ($isDraft) {
                 $response->addAltAction(Craft::t('app', 'Save and continue editing'), [
                     'redirect' => '{cpEditUrl}',
                     'action' => 'elements/save-draft',
@@ -589,7 +589,7 @@ class ElementsController extends Controller
             } else {
                 $docTitle .= " ($element->draftName)";
             }
-        } else if ($element->getIsRevision()) {
+        } elseif ($element->getIsRevision()) {
             /** @var ElementInterface|RevisionBehavior $element */
             $docTitle .= ' (' . $element->getRevisionLabel() . ')';
         }
@@ -601,7 +601,7 @@ class ElementsController extends Controller
         ElementInterface $element,
         bool $isMultiSiteElement,
         bool $isUnpublishedDraft,
-        array $propSiteIds
+        array $propSiteIds,
     ): ?string {
         $showDrafts = !$isUnpublishedDraft;
 
@@ -631,7 +631,7 @@ class ElementsController extends Controller
         bool $enablePreview,
         bool $isCurrent,
         bool $isUnpublishedDraft,
-        bool $isDraft
+        bool $isDraft,
     ): string {
         $components = [];
 
@@ -662,7 +662,7 @@ class ElementsController extends Controller
                         ],
                     ]);
                 }
-            } else if ($isDraft && $canSaveCanonical) {
+            } elseif ($isDraft && $canSaveCanonical) {
                 // Apply draft
                 $components[] = Html::button(Craft::t('app', 'Apply draft'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -672,7 +672,7 @@ class ElementsController extends Controller
                     ],
                 ]);
             }
-        } else if ($isRevision && $canSaveCanonical) {
+        } elseif ($isRevision && $canSaveCanonical) {
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
@@ -698,7 +698,7 @@ class ElementsController extends Controller
         string $containerId,
         callable $contentFn,
         callable $sidebarFn,
-        callable $jsSettingsFn
+        callable $jsSettingsFn,
     ) {
         $fieldLayout = $element->getFieldLayout();
         $form = $fieldLayout?->createForm($element, !$canSave, [
@@ -722,7 +722,7 @@ JS;
         ElementInterface $element,
         bool $isUnpublishedDraft,
         bool $canSave,
-        ?FieldLayoutForm $form
+        ?FieldLayoutForm $form,
     ): string {
         $components = [];
 
@@ -757,7 +757,7 @@ JS;
         bool $canSave,
         bool $isCurrent,
         bool $isMultiSiteElement,
-        bool $canEditMultipleSites
+        bool $canEditMultipleSites,
     ): string {
         $components = [];
 
@@ -1278,7 +1278,7 @@ JS;
             if (!$this->_canApplyUnpublishedDraft($element, $user)) {
                 throw new ForbiddenHttpException('User not authorized to create this element.');
             }
-        } else if (!$element->getCanonical(true)->canSave($user)) {
+        } elseif (!$element->getCanonical(true)->canSave($user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
@@ -1328,7 +1328,7 @@ JS;
             $message = Craft::t('app', '{type} created.', [
                 'type' => $element::displayName(),
             ]);
-        } else if ($element->isProvisionalDraft) {
+        } elseif ($element->isProvisionalDraft) {
             $message = Craft::t('app', '{type} saved.', [
                 'type' => $element::displayName(),
             ]);
@@ -1345,7 +1345,7 @@ JS;
             $message = Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]);
-        } else if ($element->isProvisionalDraft) {
+        } elseif ($element->isProvisionalDraft) {
             $message = Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]);
@@ -1497,9 +1497,9 @@ JS;
 
         if ($this->_elementType) {
             $elementType = $this->_elementType;
-        } else if ($elementId) {
+        } elseif ($elementId) {
             $elementType = $elementsService->getElementTypeById($elementId);
-        } else if ($elementUid) {
+        } elseif ($elementUid) {
             $elementType = $elementsService->getElementTypeByUid($elementUid);
         } else {
             throw new BadRequestHttpException('Request missing required param.');
@@ -1531,7 +1531,7 @@ JS;
             if (!$element) {
                 throw new BadRequestHttpException($this->_draftId ? "Invalid draft ID: $this->_draftId" : "Invalid revision ID: $this->_revisionId");
             }
-        } else if ($elementId || $elementUid) {
+        } elseif ($elementId || $elementUid) {
             if ($elementId) {
                 // First check for a provisional draft, if we're open to it
                 if ($provisional) {
@@ -1618,7 +1618,7 @@ JS;
             }
 
             $element->setEnabledForSite($this->_enabledForSite);
-        } else if (isset($this->_enabled)) {
+        } elseif (isset($this->_enabled)) {
             $element->enabled = $this->_enabled;
         }
 
@@ -1638,7 +1638,7 @@ JS;
             if (isset($this->_notes)) {
                 $element->draftNotes = $this->_notes;
             }
-        } else if (isset($this->_notes)) {
+        } elseif (isset($this->_notes)) {
             $element->setRevisionNotes($this->_notes);
         }
 

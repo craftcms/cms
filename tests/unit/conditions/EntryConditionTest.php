@@ -14,7 +14,6 @@ use craft\elements\conditions\entries\AuthorGroupConditionRule;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\SlugConditionRule;
 
-
 /**
  * Unit tests for entry conditions.
  *

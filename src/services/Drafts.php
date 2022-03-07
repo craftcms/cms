@@ -119,7 +119,7 @@ class Drafts extends Component
         ?string $name = null,
         ?string $notes = null,
         array $newAttributes = [],
-        bool $provisional = false
+        bool $provisional = false,
     ): ElementInterface {
         // Make sure the canonical element isn't a draft or revision
         if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
@@ -458,7 +458,7 @@ class Drafts extends Component
         ?int $creatorId = null,
         ?int $canonicalId = null,
         bool $trackChanges = false,
-        bool $provisional = false
+        bool $provisional = false,
     ): int {
         Db::insert(Table::DRAFTS, [
             'canonicalId' => $canonicalId,

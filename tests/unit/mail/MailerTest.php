@@ -132,7 +132,7 @@ class MailerTest extends TestCase
             'getMessage' => new SystemMessage([
                 'body' => '{{fromEmail}} || {{fromName}}',
                 'subject' => '{{fromName}} || {{fromEmail}}',
-            ])
+            ]),
         ]);
 
         $this->_sendMail('test@craft.test');
@@ -171,7 +171,7 @@ class MailerTest extends TestCase
 
         self::assertSame([
             'giel@yellowflash.net' => 'Test Recipient',
-            'info@craftcms.com' => 'Test Recipient'
+            'info@craftcms.com' => 'Test Recipient',
         ], $lastMessage->to);
     }
 
@@ -187,7 +187,7 @@ class MailerTest extends TestCase
 
         self::assertSame([
             'giel@yellowflash.net' => 'Giel',
-            'info@craftcms.com' => 'Craft CMS'
+            'info@craftcms.com' => 'Craft CMS',
         ], $lastMessage->to);
     }
 
@@ -198,7 +198,7 @@ class MailerTest extends TestCase
     {
         return [
             ['account_activation', []],
-            ['not_a_key that exists']
+            ['not_a_key that exists'],
         ];
     }
 
@@ -234,7 +234,7 @@ class MailerTest extends TestCase
 
         $this->mailer->send($this->mailer->composeFromKey('account_activation', [
             'user' => new User(),
-            'link' => 'https://craftcms.com'
+            'link' => 'https://craftcms.com',
         ]));
 
         self::assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);

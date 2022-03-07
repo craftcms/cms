@@ -51,19 +51,19 @@ class TypeResolverTest extends Unit
     {
         return [
             'entries' => [
-                'class' => EntryFixture::class
+                'class' => EntryFixture::class,
             ],
             'assets' => [
-                'class' => AssetFixture::class
+                'class' => AssetFixture::class,
             ],
             'users' => [
-                'class' => UserFixture::class
+                'class' => UserFixture::class,
             ],
             'globalSets' => [
-                'class' => GlobalSetFixture::class
+                'class' => GlobalSetFixture::class,
             ],
             'gqlSchemas' => [
-                'class' => GqlSchemasFixture::class
+                'class' => GqlSchemasFixture::class,
             ],
         ];
     }
@@ -103,7 +103,7 @@ class TypeResolverTest extends Unit
         ];
 
         foreach ($data as $testData) {
-            $this->_runResolverTest(... $testData);
+            $this->_runResolverTest(...$testData);
         }
     }
 

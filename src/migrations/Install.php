@@ -1,4 +1,6 @@
-<?php /** @noinspection RepetitiveMethodCallsInspection */
+<?php
+
+/** @noinspection RepetitiveMethodCallsInspection */
 
 /**
  * @link https://craftcms.com/

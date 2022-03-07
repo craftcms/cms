@@ -158,7 +158,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     'type' => ElementSources::TYPE_HEADING,
                     'heading' => $source['heading'],
                 ];
-            } else if (isset($source['key'])) {
+            } elseif (isset($source['key'])) {
                 $isCustom = str_starts_with($source['key'], 'custom:');
                 $sourceConfig = [
                     'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
@@ -180,9 +180,9 @@ class ElementIndexSettingsController extends BaseElementsController
                             $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
                         }
                     }
-                } else if (isset($oldSourceConfigs[$source['key']])) {
+                } elseif (isset($oldSourceConfigs[$source['key']])) {
                     $sourceConfig += $oldSourceConfigs[$source['key']];
-                } else if ($isCustom) {
+                } elseif ($isCustom) {
                     // Ignore it
                     continue;
                 }

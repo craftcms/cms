@@ -96,21 +96,21 @@ class InputTypeTest extends Unit
         $data = [];
 
         $matrixField = new MatrixField([
-            'handle' => 'matrixField'
+            'handle' => 'matrixField',
         ]);
 
         $blockTypes = [];
 
         for ($j = 0; $j < 3; $j++) {
             $blockType = new MatrixBlockType([
-                'handle' => 'blockType' . ($j + 1)
+                'handle' => 'blockType' . ($j + 1),
             ]);
 
             $layoutElements = [];
 
             for ($k = 0; $k < 3; $k++) {
                 $layoutElements[] = new CustomField(new PlainText([
-                    'handle' => "nestedField$k"
+                    'handle' => "nestedField$k",
                 ]));
             }
 
@@ -138,8 +138,8 @@ class InputTypeTest extends Unit
                     'blocks' =>
                         [
                             ['blockType' => ['id' => 2, 'one', 'two']],
-                            ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']]
-                        ]
+                            ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']],
+                        ],
                 ],
                 [
                     'blocks' =>
@@ -148,18 +148,18 @@ class InputTypeTest extends Unit
                                 'type' => 'blockType',
                                 'fields' => [
                                     'one',
-                                    'two'
-                                ]
+                                    'two',
+                                ],
                             ],
                             'new:1' => [
                                 'type' => 'blockTypeA',
                                 'fields' => [
                                     'snap' => 1,
                                     'crackle' => 2,
-                                    'pop' => 3
-                                ]
-                            ]
-                        ]
+                                    'pop' => 3,
+                                ],
+                            ],
+                        ],
                 ],
             ],
             [
@@ -167,8 +167,8 @@ class InputTypeTest extends Unit
                     'blocks' =>
                         [
                             ['blockType' => ['id' => 2, 'one', 'two']],
-                            ['blockTypeB' => ['id' => 88, 'stuff' => 'ok'], 'blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3]]
-                        ]
+                            ['blockTypeB' => ['id' => 88, 'stuff' => 'ok'], 'blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3]],
+                        ],
                 ],
                 [
                     'blocks' =>
@@ -177,16 +177,16 @@ class InputTypeTest extends Unit
                                 'type' => 'blockType',
                                 'fields' => [
                                     'one',
-                                    'two'
-                                ]
+                                    'two',
+                                ],
                             ],
                             88 => [
                                 'type' => 'blockTypeB',
                                 'fields' => [
                                     'stuff' => 'ok',
-                                ]
-                            ]
-                        ]
+                                ],
+                            ],
+                        ],
                 ],
             ],
             [
@@ -197,30 +197,30 @@ class InputTypeTest extends Unit
                             ['blockType' => ['two']],
                             ['blockType' => ['three']],
                             ['blockType' => ['four']],
-                        ]
+                        ],
                 ],
                 [
                     'blocks' =>
                         [
                             'new:1' => [
                                 'type' => 'blockType',
-                                'fields' => ['one']
+                                'fields' => ['one'],
                             ],
                             'new:2' => [
                                 'type' => 'blockType',
-                                'fields' => ['two']
+                                'fields' => ['two'],
                             ],
                             'new:3' => [
                                 'type' => 'blockType',
-                                'fields' => ['three']
+                                'fields' => ['three'],
                             ],
                             'new:4' => [
                                 'type' => 'blockType',
-                                'fields' => ['four']
-                            ]
-                        ]
+                                'fields' => ['four'],
+                            ],
+                        ],
                 ],
-            ]
+            ],
         ];
     }
 

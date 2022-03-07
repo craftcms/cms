@@ -194,7 +194,7 @@ class ConfigSyncController extends BaseUpdaterController
 
                 if (!$plugin) {
                     $missingPlugins[] = "`$handle`";
-                } else if ($plugin->schemaVersion != $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true)) {
+                } elseif ($plugin->schemaVersion != $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true)) {
                     $incompatibilities[] = $plugin->name;
                 }
             }
@@ -203,7 +203,7 @@ class ConfigSyncController extends BaseUpdaterController
         if (!empty($incompatibilities)) {
             $error = Craft::t('app', "Your project config YAML files are expecting different versions to be installed for the following:") .
                 ' ' . implode(', ', $incompatibilities);
-        } else if (!empty($missingPlugins)) {
+        } elseif (!empty($missingPlugins)) {
             $error = Craft::t('app', "Your project config YAML files are expecting the following plugins to be installed:") .
                 ' ' . implode(', ', $missingPlugins);
         }

@@ -212,7 +212,7 @@ class App
                 } else {
                     $value = true;
                 }
-            } else if (str_starts_with($item, "$name=")) {
+            } elseif (str_starts_with($item, "$name=")) {
                 $value = substr($item, $nameLen + 1);
             } else {
                 continue;
@@ -913,7 +913,7 @@ class App
                 'fileMode' => $generalConfig->defaultFileMode,
                 'dirMode' => $generalConfig->defaultDirMode,
                 'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
-                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
+                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
             ]));
         }
 

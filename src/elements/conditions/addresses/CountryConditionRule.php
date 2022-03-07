@@ -31,7 +31,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['countryCode'];
+        return [];
     }
 
     /**
@@ -48,8 +48,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AddressQuery $query */
-        $countriesRepo = Craft::$app->getAddresses()->getCountryRepository();
-        $query->countryCode($this->paramValue(fn($countryCode) => $countriesRepo->get($countryCode)));
+        $query->countryCode($this->paramValue());
     }
 
     /**

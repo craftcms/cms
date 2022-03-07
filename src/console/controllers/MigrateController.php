@@ -184,7 +184,7 @@ class MigrateController extends BaseMigrateController
         if ($action->id !== 'all') {
             if ($this->plugin) {
                 $this->track = "plugin:$this->plugin";
-            } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
+            } elseif ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
                 $this->plugin = $match[1];
             }
 
@@ -369,7 +369,7 @@ class MigrateController extends BaseMigrateController
             // Update version info
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if ($track !== MigrationManager::TRACK_CONTENT) {
+            } elseif ($track !== MigrationManager::TRACK_CONTENT) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
@@ -416,7 +416,7 @@ class MigrateController extends BaseMigrateController
             // Update any schema versions.
             if ($this->track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if ($this->plugin) {
+            } elseif ($this->plugin) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($this->plugin);
             }
 

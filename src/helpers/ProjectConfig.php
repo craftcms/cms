@@ -480,7 +480,7 @@ class ProjectConfig
                     }
                     unset($config[$key]);
                     $split = true;
-                } else if (ArrayHelper::isAssociative($configData)) {
+                } elseif (ArrayHelper::isAssociative($configData)) {
                     // Look deeper
                     $subpath = ($path ? "$path/" : '') . $key;
                     if (static::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
@@ -635,13 +635,13 @@ class ProjectConfig
                     $newContents .= $timestampLine;
                     $foundTimestamp = true;
                 }
-            } else if ($inMine) {
+            } elseif ($inMine) {
                 if ($atMine === null) {
                     $btMine .= $line;
                 } else {
                     $atMine .= $line;
                 }
-            } else if ($inTheirs) {
+            } elseif ($inTheirs) {
                 if ($atTheirs === null) {
                     $btTheirs .= $line;
                 } else {

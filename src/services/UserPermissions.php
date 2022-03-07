@@ -344,20 +344,17 @@ class UserPermissions extends Component
                 'accessSiteWhenSystemIsOff' => [
                     'label' => Craft::t('app', 'Access the site when the system is off'),
                 ],
-                'accessCp' => array_merge(
-                    [
-                        'label' => Craft::t('app', 'Access the control panel'),
-                        'nested' => [
-                            'accessCpWhenSystemIsOff' => [
-                                'label' => Craft::t('app', 'Access the control panel when the system is offline'),
-                            ],
-                            'performUpdates' => [
-                                'label' => Craft::t('app', 'Perform Craft CMS and plugin updates'),
-                            ],
+                'accessCp' => [
+                    'label' => Craft::t('app', 'Access the control panel'),
+                    'nested' => array_merge([
+                        'accessCpWhenSystemIsOff' => [
+                            'label' => Craft::t('app', 'Access the control panel when the system is offline'),
                         ],
-                    ],
-                    $pluginPermissions
-                ),
+                        'performUpdates' => [
+                            'label' => Craft::t('app', 'Perform Craft CMS and plugin updates'),
+                        ],
+                    ], $pluginPermissions),
+                ],
             ],
         ];
     }
@@ -405,7 +402,7 @@ class UserPermissions extends Component
                             ],
                         ],
                         $assignGroupPermissions
-                    )
+                    ),
                 ],
                 'deleteUsers' => [
                     'label' => Craft::t('app', 'Delete users'),

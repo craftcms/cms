@@ -1812,6 +1812,7 @@ class User extends Element implements IdentityInterface
                     ->status(null);
 
                 foreach (Db::each($entryQuery) as $entry) {
+                    /** @var Entry $entry */
                     $elementsService->deleteElement($entry);
                 }
             }
@@ -1887,7 +1888,7 @@ class User extends Element implements IdentityInterface
                         ) {
                             return self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
-                    } else if (
+                    } elseif (
                         Craft::$app->getIsLive() === false &&
                         $this->can('accessSiteWhenSystemIsOff') === false
                     ) {

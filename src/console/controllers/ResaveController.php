@@ -30,6 +30,8 @@ use yii\helpers\Console;
 /**
  * Allows you to bulk-save elements.
  *
+ * See [Bulk-Resaving Elements](https://craftcms.com/knowledge-base/bulk-resaving-elements) for examples.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.15
  */
@@ -383,7 +385,7 @@ class ResaveController extends Controller
 
         if ($this->status === 'any') {
             $criteria['status'] = null;
-        } else if ($this->status) {
+        } elseif ($this->status) {
             $criteria['status'] = explode(',', $this->status);
         }
 
@@ -442,7 +444,7 @@ class ResaveController extends Controller
                 if ($e->exception) {
                     $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                } else if ($element->hasErrors()) {
+                } elseif ($element->hasErrors()) {
                     $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {

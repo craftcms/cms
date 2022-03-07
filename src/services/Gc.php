@@ -212,7 +212,7 @@ class Gc extends Component
                 [
                     'e.type' => $blockElementTypes,
                     'r.id' => null,
-                ]
+                ],
             ], $params);
 
             if ($this->db->getIsMysql()) {

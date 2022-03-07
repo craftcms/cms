@@ -48,7 +48,7 @@ class ElementSelectorModalsController extends BaseElementsController
             foreach ($allSources as $source) {
                 if ($source['type'] === ElementSources::TYPE_HEADING) {
                     $sources[] = $source;
-                } else if (isset($sourceKeys[$source['key']])) {
+                } elseif (isset($sourceKeys[$source['key']])) {
                     $sources[] = $source;
                     // Unset so we can keep track of which keys couldn't be found
                     unset($sourceKeys[$source['key']]);

@@ -25,14 +25,14 @@ class GqlCest
     {
         return [
             'entriesWithField' => [
-                'class' => EntryWithFieldsFixture::class
+                'class' => EntryWithFieldsFixture::class,
             ],
             'gqlSchemas' => [
-                'class' => GqlSchemasFixture::class
+                'class' => GqlSchemasFixture::class,
             ],
             'globalSets' => [
-                'class' => GlobalSetFixture::class
-            ]
+                'class' => GlobalSetFixture::class,
+            ],
         ];
     }
 
@@ -102,7 +102,6 @@ class GqlCest
      */
     public function testQuerying(FunctionalTester $I)
     {
-
         $queryTypes = [
             'entries',
             'users',

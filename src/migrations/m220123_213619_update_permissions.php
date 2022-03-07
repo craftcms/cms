@@ -68,6 +68,12 @@ class m220123_213619_update_permissions extends Migration
             $delete[] = "publishPeerEntryDrafts:$section->uid";
         }
 
+        // Lowercase everything
+        $map = array_combine(
+            array_map('strtolower', array_keys($map)),
+            array_map(fn($newPermissions) => array_map('strtolower', $newPermissions), array_values($map)));
+        $delete = array_map('strtolower', $delete);
+
         // Now add the new permissions to existing users where applicable
         foreach ($map as $oldPermission => $newPermissions) {
             $userIds = (new Query())
@@ -125,7 +131,7 @@ class m220123_213619_update_permissions extends Migration
                 }
 
                 // assignUserGroup:<uid> permissions are explicitly required going forward
-                $groupPermissions["assignUserGroup:$uid"] = true;
+                $groupPermissions[strtolower("assignUserGroup:$uid")] = true;
 
                 $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
             }

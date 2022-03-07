@@ -338,7 +338,7 @@ class Categories extends Component
                 $layout->uid = key($data['fieldLayouts']);
                 Craft::$app->getFields()->saveLayout($layout);
                 $groupRecord->fieldLayoutId = $layout->id;
-            } else if ($groupRecord->fieldLayoutId) {
+            } elseif ($groupRecord->fieldLayoutId) {
                 // Delete the field layout
                 Craft::$app->getFields()->deleteLayoutById($groupRecord->fieldLayoutId);
                 $groupRecord->fieldLayoutId = null;
@@ -437,7 +437,7 @@ class Categories extends Component
                             'elementId' => $categoryIds,
                             'siteId' => $sitesNowWithoutUrls,
                         ]);
-                    } else if (!empty($sitesWithNewUriFormats)) {
+                    } elseif (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
                             App::maxPowerCaptain();
 
