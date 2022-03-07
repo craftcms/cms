@@ -24,6 +24,7 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use Symfony\Component\Yaml\Yaml;
+use Throwable;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -2273,10 +2274,14 @@ class ProjectConfig extends Component
         }
 
         if (Craft::$app->getIsInstalled()) {
-            $storedConfigVersion = (new Query())
-                ->select(['configVersion'])
-                ->from([Table::INFO])
-                ->scalar();
+            try {
+                $storedConfigVersion = (new Query())
+                    ->select(['configVersion'])
+                    ->from([Table::INFO])
+                    ->scalar();
+            } catch (Throwable $e) {
+                $storedConfigVersion = null;
+            }
 
             if ($storedConfigVersion && $storedConfigVersion !== Craft::$app->getInfo()->configVersion) {
                 // Another request must have updated the project config after this request began
