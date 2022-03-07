@@ -94,17 +94,7 @@ class Table extends Field
      */
     public function __construct($config = [])
     {
-        // Config normalization
-        foreach (['minRows', 'maxRows', 'addRowLabel'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
-        if (!isset($config['addRowLabel'])) {
-            $config['addRowLabel'] = Craft::t('app', 'Add a row');
-        }
-
+        // Config normalization}
         if (array_key_exists('columns', $config)) {
             if (!is_array($config['columns'])) {
                 unset($config['columns']);
@@ -153,6 +143,18 @@ class Table extends Field
         }
 
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->addRowLabel)) {
+            $this->addRowLabel = Craft::t('app', 'Add a row');
+        }
     }
 
     /**

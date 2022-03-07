@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
+use DateTime;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -61,11 +62,11 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
         $datetimeAttributes = array_flip($this->datetimeAttributes());
 
         foreach ($this->settingsAttributes() as $attribute) {
-            if (isset($datetimeAttributes[$attribute])) {
-                $settings[$attribute] = DateTimeHelper::toIso8601($this->$attribute) ?: null;
-            } else {
-                $settings[$attribute] = $this->$attribute;
+            $value = $this->$attribute;
+            if ($value instanceof DateTime || isset($datetimeAttributes[$attribute])) {
+                $value = DateTimeHelper::toIso8601($value) ?: null;
             }
+            $settings[$attribute] = $value;
         }
 
         return $settings;

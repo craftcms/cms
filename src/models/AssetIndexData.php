@@ -94,15 +94,4 @@ class AssetIndexData extends Model
     {
         return (string)$this->uri;
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'timestamp';
-
-        return $attributes;
-    }
 }

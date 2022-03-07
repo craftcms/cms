@@ -69,10 +69,8 @@ class Smtp extends BaseTransportAdapter
     public function __construct($config = [])
     {
         // Config normalization
-        foreach (['host', 'port', 'useAuthentication', 'username', 'password', 'encryptionMethod'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
+        if (($config['useAuthentication'] ?? null) === '') {
+            unset($config['useAuthentication']);
         }
 
         parent::__construct($config);

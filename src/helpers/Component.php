@@ -106,6 +106,9 @@ class Component
         // Merge the settings sub-key into the main config
         $config = self::mergeSettings($config);
 
+        // Typecast the properties
+        Typecast::properties($class, $config);
+
         // Instantiate and return
         $config['class'] = $class;
         return Craft::createObject($config);

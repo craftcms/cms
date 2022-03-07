@@ -43,16 +43,6 @@ class UpdateRelease extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'date';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function fields(): array
     {
         $fields = parent::fields();

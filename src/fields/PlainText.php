@@ -98,12 +98,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             unset($config['limitUnit'], $config['fieldLimit']);
         }
 
-        foreach (['charLimit', 'byteLimit', 'placeholder', 'columnType'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
         if (($config['columnType'] ?? null) === 'auto') {
             unset($config['columnType']);
         }

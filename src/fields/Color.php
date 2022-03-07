@@ -49,19 +49,6 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
-    {
-        // Config normalization
-        if (($config['defaultColor'] ?? null) === '') {
-            unset($config['defaultColor']);
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING . '(7)';
