@@ -49,7 +49,7 @@ class Gmail extends BaseTransportAdapter
     protected function defineBehaviors(): array
     {
         return [
-            'parser' =>  [
+            'parser' => [
                 'class' => EnvAttributeParserBehavior::class,
                 'attributes' => [
                     'username',
