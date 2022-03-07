@@ -35,7 +35,6 @@
 - Added the `categories/create` action.
 - Added the `elements/apply-draft` action.
 - Added the `elements/create` action.
-- Added the `elements/create` action.
 - Added the `elements/delete-draft` action.
 - Added the `elements/delete-for-site` action.
 - Added the `elements/delete` action.
