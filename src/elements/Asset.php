@@ -838,16 +838,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'dateModified';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterValidate(): void
     {
         $scenario = $this->getScenario();

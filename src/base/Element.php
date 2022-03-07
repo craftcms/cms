@@ -2208,16 +2208,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'dateLastMerged';
-        return $attributes;
-    }
-
-    /**
      * Normalizes a field’s validation rule.
      *
      * @param string $attribute

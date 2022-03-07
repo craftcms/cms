@@ -127,17 +127,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'min';
-        $attributes[] = 'max';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function init(): void
     {
         parent::init();

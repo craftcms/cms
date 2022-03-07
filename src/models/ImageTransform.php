@@ -216,16 +216,6 @@ class ImageTransform extends Model
     }
 
     /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'parameterChangeTime';
-        return $attributes;
-    }
-
-    /**
      * Return the image transformer for this transform.
      *
      * @return ImageTransformerInterface

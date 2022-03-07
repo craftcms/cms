@@ -106,17 +106,6 @@ class GqlToken extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'expiryDate';
-        $attributes[] = 'lastUsed';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
