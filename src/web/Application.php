@@ -526,7 +526,7 @@ class Application extends \yii\web\Application
 
         // Only set cache headers if GeneralConfig::buildId is `null`, or its value matches the requested URI.
         // This is to prevent caching a stale asset during a rolling deployment (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
-        if ($buildId === $buildIdFromRequest) {
+        if (!$buildId || $buildId === $buildIdFromRequest) {
             $response->setCacheHeaders();
         }
 
