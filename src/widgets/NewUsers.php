@@ -58,21 +58,6 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
-    {
-        // Config normalization
-        foreach (['userGroupId', 'dateRange'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getTitle(): ?string
     {
         if ($groupId = $this->userGroupId) {

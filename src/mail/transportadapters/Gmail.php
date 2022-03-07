@@ -46,21 +46,6 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
-    {
-        // Config normalization
-        foreach (['username', 'password'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
