@@ -1580,7 +1580,7 @@ JS;
                     $event = new GenerateTransformEvent([
                         'asset' => $this,
                         'transform' => $transform,
-                        'url' => $url
+                        'url' => $url,
                     ]);
 
                     $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
@@ -1619,7 +1619,7 @@ JS;
             $event = new DefineAssetThumbUrlEvent([
                 'asset' => $this,
                 'transform' => $transform,
-                'generate' => false
+                'generate' => false,
             ]);
             $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
 
@@ -1656,7 +1656,7 @@ JS;
         $event = new DefineAssetThumbUrlEvent([
             'asset' => $this,
             'transform' => $transform,
-            'generate' => true
+            'generate' => true,
         ]);
 
         $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
