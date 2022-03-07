@@ -164,6 +164,7 @@
 - Added `craft\elements\User::$fullName`.
 - Added `craft\elements\User::canAssignUserGroups()`.
 - Added `craft\elements\User::getIsCredentialed()`.
+- Added `craft\elements\User::getAddresses()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\FsException`.
 - Added `craft\errors\FsObjectExistsException`.
@@ -302,7 +303,6 @@
 - Added `craft\services\ProjectConfig::PATH_SCHEMA_VERSION`.
 - Added `craft\services\ProjectConfig::PATH_SYSTEM`.
 - Added `craft\services\ProjectConfig::rememberAppliedChanges()`.
-- Added `craft\services\UserAddresses`.
 - Added `craft\services\Users::deactivateUser()`.
 - Added `craft\services\Users::ensureUserByEmail()`, which will return a user for the given email, creating one if it didn’t exist yet.
 - Added `craft\services\Users::EVENT_AFTER_DEACTIVATE_USER`.
