@@ -5,7 +5,12 @@
     <div
       v-if="pendingActiveTrials.length > 1"
       class="right">
-      <a @click="addAllTrialsToCart()">{{ "Add all to cart"|t('app') }}</a>
+      <a
+        :class="{
+          'tw-opacity-50 tw-cursor-default': loading,
+        }"
+        @click="addAllTrialsToCart()"
+      >{{ "Add all to cart"|t('app') }}</a>
     </div>
 
     <h2>{{ "Active Trials"|t('app') }}</h2>
@@ -15,7 +20,7 @@
         v-for="(activeTrial, key) in pendingActiveTrials"
         :key="key"
       >
-        <active-trial :activeTrial="activeTrial"></active-trial>
+        <active-trial :loading="loading" :activeTrial="activeTrial"></active-trial>
       </div>
     </div>
   </div>
@@ -33,6 +38,12 @@ export default {
     ActiveTrial,
   },
 
+  data() {
+    return {
+      loading: false,
+    }
+  },
+
   computed: {
     ...mapGetters({
       getActiveTrialPluginEdition: 'cart/getActiveTrialPluginEdition',
@@ -42,8 +53,14 @@ export default {
 
   methods: {
     addAllTrialsToCart() {
+      if (this.loading) {
+        return;
+      }
+
+      this.loading = true
       this.$store.dispatch('cart/addAllTrialsToCart')
         .catch(() => {
+          this.loading = false
           this.$root.displayError(this.$options.filters.t('Couldn’t add all items to the cart.', 'app'))
         })
     }

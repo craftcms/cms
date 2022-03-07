@@ -43,13 +43,14 @@
     <!-- Add to cart -->
     <div class="md:tw-w-1/4">
       <div class="md:tw-text-right">
-        <template v-if="!addToCartLoading">
-          <a
+        <template v-if="!addToCartLoading && !loading">
+          <button
             @click="addToCart()"
             :loading="addToCartLoading"
+            :disabled="loading"
             :class="{
                         'disabled hover:tw-no-underline': activeTrial.licenseMismatched
-                    }">{{ "Add to cart"|t('app') }}</a>
+                    }">{{ "Add to cart"|t('app') }}</button>
         </template>
         <template v-else>
           <c-spinner size="sm"/>
@@ -65,9 +66,16 @@ import EditionBadge from '../../../EditionBadge';
 export default {
   components: {EditionBadge},
 
-  props: [
-    'activeTrial',
-  ],
+  props: {
+    activeTrial: {
+      type: Object,
+      required: true,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+  },
 
   data() {
     return {
