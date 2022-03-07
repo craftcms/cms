@@ -555,7 +555,7 @@ class Cp extends Component
                 return [];
             }
 
-            $allowedValues = array_flip($allowedValues);
+            $allowedValues = array_flip(array_filter($allowedValues));
         }
 
         $options = [];
