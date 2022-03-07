@@ -322,7 +322,7 @@ class Image
             $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
-        } else if (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+        } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
             $width = floor($viewboxMatch[3]);
             $height = floor($viewboxMatch[4]);
         } else {

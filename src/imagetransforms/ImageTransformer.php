@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -333,7 +334,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
             default:
                 if ($asset->getHasFocalPoint()) {
                     $position = $asset->getFocalPoint();
-                } else if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+                } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
                     $position = 'center-center';
                 } else {
                     $position = $transform->position;
@@ -433,7 +434,6 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
         // Make sure we're not in the middle of working on this transform from a separate request
         if ($index->inProgress) {
             for ($safety = 0; $safety < 100; $safety++) {
-
                 if ($index->error) {
                     throw new ImageTransformException(Craft::t('app',
                         'Failed to generate transform with id of {id}.',

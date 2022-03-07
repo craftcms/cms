@@ -102,7 +102,7 @@ class MigrationManager extends Component
         $class = $this->migrationNamespace . '\\' . $name;
         require_once $file;
 
-        return new $class;
+        return new $class();
     }
 
     /**

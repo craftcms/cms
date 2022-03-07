@@ -309,7 +309,7 @@ class Plugin extends Module implements PluginInterface
         require_once $path;
         $class = $migrator->migrationNamespace . '\\Install';
 
-        return new $class;
+        return new $class();
     }
 
     /**

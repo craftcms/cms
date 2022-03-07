@@ -122,7 +122,7 @@ class AddressesController extends Controller
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Address::class;
         $fieldLayout->reservedFieldHandles = [
-            'address'
+            'address',
         ];
 
         if (!Craft::$app->getAddresses()->saveLayout($fieldLayout)) {

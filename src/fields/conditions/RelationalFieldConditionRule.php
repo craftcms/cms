@@ -21,7 +21,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
 {
     use FieldConditionRuleTrait;
 
-    const OPERATOR_RELATED_TO = 'relatedTo';
+    public const OPERATOR_RELATED_TO = 'relatedTo';
 
     /**
      * @inheritdoc

@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\services\images;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
@@ -154,7 +153,7 @@ class ImagesTest extends Unit
             'ifd0.XResolution' => '72/1',
             'ifd0.YResolution' => '72/1',
             'ifd0.ResolutionUnit' => 2,
-            'ifd0.YCbCrPositioning' => 1
+            'ifd0.YCbCrPositioning' => 1,
         ];
 
         foreach ($requiredValues as $key => $value) {

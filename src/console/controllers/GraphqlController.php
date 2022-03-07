@@ -185,7 +185,7 @@ class GraphqlController extends Controller
                 $this->stderr("Invalid expiry date: $this->expiry" . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if ($this->confirm('Set an expiry date?')) {
+        } elseif ($this->confirm('Set an expiry date?')) {
             $expiryDate = $this->prompt('Expiry date:', [
                 'required' => true,
                 'validator' => function(string $input): bool {

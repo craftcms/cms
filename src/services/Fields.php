@@ -832,7 +832,7 @@ class Fields extends Component
             if (empty($field->uid)) {
                 $field->uid = StringHelper::UUID();
             }
-        } else if (!$field->uid) {
+        } elseif (!$field->uid) {
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
 
@@ -1804,7 +1804,7 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        return (new Query)
+        return (new Query())
             ->select([
                 'id',
                 'type',
@@ -1848,7 +1848,7 @@ class Fields extends Component
 
         if (is_numeric($criteria)) {
             $query->where(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->where(['uid' => $criteria]);
         }
 

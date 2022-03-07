@@ -71,7 +71,7 @@ abstract class ObjectType extends GqlObjectType
 
         if (is_object($source)) {
             $result = $source->$fieldName;
-        } else if (is_array($source)) {
+        } elseif (is_array($source)) {
             $result = $source[$fieldName] ?? null;
         }
 

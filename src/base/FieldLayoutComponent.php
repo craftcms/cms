@@ -217,7 +217,7 @@ abstract class FieldLayoutComponent extends Model
                     ]),
                     'instructions' => Craft::t('app', 'Only show when editing {type} that match the following rules:', [
                         'type' => $elementType::pluralLowerDisplayName(),
-                    ])
+                    ]),
                 ]);
             }
         }

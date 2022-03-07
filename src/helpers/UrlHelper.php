@@ -602,7 +602,7 @@ class UrlHelper
                 }
                 $params['site'] = Cp::requestedSite()->handle;
             }
-        } else if ($addToken !== false) {
+        } elseif ($addToken !== false) {
             // token/siteToken params
             if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
@@ -626,7 +626,7 @@ class UrlHelper
             } else {
                 $baseUrl = static::host() . $request->getScriptUrl();
             }
-        } else if ($cpUrl) {
+        } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
         } else {
             $baseUrl = static::baseSiteUrl();

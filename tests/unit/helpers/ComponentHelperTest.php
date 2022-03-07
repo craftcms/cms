@@ -160,16 +160,16 @@ class ComponentHelperTest extends Unit
                         'dependency1' => 'value1',
                         'dependency2' => 'value2',
                         'settings' => [
-                            'settingsdependency1' => 'value'
-                        ]
+                            'settingsdependency1' => 'value',
+                        ],
                     ]);
 
                     $this->assertEquals('value1', $component->dependency1);
                     $this->assertEquals('value2', $component->dependency2);
                     $this->assertEquals('value', $component->settingsdependency1);
                     return $component;
-                }
-            ]
+                },
+            ],
         ];
     }
 
@@ -189,14 +189,14 @@ class ComponentHelperTest extends Unit
             ],
             'class-doesnt-exist' => [
                 [
-                    'type' => 'i\\dont\\exist\\as\\a\\class'
+                    'type' => 'i\\dont\\exist\\as\\a\\class',
                 ],
                 null,
-                MissingComponentException::class
+                MissingComponentException::class,
             ],
             'class-not-a-component' => [
                 [
-                    'type' => self::class
+                    'type' => self::class,
                 ],
                 null,
                 InvalidConfigException::class,
@@ -212,12 +212,12 @@ class ComponentHelperTest extends Unit
                     'notavaliddependency' => 'value1',
                     'notavaliddependency2' => 'value2',
                     'settings' => [
-                        'notavaliddependency3' => 'value'
-                    ]
+                        'notavaliddependency3' => 'value',
+                    ],
                 ],
                 null,
                 Exception::class,
-            ]
+            ],
 
         ];
     }
@@ -231,7 +231,7 @@ class ComponentHelperTest extends Unit
             'name' => 'Component',
             'description' => 'Lorem ipsum',
             'setting1' => 'stuff',
-            'setting2' => 'stuff2'
+            'setting2' => 'stuff2',
         ];
 
         return [
@@ -242,8 +242,8 @@ class ComponentHelperTest extends Unit
                     'description' => 'Lorem ipsum',
                     'settings' => json_encode([
                         'setting1' => 'stuff',
-                        'setting2' => 'stuff2'
-                    ])
+                        'setting2' => 'stuff2',
+                    ]),
                 ],
             ],
             'basic-component-array' => [
@@ -253,8 +253,8 @@ class ComponentHelperTest extends Unit
                     'description' => 'Lorem ipsum',
                     'settings' => [
                         'setting1' => 'stuff',
-                        'setting2' => 'stuff2'
-                    ]
+                        'setting2' => 'stuff2',
+                    ],
                 ],
             ],
             'nested-doesnt-change' => [
@@ -262,13 +262,13 @@ class ComponentHelperTest extends Unit
                     [
                         'name' => 'Component',
                         'settings' => ['setting1' => 'stuff'],
-                    ]
+                    ],
                 ],
                 [
                     [
                         'name' => 'Component',
                         'settings' => ['setting1' => 'stuff'],
-                    ]
+                    ],
                 ],
             ],
             'settings-not-array' => [
@@ -278,7 +278,7 @@ class ComponentHelperTest extends Unit
                 [
                     'foo' => 'bar',
                     'settings' => '"baz"',
-                ]
+                ],
             ],
             'key-isnt-removed' => [
                 ['settings'],

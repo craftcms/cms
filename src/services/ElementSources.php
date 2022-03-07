@@ -30,21 +30,21 @@ class ElementSources extends Component
     /**
      * @event DefineSourceTableAttributesEvent The event that is triggered when defining the available table attributes for a source.
      */
-    const EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES = 'defineSourceTableAttributes';
+    public const EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES = 'defineSourceTableAttributes';
 
     /**
      * @event DefineSourceSortOptionsEvent The event that is triggered when defining the available sort options for a source.
      */
-    const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
+    public const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
 
-    const TYPE_HEADING = 'heading';
-    const TYPE_NATIVE = 'native';
-    const TYPE_CUSTOM = 'custom';
+    public const TYPE_HEADING = 'heading';
+    public const TYPE_NATIVE = 'native';
+    public const TYPE_CUSTOM = 'custom';
 
-    const CONTEXT_FIELD = 'field';
-    const CONTEXT_INDEX = 'index';
-    const CONTEXT_MODAL = 'modal';
-    const CONTEXT_SETTINGS = 'settings';
+    public const CONTEXT_FIELD = 'field';
+    public const CONTEXT_INDEX = 'index';
+    public const CONTEXT_MODAL = 'modal';
+    public const CONTEXT_SETTINGS = 'settings';
 
     /**
      * Filters out any unnecessary headings from a given source list.
@@ -163,7 +163,7 @@ class ElementSources extends Component
         foreach ($attributes as $key => $info) {
             if (!is_array($info)) {
                 $attributes[$key] = ['label' => $info];
-            } else if (!isset($info['label'])) {
+            } elseif (!isset($info['label'])) {
                 $attributes[$key]['label'] = '';
             }
         }
@@ -316,10 +316,10 @@ class ElementSources extends Component
         foreach ($sources as $source) {
             if (isset($source['type'])) {
                 $normalized[] = $source;
-            } else if (array_key_exists('heading', $source)) {
+            } elseif (array_key_exists('heading', $source)) {
                 $source['type'] = self::TYPE_HEADING;
                 $normalized[] = $source;
-            } else if (isset($source['key'])) {
+            } elseif (isset($source['key'])) {
                 $source['type'] = self::TYPE_NATIVE;
                 $normalized[] = $source;
             }

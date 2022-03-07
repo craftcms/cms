@@ -70,6 +70,7 @@
     "codeception/module-phpbrowser": "^1.0.2",
     "codeception/module-rest": "^1.4.2",
     "codeception/module-yii2": "^1.1.5",
+    "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
     "phpstan/phpstan": "^1.4.6",
@@ -97,6 +98,8 @@
     }
   },
   "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G"
   },

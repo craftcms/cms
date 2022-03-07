@@ -172,7 +172,7 @@ class UtilitiesController extends Controller
                 } catch (Throwable $e) {
                     Craft::warning("Could not clear the directory $action: " . $e->getMessage(), __METHOD__);
                 }
-            } else if (isset($cacheOption['params'])) {
+            } elseif (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {
                 $action();

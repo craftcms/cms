@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -9,6 +10,7 @@ declare(strict_types = 1);
 namespace craft\base;
 
 use Craft;
+use craft\helpers\App;
 use craft\validators\HandleValidator;
 
 /**
@@ -40,7 +42,7 @@ abstract class Fs extends SavableComponent implements FsInterface
             return null;
         }
 
-        return rtrim(Craft::parseEnv($this->url), '/') . '/';
+        return rtrim(App::parseEnv($this->url), '/') . '/';
     }
 
     /**

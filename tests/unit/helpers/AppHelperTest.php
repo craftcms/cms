@@ -430,7 +430,7 @@ class AppHelperTest extends TestCase
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
             ['dbConfig', ['class', 'dsn', 'password', 'username', 'charset', 'tablePrefix', 'schemaMap', 'commandMap', 'attributes', 'enableSchemaCache']],
             ['mutexConfig', ['class', 'fileMode', 'dirMode']],
-            ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',]],
+            ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam', ]],
             ['cacheConfig', ['class', 'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
             ['logConfig', ['class']],
             ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
@@ -460,7 +460,7 @@ class AppHelperTest extends TestCase
             ['entries', Entries::class],
             ['app helper test', self::class],
             ['std class', stdClass::class],
-            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890'],
         ];
     }
 

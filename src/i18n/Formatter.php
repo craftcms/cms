@@ -203,7 +203,7 @@ class Formatter extends \yii\i18n\Formatter
     {
         if (empty($value)) {
             $value = 0;
-        } else if ($decimals === null && is_numeric($value)) {
+        } elseif ($decimals === null && is_numeric($value)) {
             $decimals = strpos(strrev($value * 100), '.') ?: 0;
         }
 
