@@ -92,6 +92,7 @@
 - Added `craft\base\imagetransforms\EagerImageTransformerInterface`.
 - Added `craft\base\imagetransforms\ImageTransformerInterface`.
 - Added `craft\base\LocalFsInterface`.
+- Added `craft\base\Model::defineBehaviors()`. ([#10691](https://github.com/craftcms/cms/pull/10691))
 - Added `craft\base\NameTrait`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.

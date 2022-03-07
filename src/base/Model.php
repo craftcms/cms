@@ -95,9 +95,14 @@ abstract class Model extends \yii\base\Model
      */
     public function behaviors(): array
     {
-        // Fire a 'defineBehaviors' event
-        $event = new DefineBehaviorsEvent();
+        $behaviors = $this->defineBehaviors();
+        
+        // Give plugins a chance to modify them
+        $event = new DefineBehaviorsEvent([
+            'behaviors' => $behaviors,
+        ]);
         $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+
         return $event->behaviors;
     }
 
@@ -137,6 +142,22 @@ abstract class Model extends \yii\base\Model
         }
     }
 
+    /**
+     * Returns the behaviors to attach to this class.
+     *
+     * See [[behaviors()]] for details about what should be returned.
+     *
+     * Models should override this method instead of [[behaviors()]] so [[EVENT_DEFINE_BEHAVIORS]] handlers can modify the
+     * class-defined behaviors.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    protected function defineBehaviors(): array
+    {
+        return [];
+    }
+    
     /**
      * Returns the validation rules for attributes.
      *

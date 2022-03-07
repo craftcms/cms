@@ -149,21 +149,21 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'name' => function() {
-                    return $this->getName(false);
-                },
-                'baseUrl' => function() {
-                    return $this->getBaseUrl(false);
-                },
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'name' => function() {
+                        return $this->getName(false);
+                    },
+                    'baseUrl' => function() {
+                        return $this->getBaseUrl(false);
+                    },
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**
