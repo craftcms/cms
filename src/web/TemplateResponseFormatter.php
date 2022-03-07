@@ -25,7 +25,7 @@ use yii\web\ResponseFormatterInterface;
  */
 class TemplateResponseFormatter extends Component implements ResponseFormatterInterface
 {
-    const FORMAT = 'template';
+    public const FORMAT = 'template';
 
     /**
      * @inheritdoc

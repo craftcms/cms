@@ -25,7 +25,7 @@ use yii\web\ResponseFormatterInterface;
  */
 class CpScreenResponseFormatter extends Component implements ResponseFormatterInterface
 {
-    const FORMAT = 'cp-screen';
+    public const FORMAT = 'cp-screen';
 
     /**
      * @inheritdoc
