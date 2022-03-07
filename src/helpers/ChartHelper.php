@@ -12,7 +12,6 @@ use craft\db\Query;
 use DateTime;
 use yii\base\Exception;
 
-
 /**
  * Class ChartHelper
  *

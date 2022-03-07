@@ -24,7 +24,7 @@ return [
         'sortOrder' => 6,
         'fieldLayoutType' => 'volume_field_layout',
         'uid' => 'volume-1001----------------------uid',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
     ],
 
     'deleted2' => [
@@ -35,6 +35,6 @@ return [
         'sortOrder' => 7,
         'fieldLayoutType' => 'volume_field_layout',
         'uid' => 'volume-1002----------------------uid',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
     ],
 ];

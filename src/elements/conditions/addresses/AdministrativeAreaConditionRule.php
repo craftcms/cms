@@ -94,11 +94,9 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
                 'hx' => [
                     'post' => UrlHelper::actionUrl('conditions/render'),
                 ],
-            ]
+            ],
         ]);
 
         return $countrySelect . parent::inputHtml();
     }
-
-
 }

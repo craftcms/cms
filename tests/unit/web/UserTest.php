@@ -239,7 +239,7 @@ class UserTest extends TestCase
         $this->tester->mockCraftMethods('session', [
             'set' => function($name, $val) use ($value) {
                 self::assertEqualsWithDelta($value, $val, 1);
-            }
+            },
         ]);
     }
 
@@ -258,7 +258,7 @@ class UserTest extends TestCase
             },
             'get' => function($tokenParam) use ($returnValue) {
                 return $returnValue;
-            }
+            },
         ]);
     }
 

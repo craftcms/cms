@@ -75,7 +75,7 @@ class FieldLayoutForm extends Model
                 'tabindex' => '0',
                 'aria' => [
                     'labelledBy' => $tab->getTabId(),
-                ]
+                ],
             ]);
         }
         return implode("\n", $html);

@@ -544,7 +544,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 if (!is_dir($refPath) || static::hasAnythingChanged($path, $refPath)) {
                     return true;
                 }
-            } else if (!is_file($refPath) || filemtime($path) > filemtime($refPath)) {
+            } elseif (!is_file($refPath) || filemtime($path) > filemtime($refPath)) {
                 return true;
             }
         }
@@ -759,5 +759,4 @@ class FileHelper extends \yii\helpers\FileHelper
             }
         }
     }
-
 }

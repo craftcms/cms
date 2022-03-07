@@ -83,7 +83,7 @@ class UserActionCest
         Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = false;
         $I->submitForm('#userform', [
             'action' => 'users/impersonate',
-            'redirect' => Craft::$app->getSecurity()->hashData(UrlHelper::cpUrl('dashboard'))
+            'redirect' => Craft::$app->getSecurity()->hashData(UrlHelper::cpUrl('dashboard')),
         ]);
 
         $I->see('Dashboard');

@@ -96,11 +96,11 @@ class UserElementTest extends TestCase
                 self::assertSame(Craft::$app->getUser()->tokenParam, $tokenParam);
 
                 return 'TOKEN';
-            }
+            },
         ]);
 
         $this->tester->mockCraftMethods('request', [
-            'getUserAgent' => 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)'
+            'getUserAgent' => 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)',
         ]);
 
         self::assertSame(
@@ -117,7 +117,7 @@ class UserElementTest extends TestCase
     public function testGetAuthKeyException()
     {
         $this->tester->mockCraftMethods('session', [
-            'get' => null
+            'get' => null,
         ]);
 
         $this->tester->expectThrowable(Exception::class, function() {
@@ -134,7 +134,7 @@ class UserElementTest extends TestCase
         Craft::$app->getDb()->createCommand()
             ->insert(Table::SESSIONS, [
                 'userId' => $this->activeUser->id,
-                'token' => 'EXAMPLE_TOKEN'
+                'token' => 'EXAMPLE_TOKEN',
             ])->execute();
 
         self::assertFalse($this->activeUser->validateAuthKey('NOT_JSON'));
@@ -154,7 +154,7 @@ class UserElementTest extends TestCase
 
         // Valid token, user agent, and json string
         $this->tester->mockCraftMethods('request', [
-            'getUserAgent' => $validUserAgent
+            'getUserAgent' => $validUserAgent,
         ]);
         self::assertTrue(
             $this->activeUser->validateAuthKey(
@@ -172,13 +172,13 @@ class UserElementTest extends TestCase
 
         Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession = false;
         $this->tester->mockCraftMethods('request', [
-            'getUserAgent' => $validUserAgent
+            'getUserAgent' => $validUserAgent,
         ]);
 
         Craft::$app->getDb()->createCommand()
             ->insert(Table::SESSIONS, [
                 'userId' => $this->activeUser->id,
-                'token' => 'EXAMPLE_TOKEN'
+                'token' => 'EXAMPLE_TOKEN',
             ])->execute();
 
         self::assertTrue(
@@ -243,15 +243,15 @@ class UserElementTest extends TestCase
         Craft::$app->getDb()->createCommand()
             ->batchInsert(Table::SESSIONS, [
                 'userId',
-                'token'
+                'token',
             ], [
                 [
                     $this->activeUser->id,
-                    StringHelper::randomString(32)
+                    StringHelper::randomString(32),
                 ], [
                     $this->activeUser->id,
-                    StringHelper::randomString(32)
-                ]
+                    StringHelper::randomString(32),
+                ],
             ]);
 
         $this->activeUser->newPassword = 'random_password';

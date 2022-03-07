@@ -35,7 +35,7 @@ class CommandTest extends Unit
      */
     private $_sessionData = [
         'userId' => 1,
-        'token' => 'test'
+        'token' => 'test',
     ];
 
     /**
@@ -115,7 +115,7 @@ class CommandTest extends Unit
     {
         $condition = [
             'userId' => $values['userId'],
-            'token' => $values['token']
+            'token' => $values['token'],
         ];
 
         Craft::$app->getDb()->createCommand()

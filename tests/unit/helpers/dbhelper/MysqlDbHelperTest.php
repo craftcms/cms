@@ -118,35 +118,35 @@ class MysqlDbHelperTest extends Unit
                         [
                             'or',
                             ['content_table' => null],
-                            ['content_table' => '']
+                            ['content_table' => ''],
                         ],
                     ],
                     [
                         '!=',
                         'content_table',
-                        'field_2'
-                    ]
+                        'field_2',
+                    ],
                 ],
-                'content_table', ':empty:, field_2', '!='
+                'content_table', ':empty:, field_2', '!=',
             ],
             [
-                ['or', ['foo' => null], ['foo' => '']], 'foo', ':empty:'
+                ['or', ['foo' => null], ['foo' => '']], 'foo', ':empty:',
             ],
             [
-                ['or', ['foo' => null], ['foo' => '']], 'foo', ':EMPTY:'
+                ['or', ['foo' => null], ['foo' => '']], 'foo', ':EMPTY:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':notempty:'
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':notempty:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':NOTEMPTY:'
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':NOTEMPTY:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'not :empty:'
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'not :empty:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'NOT :EMPTY:'
-            ]
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'NOT :EMPTY:',
+            ],
         ];
     }
 

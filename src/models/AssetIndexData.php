@@ -105,6 +105,4 @@ class AssetIndexData extends Model
 
         return $attributes;
     }
-
-
 }

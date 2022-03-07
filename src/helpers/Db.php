@@ -1488,7 +1488,7 @@ class Db
 
         if ($lower === ':empty:') {
             $value = ':empty:';
-        } else if ($lower === ':notempty:' || $lower === 'not :empty:') {
+        } elseif ($lower === ':notempty:' || $lower === 'not :empty:') {
             $value = 'not :empty:';
         }
     }

@@ -39,7 +39,7 @@ class JsonHelperTest extends Unit
         return [
             ['{"test":"test"', '{"test":"test"'],
             [$basicArray, json_encode($basicArray)],
-            [null, '']
+            [null, ''],
         ];
     }
 

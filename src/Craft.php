@@ -326,7 +326,7 @@ EOD;
                     );
                 },
             ]);
-        } else if ($load) {
+        } elseif ($load) {
             // Just evaluate the code
             eval(preg_replace('/^<\?php\s*/', '', $fileContents));
         }

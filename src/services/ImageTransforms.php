@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -212,7 +213,7 @@ class ImageTransforms extends Component
 
         if ($isNewTransform) {
             $transform->uid = StringHelper::UUID();
-        } else if (!$transform->uid) {
+        } elseif (!$transform->uid) {
             $transform->uid = Db::uidById(Table::IMAGETRANSFORMS, $transform->id, $this->db);
         }
 
@@ -545,7 +546,7 @@ class ImageTransforms extends Component
         // Fire a 'beforeInvalidateAssetTransforms' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS)) {
             $this->trigger(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS, new AssetEvent([
-                'asset' => $asset
+                'asset' => $asset,
             ]));
         }
 
@@ -565,7 +566,7 @@ class ImageTransforms extends Component
     public function getAllImageTransformers(): array
     {
         $transformers = [
-            ImageTransformer::class
+            ImageTransformer::class,
         ];
 
         $event = new RegisterImageTransformersEvent([

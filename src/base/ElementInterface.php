@@ -17,7 +17,6 @@ use craft\models\Site;
 use Illuminate\Support\Collection;
 use Twig\Markup;
 
-
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].

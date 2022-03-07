@@ -9,7 +9,7 @@ module.exports = getConfig({
   type: 'vue',
   postCssConfig: path.resolve(__dirname, 'postcss.config.js'),
   config: {
-    entry: { app: './main.js'},
+    entry: {app: './main.js'},
     output: {
       filename: 'js/app.js',
       chunkFilename: 'js/[name].js',

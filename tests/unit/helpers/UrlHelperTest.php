@@ -23,13 +23,13 @@ use yii\base\Exception;
  */
 class UrlHelperTest extends Unit
 {
-    const ABSOLUTE_URL = 'http://craftcms.com/';
-    const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
-    const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
-    const ABSOLUTE_URL_HTTPS_WWW = 'https://www.craftcms.com/';
-    const NON_ABSOLUTE_URL = 'craftcms.com/';
-    const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
-    const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
+    public const ABSOLUTE_URL = 'http://craftcms.com/';
+    public const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
+    public const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
+    public const ABSOLUTE_URL_HTTPS_WWW = 'https://www.craftcms.com/';
+    public const NON_ABSOLUTE_URL = 'craftcms.com/';
+    public const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
+    public const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
 
     /**
      * @var UnitTester
@@ -361,27 +361,27 @@ class UrlHelperTest extends Unit
             'test-simple-endpoint' => [
                 '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
-                ['param1' => 'entry1', 'param2' => 'entry2']
+                ['param1' => 'entry1', 'param2' => 'entry2'],
             ],
             'test-preexisting-endpoints' => [
                 '{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
-                ['param1' => 'entry1', 'param2' => 'entry2']
+                ['param1' => 'entry1', 'param2' => 'entry2'],
             ],
             [
                 '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
-                    'param2' => 'entry2'
+                    'param2' => 'entry2',
                 ],
-                'https'
+                'https',
             ],
             [
                 '{siteUrl}?param1=entry1&param2=entry2',
                 TestSetup::SITE_URL,
                 ['param1' => 'entry1', 'param2' => 'entry2'],
-                'https'
+                'https',
             ],
         ];
     }
@@ -618,19 +618,19 @@ class UrlHelperTest extends Unit
                 'endpoint',
                 null,
                 null,
-                null
+                null,
             ],
             'full-url-scheme' => [
                 self::ABSOLUTE_URL_HTTPS,
                 self::ABSOLUTE_URL,
                 null,
-                'https'
+                'https',
             ],
             'scheme-override-param-add' => [
                 self::ABSOLUTE_URL_HTTPS . '?param1=entry1&param2=entry2',
                 self::ABSOLUTE_URL,
                 ['param1' => 'entry1', 'param2' => 'entry2'],
-                'https'
+                'https',
             ],
         ];
     }
