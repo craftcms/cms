@@ -167,8 +167,8 @@
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::$fullName`.
 - Added `craft\elements\User::canAssignUserGroups()`.
-- Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::getAddresses()`.
+- Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\FsException`.
 - Added `craft\errors\FsObjectExistsException`.
