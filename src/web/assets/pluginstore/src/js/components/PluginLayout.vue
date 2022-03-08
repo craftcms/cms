@@ -8,7 +8,7 @@
         <template v-if="plugin">
           <div class="ps-container tw-pb-0">
             <div class="description tw-flex">
-              <div class="icon tw-w-24">
+              <div class="icon tw-w-28">
                 <img
                   v-if="plugin.iconUrl"
                   :alt="plugin.name + ' icon'"
@@ -21,18 +21,22 @@
                 >
               </div>
 
-              <div class="name tw-ml-4 tw-self-center">
-                <h1 class="self-center tw-pb-0 tw-border-b-0 tw-mt-0 tw-mb-1">
+              <div class="name tw-ml-8 tw-self-center">
+                <h1 class="self-center tw-pb-0 tw-border-b-0 tw-mt-0 tw-mb-1 align-middle">
                   {{ plugin.name }}
                 </h1>
 
-                <div class="developer">
+                <div class="developer tw-flex tw-items-center">
                   <router-link
                     :to="'/developer/'+plugin.developerId"
                     :title="plugin.developerName"
                   >
                     {{ plugin.developerName }}
                   </router-link>
+
+                  <template v-if="plugin.developerPartner">
+                    <partner-badge kind="craft" class="tw-ml-2" />
+                  </template>
                 </div>
               </div>
             </div>
@@ -75,8 +79,10 @@
 <script>
 import {mapState, mapGetters} from 'vuex'
 import {isPluginFree} from '../utils/plugins';
+import PartnerBadge from './partner/PartnerBadge';
 
 export default {
+  components: {PartnerBadge},
   computed: {
     ...mapState({
       plugin: state => state.pluginStore.plugin,
