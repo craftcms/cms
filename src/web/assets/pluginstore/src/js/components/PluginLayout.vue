@@ -8,7 +8,7 @@
         <template v-if="plugin">
           <div class="ps-container tw-pb-0">
             <div class="description tw-flex">
-              <div class="icon tw-w-24">
+              <div class="icon tw-w-28">
                 <img
                   v-if="plugin.iconUrl"
                   :alt="plugin.name + ' icon'"
@@ -21,7 +21,7 @@
                 >
               </div>
 
-              <div class="name tw-ml-4 tw-self-center">
+              <div class="name tw-ml-8 tw-self-center">
                 <h1 class="self-center tw-pb-0 tw-border-b-0 tw-mt-0 tw-mb-1 align-middle">
                   {{ plugin.name }}
                 </h1>

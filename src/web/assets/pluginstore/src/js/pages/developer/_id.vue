@@ -11,7 +11,7 @@
             v-if="developer"
             class="developer-card tw-flex tw-pb-6 tw-items-center"
           >
-            <div class="avatar tw-w-32 tw-h-32 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-12 tw-no-line-height">
+            <div class="avatar tw-w-28 tw-h-28 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-8 tw-no-line-height">
               <img
                 :src="developer.photoUrl"
                 class="tw-w-full tw-h-full"
