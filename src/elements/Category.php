@@ -422,6 +422,29 @@ class Category extends Element
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getStructureId(): ?int
+    {
+        if (($structureId = parent::getStructureId()) !== null) {
+            return $structureId;
+        }
+
+        if ($this->groupId) {
+            return (new Query())
+                ->select('structureId')
+                ->from([Table::CATEGORYGROUPS])
+                ->where([
+                    'id' => $this->groupId,
+                    'dateDeleted' => null
+                ])
+                ->scalar();
+        }
+
+        return null;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function previewTargets(): array

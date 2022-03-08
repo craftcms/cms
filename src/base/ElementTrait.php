@@ -62,11 +62,6 @@ trait ElementTrait
     public ?int $fieldLayoutId = null;
 
     /**
-     * @var int|null The element’s structure ID
-     */
-    public ?int $structureId = null;
-
-    /**
      * @var int|null The element’s content row ID
      */
     public ?int $contentId = null;

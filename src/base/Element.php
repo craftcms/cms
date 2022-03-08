@@ -942,10 +942,12 @@ abstract class Element extends Component implements ElementInterface
             // Special case for sorting by structure
             if (isset($viewState['order']) && $viewState['order'] === 'structure') {
                 $source = ElementHelper::findSource(static::class, $sourceKey, $context);
-
-                if (isset($source['structureId'])) {
-                    $elementQuery->orderBy(['lft' => SORT_ASC]);
-                    $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
+                $structureId = $source['structureId'] ?? null;
+                if ($structureId) {
+                    $elementQuery
+                        ->structureId($structureId)
+                        ->orderBy(['lft' => SORT_ASC]);
+                    $variables['structure'] = Craft::$app->getStructures()->getStructureById($structureId);
 
                     // Are they allowed to make changes to this structure?
                     if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
@@ -1820,6 +1822,13 @@ abstract class Element extends Component implements ElementInterface
     private ?bool $_isFresh = null;
 
     /**
+     * @var int|null
+     * @see getStructureId()
+     * @see setStructureId()
+     */
+    private ?int $_structureId = null;
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -2517,6 +2526,22 @@ abstract class Element extends Component implements ElementInterface
     public function getIsUnpublishedDraft(): bool
     {
         return $this->getIsDraft() && $this->getIsCanonical();
+    }
+
+    /**
+     * @param int|null $structureId The element’s structure ID
+     */
+    public function setStructureId(?int $structureId): void
+    {
+        $this->_structureId = $structureId;
+    }
+
+    /**
+     * @return int|null The element’s structure ID
+     */
+    public function getStructureId(): ?int
+    {
+        return $this->_structureId;
     }
 
     /**

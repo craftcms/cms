@@ -2144,7 +2144,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         return (
             !$this->trashed &&
             !$this->revisions &&
-            ($this->withStructure ?? (bool)$this->structureId)
+            (bool)$this->structureId &&
+            $this->withStructure
         );
     }
 
@@ -2186,37 +2187,16 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'structureelements.level',
             ]);
 
-        if ($this->structureId) {
-            $this->query->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
-                'and',
-                '[[structureelements.elementId]] = [[subquery.elementsId]]',
-                ['structureelements.structureId' => $this->structureId],
-            ]);
-            $this->subQuery->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
-                'and',
-                '[[structureelements.elementId]] = [[elements.id]]',
-                ['structureelements.structureId' => $this->structureId],
-            ]);
-        } else {
-            $this->query
-                ->addSelect(['structureelements.structureId'])
-                ->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
-                    'and',
-                    '[[structureelements.elementId]] = [[subquery.elementsId]]',
-                    '[[structureelements.structureId]] = [[subquery.structureId]]',
-                ]);
-            $existsQuery = (new Query())
-                ->from([Table::STRUCTURES])
-                ->where('[[id]] = [[structureelements.structureId]]')
-                ->andWhere(['dateDeleted' => null]);
-            $this->subQuery
-                ->addSelect(['structureelements.structureId'])
-                ->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
-                    'and',
-                    '[[structureelements.elementId]] = [[elements.id]]',
-                    ['exists', $existsQuery],
-                ]);
-        }
+        $this->query->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            'and',
+            '[[structureelements.elementId]] = [[subquery.elementsId]]',
+            ['structureelements.structureId' => $this->structureId],
+        ]);
+        $this->subQuery->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
+            'and',
+            '[[structureelements.elementId]] = [[elements.id]]',
+            ['structureelements.structureId' => $this->structureId],
+        ]);
 
         if (isset($this->hasDescendants)) {
             if ($this->hasDescendants) {

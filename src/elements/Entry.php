@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -925,6 +926,29 @@ class Entry extends Element
         }
 
         return $sites;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getStructureId(): ?int
+    {
+        if (($structureId = parent::getStructureId()) !== null) {
+            return $structureId;
+        }
+
+        if ($this->sectionId) {
+            return (new Query())
+                ->select('structureId')
+                ->from([Table::SECTIONS])
+                ->where([
+                    'id' => $this->sectionId,
+                    'dateDeleted' => null
+                ])
+                ->scalar();
+        }
+
+        return null;
     }
 
     /**
