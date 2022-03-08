@@ -581,35 +581,11 @@ class Assets extends Component
      *
      * @param Asset $asset
      * @return string
+     * @deprecated in 4.0.0. [[AssetsHelper::iconPath()]] should be used instead.
      */
     public function getIconPath(Asset $asset): string
     {
-        $ext = $asset->getExtension();
-        $path = Craft::$app->getPath()->getAssetsIconsPath() . DIRECTORY_SEPARATOR . strtolower($ext) . '.svg';
-
-        if (file_exists($path)) {
-            return $path;
-        }
-
-        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
-
-        $extLength = strlen($ext);
-        if ($extLength <= 3) {
-            $textSize = '20';
-        } elseif ($extLength === 4) {
-            $textSize = '17';
-        } else {
-            if ($extLength > 5) {
-                $ext = substr($ext, 0, 4) . '…';
-            }
-            $textSize = '14';
-        }
-
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($ext) . '</text>';
-        $svg = str_replace('<!-- EXT -->', $textNode, $svg);
-
-        FileHelper::writeToFile($path, $svg);
-        return $path;
+        return AssetsHelper::iconPath($asset->getExtension());
     }
 
     /**

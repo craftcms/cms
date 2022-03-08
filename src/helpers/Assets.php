@@ -807,4 +807,55 @@ class Assets
 
         return $bytes;
     }
+
+    /**
+     * Returns the URL to an asset icon for a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.0.0
+     */
+    public static function iconUrl(string $extension): string
+    {
+        return UrlHelper::actionUrl('assets/icon', [
+            'extension' => $extension,
+        ]);
+    }
+
+    /**
+     * Returns the file path to an asset icon for a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.0.0
+     */
+    public static function iconPath(string $extension): string
+    {
+        $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
+
+        $extLength = strlen($extension);
+        if ($extLength <= 3) {
+            $textSize = '20';
+        } elseif ($extLength === 4) {
+            $textSize = '17';
+        } else {
+            if ($extLength > 5) {
+                $extension = substr($extension, 0, 4) . '…';
+            }
+            $textSize = '14';
+        }
+
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
+        $svg = str_replace('<!-- EXT -->', $textNode, $svg);
+
+        FileHelper::writeToFile($path, $svg);
+        return $path;
+    }
+
 }

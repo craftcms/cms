@@ -993,27 +993,19 @@ class AssetsController extends Controller
     }
 
     /**
-     * Returns an asset’s file icon.
+     * Returns a file icon with an extension.
      *
-     * @param string $uid The asset’s UID
+     * @param string $extension The asset’s UID
      * @return Response
      * @since 4.0.0
      */
-    public function actionIcon(string $uid)
+    public function actionIcon(string $extension)
     {
-        $asset = Asset::find()->uid($uid)->one();
-
-        if (!$asset) {
-            $e = new NotFoundHttpException("Invalid asset UID: $uid");
-            Craft::$app->getErrorHandler()->logException($e);
-            return $this->asBrokenImage($e);
-        }
-
-        $path = Craft::$app->getAssets()->getIconPath($asset);
+        $path = Assets::iconPath($extension);
 
         return $this->response
             ->setCacheHeaders()
-            ->sendFile($path, $asset->getFilename(), [
+            ->sendFile($path, "$extension.svg", [
                 'inline' => true,
             ]);
     }

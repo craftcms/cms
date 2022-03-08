@@ -118,7 +118,6 @@
 - Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
 - Added `craft\elements\Asset::EVENT_GENERATE_TRANSFORM`.
 - Added `craft\elements\Asset::getFs()`.
-- Added `craft\elements\Asset::getIconUrl()`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\conditions\addresses\AddressCondition`.
 - Added `craft\elements\conditions\addresses\CountryConditionRule`.
@@ -180,7 +179,6 @@
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
-- Added `craft\events\DefineAssetThumbUrlEvent::$transform`, which replaces `$width` and `$height`.
 - Added `craft\events\DefineHtmlEvent::$static`.
 - Added `craft\events\GenerateTransformEvent::$asset`.
 - Added `craft\events\GenerateTransformEvent::$transform`.
@@ -222,6 +220,8 @@
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Assets::iconPath()`.
+- Added `craft\helpers\Assets::iconUrl()`.
 - Added `craft\helpers\Cp::addressCardHtml()`.
 - Added `craft\helpers\Cp::addressCardsHtml()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
@@ -436,7 +436,6 @@
 - `craft\elements\Asset::getVolume()` now returns an instance of `craft\models\Volume`.
 - `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
-- `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
 - `craft\fieldlayoutelements\AssetTitleField` has been renamed to `craft\fieldlayoutelements\assets\AssetTitleField`.
@@ -534,6 +533,7 @@
 - Deprecated `craft\helpers\MigrationHelper`.
 - Deprecated `craft\i18n\I18N::getIsIntlLoaded()`.
 - Deprecated `craft\services\Assets::getAssetUrl()`. `craft\elements\Asset::getUrl()` should be used instead.
+- Deprecated `craft\services\Assets::getIconPath()`. `craft\helpers\Assets::iconPath()` should be used instead.
 - Deprecated `craft\services\Assets::getThumbUrl()`. `craft\elements\Asset::getThumbUrl()` should be used instead.
 - Deprecated `craft\web\Controller::asErrorJson()`. `asFailure()` should be used instead.
 - Deprecated the `assets/save-asset` action. `elements/save` should be used instead.
@@ -629,6 +629,7 @@
 - Removed `craft\events\DefineComponentsEvent`.
 - Removed `craft\events\GenerateTransformEvent::$image`.
 - Removed `craft\events\GenerateTransformEvent::$tempPath`.
+- Removed `craft\events\GetAssetThumbUrlEvent`.
 - Removed `craft\events\GlobalSetContentEvent`.
 - Removed `craft\events\RegisterGqlPermissionsEvent`.
 - Removed `craft\events\SearchEvent::getElementIds()`.
