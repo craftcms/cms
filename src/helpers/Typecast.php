@@ -31,6 +31,7 @@ final class Typecast
      *
      * @param string $class The class name
      * @param array $properties The property values
+     * @throws InvalidValueException if any of values can’t be typecasted to their property type
      */
     public static function properties(string $class, array &$properties): void
     {
@@ -45,6 +46,7 @@ final class Typecast
      * @param string $class The class name
      * @param string $property The property name
      * @param mixed $value The property value
+     * @throws InvalidValueException if $value can’t be typecasted to the property type
      */
     private static function property(string $class, string $property, mixed &$value): void
     {

@@ -18,6 +18,8 @@ use DateTime;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
+use yii\base\InvalidConfigException;
+use yii\base\InvalidValueException;
 use yii\validators\Validator;
 
 /**
@@ -66,7 +68,11 @@ abstract class Model extends \yii\base\Model
     public function __construct($config = [])
     {
         // Typecast the properties
-        Typecast::properties(static::class, $config);
+        try {
+            Typecast::properties(static::class, $config);
+        } catch (InvalidValueException $e) {
+            throw new InvalidConfigException($e->getMessage(), previous: $e);
+        }
 
         // Normalize the DateTime attributes
         foreach ($this->datetimeAttributes() as $attribute) {
@@ -208,7 +214,11 @@ abstract class Model extends \yii\base\Model
     public function setAttributes($values, $safeOnly = true): void
     {
         // Typecast them
-        Typecast::properties(static::class, $values);
+        try {
+            Typecast::properties(static::class, $values);
+        } catch (InvalidValueException $e) {
+            throw new InvalidConfigException($e->getMessage(), previous: $e);
+        }
 
         // Normalize the date/time attributes
         foreach ($this->datetimeAttributes() as $name) {
