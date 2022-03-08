@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidValueException;
 
 /**
  * Component helper
@@ -108,11 +107,7 @@ class Component
         $config = self::mergeSettings($config);
 
         // Typecast the properties
-        try {
-            Typecast::properties($class, $config);
-        } catch (InvalidValueException $e) {
-            throw new InvalidConfigException($e->getMessage(), previous: $e);
-        }
+        Typecast::properties($class, $config);
 
         // Instantiate and return
         $config['class'] = $class;
