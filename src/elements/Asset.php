@@ -123,13 +123,13 @@ class Asset extends Element
     public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an asset.
      * @since 4.0.0
      */
     public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an asset.
      * @since 4.0.0
      */
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';

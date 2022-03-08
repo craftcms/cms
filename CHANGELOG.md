@@ -182,7 +182,7 @@
 - Added `craft\events\DefineHtmlEvent::$static`.
 - Added `craft\events\GenerateTransformEvent::$asset`.
 - Added `craft\events\GenerateTransformEvent::$transform`.
-- Added `craft\events\GenerateTransformEvent::$url`. now has the `$asset`, `$transform` and `$url` fields.
+- Added `craft\events\GenerateTransformEvent::$url`.
 - Added `craft\events\ImageTransformEvent`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\events\TransformImageEvent`.
@@ -623,6 +623,8 @@
 - Removed `craft\events\AssetTransformEvent`.
 - Removed `craft\events\AssetTransformImageEvent`.
 - Removed `craft\events\DefineComponentsEvent`.
+- Removed `craft\events\GenerateTransformEvent::$image`.
+- Removed `craft\events\GenerateTransformEvent::$tempPath`.
 - Removed `craft\events\GlobalSetContentEvent`.
 - Removed `craft\events\RegisterGqlPermissionsEvent`.
 - Removed `craft\events\SearchEvent::getElementIds()`.
