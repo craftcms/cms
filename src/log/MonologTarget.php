@@ -90,13 +90,12 @@ class MonologTarget extends PsrTarget
     protected int $maxFiles = 5;
 
     /**
-     * @var FormatterInterface|null The Monolog formatter. Defaults to `LineFormatter`.
+     * @var FormatterInterface|null The Monolog formatter to use. Defaults to `LineFormatter`.
      */
     protected ?FormatterInterface $formatter = null;
 
     /**
-     * @var ProcessorInterface|null The Monolog processor.
-     * Defaults to `StreamHandler` if CRAFT_STREAM_LOG is set to `true`, otherwise `RotatingFileHandler`.
+     * @var ProcessorInterface|null The Monolog processor to use. Defaults to `LogProcessor`.
      */
     protected ?ProcessorInterface $processor = null;
 
