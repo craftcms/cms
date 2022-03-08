@@ -175,11 +175,6 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'type' => Type::boolean(),
                 'description' => 'Returns whether this is an unpublished draft.',
             ],
-            'isUnsavedDraft' => [
-                'name' => 'isUnsavedDraft',
-                'type' => Type::boolean(),
-                'description' => 'Returns whether this is an unpublished draft. **This field is deprecated.** `isUnpublishedDraft` should be used instead.',
-            ],
             'draftName' => [
                 'name' => 'draftName',
                 'type' => Type::string(),

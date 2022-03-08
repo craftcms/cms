@@ -7,6 +7,7 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\TypeManager;
@@ -65,7 +66,7 @@ class MatrixBlock extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::nonNull(Type::int()),
