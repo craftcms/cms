@@ -139,7 +139,7 @@ class Asset extends Element
      * @see getUrl()
      * @since 4.0.0
      */
-    public const EVENT_DEFINE_ASSET_URL = 'defineAssetUrl';
+    public const EVENT_DEFINE_URL = 'defineUrl';
 
     /**
      * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an asset.
@@ -1503,7 +1503,7 @@ JS;
             'transform' => $transform,
             'asset' => $this,
         ]);
-        $this->trigger(self::EVENT_DEFINE_ASSET_URL, $event);
+        $this->trigger(self::EVENT_DEFINE_URL, $event);
 
         // If a plugin set the url, we'll just use that.
         if ($event->url !== null) {
