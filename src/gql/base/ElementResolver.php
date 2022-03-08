@@ -16,6 +16,7 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Collection;
 
 /**
  * Class ElementResolver
@@ -75,7 +76,7 @@ abstract class ElementResolver extends Resolver
      * @param ResolveInfo $resolveInfo
      * @return ElementQuery|array
      */
-    protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo): ElementQuery|array
+    protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo): ElementQuery|Collection
     {
         /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
