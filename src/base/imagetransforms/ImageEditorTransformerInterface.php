@@ -13,7 +13,7 @@ use craft\elements\Asset;
 use craft\models\ImageTransform;
 
 /**
- * ImageEditorTransformerInterface defines the common interface to be implemented by all image drivers that support image editor
+ * ImageEditorTransformerInterface defines the common interface to be implemented by image drivers that support the Image Editor
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -21,14 +21,14 @@ use craft\models\ImageTransform;
 interface ImageEditorTransformerInterface
 {
     /**
-     * Start editing an image by providing an Asset.
+     * Begins an image editing process.
      *
      * @param Asset $asset
      */
     public function startImageEditing(Asset $asset): void;
 
     /**
-     * Flip the image
+     * Flips the image.
      *
      * @param bool $flipX
      * @param bool $flipY
@@ -36,7 +36,7 @@ interface ImageEditorTransformerInterface
     public function flipImage(bool $flipX, bool $flipY): void;
 
     /**
-     * Scale the image
+     * Scales the image.
      *
      * @param int $width
      * @param int $height
@@ -44,27 +44,29 @@ interface ImageEditorTransformerInterface
     public function scaleImage(int $width, int $height): void;
 
     /**
-     * Rotate the image.
+     * Rotates the image.
      *
      * @param float $degrees
      */
     public function rotateImage(float $degrees): void;
 
     /**
-     * Get the current width of the edited image.
+     * Returns the current width of the edited image.
      *
      * @return int $width
      */
     public function getEditedImageWidth(): int;
 
     /**
-     * Get the current height of the edited image.
+     * Returns the current height of the edited image.
      *
      * @return int $height
      */
     public function getEditedImageHeight(): int;
 
     /**
+     * Crops the image.
+     *
      * @param int $x
      * @param int $y
      * @param int $width
@@ -73,14 +75,14 @@ interface ImageEditorTransformerInterface
     public function crop(int $x, int $y, int $width, int $height): void;
 
     /**
-     * Finish editing the image and return the file location of the contents;
+     * Completes an image editing process and returns the file location of the resulting image;
      *
      * @return string
      */
     public function finishImageEditing(): string;
 
     /**
-     * Cancel the image editing and return the location for a temporary file that was created.
+     * Aborts the image editing process and returns the location of a temporary file that was created.
      *
      * @return string
      */

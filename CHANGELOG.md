@@ -114,10 +114,10 @@
 - Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
 - Added `craft\elements\Address`.
 - Added `craft\elements\Asset::$alt`.
+- Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
+- Added `craft\elements\Asset::EVENT_GENERATE_TRANSFORM`.
 - Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
-- Added `craft\elements\Asset::EVENT_GENERATE_TRANSFORM`.
-- Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
 - Added `craft\elements\conditions\addresses\AddressCondition`.
 - Added `craft\elements\conditions\addresses\CountryConditionRule`.
 - Added `craft\elements\conditions\assets\AssetCondition`.
@@ -178,7 +178,11 @@
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
+- Added `craft\events\DefineAssetThumbUrlEvent::$transform`, which replaces `$width` and `$height`.
 - Added `craft\events\DefineHtmlEvent::$static`.
+- Added `craft\events\GenerateTransformEvent::$asset`.
+- Added `craft\events\GenerateTransformEvent::$transform`.
+- Added `craft\events\GenerateTransformEvent::$url`. now has the `$asset`, `$transform` and `$url` fields.
 - Added `craft\events\ImageTransformEvent`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\events\TransformImageEvent`.
@@ -430,8 +434,6 @@
 - `craft\elements\Asset::getVolume()` now returns an instance of `craft\models\Volume`.
 - `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
-- `craft\events\DefineAssetThumbUrlEvent` now has a `$transform` field, instead of separate `$width` and `$height` fields.
-- `craft\events\GenerateTransformEvent` now has the `$asset`, `$transform` and `$url` fields.
 - `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
@@ -452,9 +454,7 @@
 - `craft\helpers\App::env()` now returns `null` if a value couldn’t be found, rather than `false`.
 - `craft\helpers\App::env()` now returns a boolean if the original value was `'true'` or `'false'`.
 - `craft\helpers\App::env()` now returns an integer or float if the original value was numeric.
-- `craft\helpers\Assets::generateUrl()` no longer accepts a `craft\models\Volume` object as the first argument. An object implementing `craft\base\FsInterface` is expected instead.
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
-- `craft\helpers\Assets::generateUrl()` no longer accepts a `craft\models\Volume` as the first argument. A `craft\elements\Asset` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Component::createComponent()` now automatically typecasts values that map to properties with `int`, `float`, `int|float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - `craft\helpers\Db::batchInsert()`, `craft\helpers\Db::insert()`, `craft\db\Command::batchInsert()`, `craft\db\Command::insert()`, `craft\db\Migration::batchInsert()`, and `craft\db\Migration::insert()` no longer have `$includeAuditColumns` arguments, and now check if the table has `dateCreated`, `dateUpdated`, and/or `uid` columns before setting their values.
