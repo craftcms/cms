@@ -669,6 +669,7 @@
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
 - Removed `craft\services\Assets::EVENT_GET_THUMB_PATH`.
+- Removed `craft\services\Assets::getThumbPath()`.
 - Removed `craft\services\AssetTransforms`.
 - Removed `craft\services\Composer::$disablePackagist`.
 - Removed `craft\services\Composer::optimize()`.
