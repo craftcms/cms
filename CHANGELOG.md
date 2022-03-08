@@ -690,6 +690,7 @@
 - Removed `craft\services\Fields::getFieldsByElementType()`.
 - Removed `craft\services\Fields::getFieldsByLayoutId()`.
 - Removed `craft\services\Gql::getAllPermissions()`.
+- Removed `craft\services\Path::getAssetThumbsPath()`.
 - Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Removed `craft\services\ProjectConfig::CONFIG_KEY`.

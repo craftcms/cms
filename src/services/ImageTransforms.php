@@ -530,7 +530,6 @@ class ImageTransforms extends Component
     public function deleteResizedAssetVersion(Asset $asset): void
     {
         $dirs = [
-            Craft::$app->getPath()->getAssetThumbsPath(),
             Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id,
         ];
 
