@@ -3,7 +3,9 @@ const { chromium, expect } = require('@playwright/test');
 
 module.exports = async config => {
   const { baseURL } = config.projects[0].use;
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    // devtools: true
+  });
   const page = await browser.newPage();
 
   await page.goto(baseURL);
