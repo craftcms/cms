@@ -149,6 +149,7 @@ class MonologTarget extends PsrTarget
 
     /**
      * @throws InvalidConfigException
+     * @inheritDoc
      */
     public function setLogger(LoggerInterface $logger): void
     {
