@@ -121,13 +121,13 @@ class Asset extends Element
     public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an asset.
+     * @event GenerateTransformEvent The event that is triggered before a transform is generated for an asset.
      * @since 4.0.0
      */
-    public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
+    public const EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an asset.
+     * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
      * @since 4.0.0
      */
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
@@ -1545,13 +1545,13 @@ JS;
             $imageTransformer = $transform->getImageTransformer();
 
             try {
-                if ($this->hasEventHandlers(self::EVENT_GENERATE_TRANSFORM)) {
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
                     $event = new GenerateTransformEvent([
                         'asset' => $this,
                         'transform' => $transform,
                     ]);
 
-                    $this->trigger(self::EVENT_GENERATE_TRANSFORM, $event);
+                    $this->trigger(self::EVENT_BEFORE_GENERATE_TRANSFORM, $event);
 
                     // If a plugin set the url, we'll just use that.
                     if ($event->url !== null) {
