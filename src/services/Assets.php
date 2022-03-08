@@ -562,8 +562,8 @@ class Assets extends Component
      * @param Asset $asset
      * @param ImageTransform|string|array|null $transform
      * @return string|null
-     * @throws VolumeException
-     * @throws ImageTransformException
+     * @throws InvalidConfigException
+     * @deprecated in 4.0.0. [[Asset::getUrl()]] should be used instead.
      */
     public function getAssetUrl(Asset $asset, mixed $transform = null): ?string
     {
