@@ -247,6 +247,7 @@
 - Added `craft\helpers\Number::toIntOrFloat()`.
 - Added `craft\helpers\ProjectConfig::encodeValueAsString()`.
 - Added `craft\helpers\ProjectConfig::ensureAllSectionsProcessed()`.
+- Added `craft\helpers\ProjectConfig::traverseDataArray()`.
 - Added `craft\helpers\Typecast`. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - Added `craft\i18n\Translation`.
 - Added `craft\imagetransforms\ImageTransformer`.
