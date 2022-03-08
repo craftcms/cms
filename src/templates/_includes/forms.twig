@@ -226,7 +226,7 @@
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
             tip: (config.allowedEnvValues is not defined)
-            ? 'This can be set to an environment variable with a value of one of the selectable option values.'|t('app')
+            ? 'This can be set to an environment variable matching one of the option values.'|t('app')
             : 'This can be set to an environment variable.'|t('app'),
         }) %}
     {% endif %}
@@ -352,7 +352,7 @@
     {% set config = config|merge({id: config.id ?? "fs#{random()}"}) %}
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
-            tip: 'This can be set to an environment variable with a value of a filesystem’s handle.'|t('app'),
+            tip: 'This can be set to an environment variable matching one of the option values.'|t('app'),
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/fs') }}
