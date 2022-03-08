@@ -10,7 +10,6 @@ namespace craft\assetpreviews;
 use Craft;
 use craft\base\AssetPreviewHandler;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
 
 /**

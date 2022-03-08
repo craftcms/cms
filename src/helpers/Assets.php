@@ -857,5 +857,4 @@ class Assets
         FileHelper::writeToFile($path, $svg);
         return $path;
     }
-
 }
