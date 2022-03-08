@@ -1028,8 +1028,8 @@ class Asset extends Element
     {
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
-        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-        if ($subfolders) {
+        if ($this->folderPath !== null) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
             $uri .= sprintf('/%s', implode('/', $subfolders));
         }
         return UrlHelper::cpUrl($uri);
@@ -1054,13 +1054,15 @@ class Asset extends Element
             ],
         ];
 
-        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-        foreach ($subfolders as $subfolder) {
-            $uri .= "/$subfolder";
-            $crumbs[] = [
-                'label' => $subfolder,
-                'url' => UrlHelper::cpUrl($uri),
-            ];
+        if ($this->folderPath !== null) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            foreach ($subfolders as $subfolder) {
+                $uri .= "/$subfolder";
+                $crumbs[] = [
+                    'label' => $subfolder,
+                    'url' => UrlHelper::cpUrl($uri),
+                ];
+            }
         }
 
         return $crumbs;
@@ -1650,7 +1652,14 @@ JS;
      */
     public function getPreviewThumbImg(int $desiredWidth, int $desiredHeight): string
     {
-        $assetsService = Craft::$app->getAssets();
+        // If it's not an image, return a generic file extension icon
+        if (!Image::canManipulateAsImage($this->getExtension())) {
+            return Html::tag('img', '', [
+                'src' => $this->getIconUrl(),
+                'alt' => $this->title,
+            ]);
+        }
+
         $srcsets = [];
         [$width, $height] = AssetsHelper::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
@@ -1658,8 +1667,13 @@ JS;
             [$width * 2, $height * 2],
         ];
         foreach ($thumbSizes as [$width, $height]) {
-            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
-            $srcsets[] = $thumbUrl . ' ' . $width . 'w';
+            $transform = new ImageTransform([
+                'width' => $width,
+                'height' => $height,
+                'mode' => 'crop',
+            ]);
+            $transformUrl = $transform->getImageTransformer()->getTransformUrl($this, $transform, false);
+            $srcsets[] = sprintf('%s %sw', $transformUrl, $width);
         }
 
         return Html::tag('img', '', [
