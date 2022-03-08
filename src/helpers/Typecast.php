@@ -13,8 +13,8 @@ use DateTime;
 use ReflectionException;
 use ReflectionNamedType;
 use ReflectionProperty;
+use ReflectionUnionType;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidValueException;
 
 /**
  * Typecast Helper
@@ -24,6 +24,15 @@ use yii\base\InvalidValueException;
  */
 final class Typecast
 {
+    private const TYPE_BOOL = 'bool';
+    private const TYPE_FLOAT = 'float';
+    private const TYPE_INT = 'int';
+    private const TYPE_INT_FLOAT = 'int|float';
+    private const TYPE_STRING = 'string';
+    private const TYPE_ARRAY = 'array';
+    private const TYPE_NULL = 'null';
+    private const TYPE_DATETIME = DateTime::class;
+
     private static array $types = [];
 
     /**
@@ -53,42 +62,30 @@ final class Typecast
             return;
         }
 
-        if ($value === '') {
-            $value = null;
-        }
+        [$typeName, $allowsNull] = $type;
 
-        if ($value === null && $type->allowsNull()) {
+        if ($allowsNull && ($value === null || $value === '')) {
+            $value = null;
             return;
         }
 
-        switch ($type->getName()) {
-            case 'int':
-                if ($value !== null && !is_scalar($value)) {
-                    throw new InvalidValueException("Unable to typecast $property value to an int.");
+        switch ($typeName) {
+            case self::TYPE_BOOL:
+            case self::TYPE_FLOAT:
+            case self::TYPE_INT:
+            case self::TYPE_INT_FLOAT:
+            case self::TYPE_STRING:
+                if ($value === null || is_scalar($value)) {
+                    $value = match ($typeName) {
+                        self::TYPE_BOOL => (bool)$value,
+                        self::TYPE_FLOAT => (float)$value,
+                        self::TYPE_INT => (int)$value,
+                        self::TYPE_INT_FLOAT => Number::toIntOrFloat($value ?? 0),
+                        self::TYPE_STRING => (string)$value,
+                    };
                 }
-                $value = (int)$value;
                 return;
-            case 'float':
-                if ($value !== null && !is_scalar($value)) {
-                    throw new InvalidValueException("Unable to typecast $property value to a float.");
-                }
-                $value = (float)$value;
-                return;
-            case 'string':
-                if ($value !== null && !is_scalar($value)) {
-                    // We could technically call __toString() here, but that seems hacky.
-                    // If an object is getting set to a string property, that's probably a bug that shouldn't go unnoticed.
-                    throw new InvalidValueException("Unable to typecast $property value to a string.");
-                }
-                $value = (string)$value;
-                return;
-            case 'bool':
-                if ($value !== null && !is_scalar($value)) {
-                    throw new InvalidValueException("Unable to typecast $property value to a bool.");
-                }
-                $value = (bool)$value;
-                return;
-            case 'array':
+            case self::TYPE_ARRAY:
                 if ($value === null) {
                     $value = [];
                 }
@@ -98,55 +95,67 @@ final class Typecast
                 if (is_string($value)) {
                     try {
                         $decoded = Json::decode($value) ?? [];
-                        if (!is_array($decoded)) {
-                            throw new InvalidValueException();
+                        if (is_array($decoded)) {
+                            $value = $decoded;
                         }
-                        $value = $decoded;
-                    } catch (InvalidArgumentException | InvalidValueException) {
+                    } catch (InvalidArgumentException) {
                         $value = StringHelper::split($value);
                     }
                     return;
                 }
                 if (is_iterable($value)) {
                     $value = iterator_to_array($value);
-                    return;
                 }
-                throw new InvalidValueException("Unable to typecast $property value to an array.");
-            case DateTime::class:
+                return;
+            case self::TYPE_DATETIME:
                 if ($value instanceof DateTime) {
                     return;
                 }
                 $date = DateTimeHelper::toDateTime($value);
-                if (!$date && !$type->allowsNull()) {
-                    throw new InvalidValueException("Unable to typecast $property value to a DateTime object.");
+                if ($date || $allowsNull) {
+                    $value = $date ?: null;
                 }
-                $value = $date ?: null;
                 return;
         }
     }
 
-    private static function propertyType(string $class, string $property): ?ReflectionNamedType
+    private static function propertyType(string $class, string $property): array|false
     {
         if (!isset(self::$types[$class][$property])) {
-            try {
-                $ref = new ReflectionProperty($class, $property);
-                if (!$ref->isPublic() || $ref->isStatic()) {
-                    self::$types[$class][$property] = false;
-                } else {
-                    $type = $ref->getType();
-                    if ($type instanceof ReflectionNamedType) {
-                        self::$types[$class][$property] = $type;
-                    } else {
-                        // We don't support typecasting properties with union types
-                        self::$types[$class][$property] = false;
-                    }
-                }
-            } catch (ReflectionException) {
-                // The property doesn’t exist
-                self::$types[$class][$property] = false;
+            self::$types[$class][$property] = self::_propertyType($class, $property);
+        }
+
+        return self::$types[$class][$property];
+    }
+
+    private static function _propertyType(string $class, string $property): array|false
+    {
+        try {
+            $ref = new ReflectionProperty($class, $property);
+        } catch (ReflectionException) {
+            // The property doesn’t exist
+            return false;
+        }
+
+        if (!$ref->isPublic() || $ref->isStatic()) {
+            return false;
+        }
+
+        $type = $ref->getType();
+
+        if ($type instanceof ReflectionNamedType) {
+            return [$type->getName(), $type->allowsNull()];
+        }
+
+        if ($type instanceof ReflectionUnionType) {
+            // Special case for int|float
+            $names = array_map(fn(ReflectionNamedType $type) => $type->getName(), $type->getTypes());
+            sort($names);
+            if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
+                return [self::TYPE_INT_FLOAT, in_array(self::TYPE_NULL, $names)];
             }
         }
 
-        return self::$types[$class][$property] ?: null;
+        return false;
     }
 }

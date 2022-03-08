@@ -118,19 +118,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                 $config[$name] = $this->_normalizeNumber($config[$name]);
             }
         }
-        foreach (['defaultValue', 'max', 'decimals'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-        if (($config['min'] ?? null) === '') {
-            $config['min'] = null; // default is 0
-        }
-        foreach (['min', 'max', 'defaultValue'] as $name) {
-            if (isset($config[$name])) {
-                $config[$name] = NumberHelper::toIntOrFloat($config[$name]);
-            }
-        }
 
         parent::__construct($config);
     }
