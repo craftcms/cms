@@ -27,6 +27,7 @@
                 class="tw-mt-1"
               >{{ developer.location }}</div>
 
+              <!-- Partner badges -->
               <template v-if="(
                 developer.partner &&
                 (
@@ -59,6 +60,7 @@
                 </div>
               </template>
 
+              <!-- Partner profile URL and developer URL -->
               <template v-if="developer.partnerUrl || developer.developerUrl">
                 <ul class="developer-buttons tw-mt-4 tw-space-y-2">
                   <template v-if="developer.partnerUrl">
