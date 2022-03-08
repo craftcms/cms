@@ -18,7 +18,6 @@ use craft\models\EntryType as EntryTypeModel;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
-use GraphQL\Language\AST\ValueNode;
 use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;

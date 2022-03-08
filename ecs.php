@@ -14,6 +14,9 @@ return static function(ContainerConfigurator $containerConfigurator): void {
         __DIR__ . '/tests',
         __FILE__,
     ]);
+    $parameters->set(Option::SKIP, [
+        __DIR__ . '/tests/_craft/storage',
+    ]);
 
     $containerConfigurator->import(SetList::CRAFT_CMS_4);
 };

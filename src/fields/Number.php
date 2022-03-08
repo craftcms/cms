@@ -16,7 +16,6 @@ use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
-use craft\helpers\Number as NumberHelper;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
