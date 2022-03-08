@@ -106,12 +106,12 @@ class MonologTarget extends PsrTarget
     protected $logger;
 
     /**
-     * Disallow setting logger props after logger is created.
      * @inheritDoc
      * @throws InvalidConfigException
      */
-    public function __set($name, $value)
+    public function __set($name, $value): void
     {
+        // Disallow setting logger props after logger is created.
         if (in_array($name, static::LOGGER_PROPS, true)) {
             if ($this->logger) {
                 throw new InvalidConfigException("The property \"$name\" must be set before \"logger\".");
@@ -119,10 +119,10 @@ class MonologTarget extends PsrTarget
 
             $this->$name = $value;
 
-            return null;
+            return;
         }
 
-        return parent::__set($name, $value);
+        parent::__set($name, $value);
     }
 
     /**
