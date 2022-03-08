@@ -9,7 +9,9 @@ namespace craft\assetpreviews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\UrlHelper;
+use craft\models\ImageTransform;
 
 /**
  * Provides functionality to preview images.
@@ -24,16 +26,24 @@ class Image extends AssetPreviewHandler
      */
     public function getPreviewHtml(array $variables = []): string
     {
-        $volume = $this->asset->getVolume();
+        $originalWidth = (int)$this->asset->getWidth();
+        $originalHeight = (int)$this->asset->getHeight();
+        [$width, $height] = AssetsHelper::scaledDimensions((int)$this->asset->getWidth(), (int)$this->asset->getHeight(), 1000, 1000);
 
-        if ($volume->getFs()->hasUrls) {
+        // Can we just use the main asset URL?
+        if (
+            $this->asset->getVolume()->getFs()->hasUrls &&
+            $originalWidth <= $width &&
+            $originalHeight <= $height
+        ) {
             $url = $this->asset->getUrl();
         } else {
-            $url = UrlHelper::actionUrl('assets/thumb', [
-                'uid' => $this->asset->uid,
-                'width' => $this->asset->getWidth(),
-                'height' => $this->asset->getHeight(),
-            ], null, false);
+            $transform = new ImageTransform([
+                'width' => $width,
+                'height' => $height,
+                'mode' => 'crop',
+            ]);
+            $url = $transform->getImageTransformer()->getTransformUrl($this->asset, $transform, true);
         }
 
         return Craft::$app->getView()->renderTemplate('assets/_previews/image',

@@ -567,10 +567,12 @@ class Assets extends Component
      * @param int $width width of the returned thumb
      * @param int|null $height height of the returned thumb (defaults to $width if null)
      * @return string
+     * @deprecated in 4.0.0. [[Asset::getThumbUrl()]] should be used instead.
      */
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null): string
     {
-        return $asset->getThumbUrl(max($width, (int)$height));
+        $size = $height ? max($width, $height) : $width;
+        return $asset->getThumbUrl($size);
     }
 
     /**

@@ -25,6 +25,7 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
+use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -763,8 +764,13 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        $url = $asset->getSimpleTransformUrl($size, $size, 'fit');
+        $transform = new ImageTransform([
+            'width' => $size,
+            'height' => $size,
+            'mode' => 'fit',
+        ]);
 
+        $url = $transform->getImageTransformer()->getTransformUrl($asset, $transform, true);
         return $this->response->redirect($url);
     }
 
@@ -987,31 +993,29 @@ class AssetsController extends Controller
     }
 
     /**
-     * Returns an asset’s thumbnail.
+     * Returns an asset’s file icon.
      *
-     * @param string $uid The asset's UID
-     * @param int $width The thumbnail width
-     * @param int $height The thumbnail height
+     * @param string $uid The asset’s UID
      * @return Response
-     * @since 3.0.13
+     * @since 4.0.0
      */
-    public function actionThumb(string $uid, int $width, int $height): Response
+    public function actionIcon(string $uid)
     {
         $asset = Asset::find()->uid($uid)->one();
 
         if (!$asset) {
-            $e = new NotFoundHttpException('Invalid asset UID: ' . $uid);
+            $e = new NotFoundHttpException("Invalid asset UID: $uid");
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asBrokenImage($e);
         }
 
-        try {
-            $url = $asset->getSimpleTransformUrl($width, $height);
-            return $this->response->redirect($url);
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            return $this->asBrokenImage($e);
-        }
+        $path = Craft::$app->getAssets()->getIconPath($asset);
+
+        return $this->response
+            ->setCacheHeaders()
+            ->sendFile($path, $asset->getFilename(), [
+                'inline' => true,
+            ]);
     }
 
     /**

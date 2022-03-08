@@ -140,13 +140,6 @@ class Asset extends Element
      */
     public const EVENT_DEFINE_URL = 'defineUrl';
 
-    /**
-     * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being generated for an asset.
-     * @see getThumbUrl()
-     * @since 4.0.0
-     */
-    public const EVENT_DEFINE_THUMB_URL = 'defineThumbUrl';
-
     // Location error codes
     // -------------------------------------------------------------------------
 
@@ -1593,6 +1586,11 @@ JS;
      */
     public function getThumbUrl(int $size): ?string
     {
+        // If it's not an image, return a generic file extension icon
+        if (!Image::canManipulateAsImage($this->getExtension())) {
+            return $this->getIconUrl();
+        }
+
         if ($this->getWidth() && $this->getHeight()) {
             [$width, $height] = AssetsHelper::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
         } else {
@@ -1605,54 +1603,24 @@ JS;
             'mode' => 'crop',
         ]);
 
-        // Maybe a plugin wants to do something here
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
-            $event = new DefineAssetThumbUrlEvent([
-                'asset' => $this,
-                'transform' => $transform,
-                'generate' => false,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
+        $transformUrl = $transform->getImageTransformer()->getTransformUrl($this, $transform, false);
 
-            // If a plugin set the url, we'll just use that.
-            if ($event->url !== null) {
-                return $event->url;
-            }
-        }
-
-        return UrlHelper::actionUrl('assets/thumb', [
-            'uid' => $this->uid,
-            'width' => $width,
-            'height' => $height,
+        return UrlHelper::urlWithParams($transformUrl, [
             'v' => $this->dateModified->getTimestamp(),
-        ], null, false);
+        ]);
     }
 
     /**
-     * Get a simple transform URL.
+     * Returns the asset’s icon URL.
      *
-     * @param int $width
-     * @param int|null $height
-     * @param string $mode
-     * @return string|null
+     * @return string
+     * @since 4.0.0
      */
-    public function getSimpleTransformUrl(int $width, ?int $height = null, string $mode = 'crop'): ?string
+    public function getIconUrl(): string
     {
-        $transform = new ImageTransform([
-            'width' => $width,
-            'height' => $height,
-            'mode' => $mode,
+        return UrlHelper::actionUrl('assets/icon', [
+            'uid' => $this->uid,
         ]);
-
-        $event = new DefineAssetThumbUrlEvent([
-            'asset' => $this,
-            'transform' => $transform,
-            'generate' => true,
-        ]);
-
-        $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
-
-        return $transform->getImageTransformer()->getTransformUrl($this, $transform, true);
     }
 
     /**

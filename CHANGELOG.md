@@ -31,6 +31,7 @@
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
+- Added the `assets/icon` action.
 - Added the `assets/update-focal-point` action.
 - Added the `categories/create` action.
 - Added the `elements/apply-draft` action.
@@ -117,6 +118,7 @@
 - Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
 - Added `craft\elements\Asset::EVENT_GENERATE_TRANSFORM`.
 - Added `craft\elements\Asset::getFs()`.
+- Added `craft\elements\Asset::getIconUrl()`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\conditions\addresses\AddressCondition`.
 - Added `craft\elements\conditions\addresses\CountryConditionRule`.
@@ -478,7 +480,6 @@
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
-- `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been moved to `craft\elements\Asset::EVENT_DEFINE_THUMB_URL`.
 - `craft\services\Assets::EVENT_GET_ASSET_URL` has been moved to `craft\elements\Asset::EVENT_DEFINE_URL`.
 - `craft\services\AssetTransforms::CONFIG_TRANSFORM_KEY` has been moved to `craft\services\ProjectConfig::PATH_IMAGE_TRANSFORMS`.
 - `craft\services\Categories::CONFIG_CATEGORYROUP_KEY` has been moved to `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
@@ -533,6 +534,7 @@
 - Deprecated `craft\helpers\MigrationHelper`.
 - Deprecated `craft\i18n\I18N::getIsIntlLoaded()`.
 - Deprecated `craft\services\Assets::getAssetUrl()`. `craft\elements\Asset::getUrl()` should be used instead.
+- Deprecated `craft\services\Assets::getThumbUrl()`. `craft\elements\Asset::getThumbUrl()` should be used instead.
 - Deprecated `craft\web\Controller::asErrorJson()`. `asFailure()` should be used instead.
 - Deprecated the `assets/save-asset` action. `elements/save` should be used instead.
 - Deprecated the `categories/save-category` action. `elements/save` should be used instead.
@@ -571,6 +573,7 @@
 - Removed the `customizeSources` user permission. Only admins can customize element sources now, and only from an environment that allows admin changes.
 - Removed the `publishPeerEntryDrafts:<uid>` permissions, as they were pointless. (If a user is authorized to save an entry and view other users’ drafts of it, there’s nothing stopping them from making the same changes themselves.)
 - Removed the `assets/edit-asset` action.
+- Removed the `assets/thumb` action.
 - Removed the `categories/edit-category` action.
 - Removed the `categories/preview-category` action.
 - Removed the `categories/share-category` action.
@@ -668,6 +671,7 @@
 - Removed `craft\services\AssetIndexer::getMissingFiles()`.
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
+- Removed `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL`.
 - Removed `craft\services\Assets::EVENT_GET_THUMB_PATH`.
 - Removed `craft\services\Assets::getThumbPath()`.
 - Removed `craft\services\AssetTransforms`.
