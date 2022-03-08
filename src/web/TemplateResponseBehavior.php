@@ -17,7 +17,7 @@ use yii\base\Behavior;
  */
 class TemplateResponseBehavior extends Behavior
 {
-    const NAME = 'template';
+    public const NAME = 'template';
 
     /**
      * @var string The template to render.

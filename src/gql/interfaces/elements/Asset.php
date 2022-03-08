@@ -7,6 +7,7 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\arguments\Transform;
@@ -71,7 +72,7 @@ class Asset extends Element
     public static function getFieldDefinitions(): array
     {
         // @TODO Remove the `uri` field for Assets.
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),

@@ -21,7 +21,7 @@ use yii\base\Behavior;
  */
 class CpScreenResponseBehavior extends Behavior
 {
-    const NAME = 'cp-screen';
+    public const NAME = 'cp-screen';
 
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.

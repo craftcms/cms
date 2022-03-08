@@ -55,19 +55,19 @@ class MailSettings extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'fromEmail',
-                'replyToEmail',
-                'fromName',
-                'template',
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'fromEmail',
+                    'replyToEmail',
+                    'fromName',
+                    'template',
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**

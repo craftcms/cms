@@ -104,19 +104,6 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function __construct(array $config = [])
-    {
-        // Config normalization
-        if (($config['branchLimit'] ?? null) === '') {
-            unset($config['branchLimit']);
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_array($value)) {
