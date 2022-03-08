@@ -1509,9 +1509,6 @@ JS;
             return Assets::generateUrl($volume->getFs(), $this);
         }
 
-        // Normalize empty transform values
-        $transform = $this->_transform;
-
         $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
         $noFolder = !$this->folderId;
         $transformNoUrl = $transform && !$volume->getTransformFs()->hasUrls;
