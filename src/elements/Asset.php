@@ -1516,7 +1516,7 @@ JS;
         }
 
         // Normalize empty transform values
-        $transform = $transform ?? $this->_transform;
+        $transform = $this->_transform;
 
         $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
         $noFolder = !$this->folderId;
