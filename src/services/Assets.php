@@ -25,25 +25,16 @@ use craft\errors\AssetOperationException;
 use craft\errors\FsException;
 use craft\errors\FsObjectExistsException;
 use craft\errors\FsObjectNotFoundException;
-use craft\errors\ImageException;
-use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetPreviewEvent;
-use craft\events\AssetThumbEvent;
-use craft\events\DefineAssetThumbUrlEvent;
-use craft\events\DefineAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
-use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
-use craft\image\Raster;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -53,7 +44,6 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 /**
  * Assets service.

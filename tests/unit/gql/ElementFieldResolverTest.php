@@ -285,14 +285,14 @@ class ElementFieldResolverTest extends Unit
     {
         $imageTransformService = $this->make(ImageTransforms::class, [
             'getImageTransformer' => $this->make(ImageTransformer::class, [
-                'getTransformUrl' => function ($asset, ImageTransform $imageTransform) use ($expectedArguments): string {
+                'getTransformUrl' => function($asset, ImageTransform $imageTransform) use ($expectedArguments): string {
                     self::assertEquals($expectedArguments, $imageTransform->toArray(array_keys($expectedArguments)));
                     return 'ok';
-                }
+                },
             ]),
-            'getTransformByHandle' => function ($handle): ?ImageTransform {
+            'getTransformByHandle' => function($handle): ?ImageTransform {
                 return new ImageTransform(['handle' => $handle]);
-            }
+            },
         ]);
 
         Craft::$app->set('imageTransforms', $imageTransformService);

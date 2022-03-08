@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace craft\base\imagetransforms;
 
 use craft\elements\Asset;
-use craft\models\ImageTransform;
 
 /**
  * ImageEditorTransformerInterface defines the common interface to be implemented by image drivers that support the Image Editor

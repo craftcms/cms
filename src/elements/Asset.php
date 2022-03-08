@@ -42,7 +42,6 @@ use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
