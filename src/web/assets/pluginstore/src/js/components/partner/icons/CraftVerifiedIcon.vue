@@ -1,14 +1,14 @@
 <template>
-  <svg viewBox="0 0 35 35" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-      <g id="Badges/Craft-Verification" fill-rule="nonzero" stroke="#E5422B">
-        <g id="Group-2">
-          <g id="Group">
-            <circle id="Oval-5" cx="17.5" cy="17.5" r="17"></circle>
-          </g>
-          <polyline id="Path-5" stroke-width="2" points="10 18.0641807 15.0480459 23.9612764 27 11"></polyline>
-        </g>
-      </g>
-    </g>
+  <svg
+    width="100"
+    height="100"
+    viewBox="0 0 100 100"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg">
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M83.535 26.465C84.4723 27.4026 84.9989 28.6742 84.9989 30C84.9989 31.3258 84.4723 32.5974 83.535 33.535L43.535 73.535C42.5973 74.4724 41.3258 74.9989 40 74.9989C38.6741 74.9989 37.4026 74.4724 36.465 73.535L16.465 53.535C15.5542 52.592 15.0502 51.329 15.0616 50.018C15.073 48.707 15.5988 47.4529 16.5259 46.5259C17.4529 45.5989 18.707 45.073 20.018 45.0616C21.3289 45.0502 22.5919 45.5542 23.535 46.465L40 62.93L76.465 26.465C77.4026 25.5276 78.6741 25.0011 80 25.0011C81.3258 25.0011 82.5973 25.5276 83.535 26.465Z"
+      fill="currentColor" />
   </svg>
 </template>

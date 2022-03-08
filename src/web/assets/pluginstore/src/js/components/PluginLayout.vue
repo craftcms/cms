@@ -34,9 +34,9 @@
                     {{ plugin.developerName }}
                   </router-link>
 
-                  <craft-verified-badge
-                    class="tw-ml-2"
-                  />
+                  <template v-if="plugin.developerPartner">
+                    <partner-badge kind="craft" class="tw-ml-2" />
+                  </template>
                 </div>
               </div>
             </div>
@@ -79,10 +79,10 @@
 <script>
 import {mapState, mapGetters} from 'vuex'
 import {isPluginFree} from '../utils/plugins';
-import CraftVerifiedBadge from './partner/CraftVerifiedBadge';
+import PartnerBadge from './partner/PartnerBadge';
 
 export default {
-  components: {CraftVerifiedBadge},
+  components: {PartnerBadge},
   computed: {
     ...mapState({
       plugin: state => state.pluginStore.plugin,
