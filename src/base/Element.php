@@ -2529,6 +2529,9 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Sets the element’s structure ID.
+     *
+     * @since 4.0.0
      * @param int|null $structureId The element’s structure ID
      */
     public function setStructureId(?int $structureId): void
@@ -2537,6 +2540,9 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns the element’s structure ID
+     *
+     * @since 4.0.0
      * @return int|null The element’s structure ID
      */
     public function getStructureId(): ?int
