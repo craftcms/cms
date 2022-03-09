@@ -124,6 +124,15 @@ class MonologTarget extends PsrTarget
         parent::__set($name, $value);
     }
 
+    public function __get($name)
+    {
+        if (in_array($name, static::LOGGER_PROPS, true)) {
+            return $this->$name;
+        }
+
+        return parent::__get($name);
+    }
+
     /**
      * @inheritDoc
      */
