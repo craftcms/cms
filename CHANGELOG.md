@@ -25,6 +25,7 @@
 - Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
+- Added support for Monolog and the PSR-3 logging interface. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - Added the `|money` Twig filter.
 - Added the `collect()` Twig function.
 - Added the `assetUploaders`, `authors`, and `fullName` user query params.
@@ -32,6 +33,8 @@
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
+- Added the `enableLogging` database config setting for logging database queries. ([#10659](https://github.com/craftcms/cms/pull/10659))
+- Added the `enableProfiling` database config setting for logging database query profiling information. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - Added the `assets/icon` action.
 - Added the `assets/update-focal-point` action.
 - Added the `categories/create` action.
@@ -259,6 +262,9 @@
 - Added `craft\helpers\Typecast`. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - Added `craft\i18n\Translation`.
 - Added `craft\imagetransforms\ImageTransformer`.
+- Added `craft\log\Dispatcher::getTargets()`.
+- Added `craft\log\LogProcessor`.
+- Added `craft\log\MonologTarget`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::getElementsByType()`.
 - Added `craft\models\FieldLayout::getFirstElementByType()`.
@@ -387,6 +393,10 @@
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
 - Improved the look of loading spinners in the control panel. ([#9109](https://github.com/craftcms/cms/discussions/9109))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
+- 404 requests are no longer logged by default. ([#10659](https://github.com/craftcms/cms/pull/10659))
+- Log entries are now single-line by default when Dev Mode is disabled. ([#10659](https://github.com/craftcms/cms/pull/10659))
+- Log files are now rotated once every 24 hours. ([#10659](https://github.com/craftcms/cms/pull/10659))
+- `CRAFT_STREAM_LOG` no longer logs _in addition to_ other log targets. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
 - Editable tables now support `allowAdd`, `allowDelete`, and `allowReorder` settings, replacing `staticRows`. ([#10163](https://github.com/craftcms/cms/pull/10163))
@@ -645,10 +655,14 @@
 - Removed `craft\gql\base\Resolver::getArrayableArguments()`.
 - Removed `craft\gql\base\Resolver::prepareArguments()`.
 - Removed `craft\helpers\App::dbMutexConfig()`.
+- Removed `craft\helpers\App::getDefaultLogTargets()`.
+- Removed `craft\helpers\App::logConfig()`.
 - Removed `craft\helpers\Cp::editElementTitles()`.
 - Removed `craft\helpers\Localization::localeData()`.
 - Removed `craft\helpers\Stringy`.
 - Removed `craft\i18n\Locale::setDateTimeFormats()`.
+- Removed `craft\log\FileTarget`.
+- Removed `craft\log\StreamLogTarget`.
 - Removed `craft\models\AssetTransform`.
 - Removed `craft\models\AssetTransformIndex`.
 - Removed `craft\models\BaseEntryRevisionModel`.
