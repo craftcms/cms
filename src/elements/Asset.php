@@ -1505,6 +1505,8 @@ JS;
 
         $volume = $this->getVolume();
 
+        $transform = $transform ?? $this->_transform;
+
         if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
             return Assets::generateUrl($volume->getFs(), $this);
         }
