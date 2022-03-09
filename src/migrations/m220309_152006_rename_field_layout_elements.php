@@ -10,9 +10,9 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\services\ProjectConfig;
 
 /**
- * m220225_134220_rename_field_layout_elements migration.
+ * m220309_152006_rename_field_layout_elements migration.
  */
-class m220225_134220_rename_field_layout_elements extends Migration
+class m220309_152006_rename_field_layout_elements extends Migration
 {
     /**
      * @inheritdoc
@@ -76,7 +76,7 @@ class m220225_134220_rename_field_layout_elements extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m220225_134220_rename_field_layout_elements cannot be reverted.\n";
+        echo "m220309_152006_rename_field_layout_elements cannot be reverted.\n";
         return false;
     }
 }
