@@ -16,7 +16,6 @@ use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
-use craft\helpers\Number as NumberHelper;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
@@ -116,19 +115,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         foreach (['defaultValue', 'min', 'max'] as $name) {
             if (isset($config[$name])) {
                 $config[$name] = $this->_normalizeNumber($config[$name]);
-            }
-        }
-        foreach (['defaultValue', 'max', 'decimals'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-        if (($config['min'] ?? null) === '') {
-            $config['min'] = null; // default is 0
-        }
-        foreach (['min', 'max', 'defaultValue'] as $name) {
-            if (isset($config[$name])) {
-                $config[$name] = NumberHelper::toIntOrFloat($config[$name]);
             }
         }
 

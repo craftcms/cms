@@ -197,12 +197,12 @@ class GlobalSet extends Element
      */
     protected function defineBehaviors(): array
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => __CLASS__,
-            ],
+        $behaviors = parent::defineBehaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => __CLASS__,
         ];
+        return $behaviors;
     }
 
     /**

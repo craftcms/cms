@@ -13,6 +13,7 @@ use craft\test\mockclasses\models\ExampleModel;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use TypeError;
 
 /**
  * Unit tests for ModelTest
@@ -80,6 +81,79 @@ class ModelTest extends Unit
         $model->exampleDateParam = '2018-11-12 20:00:00';
 
         self::assertSame('2018-11-12 20:00:00', $model->exampleDateParam);
+    }
+
+    /**
+     * Test string properties
+     */
+    public function testStringProperties(): void
+    {
+        self::assertSame(null, (new ExampleModel(['nullableStringParam' => '']))->nullableStringParam);
+        self::assertSame(null, (new ExampleModel(['nullableStringParam' => null]))->nullableStringParam);
+        self::assertSame('', (new ExampleModel(['stringParam' => null]))->stringParam);
+        self::assertSame('foo', (new ExampleModel(['stringParam' => 'foo']))->stringParam);
+        self::assertSame('1', (new ExampleModel(['stringParam' => 1]))->stringParam);
+        self::expectException(TypeError::class);
+        new ExampleModel(['stringParam' => []]);
+    }
+
+    /**
+     * Test int properties
+     */
+    public function testIntProperties(): void
+    {
+        self::assertSame(null, (new ExampleModel(['nullableIntParam' => '']))->nullableIntParam);
+        self::assertSame(null, (new ExampleModel(['nullableIntParam' => null]))->nullableIntParam);
+        self::assertSame(0, (new ExampleModel(['intParam' => null]))->intParam);
+        self::assertSame(0, (new ExampleModel(['intParam' => 'foo']))->intParam);
+        self::assertSame(10, (new ExampleModel(['intParam' => '10']))->intParam);
+        self::assertSame(10, (new ExampleModel(['intParam' => '10.1']))->intParam);
+        self::expectException(TypeError::class);
+        new ExampleModel(['intParam' => []]);
+    }
+
+    /**
+     * Test float properties
+     */
+    public function testFloatProperties(): void
+    {
+        self::assertSame(null, (new ExampleModel(['nullableFloatParam' => '']))->nullableFloatParam);
+        self::assertSame(null, (new ExampleModel(['nullableFloatParam' => null]))->nullableFloatParam);
+        self::assertSame(0.0, (new ExampleModel(['floatParam' => null]))->floatParam);
+        self::assertSame(0.0, (new ExampleModel(['floatParam' => 'foo']))->floatParam);
+        self::assertSame(10.0, (new ExampleModel(['floatParam' => '10']))->floatParam);
+        self::assertSame(10.1, (new ExampleModel(['floatParam' => '10.1']))->floatParam);
+        self::expectException(TypeError::class);
+        new ExampleModel(['floatParam' => []]);
+    }
+
+    /**
+     * Test float properties
+     */
+    public function testNumericProperties(): void
+    {
+        self::assertSame(null, (new ExampleModel(['nullableNumericParam' => '']))->nullableNumericParam);
+        self::assertSame(null, (new ExampleModel(['nullableNumericParam' => null]))->nullableNumericParam);
+        self::assertSame(0, (new ExampleModel(['numericParam' => null]))->numericParam);
+        self::assertSame(10, (new ExampleModel(['numericParam' => '10']))->numericParam);
+        self::assertSame(10.1, (new ExampleModel(['numericParam' => '10.1']))->numericParam);
+        self::expectException(TypeError::class);
+        new ExampleModel(['numericParam' => []]);
+    }
+
+    /**
+     * Test bool properties
+     */
+    public function testBoolProperties(): void
+    {
+        self::assertSame(null, (new ExampleModel(['nullableBoolParam' => '']))->nullableBoolParam);
+        self::assertSame(null, (new ExampleModel(['nullableBoolParam' => null]))->nullableBoolParam);
+        self::assertSame(false, (new ExampleModel(['boolParam' => null]))->boolParam);
+        self::assertSame(true, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
+        self::assertSame(true, (new ExampleModel(['boolParam' => '10']))->boolParam);
+        self::assertSame(true, (new ExampleModel(['boolParam' => true]))->boolParam);
+        self::expectException(TypeError::class);
+        new ExampleModel(['boolParam' => []]);
     }
 
     /**

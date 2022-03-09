@@ -153,7 +153,7 @@
       </meta-stat>
 
       <!-- Categories -->
-      <meta-stat>
+      <meta-stat class="meta-categories">
         <template #title>
           {{ "Categories"|t('app') }}
         </template>

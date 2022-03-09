@@ -21,7 +21,7 @@ use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
 use craft\events\ConfigEvent;
 use craft\events\ImageTransformEvent;
-use craft\events\RegisterImageTransformersEvent;
+use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -76,17 +76,12 @@ class ImageTransforms extends Component
     public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
-     */
-    public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
-
-    /**
      * @event AssetEvent The event that is triggered when a transform is being generated for an Asset.
      */
     public const EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS = 'beforeInvalidateAssetTransforms';
 
     /**
-     * @event RegisterImageTransformersEvent The event that is triggered when registering image transformers.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering image transformers.
      */
     public const EVENT_REGISTER_IMAGE_TRANSFORMERS = 'registerImageTransformers';
 
@@ -471,9 +466,30 @@ class ImageTransforms extends Component
     }
 
     /**
-     * @param string $type
+     * Get all image transformer types.
+     *
+     * @return array
+     */
+    public function getAllImageTransformerTypes(): array
+    {
+        $transformerTypes = [
+            ImageTransformer::class,
+        ];
+
+        $event = new RegisterComponentTypesEvent([
+            'types' => $transformerTypes,
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
+
+        return $event->types;
+    }
+
+    /**
+     * @template T
+     * @param class-string<T> $type
      * @param array $config
-     * @return ImageTransformerInterface
+     * @return T
      * @throws InvalidConfigException
      */
     public function getImageTransformer(string $type, array $config = []): ImageTransformerInterface
@@ -514,7 +530,6 @@ class ImageTransforms extends Component
     public function deleteResizedAssetVersion(Asset $asset): void
     {
         $dirs = [
-            Craft::$app->getPath()->getAssetThumbsPath(),
             Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id,
         ];
 
@@ -569,13 +584,13 @@ class ImageTransforms extends Component
             ImageTransformer::class,
         ];
 
-        $event = new RegisterImageTransformersEvent([
-            'transformers' => $transformers,
+        $event = new RegisterComponentTypesEvent([
+            'types' => $transformers,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
 
-        return $event->transformers;
+        return $event->types;
     }
 
     /**

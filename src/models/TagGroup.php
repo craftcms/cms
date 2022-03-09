@@ -58,7 +58,7 @@ class TagGroup extends Model
             'fieldLayout' => [
                 'class' => FieldLayoutBehavior::class,
                 'elementType' => Tag::class,
-            ], 
+            ],
         ];
     }
 

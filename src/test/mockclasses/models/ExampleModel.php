@@ -40,6 +40,56 @@ class ExampleModel extends Model
     public ?DateTime $dateUpdated = null;
 
     /**
+     * @var string|null
+     */
+    public ?string $nullableStringParam = null;
+
+    /**
+     * @var string
+     */
+    public string $stringParam;
+
+    /**
+     * @var int|null
+     */
+    public ?int $nullableIntParam = null;
+
+    /**
+     * @var int
+     */
+    public int $intParam;
+
+    /**
+     * @var float|null
+     */
+    public ?float $nullableFloatParam = null;
+
+    /**
+     * @var float
+     */
+    public float $floatParam;
+
+    /**
+     * @var inT|float|null
+     */
+    public int|float|null $nullableNumericParam = null;
+
+    /**
+     * @var int|float
+     */
+    public int|float $numericParam;
+
+    /**
+     * @var bool|null
+     */
+    public ?bool $nullableBoolParam = null;
+
+    /**
+     * @var bool
+     */
+    public bool $boolParam;
+
+    /**
      * @inheritdoc
      */
     public function datetimeAttributes(): array
@@ -48,5 +98,17 @@ class ExampleModel extends Model
         $attr[] = 'exampleDateParam';
 
         return $attr;
+    }
+
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        $resolveNotNullableProperty = fn(self $model, string $field) => $this->$field ?? null;
+        $fields['stringParam'] = $resolveNotNullableProperty;
+        $fields['intParam'] = $resolveNotNullableProperty;
+        $fields['floatParam'] = $resolveNotNullableProperty;
+        $fields['numericParam'] = $resolveNotNullableProperty;
+        $fields['boolParam'] = $resolveNotNullableProperty;
+        return $fields;
     }
 }

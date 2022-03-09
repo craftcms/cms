@@ -42,6 +42,9 @@ class AssetElementTest extends TestCase
                 'getFs' => $this->make(Fs::class, [
                     'hasUrls' => true,
                 ]),
+                'getTransformFs' => $this->make(Fs::class, [
+                    'hasUrls' => true,
+                ]),
             ]),
             'folderId' => 2,
             'filename' => 'foo.jpg',

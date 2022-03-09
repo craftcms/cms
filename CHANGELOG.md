@@ -16,6 +16,7 @@
 - Added “Credentialed” and “Inactive” user sources.
 - Added the “Deactivate…” user action for pending and active users.
 - Users can now have an “Addresses” field. ([#10507](https://github.com/craftcms/cms/pull/10507))
+- Added the concept of “filesystems”, which handle file operations, either locally or on a remote service like Amazon S3.
 - Added the Money field type.
 - Craft now provides a native “Alternative Text” (`alt`) field for assets. ([#10302](https://github.com/craftcms/cms/discussions/10302))
 - Asset thumbnails in the control panel now have `alt` attributes, for assets with a filled-in Alternative Text value.
@@ -31,6 +32,7 @@
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
+- Added the `assets/icon` action.
 - Added the `assets/update-focal-point` action.
 - Added the `categories/create` action.
 - Added the `elements/apply-draft` action.
@@ -90,6 +92,7 @@
 - Added `craft\base\Image::heartbeat()`.
 - Added `craft\base\Image::setHeartbeatCallback()`.
 - Added `craft\base\imagetransforms\EagerImageTransformerInterface`.
+- Added `craft\base\imagetransforms\ImageEditorTransformerInterface`.
 - Added `craft\base\imagetransforms\ImageTransformerInterface`.
 - Added `craft\base\LocalFsInterface`.
 - Added `craft\base\Model::defineBehaviors()`. ([#10691](https://github.com/craftcms/cms/pull/10691))
@@ -113,6 +116,8 @@
 - Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
 - Added `craft\elements\Address`.
 - Added `craft\elements\Asset::$alt`.
+- Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
+- Added `craft\elements\Asset::EVENT_BEFORE_GENERATE_TRANSFORM`.
 - Added `craft\elements\Asset::getFs()`.
 - Added `craft\elements\Asset::setFilename()`.
 - Added `craft\elements\conditions\addresses\AddressCondition`.
@@ -164,8 +169,8 @@
 - Added `craft\elements\User::$active`.
 - Added `craft\elements\User::$fullName`.
 - Added `craft\elements\User::canAssignUserGroups()`.
-- Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::getAddresses()`.
+- Added `craft\elements\User::getIsCredentialed()`.
 - Added `craft\elements\User::STATUS_INACTIVE`.
 - Added `craft\errors\FsException`.
 - Added `craft\errors\FsObjectExistsException`.
@@ -176,9 +181,11 @@
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
 - Added `craft\events\DefineHtmlEvent::$static`.
+- Added `craft\events\GenerateTransformEvent::$asset`.
+- Added `craft\events\GenerateTransformEvent::$transform`.
+- Added `craft\events\GenerateTransformEvent::$url`.
 - Added `craft\events\ImageTransformEvent`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
-- Added `craft\events\RegisterImageTransformersEvent`.
 - Added `craft\events\TransformImageEvent`.
 - Added `craft\fieldlayoutelements\addresses\AddressField`.
 - Added `craft\fieldlayoutelements\addresses\CountryCodeField`.
@@ -214,6 +221,8 @@
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.
+- Added `craft\helpers\Assets::iconPath()`.
+- Added `craft\helpers\Assets::iconUrl()`.
 - Added `craft\helpers\Cp::addressCardHtml()`.
 - Added `craft\helpers\Cp::addressCardsHtml()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
@@ -363,7 +372,9 @@
 - Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
 - When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - `alt` is now a reserved field handle for volume field layouts.
-- Filesystem operations have been decoupled from volumes.
+- Volumes no longer have “types”, and their file operations are now delegated to a filesystem selected by an “Asset Filesystem” setting on the volume.
+- Volumes now have a “Transform Filesystem” setting, which can be used to choose which filesystem image transforms should be stored in. (The volume’s Asset Filesystem will be used by default.)
+- Asset thumbnails are now generated as image transforms.
 - Images that are not web-safe now are always converted to JPEGs when transforming, if no format was specified.
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.
@@ -420,7 +431,7 @@
 - `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\ElementInterface::getSidebarHtml()` now has a `static` argument.
 - `craft\base\MemoizableArray` no longer extends `ArrayObject`, and now implements `IteratorAggregate` and `Countable` directly.
-- `craft\base\Model::__construct()` and `setAttributes()` now automatically typecast values that map to properties with `int`, `float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
+- `craft\base\Model::__construct()` and `setAttributes()` now automatically typecast values that map to properties with `int`, `float`, `int|float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\behaviors\FieldLayoutBehavior::getFields()` has been renamed to `getCustomFields()`.
@@ -428,7 +439,6 @@
 - `craft\elements\Asset::getVolume()` now returns an instance of `craft\models\Volume`.
 - `craft\elements\db\ElementQuery::ids()` no longer accepts an array of criteria params.
 - `craft\events\DraftEvent::$source` has been renamed to `$canonical`.
-- `craft\events\GetAssetThumbUrlEvent` has been renamed to `DefineAssetThumbUrlEvent`.
 - `craft\events\GetAssetUrlEvent` has been renamed to `DefineAssetUrlEvent`.
 - `craft\events\RevisionEvent::$source` has been renamed to `$canonical`.
 - `craft\fieldlayoutelements\AssetTitleField` has been renamed to `craft\fieldlayoutelements\assets\AssetTitleField`.
@@ -450,7 +460,7 @@
 - `craft\helpers\App::env()` now returns an integer or float if the original value was numeric.
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
-- `craft\helpers\Component::createComponent()` now automatically typecasts values that map to properties with `int`, `float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
+- `craft\helpers\Component::createComponent()` now automatically typecasts values that map to properties with `int`, `float`, `int|float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - `craft\helpers\Db::batchInsert()`, `craft\helpers\Db::insert()`, `craft\db\Command::batchInsert()`, `craft\db\Command::insert()`, `craft\db\Migration::batchInsert()`, and `craft\db\Migration::insert()` no longer have `$includeAuditColumns` arguments, and now check if the table has `dateCreated`, `dateUpdated`, and/or `uid` columns before setting their values.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
@@ -472,9 +482,7 @@
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
 - `craft\services\Assets::ensureTopFolder()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.
-- `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` has been renamed to `EVENT_DEFINE_THUMB_URL`.
-- `craft\services\Assets::EVENT_GET_ASSET_URL` has been renamed to `EVENT_DEFINE_ASSET_URL`.
-- `craft\services\Assets::EVENT_GET_THUMB_PATH` has been renamed to `EVENT_DEFINE_THUMB_PATH`.
+- `craft\services\Assets::EVENT_GET_ASSET_URL` has been moved to `craft\elements\Asset::EVENT_DEFINE_URL`.
 - `craft\services\AssetTransforms::CONFIG_TRANSFORM_KEY` has been moved to `craft\services\ProjectConfig::PATH_IMAGE_TRANSFORMS`.
 - `craft\services\Categories::CONFIG_CATEGORYROUP_KEY` has been moved to `craft\services\ProjectConfig::PATH_CATEGORY_GROUPS`.
 - `craft\services\Fields::CONFIG_FIELDGROUP_KEY` has been moved to `craft\services\ProjectConfig::PATH_FIELD_GROUPS`.
@@ -527,6 +535,9 @@
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
 - Deprecated `craft\helpers\MigrationHelper`.
 - Deprecated `craft\i18n\I18N::getIsIntlLoaded()`.
+- Deprecated `craft\services\Assets::getAssetUrl()`. `craft\elements\Asset::getUrl()` should be used instead.
+- Deprecated `craft\services\Assets::getIconPath()`. `craft\helpers\Assets::iconPath()` should be used instead.
+- Deprecated `craft\services\Assets::getThumbUrl()`. `craft\elements\Asset::getThumbUrl()` should be used instead.
 - Deprecated `craft\web\Controller::asErrorJson()`. `asFailure()` should be used instead.
 - Deprecated the `assets/save-asset` action. `elements/save` should be used instead.
 - Deprecated the `categories/save-category` action. `elements/save` should be used instead.
@@ -565,6 +576,7 @@
 - Removed the `customizeSources` user permission. Only admins can customize element sources now, and only from an environment that allows admin changes.
 - Removed the `publishPeerEntryDrafts:<uid>` permissions, as they were pointless. (If a user is authorized to save an entry and view other users’ drafts of it, there’s nothing stopping them from making the same changes themselves.)
 - Removed the `assets/edit-asset` action.
+- Removed the `assets/thumb` action.
 - Removed the `categories/edit-category` action.
 - Removed the `categories/preview-category` action.
 - Removed the `categories/share-category` action.
@@ -618,6 +630,9 @@
 - Removed `craft\events\AssetTransformEvent`.
 - Removed `craft\events\AssetTransformImageEvent`.
 - Removed `craft\events\DefineComponentsEvent`.
+- Removed `craft\events\GenerateTransformEvent::$image`.
+- Removed `craft\events\GenerateTransformEvent::$tempPath`.
+- Removed `craft\events\GetAssetThumbUrlEvent`.
 - Removed `craft\events\GlobalSetContentEvent`.
 - Removed `craft\events\RegisterGqlPermissionsEvent`.
 - Removed `craft\events\SearchEvent::getElementIds()`.
@@ -660,6 +675,9 @@
 - Removed `craft\services\AssetIndexer::getMissingFiles()`.
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
+- Removed `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL`.
+- Removed `craft\services\Assets::EVENT_GET_THUMB_PATH`.
+- Removed `craft\services\Assets::getThumbPath()`.
 - Removed `craft\services\AssetTransforms`.
 - Removed `craft\services\Composer::$disablePackagist`.
 - Removed `craft\services\Composer::optimize()`.
@@ -676,6 +694,7 @@
 - Removed `craft\services\Fields::getFieldsByElementType()`.
 - Removed `craft\services\Fields::getFieldsByLayoutId()`.
 - Removed `craft\services\Gql::getAllPermissions()`.
+- Removed `craft\services\Path::getAssetThumbsPath()`.
 - Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Removed `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Removed `craft\services\ProjectConfig::CONFIG_KEY`.
