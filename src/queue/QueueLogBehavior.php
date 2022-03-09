@@ -8,14 +8,9 @@
 namespace craft\queue;
 
 use Craft;
-use craft\helpers\App;
 use craft\log\Dispatcher;
-use craft\log\FileTarget;
 use craft\log\MonologTarget;
 use Illuminate\Support\Collection;
-use Monolog\Handler\RotatingFileHandler;
-use samdark\log\PsrTarget;
-use yii\log\Target;
 use yii\queue\ExecEvent;
 
 /**
