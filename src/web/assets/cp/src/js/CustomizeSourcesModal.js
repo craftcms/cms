@@ -59,7 +59,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             spinner: true,
         }).appendTo(this.$footerBtnContainer);
 
-        this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
+        this.$loadingSpinner = $('<div class="spinner"/>').appendTo(this.$sourceSettingsContainer);
 
         this.setContainer($container);
         this.show();
