@@ -92,7 +92,7 @@ class m220309_152006_rename_field_layout_elements extends Migration
                                 }
                                 $tabRecord->settings = [
                                     'userCondition' => $tabConfig['userCondition'] ?? null,
-                                    'elementCondition' => $tabConfig['elementCondition'] ?? null
+                                    'elementCondition' => $tabConfig['elementCondition'] ?? null,
                                 ];
                                 $tabRecord->elements = $tabConfig['elements'];
                                 $tabRecord->save();
