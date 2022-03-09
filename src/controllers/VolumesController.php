@@ -141,6 +141,7 @@ class VolumesController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'fsHandle' => $this->request->getBodyParam('fsHandle'),
+            'transformFsHandle' => $this->request->getBodyParam('transformFsHandle'),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
         ]);

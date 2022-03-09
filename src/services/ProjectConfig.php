@@ -1091,7 +1091,19 @@ class ProjectConfig extends Component
                 if (isset($matches['extra'])) {
                     $path = $matches['path'];
                     $incomingConfig = $this->getIsApplyingExternalChanges() ? $this->getExternalConfig() : $this->getCurrentWorkingConfig();
-                    $this->getCurrentWorkingConfig()->commitChanges($this->getInternalConfig()->get($path), $incomingConfig->get($path), $path);
+
+                    $oldValue = $this->getInternalConfig()->get($path);
+
+                    // For containing paths we need to do the following things:
+                    // 1) get the previous value at the containing path, which will be stale
+                    // 2) get the extra path component from matches array
+                    // 3) grab the actual new data from the event and merge it over the stale data
+                    $newValue = $incomingConfig->get($path) ?? [];
+                    $extraPath = StringHelper::removeLeft($matches['extra'], '.');
+                    $newNestedValue = $event->newValue;
+                    ProjectConfigHelper::traverseDataArray($newValue, $extraPath, $newNestedValue);
+
+                    $this->getCurrentWorkingConfig()->commitChanges($oldValue, $newValue, $path);
                     continue;
                 }
 
@@ -2106,10 +2118,14 @@ class ProjectConfig extends Component
         }
 
         if (Craft::$app->getIsInstalled()) {
-            $storedConfigVersion = (new Query())
-                ->select(['configVersion'])
-                ->from([Table::INFO])
-                ->scalar();
+            try {
+                $storedConfigVersion = (new Query())
+                    ->select(['configVersion'])
+                    ->from([Table::INFO])
+                    ->scalar();
+            } catch (Throwable $e) {
+                $storedConfigVersion = null;
+            }
 
             if ($storedConfigVersion && $storedConfigVersion !== Craft::$app->getInfo()->configVersion) {
                 // Another request must have updated the project config after this request began

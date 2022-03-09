@@ -581,6 +581,16 @@ li.breadcrumb-toggle-wrapper {
   display: none;
 }
 
+#account-menu {
+  ul {
+    li {
+      a {
+        max-width: calc(100% + 28px) !important;
+      }
+    }
+  }
+}
+
 #announcements-btn {
   @include header-btn;
   width: 40px;

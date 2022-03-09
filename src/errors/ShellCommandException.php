@@ -16,7 +16,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ShellCommandException extends Exception
+final class ShellCommandException extends Exception
 {
     /**
      * @var string The command that was executed
@@ -43,11 +43,11 @@ class ShellCommandException extends Exception
     {
         $execCommand = $command->getExecCommand();
 
-        if ($execCommand !== false) {
-            return new static($execCommand, $command->getExitCode(), $command->getStdErr());
+        if ($execCommand === false) {
+            return false;
         }
 
-        return false;
+        return new self($execCommand, $command->getExitCode(), $command->getStdErr());
     }
 
     /**

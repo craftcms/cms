@@ -88,6 +88,20 @@ class Volume extends Model
     private ?string $_fsHandle = null;
 
     /**
+     * @var FsInterface
+     * @see getTransformFs()
+     * @see setTransformFs()
+     */
+    private ?FsInterface $_transformFs;
+
+    /**
+     * @var string|null
+     * @see getTransformFsHandle()
+     * @see setTransformFsHandle()
+     */
+    private ?string $_transformFsHandle = null;
+
+    /**
      * Constructor
      *
      * @param array $config
@@ -96,6 +110,10 @@ class Volume extends Model
     {
         if (isset($config['fs']) && is_string($config['fs'])) {
             $config['fsHandle'] = ArrayHelper::remove($config, 'fs');
+        }
+
+        if (isset($config['transformFs']) && is_string($config['transformFs'])) {
+            $config['transformFsHandle'] = ArrayHelper::remove($config, 'transformFs');
         }
 
         parent::__construct($config);
@@ -235,6 +253,68 @@ class Volume extends Model
         $this->_fsHandle = $handle;
     }
 
+
+    /**
+     * Returns the volume’s transform filesystem.
+     *
+     * @return FsInterface
+     * @throws InvalidConfigException if [[fsHandle]] is missing or invalid
+     */
+    public function getTransformFs(): FsInterface
+    {
+        if (!isset($this->_transformFs)) {
+            $handle = $this->getTransformFsHandle() ?? $this->getFsHandle();
+            $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+
+            if (!$fs) {
+                throw new InvalidConfigException("Invalid filesystem handle: $handle");
+            }
+
+            $this->_transformFs = $fs;
+        }
+
+        return $this->_transformFs;
+    }
+
+    /**
+     * Set the transform filesystem.
+     *
+     * @param ?FsInterface $fs
+     */
+    public function setTransformFs(?FsInterface $fs): void
+    {
+        if ($fs) {
+            $this->_transformFs = $fs;
+            $this->_transformFsHandle = $fs->handle;
+        } else {
+            $this->_transformFsHandle = $this->_transformFs = null;
+        }
+    }
+
+    /**
+     * Returns the transform filesystem handle. If none set, will return the current fs handle.
+     *
+     * @param bool $parse Whether to parse the name for an alias or environment variable
+     * @return string|null
+     */
+    public function getTransformFsHandle(bool $parse = true): ?string
+    {
+        if ($this->_transformFsHandle) {
+            return $parse ? App::parseEnv($this->_transformFsHandle) : $this->_transformFsHandle;
+        }
+        return null;
+    }
+
+    /**
+     * Sets the transform filesystem handle.
+     *
+     * @param string $handle
+     */
+    public function setTransformFsHandle(string $handle): void
+    {
+        $this->_transformFsHandle = $handle;
+    }
+
     /**
      * Returns the volume’s config.
      *
@@ -246,6 +326,7 @@ class Volume extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
+            'transformFs' => $this->_transformFsHandle,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,

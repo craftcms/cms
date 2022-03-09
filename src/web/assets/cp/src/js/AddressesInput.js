@@ -48,15 +48,22 @@ Craft.AddressesInput = Garnish.Base.extend({
                 ev.stopPropagation();
                 if (confirm(Craft.t('app', 'Are you sure you want to delete this address?'))) {
                     this.$addBtn.addClass('loading');
+                    const addressId = $card.data('id');
+                    const draftId = $card.data('draft-id');
                     Craft.sendActionRequest('POST', 'elements/delete', {
                         data: {
-                            elementId: $card.data('id'),
-                            draftId: $card.data('draft-id'),
+                            elementId: addressId,
+                            draftId: draftId,
                         },
                     }).then(() => {
                         $card.remove();
                         this.$cards = this.$cards.not($card);
                         this.updateAddButton();
+
+                        this.trigger('deleteAddress', {
+                            addressId,
+                            draftId,
+                        });
                     }).finally(() => {
                         this.$addBtn.removeClass('loading');
                     });
@@ -69,6 +76,10 @@ Craft.AddressesInput = Garnish.Base.extend({
         const slideout = Craft.createElementEditor('craft\\elements\\Address', $card, settings);
 
         slideout.on('submit', ev => {
+            this.trigger('saveAddress', {
+                data: ev.data,
+            });
+
             Craft.sendActionRequest('POST', 'addresses/card-html', {
                 data: {
                     addressId: ev.data.id,

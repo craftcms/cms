@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\helpers\Json;
-use craft\log\Dispatcher;
 use GuzzleHttp\Exception\ClientException;
 use Throwable;
 use Twig\Error\Error as TwigError;
@@ -20,7 +19,6 @@ use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
 use yii\base\Exception;
 use yii\base\UserException;
-use yii\log\FileTarget;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 
@@ -56,13 +54,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // 404?
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
-            // Log to a special file
-            $logDispatcher = Craft::$app->getLog();
-            $fileTarget = $logDispatcher->targets[Dispatcher::TARGET_FILE] ?? $logDispatcher->targets[0] ?? null;
-            if ($fileTarget && $fileTarget instanceof FileTarget) {
-                $fileTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
-            }
-
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && $request->getPathInfo() === 'wp-admin') {
                 $exception->statusCode = 418;
@@ -252,7 +243,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $template = new $class(Craft::$app->getView()->getTwig());
         $src = $template->getSourceContext();
         //                $this->sourceCode = $src->getCode();
-        $file = $src->getPath();
+        $file = $src->getPath() ?: null;
         $line = null;
 
         if ($traceLine !== null) {

@@ -13,8 +13,7 @@ use craft\test\mockclasses\models\ExampleModel;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use yii\base\InvalidConfigException;
-use yii\base\InvalidValueException;
+use TypeError;
 
 /**
  * Unit tests for ModelTest
@@ -94,7 +93,7 @@ class ModelTest extends Unit
         self::assertSame('', (new ExampleModel(['stringParam' => null]))->stringParam);
         self::assertSame('foo', (new ExampleModel(['stringParam' => 'foo']))->stringParam);
         self::assertSame('1', (new ExampleModel(['stringParam' => 1]))->stringParam);
-        self::expectException(InvalidConfigException::class);
+        self::expectException(TypeError::class);
         new ExampleModel(['stringParam' => []]);
     }
 
@@ -109,7 +108,7 @@ class ModelTest extends Unit
         self::assertSame(0, (new ExampleModel(['intParam' => 'foo']))->intParam);
         self::assertSame(10, (new ExampleModel(['intParam' => '10']))->intParam);
         self::assertSame(10, (new ExampleModel(['intParam' => '10.1']))->intParam);
-        self::expectException(InvalidConfigException::class);
+        self::expectException(TypeError::class);
         new ExampleModel(['intParam' => []]);
     }
 
@@ -124,7 +123,7 @@ class ModelTest extends Unit
         self::assertSame(0.0, (new ExampleModel(['floatParam' => 'foo']))->floatParam);
         self::assertSame(10.0, (new ExampleModel(['floatParam' => '10']))->floatParam);
         self::assertSame(10.1, (new ExampleModel(['floatParam' => '10.1']))->floatParam);
-        self::expectException(InvalidConfigException::class);
+        self::expectException(TypeError::class);
         new ExampleModel(['floatParam' => []]);
     }
 
@@ -138,7 +137,7 @@ class ModelTest extends Unit
         self::assertSame(0, (new ExampleModel(['numericParam' => null]))->numericParam);
         self::assertSame(10, (new ExampleModel(['numericParam' => '10']))->numericParam);
         self::assertSame(10.1, (new ExampleModel(['numericParam' => '10.1']))->numericParam);
-        self::expectException(InvalidConfigException::class);
+        self::expectException(TypeError::class);
         new ExampleModel(['numericParam' => []]);
     }
 
@@ -153,7 +152,7 @@ class ModelTest extends Unit
         self::assertSame(true, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
         self::assertSame(true, (new ExampleModel(['boolParam' => '10']))->boolParam);
         self::assertSame(true, (new ExampleModel(['boolParam' => true]))->boolParam);
-        self::expectException(InvalidConfigException::class);
+        self::expectException(TypeError::class);
         new ExampleModel(['boolParam' => []]);
     }
 

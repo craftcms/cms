@@ -99,4 +99,16 @@ class ExampleModel extends Model
 
         return $attr;
     }
+
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        $resolveNotNullableProperty = fn(self $model, string $field) => $this->$field ?? null;
+        $fields['stringParam'] = $resolveNotNullableProperty;
+        $fields['intParam'] = $resolveNotNullableProperty;
+        $fields['floatParam'] = $resolveNotNullableProperty;
+        $fields['numericParam'] = $resolveNotNullableProperty;
+        $fields['boolParam'] = $resolveNotNullableProperty;
+        return $fields;
+    }
 }

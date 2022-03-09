@@ -118,7 +118,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             $this->delete($path);
         }
 
-        $this->traverseDataArray($this->data, $path, $value);
+        ProjectConfigHelper::traverseDataArray($this->data, $path, $value);
     }
 
     /**
@@ -129,7 +129,9 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      */
     protected function delete($path): mixed
     {
-        return $this->traverseDataArray($this->data, $path, null, true);
+        ProjectConfigHelper::traverseDataArray($this->data, $path, null, true);
+
+        return null;
     }
 
     /**

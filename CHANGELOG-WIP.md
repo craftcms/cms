@@ -1,6 +1,6 @@
-# Release Notes for Craft CMS 4
+# WIP Release Notes for Craft CMS 4.0.0
 
-## 4.0.0-beta.1 - 2022-03-09
+## 4.0.0 (Unreleased)
 
 ### Added
 - Entries’, categories’, and assets’ edit pages, and all element types via slideouts, now use a unified editing experience. ([#10467](https://github.com/craftcms/cms/pull/10467))

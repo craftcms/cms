@@ -36,6 +36,8 @@ use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\events\DefineAssetUrlEvent;
+use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
@@ -117,6 +119,25 @@ class Asset extends Element
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
      */
     public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
+
+    /**
+     * @event GenerateTransformEvent The event that is triggered before a transform is generated for an asset.
+     * @since 4.0.0
+     */
+    public const EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
+
+    /**
+     * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
+     * @since 4.0.0
+     */
+    public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
+
+    /**
+     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
+     * @see getUrl()
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_URL = 'defineUrl';
 
     // Location error codes
     // -------------------------------------------------------------------------
@@ -1006,8 +1027,8 @@ class Asset extends Element
     {
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
-        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-        if ($subfolders) {
+        if ($this->folderPath !== null) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
             $uri .= sprintf('/%s', implode('/', $subfolders));
         }
         return UrlHelper::cpUrl($uri);
@@ -1032,13 +1053,15 @@ class Asset extends Element
             ],
         ];
 
-        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-        foreach ($subfolders as $subfolder) {
-            $uri .= "/$subfolder";
-            $crumbs[] = [
-                'label' => $subfolder,
-                'url' => UrlHelper::cpUrl($uri),
-            ];
+        if ($this->folderPath !== null) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            foreach ($subfolders as $subfolder) {
+                $uri .= "/$subfolder";
+                $crumbs[] = [
+                    'label' => $subfolder,
+                    'url' => UrlHelper::cpUrl($uri),
+                ];
+            }
         }
 
         return $crumbs;
@@ -1468,9 +1491,31 @@ JS;
      */
     public function getUrl(mixed $transform = null): ?string
     {
+        // Maybe a plugin wants to do something here
+        $event = new DefineAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $this,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
         $volume = $this->getVolume();
 
-        if (!$volume->getFs()->hasUrls || !$this->folderId) {
+        $transform = $transform ?? $this->_transform;
+
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
+            return Assets::generateUrl($volume->getFs(), $this);
+        }
+
+        $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
+        $noFolder = !$this->folderId;
+        $transformNoUrl = $transform && !$volume->getTransformFs()->hasUrls;
+
+        if ($fsNoUrls || $noFolder || $transformNoUrl) {
             return null;
         }
 
@@ -1481,12 +1526,8 @@ JS;
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return Assets::generateUrl($volume, $this);
+            return Assets::generateUrl($volume->getFs(), $this);
         }
-
-        // Normalize empty transform values
-        $transform = $transform ?? $this->_transform;
-
 
         if ($transform) {
             if (is_array($transform)) {
@@ -1503,7 +1544,33 @@ JS;
             $imageTransformer = $transform->getImageTransformer();
 
             try {
-                return $imageTransformer->getTransformUrl($this, $transform, $immediately);
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
+                    $event = new GenerateTransformEvent([
+                        'asset' => $this,
+                        'transform' => $transform,
+                    ]);
+
+                    $this->trigger(self::EVENT_BEFORE_GENERATE_TRANSFORM, $event);
+
+                    // If a plugin set the url, we'll just use that.
+                    if ($event->url !== null) {
+                        return $event->url;
+                    }
+                }
+
+                $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
+
+                if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
+                    $event = new GenerateTransformEvent([
+                        'asset' => $this,
+                        'transform' => $transform,
+                        'url' => $url,
+                    ]);
+
+                    $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
+                }
+
+                return $url;
             } catch (ImageTransformException $e) {
                 Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
@@ -1511,7 +1578,7 @@ JS;
             }
         }
 
-        return Assets::generateUrl($volume, $this);
+        return Assets::generateUrl($volume->getFs(), $this);
     }
 
     /**
@@ -1519,13 +1586,28 @@ JS;
      */
     public function getThumbUrl(int $size): ?string
     {
+        // If it's not an image, return a generic file extension icon
+        if (!Image::canManipulateAsImage($this->getExtension())) {
+            return Assets::iconUrl($this->getExtension());
+        }
+
         if ($this->getWidth() && $this->getHeight()) {
             [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
 
-        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
+        $transform = new ImageTransform([
+            'width' => $width,
+            'height' => $height,
+            'mode' => 'crop',
+        ]);
+
+        $transformUrl = $transform->getImageTransformer()->getTransformUrl($this, $transform, false);
+
+        return UrlHelper::urlWithParams($transformUrl, [
+            'v' => $this->dateModified->getTimestamp(),
+        ]);
     }
 
     /**
@@ -1555,7 +1637,14 @@ JS;
      */
     public function getPreviewThumbImg(int $desiredWidth, int $desiredHeight): string
     {
-        $assetsService = Craft::$app->getAssets();
+        // If it's not an image, return a generic file extension icon
+        if (!Image::canManipulateAsImage($this->getExtension())) {
+            return Html::tag('img', '', [
+                'src' => Assets::iconUrl($this->getExtension()),
+                'alt' => $this->title,
+            ]);
+        }
+
         $srcsets = [];
         [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
@@ -1563,8 +1652,13 @@ JS;
             [$width * 2, $height * 2],
         ];
         foreach ($thumbSizes as [$width, $height]) {
-            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
-            $srcsets[] = $thumbUrl . ' ' . $width . 'w';
+            $transform = new ImageTransform([
+                'width' => $width,
+                'height' => $height,
+                'mode' => 'crop',
+            ]);
+            $transformUrl = $transform->getImageTransformer()->getTransformUrl($this, $transform, false);
+            $srcsets[] = sprintf('%s %sw', $transformUrl, $width);
         }
 
         return Html::tag('img', '', [

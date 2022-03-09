@@ -1071,7 +1071,7 @@ td.right {
     padding: 10px 0;
     border: none;
     width: 200px;
-    height: calc(100% - 62px);
+    height: calc(100% - 50px);
     box-sizing: border-box;
     background-color: $grey050;
     overflow: auto;
@@ -1086,7 +1086,7 @@ td.right {
 
   & > .source-settings {
     position: relative;
-    height: calc(100% - 62px);
+    height: calc(100% - 50px);
     box-sizing: border-box;
     padding: 24px;
     overflow: auto;

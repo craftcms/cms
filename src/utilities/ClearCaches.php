@@ -135,7 +135,6 @@ class ClearCaches extends Utility
                 'action' => function() use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
-                        $pathService->getAssetThumbsPath(false),
                         $pathService->getAssetsIconsPath(false),
                     ];
                     foreach ($dirs as $dir) {

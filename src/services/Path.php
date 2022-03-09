@@ -368,23 +368,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/thumbs/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     */
-    public function getAssetThumbsPath(bool $create = true): string
-    {
-        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'thumbs';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the `storage/runtime/assets/icons/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist

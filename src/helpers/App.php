@@ -19,9 +19,6 @@ use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
-use craft\log\Dispatcher;
-use craft\log\FileTarget;
-use craft\log\StreamLogTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -39,10 +36,6 @@ use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
-use yii\i18n\PhpMessageSource;
-use yii\log\Dispatcher as YiiDispatcher;
-use yii\log\Logger;
-use yii\log\Target;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
 
@@ -760,6 +753,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
+            'enableLogging' => $dbConfig->enableLogging,
+            'enableProfiling' => $dbConfig->enableProfiling,
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],
@@ -846,78 +841,6 @@ class App
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
         ];
-    }
-
-    /**
-     * Returns the `log` component config.
-     *
-     * @return array|null
-     * @since 3.0.18
-     * @deprecated in 3.6.0. Override `components.log.targets` instead
-     */
-    public static function logConfig(): ?array
-    {
-        // Using Yii's Dispatcher class here is intentional
-        return [
-            'class' => YiiDispatcher::class,
-            'targets' => array_values(static::defaultLogTargets()),
-        ];
-    }
-
-    /**
-     * Returns the default log targets.
-     *
-     * @return Target[]
-     * @since 3.6.14
-     */
-    public static function defaultLogTargets(): array
-    {
-        // Warning - Don't do anything that could cause something to get logged from here!
-        // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
-        // targets haven’t been instantiated yet.
-
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-
-        // Only log console requests and web requests that aren't getAuthTimeout requests
-        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
-            return [];
-        }
-
-        $targets = [];
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $baseTargetConfig = [
-            'includeUserIp' => $generalConfig->storeUserIps,
-            'except' => [
-                PhpMessageSource::class . ':*',
-            ],
-        ];
-
-        if (self::isStreamLog()) {
-            $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => StreamLogTarget::class,
-                'url' => 'php://stderr',
-                'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
-            ]));
-
-            // Don't pollute console request output
-            if (!$isConsoleRequest && YII_DEBUG) {
-                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
-                    'class' => StreamLogTarget::class,
-                    'url' => 'php://stdout',
-                    'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
-                ]));
-            }
-        } else {
-            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => FileTarget::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-                'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
-                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
-            ]));
-        }
-
-        return $targets;
     }
 
     /**

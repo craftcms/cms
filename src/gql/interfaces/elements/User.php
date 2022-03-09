@@ -10,7 +10,6 @@ namespace craft\gql\interfaces\elements;
 use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\UserType;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;

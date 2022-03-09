@@ -1,7 +1,6 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "4.0.0-alpha.1",
   "keywords": [
     "cms",
     "craftcms",
@@ -48,7 +47,9 @@
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
+    "monolog/monolog": "^2.3",
     "pixelandtonic/imagine": "~1.2.4.1",
+    "samdark/yii2-psr-log-target": "^1.1",
     "seld/cli-prompt": "^1.0.4",
     "symfony/http-client": "^6.0.3",
     "symfony/var-dumper": "^5.0|^6.0",

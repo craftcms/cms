@@ -11,7 +11,6 @@ use Craft;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Structure;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\CategoryType;
 use craft\helpers\Gql;
 use craft\services\Gql as GqlService;
