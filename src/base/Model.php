@@ -50,14 +50,14 @@ abstract class Model extends \yii\base\Model
     public const EVENT_DEFINE_RULES = 'defineRules';
 
     /**
-     * @event DefineRulesEvent The event that is triggered when defining the arrayable fields
+     * @event DefineFieldsEvent The event that is triggered when defining the arrayable fields
      * @see fields()
      * @since 3.5.0
      */
     public const EVENT_DEFINE_FIELDS = 'defineFields';
 
     /**
-     * @event DefineRulesEvent The event that is triggered when defining the extra arrayable fields
+     * @event DefineFieldsEvent The event that is triggered when defining the extra arrayable fields
      * @see extraFields()
      * @since 3.5.0
      */
