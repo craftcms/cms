@@ -65,9 +65,7 @@ class m220225_134220_rename_field_layout_elements extends Migration
                 }
 
                 if ($modified) {
-                    // todo: this should work:
-                    // $projectConfig->set("$basePath.$uid.fieldLayouts", $fieldLayoutConfigs);
-                    $projectConfig->set("$basePath.$uid", $baseConfig);
+                    $projectConfig->set("$basePath.$uid.fieldLayouts", $fieldLayoutConfigs);
                 }
             }
         }
