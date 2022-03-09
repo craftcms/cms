@@ -56,13 +56,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // 404?
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
-            // Log to a special file
-            $logDispatcher = Craft::$app->getLog();
-            $fileTarget = $logDispatcher->targets[Dispatcher::TARGET_FILE] ?? $logDispatcher->targets[0] ?? null;
-            if ($fileTarget && $fileTarget instanceof FileTarget) {
-                $fileTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
-            }
-
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && $request->getPathInfo() === 'wp-admin') {
                 $exception->statusCode = 418;

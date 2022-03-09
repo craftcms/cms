@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use DateTime;
@@ -266,5 +267,25 @@ class Command extends \yii\db\Command
         return $this->update($table, [
             'dateDeleted' => null,
         ], $condition, $params, false);
+    }
+
+    /**
+     * Logs the current database query if query logging is enabled and returns
+     * the profiling token if profiling is enabled.
+     * @param string $category the log category.
+     * @return array array of two elements, the first is boolean of whether profiling is enabled or not.
+     * The second is the rawSql if it has been created.
+     */
+    protected function logQuery($category): array
+    {
+        if ($this->db->enableLogging) {
+            $rawSql = $this->getRawSql();
+            Craft::info("SQL Query:\n" . $rawSql, $category);
+        }
+        if (!$this->db->enableProfiling) {
+            return [false, isset($rawSql) ? $rawSql : null];
+        }
+
+        return [true, isset($rawSql) ? $rawSql : $this->getRawSql()];
     }
 }
