@@ -1246,7 +1246,7 @@ class Entry extends Element
     public function setAuthor(?User $author = null): void
     {
         $this->_author = $author;
-        $this->setAuthorId($author->id);
+        $this->setAuthorId($author?->id);
     }
 
     /**
