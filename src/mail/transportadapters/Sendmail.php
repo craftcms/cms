@@ -117,8 +117,12 @@ class Sendmail extends BaseTransportAdapter
      */
     public function defineTransport(): array|AbstractTransport
     {
+        // Replace any spaces with `%20` according to https://symfony.com/doc/current/mailer.html#other-options
+        $command = (App::parseEnv($this->command) ?: self::DEFAULT_COMMAND);
+        $command = str_replace(' ', '%20', $command);
+
         return [
-            'dsn' => 'sendmail://default?command=' . (App::parseEnv($this->command) ?: self::DEFAULT_COMMAND),
+            'dsn' => 'sendmail://default?command=' . $command,
         ];
     }
 
