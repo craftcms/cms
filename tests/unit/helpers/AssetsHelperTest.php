@@ -56,9 +56,9 @@ class AssetsHelperTest extends Unit
         }
 
         $asset = $assetQuery->one();
-        $volume = $asset->getVolume();
+        $fs = $asset->getFs();
 
-        self::assertSame($expected, Assets::generateUrl($volume, $asset));
+        self::assertSame($expected, Assets::generateUrl($fs, $asset));
     }
 
     /**

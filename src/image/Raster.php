@@ -21,6 +21,7 @@ use Imagine\Image\AbstractFont as Font;
 use Imagine\Image\AbstractImage;
 use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
+use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
@@ -678,7 +679,7 @@ class Raster extends Image
      */
     private function _getResizeFilter(): string
     {
-        return (Craft::$app->getImages()->getIsGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->getIsGd() ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
     }
 
     /**

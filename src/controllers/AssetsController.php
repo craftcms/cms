@@ -21,12 +21,11 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
-use craft\image\Raster;
 use craft\imagetransforms\ImageTransformer;
+use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -760,13 +759,19 @@ class AssetsController extends Controller
         $assetId = (int)$this->request->getRequiredQueryParam('assetId');
         $size = (int)$this->request->getRequiredQueryParam('size');
 
-        $filePath = Assets::getImageEditorSource($assetId, $size);
-
-        if (!$filePath) {
+        $asset = Asset::findOne($assetId);
+        if (!$asset) {
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        return $this->response->sendFile($filePath, null, ['inline' => true]);
+        $transform = new ImageTransform([
+            'width' => $size,
+            'height' => $size,
+            'mode' => 'fit',
+        ]);
+
+        $url = $transform->getImageTransformer()->getTransformUrl($asset, $transform, true);
+        return $this->response->redirect($url);
     }
 
     /**
@@ -822,36 +827,21 @@ class AssetsController extends Controller
                 throw new BadRequestHttpException('Invalid cropping parameters passed');
             }
 
+            // TODO Fire an event for any other image editing takers.
+            $transformer = new ImageTransformer();
+
+            $originalImageWidth = $asset->width;
+            $originalImageHeight = $asset->height;
+
+            $transformer->startImageEditing($asset);
+
             $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
             $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
             $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
             $imageChanged = $imageCropped || $imageRotated || $imageFlipped;
 
-            $imageCopy = $asset->getCopyOfFile();
-
-            $imageSize = Image::imageSize($imageCopy);
-
-            /** @var Raster $image */
-            $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
-
-            // TODO Is this hacky? It seems hacky.
-            // We're rasterizing SVG, we have to make sure that the filename change does not get lost
-            if (strtolower($asset->getExtension()) === 'svg') {
-                unlink($imageCopy);
-                $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
-                $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
-            }
-
-            [$originalImageWidth, $originalImageHeight] = $imageSize;
-
             if ($imageFlipped) {
-                if (!empty($flipData['x'])) {
-                    $image->flipHorizontally();
-                }
-
-                if (!empty($flipData['y'])) {
-                    $image->flipVertically();
-                }
+                $transformer->flipImage(!empty($flipData['x']), !empty($flipData['y']));
             }
 
             $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -859,17 +849,17 @@ class AssetsController extends Controller
             $generalConfig->upscaleImages = true;
 
             if ($zoom !== 1.0) {
-                $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+                $transformer->scaleImage($originalImageWidth * $zoom, $originalImageHeight * $zoom);
             }
 
             $generalConfig->upscaleImages = $upscale;
 
             if ($imageRotated) {
-                $image->rotate($imageRotation + $viewportRotation);
+                $transformer->rotateImage($imageRotation + $viewportRotation);
             }
 
-            $imageCenterX = $image->getWidth() / 2;
-            $imageCenterY = $image->getHeight() / 2;
+            $imageCenterX = $transformer->getEditedImageWidth() / 2;
+            $imageCenterY = $transformer->getEditedImageHeight() / 2;
 
             $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
             $width = $cropData['width'] * $zoom * $adjustmentRatio;
@@ -891,11 +881,13 @@ class AssetsController extends Controller
             }
 
             if ($imageCropped) {
-                $image->crop($x, $x + $width, $y, $y + $height);
+                $transformer->crop($x, $y, $width, $height);
             }
 
             if ($imageChanged) {
-                $image->saveAs($imageCopy);
+                $finalImage = $transformer->finishImageEditing();
+            } else {
+                $finalImage = $transformer->cancelImageEditing();
             }
 
             $output = [];
@@ -912,7 +904,7 @@ class AssetsController extends Controller
 
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
-                    $assets->replaceAssetFile($asset, $imageCopy, $asset->getFilename());
+                    $assets->replaceAssetFile($asset, $finalImage, $asset->getFilename());
                 } elseif ($focalChanged) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
@@ -921,7 +913,7 @@ class AssetsController extends Controller
                 $newAsset->avoidFilenameConflicts = true;
                 $newAsset->setScenario(Asset::SCENARIO_CREATE);
 
-                $newAsset->tempFilePath = $imageCopy;
+                $newAsset->tempFilePath = $finalImage;
                 $newAsset->setFilename($asset->getFilename());
                 $newAsset->newFolderId = $folder->id;
                 $newAsset->setVolumeId($folder->volumeId);
@@ -1001,34 +993,19 @@ class AssetsController extends Controller
     }
 
     /**
-     * Returns an asset’s thumbnail.
+     * Returns a file icon with an extension.
      *
-     * @param string $uid The asset's UID
-     * @param int $width The thumbnail width
-     * @param int $height The thumbnail height
+     * @param string $extension The asset’s UID
      * @return Response
-     * @since 3.0.13
+     * @since 4.0.0
      */
-    public function actionThumb(string $uid, int $width, int $height): Response
+    public function actionIcon(string $extension)
     {
-        $asset = Asset::find()->uid($uid)->one();
-
-        if (!$asset) {
-            $e = new NotFoundHttpException('Invalid asset UID: ' . $uid);
-            Craft::$app->getErrorHandler()->logException($e);
-            return $this->asBrokenImage($e);
-        }
-
-        try {
-            $path = Craft::$app->getAssets()->getThumbPath($asset, $width, $height, true);
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            return $this->asBrokenImage($e);
-        }
+        $path = Assets::iconPath($extension);
 
         return $this->response
             ->setCacheHeaders()
-            ->sendFile($path, $asset->getFilename(), [
+            ->sendFile($path, "$extension.svg", [
                 'inline' => true,
             ]);
     }
