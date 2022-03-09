@@ -118,7 +118,7 @@ class Sendmail extends BaseTransportAdapter
     public function defineTransport(): array|AbstractTransport
     {
         return [
-            'dsn' => 'sendmail://default?command=' . $this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND,
+            'dsn' => 'sendmail://default?command=' . ($this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND),
         ];
     }
 
