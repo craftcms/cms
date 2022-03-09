@@ -24,7 +24,8 @@ class LogProcessor implements ProcessorInterface
     public function __construct(
         protected bool $includeUserIp = false,
         protected array $contextVars = [],
-    ) {}
+    ) {
+    }
 
     /**
      * {@inheritDoc}

@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\helpers\Json;
-use craft\log\Dispatcher;
 use GuzzleHttp\Exception\ClientException;
 use Throwable;
 use Twig\Error\Error as TwigError;
@@ -20,7 +19,6 @@ use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
 use yii\base\Exception;
 use yii\base\UserException;
-use yii\log\FileTarget;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 

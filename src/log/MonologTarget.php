@@ -18,7 +18,6 @@ use yii\base\InvalidConfigException;
 use yii\i18n\PhpMessageSource;
 use yii\web\HttpException;
 
-
 /**
  * Class MonologTarget
  *
