@@ -228,6 +228,7 @@
 - Added `craft\helpers\Assets::iconUrl()`.
 - Added `craft\helpers\Cp::addressCardHtml()`.
 - Added `craft\helpers\Cp::addressCardsHtml()`.
+- Added `craft\helpers\Cp::addressFieldsHtml()`.
 - Added `craft\helpers\Cp::dateFieldHtml()`.
 - Added `craft\helpers\Cp::dateHtml()`.
 - Added `craft\helpers\Cp::elementSelectHtml()`.
