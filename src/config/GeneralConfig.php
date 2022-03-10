@@ -301,6 +301,12 @@ class GeneralConfig extends BaseObject
     public $backupCommand;
 
     /**
+     * @var bool Whether to base64-encode binary control panel resources. Useful in environments where serving
+     *           binary files is not allowed, e.g. AWS Lambda.
+     */
+    public bool $base64EncodeBinaryResources = false;
+
+    /**
      * @var string|null The base URL Craft should use when generating control panel URLs.
      *
      * It will be determined automatically if left blank.

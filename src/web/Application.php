@@ -19,9 +19,11 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use voku\helper\UTF8;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
@@ -516,6 +518,13 @@ class Application extends \yii\web\Application
         $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
             throw new NotFoundHttpException("$filePath does not exist.");
+        }
+
+        if (
+            $this->getConfig()->getGeneral()->base64EncodeBinaryResources &&
+            UTF8::is_binary_file($publishedPath)
+        ) {
+            $publishedPath = Html::dataUrl($publishedPath);
         }
 
         // Don't send cache headers here, in case we're in the middle of deploying an update across multiple
