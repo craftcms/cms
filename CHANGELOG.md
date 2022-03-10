@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where field layout component settings weren’t including condition fields for the currently-edited element. ([#10723](https://github.com/craftcms/cms/issues/10723))
+- Fixed a bug where Craft would sometimes falsely detect incompatible schema versions when executing the `craft up` command.
 
 ## 4.0.0-beta.1 - 2022-03-09
 
