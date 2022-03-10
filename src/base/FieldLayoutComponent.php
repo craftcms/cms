@@ -204,7 +204,7 @@ abstract class FieldLayoutComponent extends Model
             /** @var ElementInterface|string|null $elementType */
             $elementType = $this->getLayout()->type;
 
-            if ($elementType instanceof ElementInterface) {
+            if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
                 $elementCondition = $this->_elementCondition ?? $elementType::createCondition();
                 $elementCondition->mainTag = 'div';
                 $elementCondition->id = 'element-condition';
