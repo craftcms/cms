@@ -10,6 +10,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 
 /**
@@ -63,7 +64,15 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
      */
     protected function options(): array
     {
-        return Craft::$app->getAddresses()->getSubdivisionRepository()->getList([$this->countryCode], Craft::$app->language);
+        $administrativeAreas = Craft::$app->getAddresses()->getSubdivisionRepository()->getList([$this->countryCode], Craft::$app->language);
+        // Allow custom states that are currently in the administrative areas list to remain in the list.
+        foreach ($this->getValues() as $val) {
+            if (!in_array($val, $administrativeAreas, false)) {
+                $administrativeAreas[$val] = $val;
+            }
+        }
+
+        return $administrativeAreas;
     }
 
     /**
@@ -97,6 +106,35 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
             ],
         ]);
 
-        return $countrySelect . parent::inputHtml();
+        $multiSelectId = 'multiselect';
+        $namespacedId = Craft::$app->getView()->namespaceInputId($multiSelectId);
+
+        $js = <<<JS
+$('#$namespacedId').selectize({
+    plugins: ['remove_button'],
+    create: true, // Must allow creation since administrive area field on addresses could be free text input
+    onDropdownClose: () => {
+        htmx.trigger(htmx.find('#$namespacedId'), 'change');
+    },
+});
+JS;
+        Craft::$app->getView()->registerJs($js);
+
+        $adminSelectize =
+            Html::hiddenLabel($this->getLabel(), $multiSelectId) .
+            Cp::multiSelectHtml([
+                'id' => $multiSelectId,
+                'class' => 'selectize fullwidth',
+                'name' => 'values',
+                'values' => $this->getValues(),
+                'options' => $this->options(),
+                'inputAttributes' => [
+                    'style' => [
+                        'display' => 'none', // Hide it before selectize does its thing
+                    ],
+                ],
+            ]);
+
+        return $countrySelect . $adminSelectize;
     }
 }

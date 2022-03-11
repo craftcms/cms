@@ -3,17 +3,20 @@
 ## Unreleased
 
 ### Added
-- Added `craft\services\Assets::EVENT_DEFINE_THUMB_URL`, which replaces `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` (previously removed).
+- Added `craft\base\Element::notesFieldHtml()`.
+- Added `craft\base\Element::statusFieldHtml()`.
 - Added `craft\events\DefineAssetThumbUrlEvent`, which replaces `GetAssetThumbUrlEvent` (previously removed).
+- Added `craft\services\Assets::EVENT_DEFINE_THUMB_URL`, which replaces `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` (previously removed).
 
 ### Changed
+- Sidebar components appended to `craft\events\DefineHtmlEvent::$html` for `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML` are now positioned before the element metadata.
 - `craft\services\Assets::getThumbUrl()` is no longer deprecated.
 
 ### Fixed
 - Fixed a bug where field layout component settings weren’t including condition fields for the currently-edited element. ([#10723](https://github.com/craftcms/cms/issues/10723))
 - Fixed a bug where the `up` command could falsely detect incompatible schema versions.
-- Fixed a bug where it was impossible to create a subfolder and navigate to it immediately in the assets manager.
-- Fixed a bug where Asset Indexing utility did not work correctly.
+- Fixed a bug where it wasn’t possible to navigate to newly-created subfolders on the Assets index page.
+- Fixed a JavaScript error on the Updates utility.
 
 ## 4.0.0-beta.1 - 2022-03-09
 

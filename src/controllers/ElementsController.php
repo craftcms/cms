@@ -388,7 +388,7 @@ class ElementsController extends Controller
                     $response,
                     $containerId,
                     fn(?FieldLayoutForm $form) => $this->_editorContent($element, $isUnpublishedDraft, $canSave, $form),
-                    fn(?FieldLayoutForm $form) => $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave, $isCurrent, $isMultiSiteElement, $canEditMultipleSites),
+                    fn(?FieldLayoutForm $form) => $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave),
                     fn(?FieldLayoutForm $form) => [
                         'addlSites' => $addlEditableSites,
                         'canCreateDrafts' => $canCreateDrafts,
@@ -755,9 +755,6 @@ JS;
         ElementInterface $element,
         bool $mergedCanonicalChanges,
         bool $canSave,
-        bool $isCurrent,
-        bool $isMultiSiteElement,
-        bool $canEditMultipleSites,
     ): string {
         $components = [];
 
@@ -771,66 +768,8 @@ JS;
         }
 
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
-        $sidebarHtml = $element->getSidebarHtml(!$canSave);
-
-        if ($canSave && $element::hasStatuses()) {
-            if ($isMultiSiteElement) {
-                $expandStatusBtn = $canEditMultipleSites
-                    ? Html::button('', [
-                        'class' => ['expand-status-btn', 'btn'],
-                        'data' => [
-                            'icon' => 'ellipsis',
-                        ],
-                    ])
-                    : '';
-                $statusField = Cp::lightswitchFieldHtml([
-                    'fieldClass' => "enabled-for-site-$element->siteId-field",
-                    'label' => Craft::t('site', $element->getSite()->getName()) .
-                        $expandStatusBtn,
-                    'name' => "enabledForSite[$element->siteId]",
-                    'on' => $element->enabled && $element->getEnabledForSite(),
-                    'disabled' => !$canSave,
-                    'status' => $element->getAttributeStatus('enabled'),
-                ]);
-            } else {
-                $statusField = Cp::lightswitchFieldHtml([
-                    'id' => 'enabled',
-                    'label' => Craft::t('app', 'Enabled'),
-                    'name' => 'enabled',
-                    'on' => $element->enabled,
-                    'disabled' => $element->getIsRevision(),
-                    'status' => $element->getAttributeStatus('enabled'),
-                ]);
-            }
-
-            $statusHtml = Html::beginTag('fieldset') .
-                Html::tag('legend', Craft::t('app', 'Status:')) .
-                Html::tag('div', $statusField, ['class' => 'meta']) .
-                Html::endTag('fieldset');
-        } else {
-            $statusHtml = '';
-        }
-
-        $sidebarHtml = str_replace('<!-- STATUS -->', $statusHtml, $sidebarHtml);
-        $components[] = $sidebarHtml;
-
-        if (
-            ($isCurrent || $element->getIsDraft()) &&
-            $element->hasRevisions()
-        ) {
-            $components[] = Cp::textareaFieldHtml([
-                'label' => Craft::t('app', 'Notes about your changes:'),
-                'class' => ['nicetext', 'notes'],
-                'name' => 'notes',
-                'value' => $isCurrent ? $this->_notes : $element->draftNotes,
-                'rows' => 1,
-                'inputAttributes' => [
-                    'aria' => [
-                        'label' => Craft::t('app', 'Notes about your changes'),
-                    ],
-                ],
-            ]);
-        }
+        $components[] = $element->getSidebarHtml(!$canSave);
+        ;
 
         if ($this->id) {
             $components[] = Cp::metadataHtml($element->getMetadata());
