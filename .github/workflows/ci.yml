@@ -1,0 +1,101 @@
+name: ci
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - feature/**
+      - 4.0
+  pull_request:
+    branches:
+      - "**"
+jobs:
+  run:
+    runs-on: ${{ matrix.operating-system }}
+    name: PHP ${{ matrix.php-versions }} test on ${{ matrix.operating-system }}
+    env:
+      PHP_EXTENSIONS: ctype,curl,dom,iconv,imagick,intl,json,,mbstring,openssl,pcre,pdo,pdo_mysql,pdo_postgresql,reflection,spl,zip
+      EXT_CACHE_KEY: extension-cache-v1 # change to clear the extension cache
+
+    services:
+
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: craft-test
+          POSTGRES_DB: postgres
+        ports:
+          - 5432/tcp
+        # Set health checks to wait until mysql has started
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: mysql
+          MYSQL_DATABASE: craft-test
+          MYSQL_USER: mysql
+          MYSQL_PASSWORD: mysql
+        # Set health checks to wait until mysql has started
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 3306:3306
+
+    strategy:
+      matrix:
+        operating-system: ['ubuntu-latest']
+        php-versions: [8.1, 8.0, 7.4, 7.3, 7.2]
+        db: ['mysql', 'postgres']
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup cache environment
+      id: extcache
+      uses: shivammathur/cache-extensions@v1
+      with:
+        php-version: ${{ matrix.php-versions }}
+        extensions: ${{ env.PHP_EXTENSIONS }}
+        key: ${{ env.EXT_CACHE_KEY }}
+
+    - name: Cache extensions
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.extcache.outputs.dir }}
+        key: ${{ steps.extcache.outputs.key }}
+        restore-keys: ${{ steps.extcache.outputs.key }}
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@verbose
+      with:
+        php-version: ${{ matrix.php-versions }}
+        extensions: mbstring, intl
+        ini-values: post_max_size=256M, max_execution_time=180, memory_limit=512M
+        tools: composer:v2
+        coverage: none
+      env:
+        COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        fail-fast: true
+
+    - name: Print PHP version
+      run: echo ${{ steps.setup-php.outputs.php-version }}
+
+    - name: Setup problem matchers for PHP
+      run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist
