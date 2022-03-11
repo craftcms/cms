@@ -9,7 +9,9 @@ namespace craft\web\twig\variables;
 
 use Craft;
 
-Craft::$app->requireEdition(Craft::Pro);
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
+    Craft::$app->requireEdition(Craft::Pro);
+}
 
 /**
  * User permission functions.

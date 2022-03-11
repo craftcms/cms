@@ -250,9 +250,9 @@ class HtmlHelperTest extends Unit
             [
                 '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
                 $htmlTagString . '!@#$%^&*(){}|::"<><?>/*-~`',
-                ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`']
+                ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`'],
             ],
-            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']]
+            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']],
         ];
     }
 

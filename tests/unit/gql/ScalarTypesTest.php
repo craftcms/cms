@@ -103,7 +103,7 @@ class ScalarTypesTest extends Unit
 
     /**
      * Test the useSystemTimezoneForGraphQlDates setting.
-     * 
+     *
      * @throws \GraphQL\Error\Error
      */
     public function testTimeZoneConfigSetting()
@@ -113,14 +113,16 @@ class ScalarTypesTest extends Unit
         $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
         $dateField = $this->make(Date::class, [
             'showTimeZone' => false,
-            'handle' => 'fieldName'
+            'handle' => 'fieldName',
         ]);
         $resolveInfo = $this->make(ResolveInfo::class, [
-            'fieldName' => 'fieldName'
+            'fieldName' => 'fieldName',
         ]);
         $resolver = $dateField->getContentGqlType()['resolve'];
         $element = $this->make(Entry::class, [
-            'getFieldValue' => function () use ($dateTime) { return clone $dateTime; }
+            'getFieldValue' => function() use ($dateTime) {
+                return clone $dateTime;
+            },
         ]);
 
         $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;

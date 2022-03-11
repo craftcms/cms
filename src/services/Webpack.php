@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -62,13 +63,22 @@ class Webpack extends Component
 
         // Search up the directory tree for the .env file in $assetPath
         while ($assetDir) {
+            $assetDir = FileHelper::normalizePath($assetDir);
             $assetPath = $assetDir . DIRECTORY_SEPARATOR . '.env';
-            if ((isset($this->_checkedEnvDirs[$assetDir]) && $this->_checkedEnvDirs[$assetDir]) || (!isset($this->_checkedEnvDirs[$assetDir]) && file_exists($assetPath))) {
-                $this->_checkedEnvDirs[$assetDir] = true;
-                return $assetPath;
+
+            if (!isset($this->_checkedEnvDirs[$assetDir])) {
+                // Make sure it's within the allowed base paths
+                if (!App::isPathAllowed($assetDir)) {
+                    $this->_checkedEnvDirs[$assetDir] = false;
+                    break;
+                }
+
+                $this->_checkedEnvDirs[$assetDir] = file_exists($assetPath);
             }
 
-            $this->_checkedEnvDirs[$assetDir] = false;
+            if ($this->_checkedEnvDirs[$assetDir]) {
+                return $assetPath;
+            }
 
             if ($assetDir === DIRECTORY_SEPARATOR || $assetDir === dirname($assetDir)) {
                 break;

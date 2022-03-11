@@ -263,7 +263,7 @@ class UserGroups extends Component
 
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
-        } else if (!$group->uid) {
+        } elseif (!$group->uid) {
             $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
         }
 

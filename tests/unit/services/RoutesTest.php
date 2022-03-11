@@ -63,7 +63,7 @@ class RoutesTest extends Unit
                     'template' => '_test',
                     'uriPattern' => '',
                 ],
-                [], '_test'
+                [], '_test',
             ],
             [
                 [
@@ -73,7 +73,7 @@ class RoutesTest extends Unit
                     'uriParts' => ['test1', 'test2'],
                     'uriPattern' => 'test1test2',
                 ],
-                ['test1', 'test2'], '_test'
+                ['test1', 'test2'], '_test',
             ],
             [
                 [
@@ -83,7 +83,7 @@ class RoutesTest extends Unit
                     'uriParts' => [['validHandle', 'date'], ['someHandle', 'slug']],
                     'uriPattern' => '<validHandle:date><someHandle:slug>',
                 ],
-                [['validHandle', 'date'], ['someHandle', 'slug']], '_test'
+                [['validHandle', 'date'], ['someHandle', 'slug']], '_test',
             ],
             [
                 [
@@ -93,7 +93,7 @@ class RoutesTest extends Unit
                     'uriParts' => [['validHandle', 'date'], ['!@#$%^&*(', 'validHandle'], ['validHandle', '!@#$%^&*(']],
                     'uriPattern' => '<validHandle:date><any:validHandle><validHandle2:!@#$%^&*(>',
                 ],
-                [['validHandle', 'date'], ['!@#$%^&*(', 'validHandle'], ['validHandle', '!@#$%^&*(']], '_test'
+                [['validHandle', 'date'], ['!@#$%^&*(', 'validHandle'], ['validHandle', '!@#$%^&*(']], '_test',
             ],
             [
                 [
@@ -103,7 +103,7 @@ class RoutesTest extends Unit
                     'uriParts' => [['validHandle', 'date', 'extraParamThatIsntUsed'], ['!@#$%^&*(', 'validHandle']],
                     'uriPattern' => '<validHandle:date><any:validHandle>',
                 ],
-                [['validHandle', 'date', 'extraParamThatIsntUsed'], ['!@#$%^&*(', 'validHandle']], '_test'
+                [['validHandle', 'date', 'extraParamThatIsntUsed'], ['!@#$%^&*(', 'validHandle']], '_test',
             ],
             [
                 [
@@ -113,7 +113,7 @@ class RoutesTest extends Unit
                     'uriParts' => [['validHandle', 'date'], 'noArray'],
                     'uriPattern' => '<validHandle:date>noArray',
                 ],
-                [['validHandle', 'date'], 'noArray'], '_test'
+                [['validHandle', 'date'], 'noArray'], '_test',
             ],
 
             // TODO: Well more a question. Shouldn't emojis (UTF-8) be allowed in routes?
@@ -125,7 +125,7 @@ class RoutesTest extends Unit
                     'uriParts' => [['😎', 'date'], ['😎', 'emoji']],
                     'uriPattern' => '<any:date><any2:emoji>',
                 ],
-                [['😎', 'date'], ['😎', 'emoji']], '_test'
+                [['😎', 'date'], ['😎', 'emoji']], '_test',
             ],
         ];
     }

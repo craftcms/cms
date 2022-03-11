@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpParamsInspection */
+<?php
+
+/** @noinspection PhpParamsInspection */
 
 /**
  * @link      https://craftcms.com/
@@ -157,7 +159,7 @@ class ImageHelperTest extends Unit
             Stub::make(Logger::class, [
                 'log' => function($message) use ($errorLogMessage) {
                     self::assertSame($errorLogMessage, $message);
-                }
+                },
             ])
         );
 
@@ -256,8 +258,8 @@ class ImageHelperTest extends Unit
                     'filter' => 0,
                     'interface' => 0,
                     'color-type' => 'Truecolour',
-                    'channels' => 3
-                ], dirname(__FILE__, 3) . '/_data/assets/files/google.png'
+                    'channels' => 3,
+                ], dirname(__FILE__, 3) . '/_data/assets/files/google.png',
             ],
             [false, dirname(__FILE__, 3) . '/_data/assets/files/no-ihdr.png'],
             [false, dirname(__FILE__, 3) . '/_data/assets/files/invalid-ihdr.png'],
@@ -300,7 +302,7 @@ class ImageHelperTest extends Unit
             [false, 'pdf'],
             [false, 'json'],
             [false, 'html'],
-            [false, 'htm']
+            [false, 'htm'],
         ];
     }
 }

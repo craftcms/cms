@@ -64,9 +64,9 @@ class FlysysteVolumeTest extends Unit
             'filesystem' => $this->make(Filesystem::class, [
                 'getMetadata' => Expected::exactly(2, [
                     'timestamp' => 123,
-                    'size' => 456
-                ])
-            ])
+                    'size' => 456,
+                ]),
+            ]),
         ]);
 
         $this->assertEquals(['timestamp' => 123, 'size' => 456], $volume->getFileMetadata('path'));

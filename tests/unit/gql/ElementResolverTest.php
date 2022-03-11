@@ -33,11 +33,10 @@ class ElementResolverTest extends Unit
                 'getActiveSchema' => $this->make(GqlSchema::class, [
                     'scope' => [
                         'volumes.someUid:read',
-                    ]
-                ])
+                    ],
+                ]),
             ]
         );
-
     }
 
     protected function _after()
@@ -55,7 +54,7 @@ class ElementResolverTest extends Unit
         // Mock the fetched Asset query
         $assetQuery = $this->make(AssetQuery::class, [
             'one' => new Asset(['uid' => $testUid]),
-            'count' => $testCount
+            'count' => $testCount,
         ]);
 
         // The only way we can mock with a provided element query (to avoid using slow fixtures or DB data), is to provide

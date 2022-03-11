@@ -31,5 +31,5 @@ return [
         'lastName' => '4',
         'username' => 'user4',
         'email' => 'user4@someemail.com',
-    ]
+    ],
 ];

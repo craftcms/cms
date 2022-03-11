@@ -40,8 +40,8 @@ class RequestTest extends TestCase
     {
         return [
             'sites' => [
-                'class' => SitesFixture::class
-            ]
+                'class' => SitesFixture::class,
+            ],
         ];
     }
 
@@ -399,7 +399,7 @@ class RequestTest extends TestCase
     {
         $this->setInaccessibleProperty($this->request, '_segments', [
             Craft::$app->getConfig()->getGeneral()->actionTrigger,
-            'do-stuff'
+            'do-stuff',
         ]);
 
         $this->checkRequestAndAssertIsSingleAction();
@@ -576,7 +576,7 @@ class RequestTest extends TestCase
         parent::_before();
 
         $this->request = new Request([
-            'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe'
+            'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe',
         ]);
     }
 

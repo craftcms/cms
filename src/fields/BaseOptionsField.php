@@ -66,7 +66,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                         'value' => $key,
                         'default' => '',
                     ];
-                } else if (!empty($option['isOptgroup'])) {
+                } elseif (!empty($option['isOptgroup'])) {
                     // isOptgroup will be set if this is a settings request
                     $options[] = [
                         'optgroup' => $option['label'],
@@ -243,9 +243,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 strpos($value, '{') === 0
             )) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === '' && $this->multi) {
+        } elseif ($value === '' && $this->multi) {
             $value = [];
-        } else if ($value === null && $this->isFresh($element)) {
+        } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
         }
 
@@ -277,7 +277,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 $selectedOptions[] = new OptionData($label, $selectedValue, true, $valid);
             }
             $value = new MultiOptionsFieldData($selectedOptions);
-        } else if (!empty($selectedValues)) {
+        } elseif (!empty($selectedValues)) {
             // Convert the value to a SingleOptionFieldData object
             $selectedValue = reset($selectedValues);
             $index = array_search($selectedValue, $optionValues, true);
@@ -346,7 +346,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
                     $value = "{$match[1]}*\"{$match[2]}\"*";
                 }
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 foreach ($value as &$v) {
                     if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
                         $v = "{$match[1]}*\"{$match[2]}\"*";

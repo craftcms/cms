@@ -7,7 +7,6 @@
 
 namespace crafttests\fixtures;
 
-
 use craft\models\FieldLayout;
 use craft\test\fixtures\FieldLayoutFixture as BaseFieldLayoutFixture;
 

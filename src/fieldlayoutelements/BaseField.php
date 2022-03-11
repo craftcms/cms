@@ -500,7 +500,7 @@ abstract class BaseField extends FieldLayoutElement
         if (!Craft::$app->getIsMultiSite()) {
             // Only one site so use its language
             $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
-        } else if (!$element || !$this->translatable($element, $static)) {
+        } elseif (!$element || !$this->translatable($element, $static)) {
             // Not translatable, so use the user’s language
             $locale = Craft::$app->getLocale();
         } else {

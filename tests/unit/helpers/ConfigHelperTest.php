@@ -60,8 +60,8 @@ class ConfigHelperTest extends Unit
     {
         $this->tester->expectThrowable(
             InvalidConfigException::class, function() {
-            ConfigHelper::durationInSeconds(true);
-        });
+                ConfigHelper::durationInSeconds(true);
+            });
 
         $this->tester->expectThrowable(InvalidConfigException::class, function() {
             ConfigHelper::durationInSeconds(['test' => 'test']);
@@ -103,8 +103,8 @@ class ConfigHelperTest extends Unit
             // If variable is callable.  Ensure the handle gets passed into the callable.
             [
                 'imahandle', function($handle) {
-                return $handle;
-            }, 'imahandle'
+                    return $handle;
+                }, 'imahandle',
             ],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
             ['string', 'string'],

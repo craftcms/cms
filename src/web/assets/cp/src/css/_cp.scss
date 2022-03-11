@@ -647,8 +647,7 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-.breadcrumb-toggle-wrapper,
-.account-toggle-wrapper {
+[data-wrapper] {
   position: relative;
 }
 
@@ -1097,7 +1096,7 @@ li.breadcrumb-toggle-wrapper {
     .text::placeholder,
     .datewrapper .text + div[data-icon],
     .timewrapper .text + div[data-icon] {
-      color: $grey300;
+      color: $grey500;
     }
 
     .ui-datepicker {
@@ -1457,6 +1456,7 @@ li.breadcrumb-toggle-wrapper {
 
       .toggle {
         position: absolute;
+        z-index: 1;
         height: 34px;
         top: 0;
         width: 24px;

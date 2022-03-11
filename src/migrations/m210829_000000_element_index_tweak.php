@@ -11,7 +11,6 @@ use craft\helpers\MigrationHelper;
  */
 class m210829_000000_element_index_tweak extends Migration
 {
-
     /**
      * @inheritdoc
      */

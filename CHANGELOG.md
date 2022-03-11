@@ -1,5 +1,67 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where two users could be created with the same username and email, if the **Save** button was double-clicked. ([#9835](https://github.com/craftcms/cms/issues/9835), [#10661](https://github.com/craftcms/cms/issues/10661))
+- Fixed an error that could occur when updating from an earlier version than Craft 3.5.6. ([#10685](https://github.com/craftcms/cms/issues/10685))
+- Fixed an error that could occur when rendering an exception view for another error. ([#10712](https://github.com/craftcms/cms/issues/10712))
+
+## 3.7.36 - 2022-03-03
+
+### Changed
+- `{% js %}` and `{% css %}` tags can now import URLs that don’t end in `.js` or `.css`, so long as they begin with `https://` or `http://`. ([#10666](https://github.com/craftcms/cms/discussions/10666))
+- The `plugin/list` command now shows plugins’ package names. ([#10667](https://github.com/craftcms/cms/discussions/10667))
+
+### Fixed
+- Fixed a bug that prevented moving assets between volumes. ([#10668](https://github.com/craftcms/cms/issues/10668))
+
+## 3.7.35 - 2022-03-01
+
+### Added
+- Added `craft\errors\BusyResourceException`.
+- Added `craft\errors\StaleResourceException`.
+
+### Changed
+- Improved Live Preview accessibility. ([#7476](https://github.com/craftcms/cms/issues/7476))
+- Improved error reporting when trying to upload an Asset from a disallowed location. ([#10633](https://github.com/craftcms/cms/issues/10633))
+- The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
+
+### Fixed
+- Fixed an error that occurred when initializing an element with custom field values that weren’t included in its field layout. ([#10622](https://github.com/craftcms/cms/issues/10622))
+- Fixed a PHP 8 compatibility bug.
+- Fixed a bug where drafts weren’t getting propagated when a section was enabled for new sites. ([#10634](https://github.com/craftcms/cms/issues/10634))
+- Fixed a bug where moving files and folders from the Assets index page wouldn’t ever resolve properly if there was an unexpected server error.
+- Fixed a bug where disclosure menus could be shorter than their contents. ([#10639](https://github.com/craftcms/cms/issues/10639))
+- Fixed potential race conditions that could result in old project config data getting cached. ([#7795](https://github.com/craftcms/cms/issues/7795))
+- Fixed a bug where numerically-indexed array keys weren’t always consecutive after the project config was rebuilt. ([#10512](https://github.com/craftcms/cms/issues/10512))
+
+## 3.7.34 - 2022-02-22
+
+### Added
+- Added `craft\helpers\App::phpConfigValueAsPaths()`.
+- Added `craft\helpers\App::normalizePhpPaths()`.
+- Added `craft\helpers\App::isPathAllowed()`.
+
+### Changed
+- Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+- Craft no longer attempts to write a license key file when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer attempts to write project config YAML files when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer publishes asset bundles when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+
+### Fixed
+- Fixed a bug where Date fields weren’t displaying properly.
+- Fixed a bug where some GraphQL API query arguments would break element queries. ([#10580](https://github.com/craftcms/cms/issues/10580))
+- Fixed a PHP 8.1 compatibility bug. ([#10594](https://github.com/craftcms/cms/issues/10594))
+- Fixed a bug where Matrix action menus were causing horizontal scrollbars within Live Preview. ([#10601](https://github.com/craftcms/cms/issues/10601))
+- Fixed a PHP warning that would occur when running Craft in Dev Mode, if the `open_basedir` PHP setting was set. ([#10581](https://github.com/craftcms/cms/issues/10581))
+- Fixed a bug where the “View” button on Edit Category pages wasn’t getting linked to a tokenized preview page for disabled sites.
+- Fixed a bug where asset subfolder toggles weren’t visible when their source was focused. ([#10617](https://github.com/craftcms/cms/issues/10617))
+- Fixed a bug where Live Preview would close when the <kbd>Esc</kbd> key was pressed, when a modal window was open. ([#10623](https://github.com/craftcms/cms/issues/10623))
+
+### Security
+- Craft now HTML-encodes user’ names in the default system email messages.
+
 ## 3.7.33 - 2022-02-15
 
 > {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.

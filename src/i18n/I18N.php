@@ -92,7 +92,7 @@ class I18N extends \yii\i18n\I18N
     {
         if ($this->_allLocaleIds === null) {
             if ($this->getIsIntlLoaded()) {
-                $this->_allLocaleIds = ResourceBundle::getLocales(null);
+                $this->_allLocaleIds = ResourceBundle::getLocales('');
             } else {
                 $appLocalesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales';
                 $customLocalesPath = Craft::$app->getPath()->getConfigPath() . '/locales';

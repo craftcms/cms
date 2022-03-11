@@ -184,7 +184,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
         // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
         // or if the user is an admin and has indicated they want to see it
-        else if ($this->_showExceptionView()) {
+        elseif ($this->_showExceptionView()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }
@@ -248,7 +248,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $template = new $class(Craft::$app->getView()->getTwig());
         $src = $template->getSourceContext();
         //                $this->sourceCode = $src->getCode();
-        $file = $src->getPath();
+        $file = $src->getPath() ?: null;
         $line = null;
 
         if ($traceLine !== null) {

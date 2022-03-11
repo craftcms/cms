@@ -62,7 +62,7 @@ class PreviewController extends Controller
 
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
-        } else if ($revisionId) {
+        } elseif ($revisionId) {
             $this->requireAuthorization('previewRevision:' . $revisionId);
         } else {
             $this->requireAuthorization('previewElement:' . $sourceId);
@@ -124,7 +124,7 @@ class PreviewController extends Controller
             $element = $query
                 ->draftId($draftId)
                 ->one();
-        } else if ($revisionId) {
+        } elseif ($revisionId) {
             $element = $query
                 ->revisionId($revisionId)
                 ->one();

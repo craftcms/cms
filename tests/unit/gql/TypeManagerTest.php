@@ -53,7 +53,7 @@ class TypeManagerTest extends Unit
     {
         TypeManager::flush();
         $cachedName = 'someName';
-        $fields= ['ok'];
+        $fields = ['ok'];
 
         TypeManager::prepareFieldDefinitions([], $cachedName);
         self::assertNotSame($fields, TypeManager::prepareFieldDefinitions($fields, $cachedName));
@@ -66,21 +66,21 @@ class TypeManagerTest extends Unit
         return [
             [
                 ['field' => 'something'],
-                function (DefineGqlTypeFieldsEvent $event) {
+                function(DefineGqlTypeFieldsEvent $event) {
                     $event->fields['field'] = 'otherThing';
                 },
                 ['field' => 'otherThing'],
             ],
             [
                 ['field' => 'something'],
-                function (DefineGqlTypeFieldsEvent $event) {
+                function(DefineGqlTypeFieldsEvent $event) {
                     $event->fields['otherField'] = 'otherThing';
                 },
                 ['field' => 'something', 'otherField' => 'otherThing'],
             ],
             [
                 ['field' => 'something', 'otherField' => 'otherThing'],
-                function (DefineGqlTypeFieldsEvent $event) {
+                function(DefineGqlTypeFieldsEvent $event) {
                     unset($event->fields['otherField']);
                 },
                 ['field' => 'something'],

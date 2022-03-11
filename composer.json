@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.7.33",
+  "version": "3.7.36",
   "keywords": [
     "cms",
     "craftcms",
@@ -64,6 +64,7 @@
     "codeception/module-phpbrowser": "^1.0.0",
     "codeception/module-rest": "^1.0.0",
     "codeception/module-yii2": "^1.0.0",
+    "craftcms/ecs": "dev-main",
     "fzaninotto/faker": "^1.8",
     "league/factory-muffin": "^3.0",
     "vlucas/phpdotenv": "^3.0"
@@ -89,6 +90,10 @@
       "crafttests\\fixtures\\": "tests/fixtures/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
     }
+  },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix"
   },
   "config": {
     "sort-packages": true,

@@ -36,7 +36,7 @@ class FieldFixture extends ActiveFixture
         foreach ($this->getData() as $alias => $row) {
             if (isset($row['fieldType'])) {
                 $class = $row['fieldType'];
-                $field = new $class;
+                $field = new $class();
                 unset($row['fieldType']);
             } else {
                 $field = new PlainText();

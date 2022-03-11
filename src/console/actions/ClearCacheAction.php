@@ -55,7 +55,7 @@ class ClearCacheAction extends Action
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }
-        } else if (isset($this->params)) {
+        } elseif (isset($this->params)) {
             try {
                 call_user_func_array($this->action, $this->params);
             } catch (\Throwable $e) {

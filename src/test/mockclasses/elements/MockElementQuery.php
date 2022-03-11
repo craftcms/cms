@@ -12,7 +12,7 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
 
 /**
- * MockElementQuery is used to mimic element query and help mocking element query results.
+ * MockElementQuery is used to mimic element queries and mock their results
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.5
@@ -66,7 +66,7 @@ class MockElementQuery extends ElementQuery
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $prefix . '.php';
         file_put_contents($tempPath, $classData);
         include($tempPath);
-        $instance = new $className;
+        $instance = new $className();
         unlink($tempPath);
 
         return $instance;

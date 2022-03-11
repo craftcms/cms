@@ -10,7 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
+use craft\errors\StaleResourceException;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -261,7 +263,12 @@ class AppController extends Controller
 
             // Sync project.yaml?
             if ($applyProjectConfigChanges) {
-                $projectConfigService->applyYamlChanges();
+                try {
+                    $projectConfigService->applyYamlChanges();
+                } catch (BusyResourceException|StaleResourceException $e) {
+                    Craft::$app->getErrorHandler()->logException($e);
+                    Craft::warning("Couldn’t apply project config YAML changes: {$e->getMessage()}", __METHOD__);
+                }
             }
 
             $transaction->commit();
@@ -286,7 +293,7 @@ class AppController extends Controller
             $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
-            } else if (isset($restoreException)) {
+            } elseif (isset($restoreException)) {
                 $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
             } else {
                 $error .= ' The database has not been restored.';
@@ -496,7 +503,7 @@ class AppController extends Controller
                         'name' => $update->replacementName,
                     ]);
             }
-        } else if ($update->status === Update::STATUS_EXPIRED) {
+        } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
             ]);

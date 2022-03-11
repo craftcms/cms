@@ -81,23 +81,23 @@ class NoFixturesTest extends TestCase
         $yaml = [
             'sections' => ['someUid' => ['handle' => 'someHandle']],
             'sections.someUid' => ['handle' => 'otherHandle'],
-            'sections.someUid.handle' => 'otherHandle'
+            'sections.someUid.handle' => 'otherHandle',
         ];
 
         $sectionService = $this->make(Sections::class, [
-            'handleChangedSection' => Expected::once()
+            'handleChangedSection' => Expected::once(),
         ]);
         $projectConfig = $this->make(ProjectConfig::class, [
             '_storedConfig' => [
                 'sections' => [
                     'someUid' => [
-                        'handle' => 'someHandle'
-                    ]
-                ]
+                        'handle' => 'someHandle',
+                    ],
+                ],
             ],
             'get' => function($path, $useYaml) use ($yaml) {
                 return $yaml[$path];
-            }
+            },
         ]);
 
         // Mocking the project config killed all event listeners, though
@@ -138,7 +138,7 @@ class NoFixturesTest extends TestCase
                     'a' => null,
                     'b' => 'c',
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -149,7 +149,7 @@ class NoFixturesTest extends TestCase
                     'a' => 'b',
                     'b' => null,
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -160,7 +160,7 @@ class NoFixturesTest extends TestCase
                     'a' => null,
                     'b' => null,
                     'c' => 'a',
-                ]
+                ],
             ],
         ];
     }
@@ -170,12 +170,12 @@ class NoFixturesTest extends TestCase
         return [
             [
                 'a.b.c',
-                ['foo' => 'bar']
+                ['foo' => 'bar'],
             ],
             [
                 'a.b',
-                ['foo' => 'bar', 'bar' => ['baz']]
-            ]
+                ['foo' => 'bar', 'bar' => ['baz']],
+            ],
         ];
     }
 
@@ -184,35 +184,35 @@ class NoFixturesTest extends TestCase
         return [
             [
                 'foo',
-                '"foo"'
+                '"foo"',
             ],
             [
                 true,
-                'true'
+                'true',
             ],
             [
                 null,
-                'null'
+                'null',
             ],
             [
                 false,
-                'false'
+                'false',
             ],
             [
                 2.5,
-                '2.5'
+                '2.5',
             ],
             [
                 0,
-                '0'
+                '0',
             ],
             [
                 2,
-                '2'
+                '2',
             ],
             [
                 2.0,
-                '2.0'
+                '2.0',
             ],
         ];
     }

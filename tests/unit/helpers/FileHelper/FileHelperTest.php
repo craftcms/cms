@@ -255,7 +255,7 @@ class FileHelperTest extends Unit
             [
                 'c:' . DIRECTORY_SEPARATOR . 'vagrant' . DIRECTORY_SEPARATOR . 'box',
                 'c:/vagrant/box',
-                DIRECTORY_SEPARATOR
+                DIRECTORY_SEPARATOR,
             ],
             ['c:\\vagrant\\box', 'c:/vagrant/box', '\\'],
             ['c:|vagrant|box', 'c:\\vagrant\\box', '|'],

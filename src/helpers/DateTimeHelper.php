@@ -559,7 +559,7 @@ class DateTimeHelper
         if (!$showSeconds) {
             if ($minutes && round($dateInterval->s / 60)) {
                 $minutes++;
-            } else if (!$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$minutes) {
+            } elseif (!$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$minutes) {
                 return Craft::t('app', 'less than a minute');
             }
         }
@@ -614,7 +614,7 @@ class DateTimeHelper
         // Valid separators are either '-', '.' or '/'.
         if (StringHelper::contains($format, '.')) {
             $separator = '.';
-        } else if (StringHelper::contains($format, '-')) {
+        } elseif (StringHelper::contains($format, '-')) {
             $separator = '-';
         } else {
             $separator = '/';

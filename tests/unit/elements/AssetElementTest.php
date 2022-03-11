@@ -37,14 +37,14 @@ class AssetElementTest extends TestCase
     {
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
-               'hasUrls' => true
+               'hasUrls' => true,
             ]),
-            'folderId' => 2
+            'folderId' => 2,
         ]);
 
         $this->tester->mockCraftMethods('assetTransforms', [
             'normalizeTransform' => Expected::once(new AssetTransform()),
-            'extendTransform' => Expected::once(new AssetTransform())
+            'extendTransform' => Expected::once(new AssetTransform()),
         ]);
 
         $asset->getUrl([
@@ -62,30 +62,29 @@ class AssetElementTest extends TestCase
     {
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
-                'hasUrls' => true
+                'hasUrls' => true,
             ]),
             'folderId' => 2,
             'kind' => Asset::KIND_IMAGE,
             'width' => 100,
             'height' => 100,
-            'filename' => 'some.jpg'
+            'filename' => 'some.jpg',
         ]);
 
         $this->tester->mockCraftMethods('assets', [
-            'getAssetUrl' => 'http://url.com'
+            'getAssetUrl' => 'http://url.com',
         ]);
 
         $extend = $expectExtension ? Expected::once(new AssetTransform()) : Expected::never(new AssetTransform());
 
         $assetTransforms = $this->make(AssetTransforms::class, [
             'getTransformByHandle' => new AssetTransform(),
-            'extendTransform' => $extend
+            'extendTransform' => $extend,
         ]);
 
         Craft::$app->set('assetTransforms', $assetTransforms);
 
         $result = $asset->{$methodName}($transformData);
-
     }
 
     public function normalizingExtendsTransformProvider()

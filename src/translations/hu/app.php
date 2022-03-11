@@ -1712,7 +1712,7 @@ return [
     'You’re all up to date!' => 'Ön teljesen naprakész!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'A Craft {edition} {licensedEdition} licensz.',
     'Zip Code' => 'Zip-kód',
-    'account_activation_body' => "Hello {{user.friendlyName}},
+    'account_activation_body' => "Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
@@ -1736,7 +1736,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'five' => 'öt',
     'folders and files' => 'mappák és fájlok',
     'folders' => 'mappák',
-    'forgot_password_body' => "Szia {{user.friendlyName}}!\n\nA {{siteName}} jelszavad visszaállításához kattints erre a hivatkozásra:\n\n<{{link}}>\n\nHa nem vártad ezt az e-mailt, akkor hagyd figyelmen kívül.",
+    'forgot_password_body' => "Szia {{user.friendlyName|e}}!\n\nA {{siteName}} jelszavad visszaállításához kattints erre a hivatkozásra:\n\n<{{link}}>\n\nHa nem vártad ezt az e-mailt, akkor hagyd figyelmen kívül.",
     'forgot_password_heading' => 'Amikor valaki elfelejti a jelszavát:',
     'forgot_password_subject' => 'Új jelszó beállítása',
     'four' => 'négy',
@@ -1806,7 +1806,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'stripe_error_withdrawal_count_limit_exceeded' => 'Az ügyfél túllépte a kártyáján rendelkezésre álló egyenleget vagy hitelkeretet.',
     'tag' => 'címke',
     'tags' => 'címke',
-    'test_email_body' => "Szia  {{user.friendlyName}},\n\nGratulálok! A Craft sikeresen elküldött egy e-mailt.\n\nItt láthatók a használt beállítások:\n\n{{ settings }}",
+    'test_email_body' => "Szia  {{user.friendlyName|e}},\n\nGratulálok! A Craft sikeresen elküldött egy e-mailt.\n\nItt láthatók a használt beállítások:\n\n{{ settings }}",
     'test_email_heading' => 'Amikor teszteled az email beállításokat:',
     'test_email_subject' => 'Ez egy teszt e-mail a Crafttól.',
     'three' => 'három',
@@ -1814,7 +1814,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'two' => 'kettő',
     'user' => 'felhasználó',
     'users' => 'felhasználók',
-    'verify_new_email_body' => "Hello {{user.friendlyName}},\n\nKérjük erősitsd meg az új email címedet az alábbi linkre kattintva:\n\n<{{link}}>\n\nAmennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül.",
+    'verify_new_email_body' => "Hello {{user.friendlyName|e}},\n\nKérjük erősitsd meg az új email címedet az alábbi linkre kattintva:\n\n<{{link}}>\n\nAmennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül.",
     'verify_new_email_heading' => 'Amikor valaki e-mail címet változtat:',
     'verify_new_email_subject' => 'Ellenőrizze e-mail címét',
     'week' => 'hét',

@@ -63,7 +63,7 @@ class ArgumentHandlerTest extends Unit
                     ksort($arguments);
                     // Encode as string, so we can pass a data structure as a string.
                     return json_encode($arguments);
-                }
+                },
             ];
         });
 
@@ -76,7 +76,7 @@ class ArgumentHandlerTest extends Unit
                 }
 
                 return $argumentList;
-            }
+            },
         ]);
 
         Event::on(ArgumentManager::class, ArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS, function(RegisterGqlArgumentHandlersEvent $event) use ($handler) {
@@ -139,19 +139,19 @@ class ArgumentHandlerTest extends Unit
                 $handlers,
                 [
                     'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3, 4]]],
-                    'relatedToAssets' => ['expected' => Asset::class, 'return' => [[9,10]]]
+                    'relatedToAssets' => ['expected' => Asset::class, 'return' => [[9, 10]]],
                 ],
                 [
                     'and',
                     ['element' => [3, 4]],
-                    ['element' => [9,10]]
+                    ['element' => [9, 10]],
                 ],
             ],
             [
                 $handlers,
                 [
                     'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3], [4]]],
-                    'relatedTo' => [8, 9]
+                    'relatedTo' => [8, 9],
                 ],
                 [
                     'and',
@@ -164,7 +164,7 @@ class ArgumentHandlerTest extends Unit
                 $handlers,
                 [
                     'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3, 4]]],
-                    'relatedTo' => ['and', 8, 9]
+                    'relatedTo' => ['and', 8, 9],
                 ],
                 [
                     'and',

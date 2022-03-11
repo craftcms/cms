@@ -1712,7 +1712,7 @@ return [
     'You’re all up to date!' => 'You’re all up to date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du kjører Craft {edition} med en Craft {licensedEdition}-lisens.',
     'Zip Code' => 'Postnummer',
-    'account_activation_body' => "Hei, {{user.friendlyName}}\n\nTakk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
+    'account_activation_body' => "Hei, {{user.friendlyName|e}}\n\nTakk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
     'account_activation_heading' => 'Når noen oppretter en konto:',
     'account_activation_subject' => 'Aktiver kontoen din',
     'and' => 'og',
@@ -1732,7 +1732,7 @@ return [
     'five' => 'fem',
     'folders and files' => 'mapper og filer',
     'folders' => 'mapper',
-    'forgot_password_body' => "Hei, {{user.friendlyName}}\n\nFor å nullstille passordet ditt  på {{siteName}}, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
+    'forgot_password_body' => "Hei, {{user.friendlyName|e}}\n\nFor å nullstille passordet ditt  på {{siteName}}, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
     'forgot_password_heading' => 'Når noen glemmer passordet sitt:',
     'forgot_password_subject' => 'Nullstill passordet ditt',
     'four' => 'fire',
@@ -1802,7 +1802,7 @@ return [
     'stripe_error_withdrawal_count_limit_exceeded' => 'The customer has exceeded the balance or credit limit available on their card.',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => "Hei, {{user.friendlyName}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
 Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
@@ -1812,7 +1812,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     'two' => 'to',
     'user' => 'bruker',
     'users' => 'brukere',
-    'verify_new_email_body' => "Hei, {{user.friendlyName}}\n\nBekreft din nye e-postadresse ved å trykke på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
+    'verify_new_email_body' => "Hei, {{user.friendlyName|e}}\n\nBekreft din nye e-postadresse ved å trykke på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
     'verify_new_email_heading' => 'Når noen endrer e-postadressen sin:',
     'verify_new_email_subject' => 'Bekreft din nye e-postadresse',
     'week' => 'uke',

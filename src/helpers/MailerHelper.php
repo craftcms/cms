@@ -128,7 +128,7 @@ class MailerHelper
                 } else {
                     $normalized[] = $value->email;
                 }
-            } else if (is_numeric($key)) {
+            } elseif (is_numeric($key)) {
                 $normalized[] = $value;
             } else {
                 $normalized[$key] = $value;
@@ -175,9 +175,9 @@ class MailerHelper
         foreach ($transportSettings as $label => $value) {
             if (is_scalar($value)) {
                 $settings[$label] = $security->redactIfSensitive($label, $value);
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 $settings[$label] = 'Array';
-            } else if (is_object($value)) {
+            } elseif (is_object($value)) {
                 $settings[$label] = 'Object';
             }
         }

@@ -65,8 +65,8 @@ class InterfaceAndGeneratorTest extends Unit
                         'entrytypes.entrytype-uid-2:read',
                         'globalsets.globalset-uid-1:read',
                         'entrytypes.globalset-uid-2:read',
-                    ]
-                ])
+                    ],
+                ]),
             ]
 
         );
@@ -78,7 +78,7 @@ class InterfaceAndGeneratorTest extends Unit
             [
                 'getAllVolumes' => function() {
                     return $this->mockVolumes();
-                }
+                },
             ]
         );
 
@@ -88,7 +88,7 @@ class InterfaceAndGeneratorTest extends Unit
             [
                 'getAllEntryTypes' => function() {
                     return $this->mockEntryTypes();
-                }
+                },
             ]
         );
 
@@ -98,7 +98,7 @@ class InterfaceAndGeneratorTest extends Unit
             [
                 'getAllSets' => function() {
                     return $this->mockGlobalSets();
-                }
+                },
             ]
         );
 
@@ -108,7 +108,7 @@ class InterfaceAndGeneratorTest extends Unit
             [
                 'getAllGroups' => function() {
                     return $this->mockCategoryGroups();
-                }
+                },
             ]
         );
 
@@ -118,7 +118,7 @@ class InterfaceAndGeneratorTest extends Unit
             [
                 'getAllTagGroups' => function() {
                     return $this->mockTagGroups();
-                }
+                },
             ]
         );
 
@@ -128,7 +128,7 @@ class InterfaceAndGeneratorTest extends Unit
             [
                 'getAllBlockTypes' => function() {
                     return $this->mockMatrixBlocks();
-                }
+                },
             ]
         );
     }
@@ -191,7 +191,7 @@ class InterfaceAndGeneratorTest extends Unit
                     'handle' => 'allow',
                     'type' => 'lightswitch',
                 ],
-            ]
+            ],
         ]);
         TableRowType::generateTypes($tableField);
         $typeName = TableRowType::getName($tableField);
@@ -206,8 +206,8 @@ class InterfaceAndGeneratorTest extends Unit
             [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'gqlTypeNameByContext']],
             [
                 ElementInterface::class, function() {
-                return ['Element'];
-            }, [BaseElement::class, 'gqlTypeNameByContext']
+                    return ['Element'];
+                }, [BaseElement::class, 'gqlTypeNameByContext'],
             ],
             [EntryInterface::class, [$this, 'mockEntryTypes'], [EntryElement::class, 'gqlTypeNameByContext']],
             [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'gqlTypeNameByContext']],
@@ -216,8 +216,8 @@ class InterfaceAndGeneratorTest extends Unit
             [MatrixBlockInterface::class, [$this, 'mockMatrixBlocks'], [MatrixBlockElement::class, 'gqlTypeNameByContext']],
             [
                 UserInterface::class, function() {
-                return ['User'];
-            }, [UserElement::class, 'gqlTypeNameByContext']
+                    return ['User'];
+                }, [UserElement::class, 'gqlTypeNameByContext'],
             ],
         ];
     }
