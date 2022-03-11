@@ -1298,6 +1298,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             Craft.sendActionRequest('POST', 'assets/create-folder', {data})
                 .then((response) => {
+                    const data = response.data;
                     this.setIndexAvailable();
                     this._prepareParentForChildren($parentFolder);
                     var $subfolder = $(
