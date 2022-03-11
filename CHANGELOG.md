@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Assets::EVENT_DEFINE_THUMB_URL`, which replaces `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` (previously removed).
+- Added `craft\events\DefineAssetThumbUrlEvent`, which replaces `GetAssetThumbUrlEvent` (previously removed).
+
+### Changed
+- `craft\services\Assets::getThumbUrl()` is no longer deprecated.
+
 ### Fixed
 - Fixed a bug where field layout component settings weren’t including condition fields for the currently-edited element. ([#10723](https://github.com/craftcms/cms/issues/10723))
 - Fixed a bug where the `up` command could fasely detect incompatible schema versions.

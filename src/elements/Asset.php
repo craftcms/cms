@@ -1586,28 +1586,13 @@ JS;
      */
     public function getThumbUrl(int $size): ?string
     {
-        // If it's not an image, return a generic file extension icon
-        if (!Image::canManipulateAsImage($this->getExtension())) {
-            return Assets::iconUrl($this->getExtension());
-        }
-
         if ($this->getWidth() && $this->getHeight()) {
             [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
 
-        $transform = new ImageTransform([
-            'width' => $width,
-            'height' => $height,
-            'mode' => 'crop',
-        ]);
-
-        $transformUrl = $transform->getImageTransformer()->getTransformUrl($this, $transform, false);
-
-        return UrlHelper::urlWithParams($transformUrl, [
-            'v' => $this->dateModified->getTimestamp(),
-        ]);
+        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height);
     }
 
     /**
@@ -1632,33 +1617,20 @@ JS;
      * @param int $desiredWidth
      * @param int $desiredHeight
      * @return string
-     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @since 3.4.0
      */
     public function getPreviewThumbImg(int $desiredWidth, int $desiredHeight): string
     {
-        // If it's not an image, return a generic file extension icon
-        if (!Image::canManipulateAsImage($this->getExtension())) {
-            return Html::tag('img', '', [
-                'src' => Assets::iconUrl($this->getExtension()),
-                'alt' => $this->title,
-            ]);
-        }
-
         $srcsets = [];
         [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
         ];
+        $assetsService = Craft::$app->getAssets();
+
         foreach ($thumbSizes as [$width, $height]) {
-            $transform = new ImageTransform([
-                'width' => $width,
-                'height' => $height,
-                'mode' => 'crop',
-            ]);
-            $transformUrl = $transform->getImageTransformer()->getTransformUrl($this, $transform, false);
-            $srcsets[] = sprintf('%s %sw', $transformUrl, $width);
+            $srcsets[] = sprintf('%s %sw', $assetsService->getThumbUrl($this, $width, $height), $width);
         }
 
         return Html::tag('img', '', [

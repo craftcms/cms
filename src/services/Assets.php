@@ -27,14 +27,17 @@ use craft\errors\FsObjectExistsException;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\VolumeException;
 use craft\events\AssetPreviewEvent;
+use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -65,6 +68,13 @@ class Assets extends Component
      * @event ReplaceAssetEvent The event that is triggered after an asset is replaced.
      */
     public const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
+
+    /**
+     * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being requested for an asset.
+     * @see getThumbUrl()
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_THUMB_URL = 'defineThumbUrl';
 
     /**
      * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
@@ -567,12 +577,45 @@ class Assets extends Component
      * @param int $width width of the returned thumb
      * @param int|null $height height of the returned thumb (defaults to $width if null)
      * @return string
-     * @deprecated in 4.0.0. [[Asset::getThumbUrl()]] should be used instead.
      */
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null): string
     {
-        $size = $height ? max($width, $height) : $width;
-        return $asset->getThumbUrl($size);
+        if ($height === null) {
+            $height = $width;
+        }
+
+        // Maybe a plugin wants to do something here
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
+            $event = new DefineAssetThumbUrlEvent([
+                'asset' => $asset,
+                'width' => $width,
+                'height' => $height,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
+
+            // If a plugin set the url, we'll just use that.
+            if ($event->url !== null) {
+                return $event->url;
+            }
+        }
+
+        // If it's not an image, return a generic file extension icon
+        $extension = $asset->getExtension();
+        if (!Image::canManipulateAsImage($extension)) {
+            return AssetsHelper::iconUrl($extension);
+        }
+
+        $transform = new ImageTransform([
+            'width' => $width,
+            'height' => $height,
+            'mode' => 'crop',
+        ]);
+
+        $transformUrl = $transform->getImageTransformer()->getTransformUrl($asset, $transform, false);
+
+        return UrlHelper::urlWithParams($transformUrl, [
+            'v' => $asset->dateModified->getTimestamp(),
+        ]);
     }
 
     /**
