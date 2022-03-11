@@ -73,7 +73,9 @@
 - Added `craft\base\Element::EVENT_DEFINE_ADDL_BUTTONS`. ([#10420](https://github.com/craftcms/cms/discussions/10420))
 - Added `craft\base\Element::getParentId()`.
 - Added `craft\base\Element::hasNewParent()`.
+- Added `craft\base\Element::notesFieldHtml()`.
 - Added `craft\base\Element::setParentId()`.
+- Added `craft\base\Element::statusFieldHtml()`.
 - Added `craft\base\ElementInterface::canCreateDrafts()`.
 - Added `craft\base\ElementInterface::canDelete()`.
 - Added `craft\base\ElementInterface::canDeleteForSite()`.
