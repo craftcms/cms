@@ -26,6 +26,7 @@
     {{ forms.lightswitchField({
         name: 'cacheImages',
         label: 'Cache remote images'|t('app'),
+        class: 'volume-selector',
         instructions: 'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.'|t('app'),
         on: true,
     }) }}
@@ -69,11 +70,10 @@
             return false;
         }
 
-        const data = {};
-        for (let param of $(ev.target).serialize().split('&')) {
-            let parts = param.split('=');
-            data[unescape(parts[0])] = parts[1];
-        }
+        const data = {
+            'cacheImages': !!$('input[name=cacheImages]').val(),
+            'volumes': $(ev.target).find('.checkbox-select input:checked:enabled').map(function(){return $(this).val();}).get()
+        };
 
         $submitButton.addClass('disabled').after('<div class="spinner"></div>');
 
