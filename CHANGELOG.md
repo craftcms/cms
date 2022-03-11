@@ -9,6 +9,7 @@
 - Added `craft\services\Assets::EVENT_DEFINE_THUMB_URL`, which replaces `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` (previously removed).
 
 ### Changed
+- Field grids within slideouts can now only have up to two columns. ([#10726](https://github.com/craftcms/cms/issues/10726))
 - Sidebar components appended to `craft\events\DefineHtmlEvent::$html` for `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML` are now positioned before the element metadata.
 - `craft\services\Assets::getThumbUrl()` is no longer deprecated.
 
