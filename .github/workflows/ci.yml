@@ -15,7 +15,7 @@ jobs:
     name: PHP ${{ matrix.php-versions }} test on ${{ matrix.operating-system }}
     env:
       PHP_EXTENSIONS: ctype,curl,dom,iconv,imagick,intl,json,,mbstring,openssl,pcre,pdo,pdo_mysql,pdo_postgresql,reflection,spl,zip
-      EXT_CACHE_KEY: extension-cache-v1 # change to clear the extension cache
+      EXT_CACHE_KEY: extension-cache-v1 # change to clear the extension cache.
 
     services:
 
