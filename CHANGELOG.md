@@ -19,6 +19,7 @@
 - Fixed a bug where it wasn’t possible to navigate to newly-created subfolders on the Assets index page.
 - Fixed a JavaScript error on the Asset Indexes utility.
 - Fixed a JavaScript error on the Updates utility.
+- Fixed an error that occurred when saving an entry with an empty `authorId` value. ([#10734](https://github.com/craftcms/cms/issues/10734))
 
 ## 4.0.0-beta.1 - 2022-03-09
 

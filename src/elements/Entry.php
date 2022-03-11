@@ -1194,11 +1194,15 @@ class Entry extends Element
     /**
      * Sets the entry author ID.
      *
-     * @param int|int[]|null $authorId
+     * @param int|int[]|string|null $authorId
      * @since 4.0.0
      */
-    public function setAuthorId(array|int|null $authorId): void
+    public function setAuthorId(array|int|string|null $authorId): void
     {
+        if ($authorId === '') {
+            $authorId = null;
+        }
+
         if (is_array($authorId)) {
             $this->_authorId = reset($authorId) ?: null;
         } else {
