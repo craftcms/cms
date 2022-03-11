@@ -16,7 +16,7 @@ jobs:
     name: PHP ${{ matrix.php-versions }} on ${{ matrix.db }}
     env:
       PHP_EXTENSIONS: ctype,curl,dom,iconv,imagick,intl,json,,mbstring,openssl,pcre,pdo,pdo_mysql,pdo_postgresql,reflection,spl,zip
-      EXT_CACHE_KEY: extension-cache-v2 # change to clear the extension cache.
+      EXT_CACHE_KEY: extension-cache-v3 # change to clear the extension cache.
 
     services:
 
@@ -60,7 +60,7 @@ jobs:
       with:
         php-version: ${{ matrix.php-versions }}
         extensions: ${{ env.PHP_EXTENSIONS }}
-        key: ${{ env.EXT_CACHE_KEY }}-{{ matrix.operating-system }}-{{ matrix.php-versions }}-{{ matrix.db }}
+        key: ${{ env.EXT_CACHE_KEY }}
 
     - name: Cache extensions
       uses: actions/cache@v2
