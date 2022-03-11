@@ -16,6 +16,7 @@
 - Fixed a bug where field layout component settings weren’t including condition fields for the currently-edited element. ([#10723](https://github.com/craftcms/cms/issues/10723))
 - Fixed a bug where the `up` command could falsely detect incompatible schema versions.
 - Fixed a bug where it wasn’t possible to navigate to newly-created subfolders on the Assets index page.
+- Fixed a JavaScript error on the Asset Indexes utility.
 - Fixed a JavaScript error on the Updates utility.
 
 ## 4.0.0-beta.1 - 2022-03-09
