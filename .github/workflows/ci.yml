@@ -98,14 +98,8 @@ jobs:
 #        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
 #        restore-keys: ${{ runner.os }}-composer-
 
-    - name: Parent directory
-      run: cd ..
-
-    - name: PWD
-      run: pwd
-
-    - name: ls
-      run: ls -la
+    - name: Debug
+      run: cd.. && pwd && ls -al
 
     - name: Install dependencies
       run: composer install --prefer-dist
