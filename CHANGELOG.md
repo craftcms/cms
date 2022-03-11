@@ -3,10 +3,13 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\Element::notesFieldHtml()`.
+- Added `craft\base\Element::statusFieldHtml()`.
 - Added `craft\events\DefineAssetThumbUrlEvent`, which replaces `GetAssetThumbUrlEvent` (previously removed).
 - Added `craft\services\Assets::EVENT_DEFINE_THUMB_URL`, which replaces `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` (previously removed).
 
 ### Changed
+- Sidebar components appended to `craft\events\DefineHtmlEvent::$html` for `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML` are now positioned before the element metadata.
 - `craft\services\Assets::getThumbUrl()` is no longer deprecated.
 
 ### Fixed

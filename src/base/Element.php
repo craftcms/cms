@@ -4238,7 +4238,11 @@ abstract class Element extends Component implements ElementInterface
 
         if (!$static && static::hasStatuses()) {
             // Is this a multi-site element?
-            $components[] = '<!-- STATUS -->';
+            $components[] = $this->statusFieldHtml();
+        }
+
+        if ($this->hasRevisions() && !$this->getIsRevision()) {
+            $components[] = $this->notesFieldHtml();
         }
 
         // Fire a defineSidebarHtml event
@@ -4309,6 +4313,78 @@ JS,
             'value' => $slug,
             'disabled' => $static,
             'errors' => array_merge($this->getErrors('slug'), $this->getErrors('uri')),
+        ]);
+    }
+
+    /**
+     * Returns the status field HTML for the sidebar.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    protected function statusFieldHtml(): string
+    {
+        $supportedSites = ElementHelper::supportedSitesForElement($this, true);
+        $allEditableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
+        $propSiteIds = array_column($propSites, 'siteId');
+        $propEditableSiteIds = array_intersect($propSiteIds, $allEditableSiteIds);
+        $addlEditableSites = array_values(array_filter($supportedSites, fn($site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds)));
+
+        if (count($supportedSites) > 1) {
+            $expandStatusBtn = (count($propEditableSiteIds) > 1 || $addlEditableSites)
+                ? Html::button('', [
+                    'class' => ['expand-status-btn', 'btn'],
+                    'data' => [
+                        'icon' => 'ellipsis',
+                    ],
+                ])
+                : '';
+            $statusField = Cp::lightswitchFieldHtml([
+                'fieldClass' => "enabled-for-site-$this->siteId-field",
+                'label' => Craft::t('site', $this->getSite()->getName()) .
+                    $expandStatusBtn,
+                'name' => "enabledForSite[$this->siteId]",
+                'on' => $this->enabled && $this->getEnabledForSite(),
+                'status' => $this->getAttributeStatus('enabled'),
+            ]);
+        } else {
+            $statusField = Cp::lightswitchFieldHtml([
+                'id' => 'enabled',
+                'label' => Craft::t('app', 'Enabled'),
+                'name' => 'enabled',
+                'on' => $this->enabled,
+                'disabled' => $this->getIsRevision(),
+                'status' => $this->getAttributeStatus('enabled'),
+            ]);
+        }
+
+        return Html::beginTag('fieldset') .
+            Html::tag('legend', Craft::t('app', 'Status:')) .
+            Html::tag('div', $statusField, ['class' => 'meta']) .
+            Html::endTag('fieldset');
+    }
+
+    /**
+     * Returns the notes field HTML for the sidebar.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    protected function notesFieldHtml(): string
+    {
+        /** @var static|DraftBehavior $this */
+        return Cp::textareaFieldHtml([
+            'label' => Craft::t('app', 'Notes about your changes:'),
+            'class' => ['nicetext', 'notes'],
+            'name' => 'notes',
+            'value' => $this->getIsCanonical() || $this->isProvisionalDraft ? $this->revisionNotes : $this->draftNotes,
+            'rows' => 1,
+            'inputAttributes' => [
+                'aria' => [
+                    'label' => Craft::t('app', 'Notes about your changes'),
+                ],
+            ],
         ]);
     }
 
