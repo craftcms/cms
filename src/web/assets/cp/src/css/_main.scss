@@ -1561,10 +1561,9 @@ ul.icons {
   align-items: center;
   border: 1px solid $hairlineColor;
   border-radius: $smallBorderRadius;
-  transition: border-color linear 100ms;
   padding: 0 9px;
   cursor: pointer;
-  transition: margin-left linear 100ms, margin-right linear 100ms;
+  color: $mediumTextColor;
 
   input {
     border: 0;
@@ -1574,31 +1573,26 @@ ul.icons {
     background-color: transparent;
     border: none;
     cursor: pointer;
-    color: $textColor;
+    color: $mediumTextColor;
     text-align: center;
   }
 
-  &.light input {
-    color: $mediumTextColor;
-  }
-
   span {
-    opacity: 0;
     padding: 0;
     width: 13px;
     background: none;
-    @include margin-left(-13px);
-    transition: opacity linear 100ms, margin-left linear 100ms,
-      margin-right linear 100ms;
+    margin-top: -3px;
+    @include margin-left(5px);
+    color: $lightTextColor;
   }
 
   &:hover,
   &:focus {
     border-color: $mediumHairlineColor;
+    color: $textColor;
 
-    span {
-      opacity: 1;
-      @include margin-left(3px);
+    input {
+      color: $textColor;
     }
   }
 
@@ -1609,25 +1603,6 @@ ul.icons {
       font-size: 11px !important;
       height: 20px;
     }
-  }
-}
-
-// Prevent the button from jumping if the added width would otherwise bump it down to the next line
-.copytextbtn-expand-r {
-  @include margin-right(16px);
-
-  &:hover,
-  &:focus {
-    @include margin-right(-16px);
-  }
-}
-
-.copytextbtn-expand-l {
-  @include margin-left(16px);
-
-  &:hover,
-  &:focus {
-    @include margin-left(-16px);
   }
 }
 
