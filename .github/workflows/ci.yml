@@ -99,7 +99,7 @@ jobs:
 #        restore-keys: ${{ runner.os }}-composer-
 
     - name: Debug
-      run: cd.. && pwd && ls -al
+      run: cd .. && pwd && ls -al
 
     - name: Install dependencies
       run: composer install --prefer-dist
