@@ -98,6 +98,9 @@ jobs:
 #        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
 #        restore-keys: ${{ runner.os }}-composer-
 
+    - name: Parent directory
+      run: cd ..
+
     - name: PWD
       run: pwd
 
