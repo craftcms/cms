@@ -48,7 +48,7 @@ class FieldLayout extends Model
      *     FieldLayout::class,
      *     FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
      *     function(DefineFieldLayoutFieldsEvent $event) {
-     *         // @var FieldLayout $layout
+     *         /** @var FieldLayout $layout */
      *         $layout = $event->sender;
      *
      *         if ($layout->type === MyElementType::class) {
