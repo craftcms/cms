@@ -1550,6 +1550,7 @@ Craft.ElementEditor = Garnish.Base.extend({
         const data = this.prepareData(this.serializeForm(false));
 
         if (this.isFullPage) {
+            this.stopListeningForChanges();
             const $form = Craft.createForm(data);
             $form.appendTo(Garnish.$bod);
             $form.submit();

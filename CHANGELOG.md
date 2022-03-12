@@ -20,6 +20,7 @@
 - Fixed a JavaScript error on the Asset Indexes utility.
 - Fixed a JavaScript error on the Updates utility.
 - Fixed an error that occurred when saving an entry with an empty `authorId` value. ([#10734](https://github.com/craftcms/cms/issues/10734))
+- Fixed JavaScript errors that occurred when submitting the form on Edit Entry and Edit Category pages. ([#10704](https://github.com/craftcms/cms/issues/10704))
 
 ## 4.0.0-beta.1 - 2022-03-09
 
