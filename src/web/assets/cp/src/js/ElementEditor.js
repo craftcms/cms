@@ -24,7 +24,7 @@ Craft.ElementEditor = Garnish.Base.extend({
     $siteStatusPane: null,
     $globalLightswitch: null,
     $siteLightswitches: null,
-    $addlSiteField: null,
+    $additionalSiteField: null,
 
     siteIds: null,
     newSiteIds: null,
@@ -412,7 +412,7 @@ Craft.ElementEditor = Garnish.Base.extend({
         }
 
         // Are there additional sites that can be added?
-        if (this.settings.addlSites && this.settings.addlSites.length && this.isFullPage) {
+        if (this.settings.additionalSites && this.settings.additionalSites.length && this.isFullPage) {
             this._createAddlSiteField();
         }
 
@@ -499,8 +499,8 @@ Craft.ElementEditor = Garnish.Base.extend({
             disabled: !!this.settings.revisionId,
         });
 
-        if (this.$addlSiteField) {
-            $field.insertBefore(this.$addlSiteField);
+        if (this.$additionalSiteField) {
+            $field.insertBefore(this.$additionalSiteField);
         } else {
             $field.appendTo(this.$siteStatusPane);
         }
@@ -518,24 +518,24 @@ Craft.ElementEditor = Garnish.Base.extend({
     },
 
     _createAddlSiteField: function() {
-        const addlSites = Craft.sites.filter(site => {
-            return !this.siteIds.includes(site.id) && this.settings.addlSites.some(s => s.siteId == site.id);
+        const additionalSites = Craft.sites.filter(site => {
+            return !this.siteIds.includes(site.id) && this.settings.additionalSites.some(s => s.siteId == site.id);
         });
 
-        if (!addlSites.length) {
+        if (!additionalSites.length) {
             return;
         }
 
         const $addlSiteSelectContainer = Craft.ui.createSelect({
             options: [
                 {label: Craft.t('app', 'Add a site…')},
-                ...addlSites.map(s => {
+                ...additionalSites.map(s => {
                     return {label: s.name, value: s.id};
                 }),
             ],
         }).addClass('fullwidth');
 
-        this.$addlSiteField = Craft.ui.createField($addlSiteSelectContainer, {})
+        this.$additionalSiteField = Craft.ui.createField($addlSiteSelectContainer, {})
             .addClass('nested add')
             .appendTo(this.$siteStatusPane);
 
@@ -549,7 +549,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                 return;
             }
 
-            const addlSiteInfo = this.settings.addlSites.find(s => s.siteId == site.id);
+            const addlSiteInfo = this.settings.additionalSites.find(s => s.siteId == site.id);
             this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
             this._updateGlobalStatus();
 
@@ -566,11 +566,11 @@ Craft.ElementEditor = Garnish.Base.extend({
 
             // Was that the last site?
             if ($addlSiteSelect.find('option').length === 1) {
-                this._removeField(this.$addlSiteField);
+                this._removeField(this.$additionalSiteField);
             }
         });
 
-        this._showField(this.$addlSiteField);
+        this._showField(this.$additionalSiteField);
     },
 
     showStatusHud: function(target) {
@@ -1049,7 +1049,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                     }
                     this.newSiteIds.forEach(siteId => {
                         const $option = revisionMenu.$options.filter(`[data-site-id=${siteId}]`);
-                        const siteSettings = this.settings.addlSites.find(s => s.siteId == siteId);
+                        const siteSettings = this.settings.additionalSites.find(s => s.siteId == siteId);
                         if (!siteSettings || typeof siteSettings.enabledByDefault === 'undefined' || siteSettings.enabledByDefault) {
                             $option.find('.status').removeClass('disabled').addClass('enabled');
                         }
@@ -1571,7 +1571,7 @@ Craft.ElementEditor = Garnish.Base.extend({
     },
 }, {
     defaults: {
-        addlSites: [],
+        additionalSites: [],
         canCreateDrafts: false,
         canEditMultipleSites: false,
         canSaveCanonical: false,

@@ -367,7 +367,7 @@ class ElementsController extends Controller
                 $isUnpublishedDraft,
                 $propSiteIds
             ))
-            ->addlButtons(fn() => $this->_addlButtons(
+            ->additionalButtons(fn() => $this->_additionalButtons(
                 $element,
                 $canonical,
                 $isRevision,
@@ -390,7 +390,7 @@ class ElementsController extends Controller
                     fn(?FieldLayoutForm $form) => $this->_editorContent($element, $isUnpublishedDraft, $canSave, $form),
                     fn(?FieldLayoutForm $form) => $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave),
                     fn(?FieldLayoutForm $form) => [
-                        'addlSites' => $addlEditableSites,
+                        'additionalSites' => $addlEditableSites,
                         'canCreateDrafts' => $canCreateDrafts,
                         'canEditMultipleSites' => $canEditMultipleSites,
                         'canSaveCanonical' => $canSaveCanonical,
@@ -620,7 +620,7 @@ class ElementsController extends Controller
         return null;
     }
 
-    private function _addlButtons(
+    private function _additionalButtons(
         ElementInterface $element,
         ElementInterface $canonical,
         bool $isRevision,
@@ -686,7 +686,7 @@ class ElementsController extends Controller
                 Html::endForm();
         }
 
-        $components[] = $element->getAddlButtons();
+        $components[] = $element->getAdditionalButtons();
 
         return implode("\n", array_filter($components));
     }

@@ -320,10 +320,10 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining additional buttons that should be shown at the top of the element’s edit page.
-     * @see getAddlButtons()
+     * @see getAdditionalButtons()
      * @since 4.0.0
      */
-    public const EVENT_DEFINE_ADDL_BUTTONS = 'defineAddlButtons';
+    public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
@@ -2846,11 +2846,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAddlButtons(): string
+    public function getAdditionalButtons(): string
     {
-        // Fire a defineAddlButtons event
+        // Fire a defineAdditionalButtons event
         $event = new DefineHtmlEvent();
-        $this->trigger(self::EVENT_DEFINE_ADDL_BUTTONS, $event);
+        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
         return $event->html;
     }
 

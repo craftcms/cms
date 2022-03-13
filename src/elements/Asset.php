@@ -1070,7 +1070,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getAddlButtons(): string
+    public function getAdditionalButtons(): string
     {
         $volume = $this->getVolume();
         $user = Craft::$app->getUser()->getIdentity();
@@ -1176,7 +1176,7 @@ JS;
             $view->registerJs($js);
         }
 
-        return $html . parent::getAddlButtons();
+        return $html . parent::getAdditionalButtons();
     }
 
     /**

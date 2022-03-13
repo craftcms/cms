@@ -11,7 +11,12 @@
 ### Changed
 - Field grids within slideouts can now only have up to two columns. ([#10726](https://github.com/craftcms/cms/issues/10726))
 - Sidebar components appended to `craft\events\DefineHtmlEvent::$html` for `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML` are now positioned before the element metadata.
+- `craft\base\Element::EVENT_DEFINE_ADDL_BUTTONS` has been renamed to `EVENT_DEFINE_ADDITIONAL_BUTTONS`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
+- `craft\base\ElementInterface::getAddlButtons()` has been renamed to `getAdditionalButtons()`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
 - `craft\services\Assets::getThumbUrl()` is no longer deprecated.
+- `craft\web\CpScreenResponseBehavior::$addlButtons` has been renamed to `$additionalButtons`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
+- `craft\web\CpScreenResponseBehavior::addlButtons()` has been renamed to `additionalButtons()`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
+- `craft\web\CpScreenResponseBehavior::addlButtonsTemplate()` has been renamed to `additionalButtonsTemplate()`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
 
 ### Fixed
 - Fixed a bug where field layout component settings weren’t including condition fields for the currently-edited element. ([#10723](https://github.com/craftcms/cms/issues/10723))

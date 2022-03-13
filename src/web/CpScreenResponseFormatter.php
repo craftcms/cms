@@ -109,7 +109,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $crumbs = is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs;
         $contextMenu = is_callable($behavior->contextMenu) ? call_user_func($behavior->contextMenu) : $behavior->contextMenu;
-        $addlButtons = is_callable($behavior->addlButtons) ? call_user_func($behavior->addlButtons) : $behavior->addlButtons;
+        $addlButtons = is_callable($behavior->additionalButtons) ? call_user_func($behavior->additionalButtons) : $behavior->additionalButtons;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
         $notice = is_callable($behavior->notice) ? call_user_func($behavior->notice) : $behavior->notice;
         $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
@@ -137,7 +137,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 }, $crumbs ?? []),
                 'contextMenu' => $contextMenu,
                 'submitButtonLabel' => $behavior->submitButtonLabel,
-                'addlButtons' => $addlButtons,
+                'additionalButtons' => $addlButtons,
                 'tabs' => $behavior->tabs,
                 'fullPageForm' => (bool)$behavior->action,
                 'formActions' => array_map(function(array $action) use ($security): array {

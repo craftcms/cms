@@ -102,10 +102,10 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * @var string|callable|null Additional buttons’ HTML
-     * @see addlButtons()
-     * @see addlButtonsTemplate()
+     * @see additionalButtons()
+     * @see additionalButtonsTemplate()
      */
-    public $addlButtons = null;
+    public $additionalButtons = null;
 
     /**
      * @var string|callable|null The content HTML
@@ -375,9 +375,9 @@ class CpScreenResponseBehavior extends Behavior
      * @param callable|string|null $value
      * @return Response|self
      */
-    public function addlButtons(callable|string|null $value): Response
+    public function additionalButtons(callable|string|null $value): Response
     {
-        $this->addlButtons = $value;
+        $this->additionalButtons = $value;
         return $this->owner;
     }
 
@@ -388,9 +388,9 @@ class CpScreenResponseBehavior extends Behavior
      * @param array $variables
      * @return Response|self
      */
-    public function addlButtonsTemplate(string $template, array $variables = []): Response
+    public function additionalButtonsTemplate(string $template, array $variables = []): Response
     {
-        return $this->addlButtons(
+        return $this->additionalButtons(
             fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
         );
     }

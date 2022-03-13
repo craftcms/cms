@@ -858,7 +858,7 @@ interface ElementInterface extends ComponentInterface
      * @return string
      * @since 4.0.0
      */
-    public function getAddlButtons(): string;
+    public function getAdditionalButtons(): string;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
