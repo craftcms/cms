@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Throwable;
@@ -171,7 +172,9 @@ class EntriesController extends BaseEntriesController
         }
 
         // Redirect to its edit page
-        return $this->redirect($entry->getCpEditUrl());
+        return $this->redirect(UrlHelper::urlWithParams($entry->getCpEditUrl(), [
+            'fresh' => 1,
+        ]));
     }
 
     /**
