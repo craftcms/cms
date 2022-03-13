@@ -4360,7 +4360,7 @@ JS,
         }
 
         return Html::beginTag('fieldset') .
-            Html::tag('legend', Craft::t('app', 'Status:')) .
+            Html::tag('legend', Craft::t('app', 'Status'), ['class' => 'h6']) .
             Html::tag('div', $statusField, ['class' => 'meta']) .
             Html::endTag('fieldset');
     }
@@ -4375,7 +4375,8 @@ JS,
     {
         /** @var static|DraftBehavior $this */
         return Cp::textareaFieldHtml([
-            'label' => Craft::t('app', 'Notes about your changes:'),
+            'label' => Craft::t('app', 'Notes about your changes'),
+            'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
             'name' => 'notes',
             'value' => $this->getIsCanonical() || $this->isProvisionalDraft ? $this->revisionNotes : $this->draftNotes,

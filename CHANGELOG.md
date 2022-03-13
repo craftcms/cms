@@ -10,6 +10,7 @@
 
 ### Changed
 - Field grids within slideouts can now only have up to two columns. ([#10726](https://github.com/craftcms/cms/issues/10726))
+- Improved the “Status” and “Notes about your changes” heading styles on edit pages. ([#10738](https://github.com/craftcms/cms/issues/10738))
 - Sidebar components appended to `craft\events\DefineHtmlEvent::$html` for `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML` are now positioned before the element metadata.
 - `craft\base\Element::EVENT_DEFINE_ADDL_BUTTONS` has been renamed to `EVENT_DEFINE_ADDITIONAL_BUTTONS`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
 - `craft\base\ElementInterface::getAddlButtons()` has been renamed to `getAdditionalButtons()`. ([#10741](https://github.com/craftcms/cms/discussions/10741))

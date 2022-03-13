@@ -1005,7 +1005,6 @@ return [
     'Not installed' => 'Not installed',
     'Not translatable' => 'Not translatable',
     'Notes about your changes' => 'Notes about your changes',
-    'Notes about your changes:' => 'Notes about your changes:',
     'Notes' => 'Notes',
     'Nothing selected.' => 'Nothing selected.',
     'Nothing to index.' => 'Nothing to index.',

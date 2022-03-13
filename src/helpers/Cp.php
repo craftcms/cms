@@ -601,6 +601,7 @@ class Cp
                     ($label
                         ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
                             'id' => $labelId,
+                            'class' => $config['labelClass'] ?? null,
                             'for' => !$fieldset ? $id : null,
                             'aria' => [
                                 'hidden' => $fieldset ? 'true' : null,
