@@ -31,6 +31,7 @@
 - Fixed JavaScript errors that occurred when submitting the form on Edit Entry and Edit Category pages. ([#10704](https://github.com/craftcms/cms/issues/10704))
 - Fixed a bug where translatable field values weren’t getting copied to other sites when editing a freshly-created entry. ([#10724](https://github.com/craftcms/cms/issues/10724))
 - Fixed a JavaScript error that occurred when creating a new category from the Categories index page.
+- Fixed a bug where no fields would be visible after switching an entry’s type, if its section’s field layouts hadn’t been saved since updating to Craft 4.
 
 ## 4.0.0-beta.1 - 2022-03-09
 

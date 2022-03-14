@@ -9,9 +9,9 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 
 /**
- * m220128_055840_field_layout_element_uids migration.
+ * m220314_211928_field_layout_element_uids migration.
  */
-class m220128_055840_field_layout_element_uids extends Migration
+class m220314_211928_field_layout_element_uids extends Migration
 {
     /**
      * @inheritdoc
@@ -48,7 +48,7 @@ class m220128_055840_field_layout_element_uids extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m220128_055840_field_layout_element_uids cannot be reverted.\n";
+        echo "m220314_211928_field_layout_element_uids cannot be reverted.\n";
         return false;
     }
 }
