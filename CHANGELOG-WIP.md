@@ -535,6 +535,7 @@
 - `craft\web\View::renderString()` now has an `$escapeHtml` argument.
 - `craft\web\View::setNamespace()`’ `$namespace` argument no longer has a default value of `null`.
 - The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
+- The `Craft.getUrl()` JavaScript method now encodes any query string params passed to it.
 - Local volumes no longer use Flysystem.
 - Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
