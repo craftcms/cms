@@ -161,6 +161,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: grid;
   grid-template-columns: 30px auto;
   grid-gap: 10px;
+  height: 100%;
   padding: 0 10px;
   position: relative;
   flex: 0 0 50px;
