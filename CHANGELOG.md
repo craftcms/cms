@@ -35,6 +35,7 @@
 - Fixed a JavaScript error that occurred when creating a new category from the Categories index page.
 - Fixed a bug where no fields would be visible after switching an entry’s type, if its section’s field layouts hadn’t been saved since updating to Craft 4.
 - Fixed a bug where entry and volume field layouts with multiple tabs were getting corrupted when updating to Craft 4.
+- Fixed a bug where the View button/menu on Edit Entry pages wasn’t working. ([#10747](https://github.com/craftcms/cms/issues/10747))
 
 ## 4.0.0-beta.1 - 2022-03-09
 

@@ -700,7 +700,7 @@ Craft.ElementEditor = Garnish.Base.extend({
     },
 
     createShareMenu: function($container) {
-        $('<button/>', {
+        const $btn = $('<button/>', {
             type: 'button',
             class: 'share-btn btn menubtn',
             text: Craft.t('app', 'View'),
@@ -714,6 +714,8 @@ Craft.ElementEditor = Garnish.Base.extend({
                 .append(this.createPreviewLink(target, target.label))
                 .appendTo($ul);
         });
+
+        new Garnish.MenuBtn($btn);
     },
 
     getPreviewTokenParams: function() {
@@ -811,7 +813,7 @@ Craft.ElementEditor = Garnish.Base.extend({
         }
 
         const createTokenParams = this.getPreviewTokenParams();
-        createTokenParams.redirect = encodeURIComponent(previewUrl);
+        createTokenParams.redirect = previewUrl;
         return Craft.getActionUrl('preview/create-token', createTokenParams);
     },
 
