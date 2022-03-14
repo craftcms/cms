@@ -161,9 +161,6 @@ class DbConfig extends BaseObject
      */
     public bool $enableProfiling = YII_DEBUG;
 
-    // Deprecated Properties
-    // -------------------------------------------------------------------------
-
     /**
      * @var string|null The database connection URL, if one was provided by your hosting environment.
      *
@@ -172,12 +169,12 @@ class DbConfig extends BaseObject
     public ?string $url = null;
 
     /**
-     * @var string The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
+     * @var string|null The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
      */
     public string $driver;
 
     /**
-     * @var string The database server name or IP address. Usually `localhost` or `127.0.0.1`.
+     * @var string|null The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      */
     public string $server;
 
@@ -193,7 +190,7 @@ class DbConfig extends BaseObject
     public ?string $unixSocket = null;
 
     /**
-     * @var string The name of the database to select.
+     * @var string|null The name of the database to select.
      */
     public string $database;
 
