@@ -69,8 +69,10 @@ class m220309_152006_rename_field_layout_elements extends Migration
                                         }
                                     }
                                 }
+                                unset($elementConfig);
                             }
                         }
+                        unset($tabConfig);
                     }
 
                     if ($modified) {
@@ -100,6 +102,7 @@ class m220309_152006_rename_field_layout_elements extends Migration
                         }
                     }
                 }
+                unset($fieldLayoutConfig);
 
                 if ($anyModified) {
                     $projectConfig->set("$basePath.$uid.fieldLayouts", $fieldLayoutConfigs);

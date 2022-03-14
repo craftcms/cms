@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+> {warning} Due to a data corruption bug, projects that were updated to Craft 4 from Craft 3 are advised to re-update from a Craft 3 database backup.
+
 ### Added
 - Added `craft\base\Element::notesFieldHtml()`.
 - Added `craft\base\Element::statusFieldHtml()`.
@@ -32,6 +34,7 @@
 - Fixed a bug where translatable field values weren’t getting copied to other sites when editing a freshly-created entry. ([#10724](https://github.com/craftcms/cms/issues/10724))
 - Fixed a JavaScript error that occurred when creating a new category from the Categories index page.
 - Fixed a bug where no fields would be visible after switching an entry’s type, if its section’s field layouts hadn’t been saved since updating to Craft 4.
+- Fixed a bug where entry and volume field layouts with multiple tabs were getting corrupted when updating to Craft 4.
 
 ## 4.0.0-beta.1 - 2022-03-09
 
