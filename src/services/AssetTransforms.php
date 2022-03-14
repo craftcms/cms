@@ -1062,7 +1062,7 @@ class AssetTransforms extends Component
 
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
-        try {
+        // try {
             if (!$volume instanceof LocalVolumeInterface) {
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     if (is_file($imageSourcePath)) {
@@ -1108,10 +1108,10 @@ class AssetTransforms extends Component
                     }
                 }
             }
-        } catch (AssetException $exception) {
+        // } catch (AssetException $exception) {
             // Make sure we throw a new exception
-            $imageSourcePath = false;
-        }
+            // $imageSourcePath = false;
+        // }
 
         if (!is_file($imageSourcePath)) {
             throw new VolumeObjectNotFoundException("The file \"{$asset->filename}\" does not exist.");
