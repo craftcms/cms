@@ -1495,7 +1495,7 @@ ul.icons {
       z-index: 1;
     }
 
-    &:not(.dashed):not(:last-child) {
+    &:not(.dashed):not(:last-child):not(.btngroup-btn-last) {
       @include margin-right(1px);
     }
 
@@ -1505,7 +1505,7 @@ ul.icons {
         border-bottom-left-radius: 0;
       }
 
-      &:not(:last-child) {
+      &:not(:last-child):not(.btngroup-btn-last) {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
       }
@@ -1517,7 +1517,7 @@ ul.icons {
         border-bottom-right-radius: 0;
       }
 
-      &:not(:last-child) {
+      &:not(:last-child):not(.btngroup-btn-last) {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
       }
@@ -1846,7 +1846,7 @@ div.btn.submit input {
   border: 1px dashed $mediumHairlineColor;
   background-color: transparent;
 
-  .btngroup &:not(:last-child) {
+  .btngroup &:not(:last-child):not(.btngroup-btn-last) {
     @include border-right(1px solid transparent);
     @include margin-right(-1px);
   }

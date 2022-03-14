@@ -70,10 +70,6 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend({
             params.siteId = this.$element.data('site-id');
         }
 
-        if (this.settings.attributes) {
-            params.attributes = this.settings.attributes;
-        }
-
         if (this.settings.prevalidate) {
             params.prevalidate = 1;
         }
@@ -91,11 +87,10 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend({
         revisionId: null,
         elementType: null,
         siteId: null,
-        attributes: null,
         prevalidate: false,
         saveParams: {},
         elementIndex: null,
         onSaveElement: null,
         validators: [],
-    }
+    },
 });

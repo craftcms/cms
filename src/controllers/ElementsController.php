@@ -200,7 +200,9 @@ class ElementsController extends Controller
 
         $response = $this->_asSuccess(Craft::t('app', '{type} created.', [
             'type' => Craft::t('app', 'Draft'),
-        ]), $element);
+        ]), $element, array_filter([
+            'cpEditUrl' => $this->request->isCpRequest ? $element->getCpEditUrl() : null,
+        ]));
 
         if (!$this->request->getAcceptsJson()) {
             $response->redirect($editUrl);

@@ -2201,14 +2201,12 @@ $.extend($.fn,
 
         disclosureMenu: function() {
             return this.each(function() {
-                var $trigger = $(this);
-                var $disclosureId = $trigger.attr('aria-controls');
+                const $trigger = $(this);
 
                 // Only instantiate element if there is a reference to disclosure content
-                if ($disclosureId) {
-                    var settings = {};
-
-                    new Garnish.DisclosureMenu($trigger, settings);
+                // and if the trigger hasn't already been instantiated
+                if (Garnish.hasAttr($trigger, 'aria-controls') && !$trigger.data('trigger')) {
+                    new Garnish.DisclosureMenu($trigger);
                 }
             });
         },

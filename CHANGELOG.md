@@ -12,6 +12,7 @@
 ### Changed
 - Field grids within slideouts can now only have up to two columns. ([#10726](https://github.com/craftcms/cms/issues/10726))
 - Improved the “Status” and “Notes about your changes” heading styles on edit pages. ([#10738](https://github.com/craftcms/cms/issues/10738))
+- Improved the behavior of “New entry” and “New category” buttons on entry and category indexes.
 - Sidebar components appended to `craft\events\DefineHtmlEvent::$html` for `craft\base\Element::EVENT_DEFINE_SIDEBAR_HTML` are now positioned before the element metadata.
 - `craft\base\Element::EVENT_DEFINE_ADDL_BUTTONS` has been renamed to `EVENT_DEFINE_ADDITIONAL_BUTTONS`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
 - `craft\base\ElementInterface::getAddlButtons()` has been renamed to `getAdditionalButtons()`. ([#10741](https://github.com/craftcms/cms/discussions/10741))
@@ -29,6 +30,7 @@
 - Fixed an error that occurred when saving an entry with an empty `authorId` value. ([#10734](https://github.com/craftcms/cms/issues/10734))
 - Fixed JavaScript errors that occurred when submitting the form on Edit Entry and Edit Category pages. ([#10704](https://github.com/craftcms/cms/issues/10704))
 - Fixed a bug where translatable field values weren’t getting copied to other sites when editing a freshly-created entry. ([#10724](https://github.com/craftcms/cms/issues/10724))
+- Fixed a JavaScript error that occurred when creating a new category from the Categories index page.
 
 ## 4.0.0-beta.1 - 2022-03-09
 
