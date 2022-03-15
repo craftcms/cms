@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved the styling of copy buttons in the control panel. ([#10732](https://github.com/craftcms/cms/discussions/10732))
+- In-app Plugin Store purchases are now completed on `id.craftcms.com` rather than within the control panel.
 
 ### Fixed
 - Fixed a bug where two users could be created with the same username and email, if the **Save** button was double-clicked. ([#9835](https://github.com/craftcms/cms/issues/9835), [#10661](https://github.com/craftcms/cms/issues/10661))
