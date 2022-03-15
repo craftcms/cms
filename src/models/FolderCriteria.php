@@ -33,7 +33,7 @@ class FolderCriteria extends Model
     public mixed $volumeId = null;
 
     /**
-     * @var int|string|array The folder name(s).
+     * @var int|string|array|null The folder name(s).
      *
      * ::: tip
      * If you’re searching for a folder name that contains a comma, pass the value through
@@ -48,9 +48,9 @@ class FolderCriteria extends Model
     public mixed $path = null;
 
     /**
-     * @var string Order
+     * @var string|array Order
      */
-    public string $order = 'name asc';
+    public string|array $order = 'name asc';
 
     /**
      * @var int|null Offset
