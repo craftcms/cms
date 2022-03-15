@@ -763,6 +763,7 @@ class Assets extends Component
             }
 
             // Generate it
+            Craft::error("dir: $dir");
             FileHelper::createDirectory($dir);
             $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
 

@@ -1061,11 +1061,14 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
 
         $imageSourcePath = $asset->getImageTransformSourcePath();
+        Craft::error("imageSourcePath: $imageSourcePath");
 
         // try {
             if (!$volume instanceof LocalVolumeInterface) {
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
+                    Craft::error("err1");
                     if (is_file($imageSourcePath)) {
+                        Craft::error("err2");
                         // Delete since it's a 0-byter
                         FileHelper::unlink($imageSourcePath);
                     }
@@ -1075,6 +1078,7 @@ class AssetTransforms extends Component
                     $tempFilename = uniqid($prefix, true) . '.' . $extension;
                     $tempPath = Craft::$app->getPath()->getTempPath();
                     $tempFilePath = $tempPath . DIRECTORY_SEPARATOR . $tempFilename;
+                    Craft::error("tempFilePath: $tempFilePath");
 
                     // Fetch a list of existing temp files for this image.
                     $files = FileHelper::findFiles($tempPath, [
@@ -1082,14 +1086,17 @@ class AssetTransforms extends Component
                             $prefix . '*' . '.' . $extension,
                         ],
                     ]);
+                    Craft::error("files: " . json_encode($files));
 
                     // And clean them up.
                     if (!empty($files)) {
                         foreach ($files as $filePath) {
+                            Craft::error("err3: $filePath");
                             FileHelper::unlink($filePath);
                         }
                     }
-                    $volume->saveFileLocally($asset->getPath(), $tempFilePath);
+                    $bytes = $volume->saveFileLocally($asset->getPath(), $tempFilePath);
+                    Craft::error("bytes: $bytes");
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
@@ -1099,6 +1106,8 @@ class AssetTransforms extends Component
                             ['file' => $asset->filename]));
                     }
 
+                    Craft::error("tempFilePath: $tempFilePath");
+                    Craft::error("imageSourcePath: $imageSourcePath");
                     $this->storeLocalSource($tempFilePath, $imageSourcePath);
 
                     // Delete the leftover data.
@@ -1186,7 +1195,8 @@ class AssetTransforms extends Component
             $image->scaleToFit($maxCachedImageSize, $maxCachedImageSize, false)->saveAs($destination);
         } else {
             if ($source !== $destination) {
-                copy($source, $destination);
+                $success = copy($source, $destination);
+                Craft::error("copied: $success");
             }
         }
     }
