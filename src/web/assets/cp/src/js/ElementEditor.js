@@ -124,7 +124,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 
             if (this.settings.previewTargets.length === 1) {
                 const [target] = this.settings.previewTargets;
-                this.createPreviewLink(target).addClass('share-btn btn').appendTo($previewBtnContainer);
+                this.createPreviewLink(target).addClass('view-btn btn').appendTo($previewBtnContainer);
             } else {
                 this.createShareMenu($previewBtnContainer);
             }
@@ -702,7 +702,7 @@ Craft.ElementEditor = Garnish.Base.extend({
     createShareMenu: function($container) {
         const $btn = $('<button/>', {
             type: 'button',
-            class: 'share-btn btn menubtn',
+            class: 'view-btn btn menubtn',
             text: Craft.t('app', 'View'),
         }).appendTo($container);
 

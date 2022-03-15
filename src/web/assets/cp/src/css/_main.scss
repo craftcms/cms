@@ -169,7 +169,7 @@ table.editable textarea {
 .go:after,
 .required:after,
 .preview-btn:before,
-.share-btn:before,
+.view-btn:before,
 [data-icon]:before,
 [data-icon-after]:after {
   @include icon;
@@ -250,7 +250,7 @@ body.rtl [data-icon-after="structure"]:after {
 }
 
 .preview-btn,
-.share-btn {
+.view-btn {
   &:before {
     @include margin-right(var(--xs));
   }
@@ -261,7 +261,7 @@ body.rtl [data-icon-after="structure"]:after {
   content: "view";
 }
 
-.share-btn:before {
+.view-btn:before {
   body.ltr & {
     content: "share";
   }
@@ -1757,7 +1757,7 @@ ul.icons {
 
 .btn.big[data-icon]:before,
 .preview-btn:before,
-.share-btn:before {
+.view-btn:before {
   @include margin-left(-2px);
 }
 
