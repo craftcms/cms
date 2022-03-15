@@ -180,7 +180,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             },
         }).then(ev => {
             if (this.settings.context === 'index') {
-                document.location.href = ev.data.cpEditUrl;
+                document.location.href = Craft.getUrl(ev.data.cpEditUrl, {fresh: 1});
             } else {
                 const slideout = Craft.createElementEditor(this.elementType, {
                     siteId: this.siteId,
