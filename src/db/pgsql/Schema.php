@@ -98,7 +98,7 @@ class Schema extends \yii\db\pgsql\Schema
     public function getLastInsertID($sequenceName = ''): string
     {
         if ($sequenceName !== '') {
-            if (strpos($sequenceName, '.') === false) {
+            if (!str_contains($sequenceName, '.')) {
                 $sequenceName = $this->defaultSchema . '.' . $this->getRawTableName($sequenceName);
             }
             $sequenceName .= '_id_seq';
@@ -260,42 +260,22 @@ SQL;
 
         foreach ($extendedConstraints as $key => $extendedConstraint) {
             // Find out what to do on update.
-            switch ($extendedConstraint['update_type']) {
-                case 'a':
-                    $updateAction = 'NO ACTION';
-                    break;
-                case 'r':
-                    $updateAction = 'RESTRICT';
-                    break;
-                case 'c':
-                    $updateAction = 'CASCADE';
-                    break;
-                case 'n':
-                    $updateAction = 'SET NULL';
-                    break;
-                default:
-                    $updateAction = 'DEFAULT';
-                    break;
-            }
+            $updateAction = match ($extendedConstraint['update_type']) {
+                'a' => 'NO ACTION',
+                'r' => 'RESTRICT',
+                'c' => 'CASCADE',
+                'n' => 'SET NULL',
+                default => 'DEFAULT',
+            };
 
             // Find out what to do on update.
-            switch ($extendedConstraint['delete_type']) {
-                case 'a':
-                    $deleteAction = 'NO ACTION';
-                    break;
-                case 'r':
-                    $deleteAction = 'RESTRICT';
-                    break;
-                case 'c':
-                    $deleteAction = 'CASCADE';
-                    break;
-                case 'n':
-                    $deleteAction = 'SET NULL';
-                    break;
-                default:
-                    $deleteAction = 'DEFAULT';
-                    break;
-            }
+            $deleteAction = match ($extendedConstraint['delete_type']) {
+                'a' => 'NO ACTION',
+                'r' => 'RESTRICT',
+                'c' => 'CASCADE',
+                'n' => 'SET NULL',
+                default => 'DEFAULT',
+            };
 
             $table->addExtendedForeignKey($key, [
                 'updateType' => $updateAction,

@@ -35,8 +35,8 @@ class AssetsHelperTest extends Unit
     {
         return [
             'assets' => [
-                'class' => AssetFixture::class
-            ]
+                'class' => AssetFixture::class,
+            ],
         ];
     }
 
@@ -56,9 +56,9 @@ class AssetsHelperTest extends Unit
         }
 
         $asset = $assetQuery->one();
-        $volume = $asset->getVolume();
+        $fs = $asset->getFs();
 
-        self::assertSame($expected, Assets::generateUrl($volume, $asset));
+        self::assertSame($expected, Assets::generateUrl($fs, $asset));
     }
 
     /**
@@ -102,10 +102,7 @@ class AssetsHelperTest extends Unit
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
         self::assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
-        self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
-
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = false;
         self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
@@ -202,7 +199,7 @@ class AssetsHelperTest extends Unit
     public function generateUrlDataProvider(): array
     {
         return [
-            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
+            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']],
         ];
     }
 
@@ -248,7 +245,7 @@ class AssetsHelperTest extends Unit
             ['Audio', 'audio'],
             ['Text', 'text'],
             ['PHP', 'php'],
-            ['unknown', 'Raaa']
+            ['unknown', 'Raaa'],
         ];
     }
 
@@ -259,7 +256,7 @@ class AssetsHelperTest extends Unit
     {
         return [
             [[2, '.'], '{folder:2}.'],
-            [[2, '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
+            [[2, '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()'],
         ];
     }
 

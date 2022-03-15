@@ -20,28 +20,13 @@
 {% endif %}
 
 {{ forms.textField({
-    fieldClass: 'width-50',
-    label: "First Name"|t('app'),
-    id: 'firstName',
-    name: 'firstName',
-    value: user.firstName,
+    label: "Full Name"|t('app'),
+    id: 'fullName',
+    name: 'fullName',
+    value: user.fullName,
     autocomplete: false,
-    errors: user.getErrors('firstName'),
+    errors: user.getErrors('fullName'),
     autofocus: craft.app.config.general.useEmailAsUsername,
-    inputAttributes: {
-        data: {lpignore: 'true'},
-    },
-    disabled: static,
-}) }}
-
-{{ forms.textField({
-    fieldClass: 'width-50',
-    label: "Last Name"|t('app'),
-    id: 'lastName',
-    name: 'lastName',
-    value: user.lastName,
-    autocomplete: false,
-    errors: user.getErrors('lastName'),
     inputAttributes: {
         data: {lpignore: 'true'},
     },

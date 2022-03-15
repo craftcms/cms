@@ -202,7 +202,7 @@ class SectionsController extends Controller
 
         Craft::$app->getSections()->deleteSectionById($sectionId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     // Entry Types
@@ -370,7 +370,7 @@ class SectionsController extends Controller
         $entryTypeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -386,6 +386,6 @@ class SectionsController extends Controller
         $entryTypeId = $this->request->getRequiredBodyParam('id');
 
         $success = Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
-        return $this->asJson(['success' => $success]);
+        return $success ? $this->asSuccess() : $this->asFailure();
     }
 }

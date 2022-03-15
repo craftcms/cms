@@ -34,12 +34,12 @@ abstract class BaseElementFixture extends DbFixture
     /**
      * @var array
      */
-    protected $siteIds = [];
+    protected array $siteIds = [];
 
     /**
      * @var ElementInterface[] The loaded elements
      */
-    private $_elements = [];
+    private array $_elements = [];
 
     /**
      * @inheritdoc
@@ -61,7 +61,7 @@ abstract class BaseElementFixture extends DbFixture
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->createElement();
 
-            // If they want to add a date deleted. Store it but dont set that as an element property
+            // If they want to add a dateDeleted, store it but don't set it on the element
             $dateDeleted = ArrayHelper::remove($data, 'dateDeleted');
 
             // Set the field layout

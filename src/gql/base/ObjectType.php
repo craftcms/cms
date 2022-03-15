@@ -42,7 +42,7 @@ abstract class ObjectType extends GqlObjectType
      * @return mixed $result
      * @throws GqlException if an error occurs
      */
-    public function resolveWithDirectives($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function resolveWithDirectives(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         try {
             $value = $this->resolve($source, $arguments, $context, $resolveInfo);
@@ -63,7 +63,7 @@ abstract class ObjectType extends GqlObjectType
      * @param ResolveInfo $resolveInfo The resolve information
      * @return mixed $result
      */
-    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
@@ -71,7 +71,7 @@ abstract class ObjectType extends GqlObjectType
 
         if (is_object($source)) {
             $result = $source->$fieldName;
-        } else if (is_array($source)) {
+        } elseif (is_array($source)) {
             $result = $source[$fieldName] ?? null;
         }
 

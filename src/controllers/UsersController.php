@@ -110,7 +110,7 @@ class UsersController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'get-remaining-session-time' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -375,15 +375,10 @@ class UsersController extends Controller
 
             $message = UserHelper::getLoginFailureMessage($authError, $e->user);
 
-            return $this->asJson([
-                'success' => false,
-                'message' => $message,
-            ]);
+            return $this->asFailure($message);
         }
 
-        return $this->asJson([
-            'success' => $success,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -394,16 +389,16 @@ class UsersController extends Controller
         // Passing false here for reasons.
         Craft::$app->getUser()->logout(false);
 
-        if ($this->request->getAcceptsJson()) {
-            $return = [
-                'success' => true,
-            ];
+        $data = [];
 
+        if ($this->request->getAcceptsJson()) {
             if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
-                $return['csrfTokenValue'] = $this->request->getCsrfToken();
+                $data['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asJson($return);
+            return $this->asSuccess(
+                data: $data,
+            );
         }
 
         // Redirect to the login page if this is a CP request
@@ -411,7 +406,10 @@ class UsersController extends Controller
             return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
-        return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
+        return $this->asSuccess(
+            data: $data,
+            redirect: Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect()
+        );
     }
 
     /**
@@ -470,12 +468,7 @@ class UsersController extends Controller
         }
 
         if (empty($errors)) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson(['success' => true]);
-            }
-
-            $this->setSuccessFlash(Craft::t('app', 'Password reset email sent.'));
-            return $this->redirectToPostedUrl();
+            return $this->asSuccess(Craft::t('app', 'Password reset email sent.'));
         }
 
         // Handle the errors.
@@ -554,20 +547,15 @@ class UsersController extends Controller
         $user->setScenario(User::SCENARIO_PASSWORD);
 
         if (!Craft::$app->getElements()->saveElement($user)) {
-            $errors = $user->getErrors('newPassword');
-
-            if ($this->request->getAcceptsJson()) {
-                return $this->asErrorJson(implode(', ', $errors));
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t update password.'));
-
-            return $this->_renderSetPasswordTemplate([
-                'errors' => $errors,
-                'code' => $code,
-                'id' => $uid,
-                'newUser' => !$user->password,
-            ]);
+            return $this->asFailure(
+                    Craft::t('app', 'Couldn’t update password.'),
+                    $user->getErrors('newPassword'),
+                ) ?? $this->_renderSetPasswordTemplate([
+                    'errors' => $user->getErrors('newPassword'),
+                    'code' => $code,
+                    'id' => $uid,
+                    'newUser' => !$user->password,
+                ]);
         }
 
         // If they're pending, try to activate them, and maybe treat this as an activation request
@@ -584,13 +572,12 @@ class UsersController extends Controller
 
         if ($this->request->getAcceptsJson()) {
             $return = [
-                'success' => true,
                 'status' => $user->getStatus(),
             ];
             if ($loggedIn && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
-            return $this->asJson($return);
+            return $this->asSuccess(data: $return);
         }
 
         // Can they access the CP?
@@ -629,7 +616,7 @@ class UsersController extends Controller
                     'email' => $user->unverifiedEmail,
                 ]);
             }
-        } else if ($pending) {
+        } elseif ($pending) {
             // No unverified email so just get on with activating their account
             $usersService->activateUser($user);
         }
@@ -683,10 +670,10 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, ?User $user = null, ?array $errors = null): Response
+    public function actionEditUser(mixed $userId = null, ?User $user = null, ?array $errors = null): Response
     {
         if (!empty($errors)) {
-            $this->setFailFlash(reset($errors));
+            $this->setFailFlash(implode(', ', reset($errors)));
         }
 
         // Determine which user account we're editing
@@ -703,7 +690,7 @@ class UsersController extends Controller
                     ->id($userId === 'current' ? $currentUser->id : $userId)
                     ->status(null)
                     ->one();
-            } else if ($edition === Craft::Pro) {
+            } elseif ($edition === Craft::Pro) {
                 // Registering a new user
                 $user = new User();
             }
@@ -880,7 +867,7 @@ class UsersController extends Controller
         if (!$isNewUser) {
             if ($isCurrentUser) {
                 $title = Craft::t('app', 'My Account');
-            } else if ($name) {
+            } elseif ($name) {
                 $title = Craft::t('app', '{user}’s Account', ['user' => $name]);
             } else {
                 $title = Craft::t('app', 'Edit User');
@@ -938,8 +925,7 @@ class UsersController extends Controller
                 $errors = $user->getErrors();
                 $accountFields = [
                     'username',
-                    'firstName',
-                    'lastName',
+                    'fullName',
                     'email',
                     'password',
                     'newPassword',
@@ -1233,8 +1219,21 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $user->firstName = $this->request->getBodyParam('firstName', $user->firstName);
-        $user->lastName = $this->request->getBodyParam('lastName', $user->lastName);
+        $fullName = $this->request->getBodyParam('fullName');
+
+        if ($fullName !== null) {
+            $user->fullName = $fullName;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $this->request->getBodyParam('firstName');
+            $lastName = $this->request->getBodyParam('lastName');
+
+            if ($firstName !== null || $lastName !== null) {
+                $user->fullName = null;
+                $user->firstName = $firstName ?? $user->firstName;
+                $user->lastName = $lastName ?? $user->lastName;
+            }
+        }
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
@@ -1279,10 +1278,9 @@ JS,
         }
 
         // Manually validate the user so we can pass $clearErrors=false
-        if (
-            !$user->validate(null, false) ||
-            !Craft::$app->getElements()->saveElement($user, false)
-        ) {
+        $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
+
+        if (!$success) {
             Craft::info('User not saved due to validation error.', __METHOD__);
 
             if ($isPublicRegistration) {
@@ -1297,20 +1295,11 @@ JS,
                 $user->clearErrors('unverifiedEmail');
             }
 
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson([
-                    'errors' => $user->getErrors(),
-                ]);
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save user.'));
-
-            // Send the account back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                $userVariable => $user,
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $user,
+                Craft::t('app', 'Couldn’t save user.'),
+                $userVariable
+            );
         }
 
         // If this is a new user and email verification isn't required,
@@ -1359,7 +1348,7 @@ JS,
             if ($isPublicRegistration) {
                 // Assign them to the default user group
                 Craft::$app->getUsers()->assignUserToDefaultGroup($user);
-            } else if ($currentUser) {
+            } elseif ($currentUser) {
                 // Fire an 'afterBeforeGroupsAndPermissions' event
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                     $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
@@ -1406,13 +1395,13 @@ JS,
 
         if ($this->request->getAcceptsJson()) {
             $return = [
-                'success' => true,
                 'id' => $user->id,
             ];
             if ($returnCsrfToken && $generalConfig->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
-            return $this->asJson($return);
+
+            return $this->asSuccess(data: $return);
         }
 
         if ($isPublicRegistration) {
@@ -1480,7 +1469,7 @@ JS,
 
             Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);
 
-            return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
+            return $this->asFailure(Craft::t('app', 'There was an error uploading your photo: {error}', [
                 'error' => $exception->getMessage(),
             ]));
         }
@@ -1546,17 +1535,9 @@ JS,
 
         $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => $emailSent]);
-        }
-
-        if ($emailSent) {
-            $this->setSuccessFlash(Craft::t('app', 'Activation email sent.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
-        }
-
-        return $this->redirectToPostedUrl();
+        return $emailSent ?
+            $this->asSuccess(Craft::t('app', 'Activation email sent.')) :
+            $this->asFailure(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
     }
 
     /**
@@ -1630,7 +1611,7 @@ JS,
     /**
      * Returns a summary of the content that is owned by a given user ID(s).
      *
-     * @return Response|null
+     * @return Response
      * @since 3.0.13
      */
     public function actionUserContentSummary(): Response
@@ -1834,10 +1815,10 @@ JS,
         $this->requireAcceptsJson();
 
         if ($this->_verifyExistingPassword()) {
-            return $this->asJson(['success' => true]);
+            return $this->asSuccess();
         }
 
-        return $this->asErrorJson(Craft::t('app', 'Invalid password.'));
+        return $this->asFailure(Craft::t('app', 'Invalid password.'));
     }
 
     /**
@@ -1863,23 +1844,18 @@ JS,
         ]);
         $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson([
+        return $this->asFailure(
+            $event->message,
+            data: [
                 'errorCode' => $authError,
-                'error' => $event->message,
-            ]);
-        }
-
-        $this->setFailFlash($event->message);
-
-        Craft::$app->getUrlManager()->setRouteParams([
-            'loginName' => $this->request->getBodyParam('loginName'),
-            'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
-            'errorCode' => $authError,
-            'errorMessage' => $event->message,
-        ]);
-
-        return null;
+            ],
+            routeParams: [
+                'loginName' => $this->request->getBodyParam('loginName'),
+                'rememberMe' => (bool)$this->request->getBodyParam('rememberMe'),
+                'errorCode' => $authError,
+                'errorMessage' => $event->message,
+            ]
+        );
     }
 
     /**
@@ -1900,7 +1876,6 @@ JS,
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
             $return = [
-                'success' => true,
                 'returnUrl' => $returnUrl,
             ];
 
@@ -1908,7 +1883,7 @@ JS,
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
-            return $this->asJson($return);
+            return $this->asSuccess(data: $return);
         }
 
         return $this->redirectToPostedUrl($userSession->getIdentity(), $returnUrl);
@@ -2017,7 +1992,7 @@ JS,
             move_uploaded_file($photo->tempName, $fileLocation);
             $filename = $photo->name;
             $newPhoto = true;
-        } else if (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
+        } elseif (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
             // base64-encoded photo
             $matches = [];
 
@@ -2158,7 +2133,7 @@ JS,
     /**
      * @return array|Response
      */
-    private function _processTokenRequest()
+    private function _processTokenRequest(): Response|array
     {
         $uid = $this->request->getRequiredParam('id');
         $code = $this->request->getRequiredParam('code');
@@ -2214,7 +2189,7 @@ JS,
         ]));
 
         if ($this->request->getAcceptsJson()) {
-            return $this->asErrorJson('InvalidVerificationCode');
+            return $this->asFailure('InvalidVerificationCode');
         }
 
         // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
@@ -2233,7 +2208,7 @@ JS,
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
+        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
     }
 
     /**
@@ -2319,20 +2294,17 @@ JS,
      */
     private function _handleSendPasswordResetError(array $errors, ?string $loginName = null): ?Response
     {
-        if ($this->request->getAcceptsJson()) {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-            $errors = implode(', ', $errors);
+        $errorString = implode(', ', $errors);
 
-            return $this->asErrorJson($errors);
-        }
-
-        // Send the data back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'errors' => $errors,
-            'loginName' => $loginName,
-        ]);
-
-        return null;
+        return $this->asFailure(
+            $errorString,
+            [
+                'errors' => $errors,
+            ],
+            [
+                'loginName' => $loginName,
+            ]
+        );
     }
 
     /**
@@ -2364,6 +2336,6 @@ JS,
         $this->requirePostRequest();
         $ids = $this->request->getRequiredBodyParam('ids');
         Craft::$app->getAnnouncements()->markAsRead($ids);
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

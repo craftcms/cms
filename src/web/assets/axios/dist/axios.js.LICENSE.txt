@@ -1,3 +1,5 @@
+/*! ../adapters/xhr */
+
 /*! ../cancel/Cancel */
 
 /*! ../cancel/isCancel */
@@ -6,7 +8,11 @@
 
 /*! ../core/createError */
 
+/*! ../core/enhanceError */
+
 /*! ../defaults */
+
+/*! ../defaults/transitional */
 
 /*! ../env/data */
 
@@ -16,13 +22,13 @@
 
 /*! ../helpers/isAbsoluteURL */
 
+/*! ../helpers/normalizeHeaderName */
+
 /*! ../helpers/validator */
 
 /*! ../utils */
 
 /*! ./../core/settle */
-
-/*! ./../defaults */
 
 /*! ./../helpers/buildURL */
 
@@ -38,8 +44,6 @@
 
 /*! ./InterceptorManager */
 
-/*! ./adapters/xhr */
-
 /*! ./cancel/Cancel */
 
 /*! ./cancel/CancelToken */
@@ -47,8 +51,6 @@
 /*! ./cancel/isCancel */
 
 /*! ./core/Axios */
-
-/*! ./core/enhanceError */
 
 /*! ./core/mergeConfig */
 
@@ -66,8 +68,6 @@
 
 /*! ./helpers/isAxiosError */
 
-/*! ./helpers/normalizeHeaderName */
-
 /*! ./helpers/spread */
 
 /*! ./lib/axios */
@@ -75,6 +75,8 @@
 /*! ./mergeConfig */
 
 /*! ./transformData */
+
+/*! ./transitional */
 
 /*! ./utils */
 
@@ -91,10 +93,6 @@
 /*!**********************!*\
   !*** ./lib/utils.js ***!
   \**********************/
-
-/*!*************************!*\
-  !*** ./lib/defaults.js ***!
-  \*************************/
 
 /*!*************************!*\
   !*** ./lib/env/data.js ***!
@@ -119,6 +117,10 @@
 /*!******************************!*\
   !*** ./lib/cancel/Cancel.js ***!
   \******************************/
+
+/*!*******************************!*\
+  !*** ./lib/defaults/index.js ***!
+  \*******************************/
 
 /*!*******************************!*\
   !*** ./lib/helpers/spread.js ***!
@@ -179,6 +181,10 @@
 /*!*************************************!*\
   !*** ./lib/helpers/parseHeaders.js ***!
   \*************************************/
+
+/*!**************************************!*\
+  !*** ./lib/defaults/transitional.js ***!
+  \**************************************/
 
 /*!**************************************!*\
   !*** ./lib/helpers/isAbsoluteURL.js ***!

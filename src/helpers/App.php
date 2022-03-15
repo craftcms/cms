@@ -19,9 +19,6 @@ use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
-use craft\log\Dispatcher;
-use craft\log\FileTarget;
-use craft\log\StreamLogTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -37,11 +34,8 @@ use craft\web\View;
 use HTMLPurifier_Encoder;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
-use yii\i18n\PhpMessageSource;
-use yii\log\Dispatcher as YiiDispatcher;
-use yii\log\Logger;
-use yii\log\Target;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
 
@@ -57,6 +51,12 @@ class App
      * @var bool
      */
     private static bool $_iconv;
+
+    /**
+     * @var string[]
+     * @see isPathAllowed()
+     */
+    private static array $_basePaths;
 
     /**
      * Returns an environment variable, falling back to a PHP constant of the same name.
@@ -101,7 +101,7 @@ class App
      * reference an environment variable and/or alias.
      * @since 3.7.29
      */
-    public static function parseEnv(?string $value)
+    public static function parseEnv(?string $value): bool|string|null
     {
         if ($value === null) {
             return null;
@@ -118,7 +118,7 @@ class App
             $value = $env;
         }
 
-        if (is_string($value) && StringHelper::startsWith($value, '@')) {
+        if (is_string($value) && str_starts_with($value, '@')) {
             $value = Craft::getAlias($value, false) ?: $value;
         }
 
@@ -139,7 +139,7 @@ class App
      * @return bool|null
      * @since 3.7.29
      */
-    public static function parseBooleanEnv($value): ?bool
+    public static function parseBooleanEnv(mixed $value): ?bool
     {
         if (is_bool($value)) {
             return $value;
@@ -205,7 +205,7 @@ class App
                 } else {
                     $value = true;
                 }
-            } else if (str_starts_with($item, "$name=")) {
+            } elseif (str_starts_with($item, "$name=")) {
                 $value = substr($item, $nameLen + 1);
             } else {
                 continue;
@@ -256,14 +256,11 @@ class App
      */
     public static function editionHandle(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'solo';
-            case Craft::Pro:
-                return 'pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'solo',
+            Craft::Pro => 'pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -274,14 +271,11 @@ class App
      */
     public static function editionName(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'Solo';
-            case Craft::Pro:
-                return 'Pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'Solo',
+            Craft::Pro => 'Pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -294,14 +288,11 @@ class App
      */
     public static function editionIdByHandle(string $handle): int
     {
-        switch ($handle) {
-            case 'solo':
-                return Craft::Solo;
-            case 'pro':
-                return Craft::Pro;
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle);
-        }
+        return match ($handle) {
+            'solo' => Craft::Solo,
+            'pro' => Craft::Pro,
+            default => throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle),
+        };
     }
 
     /**
@@ -310,7 +301,7 @@ class App
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
      */
-    public static function isValidEdition($edition): bool
+    public static function isValidEdition(mixed $edition): bool
     {
         if ($edition === false || $edition === null) {
             return false;
@@ -356,7 +347,7 @@ class App
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        return match (strtolower($value)) {
+        return match (is_string($value) ? strtolower($value) : $value) {
             'true' => true,
             'false' => false,
             default => is_numeric($value) ? Number::toIntOrFloat($value) : $value,
@@ -395,7 +386,7 @@ class App
      * @return int|float The value normalized into bytes.
      * @since 3.0.38
      */
-    public static function phpConfigValueInBytes(string $var)
+    public static function phpConfigValueInBytes(string $var): float|int
     {
         $value = trim(ini_get($var));
         return static::phpSizeToBytes($value);
@@ -408,7 +399,7 @@ class App
      * @return int|float The value normalized into bytes.
      * @since 3.6.0
      */
-    public static function phpSizeToBytes(string $value)
+    public static function phpSizeToBytes(string $value): float|int
     {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int)$value;
@@ -425,6 +416,93 @@ class App
         }
 
         return $value;
+    }
+
+    /**
+     * Retrieves a file path PHP config setting and normalizes it to an array of paths.
+     *
+     * @param string $var The PHP config setting to retrieve
+     * @return string[] The normalized paths
+     * @since 3.7.34
+     */
+    public static function phpConfigValueAsPaths(string $var): array
+    {
+        return static::normalizePhpPaths(ini_get($var));
+    }
+
+    /**
+     * Normalizes a PHP path setting to an array of paths
+     *
+     * @param string $value The PHP path setting value
+     * @return string[] The normalized paths
+     * @since 3.7.34
+     */
+    public static function normalizePhpPaths(string $value): array
+    {
+        // semicolons are used to separate paths on Windows; everything else uses colons
+        $value = str_replace(';', ':', trim($value));
+
+        if ($value === '') {
+            return [];
+        }
+
+        $paths = [];
+
+        foreach (explode(':', $value) as $path) {
+            $path = trim($path);
+
+            // Parse ${ENV_VAR}s
+            try {
+                $path = preg_replace_callback('/\$\{(.*?)\}/', function($match) {
+                    $env = App::env($match[1]);
+                    if ($env === false) {
+                        throw new InvalidValueException();
+                    }
+                    return $env;
+                }, $path);
+            } catch (InvalidValueException $e) {
+                // References an env var that doesn’t exist
+                continue;
+            }
+
+            // '.' => working dir
+            if ($path === '.' || str_starts_with($path, './') || str_starts_with($path, '.\\')) {
+                $path = getcwd() . substr($path, 1);
+            }
+
+            // Normalize
+            $paths[] = FileHelper::normalizePath($path);
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Returns whether the given path is within PHP’s `open_basedir` setting.
+     *
+     * @param string $path
+     * @return bool
+     * @since 3.7.34
+     */
+    public static function isPathAllowed(string $path): bool
+    {
+        if (!isset(self::$_basePaths)) {
+            self::$_basePaths = static::phpConfigValueAsPaths('open_basedir');
+        }
+
+        if (!self::$_basePaths) {
+            return true;
+        }
+
+        $path = FileHelper::normalizePath($path);
+
+        foreach (self::$_basePaths as $basePath) {
+            if (str_starts_with($path, $basePath)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -675,6 +753,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
+            'enableLogging' => $dbConfig->enableLogging,
+            'enableProfiling' => $dbConfig->enableProfiling,
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],
@@ -764,78 +844,6 @@ class App
     }
 
     /**
-     * Returns the `log` component config.
-     *
-     * @return array|null
-     * @since 3.0.18
-     * @deprecated in 3.6.0. Override `components.log.targets` instead
-     */
-    public static function logConfig(): ?array
-    {
-        // Using Yii's Dispatcher class here is intentional
-        return [
-            'class' => YiiDispatcher::class,
-            'targets' => array_values(static::defaultLogTargets()),
-        ];
-    }
-
-    /**
-     * Returns the default log targets.
-     *
-     * @return Target[]
-     * @since 3.6.14
-     */
-    public static function defaultLogTargets(): array
-    {
-        // Warning - Don't do anything that could cause something to get logged from here!
-        // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
-        // targets haven’t been instantiated yet.
-
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-
-        // Only log console requests and web requests that aren't getAuthTimeout requests
-        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
-            return [];
-        }
-
-        $targets = [];
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $baseTargetConfig = [
-            'includeUserIp' => $generalConfig->storeUserIps,
-            'except' => [
-                PhpMessageSource::class . ':*',
-            ],
-        ];
-
-        if (self::isStreamLog()) {
-            $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => StreamLogTarget::class,
-                'url' => 'php://stderr',
-                'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
-            ]));
-
-            // Don't pollute console request output
-            if (!$isConsoleRequest && YII_DEBUG) {
-                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
-                    'class' => StreamLogTarget::class,
-                    'url' => 'php://stdout',
-                    'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
-                ]));
-            }
-        } else {
-            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => FileTarget::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-                'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
-                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
-            ]));
-        }
-
-        return $targets;
-    }
-
-    /**
      * Returns the `projectConfig` component config.
      */
     public static function projectConfigConfig(): array
@@ -843,6 +851,7 @@ class App
         return [
             'class' => ProjectConfigService::class,
             'readOnly' => Craft::$app->getIsInstalled() && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
 

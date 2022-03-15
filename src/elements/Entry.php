@@ -302,9 +302,9 @@ class Entry extends Element
         $sections = [];
         if ($source === '*') {
             $sections = Craft::$app->getSections()->getAllSections();
-        } else if ($source === 'singles') {
+        } elseif ($source === 'singles') {
             $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
-        } else if (
+        } elseif (
             preg_match('/^section:(.+)$/', $source, $matches) &&
             $section = Craft::$app->getSections()->getSectionByUid($matches[1])
         ) {
@@ -350,7 +350,7 @@ class Entry extends Element
                     if (($section = Craft::$app->getSections()->getSectionById($matches[1])) !== null) {
                         $sections = [$section];
                     }
-                } else if (preg_match('/^section:(.+)$/', $source, $matches)) {
+                } elseif (preg_match('/^section:(.+)$/', $source, $matches)) {
                     if (($section = Craft::$app->getSections()->getSectionByUid($matches[1])) !== null) {
                         $sections = [$section];
                     }
@@ -419,7 +419,7 @@ class Entry extends Element
             if ($source === '*') {
                 // Delete
                 $actions[] = Delete::class;
-            } else if ($source !== 'singles') {
+            } elseif ($source !== 'singles') {
                 // Channel/Structure-only actions
                 $section = $sections[0];
 
@@ -612,7 +612,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         if ($handle === 'author') {
             $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
@@ -622,7 +622,7 @@ class Entry extends Element
             $map = array_map(function(self $entry) {
                 return [
                     'source' => $entry->id,
-                    'target' => $entry->getAuthorId()
+                    'target' => $entry->getAuthorId(),
                 ];
             }, $sourceElementsWithAuthors);
 
@@ -641,7 +641,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var EntryType $context */
         return self::_getGqlIdentifierByContext($context) . '_Entry';
@@ -651,7 +651,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var EntryType $context */
         return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
@@ -660,7 +660,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var EntryType $context */
         return [
@@ -751,7 +751,7 @@ class Entry extends Element
      * @see getAuthor()
      * @see setAuthor()
      */
-    private $_author;
+    private User|false|null $_author = null;
 
     /**
      * @var int|null Type ID
@@ -795,17 +795,6 @@ class Entry extends Element
         $names[] = 'section';
         $names[] = 'type';
         return $names;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'postDate';
-        $attributes[] = 'expiryDate';
-        return $attributes;
     }
 
     /**
@@ -975,7 +964,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected function route()
+    protected function route(): array|string|null
     {
         // Make sure that the entry is actually live
         if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
@@ -1205,11 +1194,15 @@ class Entry extends Element
     /**
      * Sets the entry author ID.
      *
-     * @param int|int[]|null $authorId
+     * @param int|int[]|string|null $authorId
      * @since 4.0.0
      */
-    public function setAuthorId($authorId): void
+    public function setAuthorId(array|int|string|null $authorId): void
     {
+        if ($authorId === '') {
+            $authorId = null;
+        }
+
         if (is_array($authorId)) {
             $this->_authorId = reset($authorId) ?: null;
         } else {
@@ -1257,7 +1250,7 @@ class Entry extends Element
     public function setAuthor(?User $author = null): void
     {
         $this->_author = $author;
-        $this->setAuthorId($author->id);
+        $this->setAuthorId($author?->id);
     }
 
     /**
@@ -1270,7 +1263,7 @@ class Entry extends Element
         if ($status == self::STATUS_ENABLED && $this->postDate) {
             $currentTime = DateTimeHelper::currentTimeStamp();
             $postDate = $this->postDate->getTimestamp();
-            $expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+            $expiryDate = $this->expiryDate?->getTimestamp();
 
             if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;
@@ -1462,7 +1455,7 @@ class Entry extends Element
         $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
 
         // Ignore homepage/temp slugs
-        if ($this->slug && strpos($this->slug, '__') !== 0) {
+        if ($this->slug && !str_starts_with($this->slug, '__')) {
             $path .= "-$this->slug";
         }
 
@@ -1592,7 +1585,7 @@ class Entry extends Element
                     return '';
                 }
 
-                $drafts = $this->getEagerLoadedElements('drafts');
+                $drafts = $this->getEagerLoadedElements('drafts')->all();
 
                 foreach ($drafts as $draft) {
                     /** @var ElementInterface|DraftBehavior $draft */
@@ -1907,7 +1900,7 @@ EOD;
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -1919,7 +1912,7 @@ EOD;
                 $record = EntryRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid entry ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid entry ID: $this->id");
                 }
             } else {
                 $record = new EntryRecord();

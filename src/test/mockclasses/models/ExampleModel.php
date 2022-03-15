@@ -22,22 +22,72 @@ class ExampleModel extends Model
     /**
      * @var mixed
      */
-    public $exampleParam;
+    public mixed $exampleParam = null;
+
+    /**
+     * @var DateTime|string|null
+     */
+    public DateTime|string|null $exampleDateParam = null;
+
+    /**
+     * @var DateTime|null
+     */
+    public ?DateTime $dateCreated = null;
+
+    /**
+     * @var DateTime|null
+     */
+    public ?DateTime $dateUpdated = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $nullableStringParam = null;
 
     /**
      * @var string
      */
-    public $exampleDateParam;
+    public string $stringParam;
 
     /**
-     * @var DateTime
+     * @var int|null
      */
-    public $dateCreated;
+    public ?int $nullableIntParam = null;
 
     /**
-     * @var DateTime
+     * @var int
      */
-    public $dateUpdated;
+    public int $intParam;
+
+    /**
+     * @var float|null
+     */
+    public ?float $nullableFloatParam = null;
+
+    /**
+     * @var float
+     */
+    public float $floatParam;
+
+    /**
+     * @var inT|float|null
+     */
+    public int|float|null $nullableNumericParam = null;
+
+    /**
+     * @var int|float
+     */
+    public int|float $numericParam;
+
+    /**
+     * @var bool|null
+     */
+    public ?bool $nullableBoolParam = null;
+
+    /**
+     * @var bool
+     */
+    public bool $boolParam;
 
     /**
      * @inheritdoc
@@ -48,5 +98,17 @@ class ExampleModel extends Model
         $attr[] = 'exampleDateParam';
 
         return $attr;
+    }
+
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        $resolveNotNullableProperty = fn(self $model, string $field) => $this->$field ?? null;
+        $fields['stringParam'] = $resolveNotNullableProperty;
+        $fields['intParam'] = $resolveNotNullableProperty;
+        $fields['floatParam'] = $resolveNotNullableProperty;
+        $fields['numericParam'] = $resolveNotNullableProperty;
+        $fields['boolParam'] = $resolveNotNullableProperty;
+        return $fields;
     }
 }

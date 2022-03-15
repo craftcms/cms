@@ -166,7 +166,7 @@ class Routes extends Component
         foreach ($uriParts as $part) {
             if (is_string($part)) {
                 $uriPattern .= $part;
-            } else if (is_array($part)) {
+            } elseif (is_array($part)) {
                 // Is the name a valid handle?
                 if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
                     $subpatternName = $part[0];

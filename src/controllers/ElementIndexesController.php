@@ -17,7 +17,6 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
@@ -70,9 +69,9 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $viewState = null;
 
     /**
-     * @var ElementQueryInterface|ElementQuery|null
+     * @var ElementQueryInterface|null
      */
-    protected $elementQuery;
+    protected ?ElementQueryInterface $elementQuery = null;
 
     /**
      * @var ElementActionInterface[]|null
@@ -253,31 +252,28 @@ class ElementIndexesController extends BaseElementsController
             return $this->response;
         }
 
-        $responseData = [
-            'success' => $success,
-            'message' => $message,
-        ];
+        if (!$success) {
+            return $this->asFailure($message);
+        }
 
-        if ($success) {
-            // Send a new set of elements
-            $responseData = array_merge($responseData, $this->elementResponseData(true, true));
+        // Send a new set of elements
+        $responseData = $this->elementResponseData(true, true);
 
-            // Send updated badge counts
-            /** @var string|ElementInterface $elementType */
-            $elementType = $this->elementType;
-            $formatter = Craft::$app->getFormatter();
-            foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
-                if (isset($source['key'])) {
-                    if (isset($source['badgeCount'])) {
-                        $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
-                    } else {
-                        $responseData['badgeCounts'][$source['key']] = null;
-                    }
+        // Send updated badge counts
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $formatter = Craft::$app->getFormatter();
+        foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
+            if (isset($source['key'])) {
+                if (isset($source['badgeCount'])) {
+                    $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
+                } else {
+                    $responseData['badgeCounts'][$source['key']] = null;
                 }
             }
         }
 
-        return $this->asJson($responseData);
+        return $this->asSuccess($message, data: $responseData);
     }
 
     /**
@@ -343,7 +339,7 @@ class ElementIndexesController extends BaseElementsController
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                     break;
             }
-        } else if (
+        } elseif (
             is_callable($export) ||
             is_resource($export) ||
             (is_array($export) && isset($export[0]) && is_resource($export[0]))
@@ -680,10 +676,10 @@ class ElementIndexesController extends BaseElementsController
             if ($this->elementQuery->trashed) {
                 if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
                     $action->hard = true;
-                } else if (!$action instanceof Restore) {
+                } elseif (!$action instanceof Restore) {
                     unset($actions[$i]);
                 }
-            } else if ($action instanceof Restore) {
+            } elseif ($action instanceof Restore) {
                 unset($actions[$i]);
             }
         }

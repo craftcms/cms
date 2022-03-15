@@ -16,7 +16,6 @@ use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\db\ElementQuery;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -47,7 +46,7 @@ use yii\base\Module;
  * There is a potential 'bug'/hampering feature with the Yii2 Codeception module.
  * DB connections initialized through the configFile param (see https://codeception.com/docs/modules/Yii2)
  * Are not captured by the Yii2Connector\ConnectionWatcher and Yii2Connector\TransactionForcer i.e. all DB interactions done through
- * Craft::$app->getDb() are not stored and roll'd back in transactions.
+ * Craft::$app->getDb() are not stored and rolled back in transactions.
  *
  * This is probably because the starting of the app (triggered by $this->client->startApp()) is done BEFORE the
  * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the connection
@@ -65,17 +64,17 @@ class Craft extends Yii2
     /**
      * @var self The current instance
      */
-    public static $instance;
+    public static self $instance;
 
     /**
      * @var TestInterface
      */
-    public static $currentTest;
+    public static TestInterface $currentTest;
 
     /**
      * @var array Application config file must be set.
      */
-    protected $addedConfig = [
+    protected array $addedConfig = [
         'migrations' => [],
         'plugins' => [],
         'dbSetup' => null,
@@ -87,12 +86,12 @@ class Craft extends Yii2
     /**
      * @var array For expecting events code
      */
-    protected $triggeredEvents = [];
+    protected array $triggeredEvents = [];
 
     /**
      * @var array For expecting events code
      */
-    protected $requiredEvents = [];
+    protected array $requiredEvents = [];
 
     /**
      * Craft constructor.
@@ -161,7 +160,7 @@ class Craft extends Yii2
 
         parent::_before($test);
 
-        // If full mock. Create the mock app and dont perform to any further actions.
+        // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
             $mockApp = TestSetup::getMockApp($test);
             \Craft::$app = $mockApp;
@@ -189,7 +188,7 @@ class Craft extends Yii2
     {
         $projectConfig = $this->_getConfig('projectConfig');
 
-        // If reset is disabled and we dont have to $force we can abandon....
+        // If `reset` is disabled and we don't have to $force, we can abandon...
         if (isset($projectConfig['reset']) && $projectConfig['reset'] === false && $force === false) {
             return true;
         }
@@ -226,15 +225,15 @@ class Craft extends Yii2
     {
         ob_start();
         try {
-            // Prevent's a static properties bug.
+            // Prevents a static properties bug
             ProjectConfig::reset();
 
             App::maxPowerCaptain();
 
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
-            // Setup the project config from the passed file.
-            if ($projectConfig = TestSetup::useProjectConfig()) {
+            // Set up the project config from the passed file.
+            if (TestSetup::useProjectConfig()) {
                 TestSetup::setupProjectConfig();
             }
 
@@ -279,7 +278,7 @@ class Craft extends Yii2
             throw $exception;
         }
 
-        // Dont output anything or we get header's already sent exception
+        // Avoid a "headers already sent" error
         ob_end_clean();
         TestSetup::tearDownCraft();
     }
@@ -293,7 +292,7 @@ class Craft extends Yii2
     public function installPlugin(array $plugin): void
     {
         if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
-            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle'] . '');
+            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle']);
         }
     }
 
@@ -309,7 +308,7 @@ class Craft extends Yii2
      * @param $path
      * @return string|false
      */
-    public static function normalizePathSeparators($path)
+    public static function normalizePathSeparators($path): string|false
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
     }
@@ -345,7 +344,7 @@ class Craft extends Yii2
         string $eventName,
         $callback,
         string $eventInstance = '',
-        array $eventValues = []
+        array $eventValues = [],
     ): void {
         // Add this event.
         $eventTriggered = false;
@@ -422,7 +421,7 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var ElementQuery $elementQuery */
+        /** @var string|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);

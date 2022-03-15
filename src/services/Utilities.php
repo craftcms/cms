@@ -40,7 +40,7 @@ class Utilities extends Component
      *
      * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * See [Utility Types](https://craftcms.com/docs/3.x/extend/utility-types.html) for documentation on creating utility types.
+     * See [Utility Types](https://craftcms.com/docs/4.x/extend/utility-types.html) for documentation on creating utility types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;

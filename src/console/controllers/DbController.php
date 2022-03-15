@@ -74,7 +74,7 @@ class DbController extends Controller
 
         if ($path !== null) {
             // Prefix with the working directory if a relative path or no path is given
-            if (strpos($path, '.') === 0 || strpos(FileHelper::normalizePath($path, '/'), '/') === false) {
+            if (str_starts_with($path, '.') || !str_contains(FileHelper::normalizePath($path, '/'), '/')) {
                 $path = getcwd() . DIRECTORY_SEPARATOR . $path;
             }
 
@@ -82,7 +82,7 @@ class DbController extends Controller
 
             if (is_dir($path)) {
                 $path .= DIRECTORY_SEPARATOR . basename($db->getBackupFilePath());
-            } else if ($this->zip) {
+            } elseif ($this->zip) {
                 $path = preg_replace('/\.zip$/', '', $path);
             }
         } else {

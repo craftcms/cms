@@ -85,7 +85,7 @@ class Component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
-    public static function createComponent($config, ?string $instanceOf = null): ComponentInterface
+    public static function createComponent(mixed $config, ?string $instanceOf = null): ComponentInterface
     {
         // Normalize the config
         if (is_string($config)) {
@@ -106,9 +106,11 @@ class Component
         // Merge the settings sub-key into the main config
         $config = self::mergeSettings($config);
 
+        // Typecast the properties
+        Typecast::properties($class, $config);
+
         // Instantiate and return
         $config['class'] = $class;
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject($config);
     }
 

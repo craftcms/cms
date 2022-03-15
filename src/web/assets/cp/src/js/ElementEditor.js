@@ -24,7 +24,7 @@ Craft.ElementEditor = Garnish.Base.extend({
     $siteStatusPane: null,
     $globalLightswitch: null,
     $siteLightswitches: null,
-    $addlSiteField: null,
+    $additionalSiteField: null,
 
     siteIds: null,
     newSiteIds: null,
@@ -124,7 +124,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 
             if (this.settings.previewTargets.length === 1) {
                 const [target] = this.settings.previewTargets;
-                this.createPreviewLink(target).addClass('share-btn btn').appendTo($previewBtnContainer);
+                this.createPreviewLink(target).addClass('view-btn btn').appendTo($previewBtnContainer);
             } else {
                 this.createShareMenu($previewBtnContainer);
             }
@@ -412,7 +412,7 @@ Craft.ElementEditor = Garnish.Base.extend({
         }
 
         // Are there additional sites that can be added?
-        if (this.settings.addlSites && this.settings.addlSites.length && this.isFullPage) {
+        if (this.settings.additionalSites && this.settings.additionalSites.length && this.isFullPage) {
             this._createAddlSiteField();
         }
 
@@ -499,8 +499,8 @@ Craft.ElementEditor = Garnish.Base.extend({
             disabled: !!this.settings.revisionId,
         });
 
-        if (this.$addlSiteField) {
-            $field.insertBefore(this.$addlSiteField);
+        if (this.$additionalSiteField) {
+            $field.insertBefore(this.$additionalSiteField);
         } else {
             $field.appendTo(this.$siteStatusPane);
         }
@@ -518,24 +518,24 @@ Craft.ElementEditor = Garnish.Base.extend({
     },
 
     _createAddlSiteField: function() {
-        const addlSites = Craft.sites.filter(site => {
-            return !this.siteIds.includes(site.id) && this.settings.addlSites.some(s => s.siteId == site.id);
+        const additionalSites = Craft.sites.filter(site => {
+            return !this.siteIds.includes(site.id) && this.settings.additionalSites.some(s => s.siteId == site.id);
         });
 
-        if (!addlSites.length) {
+        if (!additionalSites.length) {
             return;
         }
 
         const $addlSiteSelectContainer = Craft.ui.createSelect({
             options: [
                 {label: Craft.t('app', 'Add a site…')},
-                ...addlSites.map(s => {
+                ...additionalSites.map(s => {
                     return {label: s.name, value: s.id};
                 }),
             ],
         }).addClass('fullwidth');
 
-        this.$addlSiteField = Craft.ui.createField($addlSiteSelectContainer, {})
+        this.$additionalSiteField = Craft.ui.createField($addlSiteSelectContainer, {})
             .addClass('nested add')
             .appendTo(this.$siteStatusPane);
 
@@ -549,7 +549,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                 return;
             }
 
-            const addlSiteInfo = this.settings.addlSites.find(s => s.siteId == site.id);
+            const addlSiteInfo = this.settings.additionalSites.find(s => s.siteId == site.id);
             this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
             this._updateGlobalStatus();
 
@@ -566,11 +566,11 @@ Craft.ElementEditor = Garnish.Base.extend({
 
             // Was that the last site?
             if ($addlSiteSelect.find('option').length === 1) {
-                this._removeField(this.$addlSiteField);
+                this._removeField(this.$additionalSiteField);
             }
         });
 
-        this._showField(this.$addlSiteField);
+        this._showField(this.$additionalSiteField);
     },
 
     showStatusHud: function(target) {
@@ -700,9 +700,9 @@ Craft.ElementEditor = Garnish.Base.extend({
     },
 
     createShareMenu: function($container) {
-        $('<button/>', {
+        const $btn = $('<button/>', {
             type: 'button',
-            class: 'share-btn btn menubtn',
+            class: 'view-btn btn menubtn',
             text: Craft.t('app', 'View'),
         }).appendTo($container);
 
@@ -714,6 +714,8 @@ Craft.ElementEditor = Garnish.Base.extend({
                 .append(this.createPreviewLink(target, target.label))
                 .appendTo($ul);
         });
+
+        new Garnish.MenuBtn($btn);
     },
 
     getPreviewTokenParams: function() {
@@ -811,7 +813,7 @@ Craft.ElementEditor = Garnish.Base.extend({
         }
 
         const createTokenParams = this.getPreviewTokenParams();
-        createTokenParams.redirect = encodeURIComponent(previewUrl);
+        createTokenParams.redirect = previewUrl;
         return Craft.getActionUrl('preview/create-token', createTokenParams);
     },
 
@@ -1049,7 +1051,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                     }
                     this.newSiteIds.forEach(siteId => {
                         const $option = revisionMenu.$options.filter(`[data-site-id=${siteId}]`);
-                        const siteSettings = this.settings.addlSites.find(s => s.siteId == siteId);
+                        const siteSettings = this.settings.additionalSites.find(s => s.siteId == siteId);
                         if (!siteSettings || typeof siteSettings.enabledByDefault === 'undefined' || siteSettings.enabledByDefault) {
                             $option.find('.status').removeClass('disabled').addClass('enabled');
                         }
@@ -1168,7 +1170,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                             visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
 
                             if (typeof elementInfo.html === 'string') {
-                                let $oldElement = $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`);
+                                const $oldElement = $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`);
                                 const $newElement = $(elementInfo.html);
                                 if ($oldElement.length) {
                                     $oldElement.replaceWith($newElement);
@@ -1179,24 +1181,29 @@ Craft.ElementEditor = Garnish.Base.extend({
                                 changedElements = true;
                             }
                         } else {
-                            const $placeholder = $('<div/>', {
-                                class: 'hidden',
-                                'data-layout-element': elementInfo.uid,
-                            });
+                            const $oldElement = $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`);
+                            if (!$oldElement.length || !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')) {
+                                const $placeholder = $('<div/>', {
+                                    class: 'hidden',
+                                    'data-layout-element': elementInfo.uid,
+                                    'data-layout-element-placeholder': '',
+                                });
 
-                            if (this.settings.visibleLayoutElements[tabInfo.uid] && this.settings.visibleLayoutElements[tabInfo.uid].includes(elementInfo.uid)) {
-                                $tabContainer.children(`[data-layout-element="${elementInfo.uid}"]`).replaceWith($placeholder);
-                            } else {
-                                $placeholder.appendTo($tabContainer);
+                                if ($oldElement.length) {
+                                    $oldElement.replaceWith($placeholder);
+                                } else {
+                                    $placeholder.appendTo($tabContainer);
+                                }
+
+                                changedElements = true;
                             }
-
-                            changedElements = true;
                         }
                     }
                 }
 
                 // Remove any unused tab content containers
-                const $unusedTabContainers = this.$contentContainer.children('[data-layout-tab]').not($allTabContainers);
+                // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
+                const $unusedTabContainers = this.$contentContainer.children('[data-layout-tab]').not($allTabContainers).not('[data-layout-tab=""]');
                 if ($unusedTabContainers.length) {
                     $unusedTabContainers.remove();
                     changedElements = true;
@@ -1250,7 +1257,7 @@ Craft.ElementEditor = Garnish.Base.extend({
                     this.failed = true;
                     if (e && e.response) {
                         this.httpStatus = e.response.status;
-                        this.httpError = e.response.data ? e.response.data.error : null;
+                        this.httpError = e.response.data ? e.response.data.message : null;
                     }
                     this._showFailStatus();
                     reject(e);
@@ -1545,6 +1552,7 @@ Craft.ElementEditor = Garnish.Base.extend({
         const data = this.prepareData(this.serializeForm(false));
 
         if (this.isFullPage) {
+            this.stopListeningForChanges();
             const $form = Craft.createForm(data);
             $form.appendTo(Garnish.$bod);
             $form.submit();
@@ -1565,7 +1573,7 @@ Craft.ElementEditor = Garnish.Base.extend({
     },
 }, {
     defaults: {
-        addlSites: [],
+        additionalSites: [],
         canCreateDrafts: false,
         canEditMultipleSites: false,
         canSaveCanonical: false,

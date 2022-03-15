@@ -20,12 +20,12 @@ class EagerLoadPlan extends BaseObject
     /**
      * @var string|null The eager-loading handle
      */
-    public ?string $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null The eager-loading alias
      */
-    public ?string $alias;
+    public ?string $alias = null;
 
     /**
      * @var array The criteria that should be applied when eager-loading these elements

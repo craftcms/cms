@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -56,7 +57,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume The Volume to perform indexing on.
      * @param string $directory Optional path to get index list on a subfolder.
-     * @return Generator|FsListing[]
+     * @return Generator
      * @throws FsException
      */
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
@@ -75,7 +76,7 @@ class AssetIndexer extends Component
 
             foreach ($segments as $i => $segment) {
                 // Ignore if contained in or is a directory beginning with _
-                if (strpos($segment, '_') === 0 && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
+                if (str_starts_with($segment, '_') && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
                     continue 2;
                 }
             }
@@ -191,11 +192,7 @@ class AssetIndexer extends Component
      */
     public function stopIndexingSession(AssetIndexingSession $session): void
     {
-        $sessionRecord = AssetIndexingSessionRecord::findOne($session->id);
-
-        if ($sessionRecord) {
-            $sessionRecord->delete();
-        }
+        AssetIndexingSessionRecord::findOne($session->id)?->delete();
     }
 
     /**
@@ -323,9 +320,9 @@ class AssetIndexer extends Component
             }
 
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
-        } catch (AssetDisallowedExtensionException | AssetNotIndexableException $exception) {
+        } catch (AssetDisallowedExtensionException|AssetNotIndexableException $exception) {
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
         }

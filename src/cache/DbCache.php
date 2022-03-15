@@ -35,7 +35,7 @@ class DbCache extends YiiDbCache
                     'id' => $key,
                     'expire' => $duration > 0 ? $duration + time() : 0,
                     'data' => new PdoValue($value, PDO::PARAM_LOB),
-                ], true, [], false, $db);
+                ], db: $db);
             });
             $this->gc();
             return true;
@@ -58,7 +58,7 @@ class DbCache extends YiiDbCache
                     'id' => $key,
                     'expire' => $duration > 0 ? $duration + time() : 0,
                     'data' => new PdoValue($value, PDO::PARAM_LOB),
-                ], false, $db);
+                ], $db);
             });
             return true;
         } catch (Exception $e) {

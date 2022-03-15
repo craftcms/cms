@@ -9,14 +9,15 @@ namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\ReadOnlyProjectConfigData;
+use craft\mutex\Mutex;
+use craft\mutex\NullMutex;
 use craft\services\ProjectConfig;
-use craft\services\Sections;
 use craft\test\TestCase;
 use UnitTester;
 use yii\base\NotSupportedException;
+use yii\mutex\Mutex as YiiMutex;
 
 /**
  * Unit tests for ProjectConfig service.
@@ -34,22 +35,39 @@ class ProjectConfigTest extends TestCase
     protected $internal = [
         'a' => 'b',
         'b' => [
-            'c' => 'd'
+            'c' => 'd',
         ],
         'e' => [1, 2, 3],
         'f' => 'g',
         'randomString' => 'Entirely random',
-        'dateModified' => 1609452000
+        'dateModified' => 1609452000,
     ];
 
     protected $external = [
         'aa' => 'bb',
         'bb' => [
-            'vc' => 'dd'
+            'vc' => 'dd',
         ],
         'ee' => [11, 22, 33],
-        'f' => 'g'
+        'f' => 'g',
     ];
+
+    private YiiMutex $_originalMutex;
+
+    protected function _before()
+    {
+        parent::_before();
+        $this->_originalMutex = Craft::$app->getMutex();
+        Craft::$app->set('mutex', new Mutex([
+            'mutex' => new NullMutex(),
+        ]));
+    }
+
+    protected function _after()
+    {
+        parent::_after();
+        Craft::$app->set('mutex', $this->_originalMutex);
+    }
 
     /**
      * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
@@ -143,14 +161,14 @@ class ProjectConfigTest extends TestCase
         $internal = [
             'common' => [
                 'foo' => 'bar',
-                'bar' => 'baz'
-            ]
+                'bar' => 'baz',
+            ],
         ];
 
         $external = [
             'common' => [
                 'box' => 'bax',
-            ]
+            ],
         ];
         $pc = $this->getProjectConfig($internal, $external);
 
@@ -171,7 +189,6 @@ class ProjectConfigTest extends TestCase
         $pc->readOnly = true;
         $this->expectExceptionMessage('while in read-only');
         $pc->set('path', 'value');
-
     }
 
     public function testSettingValueChangesTimestamp()
@@ -186,16 +203,15 @@ class ProjectConfigTest extends TestCase
     {
         $pc = $this->getProjectConfig(null, null, [
             'trigger' => Expected::atLeastOnce(),
-            'storeYamlHistory'=> Expected::atLeastOnce(),
+            'storeYamlHistory' => Expected::atLeastOnce(),
         ]);
         Craft::$app->set('projectConfig', $pc);
 
         $pc->set('some.path', 'value');
         $pc->saveModifiedConfigData();
-        
+
         $pc->remove('some.path');
         $pc->saveModifiedConfigData();
-
     }
 
     public function getConfigProvider()
@@ -210,7 +226,7 @@ class ProjectConfigTest extends TestCase
                     'a' => null,
                     'b' => 'c',
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -221,7 +237,7 @@ class ProjectConfigTest extends TestCase
                     'a' => 'b',
                     'b' => null,
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -232,7 +248,7 @@ class ProjectConfigTest extends TestCase
                     'a' => null,
                     'b' => null,
                     'c' => 'a',
-                ]
+                ],
             ],
         ];
     }
@@ -242,12 +258,12 @@ class ProjectConfigTest extends TestCase
         return [
             [
                 'a.b.c',
-                ['foo' => 'bar']
+                ['foo' => 'bar'],
             ],
             [
                 'a.b',
-                ['foo' => 'bar', 'bar' => ['baz']]
-            ]
+                ['foo' => 'bar', 'bar' => ['baz']],
+            ],
         ];
     }
 

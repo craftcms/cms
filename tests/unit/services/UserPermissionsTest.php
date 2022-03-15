@@ -17,8 +17,8 @@ use craft\test\TestCase;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\SectionsFixture;
 use crafttests\fixtures\SitesFixture;
-use crafttests\fixtures\UserGroupsFixture;
 use crafttests\fixtures\UserFixture;
+use crafttests\fixtures\UserGroupsFixture;
 use crafttests\fixtures\VolumesFixture;
 use UnitTester;
 use yii\db\Exception as YiiDbException;
@@ -51,25 +51,26 @@ class UserPermissionsTest extends TestCase
     {
         return [
             'user-groups' => [
-                'class' => UserGroupsFixture::class
+                'class' => UserGroupsFixture::class,
             ],
             'users' => [
-                'class' => UserFixture::class
+                'class' => UserFixture::class,
             ],
             'sites' => [
-                'class' => SitesFixture::class
+                'class' => SitesFixture::class,
             ],
             'sections' => [
-                'class' => SectionsFixture::class
+                'class' => SectionsFixture::class,
             ],
             'globals' => [
                 'class' => GlobalSetFixture::class,
             ],
             'volumes' => [
-                'class' => VolumesFixture::class
-            ]
+                'class' => VolumesFixture::class,
+            ],
         ];
     }
+
 
     /**
      *
@@ -98,8 +99,6 @@ class UserPermissionsTest extends TestCase
      */
     public function testDoesGroupHavePermission()
     {
-        Craft::$app->setEdition(Craft::Pro);
-
         self::assertFalse(
             $this->userPermissions->doesGroupHavePermission('1000', 'accessCp')
         );
@@ -133,7 +132,6 @@ class UserPermissionsTest extends TestCase
      */
     public function testDoesUserHavePermission()
     {
-        Craft::$app->setEdition(Craft::Pro);
         $this->userPermissions->saveGroupPermissions('1000', ['accessCp']);
 
         $user = User::find()
@@ -164,7 +162,6 @@ class UserPermissionsTest extends TestCase
     public function testPermissionGet()
     {
         // Setup user and craft
-        Craft::$app->setEdition(Craft::Pro);
         $this->userPermissions->saveGroupPermissions('1001', ['utility:php-info']);
         $this->userPermissions->saveGroupPermissions('1000', ['accessCp', 'utility:updates']);
 
@@ -192,7 +189,6 @@ class UserPermissionsTest extends TestCase
     public function testChangedGroupPermissions()
     {
         // Setup user and craft
-        Craft::$app->setEdition(Craft::Pro);
         $this->userPermissions->saveGroupPermissions('1000', ['accessCp']);
 
         $user = User::find()
@@ -215,6 +211,8 @@ class UserPermissionsTest extends TestCase
      */
     protected function _before()
     {
+        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->getProjectConfig()->rebuild();
         parent::_before();
 
         $this->userPermissions = Craft::$app->getUserPermissions();

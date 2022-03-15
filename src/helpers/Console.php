@@ -35,7 +35,7 @@ class Console extends \yii\helpers\Console
      * @param string $string the string to print
      * @return int|false Number of bytes printed or false on error
      */
-    public static function stdout($string)
+    public static function stdout($string): int|false
     {
         if (static::streamSupportsAnsiColors(STDOUT)) {
             $args = func_get_args();
@@ -204,25 +204,18 @@ class Console extends \yii\helpers\Console
 
             if ($len < $size) {
                 if (isset($cell['align'])) {
-                    switch ($cell['align']) {
-                        case 'left':
-                            $padType = STR_PAD_RIGHT;
-                            break;
-                        case 'right':
-                            $padType = STR_PAD_LEFT;
-                            break;
-                        case 'center':
-                            $padType = STR_PAD_BOTH;
-                            break;
-                        default:
-                            throw new InvalidValueException("Invalid align value: {$cell['align']}");
-                    }
+                    $padType = match ($cell['align']) {
+                        'left' => STR_PAD_RIGHT,
+                        'right' => STR_PAD_LEFT,
+                        'center' => STR_PAD_BOTH,
+                        default => throw new InvalidValueException("Invalid align value: {$cell['align']}"),
+                    };
                 } else {
                     $padType = STR_PAD_RIGHT;
                 }
 
-                $value = str_pad($value, $size, ' ', $padType ?? STR_PAD_RIGHT);
-            } else if ($len > $size) {
+                $value = str_pad($value, $size, ' ', $padType);
+            } elseif ($len > $size) {
                 $value = substr($value, 0, $size - 1) . '…';
             }
 

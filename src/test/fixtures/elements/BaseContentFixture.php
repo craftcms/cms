@@ -37,19 +37,19 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @var string The element type this is for
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var bool Whether to skip elements that can’t be found per the criteria in the [[$dataFile|data file]].
      *
      * If this is set to `false`, an exception will be thrown.
      */
-    public $skipMissingElements = true;
+    public bool $skipMissingElements = true;
 
     /**
      * @var ElementInterface[]|null[] The loaded elements
      */
-    private $_elements = [];
+    private array $_elements = [];
 
     /**
      * @inheritdoc

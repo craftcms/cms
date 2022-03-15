@@ -27,7 +27,7 @@ class RevisionEvent extends Event
     /**
      * @var int|null The creator ID
      */
-    public ?int $creatorId;
+    public ?int $creatorId = null;
 
     /**
      * @var int The revision number
@@ -37,10 +37,10 @@ class RevisionEvent extends Event
     /**
      * @var string|null The revision notes
      */
-    public ?string $revisionNotes;
+    public ?string $revisionNotes = null;
 
     /**
      * @var ElementInterface|RevisionBehavior|null The revision associated with the event (if it exists yet)
      */
-    public $revision;
+    public ?ElementInterface $revision = null;
 }

@@ -8,7 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
+use craft\errors\StaleResourceException;
 use craft\helpers\ArrayHelper;
 use craft\services\ProjectConfig;
 use Throwable;
@@ -54,7 +56,18 @@ class ConfigSyncController extends BaseUpdaterController
             $projectConfig->forceUpdate = true;
         }
 
-        $projectConfig->applyExternalChanges();
+        try {
+            $projectConfig->applyExternalChanges();
+        } catch (BusyResourceException|StaleResourceException $e) {
+            return $this->send([
+                'error' => $e->getMessage(),
+                'options' => [
+                    $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
+                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
+                ],
+            ]);
+        }
+
         return $this->sendFinished();
     }
 
@@ -181,7 +194,7 @@ class ConfigSyncController extends BaseUpdaterController
 
                 if (!$plugin) {
                     $missingPlugins[] = "`$handle`";
-                } else if ($plugin->schemaVersion != $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true)) {
+                } elseif ($plugin->schemaVersion != $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true)) {
                     $incompatibilities[] = $plugin->name;
                 }
             }
@@ -190,7 +203,7 @@ class ConfigSyncController extends BaseUpdaterController
         if (!empty($incompatibilities)) {
             $error = Craft::t('app', "Your project config YAML files are expecting different versions to be installed for the following:") .
                 ' ' . implode(', ', $incompatibilities);
-        } else if (!empty($missingPlugins)) {
+        } elseif (!empty($missingPlugins)) {
             $error = Craft::t('app', "Your project config YAML files are expecting the following plugins to be installed:") .
                 ' ' . implode(', ', $missingPlugins);
         }

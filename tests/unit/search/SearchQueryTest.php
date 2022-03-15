@@ -16,7 +16,7 @@ use craft\search\SearchQueryTermGroup;
  * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/3.x/searching.html
+ * https://craftcms.com/docs/4.x/searching.html
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
@@ -26,7 +26,7 @@ use craft\search\SearchQueryTermGroup;
  */
 class SearchQueryTest extends Unit
 {
-    const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
+    public const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,
         'exact' => false,
         'subLeft' => false,
@@ -93,7 +93,7 @@ class SearchQueryTest extends Unit
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
         self::assertSame([
-            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
+            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase,
         ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
 
@@ -274,7 +274,7 @@ class SearchQueryTest extends Unit
             ['i said body::test', ['2' => $attributeConfig], 3],
 
             ['i have spaces and lines', null, 5],
-            ['"i" said Hello', ['0' => $firstQuote], 3]
+            ['"i" said Hello', ['0' => $firstQuote], 3],
         ];
     }
 }

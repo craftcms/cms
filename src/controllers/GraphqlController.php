@@ -41,7 +41,7 @@ class GraphqlController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['api'];
+    protected array|bool|int $allowAnonymous = ['api'];
 
     /**
      * @inheritdoc
@@ -93,7 +93,7 @@ class GraphqlController extends Controller
                     }
                 }
             }
-        } else if ($generalConfig->allowedGraphqlOrigins !== false) {
+        } elseif ($generalConfig->allowedGraphqlOrigins !== false) {
             $headers->setDefault('Access-Control-Allow-Origin', '*');
         }
 
@@ -464,18 +464,15 @@ class GraphqlController extends Controller
         }
 
         if (!$gqlService->saveToken($token)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save token.'));
-
-            // Send the token back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'token' => $token,
-            ]);
-
-            return null;
+            return $this->asFailure(
+                Craft::t('app', 'Couldn’t save token.'),
+                routeParams: [
+                    'token' => $token,
+                ]
+            );
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t('app', 'Schema saved.'));
     }
 
     /**
@@ -493,7 +490,7 @@ class GraphqlController extends Controller
 
         Craft::$app->getGql()->deleteTokenById($schemaId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
 
@@ -681,7 +678,7 @@ class GraphqlController extends Controller
 
         Craft::$app->getGql()->deleteSchemaById($schemaId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**

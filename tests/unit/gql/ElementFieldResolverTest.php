@@ -9,6 +9,7 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\base\Fs;
 use craft\elements\Asset;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
@@ -26,13 +27,17 @@ use craft\gql\types\elements\Tag as TagGqlType;
 use craft\gql\types\elements\User as UserGqlType;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\imagetransforms\ImageTransformer;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
+use craft\models\ImageTransform;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use craft\models\Volume;
 use craft\services\Assets;
+use craft\services\ImageTransforms;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class ElementFieldResolverTest extends Unit
@@ -53,8 +58,8 @@ class ElementFieldResolverTest extends Unit
                     'scope' => [
                         'usergroups.group-1-uid:read',
                         'usergroups.group-2-uid:read',
-                    ]
-                ])
+                    ],
+                ]),
             ]
         );
     }
@@ -89,7 +94,7 @@ class ElementFieldResolverTest extends Unit
                 },
                 'getType' => function() use ($typeHandle) {
                     return $this->make(EntryType::class, ['handle' => $typeHandle]);
-                }
+                },
             ]
         );
 
@@ -112,7 +117,7 @@ class ElementFieldResolverTest extends Unit
                 '__get' => function($property) {
                     // Assume a content field named 'plainTextField'
                     return in_array($property, ['imageDescription', 'volumeAndMass'], false) ? 'ok' : $this->$property;
-                }
+                },
             ]
         );
 
@@ -136,7 +141,7 @@ class ElementFieldResolverTest extends Unit
                     // Assume a content field named 'plainTextField'
                     return $property == 'plainTextField' ? 'ok' : $this->$property;
                 },
-                'handle' => 'aHandle'
+                'handle' => 'aHandle',
             ]
         );
 
@@ -163,7 +168,7 @@ class ElementFieldResolverTest extends Unit
                     return $property == 'plainTextField' ? 'ok' : $this->$property;
                 },
                 'getGroup' => function() use ($groupHandle) {
-                    return $this->make(CategoryGroup::class, ['handle' =>$groupHandle]);
+                    return $this->make(CategoryGroup::class, ['handle' => $groupHandle]);
                 },
             ]
         );
@@ -223,7 +228,7 @@ class ElementFieldResolverTest extends Unit
                 'typeId' => 99,
                 'getType' => function() use ($typeHandle) {
                     return $this->make(MatrixBlockType::class, ['handle' => $typeHandle]);
-                }
+                },
             ]
         );
 
@@ -251,7 +256,7 @@ class ElementFieldResolverTest extends Unit
                 'getPreferences' => function() {
                     return [
                         'aPreference' => 'value',
-                        'timeZone' => 'Fiji'
+                        'timeZone' => 'Fiji',
                     ];
                 },
                 'getGroups' => function() {
@@ -260,7 +265,7 @@ class ElementFieldResolverTest extends Unit
                         new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
                         new UserGroup(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
                     ];
-                }
+                },
             ]
         );
 
@@ -276,22 +281,38 @@ class ElementFieldResolverTest extends Unit
      *
      * @dataProvider assetTransformDataProvider
      */
-    public function testAssetUrlTransform($fieldArguments, $expectedArguments, $generateNow = null)
+    public function testAssetUrlTransform($fieldArguments, $expectedArguments)
     {
-        $assetService = $this->make(Assets::class, [
-            'getAssetUrl' => function ($asset, $transformArguments, $generateImmediately) use ($fieldArguments, $expectedArguments, $generateNow) {
-                self::assertEquals($expectedArguments, $transformArguments);
-
-                if (is_bool($generateNow)) {
-                    self::assertSame($generateNow, $fieldArguments['immediately']);
-                }
-            }
+        $imageTransformService = $this->make(ImageTransforms::class, [
+            'getImageTransformer' => $this->make(ImageTransformer::class, [
+                'getTransformUrl' => function($asset, ImageTransform $imageTransform) use ($expectedArguments): string {
+                    self::assertEquals($expectedArguments, $imageTransform->toArray(array_keys($expectedArguments)));
+                    return 'ok';
+                },
+            ]),
+            'getTransformByHandle' => function($handle): ?ImageTransform {
+                return new ImageTransform(['handle' => $handle]);
+            },
         ]);
 
-        Craft::$app->set('assets', $assetService);
+        Craft::$app->set('imageTransforms', $imageTransformService);
 
+        $asset = $this->make(Asset::class, [
+            'getVolume' => $this->make(Volume::class, [
+                'getFs' => $this->make(Fs::class, [
+                    'hasUrls' => true,
+                ]),
+                'getTransformFs' => $this->make(Fs::class, [
+                    'hasUrls' => true,
+                ]),
+            ]),
+            'folderId' => 2,
+            'filename' => 'foo.jpg',
+        ]);
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'url']);
-        $this->make(AssetGqlType::class)->resolveWithDirectives(new Asset(), $fieldArguments, null, $resolveInfo);
+
+
+        $this->make(AssetGqlType::class)->resolveWithDirectives($asset, $fieldArguments, null, $resolveInfo);
     }
 
     /**
@@ -310,7 +331,7 @@ class ElementFieldResolverTest extends Unit
 
         if (is_callable($result)) {
             self::assertEquals($result($element), $resolve());
-        } else if ($result === true) {
+        } elseif ($result === true) {
             self::assertEquals($element->$propertyName, $resolve());
             self::assertNotNull($element->$propertyName);
         } else {
@@ -324,13 +345,13 @@ class ElementFieldResolverTest extends Unit
             // Entries
             [
                 EntryGqlType::class, 'sectionHandle', function($source) {
-                return $source->getSection()->handle;
-            }
+                    return $source->getSection()->handle;
+                },
             ],
             [
                 EntryGqlType::class, 'typeHandle', function($source) {
-                return $source->getType()->handle;
-            }
+                    return $source->getType()->handle;
+                },
             ],
             [EntryGqlType::class, 'typeface', true],
             [EntryGqlType::class, 'missingProperty', false],
@@ -366,7 +387,7 @@ class ElementFieldResolverTest extends Unit
             [
                 CategoryGqlType::class, 'groupHandle', function($source) {
                     return $source->getGroup()->handle;
-                }
+                },
             ],
         ];
     }
@@ -379,7 +400,7 @@ class ElementFieldResolverTest extends Unit
             [
                 TagGqlType::class, 'groupHandle', function($source) {
                     return $source->getGroup()->handle;
-                }
+                },
             ],
         ];
     }
@@ -395,8 +416,8 @@ class ElementFieldResolverTest extends Unit
             [MatrixBlockGqlType::class, 'typeId', true],
             [
                 MatrixBlockGqlType::class, 'typeHandle', function($source) {
-                return $source->getType()->handle;
-            }
+                    return $source->getType()->handle;
+                },
             ],
         ];
     }
@@ -409,8 +430,8 @@ class ElementFieldResolverTest extends Unit
             [UserGqlType::class, 'username', true],
             [
                 UserGqlType::class, 'preferences', function($source) {
-                return Json::encode($source->getPreferences());
-            }
+                    return Json::encode($source->getPreferences());
+                },
             ],
         ];
     }
@@ -419,13 +440,11 @@ class ElementFieldResolverTest extends Unit
     {
         return [
             [['width' => 200, 'height' => 200], ['width' => 200, 'height' => 200]],
-            [['width' => 200, 'height' => 200, 'immediately' => true], ['width' => 200, 'height' => 200], true],
-            [['width' => 200, 'height' => 200, 'immediately' => false], ['width' => 200, 'height' => 200], false],
-            [['width' => 200, 'height' => 200, 'handle' => 'testHandle'], 'testHandle'],
-            [['width' => 200, 'height' => 200, 'transform' => 'testHandle2'], 'testHandle2'],
+            [['width' => 400, 'height' => 200], ['width' => 400, 'height' => 200]],
+            [['width' => 200, 'height' => 500], ['width' => 200, 'height' => 500]],
+            [['width' => 200, 'height' => 200, 'handle' => 'testHandle'], ['handle' => 'testHandle']],
+            [['width' => 200, 'height' => 200, 'transform' => 'testHandle2'], ['handle' => 'testHandle2']],
 
         ];
     }
-
-
 }

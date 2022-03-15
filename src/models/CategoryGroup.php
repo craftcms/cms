@@ -83,14 +83,14 @@ class CategoryGroup extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => Category::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Category::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**

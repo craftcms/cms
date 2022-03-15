@@ -21,19 +21,19 @@ use craft\queue\BaseJob;
 class UpdateSearchIndex extends BaseJob
 {
     /**
-     * @var string|ElementInterface|null The type of elements to update.
+     * @var string The type of elements to update.
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var int|int[]|null The ID(s) of the element(s) to update
      */
-    public $elementId;
+    public array|int|null $elementId = null;
 
     /**
      * @var int|string|null The site ID of the elements to update, or `'*'` to update all sites
      */
-    public $siteId = '*';
+    public string|int|null $siteId = '*';
 
     /**
      * @var string[]|null The field handles that should be indexed
@@ -46,6 +46,7 @@ class UpdateSearchIndex extends BaseJob
      */
     public function execute($queue): void
     {
+        /** @var string|ElementInterface $class */
         $class = $this->elementType;
         $elements = $class::find()
             ->drafts(null)

@@ -12,7 +12,6 @@ use craft\db\Query;
 use DateTime;
 use yii\base\Exception;
 
-
 /**
  * Class ChartHelper
  *
@@ -61,22 +60,13 @@ class ChartHelper
         }
 
         // Prepare the query
-        switch ($intervalUnit) {
-            case 'year':
-                $phpDateFormat = 'Y-01-01';
-                break;
-            case 'month':
-                $phpDateFormat = 'Y-m-01';
-                break;
-            case 'day':
-                $phpDateFormat = 'Y-m-d';
-                break;
-            case 'hour':
-                $phpDateFormat = 'Y-m-d H:00:00';
-                break;
-            default:
-                throw new Exception('Invalid interval unit: ' . $intervalUnit);
-        }
+        $phpDateFormat = match ($intervalUnit) {
+            'year' => 'Y-01-01',
+            'month' => 'Y-m-01',
+            'day' => 'Y-m-d',
+            'hour' => 'Y-m-d H:00:00',
+            default => throw new Exception('Invalid interval unit: ' . $intervalUnit),
+        };
 
         // Assemble the data
         $rows = [];

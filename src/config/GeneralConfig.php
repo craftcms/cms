@@ -91,7 +91,7 @@ class GeneralConfig extends BaseConfig
      * @see getActivateAccountSuccessPath()
      * @group Routing
      */
-    public $activateAccountSuccessPath = '';
+    public mixed $activateAccountSuccessPath = '';
 
     /**
      * @var bool Whether auto-generated URLs should have trailing slashes.
@@ -124,7 +124,7 @@ class GeneralConfig extends BaseConfig
     public bool $allowAdminChanges = true;
 
     /**
-     * @var string[]|false|null The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     * @var string[]|null|false The Ajax origins that should be allowed to access the GraphQL API, if enabled.
      *
      * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
      * in the `Access-Control-Allow-Origin` response header if it’s listed here.
@@ -134,7 +134,7 @@ class GeneralConfig extends BaseConfig
      * @since 3.5.0
      * @group GraphQL
      */
-    public $allowedGraphqlOrigins;
+    public array|null|false $allowedGraphqlOrigins = null;
 
     /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
@@ -150,7 +150,7 @@ class GeneralConfig extends BaseConfig
      * @see extraAllowedFileExtensions
      * @group Assets
      */
-    public $allowedFileExtensions = [
+    public string|array $allowedFileExtensions = [
         '7z',
         'aiff',
         'asc',
@@ -283,7 +283,7 @@ class GeneralConfig extends BaseConfig
     public bool $backupOnUpdate = true;
 
     /**
-     * @var string|false|null The shell command that Craft should execute to create a database backup.
+     * @var string|null|false The shell command that Craft should execute to create a database backup.
      *
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
@@ -301,7 +301,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Environment
      */
-    public $backupCommand;
+    public string|null|false $backupCommand = null;
 
     /**
      * @var string|null The base URL Craft should use when generating control panel URLs.
@@ -352,7 +352,7 @@ class GeneralConfig extends BaseConfig
      * @group System
      * @defaultAlt 1 day
      */
-    public $cacheDuration = 86400;
+    public mixed $cacheDuration = 86400;
 
     /**
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
@@ -376,7 +376,7 @@ class GeneralConfig extends BaseConfig
      * @group Security
      * @defaultAlt 5 minutes
      */
-    public $cooldownDuration = 300;
+    public mixed $cooldownDuration = 300;
 
     /**
      * @var array List of additional HTML tags that should be included in the `<head>` of control panel pages.
@@ -464,7 +464,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      */
-    public $defaultDirMode = 0775;
+    public mixed $defaultDirMode = 0775;
 
     /**
      * @var int|null The default permission to be set for newly-generated files.
@@ -511,7 +511,7 @@ class GeneralConfig extends BaseConfig
      * @group Security
      * @defaultAlt 1 day
      */
-    public $defaultTokenDuration = 86400;
+    public mixed $defaultTokenDuration = 86400;
 
     /**
      * @var int The default day new users should have set as their Week Start Day.
@@ -573,7 +573,7 @@ class GeneralConfig extends BaseConfig
      * @since 3.1.9
      * @group System
      */
-    public array|string $disabledPlugins = [];
+    public string|array|null $disabledPlugins = null;
 
     /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
@@ -638,7 +638,7 @@ class GeneralConfig extends BaseConfig
      * @group Security
      * @defaultAlt 5 minutes
      */
-    public $elevatedSessionDuration = 300;
+    public mixed $elevatedSessionDuration = 300;
 
     /**
      * @var bool Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
@@ -690,7 +690,7 @@ class GeneralConfig extends BaseConfig
      * @see allowedFileExtensions
      * @group System
      */
-    public $extraAllowedFileExtensions;
+    public string|array|null $extraAllowedFileExtensions = null;
 
     /**
      * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
@@ -728,10 +728,10 @@ class GeneralConfig extends BaseConfig
     public array $extraFileKinds = [];
 
     /**
-     * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      * @group Assets
      */
-    public $filenameWordSeparator = '-';
+    public string|false $filenameWordSeparator = '-';
 
     /**
      * @var bool Whether image transforms should be generated before page load.
@@ -797,7 +797,7 @@ class GeneralConfig extends BaseConfig
      * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      * @group Image Handling
      */
-    public $imageDriver = self::IMAGE_DRIVER_AUTO;
+    public mixed $imageDriver = self::IMAGE_DRIVER_AUTO;
 
     /**
      * @var array An array containing the selectable image aspect ratios for the image editor. The array must be in the format
@@ -831,7 +831,7 @@ class GeneralConfig extends BaseConfig
      * @group Security
      * @defaultAlt 1 hour
      */
-    public $invalidLoginWindowDuration = 3600;
+    public mixed $invalidLoginWindowDuration = 3600;
 
     /**
      * @var mixed The URI Craft should redirect to when user token validation fails. A token is used on things like setting and resetting user account
@@ -842,7 +842,7 @@ class GeneralConfig extends BaseConfig
      * @see getInvalidUserTokenPath()
      * @group Routing
      */
-    public $invalidUserTokenPath = '';
+    public mixed $invalidUserTokenPath = '';
 
     /**
      * @var string[]|null List of headers where proxies store the real client IP.
@@ -885,7 +885,7 @@ class GeneralConfig extends BaseConfig
      * @see getLoginPath()
      * @group Routing
      */
-    public $loginPath = 'login';
+    public mixed $loginPath = 'login';
 
     /**
      * @var mixed The URI Craft should use for user logout on the front end.
@@ -899,7 +899,7 @@ class GeneralConfig extends BaseConfig
      * @see getLogoutPath()
      * @group Routing
      */
-    public $logoutPath = 'logout';
+    public mixed $logoutPath = 'logout';
 
     /**
      * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
@@ -939,7 +939,7 @@ class GeneralConfig extends BaseConfig
      * not delete any backups.
      * @group System
      */
-    public $maxBackups = 20;
+    public int|false $maxBackups = 20;
 
     /**
      * @var int|null The maximum number of revisions that should be stored for each element.
@@ -964,7 +964,7 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      * @defaultAlt 16MB
      */
-    public $maxUploadFileSize = 16777216;
+    public string|int $maxUploadFileSize = 16777216;
 
     /**
      * @var bool Whether generated URLs should omit `index.php` (e.g. `http://domain.com/path` instead of `http://domain.com/index.php/path`)
@@ -1062,7 +1062,7 @@ class GeneralConfig extends BaseConfig
      * @see getPostCpLoginRedirect()
      * @group Routing
      */
-    public $postCpLoginRedirect = 'dashboard';
+    public mixed $postCpLoginRedirect = 'dashboard';
 
     /**
      * @var mixed The path users should be redirected to after logging in from the front-end site.
@@ -1075,7 +1075,7 @@ class GeneralConfig extends BaseConfig
      * @see getPostLoginRedirect()
      * @group Routing
      */
-    public $postLoginRedirect = '';
+    public mixed $postLoginRedirect = '';
 
     /**
      * @var mixed The path that users should be redirected to after logging out from the front-end site.
@@ -1085,7 +1085,7 @@ class GeneralConfig extends BaseConfig
      * @see getPostLogoutRedirect()
      * @group Routing
      */
-    public $postLogoutRedirect = '';
+    public mixed $postLogoutRedirect = '';
 
     /**
      * @var bool Whether the <config3:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
@@ -1160,7 +1160,7 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 1 day
      * @since 3.7.0
      */
-    public $previewTokenDuration;
+    public mixed $previewTokenDuration = null;
 
     /**
      * @var string The template path segment prefix that should be used to identify “private” templates, which are templates that are not
@@ -1182,12 +1182,12 @@ class GeneralConfig extends BaseConfig
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * ::: tip
-     * Users will only be purged when [garbage collection](https://craftcms.com/docs/3.x/gc.html) is run.
+     * Users will only be purged when [garbage collection](https://craftcms.com/docs/4.x/gc.html) is run.
      * :::
      *
      * @group Garbage Collection
      */
-    public $purgePendingUsersDuration = 0;
+    public mixed $purgePendingUsersDuration = 0;
 
     /**
      * @var mixed The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
@@ -1200,7 +1200,7 @@ class GeneralConfig extends BaseConfig
      * @group Garbage Collection
      * @defaultAlt 90 days
      */
-    public $purgeStaleUserSessionDuration = 7776000;
+    public mixed $purgeStaleUserSessionDuration = 7776000;
 
     /**
      * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
@@ -1213,7 +1213,7 @@ class GeneralConfig extends BaseConfig
      * @group Garbage Collection
      * @defaultAlt 30 days
      */
-    public $purgeUnsavedDraftsDuration = 2592000;
+    public mixed $purgeUnsavedDraftsDuration = 2592000;
 
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
@@ -1235,7 +1235,7 @@ class GeneralConfig extends BaseConfig
      * @group Session
      * @defaultAlt 1 year
      */
-    public $rememberUsernameDuration = 31536000;
+    public mixed $rememberUsernameDuration = 31536000;
 
     /**
      * @var mixed The amount of time a user stays logged if “Remember Me” is checked on the login page.
@@ -1247,7 +1247,7 @@ class GeneralConfig extends BaseConfig
      * @group Session
      * @defaultAlt 14 days
      */
-    public $rememberedUserSessionDuration = 1209600;
+    public mixed $rememberedUserSessionDuration = 1209600;
 
     /**
      * @var bool Whether Craft should require a matching user agent string when restoring a user session from a cookie.
@@ -1291,7 +1291,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Environment
      */
-    public ?string $restoreCommand = null;
+    public string|null|false $restoreCommand = null;
 
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
@@ -1388,7 +1388,7 @@ class GeneralConfig extends BaseConfig
      * @see getSetPasswordPath()
      * @group Routing
      */
-    public $setPasswordPath = 'setpassword';
+    public mixed $setPasswordPath = 'setpassword';
 
     /**
      * @var mixed The URI to the page where users can request to change their password.
@@ -1406,7 +1406,7 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      * @since 3.5.14
      */
-    public $setPasswordRequestPath;
+    public mixed $setPasswordRequestPath = null;
 
     /**
      * @var mixed The URI Craft should redirect users to after setting their password from the front end.
@@ -1416,7 +1416,7 @@ class GeneralConfig extends BaseConfig
      * @see getSetPasswordSuccessPath()
      * @group Routing
      */
-    public $setPasswordSuccessPath = '';
+    public mixed $setPasswordSuccessPath = '';
 
     /**
      * @var string The query string parameter name that site tokens should be set to.
@@ -1464,7 +1464,7 @@ class GeneralConfig extends BaseConfig
      * @group Garbage Collection
      * @defaultAlt 30 days
      */
-    public $softDeleteDuration = 2592000;
+    public mixed $softDeleteDuration = 2592000;
 
     /**
      * @var bool Whether user IP addresses should be stored/logged by the system.
@@ -1474,7 +1474,7 @@ class GeneralConfig extends BaseConfig
     public bool $storeUserIps = false;
 
     /**
-     * @var string|array|false|null Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
      * for testing purposes.
      *
      * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
@@ -1482,7 +1482,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      */
-    public $testToEmailAddress;
+    public string|array|null|false $testToEmailAddress = null;
 
     /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
@@ -1560,7 +1560,7 @@ class GeneralConfig extends BaseConfig
      * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
      * than the visible portion of the iframe.
      *
-     * If you have a [decoupled front end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * If you have a [decoupled front end](https://craftcms.com/docs/4.x/entries.html#previewing-decoupled-front-ends), you will need to include
      * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
      * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
      * `x-craft-live-preview` query string parameter.
@@ -1591,7 +1591,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      */
-    public $useSecureCookies = 'auto';
+    public string|bool $useSecureCookies = 'auto';
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
@@ -1602,7 +1602,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Routing
      */
-    public $useSslOnTokenizedUrls = 'auto';
+    public string|bool $useSslOnTokenizedUrls = 'auto';
 
     /**
      * @var mixed The amount of time before a user will get logged out due to inactivity.
@@ -1614,7 +1614,7 @@ class GeneralConfig extends BaseConfig
      * @group Session
      * @defaultAlt 1 hour
      */
-    public $userSessionDuration = 3600;
+    public mixed $userSessionDuration = 3600;
 
     /**
      * @var bool|null Whether to grab an exclusive lock on a file when writing to it by using the `LOCK_EX` flag.
@@ -1636,7 +1636,7 @@ class GeneralConfig extends BaseConfig
      * @group Security
      * @defaultAlt 1 day
      */
-    public $verificationCodeDuration = 86400;
+    public mixed $verificationCodeDuration = 86400;
 
     /**
      * @var mixed The URI or URL that Craft should use for email verification links on the front end.
@@ -1649,7 +1649,7 @@ class GeneralConfig extends BaseConfig
      * @since 3.4.0
      * @group Routing
      */
-    public $verifyEmailPath = 'verifyemail';
+    public mixed $verifyEmailPath = 'verifyemail';
 
     /**
      * @var mixed The URI that users without access to the control panel should be redirected to after verifying a new email address.
@@ -1660,7 +1660,7 @@ class GeneralConfig extends BaseConfig
      * @since 3.1.20
      * @group Routing
      */
-    public $verifyEmailSuccessPath = '';
+    public mixed $verifyEmailSuccessPath = '';
 
     /**
      * @inheritdoc
@@ -1820,7 +1820,7 @@ class GeneralConfig extends BaseConfig
      * @return mixed
      * @see loginPath
      */
-    public function getLoginPath(?string $siteHandle = null)
+    public function getLoginPath(?string $siteHandle = null): mixed
     {
         $path = ConfigHelper::localizedValue($this->loginPath, $siteHandle);
         return is_string($path) ? trim($path, '/') : $path;
@@ -1833,7 +1833,7 @@ class GeneralConfig extends BaseConfig
      * @return mixed
      * @see logoutPath
      */
-    public function getLogoutPath(?string $siteHandle = null)
+    public function getLogoutPath(?string $siteHandle = null): mixed
     {
         $path = ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
         return is_string($path) ? trim($path, '/') : $path;
@@ -1940,7 +1940,7 @@ class GeneralConfig extends BaseConfig
         }
 
         // Is this query string-based pagination?
-        if (strpos($pageTrigger, '?') === 0) {
+        if (str_starts_with($pageTrigger, '?')) {
             $pageTrigger = trim($pageTrigger, '?=');
 
             // Avoid conflict with the path param

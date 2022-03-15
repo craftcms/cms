@@ -377,11 +377,10 @@
                         startPosition: (this.currentPage > 1 ? (this.currentPage-1) * this.perPage : 0) +1
                     };
 
-                    Craft.postActionRequest(this.reorderAction, data, response => {
-                        if (response && response.success) {
-                            Craft.cp.displayNotice(Craft.escapeHtml(this.reorderSuccessMessage));
-                        }
-                    });
+                  Craft.sendActionRequest('POST', this.reorderAction, {data})
+                      .then((response) => {
+                          Craft.cp.displayNotice(Craft.escapeHtml(this.reorderSuccessMessage));
+                      });
                 } else {
                     Craft.cp.displayError(Craft.escapeHtml(this.reorderFailMessage));
                 }

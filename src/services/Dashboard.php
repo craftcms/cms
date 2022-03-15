@@ -45,7 +45,7 @@ class Dashboard extends Component
      *
      * Dashboard widgets must implement [[WidgetInterface]]. [[Widget]] provides a base implementation.
      *
-     * See [Widget Types](https://craftcms.com/docs/3.x/extend/widget-types.html) for documentation on creating Dashboard widgets.
+     * See [Widget Types](https://craftcms.com/docs/4.x/extend/widget-types.html) for documentation on creating Dashboard widgets.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -113,7 +113,7 @@ class Dashboard extends Component
      * @param mixed $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @return WidgetInterface
      */
-    public function createWidget($config): WidgetInterface
+    public function createWidget(mixed $config): WidgetInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -436,7 +436,7 @@ class Dashboard extends Component
      * @return WidgetInterface[]|false
      * @throws Exception if no user is logged-in
      */
-    private function _getUserWidgets()
+    private function _getUserWidgets(): array|false
     {
         $user = Craft::$app->getUser()->getIdentity();
 

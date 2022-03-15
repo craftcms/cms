@@ -28,7 +28,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
      */
-    public $id;
+    public string|int|null $id = null;
 
     /**
      * @var int|null Field ID
@@ -68,14 +68,14 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => MatrixBlock::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => MatrixBlock::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**
@@ -105,7 +105,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
      */
     public function getIsNew(): bool
     {
-        return (!$this->id || strpos($this->id, 'new') === 0);
+        return (!$this->id || str_starts_with($this->id, 'new'));
     }
 
     /**

@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\helpers\Json;
-use craft\log\Dispatcher;
 use GuzzleHttp\Exception\ClientException;
 use Throwable;
 use Twig\Error\Error as TwigError;
@@ -20,7 +19,6 @@ use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
 use yii\base\Exception;
 use yii\base\UserException;
-use yii\log\FileTarget;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 
@@ -56,13 +54,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // 404?
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
-            // Log to a special file
-            $logDispatcher = Craft::$app->getLog();
-            $fileTarget = $logDispatcher->targets[Dispatcher::TARGET_FILE] ?? $logDispatcher->targets[0] ?? null;
-            if ($fileTarget && $fileTarget instanceof FileTarget) {
-                $fileTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
-            }
-
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && $request->getPathInfo() === 'wp-admin') {
                 $exception->statusCode = 418;
@@ -78,7 +69,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public function handleError($code, $message, $file, $line): ?bool
     {
         // Because: https://bugs.php.net/bug.php?id=74980
-        if (strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
+        if (str_contains($message, 'Narrowing occurred during type inference. Please file a bug report')) {
             return null;
         }
 
@@ -119,8 +110,8 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         $file = realpath($file);
         $pathService = Craft::$app->getPath();
-        return strpos($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) === 0 ||
-            strpos($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) === 0 ||
+        return str_starts_with($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) ||
+            str_starts_with($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) ||
             $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
     }
 
@@ -185,7 +176,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
         // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
         // or if the user is an admin and has indicated they want to see it
-        else if ($this->_showExceptionView()) {
+        elseif ($this->_showExceptionView()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }
@@ -201,11 +192,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $url = parent::getTypeUrl($class, $method);
 
         if ($url === null) {
-            if (strpos($class, '__TwigTemplate_') === 0) {
+            if (str_starts_with($class, '__TwigTemplate_')) {
                 $class = Template::class;
             }
 
-            if (strpos($class, 'Twig\\') === 0) {
+            if (str_starts_with($class, 'Twig\\')) {
                 $url = "http://twig.sensiolabs.org/api/2.x/$class.html";
 
                 if ($method) {
@@ -222,7 +213,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function renderCallStackItem($file, $line, $class, $method, $args, $index): string
     {
-        if (strpos($file, 'compiled_templates') !== false) {
+        if (str_contains($file, 'compiled_templates')) {
             try {
                 [$file, $line] = $this->_resolveTemplateTrace($file, $line);
             } catch (Throwable $e) {
@@ -252,7 +243,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $template = new $class(Craft::$app->getView()->getTwig());
         $src = $template->getSourceContext();
         //                $this->sourceCode = $src->getCode();
-        $file = $src->getPath();
+        $file = $src->getPath() ?: null;
         $line = null;
 
         if ($traceLine !== null) {

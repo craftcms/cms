@@ -74,7 +74,7 @@ class Users extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,

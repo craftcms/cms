@@ -38,7 +38,7 @@
                     </a>
                 </div>
                 <div class="cs-icon-resources">
-                    <a href="https://craftcms.com/docs/3.x/" target="_blank" rel="noopener">
+                    <a href="https://craftcms.com/docs/4.x/" target="_blank" rel="noopener">
                         {{ svg('@appicons/book.svg') }}
                         <span>{{ 'Documentation'|t('app') }}</span>
                     </a>
@@ -97,8 +97,11 @@
                     }) }}
                 </div>
 
-                <button type="submit" class="btn submit fullwidth disabled">{{ 'Send'|t('app') }}</button>
-                <div class="spinner hidden"></div>
+                {{ forms.submitButton({
+                    class: ['fullwidth', 'disabled'],
+                    label: 'Send'|t('app'),
+                    spinner: true,
+                }) }}
             </form>
         </div>
         <iframe id="{{ idPrefix }}-iframe" name="{{ idPrefix }}-iframe" class="hidden"></iframe>

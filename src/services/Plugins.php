@@ -136,7 +136,7 @@ class Plugins extends Component
     /**
      * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting
      */
-    private $_forceDisabledPlugins;
+    private string|array|null $_forceDisabledPlugins = null;
 
     /**
      * @var string[] Cache for [[getPluginHandleByClass()]]
@@ -237,7 +237,7 @@ class Plugins extends Component
                 if (
                     $hasVersionChanged &&
                     isset($plugin->minVersionRequired) &&
-                    strpos($row['version'], 'dev-') !== 0 &&
+                    !str_starts_with($row['version'], 'dev-') &&
                     !StringHelper::endsWith($row['version'], '-dev') &&
                     version_compare($row['version'], $plugin->minVersionRequired, '<')
                 ) {
@@ -344,7 +344,7 @@ class Plugins extends Component
 
         // Find the plugin that contains this path (if any)
         foreach ($this->_composerPluginInfo as $handle => $info) {
-            if (isset($info['basePath']) && strpos($classPath, $info['basePath'] . DIRECTORY_SEPARATOR) === 0) {
+            if (isset($info['basePath']) && str_starts_with($classPath, $info['basePath'] . DIRECTORY_SEPARATOR)) {
                 return $this->_classPluginHandles[$class] = $handle;
             }
         }
@@ -1194,7 +1194,7 @@ class Plugins extends Component
             return null;
         }
 
-        if (strpos($licenseKey, '$') === 0) {
+        if (str_starts_with($licenseKey, '$')) {
             return $licenseKey;
         }
 

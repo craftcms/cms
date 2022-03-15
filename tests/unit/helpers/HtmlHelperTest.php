@@ -250,9 +250,9 @@ class HtmlHelperTest extends Unit
             [
                 '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
                 $htmlTagString . '!@#$%^&*(){}|::"<><?>/*-~`',
-                ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`']
+                ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`'],
             ],
-            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']]
+            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']],
         ];
     }
 
@@ -262,20 +262,32 @@ class HtmlHelperTest extends Unit
     public function parseTagDataProvider(): array
     {
         return [
-            [['p', ['class' => ['foo']], [
-                ['text', 'Hello'],
-                ['br', [], []],
-                ['text', 'there'],
-            ]], '<p class="foo">Hello<br>there</p>'],
-            [['div', [], [
-                ['div', [], [['text', 'Nested']]],
-            ]], '<div><div>Nested</div></div>'],
+            [
+                [
+                    'p', ['class' => ['foo']], [
+                    ['text', 'Hello'],
+                    ['br', [], []],
+                    ['text', 'there'],
+                ],
+                ], '<p class="foo">Hello<br>there</p>',
+            ],
+            [
+                [
+                    'div', [], [
+                    ['div', [], [['text', 'Nested']]],
+                ],
+                ], '<div><div>Nested</div></div>',
+            ],
             [['br', [], []], '<br>'],
             [['br', [], []], '<br />'],
             [['div', [], []], '<div />'],
-            [['script', ['type' => 'text/javascript'], [
-                ['text', "var \$p = $('<p>Hello</p>');\n"],
-            ]], "<script type=\"text/javascript\">var \$p = $('<p>Hello</p>');\n</script>"],
+            [
+                [
+                    'script', ['type' => 'text/javascript'], [
+                    ['text', "var \$p = $('<p>Hello</p>');\n"],
+                ],
+                ], "<script type=\"text/javascript\">var \$p = $('<p>Hello</p>');\n</script>",
+            ],
             [false, '<div>'],
         ];
     }

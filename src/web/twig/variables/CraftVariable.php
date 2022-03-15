@@ -55,7 +55,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @var WebApplication|ConsoleApplication|null The Craft application class
      */
-    public $app;
+    public null|WebApplication|ConsoleApplication $app = null;
 
     /**
      * @inheritdoc
@@ -139,7 +139,7 @@ class CraftVariable extends ServiceLocator
     // -------------------------------------------------------------------------
 
     /**
-     * Returns a new [asset query](https://craftcms.com/docs/3.x/assets.html#querying-assets).
+     * Returns a new [asset query](https://craftcms.com/docs/4.x/assets.html#querying-assets).
      *
      * @param array $criteria
      * @return AssetQuery
@@ -152,7 +152,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [category query](https://craftcms.com/docs/3.x/categories.html#querying-categories).
+     * Returns a new [category query](https://craftcms.com/docs/4.x/categories.html#querying-categories).
      *
      * @param array $criteria
      * @return CategoryQuery
@@ -165,7 +165,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [entry query](https://craftcms.com/docs/3.x/entries.html#querying-entries).
+     * Returns a new [entry query](https://craftcms.com/docs/4.x/entries.html#querying-entries).
      *
      * @param array $criteria
      * @return EntryQuery
@@ -178,7 +178,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [global set query](https://craftcms.com/docs/3.x/globals.html#querying-globals).
+     * Returns a new [global set query](https://craftcms.com/docs/4.x/globals.html#querying-globals).
      *
      * @param array $criteria
      * @return GlobalSetQuery
@@ -192,7 +192,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [Matrix block query](https://craftcms.com/docs/3.x/matrix-blocks.html#querying-matrix-blocks).
+     * Returns a new [Matrix block query](https://craftcms.com/docs/4.x/matrix-blocks.html#querying-matrix-blocks).
      *
      * @param array $criteria
      * @return MatrixBlockQuery
@@ -216,7 +216,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [tag query](https://craftcms.com/docs/3.x/tags.html#querying-tags).
+     * Returns a new [tag query](https://craftcms.com/docs/4.x/tags.html#querying-tags).
      *
      * @param array $criteria
      * @return TagQuery
@@ -229,7 +229,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [user query](https://craftcms.com/docs/3.x/users.html#querying-users).
+     * Returns a new [user query](https://craftcms.com/docs/4.x/users.html#querying-users).
      *
      * @param array $criteria
      * @return UserQuery

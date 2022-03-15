@@ -33,7 +33,7 @@ class QueueController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['run'];
+    protected array|bool|int $allowAnonymous = ['run'];
 
     /**
      * @inheritdoc
@@ -120,9 +120,7 @@ class QueueController extends Controller
         $id = $this->request->getRequiredBodyParam('id');
         Craft::$app->getQueue()->release($id);
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -142,9 +140,7 @@ class QueueController extends Controller
 
         Craft::$app->getQueue()->releaseAll();
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**

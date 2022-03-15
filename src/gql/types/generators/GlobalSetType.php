@@ -17,7 +17,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\GlobalSet;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 
 /**
@@ -31,7 +30,7 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $globalSets = Craft::$app->getGlobals()->getAllSets();
         $gqlTypes = [];
@@ -63,7 +62,7 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
         /** @var GlobalSetElement $globalSet */
         $typeName = self::getName($context);
@@ -79,5 +78,4 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
             },
         ]));
     }
-
 }

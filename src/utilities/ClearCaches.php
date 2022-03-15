@@ -135,7 +135,6 @@ class ClearCaches extends Utility
                 'action' => function() use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
-                        $pathService->getAssetThumbsPath(false),
                         $pathService->getAssetsIconsPath(false),
                     ];
                     foreach ($dirs as $dir) {
@@ -175,11 +174,11 @@ class ClearCaches extends Utility
                     if (
                         $request->getIsConsoleRequest() &&
                         $request->isWebrootAliasSetDynamically &&
-                        strpos($basePath, '@webroot') === 0
+                        str_starts_with($basePath, '@webroot')
                     ) {
                         throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
                             "Explicitly set the @webroot alias in config/general.php to avoid this error.\n" .
-                            'See https://craftcms.com/docs/3.x/config/#aliases for more info.');
+                            'See https://craftcms.com/docs/4.x/config/#aliases for more info.');
                     }
 
                     $basePath = Craft::getAlias($basePath);

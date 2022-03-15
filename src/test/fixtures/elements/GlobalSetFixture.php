@@ -7,7 +7,6 @@
 
 namespace craft\test\fixtures\elements;
 
-
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\GlobalSet;

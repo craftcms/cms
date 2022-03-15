@@ -72,7 +72,7 @@ class I18N extends \yii\i18n\I18N
     public function getAllLocaleIds(): array
     {
         if (!isset($this->_allLocaleIds)) {
-            $this->_allLocaleIds = ResourceBundle::getLocales(null);
+            $this->_allLocaleIds = ResourceBundle::getLocales('');
 
             // Hyphens, not underscores
             foreach ($this->_allLocaleIds as $i => $locale) {
@@ -308,16 +308,11 @@ class I18N extends \yii\i18n\I18N
         }
 
         if ($this->_shouldAddTranslationDebugOutput()) {
-            switch ($category) {
-                case 'site':
-                    $char = '$';
-                    break;
-                case 'app':
-                    $char = '@';
-                    break;
-                default:
-                    $char = '%';
-            }
+            $char = match ($category) {
+                'site' => '$',
+                'app' => '@',
+                default => '%',
+            };
 
             $translation = $char . $translation . $char;
         }

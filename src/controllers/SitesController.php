@@ -148,16 +148,15 @@ class SitesController extends Controller
         $group->setName($this->request->getRequiredBodyParam('name'));
 
         if (!Craft::$app->getSites()->saveGroup($group)) {
-            return $this->asJson([
-                'errors' => $group->getErrors(),
+            return $this->asFailure(data: [
+                'errors' => $group->getFirstErrors(),
             ]);
         }
 
         $attr = $group->getAttributes();
         $attr['name'] = Craft::t('site', $attr['name']);
 
-        return $this->asJson([
-            'success' => true,
+        return $this->asSuccess(data: [
             'group' => $attr,
         ]);
     }
@@ -173,13 +172,12 @@ class SitesController extends Controller
         $this->requireAcceptsJson();
 
         $groupId = $this->request->getRequiredBodyParam('id');
-        $success = Craft::$app->getSites()->deleteGroupById($groupId);
 
-        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
+        if (!Craft::$app->getSites()->deleteGroupById($groupId)) {
+            return $this->asFailure();
+        }
 
-        return $this->asJson([
-            'success' => $success,
-        ]);
+        return $this->asSuccess(Craft::t('app', 'Group deleted.'));
     }
 
     // Sites
@@ -348,7 +346,7 @@ class SitesController extends Controller
         $siteIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSites()->reorderSites($siteIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -366,6 +364,6 @@ class SitesController extends Controller
 
         Craft::$app->getSites()->deleteSiteById($siteId, $transferContentTo);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

@@ -136,7 +136,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var self $context */
         return $context->handle . '_GlobalSet';
@@ -146,7 +146,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var self $context */
         return ['globalsets.' . $context->uid];
@@ -156,7 +156,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var self $context */
         return 'save_' . $context->handle . '_GlobalSet';
@@ -195,9 +195,9 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
+        $behaviors = parent::defineBehaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
             'elementType' => __CLASS__,

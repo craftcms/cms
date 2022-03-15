@@ -32,7 +32,7 @@ return [
         ],
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',
-        'uid' => 'gql-main-token-------------------uid'
+        'uid' => 'gql-main-token-------------------uid',
     ],
     [
         'id' => '1001',
@@ -43,6 +43,6 @@ return [
         ],
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',
-        'uid' => 'gql-sub-token--------------------uid'
-    ]
+        'uid' => 'gql-sub-token--------------------uid',
+    ],
 ];

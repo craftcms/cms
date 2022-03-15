@@ -21,17 +21,17 @@ class DependencyHeavyComponentExample extends Component
     /**
      * @var
      */
-    public $dependency1;
+    public mixed $dependency1 = null;
 
     /**
      * @var
      */
-    public $dependency2;
+    public mixed $dependency2 = null;
 
     /**
      * @var
      */
-    public $settingsdependency1;
+    public mixed $settingsdependency1 = null;
 
     /**
      * @return string

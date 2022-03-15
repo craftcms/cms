@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -208,7 +209,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
-        $this->createDirectory(pathinfo($path, PATHINFO_DIRNAME), []);
+        $this->createDirectory(pathinfo($path, PATHINFO_DIRNAME));
         $fullPath = $this->prefixPath($path);
 
         $targetStream = @fopen($fullPath, 'w+b');
@@ -259,7 +260,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function renameFile(string $path, string $newPath): void
     {
-        $this->createDirectory($newPath);
+        $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @rename($this->prefixPath($path), $this->prefixPath($newPath));
     }
 
@@ -268,7 +269,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function copyFile(string $path, string $newPath): void
     {
-        $this->createDirectory($newPath);
+        $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
         @copy($this->prefixPath($path), $this->prefixPath($newPath));
     }
 
@@ -277,7 +278,12 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getFileStream(string $uriPath)
     {
-        return @fopen($this->prefixPath($uriPath), 'rb');
+        $path = $this->prefixPath($uriPath);
+        $file = @fopen($path, 'rb');
+        if (!$file) {
+            throw new FsObjectNotFoundException("Unable to open $path.");
+        }
+        return $file;
     }
 
     /**

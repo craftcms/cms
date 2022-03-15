@@ -10,7 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
+use craft\errors\StaleResourceException;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -45,7 +47,7 @@ class AppController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
@@ -263,7 +265,12 @@ class AppController extends Controller
 
             // Sync project.yaml?
             if ($applyProjectConfigChanges) {
-                $projectConfigService->applyExternalChanges();
+                try {
+                    $projectConfigService->applyExternalChanges();
+                } catch (BusyResourceException|StaleResourceException $e) {
+                    Craft::$app->getErrorHandler()->logException($e);
+                    Craft::warning("Couldn’t apply project config YAML changes: {$e->getMessage()}", __METHOD__);
+                }
             }
 
             $transaction->commit();
@@ -288,7 +295,7 @@ class AppController extends Controller
             $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
-            } else if (isset($restoreException)) {
+            } elseif (isset($restoreException)) {
                 $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
             } else {
                 $error .= ' The database has not been restored.';
@@ -359,12 +366,10 @@ class AppController extends Controller
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
-            return $this->asJson([
-                'success' => true,
-            ]);
+            return $this->asSuccess();
         }
 
-        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
+        return $this->asFailure(Craft::t('app', 'A server error occurred.'));
     }
 
     /**
@@ -386,16 +391,11 @@ class AppController extends Controller
             $licensedEdition = 0;
         }
 
-        switch ($edition) {
-            case 'solo':
-                $edition = Craft::Solo;
-                break;
-            case 'pro':
-                $edition = Craft::Pro;
-                break;
-            default:
-                throw new BadRequestHttpException('Invalid Craft edition: ' . $edition);
-        }
+        $edition = match ($edition) {
+            'solo' => Craft::Solo,
+            'pro' => Craft::Pro,
+            default => throw new BadRequestHttpException('Invalid Craft edition: ' . $edition),
+        };
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
         if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
@@ -404,9 +404,7 @@ class AppController extends Controller
 
         Craft::$app->setEdition($edition);
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -427,7 +425,7 @@ class AppController extends Controller
             $success = true;
         }
 
-        return $this->asJson(['success' => $success]);
+        return $success ? $this->asSuccess() : $this->asFailure();
     }
 
     /**
@@ -498,7 +496,7 @@ class AppController extends Controller
                         'name' => $update->replacementName,
                     ]);
             }
-        } else if ($update->status === Update::STATUS_EXPIRED) {
+        } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
             ]);

@@ -263,7 +263,7 @@ class Sites extends Component
 
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
-        } else if (!$group->uid) {
+        } elseif (!$group->uid) {
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
@@ -466,7 +466,7 @@ class Sites extends Component
      * @param Site|string|int|null $site the current site, or its handle/ID, or null
      * @throws InvalidArgumentException if $site is invalid
      */
-    public function setCurrentSite($site): void
+    public function setCurrentSite(mixed $site): void
     {
         // In case this was called from the constructor...
         $this->_loadAllSites();
@@ -478,7 +478,7 @@ class Sites extends Component
 
         if ($site instanceof Site) {
             $this->_currentSite = $site;
-        } else if (is_numeric($site)) {
+        } elseif (is_numeric($site)) {
             $this->_currentSite = $this->getSiteById($site, false);
         } else {
             $this->_currentSite = $this->getSiteByHandle($site, false);
@@ -673,7 +673,7 @@ class Sites extends Component
                     ->from([Table::SITES])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
-        } else if (!$site->uid) {
+        } elseif (!$site->uid) {
             $site->uid = Db::uidById(Table::SITES, $site->id);
         }
 
@@ -1001,7 +1001,7 @@ class Sites extends Component
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                            if (strpos($tableName, $matrixTablePrefix) === 0) {
+                            if (str_starts_with($tableName, $matrixTablePrefix)) {
                                 Db::delete($tableName, [
                                     'elementId' => $blockIds,
                                     'siteId' => $transferContentTo,
@@ -1210,12 +1210,12 @@ class Sites extends Component
      * @param bool $withTrashed Whether to include trashed site groups in search
      * @return SiteGroupRecord
      */
-    private function _getGroupRecord($criteria, bool $withTrashed = false): SiteGroupRecord
+    private function _getGroupRecord(mixed $criteria, bool $withTrashed = false): SiteGroupRecord
     {
         $query = $withTrashed ? SiteGroupRecord::findWithTrashed() : SiteGroupRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 
@@ -1249,12 +1249,12 @@ class Sites extends Component
      * @param bool $withTrashed Whether to include trashed sites in search
      * @return SiteRecord
      */
-    private function _getSiteRecord($criteria, bool $withTrashed = false): SiteRecord
+    private function _getSiteRecord(mixed $criteria, bool $withTrashed = false): SiteRecord
     {
         $query = $withTrashed ? SiteRecord::findWithTrashed() : SiteRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 

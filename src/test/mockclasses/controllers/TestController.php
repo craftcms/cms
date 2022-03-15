@@ -21,17 +21,17 @@ class TestController extends Controller
     /**
      * @var array
      */
-    protected $allowAnonymous = ['allow-anonymous'];
+    protected array|bool|int $allowAnonymous = ['allow-anonymous'];
 
     /**
-     * @return mixed
+     *
      */
     public function actionNotAllowAnonymous()
     {
     }
 
     /**
-     * @return mixed
+     *
      */
     public function actionAllowAnonymous()
     {

@@ -22,7 +22,7 @@ class SiteIdValidator extends Validator
      * @var bool|null $allowDisabled Whether to allow disabled sites.
      * @since 3.7.32
      */
-    public $allowDisabled;
+    public ?bool $allowDisabled = null;
 
     /**
      * @inheritdoc

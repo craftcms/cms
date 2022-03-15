@@ -50,33 +50,31 @@
             }, {
                 complete: () => {
                     let postData = Garnish.getPostData($form);
-                    let params = Craft.expandPostArray(postData);
+                    let data = Craft.expandPostArray(postData);
 
-                    Craft.postActionRequest(params.action, params, (response, textStatus) => {
-                        if (response && response.error) {
-                            alert(response.error);
-                        }
+                    Craft.sendActionRequest('POST', data.action, {data})
+                        .then((response) => {
+                            progressBar.setProgressPercentage(100);
 
-                        progressBar.setProgressPercentage(100);
+                            setTimeout(() => {
+                                if (!$allDone) {
+                                    $allDone = $('<div class="alldone" data-icon="done" />').appendTo($status);
+                                    $allDone.css('opacity', 0);
+                                    $form.data('allDone', $allDone);
+                                }
 
-                        setTimeout(() => {
-                            if (!$allDone) {
-                                $allDone = $('<div class="alldone" data-icon="done" />').appendTo($status);
-                                $allDone.css('opacity', 0);
-                                $form.data('allDone', $allDone);
-                            }
-
-                            progressBar.$progressBar.velocity({opacity: 0}, {
-                                duration: 'fast', complete: () => {
-                                    $allDone.velocity({opacity: 1}, {duration: 'fast'});
-                                    $trigger.removeClass('disabled');
-                                    $trigger.trigger('focus');
-                                },
-                            });
-                        }, 300);
-                    }, {
-                        complete: $.noop
-                    });
+                                progressBar.$progressBar.velocity({opacity: 0}, {
+                                    duration: 'fast', complete: () => {
+                                        $allDone.velocity({opacity: 1}, {duration: 'fast'});
+                                        $trigger.removeClass('disabled');
+                                        $trigger.trigger('focus');
+                                    },
+                                });
+                            }, 300);
+                        })
+                        .catch(({response}) => {
+                            alert(response.data.message);
+                        });
                 },
             });
 

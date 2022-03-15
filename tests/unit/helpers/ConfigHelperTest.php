@@ -9,11 +9,9 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ConfigHelper;
-use craft\test\mockclasses\models\ExampleModel;
 use DateTime;
 use stdClass;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -60,8 +58,8 @@ class ConfigHelperTest extends Unit
     {
         $this->tester->expectThrowable(
             InvalidConfigException::class, function() {
-            ConfigHelper::durationInSeconds(true);
-        });
+                ConfigHelper::durationInSeconds(true);
+            });
 
         $this->tester->expectThrowable(InvalidConfigException::class, function() {
             ConfigHelper::durationInSeconds(['test' => 'test']);
@@ -103,8 +101,8 @@ class ConfigHelperTest extends Unit
             // If variable is callable.  Ensure the handle gets passed into the callable.
             [
                 'imahandle', function($handle) {
-                return $handle;
-            }, 'imahandle'
+                    return $handle;
+                }, 'imahandle',
             ],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
             ['string', 'string'],
@@ -133,9 +131,6 @@ class ConfigHelperTest extends Unit
             [4, '4'],
             [5, 5],
             [0, 'M5'],
-            [0, false],
-            [1, true],
-            [0, null],
         ];
     }
 

@@ -167,7 +167,6 @@ import './CraftSupportWidget.scss';
         $supportMessage: null,
         $supportAttachment: null,
         $supportSubmit: null,
-        $supportSpinner: null,
         $supportErrorList: null,
         $supportIframe: null,
         sendingSupportTicket: false,
@@ -191,7 +190,6 @@ import './CraftSupportWidget.scss';
             var $more = this.$supportForm.children('.cs-support-more');
             this.$supportAttachment = $more.find('.cs-support-attachment:first');
             this.$supportSubmit = this.$supportForm.children('.submit:first');
-            this.$supportSpinner = this.$supportForm.children('.spinner:first');
             this.$supportIframe = this.$screen.children('iframe');
             this.addListener(this.$supportForm, 'submit', 'handleSupportFormSubmit');
 
@@ -361,8 +359,7 @@ import './CraftSupportWidget.scss';
             }
 
             this.sendingSupportTicket = true;
-            this.$supportSubmit.addClass('active');
-            this.$supportSpinner.removeClass('hidden');
+            this.$supportSubmit.addClass('loading');
         },
 
         reinit: function() {
@@ -457,8 +454,7 @@ import './CraftSupportWidget.scss';
 
         parseSupportResponse: function(response) {
             this.sendingSupportTicket = false;
-            this.$supportSubmit.removeClass('active');
-            this.$supportSpinner.addClass('hidden');
+            this.$supportSubmit.removeClass('loading');
 
             if (this.$supportErrorList) {
                 this.$supportErrorList.children().remove();

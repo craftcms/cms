@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
@@ -193,7 +192,7 @@ class View extends \yii\web\View
     private array $_deltaNames = [];
 
     /**
-     * @var mixed[] The initial delta input values.
+     * @var array The initial delta input values.
      * @see setInitialDeltaValue()
      */
     private array $_initialDeltaValues = [];
@@ -271,7 +270,6 @@ class View extends \yii\web\View
 
         // Register the CP hooks
         $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
-        $this->hook('cp.elements.edit', [$this, '_prepEditElementVariables']);
     }
 
     /**
@@ -458,14 +456,15 @@ class View extends \yii\web\View
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
      * @param string $templateMode The template mode to use.
+     * @param bool $escapeHtml Whether dynamic HTML should be escaped
      * @return string The rendered template.
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      */
-    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
+    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
     {
         // If there are no dynamic tags, just return the template
-        if (strpos($template, '{') === false) {
+        if (!str_contains($template, '{')) {
             return $template;
         }
 
@@ -473,7 +472,9 @@ class View extends \yii\web\View
         $this->setTemplateMode($templateMode);
 
         $twig = $this->getTwig();
-        $twig->setDefaultEscaperStrategy(false);
+        if (!$escapeHtml) {
+            $twig->setDefaultEscaperStrategy(false);
+        }
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
@@ -481,7 +482,9 @@ class View extends \yii\web\View
             return $twig->createTemplate($template)->render($variables);
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
-            $twig->setDefaultEscaperStrategy();
+            if (!$escapeHtml) {
+                $twig->setDefaultEscaperStrategy();
+            }
             $this->setTemplateMode($oldTemplateMode);
         }
     }
@@ -505,10 +508,10 @@ class View extends \yii\web\View
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      */
-    public function renderObjectTemplate(string $template, $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
+    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {
         // If there are no dynamic tags, just return the template
-        if (strpos($template, '{') === false) {
+        if (!str_contains($template, '{')) {
             return $template;
         }
 
@@ -539,7 +542,7 @@ class View extends \yii\web\View
             // Get the variables to pass to the template
             if ($object instanceof Model) {
                 foreach ($object->attributes() as $name) {
-                    if (!isset($variables[$name]) && strpos($template, $name) !== false) {
+                    if (!isset($variables[$name]) && str_contains($template, $name)) {
                         $variables[$name] = $object->$name;
                     }
                 }
@@ -750,7 +753,7 @@ class View extends \yii\web\View
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    public function resolveTemplate(string $name, ?string $templateMode = null)
+    public function resolveTemplate(string $name, ?string $templateMode = null): string|false
     {
         if ($templateMode === null) {
             $templateMode = $this->getTemplateMode();
@@ -773,7 +776,7 @@ class View extends \yii\web\View
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    private function _resolveTemplateInternal(string $name)
+    private function _resolveTemplateInternal(string $name): string|false
     {
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
@@ -919,7 +922,7 @@ class View extends \yii\web\View
      * @param bool $combine Whether the individually registered code snippets should be combined, losing the positions and keys
      * @return string|array|false The JS code that was registered in the active JS buffer, or `false` if there isn’t one
      */
-    public function clearJsBuffer(bool $scriptTag = true, bool $combine = true)
+    public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array|false
     {
         if (empty($this->_jsBuffers)) {
             return false;
@@ -973,7 +976,7 @@ class View extends \yii\web\View
      * @return array|false The `<script>` tags that were registered in the active buffer, grouped by position, or `false` if there isn’t one
      * @since 3.7.0
      */
-    public function clearScriptBuffer()
+    public function clearScriptBuffer(): array|false
     {
         if (empty($this->_scriptBuffers)) {
             return false;
@@ -1002,7 +1005,7 @@ class View extends \yii\web\View
      * @return array|false The `<style>` tags that were registered in the active buffer, grouped by position, or `false` if there isn’t one
      * @since 3.7.0
      */
-    public function clearCssBuffer()
+    public function clearCssBuffer(): array|false
     {
         if (empty($this->_cssBuffers)) {
             return false;
@@ -1253,7 +1256,7 @@ JS;
      * @see getInitialDeltaValues()
      * @since 3.4.6
      */
-    public function setInitialDeltaValue(string $inputName, $value): void
+    public function setInitialDeltaValue(string $inputName, mixed $value): void
     {
         if ($this->_registerDeltaNames) {
             $this->_initialDeltaValues[$this->namespaceInputName($inputName)] = $value;
@@ -1414,14 +1417,14 @@ JS;
      * }, 'widget-settings');
      * ```
      *
-     * @param string|callable $html The HTML code, or a callable that returns the HTML code
+     * @param callable|string $html The HTML code, or a callable that returns the HTML code
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
      * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
      */
-    public function namespaceInputs($html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
+    public function namespaceInputs(callable|string $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
         if (is_callable($html)) {
             // If no namespace was passed in, just return the callable response directly.
@@ -2043,21 +2046,5 @@ JS;
             true,
             $context['single'] ?? false
         );
-    }
-
-    /**
-     * Returns the HTML for an element in the control panel.
-     *
-     * @param array $context
-     */
-    private function _prepEditElementVariables(array &$context): void
-    {
-        /** @var ElementInterface $element */
-        $element = $context['element'];
-
-        [$docTitle, $title] = Cp::editElementTitles($element);
-
-        $context['docTitle'] = $docTitle;
-        $context['title'] = $title;
     }
 }

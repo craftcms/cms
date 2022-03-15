@@ -9,6 +9,7 @@ namespace craft\test;
 
 use Craft;
 use yii\base\InvalidArgumentException;
+use yii\db\ActiveRecord;
 use yii\db\TableSchema;
 use yii\test\ActiveFixture as BaseActiveFixture;
 
@@ -24,7 +25,7 @@ class ActiveFixture extends BaseActiveFixture
     /**
      * @var array
      */
-    protected $ids = [];
+    protected array $ids = [];
 
     /**
      * @inheritdoc
@@ -71,6 +72,7 @@ class ActiveFixture extends BaseActiveFixture
      */
     public function unload(): void
     {
+        /** @var ActiveRecord $modelClass */
         $modelClass = $this->modelClass;
         foreach ($this->ids as $id) {
             $arInstance = $modelClass::find()

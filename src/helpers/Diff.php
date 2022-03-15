@@ -43,7 +43,7 @@ class Diff
                     for ($j = max($i - $contextLines, 0); $j < $i; $j++) {
                         $diff .= '  ' . $lines[$j][1] . "\n";
                     }
-                } else if ($lastChange < $i - $contextLines * 2 + 2) {
+                } elseif ($lastChange < $i - $contextLines * 2 + 2) {
                     // More than 2X the context size
                     for ($j = $lastChange + 1; $j < $lastChange + $contextLines + 1; $j++) {
                         $diff .= '  ' . $lines[$j][1] . "\n";
@@ -157,7 +157,7 @@ class Diff
      * @return bool
      * @since 3.6.0
      */
-    public static function compare($a, $b, bool $strict = true): bool
+    public static function compare(mixed $a, mixed $b, bool $strict = true): bool
     {
         if (!is_array($a) || !is_array($b)) {
             return $strict ? $a === $b : $a == $b;

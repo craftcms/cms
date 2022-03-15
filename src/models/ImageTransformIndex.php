@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -92,16 +93,6 @@ class ImageTransformIndex extends Model
      * @var ImageTransform|null The transform associated with this index
      */
     private ?ImageTransform $_transform = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'dateIndexed';
-        return $attributes;
-    }
 
     /**
      * @inheritdoc

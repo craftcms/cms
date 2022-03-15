@@ -32,8 +32,8 @@ class FieldLayoutTest extends Unit
     {
         return [
             'entry-with-fields' => [
-                'class' => EntryWithFieldsFixture::class
-            ]
+                'class' => EntryWithFieldsFixture::class,
+            ],
         ];
     }
 

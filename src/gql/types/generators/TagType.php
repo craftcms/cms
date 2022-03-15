@@ -17,7 +17,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\Tag;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 
@@ -32,7 +31,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
         $gqlTypes = [];
@@ -55,7 +54,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
         /** @var TagGroup $tagGroup */
         $typeName = TagElement::gqlTypeNameByContext($context);

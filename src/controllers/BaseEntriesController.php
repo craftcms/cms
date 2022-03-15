@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\behaviors\DraftBehavior;
 use craft\elements\Entry;
 use craft\models\Section;
 use craft\models\Site;
@@ -94,7 +93,7 @@ abstract class BaseEntriesController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.4.0
      */
-    protected function enabledForSiteValue()
+    protected function enabledForSiteValue(): array|bool|null
     {
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (is_array($enabledForSite)) {

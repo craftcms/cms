@@ -75,7 +75,7 @@ class SetupController extends Controller
      * @var bool Whether existing environment variables should be used as the default values by the `db-creds` command.
      * @see _env()
      */
-    private $_useEnvDefaults = true;
+    private bool $_useEnvDefaults = true;
 
     /**
      * @inheritdoc
@@ -362,9 +362,9 @@ EOD;
             }
 
             if (
-                strpos($message, 'Access denied for user') !== false ||
-                strpos($message, 'no password supplied') !== false ||
-                strpos($message, 'password authentication failed for user') !== false
+                str_contains($message, 'Access denied for user') ||
+                str_contains($message, 'no password supplied') ||
+                str_contains($message, 'password authentication failed for user')
             ) {
                 $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
                 $badUserCredentials = true;
@@ -388,7 +388,7 @@ EOD;
                     'default' => $this->schema ?? App::env('DB_SCHEMA') ?? 'public',
                 ]);
                 $db->createCommand("SET search_path TO $this->schema;")->execute();
-            } else if ($this->schema === null) {
+            } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
                 $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
@@ -446,7 +446,7 @@ EOD;
             if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if (
+        } elseif (
             !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
             !$this->_setEnvVar('DB_SERVER', $this->server) ||
             !$this->_setEnvVar('DB_PORT', $this->port) ||
@@ -534,7 +534,7 @@ EOD;
         $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!Platform::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
-            if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
+            if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));
             }
         }

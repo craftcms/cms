@@ -79,13 +79,13 @@ class Request extends \yii\web\Request
      * @var GeneralConfig|array|string
      * @since 3.5.10
      */
-    public $generalConfig;
+    public GeneralConfig|string|array $generalConfig;
 
     /**
      * @var Sites|array|string|null
      * @since 3.5.10
      */
-    public $sites = 'sites';
+    public string|array|null|Sites $sites = 'sites';
 
     /**
      * @var string
@@ -289,7 +289,7 @@ class Request extends \yii\web\Request
         }
 
         // If this is a CP request and the path begins with the CP trigger, remove it
-        if ($this->_isCpRequest && $this->generalConfig->cpTrigger && strpos($this->_path . '/', $this->generalConfig->cpTrigger . '/') === 0) {
+        if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
             $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
         }
 
@@ -300,12 +300,12 @@ class Request extends \yii\web\Request
             // If Craft is running from a subfolder, chop the subfolder path off of the base path first
             if (
                 ($requestBaseUrl = $this->_normalizePath($this->getBaseUrl())) &&
-                strpos($basePath . '/', $requestBaseUrl . '/') === 0
+                str_starts_with($basePath . '/', $requestBaseUrl . '/')
             ) {
                 $basePath = ltrim(substr($basePath, strlen($requestBaseUrl)), '/');
             }
 
-            if (strpos($this->_path . '/', $basePath . '/') === 0) {
+            if (str_starts_with($this->_path . '/', $basePath . '/')) {
                 $this->_path = ltrim(substr($this->_path, strlen($basePath)), '/');
             }
         }
@@ -320,9 +320,9 @@ class Request extends \yii\web\Request
         $pageTrigger = $this->generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
-        if (strpos($pageTrigger, '?') === 0) {
+        if (str_starts_with($pageTrigger, '?')) {
             $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
-        } else if ($this->_path !== '') {
+        } elseif ($this->_path !== '') {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $pageTrigger = preg_quote($pageTrigger, '/');
@@ -867,7 +867,7 @@ class Request extends \yii\web\Request
      * @see getBodyParams()
      * @see setBodyParams()
      */
-    public function getBodyParam($name, $defaultValue = null)
+    public function getBodyParam($name, $defaultValue = null): mixed
     {
         return $this->_getParam($name, $defaultValue, $this->getBodyParams());
     }
@@ -897,7 +897,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the body param
      * @see getBodyParam()
      */
-    public function getRequiredBodyParam(string $name)
+    public function getRequiredBodyParam(string $name): mixed
     {
         $value = $this->getBodyParam($name);
 
@@ -905,7 +905,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new BadRequestHttpException('Request missing required body param');
+        throw new BadRequestHttpException("Request missing required body param");
     }
 
     /**
@@ -929,7 +929,7 @@ class Request extends \yii\web\Request
      * ```
      *
      * @param string $name The parameter name.
-     * @return string The parameter value
+     * @return string|null The parameter value
      * @throws BadRequestHttpException if the param value doesn’t pass validation
      * @see getBodyParam()
      */
@@ -990,7 +990,7 @@ class Request extends \yii\web\Request
      * @return mixed The GET parameter value.
      * @see getBodyParam()
      */
-    public function getQueryParam($name, $defaultValue = null)
+    public function getQueryParam($name, $defaultValue = null): mixed
     {
         return $this->_getParam($name, $defaultValue, $this->getQueryParams());
     }
@@ -1020,7 +1020,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the query param
      * @see getQueryParam()
      */
-    public function getRequiredQueryParam(string $name)
+    public function getRequiredQueryParam(string $name): mixed
     {
         $value = $this->getQueryParam($name);
 
@@ -1037,12 +1037,12 @@ class Request extends \yii\web\Request
      * If the parameter does not exist, the second parameter to this method will be returned.
      *
      * @param string $name The parameter name.
-     * @param mixed $defaultValue The default parameter value if the parameter does not exist.
+     * @param mixed|null $defaultValue The default parameter value if the parameter does not exist.
      * @return mixed The parameter value.
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getParam(string $name, $defaultValue = null)
+    public function getParam(string $name, mixed $defaultValue = null): mixed
     {
         if (($value = $this->getQueryParam($name)) !== null) {
             return $value;
@@ -1065,7 +1065,7 @@ class Request extends \yii\web\Request
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getRequiredParam(string $name)
+    public function getRequiredParam(string $name): mixed
     {
         $value = $this->getParam($name);
 
@@ -1103,7 +1103,7 @@ class Request extends \yii\web\Request
         // Tear it down and rebuild it without the path param
         $parts = explode('&', $queryString);
         foreach ($parts as $key => $part) {
-            if (strpos($part, $this->generalConfig->pathParam . '=') === 0) {
+            if (str_starts_with($part, $this->generalConfig->pathParam . '=')) {
                 unset($parts[$key]);
                 break;
             }
@@ -1169,15 +1169,15 @@ class Request extends \yii\web\Request
     {
         $userAgent = $this->getUserAgent();
 
-        if (strpos($userAgent, 'Linux') !== false) {
+        if (str_contains($userAgent, 'Linux')) {
             return 'Linux';
         }
 
-        if (strpos($userAgent, 'Win') !== false) {
+        if (str_contains($userAgent, 'Win')) {
             return 'Windows';
         }
 
-        if (strpos($userAgent, 'Mac') !== false) {
+        if (str_contains($userAgent, 'Mac')) {
             return 'Mac';
         }
 
@@ -1345,7 +1345,7 @@ class Request extends \yii\web\Request
         // They have an existing CSRF token.
         if ($existingToken) {
             // It's a CSRF token that came from an authenticated request.
-            if (strpos($existingToken, '|') !== false) {
+            if (str_contains($existingToken, '|')) {
                 // Grab the existing nonce.
                 $parts = explode('|', $existingToken);
                 $nonce = $parts[0];
@@ -1535,7 +1535,7 @@ class Request extends \yii\web\Request
 
         // Does the site URL specify a base path?
         $parsedPath = !empty($parsed['path']) ? $this->_normalizePath($parsed['path']) : '';
-        if ($parsedPath && strpos($this->getFullUri() . '/', $parsedPath . '/') !== 0) {
+        if ($parsedPath && !str_starts_with($this->getFullUri() . '/', $parsedPath . '/')) {
             return 0;
         }
 
@@ -1696,10 +1696,10 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * @param array|string $value
-     * @return array|string
+     * @param mixed $value
+     * @return mixed
      */
-    private function _utf8Value($value)
+    private function _utf8Value(mixed $value): mixed
     {
         if (is_array($value)) {
             return $this->_utf8AllTheThings($value);
@@ -1722,7 +1722,7 @@ class Request extends \yii\web\Request
      * @param array $params
      * @return mixed
      */
-    private function _getParam(?string $name, $defaultValue, array $params)
+    private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         // Do they just want the whole array?
         if ($name === null) {

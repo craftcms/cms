@@ -15,7 +15,6 @@ use Twig\Error\RuntimeError;
 use yii\base\Component;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
-use yii\web\JsonResponseFormatter;
 use yii\web\ResponseFormatterInterface;
 
 /**
@@ -26,7 +25,7 @@ use yii\web\ResponseFormatterInterface;
  */
 class TemplateResponseFormatter extends Component implements ResponseFormatterInterface
 {
-    const FORMAT = 'template';
+    public const FORMAT = 'template';
 
     /**
      * @inheritdoc

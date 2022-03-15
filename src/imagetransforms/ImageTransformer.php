@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -10,6 +11,7 @@ namespace craft\imagetransforms;
 
 use Craft;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
+use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\LocalFsInterface;
 use craft\db\Query;
@@ -17,7 +19,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
-use craft\events\GenerateTransformEvent;
 use craft\gql\types\DateTime;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -32,7 +33,8 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GeneratePendingTransforms;
-use craft\services\ImageTransforms;
+use Exception;
+use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -41,12 +43,17 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ImageTransformer implements ImageTransformerInterface, EagerImageTransformerInterface
+class ImageTransformer implements ImageTransformerInterface, EagerImageTransformerInterface, ImageEditorTransformerInterface
 {
     /**
      * @var ImageTransformIndex[]
      */
     protected array $eagerLoadedTransformIndexes = [];
+
+    /**
+     * @var array
+     */
+    protected array $imageEditorData = [];
 
     /**
      * Returns the URL for an image asset transform.
@@ -62,7 +69,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
         $imageTransformIndex = $this->getTransformIndex($asset, $imageTransform);
 
         if ($imageTransformIndex->fileExists) {
-            $fs = $asset->getFs();
+            $fs = $asset->getVolume()->getTransformFs();
             $uri = $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
@@ -70,7 +77,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
                 $imageTransformIndex->fileExists = false;
                 $this->storeTransformIndexData($imageTransformIndex);
             } else {
-                return AssetsHelper::generateUrl($asset->getVolume(), $asset, $uri, $imageTransformIndex->dateUpdated);
+                return AssetsHelper::generateUrl($fs, $asset, $uri, $imageTransformIndex->dateUpdated);
             }
         }
 
@@ -98,7 +105,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      */
     protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $asset->getFs()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
+        $asset->getVolume()->getTransformFs()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
     }
 
     /**
@@ -287,10 +294,11 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
 
         $volume = $asset->getVolume();
         $transformPath = $asset->folderPath . $this->getTransformSubpath($asset, $index);
+        $transformFs = $volume->getTransformFs();
 
         // Already created. Relax, grasshopper!
-        if ($volume->getFs()->fileExists($transformPath)) {
-            $dateModified = $volume->getFs()->getDateModified($transformPath);
+        if ($transformFs->fileExists($transformPath)) {
+            $dateModified = $transformFs->getDateModified($transformPath);
             $parameterChangeTime = $index->getTransform()->parameterChangeTime;
 
             if (!$parameterChangeTime || $parameterChangeTime->getTimestamp() <= $dateModified) {
@@ -300,7 +308,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
             // Let's cook up a new one.
             try {
                 $volume->getFs()->deleteFile($transformPath);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
         }
@@ -331,7 +339,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
             default:
                 if ($asset->getHasFocalPoint()) {
                     $position = $asset->getFocalPoint();
-                } else if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+                } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
                     $position = 'center-center';
                 } else {
                     $position = $transform->position;
@@ -343,28 +351,16 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
             $image->setInterlace($transform->interlace);
         }
 
-        $event = new GenerateTransformEvent([
-            'transformIndex' => $index,
-            'asset' => $asset,
-            'image' => $image,
-        ]);
-
-        Craft::$app->getImageTransforms()->trigger(ImageTransforms::EVENT_GENERATE_TRANSFORM, $event);
-
-        if ($event->tempPath !== null) {
-            $tempPath = $event->tempPath;
-        } else {
-            $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true) . '.' . $index->detectedFormat;
-            $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-            $image->saveAs($tempPath);
-        }
+        $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true) . '.' . $index->detectedFormat;
+        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
+        $image->saveAs($tempPath);
 
         clearstatcache(true, $tempPath);
 
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $volume->getFs()->writeFileFromStream($transformPath, $stream, []);
+            $volume->getTransformFs()->writeFileFromStream($transformPath, $stream, []);
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
@@ -394,7 +390,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $fs = $volume->getFs();
+        $fs = $volume->getTransformFs();
 
         // If we have a match, copy the file.
         if ($matchFound) {
@@ -431,7 +427,6 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
         // Make sure we're not in the middle of working on this transform from a separate request
         if ($index->inProgress) {
             for ($safety = 0; $safety < 100; $safety++) {
-
                 if ($index->error) {
                     throw new ImageTransformException(Craft::t('app',
                         'Failed to generate transform with id of {id}.',
@@ -482,7 +477,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
                 }
 
                 $this->storeTransformIndexData($index);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $index->inProgress = false;
                 $index->fileExists = false;
                 $index->error = true;
@@ -506,7 +501,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      * @return ImageTransformIndex
      * @throws ImageTransformException if the transform cannot be found by the handle
      */
-    protected function getTransformIndex(Asset $asset, $transform): ImageTransformIndex
+    protected function getTransformIndex(Asset $asset, mixed $transform): ImageTransformIndex
     {
         $transform = TransformHelper::normalizeTransform($transform);
 
@@ -580,10 +575,10 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      *
      * @param array $result
      * @param ImageTransform $transform
-     * @param Asset|array $asset The asset object or a raw database result
+     * @param array|Asset $asset The asset object or a raw database result
      * @return bool Whether the index result is still valid
      */
-    protected function validateTransformIndexResult(array $result, ImageTransform $transform, $asset): bool
+    protected function validateTransformIndexResult(array $result, ImageTransform $transform, array|Asset $asset): bool
     {
         // If the transform hasn't been generated yet, it's probably not yet invalid.
         if (empty($result['dateIndexed'])) {
@@ -638,7 +633,7 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
                 'id' => $index->id,
             ], [], true, $db);
         } else {
-            Db::insert(Table::IMAGETRANSFORMINDEX, $values, true, $db);
+            Db::insert(Table::IMAGETRANSFORMINDEX, $values, $db);
             $index->id = (int)$db->getLastInsertID(Table::IMAGETRANSFORMINDEX);
         }
 
@@ -672,6 +667,104 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
 
         return $result ? new ImageTransformIndex($result) : null;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function startImageEditing(Asset $asset): void
+    {
+        $imageCopy = $asset->getCopyOfFile();
+
+        /** @var Raster $image */
+        $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($asset->height, $asset->width));
+
+        // TODO Is this hacky? It seems hacky.
+        // We're rasterizing SVG, we have to make sure that the filename change does not get lost
+        if (strtolower($asset->getExtension()) === 'svg') {
+            unlink($imageCopy);
+            $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
+            $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
+        }
+
+        $this->imageEditorData['image'] = $image;
+        $this->imageEditorData['tempLocation'] = $imageCopy;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function flipImage(bool $flipX, bool $flipY): void
+    {
+        if ($flipX) {
+            $this->imageEditorData['image']->flipHorizontally();
+        }
+        if ($flipY) {
+            $this->imageEditorData['image']->flipVertically();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scaleImage(int $width, int $height): void
+    {
+        $this->imageEditorData['image']->scaleToFit($width, $height);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rotateImage(float $degrees): void
+    {
+        $this->imageEditorData['image']->rotate($degrees);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditedImageWidth(): int
+    {
+        return $this->imageEditorData['image']->getWidth();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditedImageHeight(): int
+    {
+        return $this->imageEditorData['image']->getHeight();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function crop(int $x, int $y, int $width, int $height): void
+    {
+        $this->imageEditorData['image']->crop($x, $x + $width, $y, $y + $height);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function finishImageEditing(): string
+    {
+        $tempLocation = $this->imageEditorData['tempLocation'];
+        $this->imageEditorData['image']->saveAs($tempLocation);
+        $this->imageEditorData = [];
+
+        return $tempLocation;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function cancelImageEditing(): string
+    {
+        $tempLocation = $this->imageEditorData['tempLocation'];
+        $this->imageEditorData = [];
+        return $tempLocation;
+    }
+
 
     /**
      * Delete transform records by an Asset id

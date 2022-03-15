@@ -586,7 +586,7 @@ $.extend(Craft,
             }
         },
 
-        /**
+                /**
          * Posts an action request to the server.
          *
          * @param {string} action
@@ -653,15 +653,8 @@ $.extend(Craft,
         /**
          * Queues up an action request to be posted to the server.
          */
-        queueActionRequest: function(action, data, callback, options) {
-            // Make 'data' optional
-            if (typeof data === 'function') {
-                options = callback;
-                callback = data;
-                data = undefined;
-            }
-
-            Craft._ajaxQueue.push([action, data, callback, options]);
+        queueActionRequest: function(callback) {
+            Craft._ajaxQueue.push(callback);
 
             if (!Craft._waitingOnAjax) {
                 Craft._postNextActionRequestInQueue();
@@ -671,19 +664,20 @@ $.extend(Craft,
         _postNextActionRequestInQueue: function() {
             Craft._waitingOnAjax = true;
 
-            var args = Craft._ajaxQueue.shift();
+            var callback = Craft._ajaxQueue.shift();
 
-            Craft.postActionRequest(args[0], args[1], function(data, textStatus, jqXHR) {
-                if (args[2] && typeof args[2] === 'function') {
-                    args[2](data, textStatus, jqXHR);
-                }
+            callback()
+                .then((response) => {
+                    if (callback && typeof callback === 'function') {
+                        callback(response ? response.data : null);
+                    }
 
-                if (Craft._ajaxQueue.length) {
-                    Craft._postNextActionRequestInQueue();
-                } else {
-                    Craft._waitingOnAjax = false;
-                }
-            }, args[3]);
+                    if (Craft._ajaxQueue.length) {
+                        Craft._postNextActionRequestInQueue();
+                    } else {
+                        Craft._waitingOnAjax = false;
+                    }
+                });
         },
 
         _actionHeaders: function() {
@@ -707,7 +701,7 @@ $.extend(Craft,
          * @returns {Promise}
          * @since 3.4.6
          */
-        sendActionRequest: function(method, action, options) {
+        sendActionRequest: function(method, action, options = {}) {
             if ($.isPlainObject(action)) {
                 options = action;
                 action = null;
@@ -2207,14 +2201,12 @@ $.extend($.fn,
 
         disclosureMenu: function() {
             return this.each(function() {
-                var $trigger = $(this);
-                var $disclosureId = $trigger.attr('aria-controls');
+                const $trigger = $(this);
 
                 // Only instantiate element if there is a reference to disclosure content
-                if ($disclosureId) {
-                    var settings = {};
-
-                    new Garnish.DisclosureMenu($trigger, settings);
+                // and if the trigger hasn't already been instantiated
+                if (Garnish.hasAttr($trigger, 'aria-controls') && !$trigger.data('trigger')) {
+                    new Garnish.DisclosureMenu($trigger);
                 }
             });
         },

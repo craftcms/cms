@@ -307,7 +307,7 @@ class Matrix extends Component
                     $layout->uid = key($data['fieldLayouts']);
                     $fieldsService->saveLayout($layout);
                     $blockTypeRecord->fieldLayoutId = $layout->id;
-                } else if ($blockTypeRecord->fieldLayoutId) {
+                } elseif ($blockTypeRecord->fieldLayoutId) {
                     // Delete the field layout
                     $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
                     $blockTypeRecord->fieldLayoutId = null;
@@ -694,7 +694,7 @@ class Matrix extends Component
                             'ownerId' => $owner->id,
                         ]);
                     }
-                } else if ((int)$block->sortOrder !== $sortOrder) {
+                } elseif ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
                     Db::update(Table::MATRIXBLOCKS_OWNERS, [
@@ -951,7 +951,41 @@ SELECT [[o.blockId]], '$draft->id', [[o.sortOrder]]
 FROM $ownersTable AS [[o]]
 INNER JOIN $blocksTable AS [[b]] ON [[b.id]] = [[o.blockId]] AND [[b.primaryOwnerId]] = '$canonical->id' AND [[b.fieldId]] = '$field->id'
 WHERE [[o.ownerId]] = '$canonical->id'
-SQL)->execute();
+SQL
+        )->execute();
+    }
+
+    /**
+     * Creates revisions for all the blocks that belong to the given canonical element, and assigns those
+     * revisions to the given owner revision.
+     *
+     * @param MatrixField $field The Matrix field
+     * @param ElementInterface $canonical The canonical element
+     * @param ElementInterface $revision The revision element
+     * @since 4.0.0
+     */
+    public function createRevisionBlocks(MatrixField $field, ElementInterface $canonical, ElementInterface $revision): void
+    {
+        $blocks = MatrixBlock::find()
+            ->ownerId($canonical->id)
+            ->fieldId($field->id)
+            ->siteId('*')
+            ->unique()
+            ->status(null)
+            ->all();
+
+        $revisionsService = Craft::$app->getRevisions();
+        $ownershipData = [];
+
+        foreach ($blocks as $block) {
+            $blockRevisionId = $revisionsService->createRevision($block, null, null, [
+                'primaryOwnerId' => $revision->id,
+                'saveOwnership' => false,
+            ]);
+            $ownershipData[] = [$blockRevisionId, $revision->id, $block->sortOrder];
+        }
+
+        Db::batchInsert(Table::MATRIXBLOCKS_OWNERS, ['blockId', 'ownerId', 'sortOrder'], $ownershipData);
     }
 
     /**
@@ -1023,11 +1057,11 @@ SQL)->execute();
                         if ($derivativeBlock->dateUpdated == $derivativeBlock->dateCreated) {
                             $elementsService->deleteElement($derivativeBlock);
                         }
-                    } else if (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
+                    } elseif (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
                         // Merge the upstream changes into the derivative block
                         $elementsService->mergeCanonicalChanges($derivativeBlock);
                     }
-                } else if (!$canonicalBlock->trashed && $canonicalBlock->dateCreated > $owner->dateCreated) {
+                } elseif (!$canonicalBlock->trashed && $canonicalBlock->dateCreated > $owner->dateCreated) {
                     // This is a new block, so duplicate it into the derivative owner
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
@@ -1126,11 +1160,11 @@ SQL)->execute();
     /**
      * Returns a block type record by its model or UID or creates a new one.
      *
-     * @param MatrixBlockType|string $blockType
+     * @param string|MatrixBlockType $blockType
      * @return MatrixBlockTypeRecord
      * @throws MatrixBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord($blockType): MatrixBlockTypeRecord
+    private function _getBlockTypeRecord(string|MatrixBlockType $blockType): MatrixBlockTypeRecord
     {
         if (is_string($blockType)) {
             $blockTypeRecord = MatrixBlockTypeRecord::findOne(['uid' => $blockType]) ?? new MatrixBlockTypeRecord();

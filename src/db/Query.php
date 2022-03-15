@@ -69,7 +69,7 @@ class Query extends \yii\db\Query
     public function isJoined(string $table): bool
     {
         foreach ($this->join as $join) {
-            if ($join[1] === $table || strpos($join[1], $table) === 0) {
+            if ($join[1] === $table || str_starts_with($join[1], $table)) {
                 return true;
             }
         }
@@ -174,7 +174,7 @@ class Query extends \yii\db\Query
      * @inheritdoc
      * @return array|Model|null first row of the query result array, or `null` if there are no query results.
      */
-    public function one($db = null)
+    public function one($db = null): Model|array|null
     {
         $limit = $this->limit;
         $this->limit = 1;
@@ -194,7 +194,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function scalar($db = null)
+    public function scalar($db = null): bool|int|string|null
     {
         $limit = $this->limit;
         $this->limit = 1;
@@ -240,7 +240,7 @@ class Query extends \yii\db\Query
      * @return array|Model|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, ?YiiConnection $db = null)
+    public function nth(int $n, ?YiiConnection $db = null): Model|array|null
     {
         $offset = $this->offset;
         $this->offset = ($offset ?: 0) + $n;
@@ -267,7 +267,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    protected function queryScalar($selectExpression, $db)
+    protected function queryScalar($selectExpression, $db): bool|string|null
     {
         try {
             return parent::queryScalar($selectExpression, $db);

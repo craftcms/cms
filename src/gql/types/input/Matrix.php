@@ -29,7 +29,7 @@ class Matrix extends InputObjectType
      * @param MatrixField $context
      * @return mixed
      */
-    public static function getType(MatrixField $context)
+    public static function getType(MatrixField $context): mixed
     {
         $typeName = $context->handle . '_MatrixInput';
 
@@ -101,7 +101,7 @@ class Matrix extends InputObjectType
      * @param $value
      * @return mixed
      */
-    public static function normalizeValue($value)
+    public static function normalizeValue($value): mixed
     {
         $preparedBlocks = [];
         $blockCounter = 1;

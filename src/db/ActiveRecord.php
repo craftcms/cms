@@ -40,7 +40,6 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     public static function find(): ActiveQuery
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject(ActiveQuery::class, [static::class]);
     }
 
@@ -115,7 +114,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
                     unset($this->$key);
                 }
             }
-        } else if (
+        } elseif (
             !empty($this->getDirtyAttributes()) &&
             $this->hasAttribute('dateUpdated')
         ) {
@@ -135,7 +134,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @return mixed The prepared value
      * @since 3.4.0
      */
-    private function _prepareValue(string $name, $value)
+    private function _prepareValue(string $name, mixed $value): mixed
     {
         $columnType = static::getTableSchema()->columns[$name]->dbType ?? null;
         return Db::prepareValueForDb($value, $columnType);

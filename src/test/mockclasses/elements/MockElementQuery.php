@@ -11,9 +11,10 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
+use yii\base\Model;
 
 /**
- * MockElementQuery is used to mimic element query and help mocking element query results.
+ * MockElementQuery is used to mimic element queries and mock their results
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.5
@@ -27,14 +28,14 @@ class MockElementQuery extends ElementQuery
      *
      * @var array
      */
-    protected $returnValues = [];
+    protected array $returnValues = [];
 
     /**
      * The element query properties
      *
      * @var array
      */
-    protected $properties = [];
+    protected array $properties = [];
 
     /**
      * MockElementQuery constructor.
@@ -48,6 +49,7 @@ class MockElementQuery extends ElementQuery
      * Generate a more specific query class for the provided element type class.
      *
      * @param $elementClass
+     * @return ElementQuery
      */
     public static function generateSpecificQueryClass($elementClass): ElementQuery
     {
@@ -67,7 +69,7 @@ class MockElementQuery extends ElementQuery
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $prefix . '.php';
         file_put_contents($tempPath, $classData);
         include($tempPath);
-        $instance = new $className;
+        $instance = new $className();
         unlink($tempPath);
 
         return $instance;
@@ -111,6 +113,7 @@ class MockElementQuery extends ElementQuery
      * Getter for mock query arguments.
      *
      * @param $name
+     * @return mixed|null
      */
     public function __get($name)
     {
@@ -120,19 +123,20 @@ class MockElementQuery extends ElementQuery
     /**
      * Mock setting query arguments via a method call.
      *
-     * @param $method
-     * @param $arguments
+     * @param $name
+     * @param $params
      * @return self
      */
-    public function __call($method, $arguments): self
+    public function __call($name, $params): self
     {
-        $this->properties[$method] = reset($arguments);
+        $this->properties[$name] = reset($params);
         return $this;
     }
 
     /**
      * Return all the return values.
      *
+     * @param mixed|null $db
      * @return array
      */
     public function all($db = null): array
@@ -145,7 +149,7 @@ class MockElementQuery extends ElementQuery
      *
      * @return array|ElementInterface|null
      */
-    public function one($db = null)
+    public function one($db = null): Model|array|null
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

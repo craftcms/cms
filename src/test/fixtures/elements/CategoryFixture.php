@@ -24,7 +24,7 @@ abstract class CategoryFixture extends BaseElementFixture
     /**
      * @var array
      */
-    protected $groupIds = [];
+    protected array $groupIds = [];
 
     /**
      * @inheritdoc

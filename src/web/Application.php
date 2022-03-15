@@ -32,6 +32,7 @@ use yii\base\ExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -56,11 +57,11 @@ use yii\web\UnauthorizedHttpException;
  * @property Session $session The session component
  * @property UrlManager $urlManager The URL manager for this application
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method \craft\web\Response getResponse()     Returns the response component.
- * @method Session getSession()      Returns the session component.
- * @method UrlManager getUrlManager()   Returns the URL manager for this application.
- * @method User getUser()         Returns the user component.
+ * @method Request getRequest() Returns the request component.
+ * @method \craft\web\Response getResponse() Returns the response component.
+ * @method Session getSession() Returns the session component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
+ * @method User getUser() Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -294,7 +295,7 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?BaseResponse
     {
         $result = parent::runAction($route, $params);
 
@@ -484,7 +485,7 @@ class Application extends \yii\web\Application
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
-        if (strpos('/' . $requestPath, $resourceBaseUri . '/') !== 0) {
+        if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
         }
 

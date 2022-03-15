@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\config\GeneralConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -61,7 +62,7 @@ class Gc extends Component
      * @var Connection|array|string The database connection to use
      * @since 4.0.0
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var GeneralConfig
@@ -95,8 +96,10 @@ class Gc extends Component
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
 
+        // elements should always go first
+        $this->hardDeleteElements();
+
         $this->hardDelete([
-            Table::ELEMENTS, // elements should always go first
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
             Table::FIELDGROUPS,
@@ -167,11 +170,77 @@ class Gc extends Component
     }
 
     /**
+     * Hard-deletes eligible elements.
+     *
+     * Any soft-deleted block elements which have revisions will be skipped, as their revisions may still be needed by the owner element.
+     *
+     * @since 4.0.0
+     */
+    public function hardDeleteElements(): void
+    {
+        if (!$this->_shouldHardDelete()) {
+            return;
+        }
+
+        $normalElementTypes = [];
+        $blockElementTypes = [];
+
+        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            if (is_subclass_of($elementType, BlockElementInterface::class)) {
+                $blockElementTypes[] = $elementType;
+            } else {
+                $normalElementTypes[] = $elementType;
+            }
+        }
+
+        if ($normalElementTypes) {
+            Db::delete(Table::ELEMENTS, [
+                'and',
+                $this->_hardDeleteCondition(),
+                ['type' => $normalElementTypes],
+            ]);
+        }
+
+        if ($blockElementTypes) {
+            // Only hard-delete block elements that don't have any revisions
+            $elementsTable = Table::ELEMENTS;
+            $revisionsTable = Table::REVISIONS;
+            $params = [];
+            $conditionSql = $this->db->getQueryBuilder()->buildCondition([
+                'and',
+                $this->_hardDeleteCondition('e'),
+                [
+                    'e.type' => $blockElementTypes,
+                    'r.id' => null,
+                ],
+            ], $params);
+
+            if ($this->db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[e]].* FROM $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+WHERE $conditionSql
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[e]]
+LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
+WHERE
+  $elementsTable.[[id]] = [[e.id]] AND $conditionSql
+SQL;
+            }
+
+            $this->db->createCommand($sql, $params)->execute();
+        }
+    }
+
+    /**
      * Hard-deletes any rows in the given table(s), that are due for it.
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
-    public function hardDelete($tables): void
+    public function hardDelete(array|string $tables): void
     {
         if (!$this->_shouldHardDelete()) {
             return;
@@ -290,11 +359,13 @@ SQL;
     }
 
     /**
+     * @param string|null $tableAlias
      * @return array
      */
-    private function _hardDeleteCondition(): array
+    private function _hardDeleteCondition(?string $tableAlias = null): array
     {
-        $condition = ['not', ['dateDeleted' => null]];
+        $tableAlias = $tableAlias ? "$tableAlias." : '';
+        $condition = ['not', ["{$tableAlias}dateDeleted" => null]];
 
         if (!$this->deleteAllTrashed) {
             $expire = DateTimeHelper::currentUTCDateTime();
@@ -303,9 +374,10 @@ SQL;
             $condition = [
                 'and',
                 $condition,
-                ['<', 'dateDeleted', Db::prepareDateForDb($pastTime)],
+                ['<', "{$tableAlias}dateDeleted", Db::prepareDateForDb($pastTime)],
             ];
         }
+
         return $condition;
     }
 }

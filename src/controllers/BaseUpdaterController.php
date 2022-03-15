@@ -42,7 +42,7 @@ abstract class BaseUpdaterController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     /**
      * @var array The data associated with the current update
@@ -178,7 +178,7 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getErrorHandler()->logException($e);
 
             $output = $io->getOutput();
-            if (strpos($output, 'Your requirements could not be resolved to an installable set of packages.') !== false) {
+            if (str_contains($output, 'Your requirements could not be resolved to an installable set of packages.')) {
                 $error = Craft::t('app', 'Composer was unable to install the updates due to a dependency conflict.');
             } else {
                 $error = Craft::t('app', 'Composer was unable to install the updates.');
@@ -294,7 +294,7 @@ abstract class BaseUpdaterController extends Controller
         if ($returnUrl === null) {
             return null;
         }
-        if (strpos($returnUrl, '{') !== false) {
+        if (str_contains($returnUrl, '{')) {
             throw new BadRequestHttpException("Invalid return URL: $returnUrl");
         }
         return $returnUrl;
@@ -448,24 +448,18 @@ abstract class BaseUpdaterController extends Controller
      */
     protected function actionStatus(string $action): string
     {
-        switch ($action) {
-            case self::ACTION_PRECHECK:
-                return Craft::t('app', 'Checking environment…');
-            case self::ACTION_RECHECK_COMPOSER:
-                return Craft::t('app', 'Checking…');
-            case self::ACTION_COMPOSER_INSTALL:
-                return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer install`',
-                ]);
-            case self::ACTION_COMPOSER_REMOVE:
-                return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer remove`',
-                ]);
-            case self::ACTION_FINISH:
-                return Craft::t('app', 'Finishing up…');
-            default:
-                throw new Exception('Invalid action: ' . $action);
-        }
+        return match ($action) {
+            self::ACTION_PRECHECK => Craft::t('app', 'Checking environment…'),
+            self::ACTION_RECHECK_COMPOSER => Craft::t('app', 'Checking…'),
+            self::ACTION_COMPOSER_INSTALL => Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
+                'command' => '`composer install`',
+            ]),
+            self::ACTION_COMPOSER_REMOVE => Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
+                'command' => '`composer remove`',
+            ]),
+            self::ACTION_FINISH => Craft::t('app', 'Finishing up…'),
+            default => throw new Exception('Invalid action: ' . $action),
+        };
     }
 
     /**

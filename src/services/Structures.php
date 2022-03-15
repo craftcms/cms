@@ -280,12 +280,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface|int $parentElement
+     * @param int|ElementInterface $parentElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function prepend(int $structureId, ElementInterface $element, $parentElement, string $mode = self::MODE_AUTO): bool
+    public function prepend(int $structureId, ElementInterface $element, ElementInterface|int $parentElement, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -301,12 +301,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface|int $parentElement
+     * @param int|ElementInterface $parentElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function append(int $structureId, ElementInterface $element, $parentElement, string $mode = self::MODE_AUTO): bool
+    public function append(int $structureId, ElementInterface $element, ElementInterface|int $parentElement, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -362,12 +362,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface|int $nextElement
+     * @param int|ElementInterface $nextElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function moveBefore(int $structureId, ElementInterface $element, $nextElement, string $mode = self::MODE_AUTO): bool
+    public function moveBefore(int $structureId, ElementInterface $element, ElementInterface|int $nextElement, string $mode = self::MODE_AUTO): bool
     {
         $nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
 
@@ -383,12 +383,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface|int $prevElement
+     * @param int|ElementInterface $prevElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function moveAfter(int $structureId, ElementInterface $element, $prevElement, string $mode = self::MODE_AUTO): bool
+    public function moveAfter(int $structureId, ElementInterface $element, ElementInterface|int $prevElement, string $mode = self::MODE_AUTO): bool
     {
         $prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
 
@@ -428,10 +428,10 @@ class Structures extends Component
      * Returns a structure element record from given structure and element IDs.
      *
      * @param int $structureId
-     * @param ElementInterface|int $element
+     * @param int|ElementInterface $element
      * @return StructureElement|null
      */
-    private function _getElementRecord(int $structureId, $element): ?StructureElement
+    private function _getElementRecord(int $structureId, ElementInterface|int $element): ?StructureElement
     {
         $elementId = is_numeric($element) ? $element : $element->id;
 

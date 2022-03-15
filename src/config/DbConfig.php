@@ -126,7 +126,7 @@ class DbConfig extends BaseConfig
      *
      * @since 3.7.27
      */
-    public $setSchemaOnConnect = false;
+    public bool $setSchemaOnConnect = false;
 
     /**
      * @var string|null If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
@@ -151,8 +151,19 @@ class DbConfig extends BaseConfig
      */
     public bool $useUnbufferedConnections = false;
 
-    // Deprecated Properties
-    // -------------------------------------------------------------------------
+    /**
+     * @var bool Whether to enable logging of database queries.
+     * @since 4.0.0
+     * @see Connection::$enableLogging
+     */
+    public bool $enableLogging = YII_DEBUG;
+
+    /**
+     * @var bool Whether to enable profiling of opening database connection and database queries.
+     * @since 4.0.0
+     * @see Connection::$enableLogging
+     */
+    public bool $enableProfiling = YII_DEBUG;
 
     /**
      * @var string|null The database connection URL, if one was provided by your hosting environment.
@@ -162,19 +173,19 @@ class DbConfig extends BaseConfig
     public ?string $url = null;
 
     /**
-     * @var string The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
+     * @var string|null The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
      */
-    public string $driver;
+    public ?string $driver = null;
 
     /**
-     * @var string The database server name or IP address. Usually `localhost` or `127.0.0.1`.
+     * @var string|null The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      */
-    public string $server;
+    public ?string $server = null;
 
     /**
-     * @var int|string The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public $port;
+    public ?int $port = null;
 
     /**
      * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
@@ -183,9 +194,9 @@ class DbConfig extends BaseConfig
     public ?string $unixSocket = null;
 
     /**
-     * @var string The name of the database to select.
+     * @var string|null The name of the database to select.
      */
-    public string $database;
+    public ?string $database = null;
 
     /**
      * @inheritdoc

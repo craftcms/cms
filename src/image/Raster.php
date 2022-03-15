@@ -21,10 +21,11 @@ use Imagine\Image\AbstractFont as Font;
 use Imagine\Image\AbstractImage;
 use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
-use Imagine\Image\ImageInterface as Imagine;
+use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
+use Imagine\Imagick\Imagine;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\ErrorException;
@@ -65,7 +66,7 @@ class Raster extends Image
     /**
      * @var Imagine|null
      */
-    private $_instance;
+    private ?Imagine $_instance = null;
 
     /**
      * @var RGB|null
@@ -161,7 +162,7 @@ class Raster extends Image
         // Make sure the image says it's an image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
-        if ($mimeType !== null && strpos($mimeType, 'image/') !== 0 && strpos($mimeType, 'application/pdf') !== 0) {
+        if ($mimeType !== null && !str_starts_with($mimeType, 'image/') && !str_starts_with($mimeType, 'application/pdf')) {
             throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => basename($path)]));
         }
 
@@ -249,7 +250,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -261,8 +262,8 @@ class Raster extends Image
             $newWidth = round($this->getWidth() / $factor);
 
             $this->resize($newWidth, $newHeight);
-            // If we need to upscale AND that's ok
-        } else if (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
+        // If we need to upscale AND that's ok
+        } elseif (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
             // Figure the crop size reductions
             $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
             $newHeight = $this->getHeight();
@@ -321,7 +322,7 @@ class Raster extends Image
 
                 $y1 = 0;
                 $y2 = $y1 + $targetHeight;
-            } else if ($newHeight - $targetHeight > 0) {
+            } elseif ($newHeight - $targetHeight > 0) {
                 switch ($verticalPosition) {
                     case 'top':
                         $y1 = 0;
@@ -678,7 +679,7 @@ class Raster extends Image
      */
     private function _getResizeFilter(): string
     {
-        return (Craft::$app->getImages()->getIsGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->getIsGd() ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
     }
 
     /**

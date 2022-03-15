@@ -16,8 +16,8 @@ use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
-use craft\helpers\Number as NumberHelper;
 use craft\i18n\Locale;
+use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
 
@@ -61,17 +61,17 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @var int|float|null The default value for new elements
      */
-    public $defaultValue;
+    public int|null|float $defaultValue = null;
 
     /**
      * @var int|float|null The minimum allowed number
      */
-    public $min = 0;
+    public int|null|float $min = 0;
 
     /**
      * @var int|float|null The maximum allowed number
      */
-    public $max;
+    public int|null|float $max = null;
 
     /**
      * @var int The number of digits allowed after the decimal point
@@ -115,19 +115,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         foreach (['defaultValue', 'min', 'max'] as $name) {
             if (isset($config[$name])) {
                 $config[$name] = $this->_normalizeNumber($config[$name]);
-            }
-        }
-        foreach (['defaultValue', 'max', 'decimals', 'size', 'prefix', 'suffix', 'previewCurrency'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-        if (($config['min'] ?? null) === '') {
-            $config['min'] = null; // default is 0
-        }
-        foreach (['min', 'max', 'defaultValue'] as $name) {
-            if (isset($config[$name])) {
-                $config[$name] = NumberHelper::toIntOrFloat($config[$name]);
             }
         }
 
@@ -186,7 +173,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value === null) {
             if (isset($this->defaultValue) && $this->isFresh($element)) {
@@ -202,7 +189,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      * @param mixed $value
      * @return int|float|string|null
      */
-    private function _normalizeNumber($value)
+    private function _normalizeNumber(mixed $value): float|int|string|null
     {
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
@@ -228,7 +215,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $formatter = Craft::$app->getFormatter();
         $formatNumber = !$formatter->willBeMisrepresented($value);
@@ -239,7 +226,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                     $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
                 } catch (InvalidArgumentException $e) {
                 }
-            } else if ($this->decimals) {
+            } elseif ($this->decimals) {
                 // Just make sure we're using the right decimal symbol
                 $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
                 try {
@@ -302,7 +289,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return NumberFieldConditionRule::class;
     }
@@ -310,26 +297,23 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
             return '';
         }
 
-        switch ($this->previewFormat) {
-            case self::FORMAT_DECIMAL:
-                return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
-            case self::FORMAT_CURRENCY:
-                return Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals);
-            default:
-                return $value;
-        }
+        return match ($this->previewFormat) {
+            self::FORMAT_DECIMAL => Craft::$app->getFormatter()->asDecimal($value, $this->decimals),
+            self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals),
+            default => $value,
+        };
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return NumberType::getType();
     }
@@ -338,7 +322,7 @@ JS;
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,

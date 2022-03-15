@@ -275,7 +275,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     protected function loadTableSchema($name): ?TableSchema
     {
-        $table = new TableSchema;
+        $table = new TableSchema();
         $this->resolveTableNames($table, $name);
 
         if ($this->findColumns($table)) {
@@ -343,7 +343,7 @@ SQL;
             }
         } catch (\Exception $e) {
             $previous = $e->getPrevious();
-            if (!$previous instanceof PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
+            if (!$previous instanceof PDOException || !str_contains($previous->getMessage(), 'SQLSTATE[42S02')) {
                 throw $e;
             }
 

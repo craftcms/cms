@@ -136,7 +136,7 @@ class UserQuery extends ElementQuery
      * ```
      * @used-by can()
      */
-    public $can;
+    public mixed $can = null;
 
     /**
      * @var int|int[]|null The user group ID(s) that the resulting users must belong to.
@@ -156,37 +156,44 @@ class UserQuery extends ElementQuery
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @var string|string[]|null The email address that the resulting users must have.
      * @used-by email()
      */
-    public $email;
+    public mixed $email = null;
 
     /**
      * @var string|string[]|null The username that the resulting users must have.
      * @used-by username()
      */
-    public $username;
+    public mixed $username = null;
+
+    /**
+     * @var string|string[]|null The full name that the resulting users must have.
+     * @used-by fullName()
+     * @since 4.0.0
+     */
+    public mixed $fullName = null;
 
     /**
      * @var string|string[]|null The first name that the resulting users must have.
      * @used-by firstName()
      */
-    public $firstName;
+    public mixed $firstName = null;
 
     /**
      * @var string|string[]|null The last name that the resulting users must have.
      * @used-by lastName()
      */
-    public $lastName;
+    public mixed $lastName = null;
 
     /**
      * @var mixed The date that the resulting users must have last logged in.
      * @used-by lastLoginDate()
      */
-    public $lastLoginDate;
+    public mixed $lastLoginDate = null;
 
     /**
      * @var bool Whether the users’ groups should be eager-loaded.
@@ -341,7 +348,7 @@ class UserQuery extends ElementQuery
     /**
      * Narrows the query results to only users that have a certain user permission, either directly on the user account or through one of their user groups.
      *
-     * See [User Management](https://craftcms.com/docs/3.x/user-management.html) for a full list of available user permissions defined by Craft.
+     * See [User Management](https://craftcms.com/docs/4.x/user-management.html) for a full list of available user permissions defined by Craft.
      *
      * ---
      *
@@ -363,7 +370,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $can
      */
-    public function can($value): self
+    public function can(mixed $value): self
     {
         $this->can = $value;
         return $this;
@@ -402,11 +409,11 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function group($value): self
+    public function group(mixed $value): self
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
@@ -451,7 +458,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value): self
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;
@@ -488,7 +495,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $email
      */
-    public function email($value): self
+    public function email(mixed $value): self
     {
         $this->email = $value;
         return $this;
@@ -530,9 +537,46 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $username
      */
-    public function username($value): self
+    public function username(mixed $value): self
     {
         $this->username = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the users’ full names.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches users…
+     * | - | -
+     * | `'Jane Doe'` | with a full name of `Jane Doe`.
+     * | `'not Jane Doe'` | not with a full name of `Jane Doe`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all the Jane Doe's #}
+     * {% set {elements-var} = {twig-method}
+     *   .fullName('Jane Doe')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all the Jane Doe's
+     * ${elements-var} = {php-method}
+     *     ->fullName('JaneDoe')
+     *     ->one();
+     * ```
+     *
+     * @param string|string[]|null $value The property value
+     * @return self self reference
+     * @uses $fullName
+     * @since 4.0.0
+     */
+    public function fullName(mixed $value): self
+    {
+        $this->fullName = $value;
         return $this;
     }
 
@@ -566,7 +610,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $firstName
      */
-    public function firstName($value): self
+    public function firstName(mixed $value): self
     {
         $this->firstName = $value;
         return $this;
@@ -602,7 +646,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $lastName
      */
-    public function lastName($value): self
+    public function lastName(mixed $value): self
     {
         $this->lastName = $value;
         return $this;
@@ -643,7 +687,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate($value): self
+    public function lastLoginDate(mixed $value): self
     {
         $this->lastLoginDate = $value;
         return $this;
@@ -679,7 +723,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value): self
+    public function status(array|string|null $value): self
     {
         return parent::status($value);
     }
@@ -751,8 +795,16 @@ class UserQuery extends ElementQuery
         ]);
 
         // todo: cleanup after next breakpoint
-        if (Craft::$app->getDb()->columnExists(Table::USERS, 'active')) {
+        $db = Craft::$app->getDb();
+        $activeColumnExists = $db->columnExists(Table::USERS, 'active');
+        $fullNameColumnExists = $db->columnExists(Table::USERS, 'fullName');
+
+        if ($activeColumnExists) {
             $this->query->addSelect(['users.active']);
+        }
+
+        if ($fullNameColumnExists) {
+            $this->query->addSelect(['users.fullName']);
         }
 
         if (is_bool($this->admin)) {
@@ -764,7 +816,7 @@ class UserQuery extends ElementQuery
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ENTRIES)
-                    ->where(['authorId' => new Expression('[[elements.id]]')])
+                    ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }
 
@@ -773,7 +825,7 @@ class UserQuery extends ElementQuery
                 $this->assetUploaders ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ASSETS)
-                    ->where(['uploaderId' => new Expression('[[elements.id]]')])
+                    ->where(['uploaderId' => new Expression('[[elements.id]]')]),
             ]);
         }
 
@@ -807,6 +859,10 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('users.username', $this->username, '=', true));
         }
 
+        if ($fullNameColumnExists && $this->fullName) {
+            $this->subQuery->andWhere(Db::parseParam('users.fullName', $this->fullName, '=', true));
+        }
+
         if ($this->firstName) {
             $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName, '=', true));
         }
@@ -825,33 +881,27 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
-        switch ($status) {
-            case User::STATUS_INACTIVE:
-                return [
-                    'users.active' => false,
-                    'users.pending' => false,
-                ];
-            case User::STATUS_ACTIVE:
-                return [
-                    'users.active' => true,
-                ];
-            case User::STATUS_PENDING:
-                return [
-                    'users.pending' => true,
-                ];
-            case User::STATUS_LOCKED:
-                return [
-                    'users.locked' => true,
-                ];
-            case User::STATUS_SUSPENDED:
-                return [
-                    'users.suspended' => true,
-                ];
-            default:
-                return parent::statusCondition($status);
-        }
+        return match ($status) {
+            User::STATUS_INACTIVE => [
+                'users.active' => false,
+                'users.pending' => false,
+            ],
+            User::STATUS_ACTIVE => [
+                'users.active' => true,
+            ],
+            User::STATUS_PENDING => [
+                'users.pending' => true,
+            ],
+            User::STATUS_LOCKED => [
+                'users.locked' => true,
+            ],
+            User::STATUS_SUSPENDED => [
+                'users.suspended' => true,
+            ],
+            default => parent::statusCondition($status),
+        };
     }
 
     /**

@@ -25,12 +25,12 @@ class ConfigEvent extends Event
     /**
      * @var mixed The old config item value
      */
-    public $oldValue;
+    public mixed $oldValue = null;
 
     /**
      * @var mixed The new config item value
      */
-    public $newValue;
+    public mixed $newValue = null;
 
     /**
      * @var string[]|null Any parts of the path that were matched by `{uid}` tokens.

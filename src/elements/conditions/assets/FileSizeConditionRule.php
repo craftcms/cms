@@ -21,10 +21,10 @@ use yii\base\InvalidValueException;
  */
 class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
-    const UNIT_B = 'B';
-    const UNIT_KB = 'KB';
-    const UNIT_MB = 'MB';
-    const UNIT_GB = 'GB';
+    public const UNIT_B = 'B';
+    public const UNIT_KB = 'KB';
+    public const UNIT_MB = 'MB';
+    public const UNIT_GB = 'GB';
 
     /**
      * @var string The size unit
@@ -131,22 +131,15 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
         [$minBytes, $maxBytes] = $this->_byteRange();
 
-        switch ($this->operator) {
-            case self::OPERATOR_EQ:
-                return $element->size >= $minBytes && $element->size <= $maxBytes;
-            case self::OPERATOR_NE:
-                return $element->size < $minBytes || $element->size > $maxBytes;
-            case self::OPERATOR_LT:
-                return $element->size < $minBytes;
-            case self::OPERATOR_LTE:
-                return $element->size <= $minBytes;
-            case self::OPERATOR_GT:
-                return $element->size > $maxBytes;
-            case self::OPERATOR_GTE:
-                return $element->size >= $maxBytes;
-            default:
-                throw new InvalidValueException("Invalid file size operator: $this->operator");
-        }
+        return match ($this->operator) {
+            self::OPERATOR_EQ => $element->size >= $minBytes && $element->size <= $maxBytes,
+            self::OPERATOR_NE => $element->size < $minBytes || $element->size > $maxBytes,
+            self::OPERATOR_LT => $element->size < $minBytes,
+            self::OPERATOR_LTE => $element->size <= $minBytes,
+            self::OPERATOR_GT => $element->size > $maxBytes,
+            self::OPERATOR_GTE => $element->size >= $maxBytes,
+            default => throw new InvalidValueException("Invalid file size operator: $this->operator"),
+        };
     }
 
     /**
@@ -161,7 +154,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
                 self::UNIT_KB,
                 self::UNIT_MB,
                 self::UNIT_GB,
-            ]
+            ],
         ];
         return $rules;
     }

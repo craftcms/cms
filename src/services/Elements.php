@@ -17,6 +17,7 @@ use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\EagerLoadPlan;
@@ -80,7 +81,7 @@ class Elements extends Component
      *
      * Element types must implement [[ElementInterface]]. [[Element]] provides a base implementation.
      *
-     * See [Element Types](https://craftcms.com/docs/3.x/extend/element-types.html) for documentation on creating element types.
+     * See [Element Types](https://craftcms.com/docs/4.x/extend/element-types.html) for documentation on creating element types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -298,7 +299,7 @@ class Elements extends Component
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
      * @return ElementInterface The element
      */
-    public function createElement($config): ElementInterface
+    public function createElement(mixed $config): ElementInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -452,7 +453,7 @@ class Elements extends Component
 
         if ($rootElement->getIsDraft()) {
             $tags[] = "element::$elementType::drafts";
-        } else if ($rootElement->getIsRevision()) {
+        } elseif ($rootElement->getIsRevision()) {
             $tags[] = "element::$elementType::revisions";
         } else {
             foreach ($element->getCacheTags() as $tag) {
@@ -475,12 +476,12 @@ class Elements extends Component
      *
      * @param int $elementId The element’s ID.
      * @param string|null $elementType The element class.
-     * @param int|int[]|string|null $siteId The site(s) to fetch the element in.
+     * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, ?string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
+    public function getElementById(int $elementId, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
     {
         return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);
     }
@@ -494,13 +495,13 @@ class Elements extends Component
      *
      * @param string $uid The element’s UID.
      * @param string|null $elementType The element class.
-     * @param int|int[]|string|null $siteId The site(s) to fetch the element in.
+     * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      * @since 3.5.13
      */
-    public function getElementByUid(string $uid, ?string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
+    public function getElementByUid(string $uid, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
     {
         return $this->_elementById('uid', $uid, $elementType, $siteId, $criteria);
     }
@@ -511,12 +512,12 @@ class Elements extends Component
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
      * @param string|null $elementType The element class.
-     * @param int|int[]|string|null $siteId The site(s) to fetch the element in.
+     * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
      * @return ElementInterface|null The matching element, or `null`.
      */
-    private function _elementById(string $property, $elementId, ?string $elementType = null, $siteId = null, array $criteria = []): ?ElementInterface
+    private function _elementById(string $property, int|string $elementId, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
     {
         if (!$elementId) {
             return null;
@@ -557,7 +558,7 @@ class Elements extends Component
             $query
                 ->draftId($data['draftId'])
                 ->provisionalDrafts(null);
-        } else if (!empty($data['revisionId'])) {
+        } elseif (!empty($data['revisionId'])) {
             $query->revisionId($data['revisionId']);
         }
 
@@ -654,7 +655,7 @@ class Elements extends Component
      * @param int|string $elementId The element’s ID/UID
      * @return string|null The element’s class, or null if it could not be found
      */
-    private function _elementTypeById(string $property, $elementId): ?string
+    private function _elementTypeById(string $property, int|string $elementId): ?string
     {
         $class = (new Query())
             ->select(['type'])
@@ -688,7 +689,7 @@ class Elements extends Component
      * @param int $siteId The site to search for the element’s URI in.
      * @return string|null|false The element’s URI or `null`, or `false` if the element doesn’t exist.
      */
-    public function getElementUriForSite(int $elementId, int $siteId)
+    public function getElementUriForSite(int $elementId, int $siteId): string|null|false
     {
         return (new Query())
             ->select(['uri'])
@@ -898,7 +899,7 @@ class Elements extends Component
                 'dateUpdated' => $timestamp,
                 'propagated' => $attribute['propagated'],
                 'userId' => $attribute['userId'],
-            ], true, [], false);
+            ]);
         }
 
         $fields = (new Query())
@@ -915,7 +916,7 @@ class Elements extends Component
                 'dateUpdated' => $timestamp,
                 'propagated' => $field['propagated'],
                 'userId' => $field['userId'],
-            ], true, [], false);
+            ]);
         }
 
         return $updatedCanonical;
@@ -946,6 +947,7 @@ class Elements extends Component
 
         try {
             foreach (Db::each($query) as $element) {
+                /** @var ElementInterface $element */
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -1023,7 +1025,7 @@ class Elements extends Component
      * propagated to all supported sites, except the one they were queried in.
      * @since 3.2.0
      */
-    public function propagateElements(ElementQueryInterface $query, $siteIds = null, bool $continueOnError = false): void
+    public function propagateElements(ElementQueryInterface $query, array|int $siteIds = null, bool $continueOnError = false): void
     {
         /** @var ElementQuery $query */
         // Fire a 'beforePropagateElements' event
@@ -1041,6 +1043,7 @@ class Elements extends Component
 
         try {
             foreach (Db::each($query) as $element) {
+                /** @var ElementInterface $element */
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -1244,7 +1247,7 @@ class Elements extends Component
                         $siteQuery
                             ->drafts()
                             ->provisionalDrafts(null);
-                    } else if ($element->getIsRevision()) {
+                    } elseif ($element->getIsRevision()) {
                         $siteQuery->revisions();
                     }
 
@@ -1864,6 +1867,7 @@ class Elements extends Component
     public function getAllElementTypes(): array
     {
         $elementTypes = [
+            Address::class,
             Asset::class,
             Category::class,
             Entry::class,
@@ -1890,7 +1894,7 @@ class Elements extends Component
      * @param mixed $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
      * @return ElementActionInterface The element action
      */
-    public function createAction($config): ElementActionInterface
+    public function createAction(mixed $config): ElementActionInterface
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementActionInterface::class);
@@ -1902,7 +1906,7 @@ class Elements extends Component
      * @param mixed $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
      * @return ElementExporterInterface The element exporter
      */
-    public function createExporter($config): ElementExporterInterface
+    public function createExporter(mixed $config): ElementExporterInterface
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementExporterInterface::class);
@@ -2202,9 +2206,9 @@ class Elements extends Component
      *
      * @param string $elementType The root element type class
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
-     * @param string|EagerLoadPlan[]|array $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param array|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
-    public function eagerLoadElements(string $elementType, array $elements, $with): void
+    public function eagerLoadElements(string $elementType, array $elements, array|string $with): void
     {
         /** @var ElementInterface|string $elementType */
         // Bail if there aren't even any elements
@@ -2416,7 +2420,7 @@ class Elements extends Component
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
      * @since 3.0.13
      */
-    public function propagateElement(ElementInterface $element, int $siteId, $siteElement = null): void
+    public function propagateElement(ElementInterface $element, int $siteId, ElementInterface|false|null $siteElement = null): void
     {
         // Get the sites supported by this element
         if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
@@ -2560,7 +2564,6 @@ class Elements extends Component
                 } else {
                     $elementRecord = new ElementRecord();
                     $elementRecord->type = get_class($element);
-                    $elementRecord->uid = $element->uid;
                 }
 
                 // Set the attributes
@@ -2581,7 +2584,7 @@ class Elements extends Component
                     if (isset($element->dateUpdated)) {
                         $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
                     }
-                } else if ($element->resaving) {
+                } elseif ($element->resaving) {
                     // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
@@ -2781,7 +2784,7 @@ class Elements extends Component
                     'dateUpdated' => $timestamp,
                     'propagated' => $element->propagating,
                     'userId' => $userId,
-                ], true, [], false);
+                ]);
             }
 
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
@@ -2794,7 +2797,7 @@ class Elements extends Component
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
-                        ], true, [], false);
+                        ]);
                     }
                 }
             }
@@ -2824,12 +2827,12 @@ class Elements extends Component
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
      * @throws Exception if the element couldn't be propagated
      */
-    private function _propagateElement(ElementInterface $element, array $siteInfo, $siteElement = null): void
+    private function _propagateElement(ElementInterface $element, array $siteInfo, ElementInterface|false|null $siteElement = null): void
     {
         // Try to fetch the element in this site
         if ($siteElement === null && $element->id) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
-        } else if (!$siteElement) {
+        } elseif (!$siteElement) {
             $siteElement = null;
         }
 
@@ -2843,7 +2846,7 @@ class Elements extends Component
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
-        } else if ($element->propagateAll) {
+        } elseif ($element->propagateAll) {
             $oldSiteElement = $siteElement;
             $siteElement = clone $element;
             $siteElement->siteId = $oldSiteElement->siteId;
@@ -2882,7 +2885,7 @@ class Elements extends Component
             if ($isNewSiteForElement) {
                 // Copy all the field values
                 $siteElement->setFieldValues($element->getFieldValues());
-            } else if (($fieldLayout = $element->getFieldLayout()) !== null) {
+            } elseif (($fieldLayout = $element->getFieldLayout()) !== null) {
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getCustomFields() as $field) {
                     // Has this field changed, and does it produce the same translation key as it did for the initial element?
