@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "Merhaba {{user.friendlyName|e}},\n\n{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:\n\n<{{link}}>\n\nBu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.",
     'account_activation_heading' => 'Biri hesap oluşturduğunda:',
     'account_activation_subject' => 'Hesabını aktif hale getir',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 've',
     'asset' => 'varlık',
     'assets' => 'dosyalar',
