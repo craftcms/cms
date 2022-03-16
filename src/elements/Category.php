@@ -128,7 +128,7 @@ class Category extends Element
      * @inheritdoc
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): CategoryQuery
     {
         return new CategoryQuery(static::class);
     }

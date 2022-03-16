@@ -111,7 +111,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): MatrixBlockQuery
     {
         return new MatrixBlockQuery(static::class);
     }

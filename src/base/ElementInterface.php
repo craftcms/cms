@@ -23,6 +23,7 @@ use Twig\Markup;
  *
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
+ * @mixin \craft\base\Component
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

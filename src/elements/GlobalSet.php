@@ -127,7 +127,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): GlobalSetQuery
     {
         return new GlobalSetQuery(static::class);
     }

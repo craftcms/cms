@@ -184,7 +184,7 @@ class Entry extends Element
      * @inheritdoc
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): EntryQuery
     {
         return new EntryQuery(static::class);
     }

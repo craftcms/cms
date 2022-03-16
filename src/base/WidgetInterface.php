@@ -12,6 +12,8 @@ namespace craft\base;
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[WidgetTrait]].
  *
  * @mixin WidgetTrait
+ * @mixin SavableComponentTrait
+ * @mixin \craft\base\Model
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

@@ -486,7 +486,7 @@ class ImageTransforms extends Component
     }
 
     /**
-     * @template T of craft\base\imagetransforms\ImageTransformerInterfac
+     * @template T of ImageTransformerInterface
      * @param class-string<T> $type
      * @param array $config
      * @return T
