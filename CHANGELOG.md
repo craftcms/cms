@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.37 - 2022-03-16
 
 ### Changed
 - Improved the styling of copy buttons in the control panel. ([#10732](https://github.com/craftcms/cms/discussions/10732))
