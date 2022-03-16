@@ -22,6 +22,7 @@ use yii\db\Connection;
  * @method Address|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @doc-path addresses.md
  * @replace {element} address
  * @replace {elements} addresses
  * @replace {myElement} myAddress
