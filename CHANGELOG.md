@@ -50,6 +50,7 @@
 - Fixed a bug where non-admin users weren’t permitted to edit assets, categories, or entries on single-site installs. ([#10757](https://github.com/craftcms/cms/issues/10757))
 - Fixed a bug where image transforms weren’t getting invalidated when an asset’s focal point was updated from its preview modal. ([#10743](https://github.com/craftcms/cms/issues/10743))
 - Fixed an error that could occur when indexing an empty volume. ([#10744](https://github.com/craftcms/cms/issues/10744))
+- Fixed a bug where `craft\services\Config::getDotEnvPath()` was returning `'1'`. ([#10761](https://github.com/craftcms/cms/pull/10761))
 
 ## 4.0.0-beta.1 - 2022-03-09
 
