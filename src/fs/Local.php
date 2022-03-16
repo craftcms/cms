@@ -152,7 +152,12 @@ class Local extends Fs implements LocalFsInterface
     public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         $targetDir = $this->prefixPath($directory);
-        $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
+        try {
+            $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
+        } catch (\UnexpectedValueException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            return;
+        }
 
         /** @var DirectoryIterator $listing */
         foreach ($iterator as $listing) {

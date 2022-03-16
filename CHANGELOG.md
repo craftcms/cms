@@ -43,6 +43,7 @@
 - Fixed a bug that prevented asset sources from displaying correctly.
 - Fixed a bug where non-admin users weren’t permitted to edit assets, categories, or entries on single-site installs. ([#10757](https://github.com/craftcms/cms/issues/10757))
 - Fixed a bug where updating the focal point using the image preview would not invalidate the already generated transforms. ([#10743](https://github.com/craftcms/cms/issues/10743))
+- Fixed an error that occurred when attempting to index an empty volume in some cases. ([#10744](https://github.com/craftcms/cms/issues/10744))
 
 ## 4.0.0-beta.1 - 2022-03-09
 
