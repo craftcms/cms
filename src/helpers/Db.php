@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Closure;
 use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
@@ -1631,7 +1630,7 @@ class Db
 
         if ($unbuffered) {
             $db = Craft::$app->getComponents()['db'];
-            if (!is_object($db) || $db instanceof Closure) {
+            if (!is_object($db) || is_callable($db)) {
                 $db = Craft::createObject($db);
             }
             $db->on(Connection::EVENT_AFTER_OPEN, function() use ($db) {

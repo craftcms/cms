@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use Closure;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -2242,7 +2241,7 @@ abstract class Element extends Component implements ElementInterface
             array_unshift($rule, $attribute);
         }
 
-        if ($rule[1] instanceof Closure || $field->hasMethod($rule[1])) {
+        if (is_callable($rule[1]) || $field->hasMethod($rule[1])) {
             // InlineValidator assumes that the closure is on the model being validated
             // so it won’t pass a reference to the element
             $rule['params'] = [

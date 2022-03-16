@@ -7,7 +7,6 @@
 
 namespace craft\test;
 
-use Closure;
 use Codeception\Test\Unit;
 use ReflectionClass;
 use ReflectionException;
@@ -24,10 +23,10 @@ use ReflectionObject;
 class TestCase extends Unit
 {
     /**
-     * Returns a callback/Closure that checks whether the passed in object is an instance of the $class param
+     * Returns a callable that checks whether the passed in object is an instance of the $class param
      *
      * @param string $class
-     * @return Closure
+     * @return callable
      */
     public function assertObjectIsInstanceOfClassCallback(string $class): callable
     {
