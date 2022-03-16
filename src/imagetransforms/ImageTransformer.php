@@ -127,7 +127,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $this->trigger(static::EVENT_DELETE_TRANSFORMED_IMAGE, new ImageTransformerOperationEvent([
                 'asset' => $asset,
                 'imageTransformIndex' => $transformIndex,
-                'path' => $path
+                'path' => $path,
             ]));
         }
 
@@ -392,7 +392,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 $this->trigger(static::EVENT_TRANSFORM_IMAGE, new ImageTransformerOperationEvent([
                     'asset' => $asset,
                     'imageTransformIndex' => $index,
-                    'path' => $transformPath
+                    'path' => $transformPath,
                 ]));
             }
         } catch (FsException $e) {
