@@ -1803,19 +1803,13 @@ JS,
         // Name attributes
         $this->populateNameAttributes($address);
 
-        // Address attributes
-        $address->countryCode = $this->request->getBodyParam('countryCode') ?? $address->countryCode;
-        $address->administrativeArea = $this->request->getBodyParam('administrativeArea') ?? $address->administrativeArea;
-        $address->locality = $this->request->getBodyParam('locality') ?? $address->locality;
-        $address->dependentLocality = $this->request->getBodyParam('dependentLocality') ?? $address->dependentLocality;
-        $address->postalCode = $this->request->getBodyParam('postalCode') ?? $address->postalCode;
-        $address->sortingCode = $this->request->getBodyParam('sortingCode') ?? $address->sortingCode;
-        $address->addressLine1 = $this->request->getBodyParam('addressLine1') ?? $address->addressLine1;
-        $address->addressLine2 = $this->request->getBodyParam('addressLine2') ?? $address->addressLine2;
-        $address->organization = $this->request->getBodyParam('organization') ?? $address->organization;
-        $address->organizationTaxId = $this->request->getBodyParam('organizationTaxId') ?? $address->organizationTaxId;
-        $address->latitude = $this->request->getBodyParam('latitude') ?? $address->latitude;
-        $address->longitude = $this->request->getBodyParam('longitude') ?? $address->longitude;
+        // All safe attributes
+        foreach ($address->safeAttributes() as $name) {
+            $value = $this->request->getBodyParam($name);
+            if ($value !== null) {
+                $address->$name = $value;
+            }
+        }
 
         // Custom fields
         $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
