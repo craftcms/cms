@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "Ahoj {{user.friendlyName|e}},\n\nděkujeme za vytvoření uživatelského účtu na webu {{siteName}}! Pro aktivaci svého účtu prosím otevři následující odkaz:\n\n<{{link}}>\n\nPokud nevíte, o co se jedná, klidně tuto zprávu ignorujte.",
     'account_activation_heading' => 'Když někdo vytvoří účet:',
     'account_activation_subject' => 'Aktivujte Váš účet',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'a',
     'asset' => 'prostředek',
     'assets' => 'objekty',
