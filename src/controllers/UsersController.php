@@ -9,6 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\NameTrait;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -45,6 +47,7 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use yii\web\UnauthorizedHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -1223,21 +1226,7 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $fullName = $this->request->getBodyParam('fullName');
-
-        if ($fullName !== null) {
-            $user->fullName = $fullName;
-        } else {
-            // Still check for firstName/lastName in case a front-end form is still posting them
-            $firstName = $this->request->getBodyParam('firstName');
-            $lastName = $this->request->getBodyParam('lastName');
-
-            if ($firstName !== null || $lastName !== null) {
-                $user->fullName = null;
-                $user->firstName = $firstName ?? $user->firstName;
-                $user->lastName = $lastName ?? $user->lastName;
-            }
-        }
+        $this->populateNameAttributes($user);
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
@@ -1775,6 +1764,72 @@ JS,
 
         $this->setSuccessFlash(Craft::t('app', 'User unsuspended.'));
         return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Saves a user’s address.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
+     */
+    public function actionSaveAddress(): ?Response
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        $userId = (int)$this->request->getBodyParam('userId') ?? $user->id;
+        $addressId = $this->request->getBodyParam('addressId');
+
+        if ($addressId) {
+            $address = Address::findOne($addressId);
+
+            if (!$address) {
+                throw new BadRequestHttpException("Invalid address ID: $addressId");
+            }
+
+            if (!$address->ownerId !== $user) {
+                throw new BadRequestHttpException("Address $addressId is not owned by user $userId");
+            }
+        } else {
+            $address = new Address([
+                'ownerId' => $userId,
+            ]);
+        }
+
+        if (!$address->canSave($user)) {
+            throw new ForbiddenHttpException('User is not permitted to edit this address.');
+        }
+
+        // Name attributes
+        $this->populateNameAttributes($address);
+
+        // Address attributes
+        $address->countryCode = $this->request->getBodyParam('countryCode') ?? $address->countryCode;
+        $address->administrativeArea = $this->request->getBodyParam('administrativeArea') ?? $address->administrativeArea;
+        $address->locality = $this->request->getBodyParam('locality') ?? $address->locality;
+        $address->dependentLocality = $this->request->getBodyParam('dependentLocality') ?? $address->dependentLocality;
+        $address->postalCode = $this->request->getBodyParam('postalCode') ?? $address->postalCode;
+        $address->sortingCode = $this->request->getBodyParam('sortingCode') ?? $address->sortingCode;
+        $address->addressLine1 = $this->request->getBodyParam('addressLine1') ?? $address->addressLine1;
+        $address->addressLine2 = $this->request->getBodyParam('addressLine2') ?? $address->addressLine2;
+        $address->organization = $this->request->getBodyParam('organization') ?? $address->organization;
+        $address->organizationTaxId = $this->request->getBodyParam('organizationTaxId') ?? $address->organizationTaxId;
+        $address->latitude = $this->request->getBodyParam('latitude') ?? $address->latitude;
+        $address->longitude = $this->request->getBodyParam('longitude') ?? $address->longitude;
+
+        // Custom fields
+        $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
+        $address->setFieldValuesFromRequest($fieldsLocation);
+
+        if (!Craft::$app->getElements()->saveElement($address)) {
+            return $this->asModelFailure($address, Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => Address::lowerDisplayName(),
+            ]), 'address');
+        }
+
+        return $this->asModelSuccess($address, Craft::t('app', '{{type} saved.', [
+            'type' => Address::displayName(),
+        ]));
     }
 
     /**
@@ -2341,5 +2396,25 @@ JS,
         $ids = $this->request->getRequiredBodyParam('ids');
         Craft::$app->getAnnouncements()->markAsRead($ids);
         return $this->asSuccess();
+    }
+
+    private function populateNameAttributes(object $model): void
+    {
+        /** @var object|NameTrait $model */
+        $fullName = $this->request->getBodyParam('fullName');
+
+        if ($fullName !== null) {
+            $model->fullName = $fullName;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $this->request->getBodyParam('firstName');
+            $lastName = $this->request->getBodyParam('lastName');
+
+            if ($firstName !== null || $lastName !== null) {
+                $model->fullName = null;
+                $model->firstName = $firstName ?? $model->firstName;
+                $model->lastName = $lastName ?? $model->lastName;
+            }
+        }
     }
 }
