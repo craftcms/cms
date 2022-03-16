@@ -47,7 +47,6 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
-use yii\web\UnauthorizedHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 

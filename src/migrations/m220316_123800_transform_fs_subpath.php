@@ -3,10 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
-use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\Json;
-use craft\helpers\StringHelper;
 
 /**
  * m220316_123800_transform_fs_subpath migration.

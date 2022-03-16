@@ -13,7 +13,6 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\services\Tokens;
-use Exception;
 use UnitTester;
 
 /**
@@ -43,6 +42,4 @@ class ConfigTest extends Unit
         $path = $config->getDotEnvPath();
         $this->assertEquals(CRAFT_TESTS_PATH . '/.env', $path);
     }
-
-    
 }
