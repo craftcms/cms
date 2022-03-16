@@ -1427,7 +1427,7 @@ JS;
             if (!$site) {
                 throw new BadRequestHttpException("Invalid side ID: $this->_siteId");
             }
-            if (!$user->can("editSite:$site->uid")) {
+            if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
                 throw new ForbiddenHttpException('User not authorized to edit content for this site.');
             }
         } else {

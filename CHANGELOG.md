@@ -41,6 +41,7 @@
 - Fixed a bug where the View button/menu on Edit Entry pages wasn’t working.
 - Fixed a bug where the View button/menu was getting hidden by the Adblock Plus browser extension. ([#10747](https://github.com/craftcms/cms/issues/10747))
 - Fixed a bug that prevented asset sources from displaying correctly.
+- Fixed a bug where non-admin users weren’t permitted to edit assets, categories, or entries on single-site installs. ([#10757](https://github.com/craftcms/cms/issues/10757))
 
 ## 4.0.0-beta.1 - 2022-03-09
 
