@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "Hallo {{user.friendlyName|e}},\n\nBedankt voor het maken van een account op {{siteName}}! Klik op de volgende link om je account te activeren:\n\n<{{link}}>\n\nAls je deze e-mail niet verwachtte, kun je hem gewoon negeren.",
     'account_activation_heading' => 'Als iemand een account aanmaakt:',
     'account_activation_subject' => 'Activeer je account',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'en',
     'asset' => 'bestand',
     'assets' => 'bestanden',
