@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.0-beta.2 - 2022-03-16
 
 > {warning} Due to a data corruption bug, projects that were updated to Craft 4 from Craft 3 are advised to re-update from a Craft 3 database backup.
 
