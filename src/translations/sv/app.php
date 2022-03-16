@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "Hej {{user.friendlyName|e}},\n\nTack för att du skapar ett konto hos {{siteName}}! Klicka på följande länk för att aktivera ditt konto:\n\n<{{link}}>\n\nOm du inte förväntade dig det här e-postmeddelandet kan du bara ignorera det.",
     'account_activation_heading' => 'När någon skapar ett konto:',
     'account_activation_subject' => 'Aktivera ditt konto',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'och',
     'asset' => 'tillgång',
     'assets' => 'tillgångar',
