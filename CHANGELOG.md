@@ -5,6 +5,7 @@
 > {warning} Due to a data corruption bug, projects that were updated to Craft 4 from Craft 3 are advised to re-update from a Craft 3 database backup.
 
 ### Added
+- Volumes now have a “Transform Subpath” setting.
 - Added the `|address` Twig filter.
 - Added the `craft.addresses()` address query factory function for Twig.
 - Added the `users/save-address` action.
