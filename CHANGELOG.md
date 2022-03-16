@@ -42,6 +42,7 @@
 - Fixed a bug where the View button/menu was getting hidden by the Adblock Plus browser extension. ([#10747](https://github.com/craftcms/cms/issues/10747))
 - Fixed a bug that prevented asset sources from displaying correctly.
 - Fixed a bug where non-admin users weren’t permitted to edit assets, categories, or entries on single-site installs. ([#10757](https://github.com/craftcms/cms/issues/10757))
+- Fixed a bug where updating the focal point using the image preview would not invalidate the already generated transforms. ([#10743](https://github.com/craftcms/cms/issues/10743))
 
 ## 4.0.0-beta.1 - 2022-03-09
 

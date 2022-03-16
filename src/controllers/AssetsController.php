@@ -1139,6 +1139,7 @@ class AssetsController extends Controller
 
         $asset->setFocalPoint($focalData);
         Craft::$app->getElements()->saveElement($asset);
+        Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
 
         return $this->asSuccess();
     }
