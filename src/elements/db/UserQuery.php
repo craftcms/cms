@@ -318,7 +318,7 @@ class UserQuery extends ElementQuery
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])

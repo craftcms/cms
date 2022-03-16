@@ -7,7 +7,6 @@
 
 namespace craft\test\mockclasses\components;
 
-
 use craft\base\Component;
 use stdClass;
 use yii\base\Event;

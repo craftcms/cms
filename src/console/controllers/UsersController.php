@@ -193,7 +193,7 @@ class UsersController extends Controller
 
         if ($this->password) {
             $user->newPassword = $this->password;
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             if ($this->confirm('Set a password for this user?', false)) {
                 $user->newPassword = $this->passwordPrompt([
                     'validator' => $this->createAttributeValidator($user, 'newPassword'),
@@ -324,7 +324,7 @@ class UsersController extends Controller
             }
 
             $user->inheritorOnDelete = $inheritor;
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             $this->deleteContent = $this->confirm("Delete user “{$user->username}” and their content?");
 
             if (!$this->deleteContent) {
@@ -372,7 +372,7 @@ class UsersController extends Controller
                 $this->stderr('Unable to set new password on user: ' . $user->getFirstError('newPassword') . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             $this->passwordPrompt([
                 'validator' => $this->createAttributeValidator($user, 'newPassword'),
             ]);

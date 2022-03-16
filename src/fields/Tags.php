@@ -92,7 +92,7 @@ class Tags extends BaseRelationField
             $value = $value
                 ->anyStatus()
                 ->all();
-        } else if (!is_array($value)) {
+        } elseif (!is_array($value)) {
             $value = [];
         }
 

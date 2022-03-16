@@ -449,7 +449,7 @@ class Elements extends Component
 
         if ($rootElement->getIsDraft()) {
             $tags[] = "element::$elementType::drafts";
-        } else if ($rootElement->getIsRevision()) {
+        } elseif ($rootElement->getIsRevision()) {
             $tags[] = "element::$elementType::revisions";
         } else {
             foreach ($element->getCacheTags() as $tag) {
@@ -554,7 +554,7 @@ class Elements extends Component
             $query
                 ->draftId($data['draftId'])
                 ->provisionalDrafts(null);
-        } else if (!empty($data['revisionId'])) {
+        } elseif (!empty($data['revisionId'])) {
             $query->revisionId($data['revisionId']);
         }
 
@@ -954,6 +954,7 @@ class Elements extends Component
 
         try {
             foreach (Db::each($query) as $element) {
+                /** @var ElementInterface $element */
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -1048,6 +1049,7 @@ class Elements extends Component
 
         try {
             foreach (Db::each($query) as $element) {
+                /** @var ElementInterface $element */
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -1251,7 +1253,7 @@ class Elements extends Component
                         $siteQuery
                             ->drafts()
                             ->provisionalDrafts(null);
-                    } else if ($element->getIsRevision()) {
+                    } elseif ($element->getIsRevision()) {
                         $siteQuery->revisions();
                     }
 
@@ -2591,7 +2593,7 @@ class Elements extends Component
                     if (isset($element->dateUpdated)) {
                         $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
                     }
-                } else if ($element->resaving) {
+                } elseif ($element->resaving) {
                     // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
@@ -2841,7 +2843,7 @@ class Elements extends Component
         // Try to fetch the element in this site
         if ($siteElement === null && $element->id) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
-        } else if (!$siteElement) {
+        } elseif (!$siteElement) {
             $siteElement = null;
         }
 
@@ -2855,7 +2857,7 @@ class Elements extends Component
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
-        } else if ($element->propagateAll) {
+        } elseif ($element->propagateAll) {
             $oldSiteElement = $siteElement;
             $siteElement = clone $element;
             $siteElement->siteId = $oldSiteElement->siteId;
@@ -2894,7 +2896,7 @@ class Elements extends Component
             if ($isNewSiteForElement) {
                 // Copy all the field values
                 $siteElement->setFieldValues($element->getFieldValues());
-            } else if (($fieldLayout = $element->getFieldLayout()) !== null) {
+            } elseif (($fieldLayout = $element->getFieldLayout()) !== null) {
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getFields() as $field) {
                     // Has this field changed, and does it produce the same translation key as it did for the initial element?

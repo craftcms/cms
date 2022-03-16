@@ -624,20 +624,6 @@ table.cart-data tr td.expiry-date {
 }
 }
 
-.payment .field {
-  margin-top: .75rem !important;
-  margin-bottom: 0 !important;
-}
-.payment .flex .flex-grow {
-  margin-bottom: 0;
-}
-.select {
-  width: 100%;
-}
-.select select {
-  width: 100%;
-}
-
 #pluginstore-modal {
   position: absolute;
   top: 0;
@@ -684,46 +670,6 @@ body.rtl #pluginstore-modal .pluginstore-modal-flex header .btn-left {
   -webkit-flex-grow: 1;
           flex-grow: 1;
   padding: 24px;
-}
-#pluginstore-modal.step-payment .blocks {
-  display: -webkit-flex;
-  display: flex;
-  margin: 0 -20px;
-}
-#pluginstore-modal.step-payment .blocks .block {
-  -webkit-flex-grow: 1;
-          flex-grow: 1;
-  width: 50%;
-  padding: 0 20px;
-}
-#pluginstore-modal.step-payment .multiselectrow {
-  display: -webkit-flex;
-  display: flex;
-}
-#pluginstore-modal.step-payment .multiselectrow>div {
-  width: 50%;
-}
-#pluginstore-modal.step-payment .multiselectrow>div .select {
-  width: 100%;
-}
-#pluginstore-modal.step-payment .multiselectrow>div .select select {
-  width: 100%;
-}
-#pluginstore-modal.step-thank-you.pluginstore-modal .pluginstore-modal-flex .pluginstore-modal-main .pluginstore-modal-content {
-  display: -webkit-flex;
-  display: flex;
-  padding: 0;
-  -webkit-justify-content: center;
-          justify-content: center;
-  -webkit-align-items: center;
-          align-items: center;
-}
-#pluginstore-modal.step-thank-you h2 {
-  margin-top: 24px;
-}
-#pluginstore-modal.step-thank-you #thank-you-message {
-  text-align: center;
-  padding: 48px 24px;
 }
 
 .category-selector-btn[data-v-756c212c] {

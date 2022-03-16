@@ -365,7 +365,7 @@ class Volumes extends Component
             $volume->sortOrder = (new Query())
                     ->from([Table::VOLUMES])
                     ->max('[[sortOrder]]') + 1;
-        } else if (!$volume->uid) {
+        } elseif (!$volume->uid) {
             $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
         }
 
@@ -417,7 +417,7 @@ class Volumes extends Component
                 $layout->uid = key($data['fieldLayouts']);
                 Craft::$app->getFields()->saveLayout($layout);
                 $volumeRecord->fieldLayoutId = $layout->id;
-            } else if ($volumeRecord->fieldLayoutId) {
+            } elseif ($volumeRecord->fieldLayoutId) {
                 // Delete the field layout
                 Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
                 $volumeRecord->fieldLayoutId = null;

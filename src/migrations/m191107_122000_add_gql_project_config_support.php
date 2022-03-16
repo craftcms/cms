@@ -66,7 +66,7 @@ class m191107_122000_add_gql_project_config_support extends Migration
 
             // Store the existing schemas on the session
             $cache->set($cacheKey, ArrayHelper::index($oldSchemaData, 'uid'));
-            // We're good to split this data into token/schema combos
+        // We're good to split this data into token/schema combos
         } else {
             $projectConfig->muteEvents = true;
             $gqlSchemas = $projectConfig->get(Gql::CONFIG_GQL_SCHEMAS_KEY) ?? [];

@@ -242,7 +242,7 @@ class Updates extends Component
                 if ($handle === 'craft') {
                     Craft::$app->getMigrator()->up();
                     Craft::$app->getUpdates()->updateCraftVersionInfo();
-                } else if ($handle === 'content') {
+                } elseif ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
                 } else {
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);

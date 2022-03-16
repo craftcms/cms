@@ -243,11 +243,11 @@ class Entry extends ElementMutationResolver
             if (array_key_exists('provisional', $arguments)) {
                 $entryQuery->provisionalDrafts($arguments['provisional']);
             }
-        } else if ($section->type === Section::TYPE_SINGLE) {
+        } elseif ($section->type === Section::TYPE_SINGLE) {
             $entryQuery->typeId($entryType->id);
-        } else if (!empty($arguments['uid'])) {
+        } elseif (!empty($arguments['uid'])) {
             $entryQuery->uid($arguments['uid']);
-        } else if (!empty($arguments['id'])) {
+        } elseif (!empty($arguments['id'])) {
             $entryQuery->id($arguments['id']);
         } else {
             // Unable to identify, make sure nothing is returned.

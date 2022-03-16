@@ -269,7 +269,7 @@ class Sites extends Component
 
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
-        } else if (!$group->uid) {
+        } elseif (!$group->uid) {
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
@@ -484,7 +484,7 @@ class Sites extends Component
 
         if ($site instanceof Site) {
             $this->_currentSite = $site;
-        } else if (is_numeric($site)) {
+        } elseif (is_numeric($site)) {
             $this->_currentSite = $this->getSiteById($site, false);
         } else {
             $this->_currentSite = $this->getSiteByHandle($site, false);
@@ -679,7 +679,7 @@ class Sites extends Component
                     ->from([Table::SITES])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
-        } else if (!$site->uid) {
+        } elseif (!$site->uid) {
             $site->uid = Db::uidById(Table::SITES, $site->id);
         }
 
@@ -1270,7 +1270,7 @@ class Sites extends Component
         $query = $withTrashed ? SiteGroupRecord::findWithTrashed() : SiteGroupRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 
@@ -1308,7 +1308,7 @@ class Sites extends Component
         $query = $withTrashed ? SiteRecord::findWithTrashed() : SiteRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (\is_string($criteria)) {
+        } elseif (\is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 

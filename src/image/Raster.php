@@ -259,8 +259,8 @@ class Raster extends Image
             $newWidth = round($this->getWidth() / $factor);
 
             $this->resize($newWidth, $newHeight);
-            // If we need to upscale AND that's ok
-        } else if (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
+        // If we need to upscale AND that's ok
+        } elseif (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
             // Figure the crop size reductions
             $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
             $newHeight = $this->getHeight();
@@ -319,7 +319,7 @@ class Raster extends Image
 
                 $y1 = 0;
                 $y2 = $y1 + $targetHeight;
-            } else if ($newHeight - $targetHeight > 0) {
+            } elseif ($newHeight - $targetHeight > 0) {
                 switch ($verticalPosition) {
                     case 'top':
                         $y1 = 0;

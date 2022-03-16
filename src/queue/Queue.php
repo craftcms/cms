@@ -131,9 +131,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
                         $this->release($payload['id']);
                     }
-                } else if (!$repeat) {
+                } elseif (!$repeat) {
                     break;
-                } else if ($timeout) {
+                } elseif ($timeout) {
                     sleep($timeout);
                 }
             }

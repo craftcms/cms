@@ -33,15 +33,15 @@ trait StructureMutationTrait
 
         if (!empty($arguments['prependTo'])) {
             $structureService->prepend($structureId, $element, $this->getRelatedElement($arguments['prependTo']));
-        } else if (!empty($arguments['appendTo'])) {
+        } elseif (!empty($arguments['appendTo'])) {
             $structureService->append($structureId, $element, $this->getRelatedElement($arguments['appendTo']));
-        } else if (!empty($arguments['prependToRoot'])) {
+        } elseif (!empty($arguments['prependToRoot'])) {
             $structureService->prependToRoot($structureId, $element);
-        } else if (!empty($arguments['appendToRoot'])) {
+        } elseif (!empty($arguments['appendToRoot'])) {
             $structureService->appendToRoot($structureId, $element);
-        } else if (!empty($arguments['insertBefore'])) {
+        } elseif (!empty($arguments['insertBefore'])) {
             $structureService->moveBefore($structureId, $element, $this->getRelatedElement($arguments['insertBefore']));
-        } else if (!empty($arguments['insertAfter'])) {
+        } elseif (!empty($arguments['insertAfter'])) {
             $structureService->moveAfter($structureId, $element, $this->getRelatedElement($arguments['insertAfter']));
         }
     }

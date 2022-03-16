@@ -37,7 +37,7 @@ class OptionField extends Resolver
             foreach ($optionFieldData as $optionData) {
                 $resolvedValue[] = $label ? $optionData->label : $optionData->value;
             }
-        } else if ($optionFieldData instanceof SingleOptionFieldData) {
+        } elseif ($optionFieldData instanceof SingleOptionFieldData) {
             $resolvedValue = $label ? $optionFieldData->label : $optionFieldData->value;
         }
 

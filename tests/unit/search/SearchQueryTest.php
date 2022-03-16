@@ -32,7 +32,7 @@ class SearchQueryTest extends Unit
         'subLeft' => false,
         'subRight' => true,
         'attribute' => null,
-        'phrase' => null
+        'phrase' => null,
     ];
 
     /**
@@ -93,7 +93,7 @@ class SearchQueryTest extends Unit
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
         self::assertSame([
-            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
+            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase,
         ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
 
@@ -169,7 +169,7 @@ class SearchQueryTest extends Unit
             'subRight' => true,
             'attribute' => null,
             'term' => $search->getQuery(),
-            'phrase' => null
+            'phrase' => null,
         ]);
 
         $tokens = $search->getTokens()[0];
@@ -274,7 +274,7 @@ class SearchQueryTest extends Unit
             ['i said body::test', ['2' => $attributeConfig], 3],
 
             ['i have spaces and lines', null, 5],
-            ['"i" said Hello', ['0' => $firstQuote], 3]
+            ['"i" said Hello', ['0' => $firstQuote], 3],
         ];
     }
 }

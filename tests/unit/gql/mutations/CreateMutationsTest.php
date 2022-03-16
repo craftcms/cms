@@ -40,26 +40,26 @@ class CreateMutationsTest extends Unit
         // Mock all the things
         $this->tester->mockCraftMethods('volumes', [
             'getAllVolumes' => [
-                new Local(['uid' => 'uid', 'handle' => 'localVolume'])
-            ]
+                new Local(['uid' => 'uid', 'handle' => 'localVolume']),
+            ],
         ]);
 
         $this->tester->mockCraftMethods('categories', [
             'getAllGroups' => [
-                new CategoryGroup(['uid' => 'uid', 'handle' => 'someGroup'])
-            ]
+                new CategoryGroup(['uid' => 'uid', 'handle' => 'someGroup']),
+            ],
         ]);
 
         $this->tester->mockCraftMethods('tags', [
             'getAllTagGroups' => [
-                new TagGroup(['uid' => 'uid', 'handle' => 'someGroup'])
-            ]
+                new TagGroup(['uid' => 'uid', 'handle' => 'someGroup']),
+            ],
         ]);
 
         $this->tester->mockCraftMethods('globals', [
             'getAllSets' => [
-                new GlobalSet(['uid' => 'uid', 'handle' => 'gSet'])
-            ]
+                new GlobalSet(['uid' => 'uid', 'handle' => 'gSet']),
+            ],
         ]);
 
         $this->tester->mockCraftMethods('sections', [
@@ -70,12 +70,11 @@ class CreateMutationsTest extends Unit
                     'getSection' => new Section([
                         'type' => Section::TYPE_CHANNEL,
                         'uid' => 'sectionUid',
-                        'handle' => 'news'
-                    ])
-                ])
-            ]
+                        'handle' => 'news',
+                    ]),
+                ]),
+            ],
         ]);
-
     }
 
     protected function _after()
@@ -91,42 +90,42 @@ class CreateMutationsTest extends Unit
      * @dataProvider assetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateAssetMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateAssetMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = AssetMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = AssetMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given volume has expected arguments and returns a certain type
      */
-   public function testCreateAssetSaveMutation()
-   {
-       $volume = $this->make(Local::class, [
+    public function testCreateAssetSaveMutation()
+    {
+        $volume = $this->make(Local::class, [
                '__call' => function($name, $args) {
                    return [
                        new Number(['handle' => 'someNumberField']),
                    ];
-               }
+               },
            ]
        );
 
-       $mutation = AssetMutations::createSaveMutation($volume);
+        $mutation = AssetMutations::createSaveMutation($volume);
 
-       self::assertInstanceOf(AssetGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someNumberField', $mutation['args']);
-       self::assertArrayHasKey('id', $mutation['args']);
-       self::assertArrayHasKey('_file', $mutation['args']);
-   }
+        self::assertInstanceOf(AssetGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someNumberField', $mutation['args']);
+        self::assertArrayHasKey('id', $mutation['args']);
+        self::assertArrayHasKey('_file', $mutation['args']);
+    }
 
     /**
      * For a list of scopes, test whether the right Category mutations are created.
@@ -137,42 +136,42 @@ class CreateMutationsTest extends Unit
      * @dataProvider categoryMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateCategoryMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateCategoryMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = CategoryMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = CategoryMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given category group has expected arguments and returns a certain type
      */
-   public function testCreateCategorySaveMutation()
-   {
-       $categoryGroup = $this->make(CategoryGroup::class, [
+    public function testCreateCategorySaveMutation()
+    {
+        $categoryGroup = $this->make(CategoryGroup::class, [
                '__call' => function($name, $args) {
                    return [
                        new PlainText(['handle' => 'someTextField']),
                    ];
-               }
+               },
            ]
        );
 
-       $mutation = CategoryMutations::createSaveMutation($categoryGroup);
+        $mutation = CategoryMutations::createSaveMutation($categoryGroup);
 
-       self::assertInstanceOf(CategoryGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someTextField', $mutation['args']);
-       self::assertArrayHasKey('prependToRoot', $mutation['args']);
-       self::assertArrayHasKey('title', $mutation['args']);
-   }
+        self::assertInstanceOf(CategoryGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someTextField', $mutation['args']);
+        self::assertArrayHasKey('prependToRoot', $mutation['args']);
+        self::assertArrayHasKey('title', $mutation['args']);
+    }
 
     /**
      * For a list of scopes, test whether the right Tag mutations are created.
@@ -183,41 +182,41 @@ class CreateMutationsTest extends Unit
      * @dataProvider tagMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateTagMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateTagMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = TagMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = TagMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given tag group has expected arguments and returns a certain type
      */
-   public function testCreateTagSaveMutation()
-   {
-       $tagGroup = $this->make(TagGroup::class, [
+    public function testCreateTagSaveMutation()
+    {
+        $tagGroup = $this->make(TagGroup::class, [
                '__call' => function($name, $args) {
                    return [
                        new PlainText(['handle' => 'someTextField']),
                    ];
-               }
+               },
            ]
        );
 
-       $mutation = TagMutations::createSaveMutation($tagGroup);
+        $mutation = TagMutations::createSaveMutation($tagGroup);
 
-       self::assertInstanceOf(TagGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someTextField', $mutation['args']);
-       self::assertArrayHasKey('uid', $mutation['args']);
-   }
+        self::assertInstanceOf(TagGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someTextField', $mutation['args']);
+        self::assertArrayHasKey('uid', $mutation['args']);
+    }
 
     /**
      * For a list of scopes, test whether the right global set mutations are created.
@@ -228,41 +227,41 @@ class CreateMutationsTest extends Unit
      * @dataProvider globalSetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-   public function testCreateGlobalSetMutations(array $scopes, array $mutationNames)
-   {
-       $this->_mockScope($scopes);
+    public function testCreateGlobalSetMutations(array $scopes, array $mutationNames)
+    {
+        $this->_mockScope($scopes);
 
-       // Create mutations
-       $mutations = GlobalSetMutations::getMutations();
-       $actualMutationNames = array_keys($mutations);
+        // Create mutations
+        $mutations = GlobalSetMutations::getMutations();
+        $actualMutationNames = array_keys($mutations);
 
-       // Verify
-       sort($mutationNames);
-       sort($actualMutationNames);
+        // Verify
+        sort($mutationNames);
+        sort($actualMutationNames);
 
-       self::assertEquals($mutationNames, $actualMutationNames);
-   }
+        self::assertEquals($mutationNames, $actualMutationNames);
+    }
 
     /**
      * Check if a created save mutation for a given global set has expected arguments and returns a certain type
      */
-   public function testCreateGlobalSetSaveMutation()
-   {
-       $globalSet = $this->make(GlobalSet::class, [
+    public function testCreateGlobalSetSaveMutation()
+    {
+        $globalSet = $this->make(GlobalSet::class, [
                '__call' => function($name, $args) {
                    return [
                        new PlainText(['handle' => 'someTextField']),
                    ];
-               }
+               },
            ]
        );
 
-       $mutation = GlobalSetMutations::createSaveMutation($globalSet);
+        $mutation = GlobalSetMutations::createSaveMutation($globalSet);
 
-       self::assertInstanceOf(GlobalSetGqlType::class, $mutation['type']);
-       self::assertArrayHasKey('someTextField', $mutation['args']);
-       self::assertArrayNotHasKey('uid', $mutation['args']);
-   }
+        self::assertInstanceOf(GlobalSetGqlType::class, $mutation['type']);
+        self::assertArrayHasKey('someTextField', $mutation['args']);
+        self::assertArrayNotHasKey('uid', $mutation['args']);
+    }
 
 
     /**
@@ -300,7 +299,7 @@ class CreateMutationsTest extends Unit
                         new PlainText(['handle' => 'someTextField']),
                     ];
                 },
-                'getSection' => new Section(['type' => Section::TYPE_SINGLE])
+                'getSection' => new Section(['type' => Section::TYPE_SINGLE]),
             ]
         );
 
@@ -310,7 +309,7 @@ class CreateMutationsTest extends Unit
                         new PlainText(['handle' => 'someTextField']),
                     ];
                 },
-                'getSection' => new Section(['type' => Section::TYPE_CHANNEL])
+                'getSection' => new Section(['type' => Section::TYPE_CHANNEL]),
             ]
         );
 
@@ -320,7 +319,7 @@ class CreateMutationsTest extends Unit
                         new PlainText(['handle' => 'someTextField']),
                     ];
                 },
-                'getSection' => new Section(['type' => Section::TYPE_STRUCTURE])
+                'getSection' => new Section(['type' => Section::TYPE_STRUCTURE]),
             ]
         );
 
@@ -352,19 +351,19 @@ class CreateMutationsTest extends Unit
         return [
             [
                 ['volumes.uid:edit', 'volumes.uid:delete'],
-                ['deleteAsset']
+                ['deleteAsset'],
             ],
             [
                 ['volumes.uid:edit', 'volumes.uid:save', 'volumes.uid:delete'],
-                ['deleteAsset', 'save_localVolume_Asset']
+                ['deleteAsset', 'save_localVolume_Asset'],
             ],
             [
                 ['volumes.uid:edit', 'volumes.uid:save'],
-                ['save_localVolume_Asset']
+                ['save_localVolume_Asset'],
             ],
             [
                 ['volumes.nope:edit', 'volumes.nope:save'],
-                []
+                [],
             ],
         ];
     }
@@ -374,19 +373,19 @@ class CreateMutationsTest extends Unit
         return [
             [
                 ['categorygroups.uid:edit', 'categorygroups.uid:delete'],
-                ['deleteCategory']
+                ['deleteCategory'],
             ],
             [
                 ['categorygroups.uid:edit', 'categorygroups.uid:save', 'categorygroups.uid:delete'],
-                ['deleteCategory', 'save_someGroup_Category']
+                ['deleteCategory', 'save_someGroup_Category'],
             ],
             [
                 ['categorygroups.uid:edit', 'categorygroups.uid:save'],
-                ['save_someGroup_Category']
+                ['save_someGroup_Category'],
             ],
             [
                 ['categorygroups.nope:edit', 'categorygroups.nope:save'],
-                []
+                [],
             ],
         ];
     }
@@ -396,19 +395,19 @@ class CreateMutationsTest extends Unit
         return [
             [
                 ['taggroups.uid:edit', 'taggroups.uid:delete'],
-                ['deleteTag']
+                ['deleteTag'],
             ],
             [
                 ['taggroups.uid:edit', 'taggroups.uid:save', 'taggroups.uid:delete'],
-                ['deleteTag', 'save_someGroup_Tag']
+                ['deleteTag', 'save_someGroup_Tag'],
             ],
             [
                 ['taggroups.uid:edit', 'taggroups.uid:save'],
-                ['save_someGroup_Tag']
+                ['save_someGroup_Tag'],
             ],
             [
                 ['taggroups.nope:edit', 'taggroups.nope:save'],
-                []
+                [],
             ],
         ];
     }
@@ -418,23 +417,23 @@ class CreateMutationsTest extends Unit
         return [
             [
                 ['entrytypes.uid:edit', 'entrytypes.uid:delete'],
-                ['deleteEntry']
+                ['deleteEntry'],
             ],
             [
                 ['entrytypes.uid:edit', 'entrytypes.uid:save', 'entrytypes.uid:delete'],
-                ['deleteEntry', 'save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft']
+                ['deleteEntry', 'save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft'],
             ],
             [
                 ['entrytypes.uid:edit', 'entrytypes.uid:create'],
-                ['save_news_article_Entry']
+                ['save_news_article_Entry'],
             ],
             [
                 ['entrytypes.uid:edit', 'entrytypes.uid:save'],
-                ['save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft']
+                ['save_news_article_Entry', 'save_news_article_Draft', 'createDraft', 'publishDraft'],
             ],
             [
                 ['entrytypes.nope:edit', 'entrytypes.nope:save'],
-                []
+                [],
             ],
         ];
     }
@@ -444,11 +443,11 @@ class CreateMutationsTest extends Unit
         return [
             [
                 ['globalsets.uid:edit'],
-                ['save_gSet_GlobalSet']
+                ['save_gSet_GlobalSet'],
             ],
             [
                 ['globalsets.uid:edit', 'globalsets.uid2:edit'],
-                ['save_gSet_GlobalSet']
+                ['save_gSet_GlobalSet'],
             ],
         ];
     }
@@ -461,8 +460,8 @@ class CreateMutationsTest extends Unit
     {
         $this->tester->mockCraftMethods('gql', [
             'getActiveSchema' => $this->make(GqlSchema::class, [
-                'scope' => $scopes
-            ])
+                'scope' => $scopes,
+            ]),
         ]);
     }
 }

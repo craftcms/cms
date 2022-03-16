@@ -62,7 +62,7 @@ class Localization
         if (is_string($number)) {
             if ($localeId === null) {
                 $locale = Craft::$app->getFormattingLocale();
-            } else if ($localeId === Craft::$app->language) {
+            } elseif ($localeId === Craft::$app->language) {
                 $locale = Craft::$app->getLocale();
             } else {
                 $locale = Craft::$app->getI18n()->getLocaleById($localeId);

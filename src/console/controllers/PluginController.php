@@ -81,7 +81,7 @@ class PluginController extends Controller
 
             if ($info['isEnabled']) {
                 $color = Console::FG_GREEN;
-            } else if ($info['isInstalled']) {
+            } elseif ($info['isInstalled']) {
                 $color = Console::FG_YELLOW;
             } else {
                 $color = Console::FG_GREY;
@@ -306,7 +306,7 @@ class PluginController extends Controller
         return $this->prompt($prompt, [
             'validator' => function(string $input) use ($uninstalledPluginInfo) {
                 return isset($uninstalledPluginInfo[$input]);
-            }
+            },
         ]);
     }
 

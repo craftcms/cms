@@ -37,10 +37,10 @@ class FixturesTest extends Unit
     {
         return [
             'entry-with-fields' => [
-                'class' => EntryWithFieldsFixture::class
+                'class' => EntryWithFieldsFixture::class,
             ],
             'entry-types' => [
-                'class' => EntryTypeFixture::class
+                'class' => EntryTypeFixture::class,
             ],
         ];
     }
@@ -75,7 +75,7 @@ class FixturesTest extends Unit
                 function() use ($sectionUid) {
                     $sectionService = $this->make(Sections::class);
                     return $sectionService->getSectionByUid($sectionUid)->handle === 'newHandle';
-                }
+                },
             ],
             // Entry type nesting inside section and handle
             [
@@ -83,7 +83,7 @@ class FixturesTest extends Unit
                 function() use ($sectionUid, $randomHandle, $entryTypeUid) {
                     $sectionService = $this->make(Sections::class);
                     return $sectionService->getEntryTypesByHandle($randomHandle)[0]->uid === $entryTypeUid;
-                }
+                },
             ],
         ];
     }

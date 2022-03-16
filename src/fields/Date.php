@@ -195,7 +195,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     {
         if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
-        } else if ($this->showTime && !$this->showDate) {
+        } elseif ($this->showTime && !$this->showDate) {
             $dateTimeValue = 'showTime';
         } else {
             $dateTimeValue = 'showBoth';

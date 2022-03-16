@@ -317,7 +317,7 @@ class Request extends \yii\web\Request
         // Is this query string-based pagination?
         if (strpos($pageTrigger, '?') === 0) {
             $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
-        } else if ($this->_path !== '') {
+        } elseif ($this->_path !== '') {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $pageTrigger = preg_quote($pageTrigger, '/');
@@ -1616,7 +1616,7 @@ class Request extends \yii\web\Request
                     $setPasswordPath = self::CP_PATH_SET_PASSWORD;
                     $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
                     $updatePath = self::CP_PATH_UPDATE;
-                } else if (!$this->generalConfig->headlessMode) {
+                } elseif (!$this->generalConfig->headlessMode) {
                     if (is_string($loginPath = $this->generalConfig->getLoginPath())) {
                         $loginPath = trim($loginPath, '/');
                     }
@@ -1659,7 +1659,7 @@ class Request extends \yii\web\Request
                 if ($hasTriggerMatch) {
                     $this->_actionSegments = array_slice($this->getSegments(), 1);
                     $this->_isSingleActionRequest = true;
-                } else if ($hasActionParam) {
+                } elseif ($hasActionParam) {
                     $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
                     $this->_isSingleActionRequest = empty($this->_path);
                 } else {

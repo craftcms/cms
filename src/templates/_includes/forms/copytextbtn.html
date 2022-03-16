@@ -22,9 +22,9 @@
 {% js %}
     {% block js %}
         (() => {
-            let $btn = $('#{{ id|namespaceInputId|e('js') }}');
-            let $input = $btn.children('input');
-            let copyValue = function() {
+            const $btn = $('#{{ id|namespaceInputId|e('js') }}');
+            const $input = $btn.children('input');
+            const copyValue = function() {
                 $input[0].select();
                 document.execCommand('copy');
                 Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
