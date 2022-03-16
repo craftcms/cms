@@ -393,6 +393,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                     'asset' => $asset,
                     'imageTransformIndex' => $index,
                     'path' => $transformPath,
+                    'image' => $image,
                 ]));
             }
         } catch (FsException $e) {
