@@ -5,6 +5,7 @@
 > {warning} Due to a data corruption bug, projects that were updated to Craft 4 from Craft 3 are advised to re-update from a Craft 3 database backup.
 
 ### Added
+- Added the `craft.addresses()` address query factory function for Twig.
 - Added `craft\base\Element::notesFieldHtml()`.
 - Added `craft\base\Element::statusFieldHtml()`.
 - Added `craft\events\DefineAssetThumbUrlEvent`, which replaces `GetAssetThumbUrlEvent` (previously removed).
