@@ -7,6 +7,7 @@
 ### Added
 - Added the `|address` Twig filter.
 - Added the `craft.addresses()` address query factory function for Twig.
+- Added the `users/save-address` action.
 - Added `craft\base\Element::notesFieldHtml()`.
 - Added `craft\base\Element::statusFieldHtml()`.
 - Added `craft\events\DefineAssetThumbUrlEvent`, which replaces `GetAssetThumbUrlEvent` (previously removed).
