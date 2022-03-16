@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "您好，{{user.friendlyName|e}}，\n\n感谢您创建 {{siteName}} 帐户！要激活帐户，请单击下面的链接:\n\n<{{link}}>\n\n如果不希望收到这封电子邮件，请予以忽略。",
     'account_activation_heading' => '有人创建帐户时：',
     'account_activation_subject' => '激活您的帐户',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => '以及',
     'asset' => '资源',
     'assets' => '资源',

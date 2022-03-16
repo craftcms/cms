@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "Hei, {{user.friendlyName|e}}\n\nTakk for at du opprettet en konto hos {{siteName}}! For å aktivere kontoen din, trykk på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
     'account_activation_heading' => 'Når noen oppretter en konto:',
     'account_activation_subject' => 'Aktiver kontoen din',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'og',
     'asset' => 'fil',
     'assets' => 'filer',

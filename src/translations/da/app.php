@@ -1764,6 +1764,8 @@ return [
 Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'og',
     'asset' => 'aktiv',
     'assets' => 'filer',

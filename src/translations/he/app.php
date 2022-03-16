@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "שלום {{user.friendlyName|e}},\n\nתודה שיצרת חשבון ב{{siteName}}! להפעל החשבון שלך, לחץ על הלינק הבא:\n\n<{{link}}>\n\nאם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.",
     'account_activation_heading' => 'כאשר מישהו יוצר חשבון:',
     'account_activation_subject' => 'הפעל את החשבון שלך',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'וגם',
     'asset' => 'נכס',
     'assets' => 'נכסים',
