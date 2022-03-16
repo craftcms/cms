@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "سلام {{user.friendlyName|e}},\n\nاز ایجاد حساب کاربری در {{siteName}} ممنونیم! برای فعالسازی حساب کاربری خود لینک زیر را کلیک نمایید:\n\n<{{link}}>\n\nدر صورتی که انتظار این پیام را نداشتید آن را نادیده بگیرید.",
     'account_activation_heading' => 'وقتی که فردی یک حساب کاربری می سازد:',
     'account_activation_subject' => 'فعالسازی حساب کاربری شما',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'و',
     'asset' => 'فایل پروژه',
     'assets' => 'فایل های پروژه',
