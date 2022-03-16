@@ -50,6 +50,7 @@
 - Added the `elements/revert` action.
 - Added the `elements/save-draft` action.
 - Added the `elements/save` action.
+- Added the `users/delete-address` action.
 - Added the `users/save-address` action.
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.

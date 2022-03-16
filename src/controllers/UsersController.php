@@ -1827,6 +1827,38 @@ JS,
     }
 
     /**
+     * Deletes a user’s address.
+     *
+     * @return Response|null
+     * @since 4.0.0
+     */
+    public function actionDeleteAddress(): ?Response
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        $addressId = $this->request->getRequiredBodyParam('addressId');
+
+        $address = Address::findOne($addressId);
+
+        if (!$address) {
+            throw new BadRequestHttpException("Invalid address ID: $addressId");
+        }
+
+        if (!$address->canDelete($user)) {
+            throw new ForbiddenHttpException('User is not permitted to delete this address.');
+        }
+
+        if (!Craft::$app->getElements()->deleteElement($address)) {
+            return $this->asModelFailure($address, Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => Address::lowerDisplayName(),
+            ]), 'address');
+        }
+
+        return $this->asModelSuccess($address, Craft::t('app', '{{{type} deleted.', [
+            'type' => Address::displayName(),
+        ]));
+    }
+
+    /**
      * Saves the user field layout.
      *
      * @return Response|null
