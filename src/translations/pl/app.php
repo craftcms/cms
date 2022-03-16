@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "Cześć {{user.friendlyName|e}},\n\nDziękujemy za utworzenie konta na {{siteName}}! Aby je aktywować, kliknij poniższy link:\n\n<{{link}}>\n\nJeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.",
     'account_activation_heading' => 'Kiedy ktoś zakłada konto:',
     'account_activation_subject' => 'Aktywuj swoje konto',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'i',
     'asset' => 'zasób',
     'assets' => 'zasoby',
