@@ -1198,10 +1198,10 @@ class Sections extends Component
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
             $entries = Entry::find()
-                ->drafts(null)
-                ->draftOf(false)
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
+                ->drafts(null)
+                ->draftOf(false)
                 ->status(null)
                 ->trashed()
                 ->site('*')

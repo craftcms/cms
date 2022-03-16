@@ -22,6 +22,7 @@ use yii\db\QueryInterface;
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
  * @mixin Query
+ * @mixin \craft\elements\db\ElementQuery
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

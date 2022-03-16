@@ -473,7 +473,7 @@ class Elements extends Component
      * the $id is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param int $elementId The element’s ID.
      * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
@@ -493,7 +493,7 @@ class Elements extends Component
      * the $uid is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param string $uid The element’s UID.
      * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
@@ -510,7 +510,7 @@ class Elements extends Component
     /**
      * Returns an element by its ID or UID.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
      * @param class-string<T>|null $elementType The element class.
@@ -968,17 +968,17 @@ class Elements extends Component
                 try {
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
-                        throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it wasn’t loaded with its content.");
+                        throw new InvalidElementException($element, "Skipped resaving \$element ($element->id) because it wasn’t loaded with its content.");
                     }
 
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
                             if (ElementHelper::isRevision($element)) {
-                                throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it's a revision.");
+                                throw new InvalidElementException($element, "Skipped resaving \$element ($element->id) because it's a revision.");
                             }
                         } catch (Throwable $rootException) {
-                            throw new InvalidElementException($element, "Skipped resaving $element ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
+                            throw new InvalidElementException($element, "Skipped resaving \$element ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
                         }
                     }
                 } catch (InvalidElementException $e) {
@@ -1611,7 +1611,7 @@ class Elements extends Component
      * @param class-string<ElementInterface>|null $elementType The element class.
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
-     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
@@ -1653,7 +1653,7 @@ class Elements extends Component
      * Deletes an element.
      *
      * @param ElementInterface $element The element to be deleted
-     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
@@ -2106,7 +2106,7 @@ class Elements extends Component
     /**
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
-     * @param string|EagerLoadPlan[]|array
+     * @param string|EagerLoadPlan[]|array $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
      */
@@ -2851,7 +2851,7 @@ class Elements extends Component
             $siteElement = clone $element;
             $siteElement->siteId = $oldSiteElement->siteId;
             $siteElement->contentId = $oldSiteElement->contentId;
-            $siteElement->setEnabledForSite($oldSiteElement->enabledForSite);
+            $siteElement->setEnabledForSite($oldSiteElement->getEnabledForSite());
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;

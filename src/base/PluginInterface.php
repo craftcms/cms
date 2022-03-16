@@ -15,7 +15,7 @@ use yii\base\Module;
  * PluginInterface defines the common interface to be implemented by plugin classes.
  * A class implementing this interface should also use [[PluginTrait]].
  *
- * @mixin PluginTrait
+ * @mixin \craft\base\PluginTrait
  * @mixin Module
  * @property string $handle The plugin’s handle (alias of [[id]])
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

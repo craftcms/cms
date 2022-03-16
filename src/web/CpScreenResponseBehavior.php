@@ -132,7 +132,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets a callable that will be called before other properties are added to the screen.
      *
      * @param callable|null $value
-     * @return Response|self
+     * @return Response
      */
     public function prepareScreen(?callable $value): Response
     {
@@ -144,7 +144,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the control panel edit URL for this screen.
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function editUrl(?string $value): Response
     {
@@ -156,7 +156,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the document title.
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function docTitle(?string $value): Response
     {
@@ -168,7 +168,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the page title.
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function title(?string $value): Response
     {
@@ -182,7 +182,7 @@ class CpScreenResponseBehavior extends Behavior
      * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
      *
      * @param callable|array|null $value
-     * @return Response|self
+     * @return Response
      */
     public function crumbs(callable|array|null $value): Response
     {
@@ -195,7 +195,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param string $label
      * @param string $url
-     * @return Response|self
+     * @return Response
      */
     public function addCrumb(string $label, string $url): Response
     {
@@ -223,7 +223,7 @@ class CpScreenResponseBehavior extends Behavior
      * container elements they represent.
      *
      * @param array $value
-     * @return Response|self
+     * @return Response
      */
     public function tabs(array $value): Response
     {
@@ -239,7 +239,7 @@ class CpScreenResponseBehavior extends Behavior
      * @param string $url
      * @param string|string[]|null $class
      * @param bool $visible
-     * @return Response|self
+     * @return Response
      */
     public function addTab(string $id, string $label, string $url, array|string $class = null, bool $visible = true): Response
     {
@@ -256,7 +256,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the form action.
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function action(?string $value): Response
     {
@@ -281,7 +281,7 @@ class CpScreenResponseBehavior extends Behavior
      * - `retainScroll` _(optional)_ – Whether the browser should retain its scroll position on the next page.
      *
      * @param callable|array|null $value
-     * @return Response|self
+     * @return Response
      */
     public function altActions(callable|array|null $value): Response
     {
@@ -294,7 +294,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param string $label
      * @param array $config
-     * @return Response|self
+     * @return Response
      * @see altActions()
      */
     public function addAltAction(string $label, array $config): Response
@@ -310,7 +310,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the URL the form should redirect to after posting
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function redirectUrl(?string $value): Response
     {
@@ -323,7 +323,7 @@ class CpScreenResponseBehavior extends Behavior
      * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function saveShortcutRedirectUrl(?string $value): Response
     {
@@ -335,7 +335,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the context menu HTML.
      *
      * @param callable|string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function contextMenu(callable|string|null $value): Response
     {
@@ -347,7 +347,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the submit button label.
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function submitButtonLabel(?string $value): Response
     {
@@ -360,7 +360,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param string $template
      * @param array $variables
-     * @return Response|self
+     * @return Response
      */
     public function contextMenuTemplate(string $template, array $variables = []): Response
     {
@@ -373,7 +373,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the additional buttons’ HTML.
      *
      * @param callable|string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function additionalButtons(callable|string|null $value): Response
     {
@@ -386,7 +386,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param string $template
      * @param array $variables
-     * @return Response|self
+     * @return Response
      */
     public function additionalButtonsTemplate(string $template, array $variables = []): Response
     {
@@ -399,7 +399,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the content HTML.
      *
      * @param callable|string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function content(callable|string|null $value): Response
     {
@@ -412,7 +412,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param string $template
      * @param array $variables
-     * @return Response|self
+     * @return Response
      */
     public function contentTemplate(string $template, array $variables = []): Response
     {
@@ -425,7 +425,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the sidebar HTML.
      *
      * @param callable|string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function sidebar(callable|string|null $value): Response
     {
@@ -438,7 +438,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param string $template
      * @param array $variables
-     * @return Response|self
+     * @return Response
      */
     public function sidebarTemplate(string $template, array $variables = []): Response
     {
@@ -451,7 +451,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the content notice HTML.
      *
      * @param callable|string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function notice(callable|string|null $value): Response
     {
@@ -464,7 +464,7 @@ class CpScreenResponseBehavior extends Behavior
      *
      * @param string $template
      * @param array $variables
-     * @return Response|self
+     * @return Response
      */
     public function noticeTemplate(string $template, array $variables = []): Response
     {
