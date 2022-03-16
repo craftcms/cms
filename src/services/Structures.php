@@ -199,6 +199,7 @@ class Structures extends Component
     public function saveStructure(Structure $structure): bool
     {
         if ($structure->id) {
+            /** @var StructureRecord $structureRecord */
             $structureRecord = StructureRecord::findWithTrashed()
                 ->andWhere(['id' => $structure->id])
                 ->one();

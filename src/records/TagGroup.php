@@ -21,6 +21,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property FieldLayout $fieldLayout Field layout
  * @property Tag[] $tags Tags
+ * @mixin \yii2tech\ar\softdelete\SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

@@ -254,7 +254,7 @@ class Asset extends Element
      * @inheritdoc
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): AssetQuery
     {
         return new AssetQuery(static::class);
     }

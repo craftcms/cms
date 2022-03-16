@@ -27,6 +27,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $sortOrder Sort order
  * @property Section $section Section
  * @property FieldLayout $fieldLayout Field layout
+ * @mixin \yii2tech\ar\softdelete\SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

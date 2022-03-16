@@ -1309,7 +1309,7 @@ class Gql extends Component
 
         foreach ($event->types as $type) {
             /** @var SingularTypeInterface $type */
-            TypeLoader::registerType($type::getName(), $type . '::getType');
+            TypeLoader::registerType($type::getName(), [$type, 'getType']);
         }
 
         return $event->types;

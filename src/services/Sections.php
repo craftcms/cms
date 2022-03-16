@@ -654,6 +654,7 @@ class Sections extends Component
 
                 // Was this already selected?
                 if (!$isNewSection && isset($allOldSiteSettingsRecords[$siteId])) {
+                    /** @var Section_SiteSettingsRecord $siteSettingsRecord */
                     $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
                 } else {
                     $siteSettingsRecord = new Section_SiteSettingsRecord();

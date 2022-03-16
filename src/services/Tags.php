@@ -367,8 +367,8 @@ class Tags extends Component
         try {
             // Delete the tags
             $tags = Tag::find()
-                ->status(null)
                 ->groupId($tagGroupRecord->id)
+                ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
 

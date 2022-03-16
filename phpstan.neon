@@ -27,3 +27,5 @@ parameters:
             - end
         yii\base\ErrorHandler:
             - convertExceptionToError
+    ignoreErrors:
+    		- '#Access to an undefined property craft\\base\\FieldInterface::\$id#'

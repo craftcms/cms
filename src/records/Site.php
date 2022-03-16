@@ -26,6 +26,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $baseUrl Base URL
  * @property int $sortOrder Sort order
  * @property SiteGroup $group Group
+ * @mixin \yii2tech\ar\softdelete\SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

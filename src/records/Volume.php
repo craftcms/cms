@@ -26,6 +26,8 @@ use yii\db\ActiveQueryInterface;
  * @property string|null $titleTranslationKeyFormat
  * @property int $sortOrder Sort order
  * @property FieldLayout $fieldLayout Field layout
+ * @mixin \yii2tech\ar\softdelete\SoftDeleteBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

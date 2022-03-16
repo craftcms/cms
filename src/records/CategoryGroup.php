@@ -25,6 +25,7 @@ use yii\db\ActiveQueryInterface;
  * @property FieldLayout $fieldLayout Field layout
  * @property CategoryGroup_SiteSettings[] $siteSettings Site settings
  * @property Category[] $categories Categories
+ * @mixin \yii2tech\ar\softdelete\SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

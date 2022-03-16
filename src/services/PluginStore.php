@@ -188,10 +188,10 @@ class PluginStore extends Component
     /**
      * Returns the token by user ID.
      *
-     * @param $userId
+     * @param int $userId
      * @return CraftIdToken|null
      */
-    public function getTokenByUserId($userId): ?CraftIdToken
+    public function getTokenByUserId(int $userId): ?CraftIdToken
     {
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 

@@ -106,7 +106,7 @@ class Tag extends Element
      * @inheritdoc
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): TagQuery
     {
         return new TagQuery(static::class);
     }

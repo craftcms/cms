@@ -21,6 +21,7 @@ use yii\validators\Validator;
  *
  * @mixin FieldTrait
  * @mixin YiiComponent
+ * @mixin \craft\base\Model
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

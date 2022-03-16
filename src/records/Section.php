@@ -26,6 +26,7 @@ use yii\db\ActiveQueryInterface;
  * @property array|null $previewTargets Preview targets
  * @property Section_SiteSettings[] $siteSettings Site settings
  * @property Structure $structure Structure
+ * @mixin \yii2tech\ar\softdelete\SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
