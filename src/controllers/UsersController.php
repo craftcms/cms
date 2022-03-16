@@ -1777,7 +1777,7 @@ JS,
     public function actionSaveAddress(): ?Response
     {
         $user = Craft::$app->getUser()->getIdentity();
-        $userId = (int)$this->request->getBodyParam('userId') ?? $user->id;
+        $userId = (int)($this->request->getBodyParam('userId') ?? $user->id);
         $addressId = $this->request->getBodyParam('addressId');
 
         if ($addressId) {
