@@ -22,7 +22,6 @@
     }) }}
 
     {{ forms.textField({
-        first: true,
         label: "Handle"|t('app'),
         id: 'handle',
         name: 'handle',
@@ -58,6 +57,14 @@
         options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(fsOptions)
     }) }}
 
+    {{ forms.textField({
+        label: "Transform subpath"|t('app'),
+        instructions: 'Where transforms should be stored on the filesystem.'|t('app'),
+        id: 'transformSubpath',
+        name: 'transformSubpath',
+        value: volume.transformSubpath,
+        errors: volume.getErrors('transformSubpath'),
+    }) }}
     {% if craft.app.getIsMultiSite() %}
         <hr>
 

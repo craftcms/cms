@@ -74,6 +74,11 @@ class Volume extends Model
     public ?string $uid = null;
 
     /**
+     * @var string The subpath to use in the transform filesystem
+     */
+    public string $transformSubpath = '';
+
+    /**
      * @var FsInterface
      * @see getFs()
      * @see setFs()
@@ -327,6 +332,7 @@ class Volume extends Model
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
             'transformFs' => $this->_transformFsHandle,
+            'transformSubpath' => $this->transformSubpath,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,

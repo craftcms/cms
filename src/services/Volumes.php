@@ -345,6 +345,7 @@ class Volumes extends Component
             $volumeRecord->handle = $data['handle'];
             $volumeRecord->fs = $data['fs'] ?? null;
             $volumeRecord->transformFs = $data['transformFs'] ?? null;
+            $volumeRecord->transformSubpath = $data['transformSubpath'] ?? null;
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -633,6 +634,7 @@ class Volumes extends Component
                 'handle',
                 'fs',
                 'transformFs',
+                'transformSubpath',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
