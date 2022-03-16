@@ -80,13 +80,13 @@ class Component
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
      * @template T
-     * @param mixed $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param class-string<T>|array{type: class-string<T>} $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @param class-string<T>|null $instanceOf The class or interface that the component must be an instance of.
      * @return T The component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
-    public static function createComponent(mixed $config, ?string $instanceOf = null): ComponentInterface
+    public static function createComponent(string|array $config, ?string $instanceOf = null): ComponentInterface
     {
         // Normalize the config
         if (is_string($config)) {
