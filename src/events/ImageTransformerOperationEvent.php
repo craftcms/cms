@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\base\Image;
 use craft\elements\Asset;
 use craft\models\ImageTransformIndex;
 use yii\base\Event;
@@ -33,4 +34,9 @@ class ImageTransformerOperationEvent extends Event
      * @var string The resulting file path that will either be created or deleted.
      */
     public string $path;
+
+    /**
+     * The Image instance that was just saved.
+     */
+    public ?Image $image;
 }
