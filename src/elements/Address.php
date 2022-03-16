@@ -35,6 +35,38 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
+    public static function displayName(): string
+    {
+        return Craft::t('app', 'Address');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'address');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
