@@ -102,7 +102,6 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 

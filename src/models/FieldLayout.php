@@ -159,7 +159,7 @@ class FieldLayout extends Model
     public ?int $id = null;
 
     /**
-     * @var string|null The element type
+     * @var class-string<ElementInterface>|null The element type
      */
     public ?string $type = null;
 

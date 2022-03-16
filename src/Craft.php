@@ -172,7 +172,7 @@ class Craft extends Yii
     /**
      * Class autoloader.
      *
-     * @param string $className
+     * @param class-string $className
      */
     public static function autoload($className): void
     {

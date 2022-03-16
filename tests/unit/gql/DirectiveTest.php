@@ -163,7 +163,7 @@ class DirectiveTest extends Unit
     /**
      * Build the JSON string to be used as a directive object
      *
-     * @param string $className
+     * @param class-string $className
      * @param array $arguments
      * @return string
      */

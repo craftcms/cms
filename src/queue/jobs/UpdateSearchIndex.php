@@ -21,7 +21,7 @@ use craft\queue\BaseJob;
 class UpdateSearchIndex extends BaseJob
 {
     /**
-     * @var string The type of elements to update.
+     * @var class-string<ElementInterface> The type of elements to update.
      */
     public string $elementType;
 

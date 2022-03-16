@@ -309,7 +309,7 @@ class ResaveController extends Controller
     }
 
     /**
-     * @param string $elementType The element type that should be resaved
+     * @param class-string<ElementInterface> $elementType The element type that should be resaved
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0

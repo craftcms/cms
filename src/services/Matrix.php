@@ -649,7 +649,6 @@ class Matrix extends Component
      */
     public function getBlockById(int $blockId, ?int $siteId = null): ?MatrixBlock
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
     }
 

@@ -70,7 +70,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @var string The name of the [[ElementInterface]] class.
+     * @var class-string<ElementInterface> The name of the [[ElementInterface]] class.
      */
     public string $elementType;
 
@@ -470,7 +470,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Constructor
      *
-     * @param string $elementType The element type class associated with this query
+     * @param class-string<ElementInterface> $elementType The element type class associated with this query
      * @param array $config Configurations to be applied to the newly created query object
      */
     public function __construct(string $elementType, array $config = [])
@@ -1982,7 +1982,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Joins the content table into the query being prepared.
      *
-     * @param string $class
+     * @param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _joinContentTable(string $class): void
@@ -2059,7 +2059,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'status' param to the query being prepared.
      *
-     * @param string $class
+     * @param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _applyStatusParam(string $class): void
@@ -2151,7 +2151,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the structure params to the query being prepared.
      *
-     * @param string $class
+     * @param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _applyStructureParams(string $class): void
@@ -2430,7 +2430,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Normalizes a structure param value to either an Element object or false.
      *
      * @param string $property The parameter’s property name.
-     * @param string $class The element class
+     * @param class-string<ElementInterface> $class The element class
      * @return ElementInterface The normalized element
      * @throws QueryAbortedException if the element can't be found
      */

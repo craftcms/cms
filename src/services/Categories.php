@@ -714,7 +714,6 @@ class Categories extends Component
             return null;
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, $criteria);
     }
 

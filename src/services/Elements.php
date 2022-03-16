@@ -305,14 +305,13 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
     /**
      * Creates an element query for a given element type.
      *
-     * @param string $elementType The element class
+     * @param class-string<ElementInterface> $elementType The element class
      * @return ElementQueryInterface The element query
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
@@ -423,7 +422,7 @@ class Elements extends Component
     /**
      * Invalidates caches for the given element type.
      *
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @since 3.5.0
      */
     public function invalidateCachesForElementType(string $elementType): void
@@ -474,12 +473,13 @@ class Elements extends Component
      * the $id is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
+     * @template T
      * @param int $elementId The element’s ID.
-     * @param string|null $elementType The element class.
+     * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
-     * @return ElementInterface|null The matching element, or `null`.
+     * @return T|null The matching element, or `null`.
      */
     public function getElementById(int $elementId, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
     {
@@ -493,12 +493,13 @@ class Elements extends Component
      * the $uid is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
+     * @template T
      * @param string $uid The element’s UID.
-     * @param string|null $elementType The element class.
+     * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
-     * @return ElementInterface|null The matching element, or `null`.
+     * @return T|null The matching element, or `null`.
      * @since 3.5.13
      */
     public function getElementByUid(string $uid, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
@@ -509,13 +510,14 @@ class Elements extends Component
     /**
      * Returns an element by its ID or UID.
      *
+     * @template T
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
-     * @param string|null $elementType The element class.
+     * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
-     * @return ElementInterface|null The matching element, or `null`.
+     * @return T|null The matching element, or `null`.
      */
     private function _elementById(string $property, int|string $elementId, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
     {
@@ -1606,7 +1608,7 @@ class Elements extends Component
      * Deletes an element by its ID.
      *
      * @param int $elementId The element’s ID
-     * @param string|null $elementType The element class.
+     * @param class-string<ElementInterface>|null $elementType The element class.
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
      * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
@@ -1896,7 +1898,6 @@ class Elements extends Component
      */
     public function createAction(mixed $config): ElementActionInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementActionInterface::class);
     }
 
@@ -1908,7 +1909,6 @@ class Elements extends Component
      */
     public function createExporter(mixed $config): ElementExporterInterface
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementExporterInterface::class);
     }
 
@@ -2204,7 +2204,7 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param string $elementType The root element type class
+     * @param class-string<ElementInterface> $elementType The root element type class
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
@@ -2222,8 +2222,8 @@ class Elements extends Component
     }
 
     /**
-     * @param string $elementType
-     * @param array $elementsBySite
+     * @param class-string<ElementInterface> $elementType
+     * @param ElementInterface[][] $elementsBySite
      * @param EagerLoadPlan[] $with
      */
     private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with): void

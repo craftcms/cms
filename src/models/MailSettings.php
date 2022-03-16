@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\mail\transportadapters\Sendmail;
+use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\validators\TemplateValidator;
 
 /**
@@ -43,7 +44,7 @@ class MailSettings extends Model
     public ?string $template = null;
 
     /**
-     * @var string|null The transport type that should be used
+     * @var class-string<TransportAdapterInterface>|null The transport type that should be used
      */
     public ?string $transportType = Sendmail::class;
 

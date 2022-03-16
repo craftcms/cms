@@ -154,7 +154,7 @@ class Dashboard extends Component
     /**
      * Returns whether the current user has a widget of the given type.
      *
-     * @param string $type The widget type
+     * @param class-string<WidgetInterface> $type The widget type
      * @return bool Whether the current user has a widget of the given type
      */
     public function doesUserHaveWidget(string $type): bool

@@ -24,7 +24,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public bool $sortable = false;
 
     /**
-     * @var string|null The element type being queried.
+     * @var class-string<ElementInterface>|null The element type being queried.
      */
     public ?string $elementType = null;
 
@@ -42,7 +42,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * Constructor.
      *
-     * @param string|null $elementType
+     * @param class-string<ElementInterface>|null $elementType
      * @param array $config
      */
     public function __construct(?string $elementType = null, array $config = [])

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\BlockElementInterface;
+use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -260,7 +261,7 @@ SQL;
     /**
      * Deletes elements that are missing data in the given element extension table.
      *
-     * @param string $elementType The element type
+     * @param class-string<ElementInterface> $elementType The element type
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
      * @since 3.6.6

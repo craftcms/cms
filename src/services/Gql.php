@@ -1139,7 +1139,7 @@ class Gql extends Component
      * Return the content arguments based on an element class and contexts for it.
      *
      * @param array $contexts
-     * @param string $elementType
+     * @param class-string<\craft\base\ElementInterface> $elementType
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array

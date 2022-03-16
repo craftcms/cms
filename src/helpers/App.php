@@ -571,7 +571,7 @@ class App
     /**
      * Returns a humanized class name.
      *
-     * @param string $class
+     * @param class-string $class
      * @return string
      */
     public static function humanizeClass(string $class): string

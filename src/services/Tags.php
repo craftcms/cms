@@ -459,7 +459,6 @@ class Tags extends Component
      */
     public function getTagById(int $tagId, ?int $siteId = null): ?Tag
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 

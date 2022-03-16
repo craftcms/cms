@@ -8,6 +8,7 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
@@ -23,7 +24,7 @@ use yii\base\InvalidConfigException;
 class FieldLayoutBehavior extends Behavior
 {
     /**
-     * @var string|null The element type that the field layout will be associated with
+     * @var class-string<ElementInterface>|null The element type that the field layout will be associated with
      */
     public ?string $elementType = null;
 

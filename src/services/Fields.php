@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
@@ -1094,7 +1095,7 @@ class Fields extends Component
     /**
      * Returns a field layout by its associated element type.
      *
-     * @param string $type The associated element type
+     * @param class-string<ElementInterface> $type The associated element type
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
@@ -1125,7 +1126,7 @@ class Fields extends Component
     /**
      * Returns all of the field layouts associated with a given element type.
      *
-     * @param string $type
+     * @param class-string<ElementInterface> $type
      * @return FieldLayout[] The field layouts
      * @since 3.5.0
      */
@@ -1477,7 +1478,7 @@ class Fields extends Component
     /**
      * Deletes field layouts associated with a given element type.
      *
-     * @param string $type The element type
+     * @param class-string<ElementInterface> $type The element type
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool

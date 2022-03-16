@@ -105,7 +105,7 @@ class PrepareQueryTest extends Unit
     /**
      * Test relational field query preparation
      *
-     * @param string $resolverClass The resolver class to test
+     * @param class-string $resolverClass The resolver class to test
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
      * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions

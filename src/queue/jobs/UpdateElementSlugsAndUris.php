@@ -32,7 +32,7 @@ class UpdateElementSlugsAndUris extends BaseJob
     public array|int|null $elementId = null;
 
     /**
-     * @var string The type of elements to update.
+     * @var class-string<ElementInterface> The type of elements to update.
      */
     public string $elementType;
 

@@ -254,7 +254,7 @@ class AppHelperTest extends TestCase
      * @dataProvider humanizeClassDataProvider
      *
      * @param string $expected
-     * @param string $class
+     * @param class-string $class
      */
     public function testHumanizeClass(string $expected, string $class)
     {

@@ -17,6 +17,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use ReflectionClass;
 use ReflectionException;
 use yii\base\Component;
+use yii\web\AssetBundle;
 
 /**
  * Webpack service.
@@ -56,7 +57,7 @@ class Webpack extends Component
     /**
      * Returns the environment file.
      *
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @return string|null
      * @throws ReflectionException
      */
@@ -94,7 +95,7 @@ class Webpack extends Component
     }
 
     /**
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @return string
      * @throws ReflectionException
      */
@@ -109,7 +110,7 @@ class Webpack extends Component
     /**
      * Load the environment variables.
      *
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @return array|null
      * @throws ReflectionException
      */
@@ -143,7 +144,7 @@ class Webpack extends Component
     }
 
     /**
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @return string|null
      * @throws Exception
      */
@@ -153,7 +154,7 @@ class Webpack extends Component
     }
 
     /**
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @return string|null
      * @throws Exception
      */
@@ -165,7 +166,7 @@ class Webpack extends Component
     /**
      * Get the dev server public path.
      *
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @return string
      * @throws Exception
      */
@@ -191,7 +192,7 @@ class Webpack extends Component
     /**
      * Returns the running status of the webpack dev server.
      *
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @param string $loopback
      * @return bool
      * @throws GuzzleException
@@ -233,7 +234,7 @@ class Webpack extends Component
 
     /**
      * @param array $json
-     * @param string $class
+     * @param class-string<AssetBundle> $class
      * @return bool
      */
     private function _matchAsset(array $json, string $class): bool

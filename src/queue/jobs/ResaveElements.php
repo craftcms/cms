@@ -25,7 +25,7 @@ use craft\services\Elements;
 class ResaveElements extends BaseJob
 {
     /**
-     * @var string The element type that should be resaved
+     * @var class-string<ElementInterface> The element type that should be resaved
      */
     public string $elementType;
 

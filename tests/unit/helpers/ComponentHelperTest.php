@@ -41,9 +41,9 @@ class ComponentHelperTest extends Unit
      * @dataProvider validateComponentClassDataProvider
      *
      * @param bool $expected
-     * @param string $class
-     * @param string|null $instanceOf
-     * @param string $exceptionClass
+     * @param class-string $class
+     * @param class-string|null $instanceOf
+     * @param class-string $exceptionClass
      */
     public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = \Throwable::class)
     {

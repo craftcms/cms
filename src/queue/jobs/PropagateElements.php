@@ -25,7 +25,7 @@ use craft\services\Elements;
 class PropagateElements extends BaseJob
 {
     /**
-     * @var string The element type that should be propagated
+     * @var class-string<ElementInterface> The element type that should be propagated
      */
     public string $elementType;
 

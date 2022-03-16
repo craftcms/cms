@@ -170,7 +170,7 @@ class TestSetup
     }
 
     /**
-     * @param string $class
+     * @param class-string<Migration> $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
      *
@@ -498,7 +498,7 @@ class TestSetup
     /**
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param string $appClass
+     * @param class-string<\yii\base\Application> $appClass
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
@@ -542,7 +542,7 @@ class TestSetup
 
     /**
      * @param CodeceptionTestCase $test
-     * @param string $class
+     * @param class-string $class
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */

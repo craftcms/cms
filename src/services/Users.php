@@ -202,7 +202,6 @@ class Users extends Component
      */
     public function getUserById(int $userId): ?User
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 

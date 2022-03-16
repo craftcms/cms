@@ -308,7 +308,7 @@ class UtilitiesController extends Controller
     /**
      * Returns a utility type’s SVG icon.
      *
-     * @param string $class
+     * @param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -336,12 +336,12 @@ class UtilitiesController extends Controller
     /**
      * Returns the default icon SVG for a given utility type.
      *
-     * @param string $class
+     * @param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $class::displayName(),
         ]);

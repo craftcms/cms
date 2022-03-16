@@ -31,7 +31,7 @@ use craft\services\Structures;
 class ApplyNewPropagationMethod extends BaseJob
 {
     /**
-     * @var string The element type to use
+     * @var class-string<ElementInterface> The element type to use
      */
     public string $elementType;
 

@@ -35,7 +35,7 @@ abstract class BaseContentFixture extends DbFixture
     use FileFixtureTrait;
 
     /**
-     * @var string The element type this is for
+     * @var class-string<ElementInterface> The element type this is for
      */
     public string $elementType;
 

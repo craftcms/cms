@@ -119,7 +119,7 @@ class Utilities extends Component
     /**
      * Returns whether the current user is authorized to use a given utility.
      *
-     * @param string $class The utility class
+     * @param class-string<UtilityInterface> $class The utility class
      * @return bool
      */
     public function checkAuthorization(string $class): bool

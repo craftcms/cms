@@ -1528,7 +1528,7 @@ JS;
     /**
      * Ensures the given element type is valid.
      *
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @throws BadRequestHttpException
      */
     private function _validateElementType(string $elementType): void

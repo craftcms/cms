@@ -72,9 +72,10 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @param string $type
+     * @template T
+     * @param class-string<T> $type
      * @param array|null $settings
-     * @return TransportAdapterInterface
+     * @return T
      * @throws MissingComponentException if $type is missing
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface

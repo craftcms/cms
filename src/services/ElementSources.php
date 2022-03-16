@@ -65,7 +65,7 @@ class ElementSources extends Component
     /**
      * Returns the element index sources in the custom groupings/order.
      *
-     * @param string $elementType The element type class
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $context The context
      * @return array[]
      */
@@ -151,7 +151,7 @@ class ElementSources extends Component
     /**
      * Returns all the available attributes that can be shown for a given element type source.
      *
-     * @param string $elementType The element type class
+     * @param class-string<ElementInterface> $elementType The element type class
      * @return array[]
      */
     public function getAvailableTableAttributes(string $elementType): array
@@ -174,7 +174,7 @@ class ElementSources extends Component
     /**
      * Returns the attributes that should be shown for a given element type source.
      *
-     * @param string $elementType The element type class
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element type source key
      * @return array[]
      */
@@ -217,7 +217,7 @@ class ElementSources extends Component
     /**
      * Returns all the field layouts available for the given element source.
      *
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param string $sourceKey
      * @return FieldLayout[]
      */
@@ -233,7 +233,7 @@ class ElementSources extends Component
     /**
      * Returns additional sort options that should be available for a given element source.
      *
-     * @param string $elementType The element type class
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element source key
      * @return array[]
      */
@@ -270,7 +270,7 @@ class ElementSources extends Component
     /**
      * Returns additional table attributes that should be available for a given source.
      *
-     * @param string $elementType The element type class
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element source key
      * @return array[]
      */
@@ -304,7 +304,7 @@ class ElementSources extends Component
     /**
      * Returns the native sources for a given element type and context, normalized with `type` keys.
      *
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param string $context
      * @return array[]
      */
@@ -330,7 +330,7 @@ class ElementSources extends Component
     /**
      * Returns the source configs for a given element type.
      *
-     * @param string $elementType The element type class
+     * @param class-string<ElementInterface> $elementType The element type class
      * @return array[]|null
      */
     private function _sourceConfigs(string $elementType): ?array
@@ -341,7 +341,7 @@ class ElementSources extends Component
     /**
      * Returns the source config for a given native source key.
      *
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param string $sourceKey
      * @return array|null
      */

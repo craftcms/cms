@@ -38,7 +38,7 @@ final class Typecast
     /**
      * Typecasts the given property values based on their type declarations.
      *
-     * @param string $class The class name
+     * @param class-string $class The class name
      * @param array $properties The property values
      */
     public static function properties(string $class, array &$properties): void
@@ -51,7 +51,7 @@ final class Typecast
     /**
      * Typecasts the given property value based on its type declaration.
      *
-     * @param string $class The class name
+     * @param class-string $class The class name
      * @param string $property The property name
      * @param mixed $value The property value
      */

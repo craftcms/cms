@@ -31,6 +31,7 @@ use ReflectionException;
 use Throwable;
 use Yii;
 use yii\base\Application;
+use yii\base\Component;
 use yii\base\ErrorException as YiiBaseErrorException;
 use yii\base\Event;
 use yii\base\Exception as YiiBaseException;
@@ -333,7 +334,7 @@ class Craft extends Yii2
     /**
      * Ensure that an event is triggered by the $callback() function.
      *
-     * @param string $class
+     * @param class-string<Component> $class
      * @param string $eventName
      * @param $callback
      * @param string $eventInstance
@@ -413,7 +414,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll Whether `status(null)` and `trashed(null)` should be applied
@@ -658,7 +659,7 @@ class Craft extends Yii2
 
     /**
      * @param TestCase $test
-     * @param string $moduleClass
+     * @param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
     protected function addModule(TestCase $test, string $moduleClass): void
@@ -667,6 +668,7 @@ class Craft extends Yii2
             return;
         }
 
+        /** @var string|Module $moduleClass */
         $componentMap = $moduleClass::getComponentMap();
 
         // Set it.
