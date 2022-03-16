@@ -301,6 +301,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param array $options
      * @param FormatterInterface|null $formatter
      * @return string
+     * @since 4.0.0
      */
     public function addressFilter(?Address $address, array $options = [], FormatterInterface $formatter = null): string
     {
