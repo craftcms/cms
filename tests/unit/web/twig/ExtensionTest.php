@@ -10,6 +10,7 @@ namespace crafttests\unit\web\twig;
 use ArrayObject;
 use Codeception\Test\Unit;
 use Craft;
+use craft\elements\Address;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\fields\MissingField;
@@ -747,6 +748,32 @@ class ExtensionTest extends Unit
             '<strong>Hello</strong>',
             '{{ "**Hello**"|md(inlineOnly=true) }}'
         );
+    }
+
+    /**
+     * @param string $renderString
+     * @param array $variables
+     * @param string $expected
+     * @return void
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @dataProvider addressFilterDataProvider
+     */
+    public function testAddressFilter(string $renderString, array $variables, string $expected)
+    {
+        $this->testRenderResult($expected, $renderString, $variables);
+    }
+
+    public function addressFilterDataProvider(): array
+    {
+        return [
+            ['{{ myAddress|address }}', ['myAddress' => Craft::createObject(Address::class, ['config' => ['attributes' => ['addressLine1' => '1 Main Stree', 'postalCode' => '12345', 'countryCode' => 'US', 'administrativeArea' => 'OR']]])], '<p translate="no">
+<span class="address-line1">1 Main Stree</span><br>
+<span class="administrative-area">OR</span> <span class="postal-code">12345</span><br>
+<span class="country">United States</span>
+</p>'],
+            ['{{ myAddress|address }}', ['myAddress' => null], ''],
+        ];
     }
 
     /**

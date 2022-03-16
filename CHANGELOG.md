@@ -5,6 +5,7 @@
 > {warning} Due to a data corruption bug, projects that were updated to Craft 4 from Craft 3 are advised to re-update from a Craft 3 database backup.
 
 ### Added
+- Added the `|address` Twig filter.
 - Added the `craft.addresses()` address query factory function for Twig.
 - Added `craft\base\Element::notesFieldHtml()`.
 - Added `craft\base\Element::statusFieldHtml()`.
@@ -14,6 +15,7 @@
 - Added `craft\imagetransforms\ImageTransformer::EVENT_DELETE_TRANSFORMED_IMAGE`.
 - Added `craft\imagetransforms\ImageTransformer::EVENT_TRANSFORM_IMAGE`.
 - Added `craft\services\Assets::EVENT_DEFINE_THUMB_URL`, which replaces `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` (previously removed).
+- Added `craft\web\twig\Extension::addressFilter()`.
 
 ### Changed
 - Field grids within slideouts can now only have up to two columns. ([#10726](https://github.com/craftcms/cms/issues/10726))
