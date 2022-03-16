@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "Hallo {{user.friendlyName|e}},\n\ndanke für das Einrichten eines Benutzerkontos auf {{siteName}}. Um Ihr Konto zu aktivieren, klicken Sie bitte auf den folgenden Link:\n\n<{{link}}>\n\nWenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.",
     'account_activation_heading' => 'Wenn jemand ein Benutzerkonto anlegt:',
     'account_activation_subject' => 'Aktivieren Sie Ihr Benutzerkonto',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'und',
     'asset' => 'Asset',
     'assets' => 'Dateien',
