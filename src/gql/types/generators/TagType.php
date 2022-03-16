@@ -15,7 +15,6 @@ use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
-use craft\gql\TypeManager;
 use craft\gql\types\elements\Tag;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
@@ -64,7 +63,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Tag([
             'name' => $typeName,
             'fields' => function() use ($tagGroupFields, $typeName) {
-                return TypeManager::prepareFieldDefinitions($tagGroupFields, $typeName);
+                return Craft::$app->getGql()->prepareFieldDefinitions($tagGroupFields, $typeName);
             },
         ]));
     }

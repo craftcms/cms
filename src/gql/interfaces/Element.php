@@ -7,10 +7,10 @@
 
 namespace craft\gql\interfaces;
 
+use Craft;
 use craft\gql\base\InterfaceType;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
 use craft\helpers\Gql as GqlHelper;
@@ -60,7 +60,7 @@ class Element extends InterfaceType implements SingularTypeInterface
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             Gql::GRAPHQL_COUNT_FIELD => [
                 'name' => Gql::GRAPHQL_COUNT_FIELD,
                 'type' => Type::int(),

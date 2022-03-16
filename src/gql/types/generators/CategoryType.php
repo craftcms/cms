@@ -15,7 +15,6 @@ use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
-use craft\gql\TypeManager;
 use craft\gql\types\elements\Category;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\CategoryGroup;
@@ -65,7 +64,7 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Category([
             'name' => $typeName,
             'fields' => function() use ($categoryGroupFields, $typeName) {
-                return TypeManager::prepareFieldDefinitions($categoryGroupFields, $typeName);
+                return Craft::$app->getGql()->prepareFieldDefinitions($categoryGroupFields, $typeName);
             },
         ]));
     }
