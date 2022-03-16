@@ -1821,7 +1821,7 @@ JS,
             ]), 'address');
         }
 
-        return $this->asModelSuccess($address, Craft::t('app', '{{type} saved.', [
+        return $this->asModelSuccess($address, Craft::t('app', '{type} saved.', [
             'type' => Address::displayName(),
         ]));
     }
@@ -1853,7 +1853,7 @@ JS,
             ]), 'address');
         }
 
-        return $this->asModelSuccess($address, Craft::t('app', '{{{type} deleted.', [
+        return $this->asModelSuccess($address, Craft::t('app', '{type} deleted.', [
             'type' => Address::displayName(),
         ]));
     }
