@@ -7,10 +7,12 @@
 
 namespace craft\web\twig;
 
+use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Countable;
 use Craft;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\helpers\App;
@@ -173,6 +175,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $security = Craft::$app->getSecurity();
 
         return [
+            new TwigFilter('address', [$this, 'addressFilter'], ['is_safe' => ['html']]),
             new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
             new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
@@ -291,6 +294,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 return is_string($obj);
             }),
         ];
+    }
+
+    /**
+     * @param Address|null $address
+     * @param array $options
+     * @param FormatterInterface|null $formatter
+     * @return string
+     * @since 4.0.0
+     */
+    public function addressFilter(?Address $address, array $options = [], FormatterInterface $formatter = null): string
+    {
+        if ($address === null) {
+            return '';
+        }
+
+        return Craft::$app->getAddresses()->formatAddress($address, $options, $formatter);
     }
 
     /**

@@ -26,6 +26,7 @@
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
 - Added support for Monolog and the PSR-3 logging interface. ([#10659](https://github.com/craftcms/cms/pull/10659))
+- Added the `|address` Twig filter.
 - Added the `|money` Twig filter.
 - Added the `collect()` Twig function.
 - Added the `assetUploaders`, `authors`, and `fullName` user query params.
@@ -345,6 +346,7 @@
 - Added `craft\web\Controller::getPostedRedirectUrl()`.
 - Added `craft\web\Controller::TemplateResponseBehavior()`.
 - Added `craft\web\Controller::TemplateResponseFormatter()`.
+- Added `craft\web\twig\Extension::addressFilter()`.
 - Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
