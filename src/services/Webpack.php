@@ -225,7 +225,7 @@ class Webpack extends Component
 
             $this->_serverResponse[$loopback] = $json;
             $this->_isDevServerRunning[$class] = $this->_matchAsset($this->_serverResponse[$loopback], $class);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return $this->_isDevServerRunning[$class] = false;
         }
 

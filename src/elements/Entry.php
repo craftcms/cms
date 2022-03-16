@@ -1057,7 +1057,7 @@ class Entry extends Element
         }
         try {
             $entryType = $this->getType();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             // The entry type was probably deleted
             return null;
         }
@@ -1553,7 +1553,7 @@ class Entry extends Element
             case 'type':
                 try {
                     return Html::encode(Craft::t('site', $this->getType()->name));
-                } catch (InvalidConfigException $e) {
+                } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }
 

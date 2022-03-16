@@ -247,7 +247,7 @@ class Assets extends BaseRelationField
     {
         $sourceOptions = [];
 
-        foreach (Asset::sources('settings') as $key => $volume) {
+        foreach (Asset::sources('settings') as $volume) {
             if (!isset($volume['heading'])) {
                 $sourceOptions[] = [
                     'label' => $volume['label'],
@@ -282,7 +282,7 @@ class Assets extends BaseRelationField
     {
         try {
             return parent::inputHtml($value, $element);
-        } catch (InvalidSubpathException $e) {
+        } catch (InvalidSubpathException) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
                 'path' => '<code>' . $this->restrictedLocationSubpath . '</code>',
             ]), [

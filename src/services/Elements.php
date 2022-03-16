@@ -446,7 +446,7 @@ class Elements extends Component
 
         try {
             $rootElement = ElementHelper::rootElement($element);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             $rootElement = $element;
         }
 
@@ -539,7 +539,7 @@ class Elements extends Component
             if ($elementType === null) {
                 $elementType = $data['type'];
             }
-        } catch (DbException $e) {
+        } catch (DbException) {
             // Not on schema 3.2.6+ yet
             if ($elementType === null) {
                 $elementType = $this->_elementTypeById($property, $elementId);
@@ -1005,7 +1005,7 @@ class Elements extends Component
                     ]));
                 }
             }
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             // Fail silently
         }
 
@@ -1095,7 +1095,7 @@ class Elements extends Component
                     ]));
                 }
             }
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             // Fail silently
         }
 
@@ -1312,7 +1312,7 @@ class Elements extends Component
                         // Set a unique URI on the site clone
                         try {
                             ElementHelper::setUniqueUri($siteClone);
-                        } catch (OperationAbortedException $e) {
+                        } catch (OperationAbortedException) {
                             // Oh well, not worth bailing over
                         }
                     }
@@ -1989,7 +1989,7 @@ class Elements extends Component
                             } else {
                                 $site = $sitesService->getSiteByHandle($siteId);
                             }
-                        } catch (SiteNotFoundException $e) {
+                        } catch (SiteNotFoundException) {
                             $site = null;
                         }
                         if (!$site) {

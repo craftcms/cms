@@ -43,7 +43,7 @@ class Gql
     {
         try {
             $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+        } catch (GqlException) {
             return false;
         }
 
@@ -73,7 +73,7 @@ class Gql
     {
         try {
             $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+        } catch (GqlException) {
             return [];
         }
 
@@ -93,7 +93,7 @@ class Gql
     {
         try {
             $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+        } catch (GqlException) {
             return false;
         }
 
@@ -111,7 +111,7 @@ class Gql
     {
         try {
             $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+        } catch (GqlException) {
             return [];
         }
 

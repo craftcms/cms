@@ -85,7 +85,7 @@ abstract class AssetFixture extends BaseElementFixture
     {
         parent::beforeLoad();
 
-        foreach ($this->files as $key => $fileInfo) {
+        foreach ($this->files as $fileInfo) {
             copy($this->sourceAssetPath . $fileInfo['filename'], $this->destinationAssetPath . $fileInfo['filename']);
         }
     }

@@ -100,7 +100,7 @@ class Conditions extends Component
                             $r1 = new ReflectionProperty($class, $attribute);
                             $r2 = new ReflectionProperty($newClass, $attribute);
                             return $r1->getDeclaringClass()->name === $r2->getDeclaringClass()->name;
-                        } catch (ReflectionException $e) {
+                        } catch (ReflectionException) {
                             return false;
                         }
                     }, ARRAY_FILTER_USE_KEY);

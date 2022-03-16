@@ -306,7 +306,7 @@ class Users extends Component
 
         try {
             $valid = Craft::$app->getSecurity()->validatePassword($code, $user->verificationCode);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $valid = false;
         }
 
@@ -598,7 +598,7 @@ class Users extends Component
         if ($subpath !== '') {
             try {
                 $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 throw new InvalidSubpathException($subpath);
             }
         }

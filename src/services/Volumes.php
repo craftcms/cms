@@ -405,8 +405,6 @@ class Volumes extends Component
         // Clear caches
         $this->_volumes = null;
 
-        $volume = $this->getVolumeById($volumeRecord->id);
-
         if ($wasTrashed) {
             // Restore the assets that were deleted with the volume
             $assets = Asset::find()

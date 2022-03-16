@@ -134,7 +134,7 @@ class Application extends \yii\web\Application
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
                 new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-            } catch (IntlException $e) {
+            } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
@@ -244,7 +244,7 @@ class Application extends \yii\web\Application
                 // Delete all compiled templates
                 try {
                     FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (ErrorException $e) {
                     Craft::error('Could not delete compiled templates: ' . $e->getMessage());
@@ -499,8 +499,8 @@ class Application extends \yii\web\Application
                 ->from(Table::RESOURCEPATHS)
                 ->where(['hash' => $hash])
                 ->scalar();
-        } catch (DbException $e) {
-            // Craft is either not installed or not updated to 3.0.3+ yet
+        } catch (DbException) {
+            // Craft isn't installed yet
         }
 
         if (empty($sourcePath)) {
@@ -671,7 +671,7 @@ class Application extends \yii\web\Application
             // Clear the template caches in case they've been compiled since this release was cut.
             try {
                 FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // the directory doesn't exist
             }
 

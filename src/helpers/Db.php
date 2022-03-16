@@ -1175,7 +1175,7 @@ class Db
                     ->renameSequence("{$rawOldName}_id_seq", "{$rawNewName}_id_seq")
                     ->execute();
                 $transaction->commit();
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 // Silently fail. The sequence probably doesn't exist
                 $transaction->rollBack();
             }

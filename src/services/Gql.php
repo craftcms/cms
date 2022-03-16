@@ -601,8 +601,6 @@ class Gql extends Component
         $schemas = [];
         $names = [];
 
-        $publicToken = null;
-
         foreach ($rows as $row) {
             $token = new GqlToken($row);
 
@@ -895,7 +893,7 @@ class Gql extends Component
 
         try {
             $token = $this->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-        } catch (InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             $token = new GqlToken([
                 'name' => 'Public Token',
                 'accessToken' => GqlToken::PUBLIC_TOKEN,

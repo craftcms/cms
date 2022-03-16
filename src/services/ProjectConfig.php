@@ -2123,7 +2123,7 @@ class ProjectConfig extends Component
                     ->select(['configVersion'])
                     ->from([Table::INFO])
                     ->scalar();
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 $storedConfigVersion = null;
             }
 

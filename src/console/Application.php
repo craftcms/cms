@@ -105,7 +105,7 @@ class Application extends \yii\console\Application
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
                 new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-            } catch (IntlException $e) {
+            } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }

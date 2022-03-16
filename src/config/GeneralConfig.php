@@ -1686,7 +1686,7 @@ class GeneralConfig extends BaseObject
 
         try {
             parent::__set($name, $value);
-        } catch (UnknownPropertyException $e) {
+        } catch (UnknownPropertyException) {
             throw new UnknownPropertyException("Invalid general config setting: $name. You can set custom config settings from config/custom.php.");
         }
     }

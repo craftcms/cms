@@ -263,7 +263,7 @@ class Updates extends Component
         // Delete all compiled templates
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
             Craft::error('Could not delete compiled templates: ' . $e->getMessage());

@@ -366,7 +366,7 @@ class Request extends \yii\web\Request
                     $this->_fullPath = $this->getPathInfo(true);
                 }
             }
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             $this->_fullPath = $this->_getQueryStringPath();
         }
 
@@ -543,7 +543,7 @@ class Request extends \yii\web\Request
         // Make sure $this->_hadToken has been set
         try {
             $this->_findToken();
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException) {
         }
 
         $this->_token = $token;
@@ -1394,7 +1394,7 @@ class Request extends \yii\web\Request
             if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
                 return true;
             }
-        } catch (DbException $e) {
+        } catch (DbException) {
             // Craft is probably not installed or updating
             Craft::$app->getUser()->switchIdentity(null);
             return true;

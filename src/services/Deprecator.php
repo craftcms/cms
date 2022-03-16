@@ -352,7 +352,7 @@ class Deprecator extends Component
     {
         $logTraces = [];
 
-        foreach ($traces as $i => $trace) {
+        foreach ($traces as $trace) {
             $logTraces[] = [
                 'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
                 'file' => !empty($trace['file']) ? $trace['file'] : null,

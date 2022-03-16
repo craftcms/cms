@@ -310,7 +310,7 @@ EOD;
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $dbConfig = new DbConfig();
             }
         }
@@ -396,10 +396,10 @@ EOD;
                 // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {
                     $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
-                } catch (DbException $e) {
+                } catch (DbException) {
                     try {
                         $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
-                    } catch (DbException $e) {
+                    } catch (DbException) {
                         $allSchemas = null;
                     }
                 }

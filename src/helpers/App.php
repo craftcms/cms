@@ -460,7 +460,7 @@ class App
                     }
                     return $env;
                 }, $path);
-            } catch (InvalidValueException $e) {
+            } catch (InvalidValueException) {
                 // References an env var that doesn’t exist
                 continue;
             }
@@ -803,7 +803,7 @@ class App
 
         try {
             $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        } catch (MissingComponentException $e) {
+        } catch (MissingComponentException) {
             // Fallback to the PHP mailer
             $adapter = new Sendmail();
         }

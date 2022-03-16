@@ -167,7 +167,7 @@ class UtilitiesController extends Controller
             if (is_string($action)) {
                 try {
                     FileHelper::clearDirectory($action);
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (Throwable $e) {
                     Craft::warning("Could not clear the directory $action: " . $e->getMessage(), __METHOD__);
@@ -275,7 +275,7 @@ class UtilitiesController extends Controller
         try {
             $migrator->up();
             $this->setSuccessFlash(Craft::t('app', 'Applied new migrations successfully.'));
-        } catch (MigrationException $e) {
+        } catch (MigrationException) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 

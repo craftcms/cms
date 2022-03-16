@@ -197,7 +197,7 @@ class MigrateController extends BaseMigrateController
                 }
                 try {
                     $this->plugin = $this->_plugin($this->plugin);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     $this->stderr("Invalid plugin handle: $this->plugin" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
@@ -449,7 +449,7 @@ class MigrateController extends BaseMigrateController
     {
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
             Craft::error('Could not delete compiled templates: ' . $e->getMessage());

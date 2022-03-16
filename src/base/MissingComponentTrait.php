@@ -121,7 +121,7 @@ trait MissingComponentTrait
                     $isInstalled = $info['isInstalled'];
                     $name = $info['name'];
                     $iconSvg = $pluginsService->getPluginIconSvg($handle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                 }
             }
         }

@@ -111,7 +111,7 @@ class FieldLayoutBehavior extends Behavior
 
         try {
             $id = $this->getFieldLayoutId();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             return $this->_fieldLayout = new FieldLayout([
                 'type' => $this->elementType,
             ]);

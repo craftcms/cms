@@ -1022,8 +1022,6 @@ class AssetsController extends Controller
     {
         try {
             // If transform Id was not passed in, see if file id and handle were.
-            $transformIndexModel = null;
-
             if ($transformId) {
                 $transformer = Craft::createObject(ImageTransformer::class);
                 $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
@@ -1087,7 +1085,7 @@ class AssetsController extends Controller
                 try {
                     $this->requireVolumePermissionByAsset('editImages', $asset);
                     $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
-                } catch (ForbiddenHttpException $exception) {
+                } catch (ForbiddenHttpException) {
                     $variables['editFocal'] = false;
                 }
             }
@@ -1096,7 +1094,7 @@ class AssetsController extends Controller
         if ($previewHandler) {
             try {
                 $previewHtml = $previewHandler->getPreviewHtml($variables);
-            } catch (NotSupportedException $e) {
+            } catch (NotSupportedException) {
                 // No big deal
             }
         }

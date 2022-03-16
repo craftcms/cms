@@ -317,7 +317,7 @@ abstract class BaseUpdaterController extends Controller
         try {
             Craft::$app->getComposer()->getJsonPath();
             return true;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }

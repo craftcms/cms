@@ -422,7 +422,7 @@ class ImageTransforms extends Component
             // Is this a srcset-style size (2x, 100w, etc.)?
             try {
                 [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // All good.
             }
 

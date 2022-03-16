@@ -106,7 +106,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
             try {
                 $fs->remove($dir);
-            } catch (IOException $e2) {
+            } catch (IOException) {
                 // throw the original exception instead
                 throw $e;
             }
@@ -434,7 +434,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
         try {
             return parent::unlink($path);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return false;
         }
     }

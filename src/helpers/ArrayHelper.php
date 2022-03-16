@@ -238,7 +238,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function firstWhere(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
     {
-        foreach ($array as $i => $element) {
+        foreach ($array as $element) {
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
@@ -262,7 +262,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function contains(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
-        foreach ($array as $i => $element) {
+        foreach ($array as $element) {
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {

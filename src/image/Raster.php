@@ -502,7 +502,7 @@ class Raster extends Image
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException) {
             try {
                 // Invalid SVG. Maybe it's missing its DTD?
                 $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . $svgContent;

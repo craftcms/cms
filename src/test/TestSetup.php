@@ -464,7 +464,7 @@ class TestSetup
         ];
 
         // Replace the default site with what is desired by the project config. If project config is enabled.
-        if ($projectConfig = self::useProjectConfig()) {
+        if (self::useProjectConfig()) {
             $existingProjectConfig = self::getSeedProjectConfigData();
 
             if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {

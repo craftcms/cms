@@ -1243,7 +1243,7 @@ JS;
 
         try {
             $canonical = Craft::$app->getDrafts()->applyDraft($element);
-        } catch (InvalidElementException $e) {
+        } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);
         } finally {
             if (!$isUnpublishedDraft) {

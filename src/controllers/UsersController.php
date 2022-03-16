@@ -378,6 +378,10 @@ class UsersController extends Controller
             return $this->asFailure($message);
         }
 
+        if (!$success) {
+            return $this->asFailure();
+        }
+
         return $this->asSuccess();
     }
 
@@ -1911,7 +1915,7 @@ JS,
                 }
 
                 return Craft::$app->handleRequest($this->request, true);
-            } catch (NotFoundHttpException $e) {
+            } catch (NotFoundHttpException) {
                 // Just go with the CP template
             }
         }
@@ -1962,7 +1966,7 @@ JS,
 
         try {
             return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return false;
         }
     }
@@ -2003,7 +2007,7 @@ JS,
                 if (!$extension && !empty($matches['type'])) {
                     try {
                         $extension = FileHelper::getExtensionByMimeType($matches['type']);
-                    } catch (InvalidArgumentException $e) {
+                    } catch (InvalidArgumentException) {
                     }
                 }
 

@@ -496,7 +496,7 @@ class DateTimeHelper
     {
         try {
             $interval = DateInterval::createFromDateString($intervalString);
-        } catch (ErrorException $e) {
+        } catch (ErrorException) {
             return false;
         }
 

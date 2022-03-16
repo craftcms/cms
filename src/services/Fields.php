@@ -1694,7 +1694,7 @@ class Fields extends Component
                 $db->createCommand()
                     ->alterColumn($table, $oldName, $type)
                     ->execute();
-            } catch (DbException $e) {
+            } catch (DbException) {
                 // Just rename the old column and pretend it didn’t exist
                 $transaction->rollBack();
                 $transaction = $db->beginTransaction();

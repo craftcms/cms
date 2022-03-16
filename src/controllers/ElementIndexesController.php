@@ -725,7 +725,7 @@ class ElementIndexesController extends BaseElementsController
                     $exporter = ['type' => $exporter];
                 }
                 $exporter['elementType'] = $elementType;
-                $exporters[$i] = $exporter = Craft::$app->getElements()->createExporter($exporter);
+                $exporters[$i] = Craft::$app->getElements()->createExporter($exporter);
 
                 if ($exporters[$i] === null) {
                     unset($exporters[$i]);

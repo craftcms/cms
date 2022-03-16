@@ -471,7 +471,7 @@ class Connection extends \yii\db\Connection
                 $schema = $this->getSchema();
                 @unlink($schema->tempMyCnfPath);
             }
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // the directory doesn't exist
         }
 

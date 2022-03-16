@@ -193,7 +193,7 @@ class AppController extends Controller
             foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);

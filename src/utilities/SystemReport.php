@@ -132,7 +132,7 @@ class SystemReport extends Utility
     {
         try {
             $version = InstalledVersions::getPrettyVersion($packageName) ?? InstalledVersions::getVersion($packageName);
-        } catch (OutOfBoundsException $e) {
+        } catch (OutOfBoundsException) {
             return;
         }
 

@@ -561,7 +561,7 @@ class ElementQueryConditionBuilder extends Component
                             $nestedPlan->handle = $newHandle;
                         }
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
-                    } catch (InvalidArgumentException $exception) {
+                    } catch (InvalidArgumentException) {
                         $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree

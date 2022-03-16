@@ -235,7 +235,7 @@ class GraphqlController extends Controller
         if (isset($this->token)) {
             try {
                 $token = $gqlService->getTokenByAccessToken($this->token);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 $this->stderr("Invalid authorization token: $this->token" . PHP_EOL, Console::FG_RED);
                 return null;
             }
@@ -253,7 +253,7 @@ class GraphqlController extends Controller
         // Next look up the active token
         try {
             return $gqlService->getActiveSchema();
-        } catch (GqlException $exception) {
+        } catch (GqlException) {
             // Well, go for the public token then.
             $schema = $gqlService->getPublicSchema();
 

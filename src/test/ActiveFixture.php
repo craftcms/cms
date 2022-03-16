@@ -34,7 +34,7 @@ class ActiveFixture extends BaseActiveFixture
     {
         $tableSchema = $this->getTableSchema();
         $this->data = [];
-        foreach ($this->getData() as $alias => $row) {
+        foreach ($this->getData() as $row) {
             $modelClass = $this->modelClass;
 
             // Fixture data may pass in props that are not for the db. We thus run an extra check to ensure

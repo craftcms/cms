@@ -345,7 +345,7 @@ class DashboardController extends Controller
                 if (($composerLockPath = $composerService->getLockPath()) !== null) {
                     $zip->addFile($composerLockPath, 'composer.lock');
                 }
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine
             }
 

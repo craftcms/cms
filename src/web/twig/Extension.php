@@ -339,7 +339,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::t($category, (string)$message, $params, $language);
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             return $message;
         }
     }
@@ -468,7 +468,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asCurrency($value, $currency, $options, $textOptions, $stripZeros);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -491,7 +491,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asShortSize($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -514,7 +514,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asDecimal($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -537,7 +537,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asPercent($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -559,7 +559,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asTimestamp($value, $format, $withPreposition);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -719,7 +719,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             } else {
                 try {
                     $config = Json::decode(file_get_contents($path));
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     Craft::warning("Invalid HTML Purifier config at $path.");
                 }
             }
@@ -1483,7 +1483,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         $isInstalled = Craft::$app->getIsInstalled();
-        $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 

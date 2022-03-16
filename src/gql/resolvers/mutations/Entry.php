@@ -194,8 +194,6 @@ class Entry extends ElementMutationResolver
         $section = $this->getResolutionData('section');
         $entryType = $this->getResolutionData('entryType');
 
-        $entry = null;
-
         // Figure out whether the mutation is about an already saved entry
         $canIdentify = $section->type === Section::TYPE_SINGLE || !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 

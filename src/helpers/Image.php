@@ -195,7 +195,7 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (Throwable $exception) {
+        } catch (Throwable) {
             return [0, 0];
         }
     }

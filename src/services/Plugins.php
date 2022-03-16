@@ -204,7 +204,7 @@ class Plugins extends Component
         foreach ($pluginInfo as $handle => $row) {
             try {
                 $configData = $this->_getPluginConfigData($handle);
-            } catch (InvalidPluginException $e) {
+            } catch (InvalidPluginException) {
                 continue;
             }
 
@@ -226,7 +226,7 @@ class Plugins extends Component
 
             try {
                 $plugin = $this->createPlugin($handle, $row);
-            } catch (InvalidPluginException $e) {
+            } catch (InvalidPluginException) {
                 $plugin = null;
             }
 
@@ -338,7 +338,7 @@ class Plugins extends Component
         try {
             // Add a trailing slash so we don't get false positives
             $classPath = FileHelper::normalizePath(dirname((new ReflectionClass($class))->getFileName())) . DIRECTORY_SEPARATOR;
-        } catch (ReflectionException $e) {
+        } catch (ReflectionException) {
             return $this->_classPluginHandles[$class] = null;
         }
 

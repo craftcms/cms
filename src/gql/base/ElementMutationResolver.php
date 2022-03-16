@@ -167,7 +167,7 @@ abstract class ElementMutationResolver extends MutationResolver
         if ($element->hasErrors()) {
             $validationErrors = [];
 
-            foreach ($element->getFirstErrors() as $attribute => $errorMessage) {
+            foreach ($element->getFirstErrors() as $errorMessage) {
                 $validationErrors[] = $errorMessage;
             }
 

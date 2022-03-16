@@ -195,7 +195,7 @@ class Craft extends Yii2
         }
 
         // Re-apply project config
-        if ($projectConfig = TestSetup::useProjectConfig()) {
+        if (TestSetup::useProjectConfig()) {
             // Tests just beginning. Reset the project config to its original state.
             TestSetup::setupProjectConfig();
 
@@ -652,7 +652,7 @@ class Craft extends Yii2
         }
 
         $config = TestSetup::createConfigService();
-        foreach ($config->getConfigFromFile('app')['modules'] ?? [] as $handle => $class) {
+        foreach ($config->getConfigFromFile('app')['modules'] ?? [] as $class) {
             $this->addModule($test, $class);
         }
     }

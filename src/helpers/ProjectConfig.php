@@ -617,7 +617,7 @@ class ProjectConfig
 
         // Conflict stuff. "bt" = "before timestamp"; "at" = "after timestamp"
         $inMine = $inTheirs = $foundTimestampInConflict = false;
-        $mineMarker = $theirsMarker = null;
+        $mineMarker = null;
         $btMine = $atMine = $btTheirs = $atTheirs = null;
         $conflictDl = "=======\n";
 

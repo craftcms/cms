@@ -861,7 +861,7 @@ class Assets extends Component
 
         try {
             FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
-        } catch (Exception $exception) {
+        } catch (Exception) {
             throw new VolumeException('Unable to create directory for temporary volume.');
         }
 

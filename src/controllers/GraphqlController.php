@@ -229,7 +229,7 @@ class GraphqlController extends Controller
                 if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
                     try {
                         $token = $gqlService->getTokenByAccessToken($matches[1]);
-                    } catch (InvalidArgumentException $e) {
+                    } catch (InvalidArgumentException) {
                     }
 
                     if (!isset($token) || !$token->getIsValid()) {
@@ -249,7 +249,7 @@ class GraphqlController extends Controller
             if (!$token) {
                 try {
                     return $gqlService->getActiveSchema();
-                } catch (GqlException $exception) {
+                } catch (GqlException) {
                     throw new BadRequestHttpException('Missing Authorization header');
                 }
             }
@@ -301,7 +301,7 @@ class GraphqlController extends Controller
         if ($schemaUid && $schemaUid !== '*') {
             try {
                 $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 throw new BadRequestHttpException('Invalid token UID.');
             }
             Craft::$app->getSession()->authorize("graphql-schema:$schemaUid");
@@ -696,7 +696,7 @@ class GraphqlController extends Controller
 
         try {
             $schema = Craft::$app->getGql()->getTokenByUid($tokenUid);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             throw new BadRequestHttpException('Invalid schema UID.');
         }
 

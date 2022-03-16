@@ -2080,7 +2080,7 @@ JS;
             }
 
             $html .= Html::endTag('div'); // .preview-thumb-container
-        } catch (NotSupportedException $e) {
+        } catch (NotSupportedException) {
             // NBD
         }
 

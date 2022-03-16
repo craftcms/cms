@@ -225,7 +225,7 @@ class UsersController extends Controller
         // Most likely an invalid group ID will throw…
         try {
             Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

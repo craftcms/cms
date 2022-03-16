@@ -33,7 +33,7 @@ class FieldFixture extends ActiveFixture
      */
     public function load(): void
     {
-        foreach ($this->getData() as $alias => $row) {
+        foreach ($this->getData() as $row) {
             if (isset($row['fieldType'])) {
                 $class = $row['fieldType'];
                 $field = new $class();

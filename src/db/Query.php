@@ -128,7 +128,7 @@ class Query extends \yii\db\Query
     {
         try {
             $rows = $this->createCommand($db)->queryAll();
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
 
@@ -152,7 +152,7 @@ class Query extends \yii\db\Query
     {
         try {
             return parent::all($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
     }
@@ -184,7 +184,7 @@ class Query extends \yii\db\Query
             if ($result === false) {
                 $result = null;
             }
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             $result = null;
         }
         $this->limit = $limit;
@@ -200,7 +200,7 @@ class Query extends \yii\db\Query
         $this->limit = 1;
         try {
             $result = parent::scalar($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             $result = false;
         }
         $this->limit = $limit;
@@ -214,7 +214,7 @@ class Query extends \yii\db\Query
     {
         try {
             return parent::column($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
     }
@@ -226,7 +226,7 @@ class Query extends \yii\db\Query
     {
         try {
             return parent::exists($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return false;
         }
     }
@@ -271,7 +271,7 @@ class Query extends \yii\db\Query
     {
         try {
             return parent::queryScalar($selectExpression, $db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return false;
         }
     }

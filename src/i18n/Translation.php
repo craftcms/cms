@@ -48,7 +48,7 @@ abstract class Translation
 
         try {
             $args = Json::decode(substr($translation, 4));
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $translation;
         }
 

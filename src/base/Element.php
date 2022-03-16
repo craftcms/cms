@@ -2145,7 +2145,7 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasUris()) {
             try {
                 $language = $this->getSite()->language;
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $language = null;
             }
 
@@ -4198,7 +4198,7 @@ abstract class Element extends Component implements ElementInterface
                                 // The field might not actually belong to this element
                                 try {
                                     $value = $this->getFieldValue($field->handle);
-                                } catch (InvalidFieldException $e) {
+                                } catch (InvalidFieldException) {
                                     return '';
                                 }
                             }

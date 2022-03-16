@@ -202,7 +202,7 @@ class ImageTransforms
                     }
                 }
             }
-        } catch (AssetException $exception) {
+        } catch (AssetException) {
             // Make sure we throw a new exception
             $imageSourcePath = false;
         }

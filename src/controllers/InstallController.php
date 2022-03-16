@@ -282,7 +282,7 @@ class InstallController extends Controller
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
                 $siteUrl = '$PRIMARY_SITE_URL';
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine, we'll just store the entered URL
             }
         }

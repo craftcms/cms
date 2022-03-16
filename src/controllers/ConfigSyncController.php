@@ -188,7 +188,7 @@ class ConfigSyncController extends BaseUpdaterController
             foreach ($this->data['installPlugins'] as $handle) {
                 try {
                     $plugin = $pluginsService->createPlugin($handle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     $plugin = null;
                 }
 

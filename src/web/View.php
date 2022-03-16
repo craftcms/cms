@@ -671,7 +671,7 @@ class View extends \yii\web\View
 
         try {
             $templateExists = ($this->resolveTemplate($name) !== false);
-        } catch (TwigLoaderError $e) {
+        } catch (TwigLoaderError) {
             // _validateTemplateName() had an issue with it
             $templateExists = false;
         }

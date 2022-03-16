@@ -1043,7 +1043,7 @@ class User extends Element implements IdentityInterface
             // Validate the password
             try {
                 $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 $passwordValid = false;
             }
 

@@ -72,7 +72,7 @@ class Console extends \yii\helpers\Console
         if ($withScriptName) {
             try {
                 $file = Craft::$app->getRequest()->getScriptFilename();
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $file = 'craft';
             }
             $command = $file . ' ' . $command;

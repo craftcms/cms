@@ -248,7 +248,7 @@ class Craft extends Yii
         if (!$fieldVersionExists) {
             try {
                 $fieldsService->updateFieldVersion();
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 // Craft probably isn't installed yet.
             }
         }

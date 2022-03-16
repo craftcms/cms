@@ -253,7 +253,7 @@ class Html extends \yii\helpers\Html
                         }
                         $children[] = $subtag;
                         $cursor = $subtag['end'];
-                    } catch (InvalidHtmlTagException $e) {
+                    } catch (InvalidHtmlTagException) {
                         // We must have just reached the end
                         break;
                     }

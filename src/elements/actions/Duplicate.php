@@ -99,7 +99,7 @@ class Duplicate extends ElementAction
 
             try {
                 $duplicate = $elementsService->duplicateElement($element, $newAttributes);
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 // Validation error
                 $failCount++;
                 continue;

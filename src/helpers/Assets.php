@@ -18,7 +18,6 @@ use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
 use yii\base\Event;

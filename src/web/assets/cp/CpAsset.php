@@ -330,7 +330,6 @@ JS;
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
-        $view = Craft::$app->getView();
 
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {

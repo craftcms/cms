@@ -719,7 +719,7 @@ class Sites extends Component
 
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
-        } catch (SiteNotFoundException $e) {
+        } catch (SiteNotFoundException) {
             $oldPrimarySiteId = null;
         }
 
@@ -1169,9 +1169,7 @@ class Sites extends Component
 
         // Check for results because during installation, the transaction hasn't been committed yet.
         if (!empty($results)) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            foreach ($results as $i => $result) {
+            foreach ($results as $result) {
                 $site = new Site($result);
                 $this->_allSitesById[$site->id] = $site;
                 if ($site->enabled) {

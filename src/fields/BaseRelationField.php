@@ -866,7 +866,6 @@ JS;
             return null;
         }
 
-        $view = Craft::$app->getView();
         $type = $class::lowerDisplayName();
         $pluralType = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);

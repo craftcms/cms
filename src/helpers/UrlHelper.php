@@ -596,7 +596,7 @@ class UrlHelper
 
         if ($cpUrl) {
             // site param
-            if (!isset($params['site']) && Craft::$app->getIsMultiSite() && ($site = Cp::requestedSite()) !== null) {
+            if (!isset($params['site']) && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
                 if ($params === null) {
                     $params = [];
                 }

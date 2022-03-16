@@ -261,7 +261,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     {
         try {
             $owner = $this->getOwner();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             $owner = $this->duplicateOf;
         }
 

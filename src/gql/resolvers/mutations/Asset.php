@@ -187,7 +187,7 @@ class Asset extends ElementMutationResolver
                     if (isset($matches['type'])) {
                         try {
                             $extension = FileHelper::getExtensionByMimeType($matches['type']);
-                        } catch (InvalidArgumentException $e) {
+                        } catch (InvalidArgumentException) {
                         }
                     }
                     if (!$extension) {

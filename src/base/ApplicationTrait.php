@@ -793,7 +793,7 @@ trait ApplicationTrait
 
         try {
             $name = $this->getSites()->getPrimarySite()->getName();
-        } catch (SiteNotFoundException $e) {
+        } catch (SiteNotFoundException) {
             $name = null;
         }
 
@@ -1439,7 +1439,7 @@ trait ApplicationTrait
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $request = $this->getRequest();
+        $this->getRequest();
         $this->getLog();
 
         // Set the timezone

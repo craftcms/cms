@@ -75,7 +75,7 @@ abstract class Api
                 $headers['X-Craft-System'] .= ",plugin-$pluginHandle:{$pluginInfo['version']};{$pluginInfo['edition']}";
                 try {
                     $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
-                } catch (InvalidLicenseKeyException $e) {
+                } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
                 $pluginLicenses[] = "$pluginHandle:" . ($licenseKey ?? '__REQUEST__');
@@ -197,7 +197,7 @@ abstract class Api
             $pluginLicenseEdition = $pluginLicenseEditions[$pluginHandle] ?? null;
             try {
                 $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus, $pluginLicenseEdition);
-            } catch (InvalidPluginException $pluginException) {
+            } catch (InvalidPluginException) {
             }
         }
 
