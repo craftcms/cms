@@ -189,6 +189,7 @@
 - Added `craft\events\GenerateTransformEvent::$asset`.
 - Added `craft\events\GenerateTransformEvent::$transform`.
 - Added `craft\events\GenerateTransformEvent::$url`.
+- Added `craft\events\ImageTransformerOperationEvent`.
 - Added `craft\events\ImageTransformEvent`.
 - Added `craft\events\RegisterConditionRuleTypesEvent`.
 - Added `craft\events\TransformImageEvent`.

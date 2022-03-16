@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace craft\imagetransforms;
 
 use Craft;
+use craft\base\Component;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
@@ -19,6 +20,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
+use craft\events\ImageTransformerOperationEvent;
 use craft\gql\types\DateTime;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -42,9 +44,23 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ *
+ * @property-read int $editedImageHeight
+ * @property-read int $editedImageWidth
+ * @property-read array $pendingTransformIndexIds
  */
-class ImageTransformer implements ImageTransformerInterface, EagerImageTransformerInterface, ImageEditorTransformerInterface
+class ImageTransformer extends Component implements ImageTransformerInterface, EagerImageTransformerInterface, ImageEditorTransformerInterface
 {
+    /**
+     * @event ImageTransformerOperationEvent The event that is fired when an image is transformed
+     */
+    public const EVENT_TRANSFORM_IMAGE = 'transformImage';
+
+    /**
+     * @event ImageTransformerOperationEvent The event that is fired when a generated image transform is deleted
+     */
+    public const EVENT_DELETE_TRANSFORMED_IMAGE = 'deleteTransformedImage';
+
     /**
      * @var ImageTransformIndex[]
      */
@@ -105,7 +121,17 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
      */
     protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $asset->getVolume()->getTransformFs()->deleteFile($asset->folderPath . $this->getTransformSubpath($asset, $transformIndex));
+        $path = $asset->folderPath . $this->getTransformSubpath($asset, $transformIndex);
+
+        if ($this->hasEventHandlers(static::EVENT_DELETE_TRANSFORMED_IMAGE)) {
+            $this->trigger(static::EVENT_DELETE_TRANSFORMED_IMAGE, new ImageTransformerOperationEvent([
+                'asset' => $asset,
+                'imageTransformIndex' => $transformIndex,
+                'path' => $path
+            ]));
+        }
+
+        $asset->getVolume()->getTransformFs()->deleteFile($path);
     }
 
     /**
@@ -361,6 +387,14 @@ class ImageTransformer implements ImageTransformerInterface, EagerImageTransform
 
         try {
             $volume->getTransformFs()->writeFileFromStream($transformPath, $stream, []);
+
+            if ($this->hasEventHandlers(static::EVENT_TRANSFORM_IMAGE)) {
+                $this->trigger(static::EVENT_TRANSFORM_IMAGE, new ImageTransformerOperationEvent([
+                    'asset' => $asset,
+                    'imageTransformIndex' => $index,
+                    'path' => $transformPath
+                ]));
+            }
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
