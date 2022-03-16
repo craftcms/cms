@@ -30,6 +30,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\Queue;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\ImageTransform;
@@ -86,14 +87,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         if ($imageTransformIndex->fileExists) {
             $fs = $asset->getVolume()->getTransformFs();
-            $uri = $this->getTransformUri($asset, $imageTransformIndex);
+            $uri = $this->getTransformBasePath($asset) . $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
-            if ($fs instanceof LocalFsInterface && !$fs->fileExists($asset->folderPath . $uri)) {
+            if ($fs instanceof LocalFsInterface && !$fs->fileExists($uri)) {
                 $imageTransformIndex->fileExists = false;
                 $this->storeTransformIndexData($imageTransformIndex);
             } else {
-                return AssetsHelper::generateUrl($fs, $asset, $uri, $imageTransformIndex->dateUpdated);
+                return $fs->getRootUrl() . $uri . AssetsHelper::urlAppendix($asset, $imageTransformIndex->dateUpdated);
             }
         }
 
@@ -121,7 +122,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      */
     protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $path = $asset->folderPath . $this->getTransformSubpath($asset, $transformIndex);
+        $path = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $transformIndex);
 
         if ($this->hasEventHandlers(static::EVENT_DELETE_TRANSFORMED_IMAGE)) {
             $this->trigger(static::EVENT_DELETE_TRANSFORMED_IMAGE, new ImageTransformerOperationEvent([
@@ -319,8 +320,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         $volume = $asset->getVolume();
-        $transformPath = $asset->folderPath . $this->getTransformSubpath($asset, $index);
         $transformFs = $volume->getTransformFs();
+        $transformPath = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
 
         // Already created. Relax, grasshopper!
         if ($transformFs->fileExists($transformPath)) {
@@ -386,7 +387,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $volume->getTransformFs()->writeFileFromStream($transformPath, $stream, []);
+            $transformFs->writeFileFromStream($transformPath, $stream, []);
 
             if ($this->hasEventHandlers(static::EVENT_TRANSFORM_IMAGE)) {
                 $this->trigger(static::EVENT_TRANSFORM_IMAGE, new ImageTransformerOperationEvent([
@@ -427,18 +428,18 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
         $fs = $volume->getTransformFs();
 
+        $target = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
         // If we have a match, copy the file.
         if ($matchFound) {
-            $from = $asset->folderPath . $this->getTransformSubpath($asset, $matchFound);
-            $to = $asset->folderPath . $this->getTransformSubpath($asset, $index);
+            $from = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $matchFound);
 
             // Sanity check
             try {
-                if ($fs->fileExists($to)) {
+                if ($fs->fileExists($target)) {
                     return true;
                 }
 
-                $fs->copyFile($from, $to);
+                $fs->copyFile($from, $target);
             } catch (FsException $exception) {
                 throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);
             }
@@ -446,7 +447,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $this->generateTransformedImage($asset, $index);
         }
 
-        return $fs->fileExists($asset->folderPath . $this->getTransformSubpath($asset, $index));
+        return $fs->fileExists($target);
     }
 
     /**
@@ -800,6 +801,19 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         return $tempLocation;
     }
 
+    /**
+     * Get the transform base path for a given asset.
+     *
+     * @param Asset $asset
+     * @return string
+     * @throws InvalidConfigException
+     */
+    protected function getTransformBasePath(Asset $asset): string
+    {
+        $subPath = $asset->getVolume()->transformSubpath;
+        $subPath = StringHelper::removeRight($subPath, '/');
+        return ($subPath ? $subPath . DIRECTORY_SEPARATOR : '') . $asset->folderPath;
+    }
 
     /**
      * Delete transform records by an Asset id
