@@ -601,7 +601,7 @@ class Assets extends Component
 
         // If it's not an image, return a generic file extension icon
         $extension = $asset->getExtension();
-        if (!Image::canManipulateAsImage($extension)) {
+        if (!Image::canManipulateAsImage($extension) || !$asset->getVolume()->getTransformFs()->hasUrls) {
             return AssetsHelper::iconUrl($extension);
         }
 
