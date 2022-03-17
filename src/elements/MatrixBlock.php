@@ -12,7 +12,6 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;

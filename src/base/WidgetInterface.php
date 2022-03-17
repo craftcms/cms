@@ -11,9 +11,9 @@ namespace craft\base;
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[WidgetTrait]].
  *
- * @mixin \craft\base\WidgetTrait
- * @mixin \craft\base\SavableComponentTrait
- * @mixin \craft\base\Model
+ * @mixin WidgetTrait
+ * @mixin SavableComponentTrait
+ * @mixin Model
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

@@ -24,7 +24,6 @@ use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;

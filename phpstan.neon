@@ -20,7 +20,6 @@ parameters:
         - tests/_bootstrap.php
     stubFiles:
         - stubs/BaseYii.stub
-
     earlyTerminatingMethodCalls:
         Craft:
             - dd

@@ -67,7 +67,6 @@ class Api extends Component
      * Checks for Craft and plugin updates.
      *
      * @param string[] $maxVersions The maximum versions that should be allowed
-     *
      * @return array
      */
     public function getUpdates(array $maxVersions = []): array

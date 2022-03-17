@@ -21,8 +21,8 @@ use yii\validators\Validator;
  *
  * @mixin FieldTrait
  * @mixin YiiComponent
- * @mixin \craft\base\Model
- * @mixin \craft\base\SavableComponentTrait
+ * @mixin Model
+ * @mixin SavableComponentTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

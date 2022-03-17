@@ -11,6 +11,7 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Class FieldGroup record.
@@ -18,7 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property string $name Name
  * @property Field[] $fields Fields
- * @mixin \yii2tech\ar\softdelete\SoftDeleteBehavior
+ * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

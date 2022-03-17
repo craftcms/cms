@@ -114,7 +114,6 @@ class Addresses extends Component
 
     /**
      * @param string $type
-     *
      * @return string
      */
     public function getLocalityTypeLabel(string $type): string
@@ -129,7 +128,6 @@ class Addresses extends Component
 
     /**
      * @param string $type
-     *
      * @return string
      */
     public function getDependentLocalityTypeLabel(string $type): string
@@ -145,7 +143,6 @@ class Addresses extends Component
 
     /**
      * @param string $type
-     *
      * @return string
      */
     public function getPostalCodeTypeLabel(string $type): string
@@ -160,7 +157,6 @@ class Addresses extends Component
 
     /**
      * @param string $type
-     *
      * @return string
      */
     public function getAdministrativeAreaTypeLabel(string $type): string

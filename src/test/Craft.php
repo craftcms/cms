@@ -7,7 +7,6 @@
 
 namespace craft\test;
 
-use Closure;
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
@@ -337,14 +336,14 @@ class Craft extends Yii2
      *
      * @param class-string<Component> $class
      * @param string $eventName
-     * @param Closure $callback
+     * @param callable $callback
      * @param string $eventInstance
      * @param array $eventValues
      */
     public function expectEvent(
         string $class,
         string $eventName,
-        Closure $callback,
+        callable $callback,
         string $eventInstance = '',
         array $eventValues = [],
     ): void {

@@ -16,6 +16,7 @@ use yii\web\HttpException;
 
 /**
  * @inheritdoc
+ * @mixin CpScreenResponseBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

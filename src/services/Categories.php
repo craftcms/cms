@@ -359,6 +359,7 @@ class Categories extends Component
 
             if (!$isNewCategoryGroup) {
                 // Get the old category group site settings
+                /** @var CategoryGroup_SiteSettingsRecord[] $allOldSiteSettingsRecords */
                 $allOldSiteSettingsRecords = CategoryGroup_SiteSettingsRecord::find()
                     ->where(['groupId' => $groupRecord->id])
                     ->indexBy('siteId')
@@ -372,7 +373,6 @@ class Categories extends Component
 
                 // Was this already selected?
                 if (!$isNewCategoryGroup && isset($allOldSiteSettingsRecords[$siteId])) {
-                    /** @var CategoryGroup_SiteSettingsRecord $siteSettingsRecord */
                     $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
                 } else {
                     $siteSettingsRecord = new CategoryGroup_SiteSettingsRecord();

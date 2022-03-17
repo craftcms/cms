@@ -968,17 +968,17 @@ class Elements extends Component
                 try {
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
-                        throw new InvalidElementException($element, "Skipped resaving \$element ($element->id) because it wasn’t loaded with its content.");
+                        throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it wasn’t loaded with its content.");
                     }
 
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
                             if (ElementHelper::isRevision($element)) {
-                                throw new InvalidElementException($element, "Skipped resaving \$element ($element->id) because it's a revision.");
+                                throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it's a revision.");
                             }
                         } catch (Throwable $rootException) {
-                            throw new InvalidElementException($element, "Skipped resaving \$element ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
+                            throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
                         }
                     }
                 } catch (InvalidElementException $e) {

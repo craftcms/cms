@@ -69,7 +69,7 @@ class QueueController extends Controller
         }
 
         // Make sure the queue isn't already running, and there are waiting jobs
-        /** @var \craft\queue\Queue $queue */
+        /** @var QueueInterface $queue */
         $queue = Craft::$app->getQueue();
         if ($queue->getHasReservedJobs() || !$queue->getHasWaitingJobs()) {
             return $this->response;
