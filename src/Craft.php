@@ -25,6 +25,7 @@ use function GuzzleHttp\default_user_agent;
  * Craft is helper class serving common Craft and Yii framework functionality.
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
+ * @phpstan-ignore-next-line
  * @mixin CraftTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
