@@ -1763,6 +1763,8 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
 <{{link}}>",
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'és',
     'asset' => 'eszköz',
     'assets' => 'média',

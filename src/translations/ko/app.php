@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "안녕하세요 {{user.friendlyName|e}}님,\n\n{{siteName}}에서 계정을 생성해 주셔서 감사합니다! 계정을 활성화시키려면, 다음 링크를 클릭해 주세요:\n\n<{{link}}>\n\n본 이메일에 관해서 모르신다면, 그냥 무시해 주세요.",
     'account_activation_heading' => '누군가 계정을 생성했을 때:',
     'account_activation_subject' => '계정을 활성화하기',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => '및',
     'asset' => '에셋',
     'assets' => '에셋',

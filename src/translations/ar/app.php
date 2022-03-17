@@ -1759,6 +1759,8 @@ return [
     'account_activation_body' => "مرحبا {{user.friendlyName|e}}،\n\nشكراً لإنشائك حساباً في {{siteName}}! لتفعيل حسابك، انقر على الرابط التالي:\n\n<{{link}}>\n\nإذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.",
     'account_activation_heading' => 'عندما ينشئ أحدهم حساباً:',
     'account_activation_subject' => 'تفعيل حسابك',
+    'address' => 'address',
+    'addresses' => 'addresses',
     'and' => 'و',
     'asset' => 'الأصل',
     'assets' => 'الأصول',
