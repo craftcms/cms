@@ -2,6 +2,7 @@ parameters:
     level: 1
     paths:
         - src
+        - tests
     excludePaths:
         - tests/_craft/*
         - tests/_data/*

@@ -7,6 +7,7 @@
 
 namespace craft\test;
 
+use Closure;
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
@@ -306,7 +307,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      * @return string|false
      */
     public static function normalizePathSeparators($path): string|false
@@ -336,14 +337,14 @@ class Craft extends Yii2
      *
      * @param class-string<Component> $class
      * @param string $eventName
-     * @param $callback
+     * @param Closure $callback
      * @param string $eventInstance
      * @param array $eventValues
      */
     public function expectEvent(
         string $class,
         string $eventName,
-        $callback,
+        Closure $callback,
         string $eventInstance = '',
         array $eventValues = [],
     ): void {

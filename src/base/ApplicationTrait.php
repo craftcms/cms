@@ -1229,7 +1229,7 @@ trait ApplicationTrait
     /**
      * Returns the queue service.
      *
-     * @return Queue The queue service
+     * @return Queue|\craft\queue\Queue The queue service
      */
     public function getQueue(): Queue
     {

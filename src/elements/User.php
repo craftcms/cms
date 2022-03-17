@@ -225,7 +225,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @return UserQuery The newly created [[UserQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): UserQuery
     {
         return new UserQuery(static::class);
     }

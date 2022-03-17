@@ -457,7 +457,7 @@ JS;
     }
 
     /**
-     * @param $generalConfig GeneralConfig
+     * @param GeneralConfig $generalConfig
      * @return array|null
      */
     private function _httpProxy(GeneralConfig $generalConfig): ?array
