@@ -401,6 +401,7 @@ trait ApplicationTrait
      *
      * @return string
      * @since 3.2.0
+     * @deprecated in 4.0.0
      */
     public function getInstalledSchemaVersion(): string
     {

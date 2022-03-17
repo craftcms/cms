@@ -549,6 +549,7 @@
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
+- Deprecated `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
 - Deprecated `craft\base\Model::datetimeAttributes()`. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - Deprecated `craft\elements\User::getFullName()`. `$fullName` should be used instead.
 - Deprecated `craft\gql\TypeManager::flush()`. `craft\services\Gql::flushCaches()` should be used instead.
