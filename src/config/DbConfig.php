@@ -85,7 +85,7 @@ class DbConfig extends BaseObject
     public $collation;
 
     /**
-     * @var string The Data Source Name (“DSN”) that tells Craft how to connect to the database.
+     * @var string|null The Data Source Name (“DSN”) that tells Craft how to connect to the database.
      *
      * DSNs should begin with a driver prefix (`mysql:` or `pgsql:`), followed by driver-specific parameters.
      * For example, `mysql:host=127.0.0.1;port=3306;dbname=acme_corp`.
@@ -147,9 +147,6 @@ class DbConfig extends BaseObject
      */
     public $useUnbufferedConnections = false;
 
-    // Deprecated Properties
-    // -------------------------------------------------------------------------
-
     /**
      * @var string|null The database connection URL, if one was provided by your hosting environment.
      *
@@ -158,17 +155,17 @@ class DbConfig extends BaseObject
     public $url;
 
     /**
-     * @var string The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
+     * @var string|null The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
      */
     public $driver;
 
     /**
-     * @var string The database server name or IP address. Usually `localhost` or `127.0.0.1`.
+     * @var string|null The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      */
     public $server;
 
     /**
-     * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
     public $port;
 
@@ -179,7 +176,7 @@ class DbConfig extends BaseObject
     public $unixSocket;
 
     /**
-     * @var string The name of the database to select.
+     * @var string|null The name of the database to select.
      */
     public $database;
 
