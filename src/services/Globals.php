@@ -261,8 +261,8 @@ class Globals extends Component
         }
 
         return GlobalSet::find()
-            ->siteId($siteId)
             ->handle($globalSetHandle)
+            ->siteId($siteId)
             ->one();
     }
 
@@ -355,6 +355,7 @@ class Globals extends Component
             $element = null;
             $elementsService = Craft::$app->getElements();
             if (!$globalSetRecord->getIsNewRecord()) {
+                /** @var GlobalSet $element */
                 $element = GlobalSet::find()
                     ->id($globalSetRecord->id)
                     ->trashed(null)

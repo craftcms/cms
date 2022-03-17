@@ -1317,6 +1317,7 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             // Get the current layout
+            /** @var FieldLayoutRecord|null $layoutRecord */
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
                 ->one();

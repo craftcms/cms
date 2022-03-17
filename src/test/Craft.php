@@ -545,6 +545,7 @@ class Craft extends Yii2
             throw new InvalidArgumentException('Not a job');
         }
 
+        /** @var \craft\queue\Queue $queue */
         $queue = \Craft::$app->getQueue();
         $queue->push($job);
         $queue->run();
@@ -604,10 +605,10 @@ class Craft extends Yii2
     }
 
     /**
-     * @param $event
+     * @param Event $event
      * @param EventItem $eventRequirements
      */
-    protected function validateEventValue($event, EventItem $eventRequirements): void
+    protected function validateEventValue(Event $event, EventItem $eventRequirements): void
     {
         $eventPropItem = $event->{$eventRequirements->eventPropName};
         $desiredValue = $eventRequirements->desiredValue;
@@ -668,8 +669,8 @@ class Craft extends Yii2
             return;
         }
 
-        /** @var string|Module $moduleClass */
-        $componentMap = $moduleClass::getComponentMap();
+        /** @var array $componentMap */
+        $componentMap = call_user_func([$moduleClass, 'getComponentMap']);
 
         // Set it.
         \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockApp($test, $componentMap, $moduleClass);

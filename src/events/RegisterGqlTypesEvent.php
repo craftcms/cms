@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\gql\base\SingularTypeInterface;
 use yii\base\Event;
 
 /**
@@ -18,7 +19,7 @@ use yii\base\Event;
 class RegisterGqlTypesEvent extends Event
 {
     /**
-     * @var array List of GraphQL Type definition classes
+     * @var SingularTypeInterface[] List of GraphQL Type definition classes
      */
     public array $types = [];
 }

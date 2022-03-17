@@ -25,7 +25,7 @@ class ProjectConfig
     /**
      * Returns a project config compatible value encoded for storage.
      *
-     * @param $value
+     * @param mixed $value
      * @return string
      * @since 4.0.0
      */
@@ -71,11 +71,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedFields = true;
+        self::$_processedFields = true;
 
         $allGroups = $projectConfig->get(ProjectConfigService::PATH_FIELD_GROUPS, true) ?? [];
         $allFields = $projectConfig->get(ProjectConfigService::PATH_FIELDS, true) ?? [];
@@ -100,11 +100,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
+        if (self::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
             return;
         }
 
-        static::$_processedSites = true;
+        self::$_processedSites = true;
 
         $allGroups = $projectConfig->get(ProjectConfigService::PATH_SITE_GROUPS, true) ?? [];
         $allSites = $projectConfig->get(ProjectConfigService::PATH_SITES, true) ?? [];
@@ -127,11 +127,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedUserGroups = true;
+        self::$_processedUserGroups = true;
 
         $allGroups = $projectConfig->get(ProjectConfigService::PATH_USER_GROUPS, true);
 
@@ -153,11 +153,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedSections = true;
+        self::$_processedSections = true;
 
         $allSections = $projectConfig->get(ProjectConfigService::PATH_SECTIONS, true);
 
@@ -177,11 +177,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedGqlSchemas = true;
+        self::$_processedGqlSchemas = true;
 
         $allSchemas = $projectConfig->get(ProjectConfigService::PATH_GRAPHQL_SCHEMAS, true);
 
@@ -200,10 +200,10 @@ class ProjectConfig
      */
     public static function reset(): void
     {
-        static::$_processedFields = false;
-        static::$_processedSites = false;
-        static::$_processedUserGroups = false;
-        static::$_processedGqlSchemas = false;
+        self::$_processedFields = false;
+        self::$_processedSites = false;
+        self::$_processedUserGroups = false;
+        self::$_processedGqlSchemas = false;
     }
 
     /**
@@ -416,12 +416,12 @@ class ProjectConfig
     /**
      * Flatten a config array to a dot.based.key array.
      *
-     * @param $array
-     * @param $path
-     * @param $result
+     * @param array $array
+     * @param string $path
+     * @param array $result
      * @since 3.4.0
      */
-    public static function flattenConfigArray($array, $path, &$result): void
+    public static function flattenConfigArray(array $array, string $path, array &$result): void
     {
         foreach ($array as $key => $value) {
             $thisPath = ltrim($path . '.' . $key, '.');
@@ -529,7 +529,7 @@ class ProjectConfig
                 } elseif (ArrayHelper::isAssociative($configData)) {
                     // Look deeper
                     $subpath = ($path ? "$path/" : '') . $key;
-                    if (static::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
+                    if (self::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
                         $split = true;
                         // Store whatever's left in the same folder
                         if (!empty($configData)) {

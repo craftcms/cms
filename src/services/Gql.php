@@ -1308,8 +1308,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var SingularTypeInterface $type */
-            TypeLoader::registerType($type::getName(), sprintf('%s::getType', (string)$type));
+            TypeLoader::registerType($type::getName(), sprintf('%s::getType', get_class($type)));
         }
 
         return $event->types;

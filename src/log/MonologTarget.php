@@ -80,7 +80,7 @@ class MonologTarget extends PsrTarget
      * @var string
      * @see Logger::$name
      */
-    protected string $name;
+    public string $name;
 
     /**
      * @var int The maximum number of files to keep in rotation.
