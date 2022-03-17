@@ -194,7 +194,7 @@ class GcTest extends Unit
      * indicate what titles are not allowed to be present.
      *
      * @param int $expectedRemoval
-     * @param array|null $notAllowedTitles
+     * @param array $notAllowedTitles
      */
     private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = [])
     {
@@ -223,6 +223,7 @@ class GcTest extends Unit
     {
         $date = (new DateTime('now', new DateTimeZone('UTC')))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
+        /** @var UserRecord[] $userRecords */
         $userRecords = UserRecord::find()
             ->where(['username' => ['user1', 'user2']])
             ->all();

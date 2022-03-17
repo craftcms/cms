@@ -37,18 +37,16 @@ class UriFormatValidatorTest extends Unit
     /**
      * @dataProvider validateAttributeDataProvider
      *
-     * @param $mustValidate
-     * @param $input
+     * @param bool $mustValidate
+     * @param string $input
      * @param bool $requireSlug
      */
-    public function testValidateAttribute($mustValidate, $input, $requireSlug = false)
+    public function testValidateAttribute(bool $mustValidate, string $input, bool $requireSlug = false)
     {
         $this->model->exampleParam = $input;
         $this->uriFormatValidator->requireSlug = $requireSlug;
 
-        $validatorResult = $this->uriFormatValidator->validateAttribute($this->model, 'exampleParam');
-
-        self::assertNull($validatorResult);
+        $this->uriFormatValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
             self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());

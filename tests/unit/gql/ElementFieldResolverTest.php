@@ -321,6 +321,7 @@ class ElementFieldResolverTest extends Unit
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
+     * @param mixed $element
      */
     public function _runTest($element, string $gqlTypeClass, string $propertyName, $result)
     {

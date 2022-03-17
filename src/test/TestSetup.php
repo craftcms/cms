@@ -498,13 +498,13 @@ class TestSetup
     /**
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param class-string<\yii\base\Application> $appClass
+     * @param null|class-string<\yii\base\Application> $appClass
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = ''): MockObject
+    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = null): MockObject
     {
-        $appClass = $appClass ?: self::appClass();
+        $appClass = $appClass ?? self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
         $mockApp = self::getMock($test, $appClass);

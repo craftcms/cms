@@ -37,11 +37,11 @@ class UriValidatorTest extends Unit
     /**
      * @dataProvider validateValueDataProvider
      *
-     * @param      $mustValidate
-     * @param      $input
-     * @param null $pattern
+     * @param bool $mustValidate
+     * @param mixed $input
+     * @param string|null $pattern
      */
-    public function testValidateValue($mustValidate, $input, $pattern = null)
+    public function testValidateValue(bool $mustValidate, mixed $input, string $pattern = null)
     {
         if ($pattern) {
             $this->uriValidator->pattern = $pattern;

@@ -58,6 +58,7 @@ class GqlHelperTest extends Unit
      * @dataProvider schemaPermissionDataProviderForExtraction
      *
      * @param array $permissionSet list of permissions the schems should have
+     * @param mixed $expectedPairs
      */
     public function testSchemaPermissionExtraction($permissionSet, $expectedPairs)
     {
@@ -131,6 +132,9 @@ class GqlHelperTest extends Unit
      * Test if entity actions are extracted correctly
      *
      * @dataProvider actionExtractionDataProvider
+     * @param mixed $scope
+     * @param mixed $entity
+     * @param mixed $result
      */
     public function testEntityActionExtraction($scope, $entity, $result)
     {
@@ -325,6 +329,7 @@ class GqlHelperTest extends Unit
 
     /**
      * Set a schema with permission set
+     * @param mixed $scopeSet
      */
     public function _setSchemaWithPermissions($scopeSet)
     {

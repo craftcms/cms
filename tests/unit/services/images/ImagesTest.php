@@ -132,7 +132,12 @@ class ImagesTest extends Unit
         Craft::$app->getConfig()->getGeneral()->transformGifs = false;
 
         $oldContents = file_get_contents($this->sandboxPath . 'example-gif.gif');
-        self::assertNull($this->images->cleanImage($this->sandboxPath . 'example-gif.gif'));
+
+        // This assertion is not super helpful:
+        // The method returns void explicitly or implicitly
+        //self::assertNull($this->images->cleanImage($this->sandboxPath . 'example-gif.gif'));
+
+        $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
         self::assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = true;

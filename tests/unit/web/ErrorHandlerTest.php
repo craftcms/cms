@@ -13,7 +13,7 @@ use craft\test\TestCase;
 use craft\web\ErrorHandler;
 use Exception;
 use ReflectionException;
-use Throwable;
+use Twig\Error\Error;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -61,12 +61,12 @@ class ErrorHandlerTest extends TestCase
     /**
      * @dataProvider exceptionTypeAndNameDataProvider
      *
-     * @param Throwable $exception
-     * @param $message
+     * @param Error $twigError
+     * @param string $message
      */
-    public function testGetExceptionName(Throwable $exception, $message)
+    public function testGetExceptionName(Error $twigError, string $message)
     {
-        self::assertSame($message, $this->errorHandler->getExceptionName($exception));
+        self::assertSame($message, $this->errorHandler->getExceptionName($twigError));
     }
 
     /**

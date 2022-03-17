@@ -539,10 +539,10 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @param int $userId
+     * @param int|null $userId
      * @return array|bool
      */
-    protected function getUserQuery(int $userId)
+    protected function getUserQuery(?int $userId)
     {
         return (new Query())
             ->select('*')
@@ -555,7 +555,7 @@ class UsersTest extends TestCase
      * @param int|null $userId
      * @return User|null
      */
-    protected function getUser(int $userId)
+    protected function getUser(?int $userId)
     {
         return Craft::$app->getUsers()->getUserById($userId);
     }

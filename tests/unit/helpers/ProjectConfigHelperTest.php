@@ -26,6 +26,8 @@ class ProjectConfigHelperTest extends Unit
      *
      * @param array $field
      * @param array $expectedResult
+     * @param mixed $unpackedData
+     * @param mixed $packedData
      */
     public function testAssociativeArrayConfigTransforms($unpackedData, $packedData)
     {

@@ -31,6 +31,10 @@ class StructureOperationMutationTest extends TestCase
      * Test structure operations
      *
      * @dataProvider structureOperationDataProvider
+     * @param mixed $elementProperties
+     * @param mixed $arguments
+     * @param mixed $requiredMethod
+     * @param mixed $exception
      */
     public function testStructureOperations($elementProperties, $arguments, $requiredMethod = '', $exception = '')
     {

@@ -116,24 +116,25 @@ class ProjectConfigTest extends TestCase
     }
 
     /**
-     * @param $path
-     * @param $useExternal
-     * @param $expectedValue
+     * @param string $path
+     * @param bool   $useExternal
+     * @param mixed  $expectedValue
+     *
+     * @throws \Exception
      * @dataProvider getValueDataProvider
      */
-    public function testGettingValue($path, $useExternal, $expectedValue)
+    public function testGettingValue(string $path, bool $useExternal, mixed $expectedValue)
     {
         $actualValue = $this->getProjectConfig()->get($path, $useExternal);
         self::assertSame($expectedValue, $actualValue);
     }
 
     /**
-     * @param $path
-     * @param $value
-     * @param $useExternal
+     * @param string $path
+     * @param mixed $value
      * @dataProvider setValueDataProvider
      */
-    public function testSettingValue($path, $value)
+    public function testSettingValue(string $path, mixed $value)
     {
         $projectConfig = $this->getProjectConfig();
         $projectConfig->set($path, $value);

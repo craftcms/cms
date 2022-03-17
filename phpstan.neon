@@ -11,6 +11,7 @@ parameters:
         - src/config/composer-classes.php
         - src/config/mimeTypes.php
         - src/views/debug/*
+        - src/image/*
     scanDirectories:
         - tests/_craft/storage/runtime/compiled_classes/
     scanFiles:

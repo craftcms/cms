@@ -21,6 +21,7 @@ class AssetMutationResolverTest extends TestCase
      *
      * @param $arguments
      * @param $scenario
+     * @param mixed $exception
      * @throws \Throwable
      * @dataProvider testVariousExceptionsProvider
      */

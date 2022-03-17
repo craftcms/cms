@@ -8,6 +8,7 @@
 namespace craft\test\mockclasses\elements;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
@@ -48,10 +49,10 @@ class MockElementQuery extends ElementQuery
     /**
      * Generate a more specific query class for the provided element type class.
      *
-     * @param $elementClass
+     * @param string $elementClass
      * @return ElementQuery
      */
-    public static function generateSpecificQueryClass($elementClass): ElementQuery
+    public static function generateSpecificQueryClass(string $elementClass): ElementQuery
     {
         $parts = explode('\\', $elementClass);
 
@@ -90,8 +91,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Setter for mock query arguments.
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
      */
     public function __set($name, $value)
     {
@@ -101,7 +102,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Check if a property has been set already.
      *
-     * @param $name
+     * @param string $name
      * @return bool
      */
     public function __isset($name): bool
@@ -112,7 +113,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Getter for mock query arguments.
      *
-     * @param $name
+     * @param string $name
      * @return mixed|null
      */
     public function __get($name)
@@ -123,8 +124,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Mock setting query arguments via a method call.
      *
-     * @param $name
-     * @param $params
+     * @param string $name
+     * @param array $params
      * @return self
      */
     public function __call($name, $params): self
@@ -147,9 +148,9 @@ class MockElementQuery extends ElementQuery
     /**
      * Return a return value.
      *
-     * @return array|ElementInterface|null
+     * @return Element|null
      */
-    public function one($db = null): Model|array|null
+    public function one($db = null):? Element
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

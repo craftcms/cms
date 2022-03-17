@@ -18,19 +18,10 @@ use craft\base\Component;
  */
 class DependencyHeavyComponentExample extends Component
 {
-    /**
-     * @var
-     */
     public mixed $dependency1 = null;
 
-    /**
-     * @var
-     */
     public mixed $dependency2 = null;
 
-    /**
-     * @var
-     */
     public mixed $settingsdependency1 = null;
 
     /**

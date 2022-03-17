@@ -232,9 +232,9 @@ class UserTest extends TestCase
     /**
      * Ensure that the param $value is equal to the value that is trying to be set to the session.
      *
-     * @param $value
+     * @param int $value
      */
-    private function _ensureSetSessionIsOfValue($value)
+    private function _ensureSetSessionIsOfValue(int $value)
     {
         $this->tester->mockCraftMethods('session', [
             'set' => function($name, $val) use ($value) {

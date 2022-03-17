@@ -327,6 +327,7 @@ class User extends \yii\web\User
     {
         // If the current user is being impersonated by an admin, get the admin instead
         if ($previousUserId = SessionHelper::get(UserElement::IMPERSONATE_KEY)) {
+            /** @var UserElement $user */
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)

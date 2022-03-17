@@ -74,15 +74,13 @@ class HandleValidatorTest extends Unit
      * @dataProvider handleValidationDataProvider
      *
      * @param bool $mustValidate
-     * @param      $input
+     * @param string $input
      */
-    public function testHandleValidation(bool $mustValidate, $input)
+    public function testHandleValidation(bool $mustValidate, string $input)
     {
         $this->model->exampleParam = $input;
 
-        $validatorResult = $this->handleValidator->validateAttribute($this->model, 'exampleParam');
-
-        self::assertNull($validatorResult);
+        $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
             self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());

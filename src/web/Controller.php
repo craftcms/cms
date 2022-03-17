@@ -214,7 +214,6 @@ abstract class Controller extends \yii\web\Controller
      * Sends a failure response.
      *
      * @param string|null $message
-     * @param array|null $errors
      * @param array $data Additional data to include in the JSON response
      * @param array $routeParams The route params to send back to the template
      * @return YiiResponse|null
@@ -235,6 +234,7 @@ abstract class Controller extends \yii\web\Controller
         $this->setFailFlash($message);
 
         if (!empty($routeParams)) {
+            /** @phpstan-ignore-next-line */
             Craft::$app->getUrlManager()->setRouteParams($routeParams);
         }
 

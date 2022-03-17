@@ -421,10 +421,10 @@ class RequestTest extends TestCase
     /**
      * @dataProvider checkRequestSpecialPathDataProvider
      *
-     * @param $path
+     * @param string $path
      * @throws ReflectionException
      */
-    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger($path)
+    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger(string $path)
     {
         // We want a CP request
         $this->setInaccessibleProperty($this->request, '_isCpRequest', true);

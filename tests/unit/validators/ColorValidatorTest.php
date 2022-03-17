@@ -68,10 +68,10 @@ class ColorValidatorTest extends Unit
     /**
      * @dataProvider colorValidatorAttributesDataProvider
      *
-     * @param $input
+     * @param string $input
      * @param bool $mustValidate
      */
-    public function testAttributeValidation($input, bool $mustValidate)
+    public function testAttributeValidation(string $input, bool $mustValidate)
     {
         $this->model->exampleParam = $input;
 

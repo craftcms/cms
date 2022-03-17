@@ -699,7 +699,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $id
      */
-    public function id($value): self
+    public function id($value): static
     {
         $this->id = $value;
         return $this;
@@ -1404,10 +1404,10 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null the first element. Null is returned if the query
+     * @return Element|null the first element. Null is returned if the query
      * results in nothing.
      */
-    public function one($db = null): Model|array|null
+    public function one($db = null) :? Element
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {

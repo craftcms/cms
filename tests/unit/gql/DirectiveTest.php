@@ -49,6 +49,7 @@ class DirectiveTest extends Unit
      * @param string $in input string
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
+     * @param mixed $directiveClass
      */
     public function testDirectivesBeingApplied($in, $directiveClass, array $directives, $result)
     {

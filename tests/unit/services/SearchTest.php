@@ -53,11 +53,11 @@ class SearchTest extends Unit
     /**
      * @dataProvider searchElementsDataProvider
      *
-     * @param $usernameOrEmailsForResult
-     * @param $usernameOrEmailsForQuery
-     * @param $searchQuery
+     * @param array $usernameOrEmailsForResult
+     * @param array $usernameOrEmailsForQuery
+     * @param string $searchQuery
      */
-    public function testSearchElements($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $searchQuery)
+    public function testSearchElements(array $usernameOrEmailsForResult, array $usernameOrEmailsForQuery, string $searchQuery)
     {
         // Repackage the dataProvider data into something that can be used by the filter function
         $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);

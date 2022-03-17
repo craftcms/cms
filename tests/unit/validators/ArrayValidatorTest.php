@@ -43,9 +43,9 @@ class ArrayValidatorTest extends Unit
      * @dataProvider paramsToTestOnEmptyDataProvider
      *
      * @param ArrayValidator $validator
-     * @param $variableName
+     * @param string $variableName
      */
-    public function testMessagingOnEmptyInputArray(ArrayValidator $validator, $variableName)
+    public function testMessagingOnEmptyInputArray(ArrayValidator $validator, string $variableName)
     {
         self::assertTrue(strlen($validator->$variableName) > 2);
 
