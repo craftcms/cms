@@ -97,18 +97,7 @@ class CraftSupport extends Widget
             $imageDriver = 'Imagick';
         }
 
-        $view->registerJsWithVars(function($id, $settings) {
-            return <<<JS
-new Craft.CraftSupportWidget($id, $settings);
-JS;
-        }, [
-            $this->id,
-            [
-                'issueTitlePrefix' => sprintf("[%s.x]: ", $cmsMajorVersion),
-                'issueParams' => [
-                    'labels' => sprintf("bug,craft%s", $cmsMajorVersion),
-                    'template' => sprintf("BUG-REPORT-V%s.yml", $cmsMajorVersion),
-                    'body' => <<<EOD
+        $body = <<<EOD
 ### Description
 
 
@@ -124,7 +113,20 @@ JS;
 ### Actual behavior
 
 
-EOD,
+EOD;
+
+        $view->registerJsWithVars(function($id, $settings) {
+            return <<<JS
+new Craft.CraftSupportWidget($id, $settings);
+JS;
+        }, [
+            $this->id,
+            [
+                'issueTitlePrefix' => sprintf("[%s.x]: ", $cmsMajorVersion),
+                'issueParams' => [
+                    'labels' => sprintf("bug,craft%s", $cmsMajorVersion),
+                    'template' => sprintf("BUG-REPORT-V%s.yml", $cmsMajorVersion),
+                    'body' => $body,
                     'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->getEditionName()),
                     'phpVersion' => App::phpVersion(),
                     'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
