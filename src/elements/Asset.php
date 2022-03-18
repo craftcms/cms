@@ -1630,7 +1630,8 @@ JS;
         $assetsService = Craft::$app->getAssets();
 
         foreach ($thumbSizes as [$width, $height]) {
-            $srcsets[] = sprintf('%s %sw', $assetsService->getThumbUrl($this, $width, $height), $width);
+            $url = $assetsService->getThumbUrl($this, $width, $height);
+            $srcsets[] = sprintf('%s %sw', $url, $width);
         }
 
         return Html::tag('img', '', [
@@ -2066,10 +2067,10 @@ JS;
                     $js = <<<JS
 $('#$editBtnId').on('click', () => {
     new Craft.AssetImageEditor($this->id, {
+        allowDegreeFractions: Craft.isImagick,
         onSave: () => {
             $updatePreviewThumbJs
         },
-        allowDegreeFractions: Craft.isImagick,
     });
 });
 JS;
