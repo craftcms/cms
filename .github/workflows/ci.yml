@@ -73,13 +73,22 @@ jobs:
       uses: shivammathur/setup-php@verbose
       with:
         php-version: ${{ matrix.php-versions }}
-        extensions: mbstring, intl
+        extensions: mbstring, intl, gd, imagick, zip, dom, mysql, pgsql
         ini-values: post_max_size=256M, max_execution_time=180, memory_limit=512M
         tools: composer:v2
         coverage: none
       env:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         fail-fast: true
+
+    - name: Start mysql service
+      run: sudo systemctl start mysql
+
+    - name: Create the postgres database
+      run: psql -U postgres -c 'CREATE DATABASE "craft_test";';
+
+    - name: Create the MySQL database
+      run: mysql -e 'CREATE DATABASE `craft_test`;';
 
     - name: Print PHP version
       run: echo ${{ steps.setup-php.outputs.php-version }}
@@ -99,4 +108,4 @@ jobs:
 #        restore-keys: ${{ runner.os }}-composer-
 
     - name: Install dependencies
-      run: composer install --no-interaction --no-ansi --no-progress --no-suggest
+      run: composer install --no-interaction --no-ansi --no-progress
