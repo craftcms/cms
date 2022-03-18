@@ -34,14 +34,11 @@ jobs:
       mysql:
         image: mysql:8
         env:
-          MYSQL_ROOT_PASSWORD: mysql
-          MYSQL_DATABASE: craft-test
-          MYSQL_USER: mysql
-          MYSQL_PASSWORD: mysql
+          MYSQL_PASSWORD: password
         # Set health checks to wait until mysql has started
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
-          - 3306:3306
+          - 32574:3306
 
     strategy:
       matrix:
@@ -69,6 +66,11 @@ jobs:
 #        key: ${{ steps.extcache.outputs.key }}
 #        restore-keys: ${{ steps.extcache.outputs.key }}
 
+  - name: Verify MySQL connection from host
+    run: |
+      sudo apt-get install -y mysql-client
+      mysql --host 127.0.0.1 --port 32574 -uroot -ppassword -e "SHOW DATABASES"
+
     - name: Setup PHP
       uses: shivammathur/setup-php@verbose
       with:
@@ -81,11 +83,11 @@ jobs:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         fail-fast: true
 
-    - name: Create the postgres database
-      run: psql -U postgres -c 'CREATE DATABASE "craft_test";';
-
-    - name: Create the MySQL database
-      run: mysql -e 'CREATE DATABASE `craft_test`;';
+#    - name: Create the postgres database
+#      run: psql -U postgres -c 'CREATE DATABASE "craft_test";';
+#
+#    - name: Create the MySQL database
+#      run: mysql -e 'CREATE DATABASE `craft_test`;';
 
     - name: Print PHP version
       run: echo ${{ steps.setup-php.outputs.php-version }}
