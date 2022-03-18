@@ -98,8 +98,5 @@ jobs:
 #        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
 #        restore-keys: ${{ runner.os }}-composer-
 
-    - name: Debug
-      run: cd .. && pwd && ls -al
-
     - name: Install dependencies
-      run: composer install --prefer-dist
+      run: composer install --no-interaction --no-ansi --no-progress --no-suggest
