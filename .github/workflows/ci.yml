@@ -68,7 +68,7 @@ jobs:
 
     - name: Verify MySQL connection from host
       run: |
-        sudo apt-get install -y mysql-client mysql-client-8.0
+        sudo apt-get install -y mysql-client mysql-client-8.0 mysql-common
         mysql --host 127.0.0.1 --port 3306 -uroot -ppassword -e "SHOW DATABASES"
 
     - name: Setup PHP
