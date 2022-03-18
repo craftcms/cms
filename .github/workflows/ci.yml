@@ -81,9 +81,6 @@ jobs:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         fail-fast: true
 
-    - name: Start mysql service
-      run: sudo systemctl start mysql
-
     - name: Create the postgres database
       run: psql -U postgres -c 'CREATE DATABASE "craft_test";';
 
