@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
+
 ### Deprecated
 - Deprecated `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
 
@@ -438,7 +441,6 @@
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - `credentialed` and `inactive` are now reserved user group handles.
 - Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
-- When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - `alt` is now a reserved field handle for volume field layouts.
 - Volumes no longer have “types”, and their file operations are now delegated to a filesystem selected by an “Asset Filesystem” setting on the volume.
 - Volumes now have a “Transform Filesystem” setting, which can be used to choose which filesystem image transforms should be stored in. (The volume’s Asset Filesystem will be used by default.)

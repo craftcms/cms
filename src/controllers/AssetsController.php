@@ -922,7 +922,7 @@ class AssetsController extends Controller
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
 
-                $output['elementId'] = $newAsset->id;
+                $output['newAssetId'] = $newAsset->id;
             }
         } catch (Throwable $exception) {
             return $this->asFailure($exception->getMessage());

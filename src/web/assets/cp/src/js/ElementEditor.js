@@ -68,7 +68,9 @@ Craft.ElementEditor = Garnish.Base.extend({
             console.warn('Double-instantiating an element editor on an element.');
             this.$container.data('elementEditor').destroy();
         }
+
         this.$container.data('elementEditor', this);
+        this.$container.attr('data-element-editor', '');
 
         this.setSettings(settings, Craft.ElementEditor.defaults);
 

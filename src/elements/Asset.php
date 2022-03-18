@@ -2068,7 +2068,17 @@ JS;
 $('#$editBtnId').on('click', () => {
     new Craft.AssetImageEditor($this->id, {
         allowDegreeFractions: Craft.isImagick,
-        onSave: () => {
+        onSave: data => {
+            if (data.newAssetId) {
+                // If this is within an Assets field’s editor slideout, replace the selected asset 
+                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
+                if (slideout && slideout.settings.elementSelectInput) {
+                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+                        .catch(() => {});
+                }
+                return;
+            }
+
             $updatePreviewThumbJs
         },
     });

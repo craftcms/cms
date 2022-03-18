@@ -2926,12 +2926,11 @@ $checkboxPadding: $checkboxSize + 4;
   min-height: 37px;
   margin-top: -7px;
 
-  &:after {
+  .elements:after {
     @include clearafter;
   }
 
-  .element,
-  .btn {
+  .element {
     @include floatleft;
     @include margin(7px, 7px, 0, 0);
   }
@@ -2963,7 +2962,8 @@ $checkboxPadding: $checkboxSize + 4;
     @include floatleft;
   }
 
-  .flex .btn {
+  .flex {
+    margin-top: 7px;
     float: none !important;
   }
 }
