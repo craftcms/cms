@@ -42,12 +42,20 @@ body:
     attributes:
       label: PHP version
   - type: input
-    id: dbVersion
+    id: os
+    attributes:
+      label: Operating system and version
+  - type: input
+    id: db
     attributes:
       label: Database type and version
-  - type: textarea
-    id: pluginVersions
+  - type: input
+    id: imageDriver
     attributes:
-      label: Installed plugin versions
+      label: Image driver and version
+  - type: textarea
+    id: plugins
+    attributes:
+      label: Installed plugins and versions
       value: |
         -
