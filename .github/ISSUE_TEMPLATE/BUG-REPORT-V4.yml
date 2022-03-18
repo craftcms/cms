@@ -3,7 +3,7 @@ description: Report an issue or unexpected behavior pertaining to Craft 4 Beta
 title: "[4.x]: "
 labels:
   - bug
-  - craft3
+  - craft4
 body:
   - type: markdown
     attributes:
