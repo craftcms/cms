@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a PHP error that occurred when using GD for image transforms.
+- Fixed a JavaScript error on the Settings → Plugins page.
 
 ## 4.0.0-beta.2 - 2022-03-16
 
