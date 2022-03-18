@@ -5,6 +5,9 @@
 ### Deprecated
 - Deprecated `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
 
+### Fixed
+- Fixed a PHP error that occurred when using GD for image transforms.
+
 ## 4.0.0-beta.2 - 2022-03-16
 
 > {warning} Due to a data corruption bug, projects that were updated to Craft 4 from Craft 3 are advised to re-update from a Craft 3 database backup.

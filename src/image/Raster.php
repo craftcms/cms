@@ -19,13 +19,13 @@ use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
 use Imagine\Image\AbstractImage;
+use Imagine\Image\AbstractImagine;
 use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
-use Imagine\Imagick\Imagine;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\ErrorException;
@@ -64,9 +64,9 @@ class Raster extends Image
     private ?AbstractImage $_image = null;
 
     /**
-     * @var Imagine|null
+     * @var AbstractImagine|null
      */
-    private ?Imagine $_instance = null;
+    private ?AbstractImagine $_instance = null;
 
     /**
      * @var RGB|null
@@ -262,7 +262,7 @@ class Raster extends Image
             $newWidth = round($this->getWidth() / $factor);
 
             $this->resize($newWidth, $newHeight);
-        // If we need to upscale AND that's ok
+            // If we need to upscale AND that's ok
         } elseif (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
             // Figure the crop size reductions
             $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
