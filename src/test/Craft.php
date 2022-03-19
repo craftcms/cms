@@ -564,6 +564,21 @@ class Craft extends Yii2
             );
         }
     }
+    
+    /**
+     * @param string $description
+     */
+    public function assertNotPushedToQueue(string $description)
+    {
+        if (\Craft::$app->getQueue() instanceof Queue) {
+            $this->assertFalse((new Query())
+                ->select(['id'])
+                ->where(['description' => $description])
+                ->from([Table::QUEUE])
+                ->exists()
+            );
+        }
+    }
 
     /**
      * @param string $fieldHandle
