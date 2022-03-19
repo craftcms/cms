@@ -1494,7 +1494,7 @@ class Entry extends Element
         } else {
             $crumbs[] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => "entries/$section->name",
+                'url' => "entries/$section->handle",
             ];
 
             if ($section->type === Section::TYPE_STRUCTURE) {
