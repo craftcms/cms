@@ -3062,6 +3062,7 @@ table.editable {
         position: absolute;
         top: 10px;
         @include left(10px);
+        z-index: 1;
       }
 
       .color-hex-indicator {

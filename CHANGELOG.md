@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where color pickers weren’t clickbale within Table fields. ([#10775](https://github.com/craftcms/cms/issues/10775))
+
 ## 3.7.37 - 2022-03-16
 
 ### Changed
