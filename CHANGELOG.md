@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\test\Craft::assertNotPushedToQueue()`. ([#10510](https://github.com/craftcms/cms/pull/10510))
+
 ### Fixed
 - Fixed a bug where color pickers weren’t clickbale within Table fields. ([#10775](https://github.com/craftcms/cms/issues/10775))
 
