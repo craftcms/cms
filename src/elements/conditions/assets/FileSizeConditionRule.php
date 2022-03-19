@@ -45,7 +45,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     protected function inputHtml(): string
     {
         return Html::tag('div',
-            parent::getHtml() .
+            parent::inputHtml() .
             Cp::selectHtml([
                 'name' => 'unit',
                 'options' => [

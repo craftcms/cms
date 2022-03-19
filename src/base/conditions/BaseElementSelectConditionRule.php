@@ -76,9 +76,9 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @param int|string $elementId
+     * @param mixed $elementId
      */
-    public function setElementId(int|string $elementId): void
+    public function setElementId(mixed $elementId): void
     {
         if (is_array($elementId)) {
             $elementId = reset($elementId);

@@ -11,6 +11,7 @@
 ### Fixed
 - Fixed a PHP error that occurred when using GD for image transforms.
 - Fixed a JavaScript error on the Settings → Plugins page.
+- Fixed “Related To” and “File Size” element condition rules. ([#10769](https://github.com/craftcms/cms/issues/10769))
 
 ## 4.0.0-beta.2 - 2022-03-16
 
