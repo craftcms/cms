@@ -13,10 +13,7 @@ const state = {
     activeTrialPlugins: [],
     cart: null,
     cartPlugins: [],
-    checkoutStatus: null,
-    identityMode: 'craftid',
     selectedExpiryDates: {},
-    stripePublicKey: null,
 }
 
 /**
@@ -310,24 +307,10 @@ const actions = {
         return dispatch('addToCart', items)
     },
 
-    checkout(context, data) {
-        return new Promise((resolve, reject) => {
-            api.checkout(data)
-                .then(responseData => {
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
-        })
-    },
-
     createCart({dispatch, rootState}) {
         return new Promise((resolve, reject) => {
-            const data = {}
-
-            if (!rootState.craft.craftId) {
-                data.email = rootState.craft.currentUser.email
+            const data = {
+                email: rootState.craft.currentUser.email
             }
 
             api.createCart(data)
@@ -666,10 +649,6 @@ const actions = {
  * Mutations
  */
 const mutations = {
-    changeIdentityMode(state, mode) {
-        state.identityMode = mode
-    },
-
     resetCart(state) {
         state.cart = null
     },
@@ -680,7 +659,6 @@ const mutations = {
 
     updateCart(state, {cartResponseData}) {
         state.cart = cartResponseData.cart
-        state.stripePublicKey = cartResponseData.stripePublicKey
 
         const selectedExpiryDates = {}
         state.cart.lineItems.forEach((lineItem, key) => {

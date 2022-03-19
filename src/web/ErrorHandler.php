@@ -248,7 +248,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $template = new $class(Craft::$app->getView()->getTwig());
         $src = $template->getSourceContext();
         //                $this->sourceCode = $src->getCode();
-        $file = $src->getPath();
+        $file = $src->getPath() ?: null;
         $line = null;
 
         if ($traceLine !== null) {
