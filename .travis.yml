@@ -76,7 +76,7 @@ script:
 - nvm install 14
 - npm install -g npm
 - npm cache clean -f
-- npm install -g snyk
+# - npm install -g snyk
 #- snyk monitor --all-projects # Enable reachable vulns, scan and publish results to Snyk
 #- snyk test --all-projects # Enable reachable vulns
 - |
