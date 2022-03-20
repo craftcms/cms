@@ -1860,7 +1860,6 @@ return [
     '{section} Entry Types' => 'Types d’entrée {section}',
     '{step, number} of {total, number}' => '{step, number} de {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'Copie de {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} tâches',
     '{total} updates available!' => '{total} mises à jour disponibles !',
