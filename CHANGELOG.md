@@ -13,6 +13,7 @@
 - Fixed a JavaScript error on the Settings → Plugins page.
 - Fixed “Related To” and “File Size” element condition rules. ([#10769](https://github.com/craftcms/cms/issues/10769))
 - Fixed the section’s breadcrumb link on Edit Entry pages. ([#10770](https://github.com/craftcms/cms/issues/10770))
+- Fixed a bug where control panel pages could reload when editing the same element in a slideout twice. ([#10771](https://github.com/craftcms/cms/issues/10771))
 
 ## 4.0.0-beta.2 - 2022-03-16
 

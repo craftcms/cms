@@ -51,8 +51,6 @@ Craft.ElementEditor = Garnish.Base.extend({
     previewLinks: null,
     scrollY: null,
 
-    bc: null,
-
     get slideout() {
         return this.$container.data('slideout');
     },
@@ -166,9 +164,8 @@ Craft.ElementEditor = Garnish.Base.extend({
             this.showStatusHud(this.$statusIcon);
         });
 
-        if (typeof BroadcastChannel !== 'undefined' && !this.settings.revisionId) {
-            this.bc = new BroadcastChannel('ElementEditor');
-            this.bc.onmessage = ev => {
+        if (this.isFullPage && Craft.broadcastChannel) {
+            Craft.broadcastChannel.onmessage = ev => {
                 if (
                     ev.data.event === 'saveDraft' &&
                     ev.data.canonicalId === this.settings.canonicalId &&
@@ -1242,8 +1239,8 @@ Craft.ElementEditor = Garnish.Base.extend({
 
                 this.afterUpdate(data);
 
-                if (this.bc) {
-                    this.bc.postMessage({
+                if (Craft.broadcastChannel) {
+                    Craft.broadcastChannel.postMessage({
                         event: 'saveDraft',
                         canonicalId: this.settings.canonicalId,
                         draftId: this.settings.draftId,
