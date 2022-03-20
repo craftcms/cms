@@ -1536,7 +1536,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = '2@' . StringHelper::randomString(10);
+        $info->fieldVersion = '3@' . StringHelper::randomString(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 
