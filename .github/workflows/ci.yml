@@ -101,7 +101,7 @@ jobs:
       run: ls -al
 
     - name: Copy tests .env
-      run: cp tests/.env.example.$DB_TYPE tests/.env
+      run: cp ./tests/.env.example.$DB_TYPE ./tests/.env
 
 #    - name: Get composer cache directory
 #      id: composer-cache
