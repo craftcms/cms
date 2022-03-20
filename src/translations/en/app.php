@@ -1876,7 +1876,6 @@ return [
     '{section} Entry Types' => '{section} Entry Types',
     '{step, number} of {total, number}' => '{step, number} of {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} copy',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} jobs',
     '{total} updates available!' => '{total} updates available!',
