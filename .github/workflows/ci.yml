@@ -66,10 +66,10 @@ jobs:
 #        key: ${{ steps.extcache.outputs.key }}
 #        restore-keys: ${{ steps.extcache.outputs.key }}
 
-    - name: Verify MySQL connection from host
-      run: |
-        sudo apt-get install -y mysql-client-8.0 mysql-client-core-8.0 mysql-common
-        mysql --host 127.0.0.1 --port 3306 -uroot -ppassword -e "SHOW DATABASES"
+#    - name: Verify MySQL connection from host
+#      run: |
+#        sudo apt-get install -y mysql-client-8.0 mysql-client-core-8.0 mysql-common
+#        mysql --host 127.0.0.1 --port 3306 -uroot -ppassword -e "SHOW DATABASES"
 
     - name: Setup PHP
       uses: shivammathur/setup-php@verbose
