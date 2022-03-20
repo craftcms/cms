@@ -97,6 +97,9 @@ jobs:
     - name: Setup problem matchers for PHP
       run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
 
+    - name: debug
+      run: ls -al
+
     - name: Copy tests .env
       run: cp tests/.env.example.$DB_TYPE tests/.env
 
