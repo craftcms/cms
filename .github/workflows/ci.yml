@@ -25,7 +25,6 @@ jobs:
         env:
           POSTGRES_PASSWORD: my-secret-password
           POSTGRES_DB: craft_test
-          DB_TYPE: pgsql
         ports:
           - 5432/tcp
         # Set health checks to wait until mysql has started
@@ -36,7 +35,6 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: my-secret-password
           MYSQL_DATABASE: craft_test
-          DB_TYPE: mysql
         # Set health checks to wait until mysql has started
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
@@ -97,11 +95,14 @@ jobs:
     - name: Setup problem matchers for PHP
       run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
 
-    - name: debug
-      run: ls -al
-
     - name: Copy tests .env
       run: cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
+
+    - name: Update .env creds
+      run: sed -i 's/DB_PASSWORD=/DB_PASSWORD=my-secret-password/' tests/.env
+
+    - name: debug
+      run: cat ./tests/.env
 
 #    - name: Get composer cache directory
 #      id: composer-cache
