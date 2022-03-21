@@ -75,7 +75,8 @@ jobs:
         extensions: ${{ env.PHP_EXTENSIONS }}
         ini-values: post_max_size=256M, max_execution_time=180, memory_limit=512M
         tools: composer:v2
-        coverage: xdebug
+        # if: matrix.php-versions != 7.4 && matrix.db != 'mysql'
+        # coverage: none
       env:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -108,3 +109,6 @@ jobs:
 
     - name: Run tests
       run: vendor/bin/codecept run unit,functional
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
