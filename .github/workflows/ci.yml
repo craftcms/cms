@@ -53,25 +53,21 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-#    - name: Setup cache environment
-#      id: extcache
-#      uses: shivammathur/cache-extensions@v1
-#      with:
-#        php-version: ${{ matrix.php-versions }}
-#        extensions: ${{ env.PHP_EXTENSIONS }}
-#        key: ${{ env.EXT_CACHE_KEY }}
+    - name: Setup cache environment
+      id: extcache
+      uses: shivammathur/cache-extensions@v1
+      with:
+        php-version: ${{ matrix.php-versions }}
+        db: ${{ matrix.db }}
+        extensions: ${{ env.PHP_EXTENSIONS }}
+        key: ${{ env.EXT_CACHE_KEY }}
 
-#    - name: Cache extensions
-#      uses: actions/cache@v2
-#      with:
-#        path: ${{ steps.extcache.outputs.dir }}
-#        key: ${{ steps.extcache.outputs.key }}
-#        restore-keys: ${{ steps.extcache.outputs.key }}
-
-#    - name: Verify MySQL connection from host
-#      run: |
-#        sudo apt-get install -y mysql-client-8.0 mysql-client-core-8.0 mysql-common
-#        mysql --host 127.0.0.1 --port 3306 -uroot -ppassword -e "SHOW DATABASES"
+    - name: Cache extensions
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.extcache.outputs.dir }}
+        key: ${{ steps.extcache.outputs.key }}
+        restore-keys: ${{ steps.extcache.outputs.key }}
 
     - name: Setup PHP
       uses: shivammathur/setup-php@verbose
@@ -84,12 +80,6 @@ jobs:
       env:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         fail-fast: true
-
-#    - name: Create the postgres database
-#      run: psql -U postgres -c 'CREATE DATABASE "craft_test";';
-#
-#    - name: Create the MySQL database
-#      run: mysql -e 'CREATE DATABASE `craft_test`;';
 
     - name: Print PHP version
       run: echo ${{ steps.setup-php.outputs.php-version }}
