@@ -23,6 +23,7 @@ jobs:
       pgsql:
         image: postgres:latest
         env:
+          POSTGRES_USER: root
           POSTGRES_PASSWORD: mysecretpassword
           POSTGRES_DB: craft_test
         ports:
