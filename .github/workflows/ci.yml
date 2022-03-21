@@ -23,7 +23,7 @@ jobs:
       pgsql:
         image: postgres:latest
         env:
-          POSTGRES_PASSWORD: my-secret-password
+          POSTGRES_PASSWORD: mysecretpassword
           POSTGRES_DB: craft_test
         ports:
           - 5432/tcp
@@ -33,10 +33,10 @@ jobs:
       mysql:
         image: mysql:latest
         env:
-          MYSQL_ROOT_PASSWORD: my-secret-password
+          MYSQL_ROOT_PASSWORD: mysecretpassword
           MYSQL_DATABASE: craft_test
         # Set health checks to wait until mysql has started
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5 --default-authentication-plugin=mysql_native_password
         ports:
           - 3306:3306
 
@@ -99,7 +99,7 @@ jobs:
       run: cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
 
     - name: Update .env creds
-      run: sed -i 's/DB_PASSWORD=/DB_PASSWORD=my-secret-password/' tests/.env
+      run: sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
 
     - name: debug
       run: cat ./tests/.env
