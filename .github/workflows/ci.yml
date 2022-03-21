@@ -59,7 +59,7 @@ jobs:
       with:
         php-version: ${{ matrix.php-versions }}
         extensions: ${{ env.PHP_EXTENSIONS }}
-        key: ${{ matrix.operating-system }}-${{ matrix.php-versions }}-extension-cache-v2 # change to clear the extension cache.
+        key: ${{ matrix.operating-system }}-${{ matrix.php-versions }}-extension-cache-v3 # change to clear the extension cache.
 
     - name: Cache extensions
       uses: actions/cache@v3
