@@ -53,20 +53,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Setup cache environment
-      id: extcache
-      uses: shivammathur/cache-extensions@v1
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: ${{ env.PHP_EXTENSIONS }}
-        key: ${{ matrix.operating-system }}-${{ matrix.php-versions }}-extension-cache-v1 # change to clear the extension cache.
-
-    - name: Cache extensions
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.extcache.outputs.dir }}
-        key: ${{ steps.extcache.outputs.key }}
-        restore-keys: ${{ steps.extcache.outputs.key }}
+#    - name: Setup cache environment
+#      id: extcache
+#      uses: shivammathur/cache-extensions@v1
+#      with:
+#        php-version: ${{ matrix.php-versions }}
+#        extensions: ${{ env.PHP_EXTENSIONS }}
+#        key: ${{ matrix.operating-system }}-${{ matrix.php-versions }}-extension-cache-v1 # change to clear the extension cache.
+#
+#    - name: Cache extensions
+#      uses: actions/cache@v2
+#      with:
+#        path: ${{ steps.extcache.outputs.dir }}
+#        key: ${{ steps.extcache.outputs.key }}
+#        restore-keys: ${{ steps.extcache.outputs.key }}
 
     - name: Setup PHP
       uses: shivammathur/setup-php@verbose
@@ -95,16 +95,16 @@ jobs:
     - name: debug
       run: cat ./tests/.env
 
-#    - name: Get composer cache directory
-#      id: composer-cache
-#      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
-#    - name: Cache dependencies
-#      uses: actions/cache@v2
-#      with:
-#        path: ${{ steps.composer-cache.outputs.dir }}
-#        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-#        restore-keys: ${{ runner.os }}-composer-
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+        restore-keys: ${{ runner.os }}-composer-
 
     - name: Install dependencies
       run: composer install --no-interaction --no-ansi --no-progress
