@@ -53,20 +53,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Setup cache environment
-      id: extcache
-      uses: shivammathur/cache-extensions@v1
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: ${{ env.PHP_EXTENSIONS }}
-        key: ${{ matrix.operating-system }}-${{ matrix.php-versions }}-extension-cache-v3 # change to clear the extension cache.
-
-    - name: Cache extensions
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.extcache.outputs.dir }}
-        key: ${{ steps.extcache.outputs.key }}
-        restore-keys: ${{ steps.extcache.outputs.key }}
+#    - name: Setup cache environment
+#      id: extcache
+#      uses: shivammathur/cache-extensions@v1
+#      with:
+#        php-version: ${{ matrix.php-versions }}
+#        extensions: ${{ env.PHP_EXTENSIONS }}
+#        key: ${{ matrix.operating-system }}-${{ matrix.php-versions }}-extension-cache-v3 # change to clear the extension cache.
+#
+#    - name: Cache extensions
+#      uses: actions/cache@v3
+#      with:
+#        path: ${{ steps.extcache.outputs.dir }}
+#        key: ${{ steps.extcache.outputs.key }}
+#        restore-keys: ${{ steps.extcache.outputs.key }}
 
     - name: Setup PHP
       uses: shivammathur/setup-php@verbose
@@ -75,7 +75,7 @@ jobs:
         extensions: ${{ env.PHP_EXTENSIONS }}
         ini-values: post_max_size=256M, max_execution_time=180, memory_limit=512M
         tools: composer:v2
-        coverage: none
+        coverage: xdebug
       env:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
