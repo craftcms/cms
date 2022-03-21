@@ -58,7 +58,6 @@ jobs:
       uses: shivammathur/cache-extensions@v1
       with:
         php-version: ${{ matrix.php-versions }}
-        db: ${{ matrix.db }}
         extensions: ${{ env.PHP_EXTENSIONS }}
         key: ${{ env.EXT_CACHE_KEY }}
 
@@ -73,7 +72,7 @@ jobs:
       uses: shivammathur/setup-php@verbose
       with:
         php-version: ${{ matrix.php-versions }}
-        extensions: mbstring, intl, gd, imagick, zip, dom, mysql, pgsql
+        extensions: ${{ env.PHP_EXTENSIONS }}
         ini-values: post_max_size=256M, max_execution_time=180, memory_limit=512M
         tools: composer:v2
         coverage: none
