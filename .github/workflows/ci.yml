@@ -22,7 +22,7 @@ jobs:
 
     name: PHP ${{ matrix.php-versions }} on ${{ matrix.db }}
     env:
-      PHP_EXTENSIONS: ctype
+      PHP_EXTENSIONS: ctype,curl,dom,iconv,imagick,intl,json,mbstring,openssl,pcre,pdo,reflection,spl,zip
 
     services:
 
