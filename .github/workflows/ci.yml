@@ -53,20 +53,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Setup cache environment
-      id: extcache
-      uses: shivammathur/cache-extensions@v1
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: ${{ env.PHP_EXTENSIONS }}
-        key: ${{ env.EXT_CACHE_KEY }}
-
-    - name: Cache extensions
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.extcache.outputs.dir }}
-        key: ${{ steps.extcache.outputs.key }}
-        restore-keys: ${{ steps.extcache.outputs.key }}
+#    - name: Setup cache environment
+#      id: extcache
+#      uses: shivammathur/cache-extensions@v1
+#      with:
+#        php-version: ${{ matrix.php-versions }}
+#        extensions: ${{ env.PHP_EXTENSIONS }}
+#        key: ${{ env.EXT_CACHE_KEY }}
+#
+#    - name: Cache extensions
+#      uses: actions/cache@v2
+#      with:
+#        path: ${{ steps.extcache.outputs.dir }}
+#        key: ${{ steps.extcache.outputs.key }}
+#        restore-keys: ${{ steps.extcache.outputs.key }}
 
     - name: Setup PHP
       uses: shivammathur/setup-php@verbose
