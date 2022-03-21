@@ -31,12 +31,13 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
 
       mysql:
-        image: mysql:latest
+        image: bitnami/mysql:latest
         env:
           MYSQL_ROOT_PASSWORD: mysecretpassword
           MYSQL_DATABASE: craft_test
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
         # Set health checks to wait until mysql has started
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5 --default-authentication-plugin=mysql_native_password
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 3306:3306
 
