@@ -78,7 +78,6 @@ jobs:
         coverage: none
       env:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        fail-fast: true
 
     - name: Print PHP version
       run: echo ${{ steps.setup-php.outputs.php-version }}
