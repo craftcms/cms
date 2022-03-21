@@ -20,7 +20,7 @@ jobs:
 
     services:
 
-      postgres:
+      pgsql:
         image: postgres:latest
         env:
           POSTGRES_PASSWORD: my-secret-password
@@ -46,7 +46,7 @@ jobs:
       matrix:
         operating-system: ['ubuntu-latest']
         php-versions: [8.1, 8.0, 7.4, 7.3, 7.2]
-        db: ['mysql', 'postgres']
+        db: ['mysql', 'pgsql']
 
     steps:
 
@@ -101,7 +101,7 @@ jobs:
       run: ls -al
 
     - name: Copy tests .env
-      run: cp ./tests/.env.example.$DB_TYPE ./tests/.env
+      run: cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
 
 #    - name: Get composer cache directory
 #      id: composer-cache
