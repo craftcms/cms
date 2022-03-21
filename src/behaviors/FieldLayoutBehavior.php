@@ -18,6 +18,7 @@ use yii\base\InvalidConfigException;
  * Field Layout behavior.
  *
  * @property FieldLayout $fieldLayout
+ * @property ElementInterface $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

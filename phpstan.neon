@@ -30,3 +30,4 @@ parameters:
             - convertExceptionToError
     ignoreErrors:
     		- '#Call to an undefined method Throwable::getMessage\(\)#'
+    		- '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'

@@ -820,7 +820,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var MatrixBlockQuery $value */
-        /** @var MatrixBlock $block */
         $keywords = [];
 
         foreach ($value->all() as $block) {
@@ -1079,9 +1078,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $elementsService = Craft::$app->getElements();
             $matrixBlocks = MatrixBlock::find()
+                ->primaryOwnerId($element->id)
                 ->status(null)
                 ->siteId($siteId)
-                ->primaryOwnerId($element->id)
                 ->all();
 
             foreach ($matrixBlocks as $matrixBlock) {
@@ -1102,9 +1101,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $elementsService = Craft::$app->getElements();
         foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
             $blocks = MatrixBlock::find()
+                ->primaryOwnerId($element->id)
                 ->status(null)
                 ->siteId($siteInfo['siteId'])
-                ->primaryOwnerId($element->id)
                 ->trashed()
                 ->andWhere(['matrixblocks.deletedWithOwner' => true])
                 ->all();
