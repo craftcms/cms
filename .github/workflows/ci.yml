@@ -13,10 +13,16 @@ on:
 jobs:
   run:
     runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      matrix:
+        operating-system: [ 'ubuntu-latest' ]
+        php-versions: [ 8.1, 8.0, 7.4, 7.3, 7.2 ]
+        db: [ 'mysql', 'pgsql' ]
+
     name: PHP ${{ matrix.php-versions }} on ${{ matrix.db }}
     env:
       PHP_EXTENSIONS: ctype
-      EXT_CACHE_KEY: extension-cache-v7 # change to clear the extension cache.
 
     services:
 
@@ -42,12 +48,6 @@ jobs:
         ports:
           - 3306:3306
 
-    strategy:
-      matrix:
-        operating-system: ['ubuntu-latest']
-        php-versions: [8.1, 8.0, 7.4, 7.3, 7.2]
-        db: ['mysql', 'pgsql']
-
     steps:
 
     - name: Checkout
@@ -59,7 +59,7 @@ jobs:
       with:
         php-version: ${{ matrix.php-versions }}
         extensions: ${{ env.PHP_EXTENSIONS }}
-        key: ${{ env.EXT_CACHE_KEY }}
+        key: extension-cache-v9 # change to clear the extension cache.
 
     - name: Cache extensions
       uses: actions/cache@v2
