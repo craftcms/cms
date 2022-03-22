@@ -49,10 +49,12 @@ use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\web\Response;
 
 /**
  * Entry represents an entry element.
@@ -1475,7 +1477,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
         $section = $this->getSection();
 
@@ -1510,7 +1512,8 @@ class Entry extends Element
             }
         }
 
-        return $crumbs;
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**

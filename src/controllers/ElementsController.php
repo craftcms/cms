@@ -362,7 +362,6 @@ class ElementsController extends Controller
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->crumbs(fn() => $element->getCrumbs())
             ->contextMenu(fn() => $this->_contextMenu(
                 $element,
                 $isMultiSiteElement,

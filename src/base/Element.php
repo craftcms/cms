@@ -2845,14 +2845,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
-    {
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getAdditionalButtons(): string
     {
         // Fire a defineAdditionalButtons event

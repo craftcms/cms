@@ -853,16 +853,6 @@ interface ElementInterface extends ComponentInterface
     public function getPostEditUrl(): ?string;
 
     /**
-     * Returns the breadcrumbs for the element’s edit page.
-     *
-     * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
-     *
-     * @return array
-     * @since 4.0.0
-     */
-    public function getCrumbs(): array;
-
-    /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.
      *
      * @return string

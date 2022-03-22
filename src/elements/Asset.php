@@ -61,6 +61,7 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -72,6 +73,7 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\validators\RequiredValidator;
+use yii\web\Response;
 
 /**
  * Asset represents an asset element.
@@ -1037,7 +1039,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
@@ -1064,7 +1066,8 @@ class Asset extends Element
             }
         }
 
-        return $crumbs;
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**

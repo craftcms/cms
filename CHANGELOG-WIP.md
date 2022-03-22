@@ -88,7 +88,6 @@
 - Added `craft\base\ElementInterface::createAnother()`.
 - Added `craft\base\ElementInterface::createCondition()`.
 - Added `craft\base\ElementInterface::getAdditionalButtons()`.
-- Added `craft\base\ElementInterface::getCrumbs()`.
 - Added `craft\base\ElementInterface::getPostEditUrl()`.
 - Added `craft\base\ElementInterface::getThumbAlt()`.
 - Added `craft\base\ElementInterface::hasRevisions()`.

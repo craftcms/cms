@@ -131,6 +131,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'variables' => [
                 'docTitle' => $behavior->docTitle ?? strip_tags($behavior->title ?? ''),
                 'title' => $behavior->title,
+                'selectedSubnavItem' => $behavior->selectedSubnavItem,
                 'crumbs' => array_map(function(array $crumb): array {
                     $crumb['url'] = UrlHelper::cpUrl($crumb['url'] ?? '');
                     return $crumb;
