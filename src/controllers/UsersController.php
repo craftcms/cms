@@ -1140,13 +1140,13 @@ JS;
                         $requireEmailVerification && (
                             $isPublicRegistration ||
                             ($isCurrentUser && !$canAdministrateUsers) ||
-                            $this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail')
+                            ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
                         )
                     ) ||
                     (
                         !$requireEmailVerification && $isNewUser && (
                             ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
-                            $this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail')
+                            ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
                         )
                     )
                 );
