@@ -109,7 +109,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
 
         foreach ($transformIndexes as $transformIndex) {
-            $this->deleteImageTransform($asset, $transformIndex);
+            $this->deleteImageTransformFile($asset, $transformIndex);
         }
 
         $this->deleteTransformIndexDataByAssetId($asset->id);
@@ -120,7 +120,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      * @param ImageTransformIndex $transformIndex
      * @throws InvalidConfigException
      */
-    protected function deleteImageTransform(Asset $asset, ImageTransformIndex $transformIndex): void
+    public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
     {
         $path = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $transformIndex);
 
@@ -384,24 +384,30 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         clearstatcache(true, $tempPath);
 
-        $stream = fopen($tempPath, 'rb');
-
         try {
+            $event = new ImageTransformerOperationEvent([
+                'asset' => $asset,
+                'imageTransformIndex' => $index,
+                'path' => $tempPath,
+                'image' => $image,
+            ]);
+            $this->trigger(static::EVENT_TRANSFORM_IMAGE, $event);
+
+            $stream = fopen($event->path, 'rb');
             $transformFs->writeFileFromStream($transformPath, $stream, []);
 
-            if ($this->hasEventHandlers(static::EVENT_TRANSFORM_IMAGE)) {
-                $this->trigger(static::EVENT_TRANSFORM_IMAGE, new ImageTransformerOperationEvent([
-                    'asset' => $asset,
-                    'imageTransformIndex' => $index,
-                    'path' => $transformPath,
-                    'image' => $image,
-                ]));
+            if (file_exists($event->path)) {
+                FileHelper::unlink($event->path);
             }
+
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
 
-        FileHelper::unlink($tempPath);
+        // Maybe a plugin changed the path to something else. Check if we need to remove this, too.
+        if (file_exists($tempPath)) {
+            FileHelper::unlink($tempPath);
+        }
     }
 
     /**
@@ -511,7 +517,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                     $index->fileExists = false;
                     $index->error = true;
                 }
-
                 $this->storeTransformIndexData($index);
             } catch (Exception $e) {
                 $index->inProgress = false;
@@ -537,7 +542,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      * @return ImageTransformIndex
      * @throws ImageTransformException if the transform cannot be found by the handle
      */
-    protected function getTransformIndex(Asset $asset, mixed $transform): ImageTransformIndex
+    public function getTransformIndex(Asset $asset, mixed $transform): ImageTransformIndex
     {
         $transform = TransformHelper::normalizeTransform($transform);
 
@@ -584,7 +589,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             ], [], Craft::$app->getImageTransforms()->db);
 
             // And the generated transform itself, too
-            $this->deleteImageTransform($asset, $existingIndex);
+            $this->deleteImageTransformFile($asset, $existingIndex);
         }
 
         // Create a new record
@@ -646,7 +651,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      * @param ImageTransformIndex $index
      * @return ImageTransformIndex
      */
-    protected function storeTransformIndexData(ImageTransformIndex $index): ImageTransformIndex
+    public function storeTransformIndexData(ImageTransformIndex $index): ImageTransformIndex
     {
         $values = Db::prepareValuesForDb(
             $index->toArray([

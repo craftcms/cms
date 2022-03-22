@@ -715,6 +715,7 @@
 - Removed `craft\events\GenerateTransformEvent::$image`.
 - Removed `craft\events\GenerateTransformEvent::$tempPath`.
 - Removed `craft\events\GetAssetThumbUrlEvent`.
+- Removed `craft\events\GetAssetThumbEvent`.
 - Removed `craft\events\GlobalSetContentEvent`.
 - Removed `craft\events\RegisterGqlPermissionsEvent`.
 - Removed `craft\events\SearchEvent::getElementIds()`.

@@ -654,6 +654,7 @@
 - Removed `craft\events\DefineComponentsEvent`.
 - Removed `craft\events\GenerateTransformEvent::$image`.
 - Removed `craft\events\GenerateTransformEvent::$tempPath`.
+- Removed `craft\events\GetAssetThumbEvent`.
 - Removed `craft\events\GetAssetThumbUrlEvent::$generate`.
 - Removed `craft\events\GetAssetThumbUrlEvent::$size`.
 - Removed `craft\events\GlobalSetContentEvent`.
