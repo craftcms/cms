@@ -108,7 +108,9 @@ jobs:
       run: composer install --no-interaction --no-ansi --no-progress
 
     - name: Run tests
-      run: vendor/bin/codecept run unit,functional
+      run: |
+        mkdir -p build/logs
+        vendor/bin/codecept run unit,functional --coverage-xml coverage.xml;
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v2
