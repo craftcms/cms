@@ -2279,7 +2279,7 @@ abstract class Element extends Component implements ElementInterface
         /** @var array|null $params */
         [$field, $method, $fieldParams] = $params;
 
-        if (is_string($method)) {
+        if (is_string($method) && !is_callable($method)) {
             $method = [$field, $method];
         }
 
