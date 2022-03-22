@@ -1860,7 +1860,6 @@ return [
     '{section} Entry Types' => 'انواع محتوای {section}',
     '{step, number} of {total, number}' => '{step, number} از {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'کپی {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {item}',
     '{total} jobs' => '{total} کار',
     '{total} updates available!' => '{total} بروزرسانی در دسترس!',

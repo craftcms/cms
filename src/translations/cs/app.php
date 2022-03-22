@@ -1862,7 +1862,6 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{section} Entry Types' => '{section} typy záznamů',
     '{step, number} of {total, number}' => '{step, number} z {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'Kopie {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} úloh(y)',
     '{total} updates available!' => '{total} aktualizací k dispozici!',
