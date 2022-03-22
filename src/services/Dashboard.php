@@ -253,7 +253,7 @@ class Dashboard extends Component
     }
 
     /**
-     * Soft-deletes a widget by its ID.
+     * Deletes a widget by its ID.
      *
      * @param int $widgetId The widget’s ID
      * @return bool Whether the widget was deleted successfully
@@ -270,7 +270,7 @@ class Dashboard extends Component
     }
 
     /**
-     * Soft-deletes a widget.
+     * Deletes a widget.
      *
      * @param WidgetInterface $widget The widget to be deleted
      * @return bool Whether the widget was deleted successfully
