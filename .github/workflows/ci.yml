@@ -55,7 +55,7 @@ jobs:
 
     - name: Test
       run: |
-        echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional\"" >> $GITHUB_ENV
+        echo "TEST_COMMAND=\"./vendor/bin/codecept run unit,functional\"" >> $GITHUB_ENV
 
     - name: Test2
       run: |
