@@ -26,6 +26,7 @@ jobs:
 
     services:
 
+      # Install Postgres
       pgsql:
         image: postgres:latest
         env:
@@ -34,9 +35,10 @@ jobs:
           POSTGRES_DB: craft_test
         ports:
           - 5432:5432
-        # Set health checks to wait until mysql has started
+        # Set health checks to wait until Postgres has started
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
 
+      # Install MySQL
       mysql:
         image: bitnami/mysql:latest
         env:
@@ -101,9 +103,6 @@ jobs:
     - name: Update .env creds
       run: sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
 
-    - name: debug
-      run: cat ./tests/.env
-
     - name: Cache Composer dependencies
       id: composer-cache
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
@@ -113,12 +112,19 @@ jobs:
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
-    - name: Install dependencies
+    - name: Install Composer dependencies
       run: composer install --no-interaction --no-ansi --no-progress
+
+    - name: Install NPM dependencies
+      run: |
+        nvm install 16
+        npm install -g npm
+        npm cache clean -f
 
     - name: Run tests
       run: ${{ env.TEST_COMMAND }}
 
+    # Only upload code coverage if PHP 7.4 and MySQL are selected
     - name: Upload coverage to Codecov
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
       uses: codecov/codecov-action@v2
