@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
 /**
  * The Conditions service provides APIs for managing conditions
  *
- * An instance of Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->conditions`]].
+ * An instance of the Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->conditions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
