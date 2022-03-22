@@ -161,6 +161,7 @@
 - Added `craft\elements\conditions\SlugConditionRule`.
 - Added `craft\elements\conditions\tags\GroupConditionRule`.
 - Added `craft\elements\conditions\tags\TagCondition`.
+- Added `craft\elements\conditions\TitleConditionRule`.
 - Added `craft\elements\conditions\UriConditionRule`.
 - Added `craft\elements\conditions\users\AdminConditionRule`.
 - Added `craft\elements\conditions\users\CredentialedConditionRule`.

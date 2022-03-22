@@ -103,6 +103,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             /** @var string|ElementInterface $elementType */
             $elementType = $this->elementType;
 
+            if ($elementType::hasContent() && $elementType::hasTitles()) {
+                $types[] = TitleConditionRule::class;
+            }
+
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;
                 $types[] = UriConditionRule::class;

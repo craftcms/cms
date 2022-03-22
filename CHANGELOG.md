@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\conditions\TitleConditionRule`. ([#10785](https://github.com/craftcms/cms/issues/10785))
+
 ### Changed
 - When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 
