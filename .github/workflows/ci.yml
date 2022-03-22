@@ -55,11 +55,11 @@ jobs:
 
     - name: Test
       run: |
-        echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional\""
+        echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional\"" >> $GITHUB_ENV
 
     - name: Test2
       run: |
-        echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional  --coverage-xml coverage.xml;\""
+        echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional  --coverage-xml coverage.xml;\"" >> $GITHUB_ENV
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
 
       #    - name: Setup cache environment
@@ -117,7 +117,7 @@ jobs:
       run: composer install --no-interaction --no-ansi --no-progress
 
     - name: Run tests
-      run: echo ${{ env.TEST_COMMAND }}
+      run: ${{ env.TEST_COMMAND }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
