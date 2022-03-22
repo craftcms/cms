@@ -53,7 +53,16 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-#    - name: Setup cache environment
+    - name: Test
+      run: |
+        echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional\""
+
+  - name: Test2
+      run: |
+        echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional  --coverage-xml coverage.xml;\""
+      if: matrix.php-versions == "7.4" and matrix.db == "mysql"
+
+      #    - name: Setup cache environment
 #      id: extcache
 #      uses: shivammathur/cache-extensions@v1
 #      with:
@@ -110,7 +119,7 @@ jobs:
     - name: Run tests
       run: |
         mkdir -p build/logs
-        vendor/bin/codecept run unit,functional --coverage-xml coverage.xml;
+        ${{ env.TEST_COMMAND }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
