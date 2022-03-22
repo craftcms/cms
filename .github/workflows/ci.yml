@@ -53,11 +53,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Test
+    - name: Set default test command environment variable
       run: |
         echo "TEST_COMMAND=./vendor/bin/codecept run unit,functional" >> $GITHUB_ENV
 
-    - name: Test2
+    - name: Set test command for the code coverage environment
       run: |
         echo "TEST_COMMAND=./vendor/bin/codecept run unit,functional  --coverage-xml coverage.xml;" >> $GITHUB_ENV
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
@@ -120,4 +120,5 @@ jobs:
       run: ${{ env.TEST_COMMAND }}
 
     - name: Upload coverage to Codecov
+      if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
       uses: codecov/codecov-action@v2
