@@ -112,14 +112,18 @@ jobs:
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
+    - name: Set Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+
     - name: Install Composer dependencies
       run: composer install --no-interaction --no-ansi --no-progress
 
     - name: Install NPM dependencies
       run: |
-        nvm install 16
-        npm install -g npm
         npm cache clean -f
+        npm install -g npm
 
     - name: Run tests
       run: ${{ env.TEST_COMMAND }}
