@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.0-beta.3 - 2022-03-22
 
 ### Added
 - Added `craft\base\ElementInterface::prepareEditScreen()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
