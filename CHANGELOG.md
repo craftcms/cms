@@ -17,6 +17,7 @@
 - Fixed a 404 error that occurred when attempting to preview unpublished category drafts. ([#10788](https://github.com/craftcms/cms/issues/10788))
 - Fixed a JavaScript error that occurred when bulk-deleting users from the Users index page. ([#10793](https://github.com/craftcms/cms/issues/10793))
 - Fixed a PHP error that could occur if an unexpected value was passed to `craft\services\Security::redactIfSensitive()`. ([#10792](https://github.com/craftcms/cms/issues/10792))
+- Fixed a bug where entry post dates weren’t being set automatically when entries were saved programmatically with the `default` validation scenario. ([#10796](https://github.com/craftcms/cms/issues/10796))
 
 ## 4.0.0-beta.2 - 2022-03-16
 

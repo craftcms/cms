@@ -1813,7 +1813,7 @@ EOD;
             $this->setAuthorId(Craft::$app->getUser()->getId());
         }
 
-        if ($this->scenario === self::SCENARIO_LIVE && !$this->postDate) {
+        if (in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) && !$this->postDate) {
             // Default the post date to the current date/time
             $this->postDate = new DateTime();
             // ...without the seconds
