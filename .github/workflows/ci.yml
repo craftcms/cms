@@ -60,7 +60,7 @@ jobs:
     - name: Test2
       run: |
         echo "TEST_COMMAND=\"vendor/bin/codecept run unit,functional  --coverage-xml coverage.xml;\""
-      if: matrix.php-versions == "7.4" && matrix.db == "mysql"
+      if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
 
       #    - name: Setup cache environment
 #      id: extcache
