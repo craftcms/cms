@@ -117,9 +117,7 @@ jobs:
       run: composer install --no-interaction --no-ansi --no-progress
 
     - name: Run tests
-      run: |
-        mkdir -p build/logs
-        ${{ env.TEST_COMMAND }}
+      run: ${{ env.TEST_COMMAND }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
