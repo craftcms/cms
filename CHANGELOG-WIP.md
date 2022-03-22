@@ -92,6 +92,7 @@
 - Added `craft\base\ElementInterface::getPostEditUrl()`.
 - Added `craft\base\ElementInterface::getThumbAlt()`.
 - Added `craft\base\ElementInterface::hasRevisions()`.
+- Added `craft\base\ElementInterface::prepareEditScreen()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
 - Added `craft\base\FieldLayoutComponent`.
 - Added `craft\base\Fs`.

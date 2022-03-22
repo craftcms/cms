@@ -718,6 +718,9 @@ class ElementsController extends Controller
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
 JS;
         $this->view->registerJs($js);
+
+        // Give the element a chance to do things here too
+        $element->prepareEditScreen($response, $containerId);
     }
 
     private function _editorContent(

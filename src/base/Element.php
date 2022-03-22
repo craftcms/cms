@@ -78,6 +78,7 @@ use yii\validators\BooleanValidator;
 use yii\validators\NumberValidator;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
+use yii\web\Response;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
@@ -2787,6 +2788,13 @@ abstract class Element extends Component implements ElementInterface
     public function hasRevisions(): bool
     {
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareEditScreen(Response $response, string $containerId): void
+    {
     }
 
     /**

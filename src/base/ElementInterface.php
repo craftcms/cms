@@ -16,6 +16,7 @@ use craft\models\FieldLayout;
 use craft\models\Site;
 use Illuminate\Support\Collection;
 use Twig\Markup;
+use yii\web\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
@@ -826,6 +827,15 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function hasRevisions(): bool;
+
+    /**
+     * Prepares the response for the element’t Edit screen.
+     *
+     * @param Response $response The response being prepared
+     * @param string $containerId The ID of the element editor’s container element
+     * @since 4.0.0
+     */
+    public function prepareEditScreen(Response $response, string $containerId): void;
 
     /**
      * Returns the element’s edit URL in the control panel.

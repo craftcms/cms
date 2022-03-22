@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\ElementInterface::prepareEditScreen()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 - Added `craft\elements\conditions\TitleConditionRule`. ([#10785](https://github.com/craftcms/cms/issues/10785))
 
 ### Changed
