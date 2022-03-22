@@ -23,6 +23,7 @@
 - Fixed a PHP error that could occur if an unexpected value was passed to `craft\services\Security::redactIfSensitive()`. ([#10792](https://github.com/craftcms/cms/issues/10792))
 - Fixed a bug where entry post dates weren’t being set automatically when entries were saved programmatically with the `default` validation scenario. ([#10796](https://github.com/craftcms/cms/issues/10796))
 - Fixed a PHP error that occurred when saving an entry with an Email field. ([#10799](https://github.com/craftcms/cms/issues/10799))
+- Fixed a PHP error that occurred when saving an image transform without a Width or Height value. ([#10783](https://github.com/craftcms/cms/issues/10783))
 
 ## 4.0.0-beta.2 - 2022-03-16
 
