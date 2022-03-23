@@ -1453,7 +1453,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null The element. Null is returned if the query
+     * @return Element|array|null The element. Null is returned if the query
      * results in nothing.
      */
     public function nth(int $n, ?Connection $db = null): Model|array|null

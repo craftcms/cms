@@ -752,7 +752,7 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|array|null $value The transforms to include.
-     * @return self The query object itself
+     * @return static The query object itself
      * @uses $withTransforms
      */
     public function withTransforms(string|array|null $value = null): static

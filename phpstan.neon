@@ -33,8 +33,10 @@ parameters:
     		- '#Call to an undefined method Throwable::getPrevious\(\)#'
     		- '#Call to an undefined method Throwable::getFile\(\)#'
     		- '#Call to an undefined method Throwable::getTraceAsString\(\)#'
+    		- '#Call to an undefined method Throwable::getLine\(\)#'
     		- '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
     		- '#Variable \$revision in PHPDoc tag @var does not exist#'
     		- '#Variable \$behavior in PHPDoc tag @var does not exist#'
     		- '#Variable \$field in PHPDoc tag @var does not exist#'
+    		- '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
 
