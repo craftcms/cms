@@ -80,7 +80,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function where($condition, $params = []): self
+    public function where($condition, $params = []): static
     {
         if (!$condition) {
             $condition = null;
@@ -92,7 +92,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function andWhere($condition, $params = []): self
+    public function andWhere($condition, $params = []): static
     {
         if (!$condition) {
             return $this;
@@ -104,7 +104,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function orWhere($condition, $params = []): self
+    public function orWhere($condition, $params = []): static
     {
         if (!$condition) {
             return $this;

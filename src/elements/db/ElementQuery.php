@@ -517,7 +517,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $inReverse
      */
-    public function inReverse(bool $value = true): self
+    public function inReverse(bool $value = true): static
     {
         $this->inReverse = $value;
         return $this;
@@ -527,7 +527,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $asArray
      */
-    public function asArray(bool $value = true): self
+    public function asArray(bool $value = true): static
     {
         $this->asArray = $value;
         return $this;
@@ -537,7 +537,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $asArray
      */
-    public function ignorePlaceholders(bool $value = true): self
+    public function ignorePlaceholders(bool $value = true): static
     {
         $this->ignorePlaceholders = $value;
         return $this;
@@ -547,7 +547,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $drafts
      */
-    public function drafts(?bool $value = true): self
+    public function drafts(?bool $value = true): static
     {
         $this->drafts = $value;
         return $this;
@@ -558,7 +558,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $draftId
      * @uses $drafts
      */
-    public function draftId(?int $value = null): self
+    public function draftId(?int $value = null): static
     {
         $this->draftId = $value;
         if ($value !== null && $this->drafts === false) {
@@ -572,7 +572,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $draftOf
      * @uses $drafts
      */
-    public function draftOf($value): self
+    public function draftOf($value): static
     {
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getCanonicalId();
@@ -592,7 +592,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $draftCreator
      * @uses $drafts
      */
-    public function draftCreator($value): self
+    public function draftCreator($value): static
     {
         if ($value instanceof User) {
             $this->draftCreator = $value->id;
@@ -612,7 +612,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $provisionalDrafts
      * @uses $drafts
      */
-    public function provisionalDrafts(?bool $value = true): self
+    public function provisionalDrafts(?bool $value = true): static
     {
         $this->provisionalDrafts = $value;
         if ($value === true && $this->drafts === false) {
@@ -625,7 +625,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $savedDraftsOnly
      */
-    public function savedDraftsOnly(bool $value = true): self
+    public function savedDraftsOnly(bool $value = true): static
     {
         $this->savedDraftsOnly = $value;
         return $this;
@@ -635,7 +635,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisions
      */
-    public function revisions(?bool $value = true): self
+    public function revisions(?bool $value = true): static
     {
         $this->revisions = $value;
         return $this;
@@ -646,7 +646,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $revisionId
      * @uses $revisions
      */
-    public function revisionId(?int $value = null): self
+    public function revisionId(?int $value = null): static
     {
         $this->revisionId = $value;
         if ($value !== null && $this->revisions === false) {
@@ -660,7 +660,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $revisionOf
      * @uses $revisions
      */
-    public function revisionOf($value): self
+    public function revisionOf($value): static
     {
         if ($value instanceof ElementInterface) {
             $this->revisionOf = $value->getCanonicalId();
@@ -680,7 +680,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $revisionCreator
      * @uses $revisions
      */
-    public function revisionCreator($value): self
+    public function revisionCreator($value): static
     {
         if ($value instanceof User) {
             $this->revisionCreator = $value->id;
@@ -709,7 +709,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $uid
      */
-    public function uid($value): self
+    public function uid($value): static
     {
         $this->uid = $value;
         return $this;
@@ -719,7 +719,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siteSettingsId
      */
-    public function siteSettingsId($value): self
+    public function siteSettingsId($value): static
     {
         $this->siteSettingsId = $value;
         return $this;
@@ -729,7 +729,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $fixedOrder
      */
-    public function fixedOrder(bool $value = true): self
+    public function fixedOrder(bool $value = true): static
     {
         $this->fixedOrder = $value;
         return $this;
@@ -739,7 +739,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $orderBy
      */
-    public function orderBy($columns): self
+    public function orderBy($columns): static
     {
         parent::orderBy($columns);
 
@@ -755,7 +755,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $orderBy
      */
-    public function addOrderBy($columns): self
+    public function addOrderBy($columns): static
     {
         // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
         // then treat this is an orderBy() call.
@@ -777,7 +777,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $status
      */
-    public function status(array|string|null $value): self
+    public function status(array|string|null $value): static
     {
         $this->status = $value;
         return $this;
@@ -787,7 +787,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $archived
      */
-    public function archived(bool $value = true): self
+    public function archived(bool $value = true): static
     {
         $this->archived = $value;
         return $this;
@@ -797,7 +797,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $trashed
      */
-    public function trashed(?bool $value = true): self
+    public function trashed(?bool $value = true): static
     {
         $this->trashed = $value;
         return $this;
@@ -807,7 +807,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $dateCreated
      */
-    public function dateCreated(mixed $value): self
+    public function dateCreated(mixed $value): static
     {
         $this->dateCreated = $value;
         return $this;
@@ -817,7 +817,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $dateUpdated
      */
-    public function dateUpdated(mixed $value): self
+    public function dateUpdated(mixed $value): static
     {
         $this->dateUpdated = $value;
         return $this;
@@ -828,7 +828,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws InvalidArgumentException if $value is invalid
      * @uses $siteId
      */
-    public function site($value): self
+    public function site($value): static
     {
         if ($value === null) {
             $this->siteId = null;
@@ -864,7 +864,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siteId
      */
-    public function siteId($value): self
+    public function siteId($value): static
     {
         if (is_array($value) && strtolower(reset($value)) === 'not') {
             array_shift($value);
@@ -886,7 +886,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $unique
      * @since 3.2.0
      */
-    public function unique(bool $value = true): self
+    public function unique(bool $value = true): static
     {
         $this->unique = $value;
         return $this;
@@ -897,7 +897,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $preferSites
      * @since 3.2.0
      */
-    public function preferSites(?array $value = null): self
+    public function preferSites(?array $value = null): static
     {
         $this->preferSites = $value;
         return $this;
@@ -907,7 +907,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $relatedTo
      */
-    public function relatedTo($value): self
+    public function relatedTo($value): static
     {
         $this->relatedTo = $value;
         return $this;
@@ -918,7 +918,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws NotSupportedException
      * @uses $relatedTo
      */
-    public function andRelatedTo($value): self
+    public function andRelatedTo($value): static
     {
         if (!$value) {
             return $this;
@@ -946,7 +946,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $title
      */
-    public function title($value): self
+    public function title($value): static
     {
         $this->title = $value;
         return $this;
@@ -956,7 +956,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $slug
      */
-    public function slug($value): self
+    public function slug($value): static
     {
         $this->slug = $value;
         return $this;
@@ -966,7 +966,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $uri
      */
-    public function uri($value): self
+    public function uri($value): static
     {
         $this->uri = $value;
         return $this;
@@ -976,7 +976,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $search
      */
-    public function search($value): self
+    public function search($value): static
     {
         $this->search = $value;
         return $this;
@@ -986,7 +986,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $ref
      */
-    public function ref($value): self
+    public function ref($value): static
     {
         $this->ref = $value;
         return $this;
@@ -996,7 +996,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $with
      */
-    public function with(array|string|null $value): self
+    public function with(array|string|null $value): static
     {
         $this->with = $value;
         return $this;
@@ -1006,7 +1006,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $with
      */
-    public function andWith(array|string|null $value): self
+    public function andWith(array|string|null $value): static
     {
         if (empty($this->with)) {
             $this->with = [$value];
@@ -1023,7 +1023,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $withStructure
      */
-    public function withStructure(bool $value = true): self
+    public function withStructure(bool $value = true): static
     {
         $this->withStructure = $value;
         return $this;
@@ -1033,7 +1033,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $structureId
      */
-    public function structureId(?int $value = null): self
+    public function structureId(?int $value = null): static
     {
         $this->structureId = $value;
         return $this;
@@ -1043,7 +1043,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $level
      */
-    public function level($value = null): self
+    public function level($value = null): static
     {
         $this->level = $value;
         return $this;
@@ -1053,7 +1053,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $hasDescendants
      */
-    public function hasDescendants(bool $value = true): self
+    public function hasDescendants(bool $value = true): static
     {
         $this->hasDescendants = $value;
         return $this;
@@ -1063,7 +1063,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $leaves
      */
-    public function leaves(bool $value = true): self
+    public function leaves(bool $value = true): static
     {
         $this->leaves = $value;
         return $this;
@@ -1073,7 +1073,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $ancestorOf
      */
-    public function ancestorOf(ElementInterface|int|null $value): self
+    public function ancestorOf(ElementInterface|int|null $value): static
     {
         $this->ancestorOf = $value;
         return $this;
@@ -1083,7 +1083,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $ancestorDist
      */
-    public function ancestorDist(?int $value = null): self
+    public function ancestorDist(?int $value = null): static
     {
         $this->ancestorDist = $value;
         return $this;
@@ -1093,7 +1093,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $descendantOf
      */
-    public function descendantOf(ElementInterface|int|null $value): self
+    public function descendantOf(ElementInterface|int|null $value): static
     {
         $this->descendantOf = $value;
         return $this;
@@ -1103,7 +1103,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $descendantDist
      */
-    public function descendantDist(?int $value = null): self
+    public function descendantDist(?int $value = null): static
     {
         $this->descendantDist = $value;
         return $this;
@@ -1113,7 +1113,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siblingOf
      */
-    public function siblingOf(ElementInterface|int|null $value): self
+    public function siblingOf(ElementInterface|int|null $value): static
     {
         $this->siblingOf = $value;
         return $this;
@@ -1123,7 +1123,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $prevSiblingOf
      */
-    public function prevSiblingOf(ElementInterface|int|null $value): self
+    public function prevSiblingOf(ElementInterface|int|null $value): static
     {
         $this->prevSiblingOf = $value;
         return $this;
@@ -1133,7 +1133,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $nextSiblingOf
      */
-    public function nextSiblingOf(ElementInterface|int|null $value): self
+    public function nextSiblingOf(ElementInterface|int|null $value): static
     {
         $this->nextSiblingOf = $value;
         return $this;
@@ -1143,7 +1143,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $positionedBefore
      */
-    public function positionedBefore(ElementInterface|int|null $value): self
+    public function positionedBefore(ElementInterface|int|null $value): static
     {
         $this->positionedBefore = $value;
         return $this;
@@ -1153,7 +1153,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $positionedAfter
      */
-    public function positionedAfter(ElementInterface|int|null $value): self
+    public function positionedAfter(ElementInterface|int|null $value): static
     {
         $this->positionedAfter = $value;
         return $this;
@@ -1162,11 +1162,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Sets the [[status()|status]] param to `null`.
      *
-     * @return self self reference
+     * @return static self reference
      * @since 3.0.17
      * @deprecated in 4.0.0. `status(null)` should be used instead.
      */
-    public function anyStatus(): self
+    public function anyStatus(): static
     {
         $this->status = null;
         return $this;
