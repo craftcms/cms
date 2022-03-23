@@ -829,7 +829,7 @@ interface ElementInterface extends ComponentInterface
     public function hasRevisions(): bool;
 
     /**
-     * Prepares the response for the element’t Edit screen.
+     * Prepares the response for the element’s Edit screen.
      *
      * @param Response $response The response being prepared
      * @param string $containerId The ID of the element editor’s container element
