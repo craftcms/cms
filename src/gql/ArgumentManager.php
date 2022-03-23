@@ -114,7 +114,7 @@ class ArgumentManager extends Component
     /**
      * Prepare GraphQL arguments according to the registered argument handlers.
      *
-     * @param $arguments
+     * @param array $arguments
      * @return array
      * @throws GqlException
      * @throws InvalidConfigException

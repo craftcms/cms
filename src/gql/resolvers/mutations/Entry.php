@@ -39,14 +39,14 @@ class Entry extends ElementMutationResolver
     /**
      * Save an entry or draft using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return EntryElement
      * @throws Throwable if reasons.
      */
-    public function saveEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): EntryElement
+    public function saveEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): EntryElement
     {
         $entry = $this->getEntryElement($arguments);
 
@@ -89,13 +89,13 @@ class Entry extends ElementMutationResolver
     /**
      * Delete an entry identified by the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @throws Throwable if reasons.
      */
-    public function deleteEntry($source, array $arguments, $context, ResolveInfo $resolveInfo): void
+    public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
@@ -117,14 +117,14 @@ class Entry extends ElementMutationResolver
     /**
      * Create a new draft for the entry id identified by the arguments
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return mixed
      * @throws Throwable if reasons.
      */
-    public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
+    public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $entryId = $arguments['id'];
 
@@ -151,14 +151,14 @@ class Entry extends ElementMutationResolver
     /**
      * Publish a draft identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return int
      * @throws Throwable if reasons.
      */
-    public function publishDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): int
+    public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
     {
         /** @var EntryElement|DraftBehavior $draft */
         $draft = Craft::$app->getElements()

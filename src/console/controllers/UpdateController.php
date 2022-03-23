@@ -233,10 +233,11 @@ class UpdateController extends Controller
         return true;
     }
 
+
     /**
      * Returns the new Composer requirements.
      *
-     * @param string[] $handles
+     * @param string ...$handles
      * @return array
      */
     private function _getRequirements(string ...$handles): array

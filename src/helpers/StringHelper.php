@@ -480,7 +480,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * by setting $caseSensitive to false.
      *
      * @param string $str The string to check the end of.
-     * @param $substrings [] Substrings to look for.
+     * @param array $substrings Substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $str ends with $substring.
      * @since 3.3.0

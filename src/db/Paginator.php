@@ -227,7 +227,7 @@ class Paginator extends BaseObject
     /**
      * Sets the results for the current page.
      *
-     * @param array
+     * @param array $pageResults
      * @since 3.1.22
      */
     public function setPageResults(array $pageResults): void

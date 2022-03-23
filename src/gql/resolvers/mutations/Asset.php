@@ -39,14 +39,14 @@ class Asset extends ElementMutationResolver
     /**
      * Save an asset using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return AssetElement
      * @throws Throwable if reasons.
      */
-    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): AssetElement
+    public function saveAsset(mixed $source, array $arguments, $context, ResolveInfo $resolveInfo): AssetElement
     {
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
@@ -110,13 +110,13 @@ class Asset extends ElementMutationResolver
     /**
      * Delete an asset identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @throws Throwable if reasons.
      */
-    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): void
+    public function deleteAsset(mixed $source, array $arguments, $context, ResolveInfo $resolveInfo): void
     {
         $assetId = $arguments['id'];
 

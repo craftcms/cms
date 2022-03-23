@@ -20,13 +20,13 @@ class Diff
     /**
      * Generates a diff for two values, represented as YAML.
      *
-     * @param $from
-     * @param $to
+     * @param mixed $from
+     * @param mixed $to
      * @param int $indent The indent size that nested values should have
      * @param int $contextLines The number of lines to show before and after changes
      * @return string
      */
-    public static function diff($from, $to, int $indent = 2, int $contextLines = 3): string
+    public static function diff(mixed $from, mixed $to, int $indent = 2, int $contextLines = 3): string
     {
         $diff = '';
         $lines = static::_diff($from, $to, $indent, 0);
@@ -76,13 +76,13 @@ class Diff
     }
 
     /**
-     * @param $from
-     * @param $to
+     * @param mixed$from
+     * @param mixed $to
      * @param int $indent
      * @param int $level
      * @return array[]
      */
-    private static function _diff($from, $to, int $indent, int $level): array
+    private static function _diff(mixed $from, mixed $to, int $indent, int $level): array
     {
         // Are we done doing recursion?
         if (

@@ -296,10 +296,10 @@ class Gql
     /**
      * Wrap a GQL object type in a NonNull type.
      *
-     * @param $type
+     * @param mixed $type
      * @return mixed
      */
-    public static function wrapInNonNull($type): mixed
+    public static function wrapInNonNull(mixed $type): mixed
     {
         if ($type instanceof NonNull) {
             return $type;
@@ -350,12 +350,12 @@ class Gql
     /**
      * Apply directives (if any) to a resolved value according to source and resolve info.
      *
-     * @param $source
+     * @param mixed $source
      * @param ResolveInfo $resolveInfo
-     * @param $value
+     * @param mixed $value
      * @return mixed
      */
-    public static function applyDirectives($source, ResolveInfo $resolveInfo, $value): mixed
+    public static function applyDirectives(mixed $source, ResolveInfo $resolveInfo, mixed $value): mixed
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
@@ -465,11 +465,11 @@ class Gql
      * Looking at the resolve information and the source queried, return the field name or it's alias, if used.
      *
      * @param ResolveInfo $resolveInfo
-     * @param $source
-     * @param $context
+     * @param mixed $source
+     * @param array $context
      * @return string
      */
-    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, $source, $context): string
+    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, array $context): string
     {
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;

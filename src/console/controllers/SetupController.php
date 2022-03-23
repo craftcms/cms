@@ -544,11 +544,11 @@ EOD;
     /**
      * Sets an environment variable value in the project’s `.env` file.
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
      * @return bool
      */
-    private function _setEnvVar($name, $value): bool
+    private function _setEnvVar(string $name, mixed $value): bool
     {
         $configService = Craft::$app->getConfig();
         $path = $configService->getDotEnvPath();

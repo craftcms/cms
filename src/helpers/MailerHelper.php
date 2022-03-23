@@ -177,10 +177,10 @@ class MailerHelper
     /**
      * Normalizes a list of emails and returns them in a comma-separated list.
      *
-     * @param $emails
+     * @param mixed $emails
      * @return string
      */
-    private static function _emailList($emails): string
+    private static function _emailList(mixed $emails): string
     {
         $normalized = static::normalizeEmails($emails);
         if ($normalized === null) {

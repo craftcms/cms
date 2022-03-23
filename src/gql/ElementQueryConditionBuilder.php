@@ -232,7 +232,7 @@ class ElementQueryConditionBuilder extends Component
      * Figure out whether a node in the parentfield is a special eager-loadable field.
      *
      * @param string $nodeName
-     * @param $parentField
+     * @param mixed $parentField
      *
      * @return bool
      */
@@ -341,10 +341,10 @@ class ElementQueryConditionBuilder extends Component
     /**
      * Prepare a list of transform arguments for return.
      *
-     * @param $arguments
+     * @param array $arguments
      * @return array
      */
-    private function _prepareTransformArguments($arguments): array
+    private function _prepareTransformArguments(array $arguments): array
     {
         if (empty($arguments)) {
             return [];
