@@ -19,7 +19,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
- * The Conditions service provides APIs for managing conditions
+ * The Conditions service provides APIs for managing conditions.
  *
  * An instance of the Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->conditions`]].
  *
