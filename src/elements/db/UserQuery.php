@@ -316,6 +316,11 @@ class UserQuery extends ElementQuery
      */
     public function group($value)
     {
+        // If the value is a group handle, swap it with the section
+        if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
+            $value = $group;
+        }
+
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
         } elseif ($value !== null) {
