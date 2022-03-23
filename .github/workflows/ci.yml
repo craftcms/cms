@@ -64,20 +64,20 @@ jobs:
         echo "TEST_COMMAND=./vendor/bin/codecept run unit,functional  --coverage-xml coverage.xml;" >> $GITHUB_ENV
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
 
-      #    - name: Setup cache environment
-#      id: extcache
-#      uses: shivammathur/cache-extensions@v1
-#      with:
-#        php-version: ${{ matrix.php-versions }}
-#        extensions: ${{ env.PHP_EXTENSIONS }}
-#        key: ${{ matrix.operating-system }}-${{ matrix.php-versions }}-extension-cache-v3 # change to clear the extension cache.
-#
-#    - name: Cache extensions
-#      uses: actions/cache@v3
-#      with:
-#        path: ${{ steps.extcache.outputs.dir }}
-#        key: ${{ steps.extcache.outputs.key }}
-#        restore-keys: ${{ steps.extcache.outputs.key }}
+    - name: Setup cache environment
+      id: extcache
+      uses: shivammathur/cache-extensions@257e3c93fb0a7d302495902b976b1d0245123b59
+      with:
+        php-version: ${{ matrix.php-versions }}
+        extensions: ${{ env.PHP_EXTENSIONS }}
+        key: extension-cache-v4 # change to clear the extension cache.
+
+    - name: Cache extensions
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.extcache.outputs.dir }}
+        key: ${{ steps.extcache.outputs.key }}
+        restore-keys: ${{ steps.extcache.outputs.key }}
 
     - name: Setup PHP
       uses: shivammathur/setup-php@verbose
