@@ -351,6 +351,20 @@ class ArrayHelperTest extends Unit
     }
 
     /**
+     * @dataProvider onlyContainsDataProvider
+     *
+     * @param bool $expected
+     * @param array $array
+     * @param string|\Closure $key
+     * @param mixed $value
+     * @param bool $strict
+     */
+    public function testOnlyContains(bool $expected, array $array, $key, $value = true, bool $strict = false)
+    {
+        self::assertSame($expected, ArrayHelper::onlyContains($array, $key, $value, $strict));
+    }
+
+    /**
      *
      */
     public function testFilterEmptyStringsFromArray()
@@ -517,6 +531,18 @@ class ArrayHelperTest extends Unit
         return [
             [true, [['foo' => 1, 'bar' => 2]], 'foo'],
             [false, [['foo' => 1, 'bar' => 2]], 'foo', true, true],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function onlyContainsDataProvider(): array
+    {
+        return [
+            [true, [['foo' => 1], ['foo' => 2]], 'foo'],
+            [false, [['foo' => 1], ['bar' => 2]], 'foo'],
+            [false, [['foo' => 1], ['foo' => 2]], 'foo', true, true],
         ];
     }
 
