@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
@@ -291,6 +292,7 @@ class UserQuery extends ElementQuery
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
      * | `['foo', 'bar']` | in a group with a handle of `foo` or `bar`.
+     * | `['and', 'foo', 'bar']` | in both groups with handles of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not in a group with a handle of `foo` or `bar`.
      * | a [[UserGroup|UserGroup]] object | in a group represented by the object.
      *
@@ -323,14 +325,45 @@ class UserQuery extends ElementQuery
 
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
-        } elseif ($value !== null) {
-            $this->groupId = (new Query())
-                ->select(['id'])
-                ->from([Table::USERGROUPS])
-                ->where(Db::parseParam('handle', $value))
-                ->column();
-        } else {
+            return $this;
+        }
+
+        if ($value === null) {
             $this->groupId = null;
+            return $this;
+        }
+
+        if (is_array($value)) {
+            // See if it's exclusively made up of user group models, except possibly for the first value
+            $firstVal = reset($value);
+            if (is_string($firstVal) && in_array(strtolower($firstVal), ['and', 'or', 'not'])) {
+                $glue = $firstVal;
+                array_shift($value);
+            } else {
+                $glue = 'or';
+            }
+
+            if (
+                ArrayHelper::onlyContains($value, function($value) {
+                    return $value instanceof UserQuery;
+                })
+            ) {
+                $value = array_map(function(UserGroup $group) {
+                    return $group->id;
+                }, $value);
+                array_unshift($value, $glue);
+                return $this;
+            }
+        }
+
+        $this->groupId = (new Query())
+            ->select(['id'])
+            ->from([Table::USERGROUPS])
+            ->where(Db::parseParam('handle', $value))
+            ->column();
+
+        if ($this->groupId && isset($glue)) {
+            array_unshift($this->groupId, $glue);
         }
 
         return $this;
@@ -346,6 +379,7 @@ class UserQuery extends ElementQuery
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
      * | `[1, 2]` | in a group with an ID of 1 or 2.
+     * | `['and', 1, 2]` | in both groups with IDs of 1 or 2.
      * | `['not', 1, 2]` | not in a group with an ID of 1 or 2.
      *
      * ---
@@ -696,12 +730,25 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $this->subQuery->andWhere([
-                'exists', (new Query())
-                    ->from(['ugu' => Table::USERGROUPS_USERS])
-                    ->where('[[elements.id]] = [[ugu.userId]]')
-                    ->andWhere(Db::parseParam('groupId', $this->groupId)),
-            ]);
+            // Checking multiple groups?
+            if (
+                is_array($this->groupId) &&
+                is_string(reset($this->groupId)) &&
+                strtolower(reset($this->groupId)) === 'and'
+            ) {
+                $groupIdChecks = array_slice($this->groupId, 1);
+            } else {
+                $groupIdChecks = [$this->groupId];
+            }
+
+            foreach ($groupIdChecks as $i => $groupIdCheck) {
+                $this->subQuery->andWhere([
+                    'exists', (new Query())
+                        ->from(["ugu$i" => Table::USERGROUPS_USERS])
+                        ->where("[[elements.id]] = [[ugu$i.userId]]")
+                        ->andWhere(Db::parseParam('groupId', $groupIdCheck)),
+                ]);
+            }
         }
 
         if ($this->email) {

@@ -298,6 +298,30 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Returns whether the given array contains *only* values where a given key (the name of a
+     * -ub-array key or sub-object property) is sett o given value.
+     *
+     * @param array|\Traversable $array the array that the value will be searched for in
+     * @param string|\Closure $key the column name or anonymous function which must be set to $value
+     * @param mixed $value the value that $key should be compared with
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @return bool whether the value exists in the array
+     * @since 3.7.38
+     */
+    public static function onlyContains($array, $key, $value = true, bool $strict = false): bool
+    {
+        foreach ($array as $element) {
+            $elementValue = static::getValue($element, $key);
+            /** @noinspection TypeUnsafeComparisonInspection */
+            if (($strict && $elementValue !== $value) || (!$strict && $elementValue != $value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Filters empty strings from an array.
      *
      * @param array $array
