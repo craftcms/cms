@@ -308,6 +308,7 @@
 - Added `craft\services\AssetIndexer::removeCliIndexingSessions()`.
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
+- Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
 - Added `craft\services\Conditions`.
 - Added `craft\services\Config::CATEGORY_CUSTOM`.

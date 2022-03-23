@@ -619,6 +619,39 @@ class Assets extends Component
     }
 
     /**
+     * Returns an image asset’s URL, scaled to fit within a max width and height.
+     *
+     * @param Asset $asset
+     * @param int $maxWidth
+     * @param int $maxHeight
+     * @return string
+     * @since 4.0.0
+     */
+    public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
+    {
+        $originalWidth = (int)$asset->getWidth();
+        $originalHeight = (int)$asset->getHeight();
+        [$width, $height] = AssetsHelper::scaledDimensions((int)$asset->getWidth(), (int)$asset->getHeight(), $maxWidth, $maxHeight);
+
+        // Can we just use the main asset URL?
+        if (
+            $asset->getVolume()->getFs()->hasUrls &&
+            $originalWidth <= $width &&
+            $originalHeight <= $height
+        ) {
+            return $asset->getUrl();
+        }
+
+        $transform = new ImageTransform([
+            'width' => $width,
+            'height' => $height,
+            'mode' => 'crop',
+        ]);
+
+        return $transform->getImageTransformer()->getTransformUrl($asset, $transform, true);
+    }
+
+    /**
      * Returns a generic file extension icon path, that can be used as a fallback
      * for assets that don't have a normal thumbnail.
      *

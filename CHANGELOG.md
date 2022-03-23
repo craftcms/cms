@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 
 ### Removed
@@ -10,6 +11,7 @@
 
 ### Fixed
 - Fixed a bug where Categories fields were showing spinners indefinitely. ([#10801](https://github.com/craftcms/cms/issues/10801))
+- Fixed a bug where the Image Editor was loading transformed preview images, even if the original image was small enough to be loaded in its original size. ([#10802](https://github.com/craftcms/cms/issues/10802))
 
 ## 4.0.0-beta.3 - 2022-03-22
 
