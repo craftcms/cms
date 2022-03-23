@@ -286,7 +286,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function contains($array, $key, $value = true, bool $strict = false): bool
     {
-        foreach ($array as $i => $element) {
+        foreach ($array as $element) {
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
