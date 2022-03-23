@@ -72,7 +72,7 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @template T
+     * @template T of TransportAdapterInterface
      * @param class-string<T> $type
      * @param array|null $settings
      * @return T
@@ -146,8 +146,10 @@ class MailerHelper
         // Use the transport adapter settings if it was sent
         if ($transportAdapter !== null) {
             /** @var BaseTransportAdapter $transportAdapter */
-            foreach ($transportAdapter->settingsAttributes() as $name) {
-                $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
+            foreach ($transportAdapter->settingsAttributes() as $names) {
+                foreach ($names as $name) {
+                    $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
+                }
             }
         } else {
             // Otherwise just output whatever public properties we have available on the transport

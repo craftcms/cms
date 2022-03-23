@@ -12,6 +12,8 @@ use craft\base\ConfigurableComponent;
 /**
  * Php implements a PHP Mail transport adapter into Craft’s mailer.
  *
+ * @method string getAttributeLabel(string $attribute)
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

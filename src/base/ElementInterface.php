@@ -1606,4 +1606,9 @@ interface ElementInterface extends ComponentInterface
      * @param int $structureId The structure ID
      */
     public function afterMoveInStructure(int $structureId): void;
+
+    /**
+     * Returns the string representation of the element.
+     */
+    public function __toString(): string;
 }

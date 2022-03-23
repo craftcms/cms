@@ -98,7 +98,7 @@ class ImageTransform extends Model
      *
      * @var string
      */
-    protected string $transformer = self::DEFAULT_TRANSFORMER;
+    public string $transformer = self::DEFAULT_TRANSFORMER;
 
     /**
      * @inheritdoc
