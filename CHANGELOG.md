@@ -6,6 +6,9 @@
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 
+### Changed
+- CP asset thumbnails are now routed through the `Asset::getUrl()` method for homogeneity.
+
 ### Removed
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 
