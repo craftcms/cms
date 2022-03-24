@@ -244,7 +244,7 @@ class Updates extends Component
                 if ($handle === 'craft') {
                     Craft::$app->getMigrator()->up();
                     Craft::$app->getUpdates()->updateCraftVersionInfo();
-                } else if ($handle === 'content') {
+                } elseif ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
                 } else {
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);
@@ -263,7 +263,7 @@ class Updates extends Component
         // Delete all compiled templates
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
             Craft::error('Could not delete compiled templates: ' . $e->getMessage());

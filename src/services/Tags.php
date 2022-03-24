@@ -203,7 +203,7 @@ class Tags extends Component
 
         if ($isNewTagGroup) {
             $tagGroup->uid = StringHelper::UUID();
-        } else if (!$tagGroup->uid) {
+        } elseif (!$tagGroup->uid) {
             $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }
 
@@ -248,7 +248,7 @@ class Tags extends Component
                 $layout->uid = key($data['fieldLayouts']);
                 Craft::$app->getFields()->saveLayout($layout);
                 $tagGroupRecord->fieldLayoutId = $layout->id;
-            } else if ($tagGroupRecord->fieldLayoutId) {
+            } elseif ($tagGroupRecord->fieldLayoutId) {
                 // Delete the field layout
                 Craft::$app->getFields()->deleteLayoutById($tagGroupRecord->fieldLayoutId);
                 $tagGroupRecord->fieldLayoutId = null;
@@ -459,7 +459,6 @@ class Tags extends Component
      */
     public function getTagById(int $tagId, ?int $siteId = null): ?Tag
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 

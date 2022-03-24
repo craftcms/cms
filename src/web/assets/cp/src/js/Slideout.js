@@ -27,6 +27,7 @@
 
             this.$outerContainer = $('<div/>', {class: 'slideout-container hidden'});
             this.$container = $(`<${this.settings.containerElement}/>`, this.settings.containerAttributes)
+                .attr('data-slideout', '')
                 .addClass('slideout')
                 .append(contents)
                 .data('slideout', this)

@@ -238,7 +238,7 @@ class ProjectConfig
      * @return mixed
      * @throws InvalidConfigException
      */
-    private static function _cleanupConfigValue($value)
+    private static function _cleanupConfigValue(mixed $value): mixed
     {
         // Only scalars, arrays and simple objects allowed.
         if ($value instanceof StdClass) {
@@ -454,6 +454,52 @@ class ProjectConfig
     }
 
     /**
+     * Traverse a nested data array according to path and perform an action depending on parameters.
+     *
+     * @param array $data A nested array of data to traverse
+     * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
+     * @param mixed|null $value Value to set at the destination. If null, will return the value, unless deleting
+     * @param bool $delete Whether to delete the value at the destination or not.
+     * @return mixed
+     * @since 4.0.0
+     */
+    public static function traverseDataArray(array &$data, array|string $path, mixed $value = null, bool $delete = false): mixed
+    {
+        if (is_string($path)) {
+            $path = explode('.', $path);
+        }
+
+        $nextSegment = array_shift($path);
+
+        // Last piece?
+        if (count($path) === 0) {
+            if ($delete) {
+                unset($data[$nextSegment]);
+            } elseif ($value === null) {
+                return $data[$nextSegment] ?? null;
+            } else {
+                $data[$nextSegment] = $value;
+            }
+        } else {
+            if (!isset($data[$nextSegment])) {
+                // If the path doesn't exist, it's fine if we wanted to delete or read
+                if ($delete || $value === null) {
+                    return null;
+                }
+
+                $data[$nextSegment] = [];
+            } elseif (!is_array($data[$nextSegment])) {
+                // If the next part is not an array, but we have to travel further, make it an array.
+                $data[$nextSegment] = [];
+            }
+
+            return self::traverseDataArray($data[$nextSegment], $path, $value, $delete);
+        }
+
+        return null;
+    }
+
+    /**
      * Recursively looks for an array of component configs (sub-arrays indexed by UUIDs), within the given config array.
      *
      * @param array $config
@@ -480,7 +526,7 @@ class ProjectConfig
                     }
                     unset($config[$key]);
                     $split = true;
-                } else if (ArrayHelper::isAssociative($configData)) {
+                } elseif (ArrayHelper::isAssociative($configData)) {
                     // Look deeper
                     $subpath = ($path ? "$path/" : '') . $key;
                     if (static::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
@@ -571,7 +617,7 @@ class ProjectConfig
 
         // Conflict stuff. "bt" = "before timestamp"; "at" = "after timestamp"
         $inMine = $inTheirs = $foundTimestampInConflict = false;
-        $mineMarker = $theirsMarker = null;
+        $mineMarker = null;
         $btMine = $atMine = $btTheirs = $atTheirs = null;
         $conflictDl = "=======\n";
 
@@ -635,13 +681,13 @@ class ProjectConfig
                     $newContents .= $timestampLine;
                     $foundTimestamp = true;
                 }
-            } else if ($inMine) {
+            } elseif ($inMine) {
                 if ($atMine === null) {
                     $btMine .= $line;
                 } else {
                     $atMine .= $line;
                 }
-            } else if ($inTheirs) {
+            } elseif ($inTheirs) {
                 if ($atTheirs === null) {
                     $btTheirs .= $line;
                 } else {

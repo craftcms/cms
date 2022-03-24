@@ -114,7 +114,7 @@ class UpdateController extends Controller
             if ($pluginUpdate->getHasReleases()) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 if ($pluginInfo['isInstalled']) {
@@ -269,7 +269,7 @@ class UpdateController extends Controller
                 if (($latest = $pluginUpdate->getLatest()) !== null) {
                     try {
                         $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                    } catch (InvalidPluginException $e) {
+                    } catch (InvalidPluginException) {
                         continue;
                     }
                     if ($pluginInfo['isInstalled']) {
@@ -292,7 +292,7 @@ class UpdateController extends Controller
                     if (isset($updates->plugins[$handle])) {
                         try {
                             $pluginInfo = $pluginsService->getPluginInfo($handle);
-                        } catch (InvalidPluginException $e) {
+                        } catch (InvalidPluginException) {
                         }
                     }
 

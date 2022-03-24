@@ -556,7 +556,7 @@ class Cp extends Component
                 return [];
             }
 
-            $allowedValues = array_flip($allowedValues);
+            $allowedValues = array_flip(array_filter($allowedValues));
         }
 
         $options = [];
@@ -597,18 +597,21 @@ class Cp extends Component
         $options = [];
 
         foreach (array_keys($_SERVER) as $var) {
-            if (
-                is_string($var) &&
-                is_string($value = App::env($var)) &&
-                $value !== '' &&
-                ($boolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)) !== null
-            ) {
+            if (!is_string($var)) {
+                continue;
+            }
+            $value = App::env($var);
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $booleanValue = is_bool($value) ? $value : filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+            if ($booleanValue !== null) {
                 $options[] = [
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
                         'data' => [
-                            'boolean' => $boolean,
+                            'boolean' => $booleanValue,
                         ],
                     ],
                 ];

@@ -49,7 +49,7 @@ class GlobalSetQuery extends ElementQuery
      * @var string|string[]|null The handle(s) that the resulting global sets must have.
      * @used-by handle()
      */
-    public $handle;
+    public string|array|null $handle = null;
 
     /**
      * Sets the [[$editable]] property.
@@ -96,7 +96,7 @@ class GlobalSetQuery extends ElementQuery
      * @return self self reference
      * @uses $handle
      */
-    public function handle($value): self
+    public function handle(mixed $value): self
     {
         $this->handle = $value;
         return $this;
@@ -112,13 +112,9 @@ class GlobalSetQuery extends ElementQuery
         $this->query->select([
             'globalsets.name',
             'globalsets.handle',
+            'globalsets.sortOrder',
             'globalsets.uid',
         ]);
-
-        // todo: remove this condition after the next breakpoint
-        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.7.6', '>=')) {
-            $this->query->addSelect('globalsets.sortOrder');
-        }
 
         if ($this->handle) {
             $this->subQuery->andWhere(Db::parseParam('globalsets.handle', $this->handle));

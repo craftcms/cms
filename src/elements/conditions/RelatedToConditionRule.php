@@ -77,7 +77,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
                     ],
                 ],
             ]) .
-            parent::getHtml(),
+            parent::inputHtml(),
             [
                 'class' => ['flex', 'flex-nowrap'],
             ]

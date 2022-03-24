@@ -24,9 +24,9 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     public bool $sortable = false;
 
     /**
-     * @var string|null The element type being queried.
+     * @var class-string<ElementInterface>|null The element type being queried.
      */
-    public ?string $elementType;
+    public ?string $elementType = null;
 
     /**
      * @var string The field context that should be used when fetching custom fields’ condition rule types.
@@ -42,7 +42,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * Constructor.
      *
-     * @param string|null $elementType
+     * @param class-string<ElementInterface>|null $elementType
      * @param array $config
      */
     public function __construct(?string $elementType = null, array $config = [])
@@ -102,6 +102,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         if ($this->elementType !== null) {
             /** @var string|ElementInterface $elementType */
             $elementType = $this->elementType;
+
+            if ($elementType::hasContent() && $elementType::hasTitles()) {
+                $types[] = TitleConditionRule::class;
+            }
 
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;

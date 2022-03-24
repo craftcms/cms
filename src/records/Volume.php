@@ -20,6 +20,8 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Name
  * @property string $handle Handle
  * @property string $fs The filesystem handle, or an environment variable that references it
+ * @property string $transformFs The transform filesystem handle, or an environment variable that references it
+ * @property string $transformSubpath The transform filesystem subpath for storing transforms
  * @property string $titleTranslationMethod
  * @property string|null $titleTranslationKeyFormat
  * @property int $sortOrder Sort order

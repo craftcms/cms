@@ -8,8 +8,6 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use Craft;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Localization;
 use UnitTester;
 use yii\base\InvalidArgumentException;

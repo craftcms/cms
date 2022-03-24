@@ -188,7 +188,7 @@ class Users extends Component
      * @var array Cached user preferences.
      * @see getUserPreferences()
      */
-    private $_userPreferences = [];
+    private array $_userPreferences = [];
 
     /**
      * Returns a user by their ID.
@@ -202,7 +202,6 @@ class Users extends Component
      */
     public function getUserById(int $userId): ?User
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 
@@ -307,7 +306,7 @@ class Users extends Component
 
         try {
             $valid = Craft::$app->getSecurity()->validatePassword($code, $user->verificationCode);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $valid = false;
         }
 
@@ -354,7 +353,7 @@ class Users extends Component
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
             'preferences' => Json::encode($preferences),
-        ], true, [], false);
+        ]);
 
         $this->_userPreferences[$user->id] = $preferences;
     }
@@ -364,10 +363,10 @@ class Users extends Component
      *
      * @param int $userId The user’s ID
      * @param string $key The preference’s key
-     * @param mixed $default The default value, if the preference hasn’t been set
+     * @param mixed|null $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
-    public function getUserPreference(int $userId, string $key, $default = null)
+    public function getUserPreference(int $userId, string $key, mixed $default = null): mixed
     {
         $preferences = $this->getUserPreferences($userId);
         return $preferences[$key] ?? $default;
@@ -599,7 +598,7 @@ class Users extends Component
         if ($subpath !== '') {
             try {
                 $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 throw new InvalidSubpathException($subpath);
             }
         }
@@ -868,7 +867,7 @@ class Users extends Component
         }
 
         // If the user status is pending, let's activate them.
-        if ($userRecord->pending == true) {
+        if ($userRecord->pending) {
             $this->activateUser($user);
         }
 
@@ -1143,6 +1142,7 @@ class Users extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $user) {
+            /** @var User $user */
             $elementsService->deleteElement($user);
             Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
         }
@@ -1212,7 +1212,7 @@ class Users extends Component
                 foreach ($event->newGroupIds as $groupId) {
                     $values[] = [$groupId, $userId];
                 }
-                Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, true, $db);
+                Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, $db);
             }
 
             if (!empty($event->removedGroupIds)) {

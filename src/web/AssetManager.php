@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\db\Table;
 use craft\errors\DbConnectException;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
@@ -22,6 +23,18 @@ use yii\db\Exception as DbException;
 class AssetManager extends \yii\web\AssetManager
 {
     /**
+     * @inheritdoc
+     */
+    public function publish($path, $options = []): array
+    {
+        if (App::isEphemeral()) {
+            return [$path, $this->getPublishedUrl($path)];
+        }
+
+        return parent::publish($path, $options);
+    }
+
+    /**
      * Returns the URL of a published file/directory path.
      *
      * @param string $path directory or file path being published
@@ -29,9 +42,9 @@ class AssetManager extends \yii\web\AssetManager
      * @param string|null $filePath A file path, relative to $sourcePath if $sourcePath is a directory, that should be appended to the returned URL.
      * @return string|false the published URL for the file or directory, or false if $publish is false and the file or directory does not exist
      */
-    public function getPublishedUrl($path, bool $publish = false, ?string $filePath = null)
+    public function getPublishedUrl($path, bool $publish = false, ?string $filePath = null): string|false
     {
-        if ($publish === true) {
+        if ($publish === true && !App::isEphemeral()) {
             [, $url] = $this->publish($path);
         } else {
             $url = parent::getPublishedUrl($path);
@@ -70,8 +83,8 @@ class AssetManager extends \yii\web\AssetManager
             Db::upsert(Table::RESOURCEPATHS, [
                 'hash' => $hash,
                 'path' => $alias,
-            ], true, [], false);
-        } catch (DbException | DbConnectException $e) {
+            ]);
+        } catch (DbException|DbConnectException) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         }
 

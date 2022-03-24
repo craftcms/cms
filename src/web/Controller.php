@@ -53,7 +53,7 @@ abstract class Controller extends \yii\web\Controller
      * - An array of action ID/bitwise pairs (e.g. `['save-guest-entry' => self::ALLOW_ANONYMOUS_OFFLINE]` – indicates
      *   that the listed action IDs can be accessed anonymously per the bitwise int assigned to it.
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
     /**
      * @inheritdoc
@@ -64,7 +64,7 @@ abstract class Controller extends \yii\web\Controller
         // Normalize $allowAnonymous
         if (is_bool($this->allowAnonymous)) {
             $this->allowAnonymous = (int)$this->allowAnonymous;
-        } else if (is_array($this->allowAnonymous)) {
+        } elseif (is_array($this->allowAnonymous)) {
             $normalized = [];
             foreach ($this->allowAnonymous as $k => $v) {
                 if (
@@ -80,7 +80,7 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
             $this->allowAnonymous = $normalized;
-        } else if (!is_int($this->allowAnonymous)) {
+        } elseif (!is_int($this->allowAnonymous)) {
             throw new InvalidConfigException('Invalid $allowAnonymous value');
         }
 
@@ -147,7 +147,7 @@ abstract class Controller extends \yii\web\Controller
             if ($this->request->getIsCpRequest()) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
-            } else if (Craft::$app->getUser()->getIsGuest()) {
+            } elseif (Craft::$app->getUser()->getIsGuest()) {
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
@@ -222,24 +222,17 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asFailure(
         ?string $message = null,
-        ?array $errors = null,
         array $data = [],
         array $routeParams = [],
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             $this->response->setStatusCode(400);
             return $this->asJson($data + array_filter([
-                    'success' => false,
                     'message' => $message,
-                    'errors' => $errors,
                 ]));
         }
 
         $this->setFailFlash($message);
-
-        if ($errors) {
-            $routeParams += ['errors' => $errors];
-        }
 
         if (!empty($routeParams)) {
             Craft::$app->getUrlManager()->setRouteParams($routeParams);
@@ -260,11 +253,10 @@ abstract class Controller extends \yii\web\Controller
     public function asSuccess(
         ?string $message = null,
         array $data = [],
-        ?string $redirect = null
+        ?string $redirect = null,
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
-                    'success' => true,
                     'message' => $message,
                     'redirect' => $redirect,
                 ]));
@@ -286,7 +278,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
-     * @param string|null $errorAttribute The attribute to return errors from, or all if `null`
+     * @param array $routeParams Additional route params that should be set for the next controller action
      * @return YiiResponse|null
      * @since 4.0.0
      */
@@ -296,18 +288,17 @@ abstract class Controller extends \yii\web\Controller
         ?string $modelName = null,
         array $data = [],
         array $routeParams = [],
-        ?string $errorAttribute = null
     ): ?YiiResponse {
         $modelName = $modelName ?? 'model';
         $routeParams += [$modelName => $model];
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
+            'errors' => $model->getErrors(),
         ];
 
         return $this->asFailure(
             $message,
-            $model->getErrors($errorAttribute),
             $data,
             $routeParams,
         );
@@ -321,7 +312,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
      * @param string|null $redirect The default URL to redirect the request
-     * @return YiiResponse|null
+     * @return YiiResponse
      * @since 4.0.0
      */
     public function asModelSuccess(
@@ -329,7 +320,7 @@ abstract class Controller extends \yii\web\Controller
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
-        ?string $redirect = null
+        ?string $redirect = null,
     ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,
@@ -592,7 +583,7 @@ abstract class Controller extends \yii\web\Controller
      * @see YiiResponse::FORMAT_JSONP
      * @see JsonResponseFormatter
      */
-    public function asJsonP($data): YiiResponse
+    public function asJsonP(mixed $data): YiiResponse
     {
         $this->response->data = $data;
         $this->response->format = YiiResponse::FORMAT_JSONP;
@@ -608,7 +599,7 @@ abstract class Controller extends \yii\web\Controller
      * @see YiiResponse::$format
      * @see YiiResponse::FORMAT_RAW
      */
-    public function asRaw($data): YiiResponse
+    public function asRaw(mixed $data): YiiResponse
     {
         $this->response->data = $data;
         $this->response->format = YiiResponse::FORMAT_RAW;

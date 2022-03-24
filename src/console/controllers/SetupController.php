@@ -75,7 +75,7 @@ class SetupController extends Controller
      * @var bool Whether existing environment variables should be used as the default values by the `db-creds` command.
      * @see _env()
      */
-    private $_useEnvDefaults = true;
+    private bool $_useEnvDefaults = true;
 
     /**
      * @inheritdoc
@@ -310,7 +310,7 @@ EOD;
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $dbConfig = new DbConfig();
             }
         }
@@ -388,7 +388,7 @@ EOD;
                     'default' => $this->schema ?? App::env('DB_SCHEMA') ?? 'public',
                 ]);
                 $db->createCommand("SET search_path TO $this->schema;")->execute();
-            } else if ($this->schema === null) {
+            } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
                 $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
@@ -396,10 +396,10 @@ EOD;
                 // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {
                     $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
-                } catch (DbException $e) {
+                } catch (DbException) {
                     try {
                         $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
-                    } catch (DbException $e) {
+                    } catch (DbException) {
                         $allSchemas = null;
                     }
                 }
@@ -446,7 +446,7 @@ EOD;
             if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if (
+        } elseif (
             !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
             !$this->_setEnvVar('DB_SERVER', $this->server) ||
             !$this->_setEnvVar('DB_PORT', $this->port) ||

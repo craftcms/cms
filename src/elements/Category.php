@@ -32,8 +32,10 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\web\CpScreenResponseBehavior;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\web\Response;
 
 /**
  * Category represents a category element.
@@ -146,7 +148,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var CategoryGroup $context */
         return $context->handle . '_Category';
@@ -156,7 +158,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var CategoryGroup $context */
         return ['categorygroups.' . $context->uid];
@@ -166,7 +168,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var CategoryGroup $context */
         return 'save_' . $context->handle . '_Category';
@@ -203,7 +205,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(string $source): array
     {
         $fieldLayouts = [];
         if (
@@ -235,7 +237,7 @@ class Category extends Element
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupById($matches[1]);
-        } else if (preg_match('/^group:(.+)$/', $source, $matches)) {
+        } elseif (preg_match('/^group:(.+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupByUid($matches[1]);
         }
 
@@ -443,7 +445,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function route()
+    protected function route(): array|string|null
     {
         // Make sure the category group is set to have URLs for this site
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -575,7 +577,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
         $group = $this->getGroup();
 
@@ -600,7 +602,8 @@ class Category extends Element
             }
         }
 
-        return $crumbs;
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**
@@ -690,7 +693,7 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -702,7 +705,7 @@ class Category extends Element
                 $record = CategoryRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid category ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid category ID: $this->id");
                 }
             } else {
                 $record = new CategoryRecord();

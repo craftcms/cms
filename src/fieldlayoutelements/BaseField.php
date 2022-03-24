@@ -72,7 +72,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param ElementInterface|null $element
      * @return mixed
      */
-    protected function value(?ElementInterface $element = null)
+    protected function value(?ElementInterface $element = null): mixed
     {
         return $element->{$this->attribute()} ?? null;
     }
@@ -128,7 +128,7 @@ abstract class BaseField extends FieldLayoutElement
     {
         $innerHtml = '';
 
-        $label = $this->showLabel() ? $this->label() : null;
+        $label = $this->selectorLabel();
         $requiredHtml = $this->required ? Html::tag('div', '', [
             'class' => 'fld-required-indicator',
             'title' => Craft::t('app', 'This field is required'),
@@ -174,6 +174,16 @@ abstract class BaseField extends FieldLayoutElement
                 'requirable' => $this->requirable(),
             ],
         ];
+    }
+
+    /**
+     * Returns the selector label.
+     *
+     * @since 4.0.0
+     */
+    protected function selectorLabel(): ?string
+    {
+        return $this->showLabel() ? $this->label() : null;
     }
 
     /**
@@ -502,7 +512,7 @@ abstract class BaseField extends FieldLayoutElement
         if (!Craft::$app->getIsMultiSite()) {
             // Only one site so use its language
             $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
-        } else if (!$element || !$this->translatable($element, $static)) {
+        } elseif (!$element || !$this->translatable($element, $static)) {
             // Not translatable, so use the user’s language
             $locale = Craft::$app->getLocale();
         } else {

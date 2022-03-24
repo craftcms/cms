@@ -33,7 +33,7 @@ class QueueController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['run'];
+    protected array|bool|int $allowAnonymous = ['run'];
 
     /**
      * @inheritdoc
@@ -201,7 +201,7 @@ class QueueController extends Controller
 
         try {
             $details += Craft::$app->getQueue()->getJobDetails($jobId);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $details += [
                 'description' => Craft::t('app', 'Completed job'),
                 'status' => Queue::STATUS_DONE,
@@ -211,7 +211,7 @@ class QueueController extends Controller
         if (isset($details['job'])) {
             try {
                 $details['job'] = Json::encode($details['job'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // Just leave the message alone
             }
         }

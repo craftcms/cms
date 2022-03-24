@@ -111,7 +111,7 @@ trait FieldConditionRuleTrait
     {
         try {
             $value = $element->getFieldValue($this->field()->handle);
-        } catch (InvalidFieldException $e) {
+        } catch (InvalidFieldException) {
             return false;
         }
 
@@ -121,7 +121,7 @@ trait FieldConditionRuleTrait
     /**
      * @return mixed
      */
-    abstract protected function elementQueryParam();
+    abstract protected function elementQueryParam(): mixed;
 
     /**
      * @return mixed

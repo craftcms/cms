@@ -14,6 +14,7 @@
         <div class="menu">
             <ul>
                 <li><a href="{{ craft.cp.craftIdAccountUrl() }}" rel="noopener" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+                {#
                 <li>
                     <form method="post" id="disconnect">
                         {{ csrfInput() }}
@@ -21,9 +22,11 @@
                         <a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
                     </form>
                 </li>
+                #}
             </ul>
         </div>
 
+        {#
         <form id="craftid-connect-form" method="post">
             {{ csrfInput() }}
             {{ actionInput('plugin-store/connect') }}
@@ -32,6 +35,7 @@
             </div>
             <a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
         </form>
+        #}
     </div>
 {% endblock %}
 

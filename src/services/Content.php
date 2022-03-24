@@ -42,7 +42,7 @@ class Content extends Component
      * @var Connection|array|string The database connection to use
      * @since 3.5.6
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var string
@@ -158,7 +158,7 @@ class Content extends Component
             ], [], true, $this->db);
         } else {
             // Insert a new row and store its ID on the element
-            Db::insert($this->contentTable, $values, true, $this->db);
+            Db::insert($this->contentTable, $values, $this->db);
             $element->contentId = $this->db->getLastInsertID($this->contentTable);
         }
 
@@ -189,7 +189,7 @@ class Content extends Component
                 $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
                 $row[$fieldHandle] = $value;
                 unset($row[$column]);
-            } else if (!in_array($column, ['id', 'elementId', 'title', 'dateCreated', 'dateUpdated', 'uid', 'siteId'], true)) {
+            } elseif (!in_array($column, ['id', 'elementId', 'title', 'dateCreated', 'dateUpdated', 'uid', 'siteId'], true)) {
                 unset($row[$column]);
             }
         }

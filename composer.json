@@ -1,7 +1,6 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "4.0.0-alpha.1",
   "keywords": [
     "cms",
     "craftcms",
@@ -36,6 +35,7 @@
     "ext-pdo": "*",
     "ext-zip": "*",
     "bacon/bacon-qr-code": "^2.0.0",
+    "commerceguys/addressing": "^1.2",
     "composer/composer": "2.1.9",
     "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.5.6",
@@ -48,13 +48,15 @@
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
+    "monolog/monolog": "^2.3",
     "pixelandtonic/imagine": "~1.2.4.1",
-    "pragmarx/google2fa": "^8.0.0",
     "pragmarx/google2fa-qrcode": "^2.0.0",
+    "samdark/yii2-psr-log-target": "^1.1",
     "seld/cli-prompt": "^1.0.4",
     "symfony/http-client": "^6.0.3",
     "symfony/var-dumper": "^5.0|^6.0",
     "symfony/yaml": "^5.2.3",
+    "theiconic/name-parser": "^1.2",
     "true/punycode": "^2.1.1",
     "twig/twig": "~3.3.0",
     "voku/stringy": "^6.4.0",
@@ -72,6 +74,7 @@
     "codeception/module-phpbrowser": "^1.0.2",
     "codeception/module-rest": "^1.4.2",
     "codeception/module-yii2": "^1.1.5",
+    "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
     "phpstan/phpstan": "^1.4.6",
@@ -99,6 +102,8 @@
     }
   },
   "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G"
   },

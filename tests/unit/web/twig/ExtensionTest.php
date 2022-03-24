@@ -10,6 +10,7 @@ namespace crafttests\unit\web\twig;
 use ArrayObject;
 use Codeception\Test\Unit;
 use Craft;
+use craft\elements\Address;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\fields\MissingField;
@@ -18,8 +19,8 @@ use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use TypeError;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -50,8 +51,8 @@ class ExtensionTest extends Unit
     {
         return [
             'globals' => [
-                'class' => GlobalSetFixture::class
-            ]
+                'class' => GlobalSetFixture::class,
+            ],
         ];
     }
 
@@ -522,7 +523,7 @@ class ExtensionTest extends Unit
             '4 days',
             '{{ d|date("%d days") }}',
             [
-                'd' => new \DateInterval('P2Y4DT6H8M')
+                'd' => new \DateInterval('P2Y4DT6H8M'),
             ]
         );
 
@@ -671,12 +672,6 @@ class ExtensionTest extends Unit
      */
     public function testGroupFilter()
     {
-        // deprecated element query
-        $this->testRenderResult(
-            TestSetup::USERNAME,
-            '{{ craft.users().id(1)|group("username")|keys|join(",") }}'
-        );
-
         $this->testRenderResult(
             TestSetup::USERNAME,
             '{{ craft.users().id(1).all()|group("username")|keys|join(",") }}'
@@ -688,7 +683,7 @@ class ExtensionTest extends Unit
         );
 
         // invalid value
-        self::expectException(RuntimeError::class);
+        self::expectException(TypeError::class);
         $this->view->renderString('{% do "foo"|group("bar") %}');
     }
 
@@ -753,6 +748,32 @@ class ExtensionTest extends Unit
             '<strong>Hello</strong>',
             '{{ "**Hello**"|md(inlineOnly=true) }}'
         );
+    }
+
+    /**
+     * @param string $renderString
+     * @param array $variables
+     * @param string $expected
+     * @return void
+     * @throws LoaderError
+     * @throws SyntaxError
+     * @dataProvider addressFilterDataProvider
+     */
+    public function testAddressFilter(string $renderString, array $variables, string $expected)
+    {
+        $this->testRenderResult($expected, $renderString, $variables);
+    }
+
+    public function addressFilterDataProvider(): array
+    {
+        return [
+            ['{{ myAddress|address }}', ['myAddress' => Craft::createObject(Address::class, ['config' => ['attributes' => ['addressLine1' => '1 Main Stree', 'postalCode' => '12345', 'countryCode' => 'US', 'administrativeArea' => 'OR']]])], '<p translate="no">
+<span class="address-line1">1 Main Stree</span><br>
+<span class="administrative-area">OR</span> <span class="postal-code">12345</span><br>
+<span class="country">United States</span>
+</p>'],
+            ['{{ myAddress|address }}', ['myAddress' => null], ''],
+        ];
     }
 
     /**
@@ -907,7 +928,7 @@ class ExtensionTest extends Unit
             'yes',
             '{% set q2 = clone(q) %}{{ q2.sectionId == q.sectionId and q2 is not same as(q) ? "yes" : "no" }}',
             [
-                'q' => Entry::find()->sectionId(10)
+                'q' => Entry::find()->sectionId(10),
             ]
         );
     }
@@ -960,7 +981,7 @@ class ExtensionTest extends Unit
     {
         $array = [
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
         ];
 
         $this->testRenderResult(

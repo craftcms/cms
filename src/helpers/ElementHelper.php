@@ -398,7 +398,10 @@ class ElementHelper
     public static function rootElement(ElementInterface $element): ElementInterface
     {
         if ($element instanceof BlockElementInterface) {
-            return static::rootElement($element->getOwner());
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::rootElement($owner);
+            }
         }
         return $element;
     }
@@ -512,7 +515,7 @@ class ElementHelper
      *
      * @param iterable|ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements($elements): void
+    public static function setNextPrevOnElements(iterable $elements): void
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;
@@ -528,9 +531,7 @@ class ElementHelper
             $lastElement = $element;
         }
 
-        if ($lastElement) {
-            $lastElement->setNext(false);
-        }
+        $lastElement?->setNext(false);
     }
 
     /**
@@ -549,7 +550,7 @@ class ElementHelper
     /**
      * Returns an element type's source definition based on a given source key/path and context.
      *
-     * @param string $elementType The element type class
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The source key/path
      * @param string $context The context
      * @return array|null The source definition, or null if it cannot be found
@@ -605,16 +606,12 @@ class ElementHelper
      */
     public static function translationDescription(string $translationMethod): ?string
     {
-        switch ($translationMethod) {
-            case Field::TRANSLATION_METHOD_SITE:
-                return Craft::t('app', 'This field is translated for each site.');
-            case Field::TRANSLATION_METHOD_SITE_GROUP:
-                return Craft::t('app', 'This field is translated for each site group.');
-            case Field::TRANSLATION_METHOD_LANGUAGE:
-                return Craft::t('app', 'This field is translated for each language.');
-            default:
-                return null;
-        }
+        return match ($translationMethod) {
+            Field::TRANSLATION_METHOD_SITE => Craft::t('app', 'This field is translated for each site.'),
+            Field::TRANSLATION_METHOD_SITE_GROUP => Craft::t('app', 'This field is translated for each site group.'),
+            Field::TRANSLATION_METHOD_LANGUAGE => Craft::t('app', 'This field is translated for each language.'),
+            default => null,
+        };
     }
 
     /**

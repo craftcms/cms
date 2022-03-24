@@ -68,7 +68,6 @@ class Tag extends ElementMutationResolver
         $tag = $this->populateElementWithData($tag, $arguments, $resolveInfo);
         $tag = $this->saveElement($tag);
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $elementService->getElementById($tag->id, TagElement::class);
     }
 

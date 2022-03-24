@@ -308,16 +308,11 @@ class I18N extends \yii\i18n\I18N
         }
 
         if ($this->_shouldAddTranslationDebugOutput()) {
-            switch ($category) {
-                case 'site':
-                    $char = '$';
-                    break;
-                case 'app':
-                    $char = '@';
-                    break;
-                default:
-                    $char = '%';
-            }
+            $char = match ($category) {
+                'site' => '$',
+                'app' => '@',
+                default => '%',
+            };
 
             $translation = $char . $translation . $char;
         }

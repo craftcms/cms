@@ -94,17 +94,7 @@ class Table extends Field
      */
     public function __construct($config = [])
     {
-        // Config normalization
-        foreach (['minRows', 'maxRows', 'addRowLabel'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-
-        if (!isset($config['addRowLabel'])) {
-            $config['addRowLabel'] = Craft::t('app', 'Add a row');
-        }
-
+        // Config normalization}
         if (array_key_exists('columns', $config)) {
             if (!is_array($config['columns'])) {
                 unset($config['columns']);
@@ -119,7 +109,7 @@ class Table extends Field
                     if ($column['type'] === 'select') {
                         if (!isset($column['options'])) {
                             $column['options'] = [];
-                        } else if (is_string($column['options'])) {
+                        } elseif (is_string($column['options'])) {
                             $column['options'] = Json::decode($column['options']);
                         }
                     } else {
@@ -158,6 +148,18 @@ class Table extends Field
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->addRowLabel)) {
+            $this->addRowLabel = Craft::t('app', 'Add a row');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -181,7 +183,7 @@ class Table extends Field
                     $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
                         'handle' => $col['handle'],
                     ]);
-                } else if (preg_match('/^col\d+$/', $col['handle'])) {
+                } elseif (preg_match('/^col\d+$/', $col['handle'])) {
                     $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
                         'format' => 'colX',
                     ]);
@@ -353,7 +355,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -395,11 +397,11 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === null && $this->isFresh($element)) {
+        } elseif ($value === null && $this->isFresh($element)) {
             $value = array_values($this->defaults ?? []);
         }
 
@@ -412,7 +414,7 @@ class Table extends Field
             foreach ($this->columns as $colId => $col) {
                 if (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
-                } else if ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
                 } else {
                     $cellValue = null;
@@ -431,7 +433,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (!is_array($value) || empty($this->columns)) {
             return null;
@@ -459,7 +461,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         if (!is_array($value) || empty($this->columns)) {
             return '';
@@ -481,7 +483,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
     }
@@ -490,7 +492,7 @@ class Table extends Field
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         $type = TableRowTypeGenerator::generateType($this);
         return Type::listOf($type);
@@ -500,7 +502,7 @@ class Table extends Field
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         $typeName = $this->handle . '_TableRowInput';
 
@@ -528,7 +530,7 @@ class Table extends Field
      * @return mixed
      * @see normalizeValue()
      */
-    private function _normalizeCellValue(string $type, $value)
+    private function _normalizeCellValue(string $type, mixed $value): mixed
     {
         switch ($type) {
             case 'color':
@@ -558,6 +560,7 @@ class Table extends Field
                     $value = LitEmoji::shortcodeToUnicode($value);
                     return trim(preg_replace('/\R/u', "\n", $value));
                 }
+                // no break
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
@@ -575,7 +578,7 @@ class Table extends Field
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
-    private function _validateCellValue(string $type, $value, ?string &$error = null): bool
+    private function _validateCellValue(string $type, mixed $value, ?string &$error = null): bool
     {
         if ($value === null || $value === '') {
             return true;
@@ -609,7 +612,7 @@ class Table extends Field
      * @param bool $static
      * @return string
      */
-    private function _getInputHtml($value, ?ElementInterface $element, bool $static): string
+    private function _getInputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
         if (empty($this->columns)) {
             return '';

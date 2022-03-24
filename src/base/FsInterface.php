@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -10,7 +11,6 @@ namespace craft\base;
 
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
-use craft\models\FsListing;
 use Generator;
 
 /**
@@ -28,7 +28,7 @@ interface FsInterface extends SavableComponentInterface
      *
      * @param string $directory The path of the directory to list files of
      * @param bool $recursive whether to fetch file list recursively, defaults to true
-     * @return Generator|FsListing[]
+     * @return Generator
      * @throws FsException
      */
     public function getFileList(string $directory = '', bool $recursive = true): Generator;

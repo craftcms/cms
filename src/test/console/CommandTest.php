@@ -7,11 +7,9 @@
 
 namespace craft\test\console;
 
-use Closure;
 use Codeception\Stub;
 use Craft;
 use craft\console\Controller;
-use Traversable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -34,62 +32,62 @@ class CommandTest
     /**
      * @var ConsoleTest
      */
-    protected $test;
+    protected ConsoleTest $test;
 
     /**
      * @var string
      */
-    protected $command;
+    protected string $command;
 
     /**
      * @var array
      */
-    protected $parameters;
+    protected array $parameters;
 
     /**
      * @var bool
      */
-    protected $ignoreStdout = false;
+    protected bool $ignoreStdout = false;
 
     /**
      * @var int
      */
-    protected $expectedExitCode;
+    protected int $expectedExitCode;
 
     /**
      * @var bool
      */
-    protected $hasExecuted = false;
+    protected bool $hasExecuted = false;
 
     /**
      * @var array|CommandTestItem
      */
-    protected $eventChain = [];
+    protected CommandTestItem|array $eventChain = [];
 
     /**
      * @var integer
      */
-    protected $currentIndex;
+    protected int $currentIndex;
 
     /**
      * @var Controller
      */
-    protected $controller;
+    protected Controller $controller;
 
     /**
      * @var string
      */
-    protected $actionId;
+    protected string $actionId;
 
     /**
      * @var int
      */
-    protected $desiredExitCode;
+    protected int $desiredExitCode;
 
     /**
      * @var int
      */
-    protected $eventChainItemsHandled = 0;
+    protected int $eventChainItemsHandled = 0;
 
     /**
      * CommandTest constructor.
@@ -134,10 +132,10 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @return CommandTest
      */
-    public function stdout($desiredOutput): CommandTest
+    public function stdout(iterable|string $desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_OUT,
@@ -146,11 +144,11 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @param bool $withScriptName
      * @return CommandTest
      */
-    public function outputCommand($desiredOutput, bool $withScriptName = true): CommandTest
+    public function outputCommand(iterable|string $desiredOutput, bool $withScriptName = true): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::OUTPUT_COMMAND,
@@ -160,10 +158,10 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @return CommandTest
      */
-    public function stderr($desiredOutput): CommandTest
+    public function stderr(iterable|string $desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_ERR,
@@ -204,12 +202,12 @@ class CommandTest
     }
 
     /**
-     * @param $prompt
+     * @param string $prompt
      * @param $returnValue
      * @param array $options
      * @return CommandTest
      */
-    public function select(string $prompt, $returnValue, $options = []): CommandTest
+    public function select(string $prompt, $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::SELECT,
@@ -252,9 +250,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function outputCommandHandler(): Closure
+    protected function outputCommandHandler(): callable
     {
         return function($out, $withScriptName = true) {
             $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
@@ -268,9 +266,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function stdoutHandler(): Closure
+    protected function stdoutHandler(): callable
     {
         return function($out) {
             if (!$this->ignoreStdout) {
@@ -285,9 +283,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function stderrHandler(): Closure
+    protected function stderrHandler(): callable
     {
         return function($out) {
             $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
@@ -300,9 +298,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function promptHandler(): Closure
+    protected function promptHandler(): callable
     {
         return function($text, $options = []) {
             $nextItem = $this->runHandlerCheck('A prompt with value: ' . $text, self::PROMPT);
@@ -313,9 +311,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function confirmHandler(): Closure
+    protected function confirmHandler(): callable
     {
         return function($message, $default = false) {
             $nextItem = $this->runHandlerCheck('A confirm with value: ' . $message, self::CONFIRM);
@@ -326,9 +324,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function selectHandler(): Closure
+    protected function selectHandler(): callable
     {
         return function($prompt, $options = []) {
             $nextItem = $this->runHandlerCheck('A select with value: ' . $prompt, self::SELECT);

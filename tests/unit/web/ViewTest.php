@@ -12,7 +12,7 @@ use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\Json;
 use craft\test\Craft as CraftTest;
-use craft\test\mockclasses\arrayable\ExampleArrayble;
+use craft\test\mockclasses\arrayable\ExampleArrayable;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
@@ -52,8 +52,8 @@ class ViewTest extends TestCase
     {
         return [
             'sites' => [
-                'class' => SitesFixture::class
-            ]
+                'class' => SitesFixture::class,
+            ],
         ];
     }
 
@@ -118,7 +118,7 @@ class ViewTest extends TestCase
         string $basePath,
         string $name,
         ?array $defaultTemplateExtensions = null,
-        ?array $indexTemplateFilenames = null
+        ?array $indexTemplateFilenames = null,
     ) {
         // If the data wants to set something custom? Set it as a prop.
         if ($defaultTemplateExtensions !== null) {
@@ -268,8 +268,8 @@ class ViewTest extends TestCase
                 },
                 function($val) {
                     return $val[0];
-                }
-            ]
+                },
+            ],
         ]);
 
         $var = ['333'];
@@ -380,7 +380,7 @@ class ViewTest extends TestCase
             ],
             View::POS_BEGIN => [
                 'bar' => 'var bar = true;',
-            ]
+            ],
         ], $view->clearJsBuffer(false, false));
     }
 
@@ -523,7 +523,7 @@ TWIG;
         $model = new ExampleModel();
         $model->exampleParam = 'Example Param';
 
-        $arrayable = new ExampleArrayble();
+        $arrayable = new ExampleArrayable();
         $arrayable->exampleArrayableParam = 'Example param';
         $arrayable->extraField = 'ExtraField';
 
@@ -663,7 +663,7 @@ TWIG;
                 'registerJs' => function($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
                     self::assertSame($desiredJs, $inputJs);
                     self::assertSame($desiredPosition, $inputPosition);
-                }
+                },
             ]
         );
     }

@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -66,7 +67,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
 
         if ($newValue === null && is_array($oldValue)) {
             $this->removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
-        } else if (is_array($newValue)) {
+        } elseif (is_array($newValue)) {
             $this->setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
         }
 
@@ -75,7 +76,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             if ($newValue === null && $oldValue !== null) {
                 // Fire a 'removeItem' event
                 $projectConfig->trigger(ProjectConfigService::EVENT_REMOVE_ITEM, $event);
-            } else if ($oldValue === null && $newValue !== null) {
+            } elseif ($oldValue === null && $newValue !== null) {
                 // Fire an 'addItem' event
                 $projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
             } else {
@@ -117,7 +118,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             $this->delete($path);
         }
 
-        $this->traverseDataArray($this->data, $path, $value);
+        ProjectConfigHelper::traverseDataArray($this->data, $path, $value);
     }
 
     /**
@@ -126,9 +127,11 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      * @param $path
      * @return mixed|null
      */
-    protected function delete($path)
+    protected function delete($path): mixed
     {
-        return $this->traverseDataArray($this->data, $path, null, true);
+        ProjectConfigHelper::traverseDataArray($this->data, $path, null, true);
+
+        return null;
     }
 
     /**

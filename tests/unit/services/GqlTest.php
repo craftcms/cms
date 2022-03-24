@@ -18,6 +18,7 @@ use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlMutationsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
+use craft\fs\Local;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
@@ -39,7 +40,6 @@ use craft\services\UserGroups;
 use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
-use craft\fs\Local;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;
@@ -97,7 +97,7 @@ class GqlTest extends Unit
             $event->queries['mockQuery'] = [
                 'type' => [],
                 'args' => [],
-                'resolve' => []
+                'resolve' => [],
             ];
         });
 
@@ -114,7 +114,7 @@ class GqlTest extends Unit
             $event->mutations['mockMutation'] = [
                 'type' => [],
                 'args' => [],
-                'resolve' => []
+                'resolve' => [],
             ];
         });
 
@@ -129,7 +129,7 @@ class GqlTest extends Unit
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['mockQuery'] = [
-                'type' => 'no bueno'
+                'type' => 'no bueno',
             ];
         });
 
@@ -277,13 +277,13 @@ class GqlTest extends Unit
                     'id' => 1,
                     'uid' => 'sectionUid',
                     'name' => 'Test section',
-                    'type' => 'channel'
+                    'type' => 'channel',
                 ]),
                 new Section([
                     'id' => 2,
                     'uid' => 'otherSectionUid',
                     'name' => 'Other test section',
-                    'type' => 'single'
+                    'type' => 'single',
                 ]),
             ],
             'getAllEntryTypes' => [
@@ -291,15 +291,15 @@ class GqlTest extends Unit
                     'id' => 1,
                     'uid' => 'entryTypeUid',
                     'name' => 'Test entry type',
-                    'sectionId' => 1
+                    'sectionId' => 1,
                 ]),
                 new EntryType([
                     'id' => 2,
                     'uid' => 'entryTypeUid',
                     'name' => 'Test entry type',
-                    'sectionId' => 2
+                    'sectionId' => 2,
                 ]),
-            ]
+            ],
         ]);
 
         $volumeService = $this->make(Volumes::class, [
@@ -307,47 +307,47 @@ class GqlTest extends Unit
                 new Local([
                     'id' => 1,
                     'name' => 'Test volume',
-                    'uid' => 'volumeUid'
-                ])
-            ]
+                    'uid' => 'volumeUid',
+                ]),
+            ],
         ]);
 
         $globalService = $this->make(Globals::class, [
-           'getAllSets' => [
-               new GlobalSet([
-                   'id' => 1,
-                   'name' => 'Test global',
-                   'uid' => 'globalUid'
-               ])
-           ]
+            'getAllSets' => [
+                new GlobalSet([
+                    'id' => 1,
+                    'name' => 'Test global',
+                    'uid' => 'globalUid',
+                ]),
+            ],
         ]);
         $categoryService = $this->make(Categories::class, [
-           'getAllGroups' => [
-               new CategoryGroup([
-                   'id' => 1,
-                   'name' => 'Test category group',
-                   'uid' => 'categoryGroupUid'
-               ])
-           ]
+            'getAllGroups' => [
+                new CategoryGroup([
+                    'id' => 1,
+                    'name' => 'Test category group',
+                    'uid' => 'categoryGroupUid',
+                ]),
+            ],
         ]);
         $tagService = $this->make(Tags::class, [
-           'getAllTagGroups' => [
-               new TagGroup([
-                   'id' => 1,
-                   'name' => 'Test tag group',
-                   'uid' => 'tagGroupUid'
-               ])
-           ]
+            'getAllTagGroups' => [
+                new TagGroup([
+                    'id' => 1,
+                    'name' => 'Test tag group',
+                    'uid' => 'tagGroupUid',
+                ]),
+            ],
         ]);
 
         $userGroupService = $this->make(UserGroups::class, [
-           'getAllGroups' => [
-               new UserGroup([
-                   'id' => 1,
-                   'name' => 'Test user group',
-                   'uid' => 'userGroupUid'
-               ])
-           ]
+            'getAllGroups' => [
+                new UserGroup([
+                    'id' => 1,
+                    'name' => 'Test user group',
+                    'uid' => 'userGroupUid',
+                ]),
+            ],
         ]);
 
         Craft::$app->set('sections', $sectionService);
@@ -376,7 +376,6 @@ class GqlTest extends Unit
         self::assertNotEmpty($allSchemaComponents['mutations']['Global sets'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Categories'] ?? []);
         self::assertNotEmpty($allSchemaComponents['mutations']['Tags'] ?? []);
-
     }
 
     /**
@@ -393,7 +392,7 @@ class GqlTest extends Unit
 
         $schema = new GqlSchema([
             'name' => StringHelper::randomString(15),
-            'scope' => []
+            'scope' => [],
         ]);
 
         self::assertEquals($cacheValue, $gql->getCachedResult($cacheKey));

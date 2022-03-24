@@ -21,9 +21,9 @@ use craft\queue\BaseJob;
 class PruneRevisions extends BaseJob
 {
     /**
-     * @var string|ElementInterface The type of elements to update.
+     * @var class-string<ElementInterface> The type of elements to update.
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var int The ID of the canonical element.
@@ -55,6 +55,7 @@ class PruneRevisions extends BaseJob
             $this->maxRevisions = $generalConfig->maxRevisions;
         }
 
+        /** @var string|ElementInterface $class */
         $class = $this->elementType;
         $extraRevisions = $class::find()
             ->revisionOf($this->canonicalId)

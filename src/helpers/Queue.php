@@ -38,7 +38,7 @@ class Queue
                 ->delay($delay)
                 ->ttr($ttr)
                 ->push($job);
-        } catch (NotSupportedException $e) {
+        } catch (NotSupportedException) {
             // Some queue drivers don't support priority
             return $queue
                 ->delay($delay)

@@ -29,21 +29,21 @@ use yii\db\Schema;
  */
 class DbHelperTest extends Unit
 {
-    const MULTI_PARSEPARAM_NOT = [
+    public const MULTI_PARSEPARAM_NOT = [
         'or',
         [
             '!=',
             'foo',
-            'field_1'
+            'field_1',
         ],
         [
             '!=',
             'foo',
-            'field_2'
-        ]
+            'field_2',
+        ],
     ];
 
-    const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
+    public const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
 
     /**
      * @var UnitTester
@@ -317,7 +317,7 @@ class DbHelperTest extends Unit
         return [
             'basic' => [
                 ['foo' => 'bar'],
-                'foo', 'bar'
+                'foo', 'bar',
             ],
             'multi-array-format' => [
                 self::MULTI_PARSEPARAM,
@@ -325,7 +325,7 @@ class DbHelperTest extends Unit
             ],
             'multi-split-by-comma' => [
                 self::MULTI_PARSEPARAM,
-                'foo', 'field_1, field_2'
+                'foo', 'field_1, field_2',
             ],
             'multi-not-param' => [
                 self::MULTI_PARSEPARAM_NOT,
@@ -333,7 +333,7 @@ class DbHelperTest extends Unit
             ],
             'multi-not-symbol' => [
                 self::MULTI_PARSEPARAM_NOT,
-                'foo', 'field_1, field_2', '!='
+                'foo', 'field_1, field_2', '!=',
             ],
             'random-symbol' => [
                 ['raaa', 'foo', 'field_1'],
@@ -343,7 +343,7 @@ class DbHelperTest extends Unit
                 [
                     'or',
                     ['raaa', 'foo', 'field_1'],
-                    ['raaa', 'foo', 'field_2']
+                    ['raaa', 'foo', 'field_2'],
                 ],
                 'foo', 'field_1, field_2', 'raaa',
             ],
@@ -411,7 +411,7 @@ class DbHelperTest extends Unit
         return [
             ['\*', '*'],
             ['\,', ','],
-            ['\,\*', ',*']
+            ['\,\*', ',*'],
         ];
     }
 
@@ -477,7 +477,7 @@ class DbHelperTest extends Unit
             ['numeric', 'Decimal'],
             ['textual', 'Longtext'],
             ['textual', 'string!@#$%^&*()'],
-            ['!@#$%', '!@#$%']
+            ['!@#$%', '!@#$%'],
         ];
     }
 
@@ -511,7 +511,7 @@ class DbHelperTest extends Unit
             ['Serialized data', $serializable],
             [false, false],
             ['😀😘', '😀😘'],
-            ['🆔', '🆔']
+            ['🆔', '🆔'],
         ];
     }
 
@@ -593,7 +593,7 @@ class DbHelperTest extends Unit
         return [
             [2147483647, 'integer(9)'],
             [false, 'stuff(9)'],
-            [9223372036854775807, 'bigint(9223372036854775807)']
+            [9223372036854775807, 'bigint(9223372036854775807)'],
         ];
     }
 
@@ -605,7 +605,6 @@ class DbHelperTest extends Unit
         return [
             [-2147483648, 'integer(9)'],
             [false, 'stuff(9)'],
-            [-9223372036854775808, 'bigint(9223372036854775807)']
         ];
     }
 
@@ -628,7 +627,7 @@ class DbHelperTest extends Unit
             [['{"JsonArray":"SomeArray"}'], [$jsonableArray]],
             [['Serialized data'], [$serializable]],
             [[false], [false]],
-            [['😀😘'], ['😀😘']]
+            [['😀😘'], ['😀😘']],
         ];
     }
 

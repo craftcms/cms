@@ -31,5 +31,5 @@ class RouteEvent extends Event
     /**
      * @var string|null The site UID the route should be limited to, if any
      */
-    public ?string $siteUid;
+    public ?string $siteUid = null;
 }

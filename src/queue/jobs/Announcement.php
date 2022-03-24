@@ -87,7 +87,7 @@ class Announcement extends BaseJob
                 'heading',
                 'body',
                 'dateCreated',
-            ], $rows, false)->execute();
+            ], $rows)->execute();
         }
     }
 

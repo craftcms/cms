@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -20,7 +21,7 @@ use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
 use craft\events\ConfigEvent;
 use craft\events\ImageTransformEvent;
-use craft\events\RegisterImageTransformersEvent;
+use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -34,6 +35,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\di\Instance;
 
 /**
@@ -74,24 +76,19 @@ class ImageTransforms extends Component
     public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
-     */
-    public const EVENT_GENERATE_TRANSFORM = 'generateTransform';
-
-    /**
      * @event AssetEvent The event that is triggered when a transform is being generated for an Asset.
      */
     public const EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS = 'beforeInvalidateAssetTransforms';
 
     /**
-     * @event RegisterImageTransformersEvent The event that is triggered when registering image transformers.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering image transformers.
      */
     public const EVENT_REGISTER_IMAGE_TRANSFORMERS = 'registerImageTransformers';
 
     /**
      * @var Connection|array|string The database connection to use
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var MemoizableArray<ImageTransform>|null
@@ -102,7 +99,7 @@ class ImageTransforms extends Component
     /**
      * @var ImageTransformerInterface[]
      */
-    private $_imageTransformers = [];
+    private array $_imageTransformers = [];
 
     /**
      * Serializer
@@ -211,7 +208,7 @@ class ImageTransforms extends Component
 
         if ($isNewTransform) {
             $transform->uid = StringHelper::UUID();
-        } else if (!$transform->uid) {
+        } elseif (!$transform->uid) {
             $transform->uid = Db::uidById(Table::IMAGETRANSFORMS, $transform->id, $this->db);
         }
 
@@ -312,7 +309,7 @@ class ImageTransforms extends Component
      *
      * @param int $transformId The transform's ID
      * @return bool Whether the transform was deleted.
-     * @throws \yii\db\Exception on DB error
+     * @throws Exception on DB error
      */
     public function deleteTransformById(int $transformId): bool
     {
@@ -330,9 +327,8 @@ class ImageTransforms extends Component
      *
      * Note that passing an ID to this function is now deprecated. Use [[deleteTransformById()]] instead.
      *
-     * @param int|ImageTransform $transform The transform
+     * @param ImageTransform $transform The transform
      * @return bool Whether the transform was deleted
-     * @throws \yii\db\Exception on DB error
      */
     public function deleteTransform(ImageTransform $transform): bool
     {
@@ -426,7 +422,7 @@ class ImageTransforms extends Component
             // Is this a srcset-style size (2x, 100w, etc.)?
             try {
                 [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // All good.
             }
 
@@ -470,9 +466,30 @@ class ImageTransforms extends Component
     }
 
     /**
-     * @param string $type
+     * Get all image transformer types.
+     *
+     * @return array
+     */
+    public function getAllImageTransformerTypes(): array
+    {
+        $transformerTypes = [
+            ImageTransformer::class,
+        ];
+
+        $event = new RegisterComponentTypesEvent([
+            'types' => $transformerTypes,
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
+
+        return $event->types;
+    }
+
+    /**
+     * @template T
+     * @param class-string<T> $type
      * @param array $config
-     * @return ImageTransformerInterface
+     * @return T
      * @throws InvalidConfigException
      */
     public function getImageTransformer(string $type, array $config = []): ImageTransformerInterface
@@ -513,7 +530,6 @@ class ImageTransforms extends Component
     public function deleteResizedAssetVersion(Asset $asset): void
     {
         $dirs = [
-            Craft::$app->getPath()->getAssetThumbsPath(),
             Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id,
         ];
 
@@ -545,7 +561,7 @@ class ImageTransforms extends Component
         // Fire a 'beforeInvalidateAssetTransforms' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS)) {
             $this->trigger(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS, new AssetEvent([
-                'asset' => $asset
+                'asset' => $asset,
             ]));
         }
 
@@ -565,16 +581,16 @@ class ImageTransforms extends Component
     public function getAllImageTransformers(): array
     {
         $transformers = [
-            ImageTransformer::class
+            ImageTransformer::class,
         ];
 
-        $event = new RegisterImageTransformersEvent([
-            'transformers' => $transformers,
+        $event = new RegisterComponentTypesEvent([
+            'types' => $transformers,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
 
-        return $event->transformers;
+        return $event->types;
     }
 
     /**

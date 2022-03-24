@@ -100,13 +100,10 @@ class PluginStore extends Component
         } else {
             // Save token to database
 
-            $oauthTokenRecord = OauthTokenRecord::find()
+            OauthTokenRecord::find()
                 ->where(['userId' => $userId])
-                ->one();
-
-            if ($oauthTokenRecord) {
-                $oauthTokenRecord->delete();
-            }
+                ->one()
+                ?->delete();
 
             $oauthTokenRecord = new OauthTokenRecord();
             $oauthTokenRecord->userId = $oauthToken->userId;
@@ -156,17 +153,12 @@ class PluginStore extends Component
     public function deleteToken(): void
     {
         // Delete DB token
-
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        $oauthToken = OauthTokenRecord::find()
+        OauthTokenRecord::find()
             ->where(['userId' => $userId])
-            ->one();
-
-        if ($oauthToken) {
-            $oauthToken->delete();
-        }
-
+            ->one()
+            ?->delete();
 
         // Delete session token
         Session::remove('pluginStore.token');

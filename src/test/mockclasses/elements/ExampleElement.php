@@ -26,7 +26,7 @@ class ExampleElement extends Element
     /**
      * @var mixed
      */
-    public $someField;
+    public mixed $someField = null;
 
     /**
      * @inheritdoc

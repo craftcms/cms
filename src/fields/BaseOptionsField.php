@@ -67,7 +67,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                         'value' => $key,
                         'default' => '',
                     ];
-                } else if (!empty($option['isOptgroup'])) {
+                } elseif (!empty($option['isOptgroup'])) {
                     // isOptgroup will be set if this is a settings request
                     $options[] = [
                         'optgroup' => $option['label'],
@@ -237,7 +237,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof MultiOptionsFieldData || $value instanceof SingleOptionFieldData) {
             return $value;
@@ -248,9 +248,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 str_starts_with($value, '{')
             )) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === '' && $this->multi) {
+        } elseif ($value === '' && $this->multi) {
             $value = [];
-        } else if ($value === null && $this->isFresh($element)) {
+        } elseif ($value === null && $this->isFresh($element)) {
             $value = $this->defaultValue();
         }
 
@@ -282,7 +282,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 $selectedOptions[] = new OptionData($label, $selectedValue, true, $valid);
             }
             $value = new MultiOptionsFieldData($selectedOptions);
-        } else if (!empty($selectedValues)) {
+        } elseif (!empty($selectedValues)) {
             // Convert the value to a SingleOptionFieldData object
             $selectedValue = reset($selectedValues);
             $index = array_search($selectedValue, $optionValues, true);
@@ -301,7 +301,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof MultiOptionsFieldData) {
             $serialized = [];
@@ -318,7 +318,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         $keywords = [];
 
@@ -342,7 +342,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return OptionsFieldConditionRule::class;
     }
@@ -351,7 +351,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @inheritdoc
      * @since 3.4.6
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         // foo => *"foo"*
         if ($this->multi) {
@@ -359,7 +359,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
                     $value = "$match[1]*\"$match[2]\"*";
                 }
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 foreach ($value as &$v) {
                     if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
                         $v = "$match[1]*\"$match[2]\"*";
@@ -394,7 +394,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
         if ($value instanceof SingleOptionFieldData) {
@@ -407,7 +407,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if ($this->multi) {
             /** @var MultiOptionsFieldData $value */
@@ -439,7 +439,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -453,7 +453,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         $values = [];
 
@@ -535,7 +535,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @return string[]|string|null
      */
-    protected function defaultValue()
+    protected function defaultValue(): array|string|null
     {
         if ($this->multi) {
             $defaultValues = [];

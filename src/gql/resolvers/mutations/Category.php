@@ -74,7 +74,6 @@ class Category extends ElementMutationResolver
 
         $this->performStructureOperations($category, $arguments);
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $elementService->getElementById($category->id, CategoryElement::class);
     }
 

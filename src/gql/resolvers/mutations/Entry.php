@@ -124,7 +124,7 @@ class Entry extends ElementMutationResolver
      * @return mixed
      * @throws Throwable if reasons.
      */
-    public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function createDraft($source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
     {
         $entryId = $arguments['id'];
 
@@ -142,7 +142,7 @@ class Entry extends ElementMutationResolver
         $draftNotes = $arguments['notes'] ?? '';
         $provisional = $arguments['provisional'] ?? false;
 
-        /** @var Entry|DraftBehavior $draft */
+        /** @var EntryElement|DraftBehavior $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 
         return $draft->draftId;
@@ -193,8 +193,6 @@ class Entry extends ElementMutationResolver
         /** @var EntryType $entryType */
         $section = $this->getResolutionData('section');
         $entryType = $this->getResolutionData('entryType');
-
-        $entry = null;
 
         // Figure out whether the mutation is about an already saved entry
         $canIdentify = $section->type === Section::TYPE_SINGLE || !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
@@ -256,11 +254,11 @@ class Entry extends ElementMutationResolver
             if (array_key_exists('provisional', $arguments)) {
                 $entryQuery->provisionalDrafts($arguments['provisional']);
             }
-        } else if ($section->type === Section::TYPE_SINGLE) {
+        } elseif ($section->type === Section::TYPE_SINGLE) {
             $entryQuery->typeId($entryType->id);
-        } else if (!empty($arguments['uid'])) {
+        } elseif (!empty($arguments['uid'])) {
             $entryQuery->uid($arguments['uid']);
-        } else if (!empty($arguments['id'])) {
+        } elseif (!empty($arguments['id'])) {
             $entryQuery->id($arguments['id']);
         } else {
             // Unable to identify, make sure nothing is returned.

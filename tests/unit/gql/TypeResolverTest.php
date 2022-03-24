@@ -9,11 +9,13 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\User;
+use craft\gql\base\Resolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
@@ -51,19 +53,19 @@ class TypeResolverTest extends Unit
     {
         return [
             'entries' => [
-                'class' => EntryFixture::class
+                'class' => EntryFixture::class,
             ],
             'assets' => [
-                'class' => AssetFixture::class
+                'class' => AssetFixture::class,
             ],
             'users' => [
-                'class' => UserFixture::class
+                'class' => UserFixture::class,
             ],
             'globalSets' => [
-                'class' => GlobalSetFixture::class
+                'class' => GlobalSetFixture::class,
             ],
             'gqlSchemas' => [
-                'class' => GqlSchemasFixture::class
+                'class' => GqlSchemasFixture::class,
             ],
         ];
     }
@@ -103,21 +105,22 @@ class TypeResolverTest extends Unit
         ];
 
         foreach ($data as $testData) {
-            $this->_runResolverTest(... $testData);
+            $this->_runResolverTest(...$testData);
         }
     }
 
     /**
      * Run the test.
      *
-     * @param string $elementType The element class providing the elements
+     * @param class-string<ElementInterface> $elementType The element class providing the elements
      * @param array $parameterSet Querying parameters to use
-     * @param string $resolverClass The resolver class being tested
+     * @param class-string<Resolver> $resolverClass The resolver class being tested
      * @param boolean $mustNotBeSame Whether the results should differ instead
      * @throws \Exception
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
+        /** @var string|ElementInterface $elementType */
         $elementQuery = Craft::configure($elementType::find(), $params);
 
         // Get the ids and elements.

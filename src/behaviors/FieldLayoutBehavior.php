@@ -8,6 +8,7 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
@@ -23,7 +24,7 @@ use yii\base\InvalidConfigException;
 class FieldLayoutBehavior extends Behavior
 {
     /**
-     * @var string|null The element type that the field layout will be associated with
+     * @var class-string<ElementInterface>|null The element type that the field layout will be associated with
      */
     public ?string $elementType = null;
 
@@ -73,9 +74,9 @@ class FieldLayoutBehavior extends Behavior
 
         if (isset($this->idAttribute)) {
             $id = $this->owner->{$this->idAttribute};
-        } else if (is_callable($this->_fieldLayoutId)) {
+        } elseif (is_callable($this->_fieldLayoutId)) {
             $id = call_user_func($this->_fieldLayoutId);
-        } else if (is_string($this->_fieldLayoutId)) {
+        } elseif (is_string($this->_fieldLayoutId)) {
             $id = $this->owner->{$this->_fieldLayoutId}();
         }
 
@@ -89,9 +90,9 @@ class FieldLayoutBehavior extends Behavior
     /**
      * Sets the owner's field layout ID.
      *
-     * @param int|string|callable $id
+     * @param callable|int|string $id
      */
-    public function setFieldLayoutId($id): void
+    public function setFieldLayoutId(callable|int|string $id): void
     {
         $this->_fieldLayoutId = $id;
     }
@@ -110,7 +111,7 @@ class FieldLayoutBehavior extends Behavior
 
         try {
             $id = $this->getFieldLayoutId();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             return $this->_fieldLayout = new FieldLayout([
                 'type' => $this->elementType,
             ]);
@@ -144,16 +145,5 @@ class FieldLayoutBehavior extends Behavior
         /** @var FieldLayout|null $fieldLayout */
         $fieldLayout = $this->owner->getFieldLayout();
         return $fieldLayout ? $fieldLayout->getCustomFields() : [];
-    }
-
-    /**
-     * Returns the custom fields associated with the owner's field layout.
-     *
-     * @return FieldInterface[]
-     * @deprecated in 4.0.0. [[FieldLayout::getCustomFields()]] should be used instead.
-     */
-    public function getFields(): array
-    {
-        return $this->getCustomFields();
     }
 }

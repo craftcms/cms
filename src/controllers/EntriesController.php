@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Throwable;
@@ -62,7 +63,7 @@ class EntriesController extends BaseEntriesController
         $sitesService = Craft::$app->getSites();
 
         if (!in_array($site->id, $editableSiteIds)) {
-            // If there's more than one possibility and entries doen’t propagate to all sites, let the user choose
+            // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
                 return $this->renderTemplate('_special/sitepicker', [
                     'siteIds' => $editableSiteIds,
@@ -155,14 +156,14 @@ class EntriesController extends BaseEntriesController
             throw new ServerErrorHttpException(sprintf('Unable to save entry as a draft: %s', implode(', ', $entry->getErrorSummary(true))));
         }
 
-        // Set its position in the structure if a before/after parma was passed
+        // Set its position in the structure if a before/after param was passed
         if ($section->type === Section::TYPE_STRUCTURE) {
             if ($nextId = $this->request->getParam('before')) {
                 $nextEntry = Craft::$app->getEntries()->getEntryById($nextId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
                 Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
-            } else if ($prevId = $this->request->getParam('after')) {
+            } elseif ($prevId = $this->request->getParam('after')) {
                 $prevEntry = Craft::$app->getEntries()->getEntryById($prevId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
@@ -171,7 +172,9 @@ class EntriesController extends BaseEntriesController
         }
 
         // Redirect to its edit page
-        return $this->redirect($entry->getCpEditUrl());
+        return $this->redirect(UrlHelper::urlWithParams($entry->getCpEditUrl(), [
+            'fresh' => 1,
+        ]));
     }
 
     /**
@@ -181,7 +184,6 @@ class EntriesController extends BaseEntriesController
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      * @throws ForbiddenHttpException
-     * @deprecated in 4.0.0
      */
     public function actionSaveEntry(bool $duplicate = false): ?Response
     {
@@ -254,7 +256,7 @@ class EntriesController extends BaseEntriesController
         if ($entry->enabled) {
             if ($entry->id) {
                 $this->requirePermission("saveEntries:$section->uid");
-            } else if (!$currentUser->can("saveEntries:$section->uid")) {
+            } elseif (!$currentUser->can("saveEntries:$section->uid")) {
                 $entry->enabled = false;
             }
         }

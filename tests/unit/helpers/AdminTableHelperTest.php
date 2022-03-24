@@ -53,7 +53,7 @@ class AdminTableHelperTest extends Unit
                     'prev_page_url' => '?prev',
                     'from' => 41,
                     'to' => 50,
-                ], 5, 100, 10
+                ], 5, 100, 10,
             ],
         ];
     }

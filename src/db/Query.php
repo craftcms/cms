@@ -128,7 +128,7 @@ class Query extends \yii\db\Query
     {
         try {
             $rows = $this->createCommand($db)->queryAll();
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
 
@@ -152,7 +152,7 @@ class Query extends \yii\db\Query
     {
         try {
             return parent::all($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
     }
@@ -174,7 +174,7 @@ class Query extends \yii\db\Query
      * @inheritdoc
      * @return array|Model|null first row of the query result array, or `null` if there are no query results.
      */
-    public function one($db = null)
+    public function one($db = null): Model|array|null
     {
         $limit = $this->limit;
         $this->limit = 1;
@@ -184,7 +184,7 @@ class Query extends \yii\db\Query
             if ($result === false) {
                 $result = null;
             }
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             $result = null;
         }
         $this->limit = $limit;
@@ -194,13 +194,13 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function scalar($db = null)
+    public function scalar($db = null): bool|int|string|null
     {
         $limit = $this->limit;
         $this->limit = 1;
         try {
             $result = parent::scalar($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             $result = false;
         }
         $this->limit = $limit;
@@ -214,7 +214,7 @@ class Query extends \yii\db\Query
     {
         try {
             return parent::column($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
     }
@@ -226,7 +226,7 @@ class Query extends \yii\db\Query
     {
         try {
             return parent::exists($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return false;
         }
     }
@@ -240,7 +240,7 @@ class Query extends \yii\db\Query
      * @return array|Model|null The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, ?YiiConnection $db = null)
+    public function nth(int $n, ?YiiConnection $db = null): Model|array|null
     {
         $offset = $this->offset;
         $this->offset = ($offset ?: 0) + $n;
@@ -267,11 +267,11 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    protected function queryScalar($selectExpression, $db)
+    protected function queryScalar($selectExpression, $db): bool|string|null
     {
         try {
             return parent::queryScalar($selectExpression, $db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return false;
         }
     }

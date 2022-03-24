@@ -9,13 +9,9 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\UtilityInterface;
-use craft\db\Table;
-use craft\elements\Asset;
 use craft\errors\MigrationException;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Queue;
-use craft\helpers\Session;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -149,118 +145,6 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Performs an Asset Index action
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Asset Indexes utility
-     */
-    public function actionAssetIndexPerformAction(): Response
-    {
-        $this->requirePermission('utility:asset-indexes');
-
-        $params = $this->request->getRequiredBodyParam('params');
-
-        // Initial request
-        $assetIndexerService = Craft::$app->getAssetIndexer();
-
-        if (!empty($params['start'])) {
-            $sessionId = $assetIndexerService->getIndexingSessionId();
-
-            $response = [
-                'volumes' => [],
-                'sessionId' => $sessionId,
-            ];
-
-            // Selection of volumes or all volumes?
-            if (is_array($params['volumes'])) {
-                $volumeIds = $params['volumes'];
-            } else {
-                $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
-            }
-
-            $missingFolders = [];
-            $skippedFiles = [];
-
-            foreach ($volumeIds as $volumeId) {
-                // Get the indexing list
-                $indexList = $assetIndexerService->prepareIndexList($sessionId, $volumeId);
-
-                if (!empty($indexList['error'])) {
-                    return $this->asFailure(data: $indexList);
-                }
-
-                if (isset($indexList['missingFolders'])) {
-                    $missingFolders += $indexList['missingFolders'];
-                }
-
-                if (isset($indexList['skippedFiles'])) {
-                    $skippedFiles = $indexList['skippedFiles'];
-                }
-
-                $response['volumes'][] = [
-                    'volumeId' => $volumeId,
-                    'total' => $indexList['total'],
-                ];
-            }
-
-            Session::set('assetsVolumesBeingIndexed', $volumeIds);
-            Session::set('assetsMissingFolders', $missingFolders);
-            Session::set('assetsSkippedFiles', $skippedFiles);
-
-            return $this->asJson([
-                'indexingData' => $response,
-            ]);
-        }
-
-        if (!empty($params['process'])) {
-            // Index the file
-            $assetIndexerService->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
-
-            return $this->asSuccess();
-        }
-
-        if (!empty($params['overview'])) {
-            $missingFiles = $assetIndexerService->getMissingFiles($params['sessionId']);
-            $missingFolders = Session::get('assetsMissingFolders') ?? [];
-            $skippedFiles = Session::get('assetsSkippedFiles') ?? [];
-
-            if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
-                return $this->asJson([
-                    'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
-                    'showDelete' => !empty($missingFiles) || !empty($missingFolders),
-                ]);
-            }
-
-            $assetIndexerService->deleteStaleIndexingData();
-        } else if (!empty($params['finish'])) {
-            if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
-                Db::delete(Table::IMAGETRANSFORMINDEX, [
-                    'assetId' => $params['deleteAsset'],
-                ]);
-
-                /** @var Asset[] $assets */
-                $assets = Asset::find()
-                    ->status(null)
-                    ->id($params['deleteAsset'])
-                    ->all();
-
-                foreach ($assets as $asset) {
-                    $asset->keepFileOnDelete = true;
-                    Craft::$app->getElements()->deleteElement($asset);
-                }
-            }
-
-            if (!empty($params['deleteFolder']) && is_array($params['deleteFolder'])) {
-                Craft::$app->getAssets()->deleteFoldersByIds($params['deleteFolder'], false);
-            }
-        }
-
-        return $this->asJson([
-            'finished' => 1,
-        ]);
-    }
-
-    /**
      * Performs a Clear Caches action
      *
      * @return Response
@@ -283,12 +167,12 @@ class UtilitiesController extends Controller
             if (is_string($action)) {
                 try {
                     FileHelper::clearDirectory($action);
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (Throwable $e) {
                     Craft::warning("Could not clear the directory $action: " . $e->getMessage(), __METHOD__);
                 }
-            } else if (isset($cacheOption['params'])) {
+            } elseif (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {
                 $action();
@@ -391,7 +275,7 @@ class UtilitiesController extends Controller
         try {
             $migrator->up();
             $this->setSuccessFlash(Craft::t('app', 'Applied new migrations successfully.'));
-        } catch (MigrationException $e) {
+        } catch (MigrationException) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 
@@ -408,6 +292,7 @@ class UtilitiesController extends Controller
         $info = [];
 
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
+            /** @var string|UtilityInterface $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
@@ -423,7 +308,7 @@ class UtilitiesController extends Controller
     /**
      * Returns a utility type’s SVG icon.
      *
-     * @param string $class
+     * @param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -451,12 +336,12 @@ class UtilitiesController extends Controller
     /**
      * Returns the default icon SVG for a given utility type.
      *
-     * @param string $class
+     * @param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $class::displayName(),
         ]);

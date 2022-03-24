@@ -72,9 +72,10 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @param string $type
+     * @template T
+     * @param class-string<T> $type
      * @param array|null $settings
-     * @return TransportAdapterInterface
+     * @return T
      * @throws MissingComponentException if $type is missing
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
@@ -92,7 +93,7 @@ class MailerHelper
      * @return array
      * @since 3.5.0
      */
-    public static function normalizeEmails($emails): array
+    public static function normalizeEmails(mixed $emails): array
     {
         if (empty($emails)) {
             return [];
@@ -106,12 +107,12 @@ class MailerHelper
 
         foreach ($emails as $key => $value) {
             if ($value instanceof User) {
-                if (($name = $value->getFullName()) !== null) {
-                    $normalized[$value->email] = $name;
+                if ($value->fullName !== null) {
+                    $normalized[$value->email] = $value->fullName;
                 } else {
                     $normalized[] = $value->email;
                 }
-            } else if (is_numeric($key)) {
+            } elseif (is_numeric($key)) {
                 $normalized[] = $value;
             } else {
                 $normalized[$key] = $value;
@@ -158,9 +159,9 @@ class MailerHelper
         foreach ($transportSettings as $label => $value) {
             if (is_scalar($value)) {
                 $settings[$label] = $security->redactIfSensitive($label, $value);
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 $settings[$label] = 'Array';
-            } else if (is_object($value)) {
+            } elseif (is_object($value)) {
                 $settings[$label] = 'Object';
             }
         }

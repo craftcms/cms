@@ -19,5 +19,5 @@ trait CraftTrait
     /**
      * @var WebApplication|ConsoleApplication
      */
-    public static $app;
+    public static WebApplication|ConsoleApplication $app;
 }

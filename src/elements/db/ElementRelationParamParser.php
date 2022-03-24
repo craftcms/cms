@@ -63,7 +63,7 @@ class ElementRelationParamParser extends BaseObject
      * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToParam($relatedToParam): array
+    public static function normalizeRelatedToParam(mixed $relatedToParam): array
     {
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
@@ -118,7 +118,7 @@ class ElementRelationParamParser extends BaseObject
      * @throws InvalidArgumentException if the criteria contains an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToCriteria($relCriteria): array
+    public static function normalizeRelatedToCriteria(mixed $relCriteria): array
     {
         if (
             !is_array($relCriteria) ||
@@ -187,7 +187,7 @@ class ElementRelationParamParser extends BaseObject
      * @param mixed $relatedToParam
      * @return array|false
      */
-    public function parse($relatedToParam)
+    public function parse(mixed $relatedToParam): array|false
     {
         $relatedToParam = static::normalizeRelatedToParam($relatedToParam);
         $glue = array_shift($relatedToParam);
@@ -203,7 +203,7 @@ class ElementRelationParamParser extends BaseObject
 
             if ($condition) {
                 $conditions[] = $condition;
-            } else if ($glue === 'or') {
+            } elseif ($glue === 'or') {
                 continue;
             } else {
                 return false;
@@ -229,7 +229,7 @@ class ElementRelationParamParser extends BaseObject
      * @param mixed $relCriteria
      * @return mixed
      */
-    private function _subparse($relCriteria)
+    private function _subparse(mixed $relCriteria): mixed
     {
         // Get the element IDs, wherever they are
         $relElementIds = [];
@@ -237,7 +237,6 @@ class ElementRelationParamParser extends BaseObject
         $glue = 'or';
 
         $elementParams = ['element', 'sourceElement', 'targetElement'];
-        $elementParam = null;
 
         foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
@@ -250,7 +249,7 @@ class ElementRelationParamParser extends BaseObject
                         if ($elementParam === 'element') {
                             $relSourceElementIds[] = $element;
                         }
-                    } else if ($element instanceof ElementInterface) {
+                    } elseif ($element instanceof ElementInterface) {
                         if ($elementParam === 'targetElement') {
                             $relElementIds[] = $element->getCanonicalId();
                         } else {
@@ -259,7 +258,7 @@ class ElementRelationParamParser extends BaseObject
                                 $relSourceElementIds[] = $element->getCanonicalId();
                             }
                         }
-                    } else if ($element instanceof ElementQueryInterface) {
+                    } elseif ($element instanceof ElementQueryInterface) {
                         $ids = $element->ids();
                         array_push($relElementIds, ...$ids);
                         if ($elementParam === 'element') {
@@ -333,7 +332,7 @@ class ElementRelationParamParser extends BaseObject
                 if ($fieldModel instanceof BaseRelationField) {
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
-                } else if ($fieldModel instanceof Matrix) {
+                } elseif ($fieldModel instanceof Matrix) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?
@@ -483,7 +482,7 @@ class ElementRelationParamParser extends BaseObject
      * @param array|null $fieldHandleParts
      * @return FieldInterface|null
      */
-    private function _getField($field, ?array &$fieldHandleParts = null): ?FieldInterface
+    private function _getField(mixed $field, ?array &$fieldHandleParts = null): ?FieldInterface
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;

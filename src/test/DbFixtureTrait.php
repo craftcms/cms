@@ -23,7 +23,7 @@ trait DbFixtureTrait
      * @var bool Whether database integrity checks should be explicitly enabled before deleting fixture data,
      * and then re-disabled afterwards.
      */
-    public $checkIntegrity = true;
+    public bool $checkIntegrity = true;
 
     /**
      * Toggles the DB integrity check.

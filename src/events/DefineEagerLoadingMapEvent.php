@@ -29,7 +29,7 @@ class DefineEagerLoadingMapEvent extends Event
     public string $handle;
 
     /**
-     * @var string|null The element type class to eager-load.
+     * @var class-string<ElementInterface>|null The element type class to eager-load.
      */
     public ?string $elementType = null;
 

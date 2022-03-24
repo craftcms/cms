@@ -16,6 +16,7 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Collection;
 
 /**
  * Class ElementResolver
@@ -34,7 +35,7 @@ abstract class ElementResolver extends Resolver
      * @param ResolveInfo $resolveInfo
      * @return mixed
      */
-    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         $value = $query instanceof ElementQuery ? $query->one() : $query;
@@ -44,7 +45,7 @@ abstract class ElementResolver extends Resolver
     /**
      * @inheritdoc
      */
-    public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         $value = $query instanceof ElementQuery ? $query->all() : $query;
@@ -60,7 +61,7 @@ abstract class ElementResolver extends Resolver
      * @param ResolveInfo $resolveInfo
      * @return mixed
      */
-    public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         return $query->count();
@@ -75,7 +76,7 @@ abstract class ElementResolver extends Resolver
      * @param ResolveInfo $resolveInfo
      * @return ElementQuery|array
      */
-    protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo): ElementQuery|Collection
     {
         /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
@@ -141,5 +142,5 @@ abstract class ElementResolver extends Resolver
      * @param null $fieldName Field name to resolve on the source, if not a top-level resolution.
      * @return mixed
      */
-    abstract protected static function prepareQuery($source, array $arguments, $fieldName = null);
+    abstract protected static function prepareQuery(mixed $source, array $arguments, $fieldName = null): mixed;
 }

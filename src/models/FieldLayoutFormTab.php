@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\FieldLayoutComponent;
 use craft\base\Model;
 use craft\helpers\Html;
 
@@ -34,10 +35,10 @@ class FieldLayoutFormTab extends Model
     public bool $hasErrors = false;
 
     /**
-     * @var string[]|bool[] The tab’s elements’ HTML content.
+     * @var array The tab’s elements, whether they’re conditional, and their HTML form HTML.
      * @since 4.0.0
      */
-    public array $elementHtml;
+    public array $elements;
 
     /**
      * @var bool Whether the tab should be shown.
@@ -81,10 +82,10 @@ class FieldLayoutFormTab extends Model
     /**
      * Returns the tab’s UUID.
      *
-     * @return string
+     * @return string|null
      * @since 4.0.0
      */
-    public function getUid(): string
+    public function getUid(): ?string
     {
         return $this->layoutTab->uid;
     }
@@ -97,16 +98,25 @@ class FieldLayoutFormTab extends Model
      */
     public function getContent(): string
     {
-        return implode("\n", array_map(function(string $uid, $html) {
-            if (is_string($html) && $html) {
-                return $html;
+        $components = [];
+
+        foreach ($this->elements as [$layoutElement, $isConditional, $elementHtml]) {
+            /** @var FieldLayoutComponent $layoutElement */
+            /** @var bool $isConditional */
+            /** @var string|bool $elementHtml */
+            if (is_string($elementHtml) && $elementHtml) {
+                $components[] = $elementHtml;
+            } elseif ($isConditional) {
+                $components[] = Html::tag('div', '', [
+                    'class' => 'hidden',
+                    'data' => [
+                        'layout-element' => $layoutElement->uid,
+                        'layout-element-placeholder' => true,
+                    ],
+                ]);
             }
-            return Html::tag('div', '', [
-                'class' => 'hidden',
-                'data' => [
-                    'layout-element' => $uid,
-                ],
-            ]);
-        }, array_keys($this->elementHtml), $this->elementHtml));
+        }
+
+        return implode("\n", $components);
     }
 }

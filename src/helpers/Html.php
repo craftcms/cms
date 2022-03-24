@@ -253,7 +253,7 @@ class Html extends \yii\helpers\Html
                         }
                         $children[] = $subtag;
                         $cursor = $subtag['end'];
-                    } catch (InvalidHtmlTagException $e) {
+                    } catch (InvalidHtmlTagException) {
                         // We must have just reached the end
                         break;
                     }
@@ -393,7 +393,7 @@ class Html extends \yii\helpers\Html
                 if (isset($m[1]) && $m[1] !== '') {
                     $value = $m[1];
                 }
-            } else if (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
+            } elseif (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
                 $value = $m[0];
             }
@@ -452,7 +452,7 @@ class Html extends \yii\helpers\Html
      * @return string[]
      * @since 3.5.0
      */
-    public static function explodeClass($value): array
+    public static function explodeClass(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];
@@ -473,7 +473,7 @@ class Html extends \yii\helpers\Html
      * @return string[]
      * @since 3.5.0
      */
-    public static function explodeStyle($value): array
+    public static function explodeStyle(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];
@@ -535,16 +535,13 @@ class Html extends \yii\helpers\Html
             $child = ArrayHelper::firstWhere($info['children'], 'type', $type, true);
 
             if ($child) {
-                switch ($ifExists) {
-                    case 'keep':
-                        return $tag;
-                    case 'replace':
-                        return substr($tag, 0, $child['start']) .
-                            $html .
-                            substr($tag, $child['end']);
-                    default:
-                        throw new InvalidArgumentException('Invalid $ifExists value: ' . $ifExists);
-                }
+                return match ($ifExists) {
+                    'keep' => $tag,
+                    'replace' => substr($tag, 0, $child['start']) .
+                        $html .
+                        substr($tag, $child['end']),
+                    default => throw new InvalidArgumentException('Invalid $ifExists value: ' . $ifExists),
+                };
             }
         }
 
@@ -581,7 +578,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an input name.
      *
      * @param string $inputName The input name
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced input name
      * @since 3.5.0
      */
@@ -598,7 +595,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an ID.
      *
      * @param string $id The ID
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced ID
      * @since 3.5.0
      */

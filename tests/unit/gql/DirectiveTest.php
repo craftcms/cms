@@ -10,7 +10,6 @@ namespace craftunit\gql;
 use Codeception\Test\Unit;
 use Craft;
 use craft\config\GeneralConfig;
-use craft\console\Application;
 use craft\elements\Asset;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
@@ -19,15 +18,11 @@ use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
-use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\models\ImageTransform;
-use craft\models\Volume;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
-use craft\fs\Local;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -68,74 +63,12 @@ class DirectiveTest extends Unit
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'someField',
-            'fieldNodes' => $fieldNodes
+            'fieldNodes' => $fieldNodes,
         ]);
 
         self::assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
     }
-
-    /**
-     * Test transform directive
-     *
-     * @dataProvider assetTransformDirectiveDataProvider
-     *
-     * @param array $directives an array of directive data as expected by GQL
-     * @param array $parameters transform parameters
-     * @param boolean $mustNotBeSame Whether the results should differ instead
-     */
-    public function testTransformDirective($directiveClass, array $directives, $parameters, $mustNotBeSame = false)
-    {
-        $this->_registerDirective($directiveClass);
-
-        /** @var Asset $asset */
-        $filename = StringHelper::randomString() . '.jpg';
-        $asset = $this->make(Asset::class, [
-            'filename' => $filename,
-            'getVolume' => $this->make(Volume::class, [
-                'getFs' => $this->make(Local::class, [
-                    'hasUrls' => true,
-                    'url' => 'http://domain.local/'
-                ]),
-            ]),
-            'folderId' => 7,
-            'getUrl' => function($parameters) {
-                if (is_array($parameters)) {
-                    $parameters = ImageTransforms::normalizeTransform($parameters);
-                }
-
-                if ($parameters instanceof ImageTransform) {
-                    $parameters = array_filter($parameters->toArray(['mode', 'width', 'height', 'format', 'position', 'interlace', 'quality']));
-                }
-
-                $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
-                return $transformed;
-            }
-        ]);
-
-        /** @var GqlAssetType $type */
-        $type = $this->make(GqlAssetType::class);
-
-        $fieldNodes = [Json::decode('{"directives":[' . implode(',', $directives) . ']}', false)];
-
-        $resolveInfo = $this->make(ResolveInfo::class, [
-            'fieldName' => 'url',
-            'fieldNodes' => $fieldNodes
-        ]);
-
-        unset($parameters['immediately']);
-
-        // `handle` parameter overrides everything else.
-        if (!empty($parameters['handle'])) {
-            $parameters = $parameters['handle'];
-        }
-
-        if ($mustNotBeSame) {
-            self::assertNotEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
-        } else {
-            self::assertEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
-        }
-    }
-
+    
     /**
      * Test if transform is only correctly applied to URL.
      */
@@ -151,7 +84,7 @@ class DirectiveTest extends Unit
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'filename',
-            'fieldNodes' => $fieldNodes
+            'fieldNodes' => $fieldNodes,
         ]);
 
         self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
@@ -230,7 +163,7 @@ class DirectiveTest extends Unit
     /**
      * Build the JSON string to be used as a directive object
      *
-     * @param string $className
+     * @param class-string $className
      * @param array $arguments
      * @return string
      */
@@ -259,8 +192,8 @@ class DirectiveTest extends Unit
 
         Craft::$app->set('config', $this->make(Config::class, [
             'getGeneral' => $this->make(GeneralConfig::class, [
-                'gqlTypePrefix' => 'test'
-            ])
+                'gqlTypePrefix' => 'test',
+            ]),
         ]));
 
         if (!GqlEntityRegistry::getEntity($directiveName)) {

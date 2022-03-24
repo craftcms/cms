@@ -89,8 +89,8 @@ class ArrayHelperTest extends Unit
             ],
             [
                 'name' => 'array 2',
-                'description' => 'the second array'
-            ]
+                'description' => 'the second array',
+            ],
         ];
 
         $filtered = ArrayHelper::where($array, 'name', 'array 1');
@@ -198,13 +198,13 @@ class ArrayHelperTest extends Unit
                 'name' => '',
                 'description' => 'the first array',
                 '' => '',
-                '😀' => '😘'
+                '😀' => '😘',
 
             ],
             [
                 'name' => 'array 2',
-                'description' => 'the second array'
-            ]
+                'description' => 'the second array',
+            ],
         ];
 
         self::assertSame($array, $mockedUp);
@@ -255,25 +255,25 @@ class ArrayHelperTest extends Unit
             [
                 'name' => 'array 1',
                 'description' => 'the first array',
-                'handle' => 'foo'
+                'handle' => 'foo',
             ],
             [
                 'name' => 'array 2',
                 'description' => 'the second array',
-                'handle' => '88'
+                'handle' => '88',
             ],
             [
                 'name' => 'array 3',
                 'description' => 'the third array',
                 'handle' => 'bar',
-                'arrayTest' => ['test' => 'me']
+                'arrayTest' => ['test' => 'me'],
             ],
             [
                 'name' => 'array 4',
                 'description' => '',
                 'handle' => 'baz',
-                '😀' => '😘'
-            ]
+                '😀' => '😘',
+            ],
         ];
 
         // Simple search
@@ -348,6 +348,20 @@ class ArrayHelperTest extends Unit
     public function testContains(bool $expected, array $array, $key, $value = true, bool $strict = false)
     {
         self::assertSame($expected, ArrayHelper::contains($array, $key, $value, $strict));
+    }
+
+    /**
+     * @dataProvider onlyContainsDataProvider
+     *
+     * @param bool $expected
+     * @param array $array
+     * @param string|\Closure $key
+     * @param mixed $value
+     * @param bool $strict
+     */
+    public function testOnlyContains(bool $expected, array $array, $key, $value = true, bool $strict = false)
+    {
+        self::assertSame($expected, ArrayHelper::onlyContains($array, $key, $value, $strict));
     }
 
     /**
@@ -523,6 +537,18 @@ class ArrayHelperTest extends Unit
     /**
      * @return array
      */
+    public function onlyContainsDataProvider(): array
+    {
+        return [
+            [true, [['foo' => 1], ['foo' => 2]], 'foo'],
+            [false, [['foo' => 1], ['bar' => 2]], 'foo'],
+            [false, [['foo' => 1], ['foo' => 2]], 'foo', true, true],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public function firstValueDataProvider(): array
     {
         $std = new stdClass();
@@ -530,7 +556,7 @@ class ArrayHelperTest extends Unit
         return [
             ['test', ['test']],
             [['test'], [['test']]],
-            [$std, ['key' => $std]]
+            [$std, ['key' => $std]],
         ];
     }
 

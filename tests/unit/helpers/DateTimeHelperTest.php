@@ -16,7 +16,6 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use UnitTester;
-use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the DateTime Helper class.
@@ -347,23 +346,6 @@ class DateTimeHelperTest extends Unit
 
         $dateTime->modify('-35 days');
         self::assertFalse(DateTimeHelper::isThisMonth($dateTime));
-    }
-
-    /**
-     * @dataProvider isWithinLastDataProvider
-     *
-     * @param bool|null $expected
-     * @param mixed $date
-     * @param mixed $timeInterval
-     */
-    public function testIsWithinLast(?bool $expected, $date, $timeInterval)
-    {
-        if (is_bool($expected)) {
-            self::assertSame($expected, DateTimeHelper::isWithinLast($date, $timeInterval));
-        } else {
-            self::expectException(InvalidArgumentException::class);
-            DateTimeHelper::isWithinLast($date, $timeInterval);
-        }
     }
 
     /**
@@ -726,36 +708,6 @@ class DateTimeHelperTest extends Unit
             ['1 hour and 1 minute', 'PT1H1M25S', false],
             ['1 hour and 2 minutes', 'PT1H1M55S', false],
             ['less than a minute', 'PT1S', false],
-        ];
-    }
-
-    /**
-     * @return array
-     * @throws Exception
-     */
-    public function isWithinLastDataProvider(): array
-    {
-        $tomorrow = new DateTime('tomorrow');
-        $yesterday = new DateTime('yesterday');
-        $aYearAgo = new DateTime('2010-08-8 20:00:00');
-
-        $modable = new DateTime('now');
-        $modable->modify('-2 days');
-
-        $hourAgo = new DateTime('now');
-        $hourAgo->modify('-1 hour');
-
-        return [
-            [true, $yesterday, 2],
-            [true, $modable->format('Y-m-d H:i:s'), 3],
-            [true, $hourAgo, '4 hours'],
-
-            [false, $aYearAgo, 25],
-            [false, $tomorrow, 0],
-
-            [null, $yesterday, 'somestring'],
-            [null, $yesterday, ''],
-            [null, 'notadate', 5],
         ];
     }
 

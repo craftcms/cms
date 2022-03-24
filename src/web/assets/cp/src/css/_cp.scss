@@ -161,6 +161,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: grid;
   grid-template-columns: 30px auto;
   grid-gap: 10px;
+  height: 100%;
   padding: 0 10px;
   position: relative;
   flex: 0 0 50px;
@@ -581,6 +582,16 @@ li.breadcrumb-toggle-wrapper {
   display: none;
 }
 
+#account-menu {
+  ul {
+    li {
+      a {
+        max-width: calc(100% + 28px) !important;
+      }
+    }
+  }
+}
+
 #announcements-btn {
   @include header-btn;
   width: 40px;
@@ -663,8 +674,7 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-.breadcrumb-toggle-wrapper,
-.account-toggle-wrapper {
+[data-wrapper] {
   position: relative;
 }
 
@@ -1057,6 +1067,12 @@ li.breadcrumb-toggle-wrapper {
         @include pane;
       }
     }
+
+    .notes {
+      border-radius: 5px;
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
   }
 }
 
@@ -1268,7 +1284,7 @@ li.breadcrumb-toggle-wrapper {
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $mediumTextColor;
+      color: $lightTextColor;
       font-size: 11px;
       font-weight: bold;
     }
@@ -1386,6 +1402,7 @@ li.breadcrumb-toggle-wrapper {
 
       .toggle {
         position: absolute;
+        z-index: 1;
         height: 34px;
         top: 0;
         width: var(--xl);
@@ -1423,7 +1440,7 @@ li.breadcrumb-toggle-wrapper {
 /* flexbox field layouts */
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
-.so-content > .flex-fields {
+.so-content .flex-fields {
   --row-gap: var(--xl);
   display: flex;
   gap: var(--row-gap) 0;
@@ -1456,6 +1473,24 @@ li.breadcrumb-toggle-wrapper {
       position: relative;
       width: 100%;
 
+      &:before {
+        position: absolute;
+        top: 0;
+        @include left(-1px);
+        width: 1px;
+        height: 100%;
+        content: '';
+        // same BG color as the hairline around the content pane’s 1px shadow
+        background-color: transparentize($grey200, 0.5);
+      }
+    }
+  }
+}
+
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields {
+  & > :not(h2):not(hr) {
+    &, &:last-child {
       // 4 cols for >= 1536px
       @media only screen and (min-width: $minXlUiWidth) {
         &.width-25 {
@@ -1469,23 +1504,26 @@ li.breadcrumb-toggle-wrapper {
         }
       }
 
-      // 2 cols fol 712 - 1536px
+      // 2 cols for 712 - 1536px
       @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
         &.width-25,
         &.width-50 {
           width: 50%;
         }
       }
+    }
+  }
+}
 
-      &:before {
-        position: absolute;
-        top: 0;
-        @include left(-1px);
-        width: 1px;
-        height: 100%;
-        content: '';
-        // same BG color as the hairline around the content pane’s 1px shadow
-        background-color: transparentize($grey200, 0.5);
+.so-content .flex-fields {
+  & > :not(h2):not(hr) {
+    &, &:last-child {
+      // 2 cols for >= 712px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
       }
     }
   }

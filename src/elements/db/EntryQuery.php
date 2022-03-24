@@ -78,7 +78,7 @@ class EntryQuery extends ElementQuery
      * @used-by section()
      * @used-by sectionId()
      */
-    public $sectionId;
+    public mixed $sectionId = null;
 
     /**
      * @var int|int[]|null The entry type ID(s) that the resulting entries must have.
@@ -100,13 +100,13 @@ class EntryQuery extends ElementQuery
      * @used-by EntryQuery::type()
      * @used-by typeId()
      */
-    public $typeId;
+    public mixed $typeId = null;
 
     /**
      * @var int|int[]|null The user ID(s) that the resulting entries’ authors must have.
      * @used-by authorId()
      */
-    public $authorId;
+    public mixed $authorId = null;
 
     /**
      * @var int|int[]|null The user group ID(s) that the resulting entries’ authors must be in.
@@ -126,7 +126,7 @@ class EntryQuery extends ElementQuery
      * @used-by authorGroup()
      * @used-by authorGroupId()
      */
-    public $authorGroupId;
+    public mixed $authorGroupId = null;
 
     /**
      * @var mixed The Post Date that the resulting entries must have.
@@ -145,7 +145,7 @@ class EntryQuery extends ElementQuery
      * ```
      * @used-by postDate()
      */
-    public $postDate;
+    public mixed $postDate = null;
 
     /**
      * @var string|array|DateTime The maximum Post Date that resulting entries can have.
@@ -164,7 +164,7 @@ class EntryQuery extends ElementQuery
      * ```
      * @used-by before()
      */
-    public $before;
+    public mixed $before = null;
 
     /**
      * @var string|array|DateTime The minimum Post Date that resulting entries can have.
@@ -183,13 +183,13 @@ class EntryQuery extends ElementQuery
      * ```
      * @used-by after()
      */
-    public $after;
+    public mixed $after = null;
 
     /**
      * @var mixed The Expiry Date that the resulting entries must have.
      * @used-by expiryDate()
      */
-    public $expiryDate;
+    public mixed $expiryDate = null;
 
     /**
      * @inheritdoc
@@ -289,7 +289,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $sectionId
      */
-    public function section($value): self
+    public function section(mixed $value): self
     {
         // If the value is a section handle, swap it with the section
         if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
@@ -303,7 +303,7 @@ class EntryQuery extends ElementQuery
             } else {
                 $this->withStructure = false;
             }
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
@@ -348,7 +348,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $sectionId
      */
-    public function sectionId($value): self
+    public function sectionId(mixed $value): self
     {
         $this->sectionId = $value;
         return $this;
@@ -389,11 +389,11 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $typeId
      */
-    public function type($value): self
+    public function type(mixed $value): self
     {
         if ($value instanceof EntryType) {
             $this->typeId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
@@ -438,7 +438,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value): self
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;
@@ -476,7 +476,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $authorId
      */
-    public function authorId($value): self
+    public function authorId(mixed $value): self
     {
         $this->authorId = $value;
         return $this;
@@ -516,7 +516,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroup($value): self
+    public function authorGroup(mixed $value): self
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
@@ -576,7 +576,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroupId($value): self
+    public function authorGroupId(mixed $value): self
     {
         $this->authorGroupId = $value;
         return $this;
@@ -619,7 +619,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $postDate
      */
-    public function postDate($value): self
+    public function postDate(mixed $value): self
     {
         $this->postDate = $value;
         return $this;
@@ -659,7 +659,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $before
      */
-    public function before($value): self
+    public function before(mixed $value): self
     {
         $this->before = $value;
         return $this;
@@ -699,7 +699,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $after
      */
-    public function after($value): self
+    public function after(mixed $value): self
     {
         $this->after = $value;
         return $this;
@@ -742,7 +742,7 @@ class EntryQuery extends ElementQuery
      * @return self self reference
      * @uses $expiryDate
      */
-    public function expiryDate($value): self
+    public function expiryDate(mixed $value): self
     {
         $this->expiryDate = $value;
         return $this;
@@ -778,7 +778,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value): self
+    public function status(array|string|null $value): self
     {
         return parent::status($value);
     }
@@ -847,47 +847,43 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
         $currentTimeDb = Db::prepareDateForDb(new DateTime());
 
-        switch ($status) {
-            case Entry::STATUS_LIVE:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true,
-                    ],
-                    ['<=', 'entries.postDate', $currentTimeDb],
-                    [
-                        'or',
-                        ['entries.expiryDate' => null],
-                        ['>', 'entries.expiryDate', $currentTimeDb],
-                    ],
-                ];
-            case Entry::STATUS_PENDING:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true,
-                    ],
-                    ['>', 'entries.postDate', $currentTimeDb],
-                ];
-            case Entry::STATUS_EXPIRED:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true,
-                    ],
-                    ['not', ['entries.expiryDate' => null]],
-                    ['<=', 'entries.expiryDate', $currentTimeDb],
-                ];
-            default:
-                return parent::statusCondition($status);
-        }
+        return match ($status) {
+            Entry::STATUS_LIVE => [
+                'and',
+                [
+                    'elements.enabled' => true,
+                    'elements_sites.enabled' => true,
+                ],
+                ['<=', 'entries.postDate', $currentTimeDb],
+                [
+                    'or',
+                    ['entries.expiryDate' => null],
+                    ['>', 'entries.expiryDate', $currentTimeDb],
+                ],
+            ],
+            Entry::STATUS_PENDING => [
+                'and',
+                [
+                    'elements.enabled' => true,
+                    'elements_sites.enabled' => true,
+                ],
+                ['>', 'entries.postDate', $currentTimeDb],
+            ],
+            Entry::STATUS_EXPIRED => [
+                'and',
+                [
+                    'elements.enabled' => true,
+                    'elements_sites.enabled' => true,
+                ],
+                ['not', ['entries.expiryDate' => null]],
+                ['<=', 'entries.expiryDate', $currentTimeDb],
+            ],
+            default => parent::statusCondition($status),
+        };
     }
 
     /**
@@ -933,9 +929,9 @@ class EntryQuery extends ElementQuery
     {
         if (empty($this->typeId)) {
             $this->typeId = is_array($this->typeId) ? [] : null;
-        } else if (is_numeric($this->typeId)) {
+        } elseif (is_numeric($this->typeId)) {
             $this->typeId = [$this->typeId];
-        } else if (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
+        } elseif (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
@@ -975,9 +971,9 @@ class EntryQuery extends ElementQuery
     {
         if (empty($this->sectionId)) {
             $this->sectionId = is_array($this->sectionId) ? [] : null;
-        } else if (is_numeric($this->sectionId)) {
+        } elseif (is_numeric($this->sectionId)) {
             $this->sectionId = [$this->sectionId];
-        } else if (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
+        } elseif (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
@@ -1039,7 +1035,7 @@ class EntryQuery extends ElementQuery
             foreach ($this->typeId as $typeId) {
                 $tags[] = "entryType:$typeId";
             }
-        } else if ($this->sectionId) {
+        } elseif ($this->sectionId) {
             foreach ($this->sectionId as $sectionId) {
                 $tags[] = "section:$sectionId";
             }

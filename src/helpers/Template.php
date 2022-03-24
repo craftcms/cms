@@ -67,7 +67,7 @@ class Template
      * @throws RuntimeError if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
      * @internal
      */
-    public static function attribute(Environment $env, Source $source, $object, $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
+    public static function attribute(Environment $env, Source $source, mixed $object, mixed $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false): mixed
     {
         // Include this element in any active caches
         if ($object instanceof ElementInterface) {
@@ -242,7 +242,7 @@ class Template
     public static function css(string $css, array $options = [], ?string $key = null): void
     {
         // Is this a CSS file?
-        if (preg_match('/^[^\r\n]+\.css$/i', $css)) {
+        if (preg_match('/^[^\r\n]+\.css$/i', $css) || UrlHelper::isAbsoluteUrl($css)) {
             Craft::$app->getView()->registerCssFile($css, $options, $key);
         } else {
             Craft::$app->getView()->registerCss($css, $options, $key);
@@ -263,7 +263,7 @@ class Template
     public static function js(string $js, array $options = [], ?string $key = null): void
     {
         // Is this a JS file?
-        if (preg_match('/^[^\r\n]+\.js$/i', $js)) {
+        if (preg_match('/^[^\r\n]+\.js$/i', $js) || UrlHelper::isAbsoluteUrl($js)) {
             Craft::$app->getView()->registerJsFile($js, $options, $key);
         } else {
             $position = $options['position'] ?? View::POS_READY;

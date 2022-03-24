@@ -94,7 +94,7 @@ class LanguageValidatorTest extends Unit
             $returnArray[] = [
                 $mustValidate,
                 $lang,
-                $requireOnlySite
+                $requireOnlySite,
             ];
         }
 
@@ -116,7 +116,7 @@ class LanguageValidatorTest extends Unit
             [null, 'nl'],
             [['{value} is not a valid site language.', []], 'de'],
             [null, 'de', false],
-            [['{value} is not a valid site language.', []], 'nolang', false]
+            [['{value} is not a valid site language.', []], 'nolang', false],
         ];
     }
 

@@ -192,7 +192,7 @@ class Search extends Component
         $searchQuery = $elementQuery->search;
         if (is_string($searchQuery)) {
             $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
-        } else if (is_array($searchQuery)) {
+        } elseif (is_array($searchQuery)) {
             $options = array_merge($searchQuery);
             $searchQuery = ArrayHelper::remove($options, 'query');
             $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
@@ -364,7 +364,7 @@ SQL;
         }
 
         // Insert/update the row in searchindex
-        Db::insert(Table::SEARCHINDEX, $columns, false);
+        Db::insert(Table::SEARCHINDEX, $columns);
     }
 
     /**
@@ -374,7 +374,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return float The total score for this row.
      */
-    private function _scoreRow(array $row, $siteId = null): float
+    private function _scoreRow(array $row, array|int|null $siteId = null): float
     {
         // Starting point
         $score = 0;
@@ -407,7 +407,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return float The total score for this term/row combination.
      */
-    private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1, $siteId = null): float
+    private function _scoreTerm(SearchQueryTerm $term, array $row, float|int $weight = 1, array|int|null $siteId = null): float
     {
         // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
@@ -436,7 +436,7 @@ SQL;
             if (trim($keywords) === trim($haystack)) {
                 $mod = 100;
             } // Don't scale up for substring matches
-            else if ($term->subLeft || $term->subRight) {
+            elseif ($term->subLeft || $term->subRight) {
                 $mod = 10;
             } else {
                 $mod = 50;
@@ -460,7 +460,7 @@ SQL;
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return string|false
      */
-    private function _getWhereClause($siteId, ?MemoizableArray $customFields)
+    private function _getWhereClause(array|int|null $siteId, ?MemoizableArray $customFields): string|false
     {
         $where = [];
 
@@ -500,7 +500,7 @@ SQL;
      * @return string|false
      * @throws Throwable
      */
-    private function _processTokens(array $tokens, bool $inclusive, $siteId, ?MemoizableArray $customFields)
+    private function _processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?MemoizableArray $customFields): string|false
     {
         $glue = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -520,7 +520,7 @@ SQL;
             if ($sql) {
                 $where[] = $sql;
             } // No SQL but keywords, save them for later
-            else if ($keywords !== null && $keywords !== '') {
+            elseif ($keywords !== null && $keywords !== '') {
                 if ($inclusive && $db->getIsMysql()) {
                     $keywords = '+' . $keywords;
                 }
@@ -562,7 +562,7 @@ SQL;
      * @return array
      * @throws Throwable
      */
-    private function _getSqlFromTerm(SearchQueryTerm $term, $siteId, ?MemoizableArray $customFields): array
+    private function _getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?MemoizableArray $customFields): array
     {
         // Initiate return value
         $sql = null;
@@ -684,7 +684,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return string
      */
-    private function _normalizeTerm(string $term, $siteId = null): string
+    private function _normalizeTerm(string $term, array|int|null $siteId = null): string
     {
         static $terms = [];
 
@@ -705,10 +705,10 @@ SQL;
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return int|int[]|null
      */
-    private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields)
+    private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
     {
         if ($customFields !== null) {
-            return ArrayHelper::getColumn($customFields->where('handle', $attribute), 'id');
+            return ArrayHelper::getColumn((array)$customFields->where('handle', $attribute), 'id');
         }
 
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
@@ -739,7 +739,7 @@ SQL;
      * @return string
      * @throws Throwable
      */
-    private function _sqlFullText($val, bool $bool = true, string $glue = ' AND '): string
+    private function _sqlFullText(mixed $val, bool $bool = true, string $glue = ' AND '): string
     {
         $db = Craft::$app->getDb();
 
@@ -779,7 +779,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return string|false
      */
-    private function _sqlSubSelect(string $where, $siteId)
+    private function _sqlSubSelect(string $where, array|int|null $siteId): string|false
     {
         $query = (new Query())
             ->select(['elementId'])

@@ -24,8 +24,9 @@ use yii\db\ActiveQueryInterface;
  * @property bool $suspended Suspended
  * @property bool $admin Admin
  * @property string $username Username
- * @property string $firstName First name
- * @property string $lastName Last name
+ * @property string|null $fullName
+ * @property string|null $firstName First name
+ * @property string|null $lastName Last name
  * @property string $email Email
  * @property string $password Password
  * @property bool $enable2fa Password

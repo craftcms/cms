@@ -23,7 +23,6 @@ use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\web\assets\matrix\MatrixAsset;
 use Illuminate\Support\Collection;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -120,7 +119,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
         $handleParts = explode(':', $handle);
@@ -158,7 +157,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var MatrixBlockTypeModel $context */
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
@@ -262,7 +261,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     {
         try {
             $owner = $this->getOwner();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             $owner = $this->duplicateOf;
         }
 
@@ -316,7 +315,9 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $blockType;
     }
 
-    /** @inheritdoc */
+    /**
+     * @inheritdoc
+     */
     public function getOwner(): ElementInterface
     {
         if (!isset($this->_owner)) {
@@ -393,7 +394,7 @@ class MatrixBlock extends Element implements BlockElementInterface
         $blockTypeHandle = $this->getType()->handle . ':' . $handle;
 
         if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
-            return $this->_eagerLoadedBlockTypeElements[$blockTypeHandle];
+            return new Collection($this->_eagerLoadedBlockTypeElements[$blockTypeHandle]);
         }
 
         return parent::getEagerLoadedElements($handle);
@@ -440,7 +441,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -453,7 +454,7 @@ class MatrixBlock extends Element implements BlockElementInterface
                 $record = MatrixBlockRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid Matrix block ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid Matrix block ID: $this->id");
                 }
             } else {
                 $record = new MatrixBlockRecord();
@@ -472,14 +473,14 @@ class MatrixBlock extends Element implements BlockElementInterface
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
                         'sortOrder' => $this->sortOrder ?? 0,
-                    ], false);
+                    ]);
                 } else {
                     Db::update(Table::MATRIXBLOCKS_OWNERS, [
                         'sortOrder' => $this->sortOrder ?? 0,
                     ], [
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
-                    ], [], false);
+                    ]);
                 }
             }
         }

@@ -10,9 +10,6 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
-use craft\gql\arguments\elements\Asset as AssetArguments;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
@@ -95,7 +92,7 @@ class GqlHelperTest extends Unit
             'usergroups.allUsers:read',
             'globalsets.someSet:read',
             'entrytypes.someEntry:read',
-            'sections.someSection:read'
+            'sections.someSection:read',
         ];
 
         $this->_setSchemaWithPermissions($permissionSet);
@@ -144,6 +141,7 @@ class GqlHelperTest extends Unit
 
     /**
      * Test GQL types correctly wrapped in NonNull type.
+     *
      * @param $input
      * @param $expected
      * @dataProvider wrapInNonNullProvider
@@ -158,20 +156,20 @@ class GqlHelperTest extends Unit
         $typeDef = [
             'name' => 'mock',
             'type' => Type::listOf(Type::string()),
-            'args' => []
+            'args' => [],
         ];
 
         $nonNulledTypeDef = [
             'name' => 'mock',
             'type' => Type::nonNull(Type::listOf(Type::string())),
-            'args' => []
+            'args' => [],
         ];
 
         return [
             [Type::boolean(), Type::nonNull(Type::boolean())],
-            [Type::string(),Type::nonNull(Type::string())],
-            [Type::id(),Type::nonNull(Type::id())],
-            [Type::nonNull(Type::int()),Type::nonNull(Type::int())],
+            [Type::string(), Type::nonNull(Type::string())],
+            [Type::id(), Type::nonNull(Type::id())],
+            [Type::nonNull(Type::int()), Type::nonNull(Type::int())],
             [$typeDef, $nonNulledTypeDef],
         ];
     }
@@ -199,7 +197,7 @@ class GqlHelperTest extends Unit
                 ],
                 'entity-two',
                 ['read', 'write', 'observe'],
-            ],            [
+            ], [
                 [
                     'entity-one:read',
                     'entity-two:read',
@@ -231,11 +229,11 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:read'
+                    'sections.someSection:read',
                 ],
                 'volumes.someVolume',
                 'read',
-                'write'
+                'write',
             ],
             [
                 [
@@ -244,18 +242,18 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:write',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
                 'volumes.someVolume',
                 'write',
-                'delete'
+                'delete',
             ],
             [
                 [],
                 'volumes.someVolume',
                 'write',
                 'delete',
-                true
+                true,
             ],
         ];
     }
@@ -269,7 +267,7 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:read'
+                    'sections.someSection:read',
                 ],
                 [
                     'usergroups' => ['allUsers'],
@@ -277,7 +275,7 @@ class GqlHelperTest extends Unit
                     'globalsets' => ['someSet'],
                     'entrytypes' => ['someEntry'],
                     'sections' => ['someSection'],
-                ]
+                ],
             ],
             [
                 [
@@ -286,7 +284,7 @@ class GqlHelperTest extends Unit
                 ],
                 [
                     'usergroups' => ['allUsers', 'otherGroup'],
-                ]
+                ],
             ], [
                 [
                     'usergroups.allUsers:read',
@@ -294,7 +292,7 @@ class GqlHelperTest extends Unit
                 ],
                 [
                     'usergroups' => ['allUsers'],
-                ]
+                ],
             ],
             [
                 [
@@ -302,9 +300,9 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:write',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
-                []
+                [],
             ],
             [
                 [
@@ -312,15 +310,15 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
                 [
                     'entrytypes' => ['someEntry'],
-                ]
+                ],
             ],
             [
                 [],
-                []
+                [],
             ],
         ];
     }

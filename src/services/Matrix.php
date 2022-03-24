@@ -307,7 +307,7 @@ class Matrix extends Component
                     $layout->uid = key($data['fieldLayouts']);
                     $fieldsService->saveLayout($layout);
                     $blockTypeRecord->fieldLayoutId = $layout->id;
-                } else if ($blockTypeRecord->fieldLayoutId) {
+                } elseif ($blockTypeRecord->fieldLayoutId) {
                     // Delete the field layout
                     $fieldsService->deleteLayoutById($blockTypeRecord->fieldLayoutId);
                     $blockTypeRecord->fieldLayoutId = null;
@@ -649,7 +649,6 @@ class Matrix extends Component
      */
     public function getBlockById(int $blockId, ?int $siteId = null): ?MatrixBlock
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
     }
 
@@ -694,7 +693,7 @@ class Matrix extends Component
                             'ownerId' => $owner->id,
                         ]);
                     }
-                } else if ((int)$block->sortOrder !== $sortOrder) {
+                } elseif ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
                     Db::update(Table::MATRIXBLOCKS_OWNERS, [
@@ -1057,11 +1056,11 @@ SQL
                         if ($derivativeBlock->dateUpdated == $derivativeBlock->dateCreated) {
                             $elementsService->deleteElement($derivativeBlock);
                         }
-                    } else if (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
+                    } elseif (!$derivativeBlock->trashed && ElementHelper::isOutdated($derivativeBlock)) {
                         // Merge the upstream changes into the derivative block
                         $elementsService->mergeCanonicalChanges($derivativeBlock);
                     }
-                } else if (!$canonicalBlock->trashed && $canonicalBlock->dateCreated > $owner->dateCreated) {
+                } elseif (!$canonicalBlock->trashed && $canonicalBlock->dateCreated > $owner->dateCreated) {
                     // This is a new block, so duplicate it into the derivative owner
                     $elementsService->duplicateElement($canonicalBlock, [
                         'canonicalId' => $canonicalBlock->id,
@@ -1160,11 +1159,11 @@ SQL
     /**
      * Returns a block type record by its model or UID or creates a new one.
      *
-     * @param MatrixBlockType|string $blockType
+     * @param string|MatrixBlockType $blockType
      * @return MatrixBlockTypeRecord
      * @throws MatrixBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord($blockType): MatrixBlockTypeRecord
+    private function _getBlockTypeRecord(string|MatrixBlockType $blockType): MatrixBlockTypeRecord
     {
         if (is_string($blockType)) {
             $blockTypeRecord = MatrixBlockTypeRecord::findOne(['uid' => $blockType]) ?? new MatrixBlockTypeRecord();

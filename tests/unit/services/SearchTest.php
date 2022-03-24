@@ -23,7 +23,7 @@ use UnitTester;
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/3.x/searching.html
+ * https://craftcms.com/docs/4.x/searching.html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -46,7 +46,7 @@ class SearchTest extends Unit
         return [
             'users' => [
                 'class' => UserFixture::class,
-            ]
+            ],
         ];
     }
 
@@ -87,8 +87,8 @@ class SearchTest extends Unit
         $user->active = true;
         $user->username = 'testIndexElementAttributes1';
         $user->email = 'testIndexElementAttributes1@test.com';
-        $user->firstName = 'john smith';
-        $user->lastName = 'WIL K ER SON!';
+        $user->firstName = 'john';
+        $user->lastName = 'wilkerson';
         $user->id = 1;
 
         // Index them.
@@ -98,9 +98,8 @@ class SearchTest extends Unit
         $searchIndex = (new Query())->from([Table::SEARCHINDEX])->where(['elementId' => $user->id])->all();
 
         self::assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
-        self::assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
-        self::assertSame(' wil k er son ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
-        self::assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
+        self::assertSame(' john ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
+        self::assertSame(' wilkerson ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
     }
 
     /**

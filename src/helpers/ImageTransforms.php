@@ -202,7 +202,7 @@ class ImageTransforms
                     }
                 }
             }
-        } catch (AssetException $exception) {
+        } catch (AssetException) {
             // Make sure we throw a new exception
             $imageSourcePath = false;
         }
@@ -241,7 +241,7 @@ class ImageTransforms
      * @return ImageTransform|null
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
-    public static function normalizeTransform($transform): ?ImageTransform
+    public static function normalizeTransform(mixed $transform): ?ImageTransform
     {
         if (!$transform) {
             return null;

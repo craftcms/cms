@@ -31,7 +31,7 @@ class CraftConnector extends Yii2
     /**
      * @var array
      */
-    protected $emails = [];
+    protected array $emails = [];
 
     /**
      * @inheritdoc
@@ -107,6 +107,7 @@ class CraftConnector extends Yii2
                 $module = new $moduleClass($moduleId, Craft::$app);
             }
 
+            /** @var string|Module $moduleClass */
             $moduleClass::setInstance(
                 $module
             );

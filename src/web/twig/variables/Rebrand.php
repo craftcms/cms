@@ -122,7 +122,7 @@ class Rebrand
      * @return string|false
      * @throws Exception in case of failure
      */
-    private function _getImagePath(string $type)
+    private function _getImagePath(string $type): string|false
     {
         if (isset($this->_paths[$type])) {
             return $this->_paths[$type];

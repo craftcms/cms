@@ -12,7 +12,6 @@ use craft\models\GqlSchema;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
-use crafttests\fixtures\GqlTokensFixture;
 use FunctionalTester;
 use yii\base\Exception;
 
@@ -25,14 +24,14 @@ class GqlCest
     {
         return [
             'entriesWithField' => [
-                'class' => EntryWithFieldsFixture::class
+                'class' => EntryWithFieldsFixture::class,
             ],
             'gqlSchemas' => [
-                'class' => GqlSchemasFixture::class
+                'class' => GqlSchemasFixture::class,
             ],
             'globalSets' => [
-                'class' => GlobalSetFixture::class
-            ]
+                'class' => GlobalSetFixture::class,
+            ],
         ];
     }
 
@@ -102,7 +101,6 @@ class GqlCest
      */
     public function testQuerying(FunctionalTester $I)
     {
-
         $queryTypes = [
             'entries',
             'users',

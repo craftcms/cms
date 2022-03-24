@@ -162,16 +162,12 @@ class InstallController extends BaseUpdaterController
      */
     protected function actionStatus(string $action): string
     {
-        switch ($action) {
-            case self::ACTION_CRAFT_INSTALL:
-                return Craft::t('app', 'Installing the plugin…');
-            case self::ACTION_ENABLE:
-                return Craft::t('app', 'Enabling the plugin…');
-            case self::ACTION_MIGRATE:
-                return Craft::t('app', 'Updating the plugin…');
-            default:
-                return parent::actionStatus($action);
-        }
+        return match ($action) {
+            self::ACTION_CRAFT_INSTALL => Craft::t('app', 'Installing the plugin…'),
+            self::ACTION_ENABLE => Craft::t('app', 'Enabling the plugin…'),
+            self::ACTION_MIGRATE => Craft::t('app', 'Updating the plugin…'),
+            default => parent::actionStatus($action),
+        };
     }
 
     /**

@@ -93,7 +93,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      * They should be bound to the DB command later.
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params): string
+    public function replace(string $table, string $column, string $find, string $replace, array|string $condition, array &$params): string
     {
         $column = $this->db->quoteColumnName($column);
 

@@ -624,7 +624,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
      * @return int|false The occurrence's index if found, otherwise false.
      */
-    public static function indexOf(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
+    public static function indexOf(string $str, string $needle, int $offset = 0, bool $caseSensitive = true): int|false
     {
         if ($caseSensitive) {
             return BaseStringy::create($str)->indexOf($needle, $offset);
@@ -645,7 +645,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
      * @return int|false The occurrence's last index if found, otherwise false.
      */
-    public static function indexOfLast(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
+    public static function indexOfLast(string $str, string $needle, int $offset = 0, bool $caseSensitive = true): int|false
     {
         if ($caseSensitive) {
             return BaseStringy::create($str)->indexOfLast($needle, $offset);
@@ -1045,7 +1045,7 @@ class StringHelper extends \yii\helpers\StringHelper
             // pick a random number from 1 up to the number of valid chars
             try {
                 $randomPick = random_int(0, $numValidChars - 1);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 $randomPick = rand(0, $numValidChars - 1);
             }
 
@@ -1160,7 +1160,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The resulting string after the replacements.
      * @since 3.3.0
      */
-    public static function replaceAll(string $str, array $search, $replacement, bool $caseSensitive = true): string
+    public static function replaceAll(string $str, array $search, array|string $replacement, bool $caseSensitive = true): string
     {
         return (string)BaseStringy::create($str)->replaceAll($search, $replacement, $caseSensitive);
     }
@@ -1239,11 +1239,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * ```
      *
      * @param string $str The string
-     * @param string|callable $replace The replacement string, or callback function.
+     * @param callable|string $replace The replacement string, or callback function.
      * @return string The string with converted 4-byte UTF-8 characters
      * @since 3.1.13
      */
-    public static function replaceMb4(string $str, $replace): string
+    public static function replaceMb4(string $str, callable|string $replace): string
     {
         if (!static::containsMb4($str)) {
             return $str;
@@ -1682,7 +1682,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $glue The glue to use if the object is an array.
      * @return string The string representation of the object.
      */
-    public static function toString($object, string $glue = ','): string
+    public static function toString(mixed $object, string $glue = ','): string
     {
         if (is_scalar($object) || (is_object($object) && method_exists($object, '__toString'))) {
             return (string)$object;

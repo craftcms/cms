@@ -17,7 +17,7 @@ return [
         'hasUrls' => true,
         'settings' => [
             'path' => dirname(__FILE__, 3) . '/_data/assets/volume-folder-1/',
-            'url' => FsFixture::BASE_URL
+            'url' => FsFixture::BASE_URL,
         ],
     ],
 ];

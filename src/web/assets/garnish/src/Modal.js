@@ -121,7 +121,7 @@ export default Base.extend(
                 }
 
                 // Add focus trap
-                Craft.trapFocusWithin(this.$container);
+                Garnish.trapFocusWithin(this.$container);
 
                 this.addListener(Garnish.$win, 'resize', '_handleWindowResize');
             }

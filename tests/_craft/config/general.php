@@ -1,7 +1,6 @@
 <?php
 
 use craft\helpers\App;
-use craft\test\Craft;
 
 /**
  * General Configuration

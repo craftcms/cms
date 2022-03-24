@@ -28,7 +28,6 @@ type AssetIndexingSessionModel = {
 }
 
 type CraftResponse = {
-    success?: boolean,
     message?: string,
     errors?: Array<string>,
     session?: AssetIndexingSessionModel,
@@ -198,7 +197,7 @@ export class AssetIndexer {
 
             this._updateCurrentIndexingSession();
 
-            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
+            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !responseData.skipDialog) {
                 if (!this._prunedSessionIds.includes(this._currentIndexingSession as number)) {
                     this.reviewSession(session);
                 } else {

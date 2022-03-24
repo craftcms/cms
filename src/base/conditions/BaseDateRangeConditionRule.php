@@ -39,7 +39,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     /**
      * @param mixed $value
      */
-    public function setStartDate($value): void
+    public function setStartDate(mixed $value): void
     {
         $this->_startDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
@@ -55,7 +55,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     /**
      * @param mixed $value
      */
-    public function setEndDate($value): void
+    public function setEndDate(mixed $value): void
     {
         $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }

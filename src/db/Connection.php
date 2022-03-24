@@ -367,11 +367,7 @@ class Connection extends \yii\db\Connection
             $this->getSchema()->refresh();
         }
 
-        if (($tableSchema = $this->getTableSchema($table)) === null) {
-            return false;
-        }
-
-        return ($tableSchema->getColumn($column) !== null);
+        return isset($this->getTableSchema($table)->columns[$column]);
     }
 
     /**
@@ -475,7 +471,7 @@ class Connection extends \yii\db\Connection
                 $schema = $this->getSchema();
                 @unlink($schema->tempMyCnfPath);
             }
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // the directory doesn't exist
         }
 

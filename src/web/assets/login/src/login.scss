@@ -155,6 +155,10 @@ body {
   margin-top: 70px;
   margin-bottom: 48px;
   opacity: .8;
+
+  > svg {
+    display: inline-block;
+  }
 }
 
 #poweredby:hover,

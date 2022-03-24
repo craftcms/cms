@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -20,17 +21,17 @@ use craft\models\ImageTransform;
 interface ImageTransformerInterface
 {
     /**
-     * Returns the URL for an image asset transform.
+     * Returns the URL for an image transform.
      *
      * @param Asset $asset
      * @param ImageTransform $imageTransform
-     * @param bool $immediately Whether the image must be transformed immediately
+     * @param bool $immediately Whether the image should be transformed immediately
      * @return string The URL for the transform
      */
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string;
 
     /**
-     * Invalidate a created transform by asset and a transform index.
+     * Invalidates all transforms for an asset.
      *
      * @param Asset $asset
      */

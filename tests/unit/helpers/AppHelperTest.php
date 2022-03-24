@@ -116,8 +116,6 @@ class AppHelperTest extends TestCase
 
         self::expectException(InvalidArgumentException::class);
         App::cliOption('no-dash');
-
-
     }
 
     /**
@@ -256,7 +254,7 @@ class AppHelperTest extends TestCase
      * @dataProvider humanizeClassDataProvider
      *
      * @param string $expected
-     * @param string $class
+     * @param class-string $class
      */
     public function testHumanizeClass(string $expected, string $class)
     {
@@ -432,9 +430,8 @@ class AppHelperTest extends TestCase
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
             ['dbConfig', ['class', 'dsn', 'password', 'username', 'charset', 'tablePrefix', 'schemaMap', 'commandMap', 'attributes', 'enableSchemaCache']],
             ['mutexConfig', ['class', 'fileMode', 'dirMode']],
-            ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',]],
+            ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam', ]],
             ['cacheConfig', ['class', 'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
-            ['logConfig', ['class']],
             ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
             ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
         ];
@@ -462,7 +459,7 @@ class AppHelperTest extends TestCase
             ['entries', Entries::class],
             ['app helper test', self::class],
             ['std class', stdClass::class],
-            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890'],
         ];
     }
 

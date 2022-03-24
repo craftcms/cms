@@ -41,7 +41,7 @@ class GraphqlController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['api'];
+    protected array|bool|int $allowAnonymous = ['api'];
 
     /**
      * @inheritdoc
@@ -93,7 +93,7 @@ class GraphqlController extends Controller
                     }
                 }
             }
-        } else if ($generalConfig->allowedGraphqlOrigins !== false) {
+        } elseif ($generalConfig->allowedGraphqlOrigins !== false) {
             $headers->setDefault('Access-Control-Allow-Origin', '*');
         }
 
@@ -229,7 +229,7 @@ class GraphqlController extends Controller
                 if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
                     try {
                         $token = $gqlService->getTokenByAccessToken($matches[1]);
-                    } catch (InvalidArgumentException $e) {
+                    } catch (InvalidArgumentException) {
                     }
 
                     if (!isset($token) || !$token->getIsValid()) {
@@ -249,7 +249,7 @@ class GraphqlController extends Controller
             if (!$token) {
                 try {
                     return $gqlService->getActiveSchema();
-                } catch (GqlException $exception) {
+                } catch (GqlException) {
                     throw new BadRequestHttpException('Missing Authorization header');
                 }
             }
@@ -301,7 +301,7 @@ class GraphqlController extends Controller
         if ($schemaUid && $schemaUid !== '*') {
             try {
                 $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 throw new BadRequestHttpException('Invalid token UID.');
             }
             Craft::$app->getSession()->authorize("graphql-schema:$schemaUid");
@@ -464,7 +464,7 @@ class GraphqlController extends Controller
         }
 
         if (!$gqlService->saveToken($token)) {
-            return $this->asError(
+            return $this->asFailure(
                 Craft::t('app', 'Couldn’t save token.'),
                 routeParams: [
                     'token' => $token,
@@ -472,7 +472,7 @@ class GraphqlController extends Controller
             );
         }
 
-        return $this->asSuccess(Craft::t('app', 'Schema saved.'))
+        return $this->asSuccess(Craft::t('app', 'Schema saved.'));
     }
 
     /**
@@ -696,7 +696,7 @@ class GraphqlController extends Controller
 
         try {
             $schema = Craft::$app->getGql()->getTokenByUid($tokenUid);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             throw new BadRequestHttpException('Invalid schema UID.');
         }
 

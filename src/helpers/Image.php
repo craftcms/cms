@@ -30,13 +30,13 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param int|float|null $targetWidth
-     * @param int|float|null $targetHeight
-     * @param int|float $sourceWidth
-     * @param int|float $sourceHeight
+     * @param float|int|null $targetWidth
+     * @param float|int|null $targetHeight
+     * @param float|int $sourceWidth
+     * @param float|int $sourceHeight
      * @return int[] Array of the width and height.
      */
-    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
+    public static function calculateMissingDimension(float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight): array
     {
         // If the target width & height are both present, return them
         if ($targetWidth && $targetHeight) {
@@ -98,7 +98,7 @@ class Image
      * @return array|false Info embedded in the PNG file, or `false` if it wasn’t found.
      * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
      */
-    public static function pngImageInfo(string $file)
+    public static function pngImageInfo(string $file): array|false
     {
         if (empty($file)) {
             return false;
@@ -195,7 +195,7 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (Throwable $exception) {
+        } catch (Throwable) {
             return [0, 0];
         }
     }
@@ -207,7 +207,7 @@ class Image
      * @return array|false
      * @throws TypeError
      */
-    public static function imageSizeByStream($stream)
+    public static function imageSizeByStream($stream): array|false
     {
         if (!is_resource($stream)) {
             throw new TypeError('Argument passed should be a resource.');
@@ -322,7 +322,7 @@ class Image
             $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
-        } else if (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+        } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
             $width = floor($viewboxMatch[3]);
             $height = floor($viewboxMatch[4]);
         } else {
@@ -370,23 +370,15 @@ class Image
     {
         $ppi = 72;
 
-        switch ($unit) {
-            case 'in':
-                return $ppi;
-            case 'pt':
-                return $ppi / 72;
-            case 'pc':
-                return $ppi / 6;
-            case 'cm':
-                return $ppi / 2.54;
-            case 'mm':
-                return $ppi / 25.4;
-            case 'em':
-                return 16;
-            case 'ex':
-                return 10;
-            default:
-                return 1;
-        }
+        return match ($unit) {
+            'in' => $ppi,
+            'pt' => $ppi / 72,
+            'pc' => $ppi / 6,
+            'cm' => $ppi / 2.54,
+            'mm' => $ppi / 25.4,
+            'em' => 16,
+            'ex' => 10,
+            default => 1,
+        };
     }
 }

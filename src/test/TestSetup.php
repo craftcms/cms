@@ -13,7 +13,6 @@ use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\errors\MigrationException;
-use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -34,7 +33,6 @@ use craft\services\Deprecator;
 use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\services\Entries;
-use craft\services\EntryRevisions;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Images;
@@ -103,12 +101,12 @@ class TestSetup
     /**
      * @var array Project Config data
      */
-    private static $_parsedProjectConfig = [];
+    private static array $_parsedProjectConfig = [];
 
     /**
      * @var Config|null An instance of the config service.
      */
-    private static $_configService = null;
+    private static ?Config $_configService = null;
 
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
@@ -116,7 +114,7 @@ class TestSetup
      * @return mixed
      * @throws InvalidConfigException
      */
-    public static function warmCraft()
+    public static function warmCraft(): mixed
     {
         $app = self::createTestCraftObjectConfig();
         $app['isInstalled'] = false;
@@ -172,7 +170,7 @@ class TestSetup
     }
 
     /**
-     * @param string $class
+     * @param class-string<Migration> $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
      *
@@ -190,7 +188,7 @@ class TestSetup
 
         if (!$migration instanceof Migration) {
             throw new InvalidArgumentException(
-                'Migration class is not an instance of: ' . Migration::class . ''
+                'Migration class is not an instance of: ' . Migration::class
             );
         }
 
@@ -284,15 +282,14 @@ class TestSetup
     }
 
     /**
-     * Determine the app type. If the parent is `craft\test\console\ConsoleTest`.
-     * Its a console test. Else, web.
+     * Determine the app type (console or web).
      *
      * @return string
      */
     public static function appType(): string
     {
         $appType = 'web';
-        if (CraftTest::$currentTest instanceof ConsoleTest) {
+        if (isset(CraftTest::$currentTest) && CraftTest::$currentTest instanceof ConsoleTest) {
             $appType = 'console';
         }
 
@@ -380,7 +377,7 @@ class TestSetup
     }
 
     /**
-     * @param string $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
+     * @param string|null $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
      * @throws ErrorException
      */
     public static function setupProjectConfig(?string $projectConfigFolder = null): void
@@ -436,7 +433,7 @@ class TestSetup
      *
      * @return array|false
      */
-    public static function useProjectConfig()
+    public static function useProjectConfig(): array|false
     {
         $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
 
@@ -467,7 +464,7 @@ class TestSetup
         ];
 
         // Replace the default site with what is desired by the project config. If project config is enabled.
-        if ($projectConfig = self::useProjectConfig()) {
+        if (self::useProjectConfig()) {
             $existingProjectConfig = self::getSeedProjectConfigData();
 
             if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {
@@ -501,7 +498,7 @@ class TestSetup
     /**
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param string $appClass
+     * @param class-string<\yii\base\Application> $appClass
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
@@ -545,7 +542,7 @@ class TestSetup
 
     /**
      * @param CodeceptionTestCase $test
-     * @param string $class
+     * @param class-string $class
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */

@@ -107,7 +107,7 @@ class ArrayValidatorTest extends Unit
         $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
 
         return [
-            [$newValidator, 'message'], [$newValidator, 'tooFew'], [$newValidator, 'tooMany'], [$newValidator, 'notEqual']
+            [$newValidator, 'message'], [$newValidator, 'tooFew'], [$newValidator, 'tooMany'], [$newValidator, 'notEqual'],
         ];
     }
 

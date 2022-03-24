@@ -17,6 +17,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             this._attachUploader();
         }
 
+        this.updateAddElementsBtn();
+
         this.addListener(this.$elementsContainer, 'keydown', this._onKeyDown.bind(this));
         this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
     },
@@ -152,23 +154,20 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         }
     },
 
-    replaceElement: function(elementId, replaceWithId) {
-        var data = {
-            elementId: replaceWithId,
-            siteId: this.settings.criteria.siteId,
-            thumbSize: this.settings.viewMode
-        };
+    enableAddElementsBtn: function() {
+        this.base();
 
-        Craft.sendActionRequest('POST', 'elements/get-element-html', {data})
-            .then((response) => {
-                var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
-                this.removeElement($existing);
-                let elementInfo = Craft.getElementInfo(response.data.html);
-                this.selectElements([elementInfo]);
-            })
-            .catch(({response}) => {
-                alert(response.data.message);
-            });
+        if (this.$uploadBtn) {
+            this.$uploadBtn.removeClass('hidden');
+        }
+    },
+
+    disableAddElementsBtn: function() {
+        this.base();
+
+        if (this.$uploadBtn) {
+            this.$uploadBtn.addClass('hidden');
+        }
     },
 
     refreshThumbnail: function(elementId) {

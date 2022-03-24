@@ -117,8 +117,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         this.removeListener(this.$shade, 'click');
 
         this.maxImageSize = this.getMaxImageSize();
-        Craft.sendActionRequest('POST', 'assets/image-editor', {data: assetId})
-            .then((response) => this.loadEditor.bind(this));
+        Craft.sendActionRequest('POST', 'assets/image-editor', {data: {assetId}})
+            .then((response) => this.loadEditor(response.data));
     },
 
     /**
@@ -1300,16 +1300,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this.saving = false;
         };
         Craft.sendActionRequest('POST', 'assets/save-image', {data: postData})
-            .then((response) => {
+            .then(response => {
                 onResponse();
-                this.onSave(data);
+                this.onSave(response.data);
                 this.hide();
                 Craft.cp.runQueue();
             })
             .catch(({response}) => {
                 onResponse();
                 alert(response.data.message);
-                return;
             });
     },
 
