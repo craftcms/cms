@@ -1860,7 +1860,6 @@ return [
     '{section} Entry Types' => '{section} Inläggstyper',
     '{step, number} of {total, number}' => '{step, number} av {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} kopia',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} jobb',
     '{total} updates available!' => '{total} uppdateringar tillgängliga!',

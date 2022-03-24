@@ -1,5 +1,19 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\ArrayHelper::onlyContains()`.
+- Added `craft\test\Craft::assertNotPushedToQueue()`. ([#10510](https://github.com/craftcms/cms/pull/10510))
+
+### Changed
+- Duplicated elements no longer have “copy” appended to the end of their titles. ([#10707](https://github.com/craftcms/cms/pull/10707))
+- User queries’ `group` and `groupId` params now support passing an array that begins with `and`, to only return users that are in all of the subsequent user groups.
+
+### Fixed
+- Fixed a bug where color pickers weren’t clickbale within Table fields. ([#10775](https://github.com/craftcms/cms/issues/10775))
+- Fixed a bug where multi-site elements weren’t getting all of their titles duplicated correctly. ([#10702](https://github.com/craftcms/cms/issues/10702))
+
 ## 3.7.37 - 2022-03-16
 
 ### Changed

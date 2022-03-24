@@ -486,6 +486,10 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     /**
      * Causes the query results to be returned in the order specified by [[id()]].
      *
+     * ::: tip
+     * If no IDs were passed to [[id()]], setting this to `true` will result in an empty result set.
+     * :::
+     *
      * ---
      *
      * ```twig

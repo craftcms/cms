@@ -1864,7 +1864,6 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{section} Entry Types' => '{section} Bejegyzés Tipusok',
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} másolata',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} feladat',
     '{total} updates available!' => '{total} frissítés áll rendelkezésre!',
