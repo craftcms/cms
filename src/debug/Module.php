@@ -8,7 +8,12 @@
 namespace craft\debug;
 
 use Craft;
+use craft\base\FsInterface;
+use craft\models\FsListing;
+use craft\services\Fs;
 use craft\web\View;
+use Illuminate\Support\Collection;
+use yii\base\Application;
 
 /**
  * @inheritdoc
@@ -18,6 +23,21 @@ use craft\web\View;
  */
 class Module extends \yii\debug\Module
 {
+
+    public $controllerNamespace = 'craft\debug\controllers';
+    public ?FsInterface $fs = null;
+
+    /**
+     * @param $app Application
+     * @return void
+     */
+    public function bootstrap($app): void
+    {
+        parent::bootstrap($app);
+
+        $this->logTarget = $app->getLog()->targets['debug'] = new LogTarget($this);
+    }
+
     /**
      * @inheritdoc
      */
