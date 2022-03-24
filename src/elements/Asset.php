@@ -1544,7 +1544,6 @@ JS;
 
             $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             $transform = ImageTransforms::normalizeTransform($transform);
-            $imageTransformer = $transform->getImageTransformer();
 
             try {
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
@@ -1561,6 +1560,7 @@ JS;
                     }
                 }
 
+                $imageTransformer = $transform->getImageTransformer();
                 $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
 
                 if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {

@@ -12,6 +12,7 @@
 ### Fixed
 - Fixed a bug where Categories fields were showing spinners indefinitely. ([#10801](https://github.com/craftcms/cms/issues/10801))
 - Fixed a bug where the Image Editor was loading transformed preview images, even if the original image was small enough to be loaded in its original size. ([#10802](https://github.com/craftcms/cms/issues/10802))
+- Fixed a bug where any image transformer set by a plugin was ignored for transforms.
 
 ## 4.0.0-beta.3 - 2022-03-22
 
