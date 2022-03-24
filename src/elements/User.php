@@ -1158,9 +1158,9 @@ class User extends Element implements IdentityInterface
     /**
      * Set the backup codes.
      *
-     * @param string $backupCodes
+     * @param ?string $backupCodes
      */
-    public function setBackupCodes(string $backupCodes): void
+    public function setBackupCodes(?string $backupCodes = ''): void
     {
         $this->_backupCodes = explode(',', $backupCodes);
     }

@@ -32,7 +32,7 @@ use yii\web\Response;
  */
 class AuthenticationController extends Controller
 {
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+    protected array|int|bool $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     private ?State $_state = null;
 
