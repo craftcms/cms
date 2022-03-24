@@ -13,6 +13,7 @@ use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
+use craft\events\MigrationTracksEvent;
 use craft\events\RegisterMigratorEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -50,6 +51,27 @@ class MigrateController extends BaseMigrateController
 {
     use ControllerTrait;
     use BackupTrait;
+
+    /**
+     * @event MigrationTracksEvent The event that is triggered before running migrations on a set of migration tracks.
+     *
+     * ```php
+     * use craft\console\controllers\MigrateController;
+     * use craft\events\MigrationTracksEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     MigrateController::class,
+     *     MigrateController::EVENT_REGISTER_MIGRATION_TRACKS,
+     *     function(MigrationTracksEvent $event) {
+     *         $event->tracks[] = 'my-custom-track';
+     *     }
+     * );
+     * ```
+     *
+     * @since 3.7.38
+     */
+    const EVENT_REGISTER_MIGRATION_TRACKS = 'registerMigrationTracks';
 
     /**
      * @event RegisterMigratorEvent The event that is triggered when resolving an unknown migration track.
@@ -334,6 +356,17 @@ class MigrateController extends BaseMigrateController
             }
         }
 
+        $event = new MigrationTracksEvent();
+        $this->trigger(self::EVENT_REGISTER_MIGRATION_TRACKS, $event);
+        foreach ($event->tracks as $track)
+        {
+            $this->stdout("Checking for {$track} migrations ...\n");
+            $customMigrations = $this->getMigrator($track)->getNewMigrations();
+            if (!empty($customMigrations)) {
+                $migrationsByTrack[$track] = $customMigrations;
+            }
+        }
+        
         if (empty($migrationsByTrack)) {
             $this->stdout('No new migrations found. Your system is up to date.' . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
@@ -352,7 +385,7 @@ class MigrateController extends BaseMigrateController
                     $which = 'content';
                     break;
                 default:
-                    $which = $plugins[substr($track, 7)]->name;
+                    $which = $this->_isPluginTrack($track) ? $plugins[substr($track, 7)]->name : $track;
             }
 
             $this->stdout("Total $n new $which " . ($n === 1 ? 'migration' : 'migrations') . ' to be applied:' . PHP_EOL, Console::FG_YELLOW);
@@ -395,7 +428,7 @@ class MigrateController extends BaseMigrateController
             // Update version info
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } elseif ($track !== MigrationManager::TRACK_CONTENT) {
+            } elseif ($this->_isPluginTrack($track)) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
@@ -481,6 +514,11 @@ class MigrateController extends BaseMigrateController
             Craft::error('Could not delete compiled templates: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
         }
+    }
+
+    private function _isPluginTrack(string $track)
+    {
+        return substr($track, 0, 7) === 'plugin:';
     }
 
     /**

@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\helpers\ArrayHelper::onlyContains()`.
 - Added `craft\test\Craft::assertNotPushedToQueue()`. ([#10510](https://github.com/craftcms/cms/pull/10510))
+- Added `craft\console\controllers\MigrateController::EVENT_REGISTER_MIGRATION_TRACKS`.
 
 ### Changed
 - Duplicated elements no longer have “copy” appended to the end of their titles. ([#10707](https://github.com/craftcms/cms/pull/10707))
