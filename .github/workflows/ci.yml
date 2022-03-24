@@ -130,3 +130,15 @@ jobs:
     - name: Upload coverage to Codecov
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
       uses: codecov/codecov-action@v2
+
+    - name: Slack notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        author_name: Bot the Builder # default: 8398a7@action-slack
+        fields: repo,commit,message,author # default: repo,commit
+        mention: here
+        if_mention: failure,cancelled
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+      if: always() # Pick up events even if the job fails or is canceled.
