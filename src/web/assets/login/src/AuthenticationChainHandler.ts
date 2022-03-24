@@ -141,10 +141,10 @@ export class AuthenticationChainHandler
 
         Craft.sendActionRequest('POST', endpoint, {data: request})
             .then((response) => {
-                this.processResponse(response.data, response.statusText);
+                this.processResponse(response.data);
             })
             .catch(({response}) => {
-                this.processResponse(response.data, response.statusText);
+                this.processResponse(response.data);
             });
     }
 
@@ -167,10 +167,10 @@ export class AuthenticationChainHandler
         const data = { alternateStep: stepType };
         Craft.sendActionRequest('POST', this.performAuthenticationEndpoint, {data})
             .then((response) => {
-                this.processResponse(response.data, response.statusText);
+                this.processResponse(response.data);
             })
             .catch(({response}) => {
-                this.processResponse(response.data, response.statusText);
+                this.processResponse(response.data);
             });
     }
 
@@ -182,76 +182,73 @@ export class AuthenticationChainHandler
     /**
      * Process authentication response.
      * @param response
-     * @param textStatus
      * @protected
      */
-    protected processResponse(response: AuthenticationResponse, textStatus: string)
+    protected processResponse(response: AuthenticationResponse)
     {
-        if (textStatus == 'success') {
-            if (response.success && response.returnUrl?.length) {
-                window.location.href = response.returnUrl;
-                // Keep the form disabled
-                return;
+        if (response.success && response.returnUrl?.length) {
+            window.location.href = response.returnUrl;
+            // Keep the form disabled
+            return;
+        } else {
+            // Take not of errors and messages
+            if (response.error) {
+                this.loginForm.showError(response.error);
+                Garnish.shake(this.loginForm.$loginForm);
+            }
+            if (response.message) {
+                this.loginForm.showMessage(response.message);
+            }
+
+            // Handle password reset response early and bail
+            if (response.passwordReset) {
+                if (!response.error) {
+                    this.loginForm.toggleRecoverAccountForm();
+                    this.restartAuthentication();
+                }
+            }
+
+            // Ensure alternative login options are handled
+            if (response.alternatives && Object.keys(response.alternatives).length > 0) {
+                this.showAlternatives(response.alternatives);
             } else {
-                // Take not of errors and messages
-                if (response.error) {
-                    this.loginForm.showError(response.error);
-                    Garnish.shake(this.loginForm.$loginForm);
-                }
-                if (response.message) {
-                    this.loginForm.showMessage(response.message);
-                }
+                this.loginForm.hideAlternatives();
+            }
 
-                // Handle password reset response early and bail
-                if (response.passwordReset) {
-                    if (!response.error) {
-                        this.loginForm.toggleRecoverAccountForm();
-                        this.restartAuthentication();
-                    }
-                }
+            // Keep track of current step type
+            if (response.stepType){
+                this.$authenticationStep.attr('rel', response.stepType);
+            }
 
-                // Ensure alternative login options are handled
-                if (response.alternatives && Object.keys(response.alternatives).length > 0) {
-                    this.showAlternatives(response.alternatives);
-                } else {
-                    this.loginForm.hideAlternatives();
-                }
+            // Load any JS files if needed
+            if (response.footHtml) {
+                addContainedJsFilesToPage(response.footHtml);
+            }
 
-                // Keep track of current step type
-                if (response.stepType){
-                    this.$authenticationStep.attr('rel', response.stepType);
+            const initStepType = (stepType: string) => {
+                if (this.authenticationSteps[stepType]) {
+                    this.authenticationSteps[stepType].init();
                 }
+            }
 
-                // Load any JS files if needed
-                if (response.footHtml) {
-                    addContainedJsFilesToPage(response.footHtml);
-                }
+            // Display the HTML for the auth step.
+            if (response.html) {
+                this.currentStep?.cleanup();
+                this.$authenticationStep.html(response.html);
+                initStepType(response.stepType!);
+            }
 
-                const initStepType = (stepType: string) => {
-                    if (this.authenticationSteps[stepType]) {
-                        this.authenticationSteps[stepType].init();
-                    }
-                }
+            // Display the HTML for the entire login form, in case we just started an authentication chain
+            if (response.loginFormHtml) {
+                this.currentStep?.cleanup();
+                this.loginForm.$loginForm.html(response.loginFormHtml);
+                this.loginForm.prepareForm();
+                initStepType(response.stepType!);
+            }
 
-                // Display the HTML for the auth step.
-                if (response.html) {
-                    this.currentStep?.cleanup();
-                    this.$authenticationStep.html(response.html);
-                    initStepType(response.stepType!);
-                }
-
-                // Display the HTML for the entire login form, in case we just started an authentication chain
-                if (response.loginFormHtml) {
-                    this.currentStep?.cleanup();
-                    this.loginForm.$loginForm.html(response.loginFormHtml);
-                    this.loginForm.prepareForm();
-                    initStepType(response.stepType!);
-                }
-
-                // Just in case this was the first step, remove all the misc things.
-                if (response.stepComplete) {
-                    this.loginForm.hideRememberMe();
-                }
+            // Just in case this was the first step, remove all the misc things.
+            if (response.stepComplete) {
+                this.loginForm.hideRememberMe();
             }
         }
 
