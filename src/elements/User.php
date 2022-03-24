@@ -38,7 +38,7 @@ use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\UserGroup;
-use craft\records\AuthAuthenticator as AuthRecord;
+use craft\records\AuthAuthenticator as AuthAuthenticatorRecord;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
@@ -1219,7 +1219,7 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        $record = AuthRecord::findOne(['userId' => $this->id]);
+        $record = AuthAuthenticatorRecord::findOne(['userId' => $this->id]);
 
         if (!$record) {
             return false;
@@ -1241,7 +1241,7 @@ class User extends Element implements IdentityInterface
     public function updateAuthenticatorTimestamp(int $timestamp): void
     {
         if ($this->id && $this->hasAuthenticatorSecret()) {
-            $record = AuthRecord::findOne(['userId' => $this->id]);
+            $record = AuthAuthenticatorRecord::findOne(['userId' => $this->id]);
             if ($record) {
                 $record->authenticatorTimestamp = $timestamp;
                 $record->save();
@@ -1273,7 +1273,7 @@ class User extends Element implements IdentityInterface
 
             // todo Maybe move this out. Makes sense because it's a separate piece of funtionality.
             // OTOH - keeping the secret localized here is good too.
-            $record = new AuthRecord();
+            $record = new AuthAuthenticatorRecord();
             $record->userId = $this->id;
             $record->authenticatorSecret = $secret;
             $record->authenticatorTimestamp = $timestamp;
@@ -1285,6 +1285,8 @@ class User extends Element implements IdentityInterface
 
             return $backupCodes;
         }
+
+        return [];
     }
 
     /**
@@ -1293,7 +1295,7 @@ class User extends Element implements IdentityInterface
     public function removeAuthenticator(): void
     {
         if ($this->id) {
-            AuthAuthenticator::deleteAll(['userId' => $this->id]);
+            AuthAuthenticatorRecord::deleteAll(['userId' => $this->id]);
             $this->_authenticatorSecret = null;
         }
     }
