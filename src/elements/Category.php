@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
@@ -463,6 +464,31 @@ class Category extends Element
                 ],
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createAnother(): ?ElementInterface
+    {
+        $group = $this->getGroup();
+
+        /** @var self $category */
+        $category = Craft::createObject([
+            'class' => self::class,
+            'groupId' => $this->groupId,
+            'siteId' => $this->siteId,
+        ]);
+
+        $category->enabled = $this->enabled;
+        $category->setEnabledForSite($this->getEnabledForSite());
+
+        // Structure parent
+        if ($group->maxLevels !== 1) {
+            $category->setParentId($this->getParentId());
+        }
+
+        return $category;
     }
 
     /**
