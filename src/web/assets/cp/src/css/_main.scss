@@ -1076,6 +1076,7 @@ td.right {
     background-color: $grey050;
     overflow: auto;
     box-shadow: inset -1px 0 0 $hairlineColor;
+    @include border-top-left-radius($largeBorderRadius);
 
     & > .btn {
       @include margin(10px, 0, 0, 14px);
