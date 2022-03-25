@@ -914,7 +914,7 @@ class Assets extends Component
         if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {
             $event = new AssetPreviewEvent(['asset' => $asset]);
             $this->trigger(self::EVENT_REGISTER_PREVIEW_HANDLER, $event);
-            if (isset($event->previewHandler) && $event->previewHandler instanceof AssetPreviewHandlerInterface) {
+            if ($event->previewHandler instanceof AssetPreviewHandlerInterface) {
                 return $event->previewHandler;
             }
         }
