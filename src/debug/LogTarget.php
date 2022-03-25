@@ -2,19 +2,19 @@
 
 namespace craft\debug;
 
-use Craft;
 use craft\errors\FsException;
-use craft\errors\VolumeException;
-use craft\fs\Temp;
-use craft\helpers\Assets;
 use craft\models\FsListing;
 use Illuminate\Support\Collection;
+use Opis\Closure;
 use yii\base\InvalidConfigException;
 use yii\debug\FlattenException;
-use yii\helpers\FileHelper;
-use Opis\Closure;
-use Generator;
 
+/**
+ * The debug LogTarget is used to store logs for later use in the debugger tool
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ */
 class LogTarget extends \yii\debug\LogTarget
 {
     /**
@@ -31,11 +31,12 @@ class LogTarget extends \yii\debug\LogTarget
             parent::export();
             return;
         }
+
         $path = $this->module->dataPath;
         $summary = $this->collectSummary();
-        $dataFile = "$path/{$this->tag}.data";
         $data = [];
         $exceptions = [];
+
         foreach ($this->module->panels as $id => $panel) {
             try {
                 $panelData = $panel->save();
@@ -48,15 +49,14 @@ class LogTarget extends \yii\debug\LogTarget
                 $exceptions[$id] = new FlattenException($exception);
             }
         }
+
         $data['summary'] = $summary;
         $data['exceptions'] = $exceptions;
 
-        $stream = tmpfile();
-        fwrite($stream, Closure\serialize($data));
-        rewind($stream);
-
-        // TODO: pass $config for fileMode, etc
-        $this->module->fs->writeFileFromStream($dataFile, $stream);
+        $this->module->fs->write(
+            "$path/{$this->tag}.data",
+            Closure\serialize($data),
+        );
 
         $this->_updateIndexFile("$path/index.data", $summary);
     }
@@ -74,17 +74,11 @@ class LogTarget extends \yii\debug\LogTarget
         if (count($manifest) > $this->module->historySize + 10) {
             $n = count($manifest) - $this->module->historySize;
             foreach (array_keys($manifest) as $tag) {
-                $this->module->fs->deleteFile(
-                    sprintf('%s/%s.data', $this->module->dataPath, $tag)
-                );
+                $this->module->fs->deleteFile("{$this->module->dataPath}/$tag");
                 if (isset($manifest[$tag]['mailFiles'])) {
                     foreach ($manifest[$tag]['mailFiles'] as $mailFile) {
                         $this->module->fs->deleteFile(
-                            sprintf(
-                                '%s/%s',
-                                Craft::getAlias($this->module->panels['mail']->mailPath),
-                                $mailFile
-                            )
+                            "{$this->module->panels['mail']->mailPath}/$mailFile"
                         );
                     }
                 }
@@ -125,38 +119,23 @@ class LogTarget extends \yii\debug\LogTarget
      *
      * @param string $indexFile path to index file
      * @param array $summary summary log data
-     * @throws \yii\base\InvalidConfigException
-     * @throws \craft\errors\FsException
+     * @throws InvalidConfigException
+     * @throws FsException
      */
-    private function _updateIndexFile($indexFile, $summary)
+    private function _updateIndexFile(string $indexFile, array $summary): void
     {
-        $stream = $this->module->fs->fileExists($indexFile) ?
-            $this->module->fs->getFileStream($indexFile) :
-            null;
-        $manifest = [];
-
-        if ($stream) {
-            @flock($stream, LOCK_EX);
-            $manifest = '';
-            while (($buffer = fgets($stream)) !== false) {
-                $manifest .= $buffer;
-            }
-            if (!feof($stream) || empty($manifest)) {
-                // error while reading index data, ignore and create new
-                $manifest = [];
-            } else {
-                $manifest = Closure\unserialize($manifest);
-            }
+        try {
+            $manifest = Closure\unserialize($this->module->fs->read($indexFile));
+        } catch(FsException $e) {
+            $manifest = [];
         }
 
         $manifest[$this->tag] = $summary;
         $this->gc($manifest);
 
-        $stream = tmpfile();
-        fwrite($stream, Closure\serialize($manifest));
-        rewind($stream);
-
-        // TODO: pass $config for fileMode, etc
-        $this->module->fs->writeFileFromStream($indexFile, $stream);
+        $this->module->fs->write(
+            $indexFile,
+            Closure\serialize($manifest),
+        );
     }
 }

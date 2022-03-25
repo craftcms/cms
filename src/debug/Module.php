@@ -9,14 +9,11 @@ namespace craft\debug;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\models\FsListing;
-use craft\services\Fs;
 use craft\web\View;
-use Illuminate\Support\Collection;
 use yii\base\Application;
 
 /**
- * @inheritdoc
+ * The Yii Debug Module provides the debug toolbar and debugger
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

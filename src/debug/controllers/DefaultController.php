@@ -2,10 +2,17 @@
 namespace craft\debug\controllers;
 
 use craft\debug\Module;
-use craft\errors\FsException;
-use yii\web\NotFoundHttpException;
 use Opis\Closure;
+use yii\web\NotFoundHttpException;
 
+/**
+ * Debugger controller provides browsing over available debug logs.
+ *
+ * @see \yii\debug\Panel
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ */
 class DefaultController extends \yii\debug\controllers\DefaultController
 {
 
@@ -33,17 +40,7 @@ class DefaultController extends \yii\debug\controllers\DefaultController
                 clearstatcache();
             }
 
-            $content = '';
-
-            try {
-                $fp = $this->module->fs->getFileStream("{$this->module->dataPath}/index.data");
-                @flock($fp, LOCK_SH);
-                $content = stream_get_contents($fp);
-                @flock($fp, LOCK_UN);
-                fclose($fp);
-            } catch(FsException $e) {
-                // TODO: log?
-            }
+            $content =  $this->module->fs->read("{$this->module->dataPath}/index.data");
 
             if ($content !== '') {
                 $this->_manifest = array_reverse(Closure\unserialize($content), true);
@@ -71,10 +68,7 @@ class DefaultController extends \yii\debug\controllers\DefaultController
         for ($retry = 0; $retry <= $maxRetry; ++$retry) {
             $manifest = $this->getManifest($retry > 0);
             if (isset($manifest[$tag])) {
-                $filePath = "{$this->module->dataPath}/$tag.data";
-                $stream = $this->module->fs->getFileStream($filePath);
-                $contents = stream_get_contents($stream);
-                fclose($stream);
+                $contents = $this->module->fs->read("{$this->module->dataPath}/$tag.data");
                 $data = Closure\unserialize($contents);
                 $exceptions = $data['exceptions'];
                 foreach ($this->module->panels as $id => $panel) {
