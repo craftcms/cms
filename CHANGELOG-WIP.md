@@ -371,6 +371,12 @@
 - Added the symfony/var-dumper package.
 - Added the theiconic/name-parser package.
 - Added the yiisoft/yii2-symfonymailer package.
+- Added `craft\base\FsInterface::write`. ([#10824](https://github.com/craftcms/cms/pull/10824))
+- Added `craft\fs\Local::write`. ([#10824](https://github.com/craftcms/cms/pull/10824))
+- Added `craft\fs\MissingFs::write`. ([#10824](https://github.com/craftcms/cms/pull/10824))
+- Added `craft\base\FsInterface::read`. ([#10824](https://github.com/craftcms/cms/pull/10824))
+- Added `craft\fs\Local::read`. ([#10824](https://github.com/craftcms/cms/pull/10824))
+- Added `craft\fs\MissingFs::read`. ([#10824](https://github.com/craftcms/cms/pull/10824))
 
 ### Changed
 - Craft now requires PHP 8.0.2 or later.
