@@ -19,7 +19,7 @@
 - Fixed an error that could occur when previewing an asset. ([#10809](https://github.com/craftcms/cms/issues/10809))
 - Fixed a bug where it wasn’t possible to change a category’s parent from category forms. ([#10819](https://github.com/craftcms/cms/issues/10819))
 - Fixed an error that occurred when editing an element with a Tags field. ([#10808](https://github.com/craftcms/cms/issues/10808), [#10814](https://github.com/craftcms/cms/issues/10814))
-- Fix a bug where an incorrect transform path was passed along via event when using the default trasnformer.
+- Fixed a bug where the incorrect transform path was getting set for `craft\imagetransforms\ImageTransformer::EVENT_TRANSFORM_IMAGE` events.
 
 ## 4.0.0-beta.3 - 2022-03-22
 
