@@ -2142,7 +2142,7 @@ JS;
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
+        return implode("\n", [
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'new-filename',
