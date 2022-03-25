@@ -14,6 +14,7 @@
 - Fixed a bug where the Image Editor was loading transformed preview images, even if the original image was small enough to be loaded in its original size. ([#10802](https://github.com/craftcms/cms/issues/10802))
 - Fixed a bug where plugin-registered image transformers were being ignored.
 - Fixed an error that could occur when previewing an asset. ([#10809](https://github.com/craftcms/cms/issues/10809))
+- Fixed a bug where it wasn’t possible to change a category’s parent from category forms. ([#10819](https://github.com/craftcms/cms/issues/10819))
 
 ## 4.0.0-beta.3 - 2022-03-22
 
