@@ -263,14 +263,17 @@ class SitesController extends Controller
         ];
 
         $languageOptions = [];
+        $languageId = Craft::$app->getLocale()->getLanguageID();
 
         foreach (Craft::$app->getI18n()->getAllLocales() as $locale) {
             $languageOptions[] = [
+                'label' => $locale->getDisplayName(Craft::$app->language),
                 'value' => $locale->id,
-                'label' => Craft::t('app', '{id} – {name}', [
-                    'name' => $locale->getDisplayName(Craft::$app->language),
-                    'id' => $locale->id,
-                ]),
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
             ];
         }
 
