@@ -7,6 +7,7 @@
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 
 ### Changed
+- Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))
 - CP asset thumbnails are now routed through the `Asset::getUrl()` method for homogeneity.
 
 ### Removed
@@ -15,7 +16,13 @@
 ### Fixed
 - Fixed a bug where Categories fields were showing spinners indefinitely. ([#10801](https://github.com/craftcms/cms/issues/10801))
 - Fixed a bug where the Image Editor was loading transformed preview images, even if the original image was small enough to be loaded in its original size. ([#10802](https://github.com/craftcms/cms/issues/10802))
-- Fixed a bug where any image transformer set by a plugin was ignored for transforms.
+- Fixed a bug where plugin-registered image transformers were being ignored.
+- Fixed an error that could occur when previewing an asset. ([#10809](https://github.com/craftcms/cms/issues/10809))
+- Fixed a bug where it wasn’t possible to change a category’s parent from category forms. ([#10819](https://github.com/craftcms/cms/issues/10819))
+- Fixed an error that occurred when editing an element with a Tags field. ([#10808](https://github.com/craftcms/cms/issues/10808), [#10814](https://github.com/craftcms/cms/issues/10814))
+- Fixed a bug where the incorrect transform path was getting set for `craft\imagetransforms\ImageTransformer::EVENT_TRANSFORM_IMAGE` events.
+- Fixed a bug where Matrix block sort order changes weren’t persisting when applying drafts. ([#10803](https://github.com/craftcms/cms/issues/10803))
+- Fixed an error that occurred if any event handlers were registered for `craft\services\ImageTransforms::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM`, `EVENT_AFTER_SAVE_IMAGE_TRANSFORM`, `EVENT_BEFORE_APPLY_TRANSFORM_DELETE`, `EVENT_AFTER_DELETE_IMAGE_TRANSFORM`, or `EVENT_BEFORE_SAVE_IMAGE_TRANSFORM`. ([#10826](https://github.com/craftcms/cms/issues/10826))
 
 ## 4.0.0-beta.3 - 2022-03-22
 

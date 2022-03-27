@@ -155,19 +155,19 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     },
 
     enableAddElementsBtn: function() {
-        this.base();
-
         if (this.$uploadBtn) {
             this.$uploadBtn.removeClass('hidden');
         }
+
+        this.base();
     },
 
     disableAddElementsBtn: function() {
-        this.base();
-
         if (this.$uploadBtn) {
             this.$uploadBtn.addClass('hidden');
         }
+
+        this.base();
     },
 
     refreshThumbnail: function(elementId) {

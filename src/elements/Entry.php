@@ -1737,7 +1737,7 @@ EOD;
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        return implode('', $fields);
+        return implode("\n", $fields);
     }
 
     private function _parentOptionCriteria(Section $section): array
