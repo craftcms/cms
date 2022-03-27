@@ -75,15 +75,7 @@
 
     <!-- Meta data -->
     <dl class="tw-mt-2">
-      <!-- Install with composer -->
-      <meta-stat>
-        <template #title>
-          {{ "Install with Composer"|t('app') }}
-        </template>
-        <template #content>
-          <composer-install :plugin="plugin" />
-        </template>
-      </meta-stat>
+      <install-plugin :plugin="plugin" />
 
       <!-- TODO: Enable Active Installs -->
       <!--
@@ -216,15 +208,15 @@
 import MetaStat from './MetaStat';
 import PluginMetaBuyButton from './PluginMetaBuyButton';
 import {mapState} from 'vuex';
-import ComposerInstall from './ComposerInstall';
+import InstallPlugin from './InstallPlugin';
 // import GithubActivity from './github-activity/GithubActivity';
 // import ActiveInstalls from './ActiveInstalls';
 
 export default {
   components: {
+    InstallPlugin,
     // ActiveInstalls,
     // GithubActivity,
-    ComposerInstall,
     PluginMetaBuyButton,
     MetaStat
   },
