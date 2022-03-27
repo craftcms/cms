@@ -8,7 +8,8 @@
 
 ### Changed
 - Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))
-- CP asset thumbnails are now routed through the `Asset::getUrl()` method for homogeneity.
+- Image thumbnails now use registered image transformers when available.
+- `craft\elements\Asset::getUrl()` now has an `$immediately` argement.
 
 ### Removed
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
