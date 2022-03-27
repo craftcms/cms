@@ -14,6 +14,7 @@
 - Fixed a bug where color pickers weren’t clickbale within Table fields. ([#10775](https://github.com/craftcms/cms/issues/10775))
 - Fixed a bug where multi-site elements weren’t getting all of their titles duplicated correctly. ([#10702](https://github.com/craftcms/cms/issues/10702))
 - Fixed deprecation errors that occurred when validating relational and Matrix fields. ([#10815](https://github.com/craftcms/cms/issues/10815))
+- Fixed an error that occurred if field instructions contained any unclosed HTML tags. ([#10290](https://github.com/craftcms/cms/issues/10290))
 
 ## 3.7.37 - 2022-03-16
 

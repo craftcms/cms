@@ -500,6 +500,7 @@ class HtmlHelperTest extends Unit
             ['foo<br>bar&lt;p&gt;baz', 'foo<br>bar<p>baz'],
             ['foo&lt;p&gt;bar<br>baz', 'foo<p>bar<br>baz'],
             ['This text goes within the &lt;title&gt; tag in the &lt;head&gt; of the HTML file.', 'This text goes within the <title> tag in the <head> of the HTML file.'],
+            ['Foo &lt;p&gt; bar <input type="hidden"', 'Foo <p> bar <input type="hidden"'],
         ];
     }
 }
