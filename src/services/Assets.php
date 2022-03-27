@@ -633,22 +633,21 @@ class Assets extends Component
         $originalHeight = (int)$asset->getHeight();
         [$width, $height] = AssetsHelper::scaledDimensions((int)$asset->getWidth(), (int)$asset->getHeight(), $maxWidth, $maxHeight);
 
-        // Can we just use the main asset URL?
         if (
-            $asset->getVolume()->getFs()->hasUrls &&
-            $originalWidth <= $width &&
-            $originalHeight <= $height
+            !$asset->getVolume()->getFs()->hasUrls ||
+            $originalWidth > $width ||
+            $originalHeight > $height
         ) {
-            return $asset->getUrl();
+            $transform = new ImageTransform([
+                'width' => $width,
+                'height' => $height,
+                'mode' => 'crop',
+            ]);
+        } else {
+            $transform = null;
         }
 
-        $transform = new ImageTransform([
-            'width' => $width,
-            'height' => $height,
-            'mode' => 'crop',
-        ]);
-
-        return $transform->getImageTransformer()->getTransformUrl($asset, $transform, true);
+        return $asset->getUrl($transform, true);
     }
 
     /**
