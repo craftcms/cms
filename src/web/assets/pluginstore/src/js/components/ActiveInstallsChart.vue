@@ -1,12 +1,18 @@
 <template>
-  <div>
+  <div v-if="plugin.installHistory">
     <ClientOnly>
-      <apex-chart
-        type="area"
-        height="40"
-        :options="chartOptions"
-        :series="series"
-      />
+      <div>
+        <apex-chart
+          type="area"
+          height="40"
+          :options="chartOptions"
+          :series="series"
+        />
+        <div
+          v-if="chartMounted"
+          class="tw-h-3 tw-bg-gradient-to-b tw-from-blue-100/100 tw-to-blue-100/0 dark:tw-from-blue-900/100 dark:tw-to-blue-900/0"
+        />
+      </div>
     </ClientOnly>
   </div>
 </template>
@@ -21,19 +27,23 @@ export default {
   },
   data() {
     return {
-      series: [
-        {
-          name: 'Installs',
-          data: this.plugin.activeInstallsStats.data
-        }
-      ],
+      chartMounted: false,
     }
   },
 
   computed: {
     chartOptions() {
       return {
+        fill: {
+          opacity: 1,
+          type: 'solid',
+          colors: ['var(--chart-fill-color)'],
+          gradient: null,
+        },
         chart: {
+          animations: {
+            enabled: false,
+          },
           sparkline: {
             enabled: true,
           },
@@ -42,6 +52,10 @@ export default {
           },
           type: 'area',
           events: {
+            mounted: function() {
+              this.chartMounted = true
+            }.bind(this),
+
             mouseLeave: function() {
               this.$emit('updateCurrentDataPoint', null)
             }.bind(this),
@@ -85,7 +99,6 @@ export default {
         },
         xaxis: {
           type: 'datetime',
-          categories: this.plugin.activeInstallsStats.categories,
         },
         yaxis: {
           show: false,
@@ -104,7 +117,40 @@ export default {
           }
         },
       }
-    }
+    },
+
+    series() {
+      return [
+        {
+          name: 'Active Installs',
+          data: this.chartData
+        },
+      ]
+    },
+
+    chartData() {
+      if (!this.plugin.installHistory) {
+        return []
+      }
+
+      const data = []
+
+      this.plugin.installHistory.forEach(item => {
+        data.push({
+          x: new Date(item.date),
+          y: item.activeInstalls,
+        })
+      })
+
+      return data
+    },
   }
 }
 </script>
+
+
+<style>
+body {
+  --chart-fill-color: #dbeafe;
+}
+</style>

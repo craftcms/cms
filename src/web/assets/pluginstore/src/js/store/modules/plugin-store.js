@@ -276,30 +276,6 @@ const mutations = {
     state.plugin = pluginDetails
 
     if (state.plugin) {
-      // TODO: Remove hard coded data once the API provides plugin.activeInstallsStats
-      state.plugin.activeInstallsStats = {
-        data: [
-          31,
-          40,
-          28,
-          51,
-          42,
-          109,
-          100,
-          105,
-        ],
-        categories: [
-          "2021-11-17T01:00:00.000Z",
-          "2021-11-18T01:00:00.000Z",
-          "2021-11-19T01:30:00.000Z",
-          "2021-11-20T02:30:00.000Z",
-          "2021-11-21T03:30:00.000Z",
-          "2021-11-22T04:30:00.000Z",
-          "2021-11-23T05:30:00.000Z",
-          "2021-11-24T06:30:00.000Z",
-        ]
-      }
-
       // TODO: Remove hard coded data once the API provides plugin.githubStats
       state.plugin.githubStats = {
         closedIssues: 12,
