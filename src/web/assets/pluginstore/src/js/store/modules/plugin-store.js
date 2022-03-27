@@ -274,16 +274,6 @@ const mutations = {
 
   updatePluginDetails(state, pluginDetails) {
     state.plugin = pluginDetails
-
-    if (state.plugin) {
-      // TODO: Remove hard coded data once the API provides plugin.githubStats
-      state.plugin.githubStats = {
-        closedIssues: 12,
-        newIssues: 17,
-        mergedPullRequests: 2,
-        openPullRequests: 3,
-      }
-    }
   },
 
   updatePlugins(state, plugins) {

@@ -1,5 +1,6 @@
 <template>
   <meta-stat
+    v-if="issueStats"
     class="tw-pt-4"
     :border="false"
   >
@@ -31,7 +32,7 @@
               </svg>
             </template>
             <template #count>
-              {{ closedIssues }}
+              {{ issueStats.closedIssues }}
             </template>
             <template #title>
               {{ "Closed Issues"|t('app')}}
@@ -57,7 +58,7 @@
               </svg>
             </template>
             <template #count>
-              {{ newIssues }}
+              {{ issueStats.openIssues }}
             </template>
             <template #title>
               {{ "New Issues"|t('app')}}
@@ -82,7 +83,7 @@
               </svg>
             </template>
             <template #count>
-              {{ mergedPullRequests }}
+              {{ issueStats.mergedPulls }}
             </template>
             <template #title>
               {{ "Merged PRs"|t('app')}}
@@ -107,7 +108,7 @@
               </svg>
             </template>
             <template #count>
-              {{ openPullRequests }}
+              {{ issueStats.openPulls }}
             </template>
             <template #title>
               {{ "Open PRs"|t('app')}}
@@ -126,39 +127,29 @@ import ActivityStat from './ActivityStat';
 export default {
   components: {ActivityStat, MetaStat},
   props: {
-    /**
-     * The number of closed issues
-     */
-    closedIssues: {
-      type: Number,
-      default: 0,
-    },
-    /**
-     * The number of new issues
-     */
-    newIssues: {
-      type: Number,
-      default: 0,
-    },
-    /**
-     * The number of merged pull requests
-     */
-    mergedPullRequests: {
-      type: Number,
-      default: 0,
-    },
-    /**
-     * The number of open pull requests
-     */
-    openPullRequests: {
-      type: Number,
-      default: 0,
+    plugin: {
+      type: Object,
+      required: true,
     },
   },
 
   computed: {
     githubActivityTitle() {
-      return this.$options.filters.t('Activity <small>(Past Month)</small>', 'app');
+      return this.$options.filters.t('Activity <small>({period} days)</small>', 'app', {
+        period: this.issueStats.period,
+      });
+    },
+
+    issueStats() {
+      if (!this.plugin) {
+        return null
+      }
+
+      if (!this.plugin.issueStats) {
+        return null
+      }
+
+      return this.plugin.issueStats.find(s => s.period === 30)
     }
   }
 }

@@ -171,15 +171,9 @@
         </template>
       </meta-stat>
 
-      <!-- TODO: Enable GitHub Activity -->
-      <!--
       <github-activity
-        :closed-issues="plugin.githubStats.closedIssues"
-        :new-issues="plugin.githubStats.newIssues"
-        :merged-pull-requests="plugin.githubStats.mergedPullRequests"
-        :open-pull-requests="plugin.githubStats.openPullRequests"
+        :plugin="plugin"
       />
-      -->
 
       <!-- Report an issue -->
       <ul class="tw-list-reset tw-space-y-2 tw-mt-8">
@@ -206,14 +200,14 @@ import MetaStat from './MetaStat';
 import PluginMetaBuyButton from './PluginMetaBuyButton';
 import {mapState} from 'vuex';
 import InstallPlugin from './InstallPlugin';
-// import GithubActivity from './github-activity/GithubActivity';
+import GithubActivity from './github-activity/GithubActivity';
 import ActiveInstalls from './ActiveInstalls';
 
 export default {
   components: {
     InstallPlugin,
     ActiveInstalls,
-    // GithubActivity,
+    GithubActivity,
     PluginMetaBuyButton,
     MetaStat
   },
