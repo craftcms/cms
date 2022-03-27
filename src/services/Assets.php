@@ -611,13 +611,7 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        // Make sure these don't get generated if unneeded
-        $oldValue = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = false;
-
-        $transformUrl = $asset->getUrl($transform);
-
-        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = $oldValue;
+        $transformUrl = $asset->getUrl($transform, false);
 
         return UrlHelper::urlWithParams($transformUrl, [
             'v' => $asset->dateModified->getTimestamp(),
