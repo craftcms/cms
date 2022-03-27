@@ -196,7 +196,7 @@ class ImageTransforms extends Component
         // Fire a 'beforeSaveImageTransform' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'assetTransform' => $transform,
+                'imageTransform' => $transform,
                 'isNew' => $isNewTransform,
             ]));
         }
@@ -295,7 +295,7 @@ class ImageTransforms extends Component
         // Fire an 'afterSaveImageTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM)) {
             $this->trigger(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'assetTransform' => $this->getTransformById($transformRecord->id),
+                'imageTransform' => $this->getTransformById($transformRecord->id),
                 'isNew' => $isNewTransform,
             ]));
         }
@@ -335,7 +335,7 @@ class ImageTransforms extends Component
         // Fire a 'beforeDeleteImageTransform' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'assetTransform' => $transform,
+                'imageTransform' => $transform,
             ]));
         }
 
@@ -361,7 +361,7 @@ class ImageTransforms extends Component
         // Fire a 'beforeApplyTransformDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
             $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new ImageTransformEvent([
-                'assetTransform' => $transform,
+                'imageTransform' => $transform,
             ]));
         }
 
@@ -375,7 +375,7 @@ class ImageTransforms extends Component
         // Fire an 'afterDeleteImageTransform' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM)) {
             $this->trigger(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'assetTransform' => $transform,
+                'imageTransform' => $transform,
             ]));
         }
 
