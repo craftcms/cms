@@ -1183,7 +1183,7 @@ class Sections extends Component
                 $layout->id = $entryTypeRecord->fieldLayoutId;
                 $layout->type = Entry::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $entryTypeRecord->fieldLayoutId = $layout->id;
             } elseif ($entryTypeRecord->fieldLayoutId) {
                 // Delete the field layout
