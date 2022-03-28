@@ -95,12 +95,12 @@ export default {
         {
           name: 'Composer',
           handle: 'composer',
-          copyValue: `composer require ${this.plugin.packageName} && ./craft plugin/install ${this.plugin.handle}`,
+          copyValue: `composer require ${this.plugin.packageName} && php craft plugin/install ${this.plugin.handle}`,
         },
         {
           name: 'Nitro',
           handle: 'nitro',
-          copyValue: `nitro composer require ${this.plugin.packageName} && ./craft plugin/install ${this.plugin.handle}`
+          copyValue: `nitro composer require ${this.plugin.packageName} && nitro craft plugin/install ${this.plugin.handle}`,
         },
       ]
     },
