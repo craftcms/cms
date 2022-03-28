@@ -72,11 +72,11 @@ abstract class ElementResolver extends Resolver
      *
      * @param mixed $source
      * @param array $arguments
-     * @param array $context
+     * @param array|null $context
      * @param ResolveInfo $resolveInfo
      * @return ElementQuery|array
      */
-    protected static function prepareElementQuery(mixed $source, array $arguments, array $context, ResolveInfo $resolveInfo): ElementQuery|Collection
+    protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQuery|Collection
     {
         /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];

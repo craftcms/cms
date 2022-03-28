@@ -60,7 +60,7 @@ class ScalarTypesTest extends Unit
      * @param string|null $exceptionThrown
      * @throws Error
      */
-    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown)
+    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown = null)
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -93,7 +93,7 @@ class ScalarTypesTest extends Unit
      * @param string|null $exceptionThrown
      * @throws Exception
      */
-    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown)
+    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown = null)
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -190,20 +190,20 @@ class ScalarTypesTest extends Unit
         GqlEntityRegistry::setPrefix('');
 
         return [
-            [Number::getType(), 2, 2, false],
-            [Number::getType(), 2.0, 2.0, false],
-            [Number::getType(), null, null, false],
+            [Number::getType(), 2, 2],
+            [Number::getType(), 2.0, 2.0],
+            [Number::getType(), null, null],
             [Number::getType(), 'oops', null, GqlException::class],
 
-            [QueryArgument::getType(), 2, 2, false],
-            [QueryArgument::getType(), 'ok', 'ok', false],
-            [QueryArgument::getType(), true, true, false],
+            [QueryArgument::getType(), 2, 2],
+            [QueryArgument::getType(), 'ok', 'ok'],
+            [QueryArgument::getType(), true, true],
             [QueryArgument::getType(), 2.0, null, GqlException::class],
 
-            [Money::getType(), 2, 2, false],
-            [Money::getType(), 2.0, 2.0, false],
-            [Money::getType(), null, null, false],
-            [Money::getType(), -2.0, -2.0, false],
+            [Money::getType(), 2, 2],
+            [Money::getType(), 2.0, 2.0],
+            [Money::getType(), null, null],
+            [Money::getType(), -2.0, -2.0],
             [Money::getType(), 'err', null, GqlException::class],
         ];
     }
@@ -218,23 +218,23 @@ class ScalarTypesTest extends Unit
         return [
             [DateTime::getType(), new IntValueNode(['value' => 2]), null, GqlException::class],
 
-            [Number::getType(), new StringValueNode(['value' => '2.4']), 2.4, false],
-            [Number::getType(), new StringValueNode(['value' => 'fake']), 0.0, false],
-            [Number::getType(), new FloatValueNode(['value' => 2.4]), 2.4, false],
-            [Number::getType(), new IntValueNode(['value' => 2]), 2, false],
-            [Number::getType(), new NullValueNode([]), null, false],
+            [Number::getType(), new StringValueNode(['value' => '2.4']), 2.4],
+            [Number::getType(), new StringValueNode(['value' => 'fake']), 0.0],
+            [Number::getType(), new FloatValueNode(['value' => 2.4]), 2.4],
+            [Number::getType(), new IntValueNode(['value' => 2]), 2],
+            [Number::getType(), new NullValueNode([]), null],
             [Number::getType(), new BooleanValueNode(['value' => false]), null, GqlException::class],
 
-            [QueryArgument::getType(), new StringValueNode(['value' => '2']), '2', false],
-            [QueryArgument::getType(), new IntValueNode(['value' => 2]), 2, false],
-            [QueryArgument::getType(), new BooleanValueNode(['value' => true]), true, false],
+            [QueryArgument::getType(), new StringValueNode(['value' => '2']), '2'],
+            [QueryArgument::getType(), new IntValueNode(['value' => 2]), 2],
+            [QueryArgument::getType(), new BooleanValueNode(['value' => true]), true],
             [QueryArgument::getType(), new FloatValueNode(['value' => '2']), null, GqlException::class],
 
-            [Money::getType(), new StringValueNode(['value' => '2.4']), 2.4, false],
-            [Money::getType(), new StringValueNode(['value' => 'fake']), 0.0, false],
-            [Money::getType(), new FloatValueNode(['value' => 2.4]), 2.4, false],
-            [Money::getType(), new IntValueNode(['value' => 2]), 2, false],
-            [Money::getType(), new NullValueNode([]), null, false],
+            [Money::getType(), new StringValueNode(['value' => '2.4']), 2.4],
+            [Money::getType(), new StringValueNode(['value' => 'fake']), 0.0],
+            [Money::getType(), new FloatValueNode(['value' => 2.4]), 2.4],
+            [Money::getType(), new IntValueNode(['value' => 2]), 2],
+            [Money::getType(), new NullValueNode([]), null],
             [Money::getType(), new BooleanValueNode(['value' => false]), null, GqlException::class],
         ];
     }

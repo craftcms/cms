@@ -45,12 +45,12 @@ class DirectiveTest extends Unit
      * Test directives
      *
      * @dataProvider directiveDataProvider
-     * @param string $in input string
+     * @param mixed $in input
      * @param mixed $directiveClass
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
      */
-    public function testDirectivesBeingApplied(string $in, mixed $directiveClass, array $directives, string $result)
+    public function testDirectivesBeingApplied(mixed $in, mixed $directiveClass, array $directives, string $result)
     {
         $this->_registerDirective($directiveClass);
 

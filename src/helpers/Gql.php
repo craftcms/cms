@@ -466,10 +466,10 @@ class Gql
      *
      * @param ResolveInfo $resolveInfo
      * @param mixed $source
-     * @param array $context
+     * @param array|null $context
      * @return string
      */
-    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, array $context): string
+    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, ?array $context): string
     {
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;

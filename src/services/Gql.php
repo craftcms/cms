@@ -25,6 +25,7 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\gql\ArgumentManager;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
@@ -1306,7 +1307,8 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            TypeLoader::registerType($type::getName(), sprintf('%s::getType', get_class($type)));
+            /** @var SingularTypeInterface $type */
+            TypeLoader::registerType($type::getName(), sprintf('%s::getType', (string)$type));
         }
 
         return $event->types;
