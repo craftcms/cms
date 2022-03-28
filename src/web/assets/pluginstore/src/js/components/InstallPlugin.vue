@@ -82,7 +82,7 @@ export default {
     return {
       copyTimeout: null,
       showSuccess: false,
-      currentInstallModeHandle: 'composer',
+      currentInstallModeHandle: 'shell',
     }
   },
 
@@ -93,8 +93,8 @@ export default {
     installModes() {
       return [
         {
-          name: 'Composer',
-          handle: 'composer',
+          name: 'Shell',
+          handle: 'shell',
           copyValue: `composer require ${this.plugin.packageName} && php craft plugin/install ${this.plugin.handle}`,
         },
         {
