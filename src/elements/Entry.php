@@ -49,10 +49,12 @@ use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\web\Response;
 
 /**
  * Entry represents an entry element.
@@ -1474,7 +1476,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
         $section = $this->getSection();
 
@@ -1493,7 +1495,7 @@ class Entry extends Element
         } else {
             $crumbs[] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => "entries/$section->name",
+                'url' => "entries/$section->handle",
             ];
 
             if ($section->type === Section::TYPE_STRUCTURE) {
@@ -1509,7 +1511,8 @@ class Entry extends Element
             }
         }
 
-        return $crumbs;
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**
@@ -1733,7 +1736,7 @@ EOD;
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        return implode('', $fields);
+        return implode("\n", $fields);
     }
 
     private function _parentOptionCriteria(Section $section): array
@@ -1812,7 +1815,7 @@ EOD;
             $this->setAuthorId(Craft::$app->getUser()->getId());
         }
 
-        if ($this->scenario === self::SCENARIO_LIVE && !$this->postDate) {
+        if (in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) && !$this->postDate) {
             // Default the post date to the current date/time
             $this->postDate = new DateTime();
             // ...without the seconds

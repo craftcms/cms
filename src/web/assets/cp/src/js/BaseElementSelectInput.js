@@ -17,7 +17,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     $elementsContainer: null,
     $elements: null,
     $addElementBtn: null,
-    $addElementBtnContainer: null,
+    $spinner: null,
 
     _initialized: false,
 
@@ -62,14 +62,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         this.$container.data('elementSelect', this);
 
         this.$elementsContainer = this.getElementsContainer();
-
         this.$addElementBtn = this.getAddElementsBtn();
-        if (this.$addElementBtn) {
-            this.$addElementBtnContainer = this.$addElementBtn.parent('.flex');
-            if (!this.$addElementBtnContainer.length) {
-                this.$addElementBtnContainer = null;
-            }
-        }
+        this.$spinner = this.getSpinner();
 
         this.thumbLoader = new Craft.ElementThumbLoader();
 
@@ -111,6 +105,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
 
     getAddElementsBtn: function() {
         return this.$container.find('.btn.add:first');
+    },
+
+    getSpinner: function() {
+        return this.$container.find('.spinner');
     },
 
     initElementSelect: function() {
@@ -162,17 +160,46 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
         }
     },
 
-    disableAddElementsBtn: function() {
-        let $btn = this.$addElementBtnContainer || this.$addElementBtn;
-        if ($btn) {
-            $btn.addClass('hidden');
+    enableAddElementsBtn: function() {
+        if (this.$addElementBtn) {
+            this.$addElementBtn.removeClass('hidden');
         }
+
+        this.updateButtonContainer();
     },
 
-    enableAddElementsBtn: function() {
-        let $btn = this.$addElementBtnContainer || this.$addElementBtn;
-        if ($btn) {
-            $btn.removeClass('hidden');
+    disableAddElementsBtn: function() {
+        if (this.$addElementBtn) {
+            this.$addElementBtn.addClass('hidden');
+        }
+
+        this.updateButtonContainer();
+    },
+
+    showSpinner: function() {
+        if (this.$spinner) {
+            this.$spinner.removeClass('hidden');
+        }
+
+        this.updateButtonContainer();
+    },
+
+    hideSpinner: function() {
+        if (this.$spinner) {
+            this.$spinner.addClass('hidden');
+        }
+
+        this.updateButtonContainer();
+    },
+
+    updateButtonContainer: function() {
+        const $container = this.$addElementBtn && this.$addElementBtn.parent('.flex');
+        if ($container && $container.length) {
+            if ($container.children(':not(.hidden)').length) {
+                $container.removeClass('hidden');
+            } else {
+                $container.addClass('hidden');
+            }
         }
     },
 
@@ -248,11 +275,51 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     },
 
     createElementEditor: function($element, settings) {
-        if (!settings) {
-            settings = {};
-        }
-        settings.prevalidate = this.settings.prevalidate;
+        settings = Object.assign({
+            elementSelectInput: this,
+            prevalidate: this.settings.prevalidate,
+        }, settings);
+
         return Craft.createElementEditor(this.settings.elementType, $element, settings);
+    },
+
+    replaceElement: function(elementId, replacementId) {
+        return new Promise((resolve, reject) => {
+            const $existing = this.$elements.filter(`[data-id="${elementId}"]`);
+
+            if (!$existing.length) {
+                reject(`No element selected with an ID of ${elementId}.`);
+                return;
+            }
+
+            this.showSpinner();
+
+            const data = {
+                elementId: replacementId,
+                siteId: this.settings.criteria.siteId,
+                thumbSize: this.settings.viewMode
+            };
+
+            Craft.sendActionRequest('POST', 'elements/get-element-html', {data})
+                .then((response) => {
+                    this.removeElement($existing);
+                    const elementInfo = Craft.getElementInfo(response.data.html);
+                    this.selectElements([elementInfo]);
+                    resolve();
+                })
+                .catch(({response}) => {
+                    if (response && response.data && response.data.message) {
+                        alert(response.data.message);
+                    } else {
+                        Craft.cp.displayError();
+                    }
+
+                    reject(response.data.message);
+                })
+                .finally(() => {
+                    this.hideSpinner();
+                });
+        });
     },
 
     removeElements: function($elements) {

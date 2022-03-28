@@ -1,10 +1,10 @@
 .preview-focal-point {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border: 2px solid rgba(255,255,255,0.8);
     background: rgba(0,0,0,0.5);
     position: absolute;
-    border-radius: 16px;
+    border-radius: 20px;
     cursor: pointer;
 }
 .preview-focal-point .inner {
@@ -17,4 +17,3 @@
     border: 2px solid rgba(255,255,255,0.8);
     border-radius: 4px;
 }
-

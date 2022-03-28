@@ -1600,7 +1600,7 @@ class User extends Element implements IdentityInterface
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
+        return implode("\n", [
             Craft::$app->getView()->renderTemplate('users/_accountfields', [
                 'user' => $this,
                 'isNewUser' => !$this->id,

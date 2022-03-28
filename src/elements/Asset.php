@@ -61,6 +61,7 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -72,6 +73,7 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\validators\RequiredValidator;
+use yii\web\Response;
 
 /**
  * Asset represents an asset element.
@@ -1037,7 +1039,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
@@ -1064,7 +1066,8 @@ class Asset extends Element
             }
         }
 
-        return $crumbs;
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**
@@ -1486,10 +1489,11 @@ JS;
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
+     * @param bool|null $immediately Whether the image should be transformed immediately
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl(mixed $transform = null): ?string
+    public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new DefineAssetUrlEvent([
@@ -1539,9 +1543,11 @@ JS;
                 }
             }
 
-            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             $transform = ImageTransforms::normalizeTransform($transform);
-            $imageTransformer = $transform->getImageTransformer();
+
+            if ($immediately === null) {
+                $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+            }
 
             try {
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
@@ -1558,6 +1564,7 @@ JS;
                     }
                 }
 
+                $imageTransformer = $transform->getImageTransformer();
                 $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
 
                 if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
@@ -1630,7 +1637,8 @@ JS;
         $assetsService = Craft::$app->getAssets();
 
         foreach ($thumbSizes as [$width, $height]) {
-            $srcsets[] = sprintf('%s %sw', $assetsService->getThumbUrl($this, $width, $height), $width);
+            $url = $assetsService->getThumbUrl($this, $width, $height);
+            $srcsets[] = sprintf('%s %sw', $url, $width);
         }
 
         return Html::tag('img', '', [
@@ -2066,10 +2074,20 @@ JS;
                     $js = <<<JS
 $('#$editBtnId').on('click', () => {
     new Craft.AssetImageEditor($this->id, {
-        onSave: () => {
+        allowDegreeFractions: Craft.isImagick,
+        onSave: data => {
+            if (data.newAssetId) {
+                // If this is within an Assets field’s editor slideout, replace the selected asset 
+                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
+                if (slideout && slideout.settings.elementSelectInput) {
+                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+                        .catch(() => {});
+                }
+                return;
+            }
+
             $updatePreviewThumbJs
         },
-        allowDegreeFractions: Craft.isImagick,
     });
 });
 JS;
@@ -2128,7 +2146,7 @@ JS;
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
+        return implode("\n", [
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'new-filename',

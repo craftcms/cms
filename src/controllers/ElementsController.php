@@ -362,7 +362,6 @@ class ElementsController extends Controller
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->crumbs(fn() => $element->getCrumbs())
             ->contextMenu(fn() => $this->_contextMenu(
                 $element,
                 $isMultiSiteElement,
@@ -403,7 +402,7 @@ class ElementsController extends Controller
                         'enablePreview' => $enablePreview,
                         'enabledForSite' => $element->enabled && $enabledForSite,
                         'hashedCpEditUrl' => $security->hashData('{cpEditUrl}'),
-                        'isLive' => $isCurrent && !$element->isProvisionalDraft && $element->enabled && $enabledForSite && $hasRoute,
+                        'isLive' => $isCurrent && !$element->getIsDraft() && $element->enabled && $enabledForSite && $hasRoute,
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
@@ -718,6 +717,9 @@ class ElementsController extends Controller
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
 JS;
         $this->view->registerJs($js);
+
+        // Give the element a chance to do things here too
+        $element->prepareEditScreen($response, $containerId);
     }
 
     private function _editorContent(

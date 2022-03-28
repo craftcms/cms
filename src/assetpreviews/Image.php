@@ -25,30 +25,10 @@ class Image extends AssetPreviewHandler
      */
     public function getPreviewHtml(array $variables = []): string
     {
-        $originalWidth = (int)$this->asset->getWidth();
-        $originalHeight = (int)$this->asset->getHeight();
-        [$width, $height] = AssetsHelper::scaledDimensions((int)$this->asset->getWidth(), (int)$this->asset->getHeight(), 1000, 1000);
-
-        // Can we just use the main asset URL?
-        if (
-            $this->asset->getVolume()->getFs()->hasUrls &&
-            $originalWidth <= $width &&
-            $originalHeight <= $height
-        ) {
-            $url = $this->asset->getUrl();
-        } else {
-            $transform = new ImageTransform([
-                'width' => $width,
-                'height' => $height,
-                'mode' => 'crop',
-            ]);
-            $url = $transform->getImageTransformer()->getTransformUrl($this->asset, $transform, true);
-        }
-
         return Craft::$app->getView()->renderTemplate('assets/_previews/image',
             array_merge([
                 'asset' => $this->asset,
-                'url' => $url,
+                'url' => Craft::$app->getAssets()->getImagePreviewUrl($this->asset, 1000, 1000),
             ], $variables)
         );
     }

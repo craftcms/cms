@@ -1518,8 +1518,8 @@ class Fields extends Component
     {
         $fieldVersion = Craft::$app->getInfo()->fieldVersion;
 
-        // If it doesn't start with `2@`, then it needs to be updated
-        if ($fieldVersion === null || !str_starts_with($fieldVersion, '2@')) {
+        // If it doesn't start with `3@`, then it needs to be updated
+        if ($fieldVersion === null || !str_starts_with($fieldVersion, '3@')) {
             return null;
         }
 
@@ -1538,7 +1538,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = '2@' . StringHelper::randomString(10);
+        $info->fieldVersion = '3@' . StringHelper::randomString(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 

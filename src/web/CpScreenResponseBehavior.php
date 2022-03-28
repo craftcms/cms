@@ -48,6 +48,12 @@ class CpScreenResponseBehavior extends Behavior
     public ?string $title = null;
 
     /**
+     * @var string|null The selected subnav item’s key in the global sidebar.
+     * @see selectedSubnavItem()
+     */
+    public ?string $selectedSubnavItem = null;
+
+    /**
      * @var array|callable|null Breadcrumbs.
      * @see crumbs()
      * @see addCrumb()
@@ -173,6 +179,18 @@ class CpScreenResponseBehavior extends Behavior
     public function title(?string $value): Response
     {
         $this->title = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets the selected subnav item’s key in the global sidebar.
+     *
+     * @param string|null $value
+     * @return Response|self
+     */
+    public function selectedSubnavItem(?string $value): Response
+    {
+        $this->selectedSubnavItem = $value;
         return $this->owner;
     }
 

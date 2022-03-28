@@ -1998,6 +1998,14 @@ $.extend(Craft,
     });
 
 // -------------------------------------------
+//  Broadcast channel
+// -------------------------------------------
+
+if (typeof BroadcastChannel !== 'undefined') {
+    Craft.broadcastChannel = new BroadcastChannel(`CraftCMS:${Craft.appId}`);
+}
+
+// -------------------------------------------
 //  Custom jQuery plugins
 // -------------------------------------------
 

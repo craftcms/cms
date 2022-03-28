@@ -350,6 +350,7 @@ JS;
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'apiParams' => Craft::$app->apiParams,
+            'appId' => Craft::$app->id,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
             'baseApiUrl' => Craft::$app->baseApiUrl,

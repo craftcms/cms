@@ -78,6 +78,7 @@ use yii\validators\BooleanValidator;
 use yii\validators\NumberValidator;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
+use yii\web\Response;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
@@ -2279,7 +2280,7 @@ abstract class Element extends Component implements ElementInterface
         /** @var array|null $params */
         [$field, $method, $fieldParams] = $params;
 
-        if (is_string($method)) {
+        if (is_string($method) && !is_callable($method)) {
             $method = [$field, $method];
         }
 
@@ -2792,6 +2793,13 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function prepareEditScreen(Response $response, string $containerId): void
+    {
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpEditUrl(): ?string
     {
         $cpEditUrl = $this->cpEditUrl();
@@ -2832,14 +2840,6 @@ abstract class Element extends Component implements ElementInterface
     public function getPostEditUrl(): ?string
     {
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCrumbs(): array
-    {
-        return [];
     }
 
     /**

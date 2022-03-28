@@ -103,11 +103,11 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         {
             Craft.elementIndex.setIndexBusy();
             const ids = Craft.elementIndex.getSelectedElementIds();
-            const data = {userId: id}; 
+            const data = {userId: ids};
             Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
                 .then((response) => {
                     Craft.elementIndex.setIndexAvailable();
-                    var modal = new Craft.DeleteUserModal(ids, {
+                    const modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
                         onSubmit: function()
                         {

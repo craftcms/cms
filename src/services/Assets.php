@@ -611,11 +611,43 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        $transformUrl = $transform->getImageTransformer()->getTransformUrl($asset, $transform, false);
+        $transformUrl = $asset->getUrl($transform, false);
 
         return UrlHelper::urlWithParams($transformUrl, [
             'v' => $asset->dateModified->getTimestamp(),
         ]);
+    }
+
+    /**
+     * Returns an image asset’s URL, scaled to fit within a max width and height.
+     *
+     * @param Asset $asset
+     * @param int $maxWidth
+     * @param int $maxHeight
+     * @return string
+     * @since 4.0.0
+     */
+    public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
+    {
+        $originalWidth = (int)$asset->getWidth();
+        $originalHeight = (int)$asset->getHeight();
+        [$width, $height] = AssetsHelper::scaledDimensions((int)$asset->getWidth(), (int)$asset->getHeight(), $maxWidth, $maxHeight);
+
+        if (
+            !$asset->getVolume()->getFs()->hasUrls ||
+            $originalWidth > $width ||
+            $originalHeight > $height
+        ) {
+            $transform = new ImageTransform([
+                'width' => $width,
+                'height' => $height,
+                'mode' => 'crop',
+            ]);
+        } else {
+            $transform = null;
+        }
+
+        return $asset->getUrl($transform, true);
     }
 
     /**

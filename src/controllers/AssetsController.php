@@ -764,13 +764,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        $transform = new ImageTransform([
-            'width' => $size,
-            'height' => $size,
-            'mode' => 'fit',
-        ]);
-
-        $url = $transform->getImageTransformer()->getTransformUrl($asset, $transform, true);
+        $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
         return $this->response->redirect($url);
     }
 
@@ -922,7 +916,7 @@ class AssetsController extends Controller
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
 
-                $output['elementId'] = $newAsset->id;
+                $output['newAssetId'] = $newAsset->id;
             }
         } catch (Throwable $exception) {
             return $this->asFailure($exception->getMessage());

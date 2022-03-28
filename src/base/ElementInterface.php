@@ -16,6 +16,7 @@ use craft\models\FieldLayout;
 use craft\models\Site;
 use Illuminate\Support\Collection;
 use Twig\Markup;
+use yii\web\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
@@ -829,6 +830,15 @@ interface ElementInterface extends ComponentInterface
     public function hasRevisions(): bool;
 
     /**
+     * Prepares the response for the element’s Edit screen.
+     *
+     * @param Response $response The response being prepared
+     * @param string $containerId The ID of the element editor’s container element
+     * @since 4.0.0
+     */
+    public function prepareEditScreen(Response $response, string $containerId): void;
+
+    /**
      * Returns the element’s edit URL in the control panel.
      *
      * @return string|null
@@ -842,16 +852,6 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
-
-    /**
-     * Returns the breadcrumbs for the element’s edit page.
-     *
-     * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
-     *
-     * @return array
-     * @since 4.0.0
-     */
-    public function getCrumbs(): array;
 
     /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.

@@ -88,10 +88,10 @@
 - Added `craft\base\ElementInterface::createAnother()`.
 - Added `craft\base\ElementInterface::createCondition()`.
 - Added `craft\base\ElementInterface::getAdditionalButtons()`.
-- Added `craft\base\ElementInterface::getCrumbs()`.
 - Added `craft\base\ElementInterface::getPostEditUrl()`.
 - Added `craft\base\ElementInterface::getThumbAlt()`.
 - Added `craft\base\ElementInterface::hasRevisions()`.
+- Added `craft\base\ElementInterface::prepareEditScreen()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
 - Added `craft\base\FieldLayoutComponent`.
 - Added `craft\base\Fs`.
@@ -161,6 +161,7 @@
 - Added `craft\elements\conditions\SlugConditionRule`.
 - Added `craft\elements\conditions\tags\GroupConditionRule`.
 - Added `craft\elements\conditions\tags\TagCondition`.
+- Added `craft\elements\conditions\TitleConditionRule`.
 - Added `craft\elements\conditions\UriConditionRule`.
 - Added `craft\elements\conditions\users\AdminConditionRule`.
 - Added `craft\elements\conditions\users\CredentialedConditionRule`.
@@ -307,6 +308,7 @@
 - Added `craft\services\AssetIndexer::removeCliIndexingSessions()`.
 - Added `craft\services\AssetIndexer::startIndexingSession()`.
 - Added `craft\services\AssetIndexer::stopIndexingSession()`.
+- Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\services\AssetTransforms::deleteTransformIndexDataByAssetIds()`.
 - Added `craft\services\Conditions`.
 - Added `craft\services\Config::CATEGORY_CUSTOM`.
@@ -549,6 +551,7 @@
 ### Deprecated
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
+- Deprecated `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
 - Deprecated `craft\base\Model::datetimeAttributes()`. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - Deprecated `craft\elements\User::getFullName()`. `$fullName` should be used instead.
 - Deprecated `craft\gql\TypeManager::flush()`. `craft\services\Gql::flushCaches()` should be used instead.
@@ -653,6 +656,7 @@
 - Removed `craft\events\DefineComponentsEvent`.
 - Removed `craft\events\GenerateTransformEvent::$image`.
 - Removed `craft\events\GenerateTransformEvent::$tempPath`.
+- Removed `craft\events\GetAssetThumbEvent`.
 - Removed `craft\events\GetAssetThumbUrlEvent::$generate`.
 - Removed `craft\events\GetAssetThumbUrlEvent::$size`.
 - Removed `craft\events\GlobalSetContentEvent`.
