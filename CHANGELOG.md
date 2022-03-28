@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\FsInterface::read()`.
+- Added `craft\base\FsInterface::write()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 
