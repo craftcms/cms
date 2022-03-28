@@ -31,12 +31,11 @@ class AppTest extends Unit
 
     /**
      * @dataProvider craftAppGetMethodsDataProvider
-     *
-     * @param $instance
-     * @param $map
+     * @param string $instance
+     * @param array $map
      * @throws InvalidConfigException
      */
-    public function testCraftAppGetMethods($instance, $map)
+    public function testCraftAppGetMethods(string $instance, array $map)
     {
         $func = $map[0];
         self::assertInstanceOf($instance, Craft::$app->$func());

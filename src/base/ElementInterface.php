@@ -187,7 +187,7 @@ interface ElementInterface extends ComponentInterface
      * $user = User::find()->email('*example.com')->one();
      * ```
      *
-     * @param mixed|null $criteria The element ID or a set of element criteria parameters
+     * @param mixed $criteria The element ID or a set of element criteria parameters
      * @return static|null Element instance matching the condition, or null if nothing matches.
      */
     public static function findOne(mixed $criteria = null): ?ElementInterface;
@@ -224,7 +224,7 @@ interface ElementInterface extends ComponentInterface
      * $users = User::find()->email('*example.com')->all();
      * ```
      *
-     * @param mixed|null $criteria The element ID, an array of IDs, or a set of element criteria parameters
+     * @param mixed $criteria The element ID, an array of IDs, or a set of element criteria parameters
      * @return static[] an array of Element instances, or an empty array if nothing matches.
      */
     public static function findAll(mixed $criteria = null): array;

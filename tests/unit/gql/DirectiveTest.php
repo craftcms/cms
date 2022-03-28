@@ -45,13 +45,12 @@ class DirectiveTest extends Unit
      * Test directives
      *
      * @dataProvider directiveDataProvider
-     *
      * @param string $in input string
+     * @param mixed $directiveClass
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
-     * @param mixed $directiveClass
      */
-    public function testDirectivesBeingApplied($in, $directiveClass, array $directives, $result)
+    public function testDirectivesBeingApplied(string $in, mixed $directiveClass, array $directives, string $result)
     {
         $this->_registerDirective($directiveClass);
 
@@ -184,9 +183,9 @@ class DirectiveTest extends Unit
     /**
      * Register a directive by class name.
      *
-     * @param $className
+     * @param class-string $className
      */
-    private function _registerDirective($className)
+    private function _registerDirective(string $className)
     {
         // Make sure the mock directive is available in the entity registry
         $directiveName = $className::name();

@@ -29,7 +29,7 @@ class ProjectConfig
      * @return string
      * @since 4.0.0
      */
-    public static function encodeValueAsString($value): string
+    public static function encodeValueAsString(mixed $value): string
     {
         return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     }
@@ -457,13 +457,13 @@ class ProjectConfig
      * Traverse a nested data array according to path and perform an action depending on parameters.
      *
      * @param array $data A nested array of data to traverse
-     * @param array|string $path Path used to traverse the array. Either an array or a dot.based.path
-     * @param mixed|null $value Value to set at the destination. If null, will return the value, unless deleting
+     * @param string|string[] $path Path used to traverse the array. Either an array or a dot.based.path
+     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
      * @param bool $delete Whether to delete the value at the destination or not.
      * @return mixed
      * @since 4.0.0
      */
-    public static function traverseDataArray(array &$data, array|string $path, mixed $value = null, bool $delete = false): mixed
+    public static function traverseDataArray(array &$data, string|array $path, mixed $value = null, bool $delete = false): mixed
     {
         if (is_string($path)) {
             $path = explode('.', $path);

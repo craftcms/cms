@@ -36,7 +36,6 @@ class TypeManagerTest extends Unit
      * Test whether it's possible to modify fields
      *
      * @dataProvider fieldModificationDataProvider
-     *
      * @param array $fields Array of fields
      * @param callable $callback Callback for modifications
      * @param string $result expected result

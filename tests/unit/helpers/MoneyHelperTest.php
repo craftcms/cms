@@ -29,7 +29,6 @@ class MoneyHelperTest extends Unit
 
     /**
      * @dataProvider toMoneyDataProvider
-     *
      * @param mixed $value
      * @param Money|false $expected
      */
@@ -40,7 +39,6 @@ class MoneyHelperTest extends Unit
 
     /**
      * @dataProvider toDecimalDataProvider
-     *
      * @param mixed $value
      * @param mixed $expected
      * @return void
@@ -52,7 +50,6 @@ class MoneyHelperTest extends Unit
 
     /**
      * @dataProvider toNumberDataProvider
-     *
      * @param mixed $value
      * @param mixed $expected
      * @param string|null $locale
@@ -74,7 +71,6 @@ class MoneyHelperTest extends Unit
 
     /**
      * @dataProvider toStringDataProvider
-     *
      * @param mixed $value
      * @param mixed $expected
      * @param string|null $locale

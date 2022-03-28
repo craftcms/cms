@@ -18,11 +18,14 @@ use craft\gql\types\DateTime;
 use craft\gql\types\Money;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
+use Exception;
+use GraphQL\Error\Error;
 use GraphQL\Language\AST\BooleanValueNode;
 use GraphQL\Language\AST\FloatValueNode;
 use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\NullValueNode;
 use GraphQL\Language\AST\StringValueNode;
+use GraphQL\Language\AST\ValueNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
 
@@ -37,13 +40,12 @@ class ScalarTypesTest extends Unit
      * Test the serialization of scalar data types
      *
      * @dataProvider serializationDataProvider
-     *
      * @param ScalarType $type
-     * @param $testValue
-     * @param $match
-     * @throws \GraphQL\Error\Error
+     * @param mixed $testValue
+     * @param mixed $match
+     * @throws Error
      */
-    public function testSerialization(ScalarType $type, $testValue, $match): void
+    public function testSerialization(ScalarType $type, mixed $testValue, mixed $match): void
     {
         self::assertSame($match, $type->serialize($testValue));
     }
@@ -52,14 +54,13 @@ class ScalarTypesTest extends Unit
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingValueDataProvider
-     *
      * @param ScalarType $type
-     * @param $testValue
-     * @param $match
-     * @param $exceptionThrown
-     * @throws \GraphQL\Error\Error
+     * @param mixed $testValue
+     * @param mixed $match
+     * @param string|null $exceptionThrown
+     * @throws Error
      */
-    public function testParsingValue(ScalarType $type, $testValue, $match, $exceptionThrown)
+    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown)
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -72,7 +73,7 @@ class ScalarTypesTest extends Unit
     /**
      * Test DateTime parsing value correctly.
      *
-     * @throws \GraphQL\Error\Error
+     * @throws Error
      */
     public function testDateTimeParseValueAndLiteral()
     {
@@ -86,14 +87,13 @@ class ScalarTypesTest extends Unit
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingLiteralDataProvider
-     *
      * @param ScalarType $type
-     * @param $testValue
-     * @param $match
-     * @param $exceptionThrown
-     * @throws \Exception
+     * @param ValueNode $testValue
+     * @param mixed $match
+     * @param string|null $exceptionThrown
+     * @throws Exception
      */
-    public function testParsingLiteral(ScalarType $type, $testValue, $match, $exceptionThrown)
+    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown)
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -106,7 +106,7 @@ class ScalarTypesTest extends Unit
     /**
      * Test the useSystemTimezoneForGraphQlDates setting.
      *
-     * @throws \GraphQL\Error\Error
+     * @throws Error
      */
     public function testTimeZoneConfigSetting()
     {

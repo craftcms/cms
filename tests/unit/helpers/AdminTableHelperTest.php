@@ -26,7 +26,6 @@ class AdminTableHelperTest extends Unit
 
     /**
      * @dataProvider paginationLinksDataProvider
-     *
      * @param array $expected
      * @param int $page
      * @param int $total

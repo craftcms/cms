@@ -22,8 +22,8 @@ use yii\db\Expression;
  *
  * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
  * @method User[]|array all($db = null)
- * @method User|null one($db = null)
- * @method User|null nth(int $n, ?Connection $db = null)
+ * @method User|array|null one($db = null)
+ * @method User|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md

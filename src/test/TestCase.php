@@ -45,7 +45,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L155
      */
-    protected function setInaccessibleProperty($object, $propertyName, $value, bool $revoke = true): void
+    protected function setInaccessibleProperty(object|string $object, string $propertyName, mixed $value, bool $revoke = true): void
     {
         $class = new ReflectionClass($object);
 
@@ -72,7 +72,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L176
      */
-    protected function getInaccessibleProperty($object, $propertyName, bool $revoke = true): mixed
+    protected function getInaccessibleProperty(object|string $object, string $propertyName, bool $revoke = true): mixed
     {
         $class = new ReflectionClass($object);
 
@@ -102,7 +102,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeMethod($object, $method, array $args = [], bool $revoke = true): mixed
+    protected function invokeMethod(object|string $object, string $method, array $args = [], bool $revoke = true): mixed
     {
         $method = (new ReflectionObject($object))->getMethod($method);
         return $this->_invokeMethodInternal($method, $object, $args, $revoke);
@@ -119,7 +119,7 @@ class TestCase extends Unit
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeStaticMethod($className, $method, array $args = [], bool $revoke = true): mixed
+    protected function invokeStaticMethod(object|string $className, string $method, array $args = [], bool $revoke = true): mixed
     {
         $method = (new ReflectionClass($className))->getMethod($method);
         return $this->_invokeMethodInternal($method, null, $args, $revoke);

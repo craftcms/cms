@@ -63,7 +63,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```php
      * public static function valueType(): string
      * {
-     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
+     *      return 'int|string';
      * }
      * ```
      *

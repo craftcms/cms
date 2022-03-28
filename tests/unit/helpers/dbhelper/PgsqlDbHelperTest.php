@@ -31,12 +31,11 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider sqlTypesDataProvider
-     *
-     * @param $type
-     * @param $supported
+     * @param string $type
+     * @param bool $supported
      * @throws NotSupportedException
      */
-    public function testTypeSupport($type, $supported)
+    public function testTypeSupport(string $type, bool $supported)
     {
         $isSupported = Db::isTypeSupported($type);
         self::assertSame($supported, Db::isTypeSupported($type));
@@ -45,7 +44,6 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnStorageCapacityDataProvider
-     *
      * @param int|null|false $expected
      * @param string $columnType
      */
@@ -56,7 +54,6 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
-     *
      * @param mixed $expected
      * @param string $column
      * @param string|int|array $value
@@ -70,7 +67,6 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnTypeByContentLengthDataProvider
-     *
      * @param string $expected
      * @param int $contentLength
      * @throws Exception

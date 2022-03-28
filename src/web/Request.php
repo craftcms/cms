@@ -1037,7 +1037,7 @@ class Request extends \yii\web\Request
      * If the parameter does not exist, the second parameter to this method will be returned.
      *
      * @param string $name The parameter name.
-     * @param mixed|null $defaultValue The default parameter value if the parameter does not exist.
+     * @param mixed $defaultValue The default parameter value if the parameter does not exist.
      * @return mixed The parameter value.
      * @see getQueryParam()
      * @see getBodyParam()

@@ -109,7 +109,6 @@ class PrepareQueryTest extends Unit
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
      * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions
-     *
      * @dataProvider relationalFieldQueryPreparationProvider
      */
     public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null)

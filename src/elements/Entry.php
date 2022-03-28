@@ -73,7 +73,6 @@ class Entry extends Element
 
     /**
      * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
-     *
      * @see getAvailableEntryTypes()
      * @since 3.6.0
      */

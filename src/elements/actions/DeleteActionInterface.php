@@ -27,8 +27,6 @@ interface DeleteActionInterface
 
     /**
      * Instructs the action that the elements should be hard-deleted.
-     *
-     * @return void
      */
     public function setHardDelete(): void;
 }

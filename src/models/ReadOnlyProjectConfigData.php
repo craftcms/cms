@@ -32,10 +32,9 @@ class ReadOnlyProjectConfigData extends Model
      * Get a stored data value for a path.
      *
      * @param string|string[] $path
-     *
      * @return mixed
      */
-    public function get(array|string $path)
+    public function get(array|string $path): mixed
     {
         return ProjectConfigHelper::traverseDataArray($this->data, $path);
     }

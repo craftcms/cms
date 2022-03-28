@@ -1459,7 +1459,7 @@ class User extends Element implements IdentityInterface
      * Returns one of the user’s preferences by its key.
      *
      * @param string $key The preference’s key
-     * @param mixed|null $default The default value, if the preference hasn’t been set
+     * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
     public function getPreference(string $key, mixed $default = null): mixed

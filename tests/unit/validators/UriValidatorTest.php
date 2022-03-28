@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -36,7 +36,6 @@ class UriValidatorTest extends Unit
 
     /**
      * @dataProvider validateValueDataProvider
-     *
      * @param bool $mustValidate
      * @param mixed $input
      * @param string|null $pattern

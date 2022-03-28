@@ -33,7 +33,6 @@ class SecurityTest extends Unit
 
     /**
      * @dataProvider redactIfSensitiveDataProvider
-     *
      * @param string|array $expected
      * @param string $name
      * @param string|array $value

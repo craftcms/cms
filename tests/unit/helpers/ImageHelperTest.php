@@ -3,9 +3,9 @@
 /** @noinspection PhpParamsInspection */
 
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -45,7 +45,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider calculateMissingDimensionDataProvider
-     *
      * @param int[] $expected
      * @param int|float|null $targetWidth
      * @param int|float|null $targetHeight
@@ -59,7 +58,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider canManipulateAsImageDataProvider
-     *
      * @param bool $expected
      * @param string $extension
      */
@@ -78,7 +76,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider pngImageInfoDataProvider
-     *
      * @param array|false $expected
      * @param string $file
      */
@@ -89,7 +86,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider canHaveExitDataProvider
-     *
      * @param bool $expected
      * @param string $filePath
      */
@@ -100,7 +96,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider imageSizeDataProvider
-     *
      * @param array $expected
      * @param string $filePath
      * @param bool $skipIfGd
@@ -116,7 +111,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider parseSvgSizeProvider
-     *
      * @param array $expected
      * @param string $svg
      */
@@ -127,7 +121,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider imageSizeByStreamDataProvider
-     *
      * @param array|false $expected
      * @param resource $stream
      */
@@ -148,12 +141,11 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider exceptionTriggeringImageByStreamDataProvider
-     *
-     * @param $errorLogMessage
-     * @param $input
+     * @param string $errorLogMessage
+     * @param resource $input
      * @throws Exception
      */
-    public function testImageByStreamException($errorLogMessage, $input)
+    public function testImageByStreamException(string $errorLogMessage, $input)
     {
         Craft::setLogger(
             Stub::make(Logger::class, [

@@ -963,7 +963,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -995,7 +995,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -1026,7 +1026,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -1055,7 +1055,7 @@ class ProjectConfig extends Component
      * @param string $event The event name
      * @param string $path The config path pattern. Can contain `{uid}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void

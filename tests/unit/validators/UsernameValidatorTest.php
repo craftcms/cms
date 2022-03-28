@@ -33,7 +33,6 @@ class UsernameValidatorTest extends Unit
 
     /**
      * @dataProvider validateValueDataProvider
-     *
      * @param array|null $expected
      * @param string|null $value
      * @throws NotSupportedException

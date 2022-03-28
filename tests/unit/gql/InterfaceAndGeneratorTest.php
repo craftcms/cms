@@ -142,7 +142,6 @@ class InterfaceAndGeneratorTest extends Unit
      * Test interfaces running type generators.
      *
      * @dataProvider interfaceDataProvider
-     *
      * @param class-string $gqlInterfaceClass The interface class being tested
      * @param callable $getAllContexts The callback that provides an array of all contexts for generated types
      * @param callable $getTypeNameByContext The callback to generate the GQL type name by context

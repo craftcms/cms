@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -28,7 +28,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider wordDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -39,7 +38,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider upperAlphaDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -50,7 +48,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider lowerAlphaDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -61,7 +58,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider upperRomanDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -72,7 +68,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider lowerRomanDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -83,7 +78,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider makeNumericDataProvider
-     *
      * @param mixed $expected
      * @param mixed $var
      */

@@ -59,7 +59,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider normalizeObjectTemplateDataProvider
-     *
      * @param string $expected
      * @param string $template
      */
@@ -84,7 +83,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider resolveTemplateDataProvider
-     *
      * @param string|false $expected
      * @param string $name
      * @param string|null $templateMode
@@ -105,7 +103,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider privateResolveTemplateDataProvider
-     *
      * @param string|null $expected
      * @param string $basePath
      * @param string $name
@@ -175,7 +172,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider renderObjectTemplateDataProvider
-     *
      * @param string $expected
      * @param string $template
      * @param mixed $object
@@ -279,7 +275,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider namespaceInputsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string|null $namespace
@@ -292,7 +287,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider namespaceInputNameDataProvider
-     *
      * @param string $expected
      * @param string $string
      * @param string|null $namespace
@@ -304,7 +298,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider namespaceInputIdDataProvider
-     *
      * @param string $expected
      * @param string $string
      * @param string|null $namespace
@@ -316,7 +309,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider getTemplateRootsDataProvider
-     *
      * @param array $expected
      * @param string $which
      * @param array $roots

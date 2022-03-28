@@ -204,7 +204,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider isMobileBrowserDataProvider
-     *
      * @param bool $expected
      * @param string $userAgent
      * @param bool $detectTablets
@@ -284,7 +283,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider getUserIpDataProvider
-     *
      * @param string|null $expected
      * @param string|null $headerName
      * @param string|null $headerValue
@@ -301,7 +299,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider getClientOsDataProvider
-     *
      * @param string $expected
      * @param string $userAgent
      */
@@ -367,7 +364,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider getParamDataProvider
-     *
      * @param mixed $expected
      * @param mixed $defaultValue
      * @param array $params
@@ -420,7 +416,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider checkRequestSpecialPathDataProvider
-     *
      * @param string $path
      * @throws ReflectionException
      */
@@ -604,11 +599,11 @@ class RequestTest extends TestCase
     }
 
     /**
-     * @param $token
+     * @param string $token
      * @return mixed
      * @throws ReflectionException
      */
-    private function _isCsrfValidForUser($token)
+    private function _isCsrfValidForUser(string $token)
     {
         return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
     }

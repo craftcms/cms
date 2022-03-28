@@ -23,7 +23,6 @@ class ImageTransformsTest extends Unit
      * Makes sure that extending transform correctly updates it.
      *
      * @dataProvider extendTransformDataProvider
-     *
      * @param ImageTransform $transform
      * @param array $parameters
      * @param array $resultCheck

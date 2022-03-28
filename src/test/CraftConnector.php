@@ -48,7 +48,7 @@ class CraftConnector extends Yii2
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
      */
-    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true): void
+    public function findAndLoginUser(mixed $user, bool $disableRequiredUserAgent = true): void
     {
         $oldRequirement = Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession;
         if ($disableRequiredUserAgent) {

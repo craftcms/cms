@@ -129,7 +129,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
-     *
      * @since 3.5.0
      */
     public bool $showSiteMenu = false;

@@ -20,7 +20,6 @@ class DiffHelperTest extends Unit
 {
     /**
      * @dataProvider compareDataProvider
-     *
      * @param bool $expected
      * @param mixed $a
      * @param mixed $b
@@ -33,7 +32,6 @@ class DiffHelperTest extends Unit
 
     /**
      * @dataProvider diffDataProvider
-     *
      * @param string $expected
      * @param mixed $from
      * @param mixed $to

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -72,7 +72,6 @@ class HandleValidatorTest extends Unit
 
     /**
      * @dataProvider handleValidationDataProvider
-     *
      * @param bool $mustValidate
      * @param string $input
      */

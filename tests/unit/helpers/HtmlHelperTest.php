@@ -28,7 +28,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider encodeParamsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param array $variables
@@ -40,7 +39,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider parseTagDataProvider
-     *
      * @param array|false $expected
      * @param string $tag
      */
@@ -69,7 +67,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider appendToTagDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param string $html
@@ -87,7 +84,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider prependToTagDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param string $html
@@ -105,7 +101,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider parseTagAttributesDataProvider
-     *
      * @param array|false $expected
      * @param string $tag
      */
@@ -121,7 +116,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider modifyTagAttributesDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param array $attributes
@@ -138,7 +132,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider normalizeTagAttributesDataProvider
-     *
      * @param array $expected
      * @param array $attributes
      */
@@ -149,7 +142,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider idDataProvider
-     *
      * @param string $expected
      * @param string $id
      */
@@ -160,7 +152,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceInputNameDataProvider
-     *
      * @param string $expected
      * @param string $name
      * @param string|null $namespace
@@ -172,7 +163,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceIdDataProvider
-     *
      * @param string $expected
      * @param string $name
      * @param string|null $namespace
@@ -184,7 +174,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceInputsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string $namespace
@@ -196,7 +185,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceAttributesDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string $namespace
@@ -209,7 +197,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider widontDataProvider
-     *
      * @param string $expected
      * @param string $string
      */
@@ -220,7 +207,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider encodeInvalidTagsDataProvider
-     *
      * @param string $expected
      * @param string $html
      */

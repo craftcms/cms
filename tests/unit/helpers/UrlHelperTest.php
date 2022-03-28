@@ -43,7 +43,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider buildQueryDataProvider
-     *
      * @param string $expected
      * @param array $params
      */
@@ -54,7 +53,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider isRootRelativeUrlDataProvider
-     *
      * @param string $url
      * @param bool $expected
      */
@@ -65,7 +63,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider isAbsoluteUrlDataProvider
-     *
      * @param bool $expected
      * @param string $url
      */
@@ -76,7 +73,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider isFulUrlDataProvider
-     *
      * @param bool $expected
      * @param string $url
      */
@@ -91,7 +87,6 @@ class UrlHelperTest extends Unit
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
      *
      * @dataProvider cpUrlCreationDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array $params
@@ -116,7 +111,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithSchemeDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param string $scheme
@@ -128,7 +122,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithTokenDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param string $token
@@ -141,7 +134,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithParametersDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param array|string $params
@@ -153,7 +145,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider stripQueryStringDataProvider
-     *
      * @param string $expected
      * @param string $url
      */
@@ -174,7 +165,6 @@ class UrlHelperTest extends Unit
      * Tests the UrlHelper::rootRelativeUrl() method.
      *
      * @dataProvider rootRelativeUrlDataProvider
-     *
      * @param string $url
      * @param string $expected
      */
@@ -187,7 +177,6 @@ class UrlHelperTest extends Unit
      * Tests the UrlHelper::url() method.
      *
      * @dataProvider urlFunctionDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array|null $params
@@ -203,7 +192,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider hostInfoDataProvider
-     *
      * @param string $expected
      * @param string $url
      */
@@ -229,7 +217,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider siteUrlDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array|string|null $params

@@ -427,7 +427,7 @@ class Assets extends Component
     /**
      * Finds folders that match a given criteria.
      *
-     * @param mixed|null $criteria
+     * @param mixed $criteria
      * @return VolumeFolder[]
      */
     public function findFolders(mixed $criteria = null): array
@@ -500,7 +500,7 @@ class Assets extends Component
     /**
      * Finds the first folder that matches a given criteria.
      *
-     * @param mixed|null $criteria
+     * @param mixed $criteria
      * @return VolumeFolder|null
      */
     public function findFolder(mixed $criteria = null): ?VolumeFolder

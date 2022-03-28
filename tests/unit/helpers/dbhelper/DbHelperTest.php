@@ -72,7 +72,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
-     *
      * @param mixed $expected
      * @param string $column
      * @param string|int|array $value
@@ -87,7 +86,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider escapeParamDataProvider
-     *
      * @param string $expected
      * @param string $value
      */
@@ -98,7 +96,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider parseColumnTypeDataProvider
-     *
      * @param string|null $expected
      * @param string $columnType
      */
@@ -109,7 +106,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider getNumericalColumnTypeDataProvider
-     *
      * @param string $expected
      * @param int|null $min
      * @param int|null $max
@@ -123,7 +119,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider parseColumnLengthDataProvider
-     *
      * @param int|null $expected
      * @param string $columnType
      */
@@ -134,7 +129,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider getSimplifiedColumnTypeDataProvider
-     *
      * @param string $expected
      * @param string $columnType
      */
@@ -145,7 +139,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider deleteIfExistsDataProvider
-     *
      * @param int $expected
      * @param string $table
      * @param string|array $condition
@@ -170,7 +163,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider prepareValueForDbDataProvider
-     *
      * @param mixed $expected
      * @param mixed $value
      */
@@ -213,7 +205,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider areColumnTypesCompatibleDataProvider
-     *
      * @param bool $expected
      * @param string $typeA
      * @param string $typeB
@@ -225,7 +216,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider isNumericColumnTypeDataProvider
-     *
      * @param bool $expected
      * @param string $columnType
      */
@@ -236,7 +226,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider isTextualColumnTypeDataProvider
-     *
      * @param bool $expected
      * @param string $columnType
      */
@@ -247,7 +236,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnStorageCapacityDataProvider
-     *
      * @param int|null|false $expected
      * @param string $columnType
      */
@@ -258,7 +246,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider getMaxAllowedValueForNumericColumnDataProvider
-     *
      * @param int|false $expected
      * @param string $columnType
      */
@@ -269,7 +256,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider getMinAllowedValueForNumericColumnDataProvider
-     *
      * @param int|false $expected
      * @param string $columnType
      */
@@ -280,7 +266,6 @@ class DbHelperTest extends Unit
 
     /**
      * @dataProvider prepareValuesForDbDataProvider
-     *
      * @param array $expected
      * @param mixed $values
      */

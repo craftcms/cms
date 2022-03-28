@@ -71,7 +71,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider parseBooleanEnvDataProvider
-     *
      * @param bool|null $expected
      * @param mixed $value
      */
@@ -128,7 +127,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider editionHandleDataProvider
-     *
      * @param string|false $expected
      * @param int $edition
      */
@@ -144,7 +142,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider editionNameDataProvider
-     *
      * @param string|false $expected
      * @param int $edition
      */
@@ -160,7 +157,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider editionIdByHandleDataProvider
-     *
      * @param int|false $expected
      * @param string $handle
      */
@@ -176,7 +172,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider validEditionsDataProvider
-     *
      * @param bool $expected
      * @param mixed $edition
      */
@@ -195,7 +190,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider normalizeVersionDataProvider
-     *
      * @param string $expected
      * @param string $version
      */
@@ -241,7 +235,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider phpSizeToBytesDataProvider
-     *
      * @param int|float $expected
      * @param string $value
      */
@@ -252,7 +245,6 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider humanizeClassDataProvider
-     *
      * @param string $expected
      * @param class-string $class
      */
@@ -296,11 +288,10 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider configsDataProvider
-     *
-     * @param $method
-     * @param $desiredConfig
+     * @param string $method
+     * @param array $desiredConfig
      */
-    public function testConfigIndexes($method, $desiredConfig)
+    public function testConfigIndexes(string $method, array $desiredConfig)
     {
         $config = App::$method();
 

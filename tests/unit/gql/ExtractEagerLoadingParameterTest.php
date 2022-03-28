@@ -107,11 +107,10 @@ class ExtractEagerLoadingParameterTest extends Unit
      * @param array $variables Query variables
      * @param array $expectedParameters The expected eager-loading parameters.
      * @param string $returnType The return type of the GQL query
-     *
      * @throws \GraphQL\Error\SyntaxError
      * @dataProvider eagerLoadingParameterExtractionProvider
      */
-    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, $returnType)
+    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, string $returnType)
     {
         $documentNode = Parser::parse(new Source($query ?: '', 'GraphQL'));
         $resolveInfo = $this->_buildResolveInfo($documentNode, $variables, $returnType);
@@ -351,11 +350,11 @@ GQL;
      *
      * @param DocumentNode $documentNode
      * @param array $variables
-     * @param $returnType
+     * @param string $returnType
      * @return object
      * @throws \Exception
      */
-    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, $returnType)
+    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, string $returnType)
     {
         $fragments = [];
 

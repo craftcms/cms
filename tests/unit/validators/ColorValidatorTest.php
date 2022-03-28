@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -46,7 +46,6 @@ class ColorValidatorTest extends Unit
 
     /**
      * @dataProvider normalizeColorDataProvider
-     *
      * @param string $expected
      * @param string $color
      */
@@ -67,7 +66,6 @@ class ColorValidatorTest extends Unit
 
     /**
      * @dataProvider colorValidatorAttributesDataProvider
-     *
      * @param string $input
      * @param bool $mustValidate
      */

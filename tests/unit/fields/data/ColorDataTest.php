@@ -26,7 +26,6 @@ class ColorDataTest extends Unit
 
     /**
      * @dataProvider rgbDataProvider
-     *
      * @param int $r
      * @param int $g
      * @param int $b
@@ -46,7 +45,6 @@ class ColorDataTest extends Unit
 
     /**
      * @dataProvider hslDataProvider
-     *
      * @param int $h
      * @param int $s
      * @param int $l

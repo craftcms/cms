@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -30,7 +30,6 @@ class ConfigHelperTest extends Unit
 
     /**
      * @dataProvider sizeInBytesDataProvider
-     *
      * @param int|float $expected
      * @param int|string $value
      */
@@ -41,7 +40,6 @@ class ConfigHelperTest extends Unit
 
     /**
      * @dataProvider durationInSecondsDataProvider
-     *
      * @param int $expected
      * @param mixed $value
      * @throws InvalidConfigException
@@ -79,7 +77,6 @@ class ConfigHelperTest extends Unit
 
     /**
      * @dataProvider localizedValueDataProvider
-     *
      * @param mixed $expected
      * @param mixed $value
      * @param string|null $siteHandle

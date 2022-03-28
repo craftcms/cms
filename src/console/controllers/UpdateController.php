@@ -233,7 +233,6 @@ class UpdateController extends Controller
         return true;
     }
 
-
     /**
      * Returns the new Composer requirements.
      *

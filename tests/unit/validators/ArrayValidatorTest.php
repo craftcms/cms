@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -41,7 +41,6 @@ class ArrayValidatorTest extends Unit
      * they will be provided automatically.
      *
      * @dataProvider paramsToTestOnEmptyDataProvider
-     *
      * @param ArrayValidator $validator
      * @param string $variableName
      */
@@ -68,11 +67,10 @@ class ArrayValidatorTest extends Unit
 
     /**
      * @dataProvider arrayValidatorValuesDataProvider
-     *
-     * @param      $inputValue
+     * @param mixed $inputValue
      * @param bool $mustValidate
      */
-    public function testValidation($inputValue, bool $mustValidate)
+    public function testValidation(mixed $inputValue, bool $mustValidate)
     {
         $this->arrayValidator->count = null;
 

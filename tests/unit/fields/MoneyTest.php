@@ -44,7 +44,6 @@ class MoneyTest extends Unit
 
     /**
      * @dataProvider constructorDataProvider
-     *
      * @param array $config
      * @param array $expected
      * @return void
@@ -60,13 +59,12 @@ class MoneyTest extends Unit
 
     /**
      * @dataProvider normalizeValueDataProvider
-     * @param $money
+     * @param mixed $money
      * @param string $value
-     * @param string $currency
      * @param string|null $defaultValue
      * @param ElementInterface|null $element
      */
-    public function testNormalizeValue($money, string $value, string $currency, ?string $defaultValue, ?ElementInterface $element): void
+    public function testNormalizeValue(mixed $money, string $value, ?string $defaultValue, ?ElementInterface $element): void
     {
         $this->field->defaultValue = $defaultValue;
         $normalized = $this->field->normalizeValue($money, $element);
@@ -77,7 +75,6 @@ class MoneyTest extends Unit
 
     /**
      * @dataProvider getTableAttributeHtmlDataProvider
-     *
      * @param mixed $value
      * @param string $expected
      * @param string|null $locale
@@ -102,7 +99,6 @@ class MoneyTest extends Unit
 
     /**
      * @dataProvider serializeValueDataProvider
-     *
      * @param \Money\Money|null $value
      * @param string|null $expected
      * @return void
@@ -165,13 +161,13 @@ class MoneyTest extends Unit
         $freshEntry->setIsFresh(true);
 
         return [
-            'money-object' => [new \Money\Money(100, new Currency('USD')), '100', 'USD', null, null],
-            'default-value' => [null, '123', 'USD', '123', $freshEntry],
+            'money-object' => [new \Money\Money(100, new Currency('USD')), '100', null, null],
+            'default-value' => [null, '123', '123', $freshEntry],
             'array-passed' => [
                 [
                     'value' => '1,23',
                     'locale' => 'nl',
-                ], '123', 'USD', null, null,
+                ], '123', null, null,
             ],
         ];
     }

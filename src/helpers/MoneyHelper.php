@@ -71,11 +71,11 @@ class MoneyHelper
     /**
      * Convert money object to localized currency string.
      *
-     * @param Money|string $value
+     * @param mixed $value
      * @param string|null $formatLocale
      * @return string|false
      */
-    public static function toString(Money|string $value, ?string $formatLocale = null): string|false
+    public static function toString(mixed $value, ?string $formatLocale = null): string|false
     {
         if (is_string($value)) {
             return $value;
@@ -94,11 +94,11 @@ class MoneyHelper
     /**
      * Convert money object to localized decimal string.
      *
-     * @param Money|string $value
+     * @param mixed $value
      * @param string|null $formatLocale
      * @return string|false
      */
-    public static function toNumber(Money|string $value, ?string $formatLocale = null): string|false
+    public static function toNumber(mixed $value, ?string $formatLocale = null): string|false
     {
         if (is_string($value)) {
             return $value;

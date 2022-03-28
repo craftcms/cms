@@ -37,7 +37,6 @@ class RoutesTest extends Unit
 
     /**
      * @dataProvider saveRouteDataProvider
-     *
      * @param array $expected
      * @param array $uriParts
      * @param string $template

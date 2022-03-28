@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -28,7 +28,6 @@ class LocalizationHelperTest extends Unit
 
     /**
      * @dataProvider normalizeLanguageDataProvider
-     *
      * @param string $expected
      * @param string $language
      */
@@ -52,7 +51,6 @@ class LocalizationHelperTest extends Unit
 
     /**
      * @dataProvider normalizeNumberDataProvider
-     *
      * @param mixed $expected
      * @param mixed $number
      * @param string|null $localeId

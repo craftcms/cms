@@ -39,7 +39,6 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider validateComponentClassDataProvider
-     *
      * @param bool $expected
      * @param class-string $class
      * @param class-string|null $instanceOf
@@ -58,10 +57,9 @@ class ComponentHelperTest extends Unit
      * Tests whether the $callback will evaluate to an instance of the componentInterface.
      *
      * @dataProvider successfulComponentCreationDataProvider
-     *
-     * @param $callback
+     * @param callable $callback
      */
-    public function testSuccessfulComponentCreation(Closure $callback)
+    public function testSuccessfulComponentCreation(callable $callback)
     {
         self::assertInstanceOf(
             ComponentInterface::class,
@@ -71,12 +69,11 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider failingComponentCreationDataProvider
-     *
      * @param array $settings
-     * @param $desiredParent
+     * @param string|null $desiredParent
      * @param string $requiredException
      */
-    public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
+    public function testFailedComponentExceptions(array $settings, ?string $desiredParent, string $requiredException)
     {
         $this->tester->expectThrowable(
             $requiredException,
@@ -95,7 +92,6 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider mergeSettingsDataProvider
-     *
      * @param array $expected
      * @param array $config
      */
@@ -106,7 +102,6 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider iconSvgDataProvider
-     *
      * @param string $needle
      * @param string|null $icon
      * @param string $label

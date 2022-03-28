@@ -519,7 +519,6 @@ class Gql
      * Shorthand for returning the complexity function for a field that will add a single query to execution.
      *
      * @param int $baseComplexity The base complexity to use. Defaults to a single query.
-     *
      * @return callable
      * @since 3.6.7
      */

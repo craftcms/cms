@@ -26,7 +26,6 @@ class ResponseTest extends Unit
 
     /**
      * @dataProvider getContentTypeDataProvider
-     *
      * @param string|null $expected
      * @param string $format
      * @param string|null $contentType

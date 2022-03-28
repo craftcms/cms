@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\mockclasses\elements;
@@ -12,13 +12,12 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
-use yii\base\Model;
 
 /**
  * MockElementQuery is used to mimic element queries and mock their results
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.5
+ * @since 3.5
  */
 class MockElementQuery extends ElementQuery
 {
@@ -49,7 +48,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Generate a more specific query class for the provided element type class.
      *
-     * @param string $elementClass
+     * @param class-string<ElementInterface> $elementClass
      * @return ElementQuery
      */
     public static function generateSpecificQueryClass(string $elementClass): ElementQuery
@@ -114,7 +113,7 @@ class MockElementQuery extends ElementQuery
      * Getter for mock query arguments.
      *
      * @param string $name
-     * @return mixed|null
+     * @return mixed
      */
     public function __get($name)
     {
@@ -137,7 +136,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Return all the return values.
      *
-     * @param mixed|null $db
+     * @param mixed $db
      * @return array
      */
     public function all($db = null): array
@@ -150,7 +149,7 @@ class MockElementQuery extends ElementQuery
      *
      * @return Element|null
      */
-    public function one($db = null):? Element
+    public function one($db = null): ? Element
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

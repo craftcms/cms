@@ -72,7 +72,6 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on entries.
      *
      * @dataProvider entryFieldTestDataProvider
-     *
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
@@ -105,7 +104,6 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on assets.
      *
      * @dataProvider assetFieldTestDataProvider
-     *
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
@@ -128,7 +126,6 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on global sets.
      *
      * @dataProvider globalSetFieldTestDataProvider
-     *
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
@@ -152,7 +149,6 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on categories
      *
      * @dataProvider categoryFieldTestDataProvider
-     *
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
@@ -180,7 +176,6 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on tags
      *
      * @dataProvider tagFieldTestDataProvider
-     *
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
@@ -208,7 +203,6 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on matrix blocks.
      *
      * @dataProvider matrixBlockFieldTestDataProvider
-     *
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
@@ -239,7 +233,6 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on users.
      *
      * @dataProvider userFieldTestDataProvider
-     *
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
@@ -278,7 +271,6 @@ class ElementFieldResolverTest extends Unit
      * @param array $fieldArguments
      * @param mixed $expectedArguments
      * @param bool $generateNow
-     *
      * @dataProvider assetTransformDataProvider
      */
     public function testAssetUrlTransform($fieldArguments, $expectedArguments)
@@ -318,12 +310,12 @@ class ElementFieldResolverTest extends Unit
     /**
      * Run the test on an element for a type class with the property name.
      *
+     * @param mixed $element
      * @param class-string $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
-     * @param mixed $element
      */
-    public function _runTest($element, string $gqlTypeClass, string $propertyName, $result)
+    public function _runTest(mixed $element, string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
         $resolve = function() use ($gqlTypeClass, $element, $resolveInfo) {

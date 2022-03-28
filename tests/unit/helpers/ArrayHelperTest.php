@@ -28,7 +28,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider toArrayDataProvider
-     *
      * @param array $expected
      * @param mixed $object
      */
@@ -39,7 +38,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider prependDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param array $values
@@ -52,7 +50,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider appendDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param array $values
@@ -65,7 +62,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider prependOrAppendDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param mixed $appendable
@@ -338,7 +334,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider containsDataProvider
-     *
      * @param bool $expected
      * @param array $array
      * @param string|\Closure $key
@@ -371,7 +366,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider firstValueDataProvider
-     *
      * @param mixed $expected
      * @param array $array
      */
@@ -382,7 +376,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider renameDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param string $oldKey
@@ -397,7 +390,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider withoutDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param string $key
@@ -409,7 +401,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider withoutValueDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param mixed $value
@@ -421,7 +412,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider ensureNonAssociativeDataProvider
-     *
      * @param array $expected
      * @param array $array
      */
@@ -433,7 +423,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider isOrderedDataProvider
-     *
      * @param bool $expected
      * @param array $array
      */
@@ -444,7 +433,6 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider isNumericDataProvider
-     *
      * @param bool $expected
      * @param array $array
      */

@@ -28,6 +28,7 @@ use craft\services\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
 
 class ArgumentHandlerTest extends Unit
 {
@@ -35,7 +36,6 @@ class ArgumentHandlerTest extends Unit
      * Test whether it's possible to modify fields
      *
      * @dataProvider integrationTestDataProvider
-     *
      * @param string $argumentString
      * @param array $expectedResult
      * @throws \Exception
@@ -91,13 +91,12 @@ class ArgumentHandlerTest extends Unit
      * Test whether relation argument handlers return the right element query and format the `relatedTo` argument correctly.
      *
      * @dataProvider relationArgumentHandlerProvider
-     *
      * @param array $handlers
-     * @param $arguments
-     * @param $expectedRelatedTo
-     * @throws \yii\base\InvalidConfigException
+     * @param array $arguments
+     * @param array $expectedRelatedTo
+     * @throws InvalidConfigException
      */
-    public function testRelationArgumentHandlers(array $handlers, $arguments, $expectedRelatedTo): void
+    public function testRelationArgumentHandlers(array $handlers, array $arguments, array $expectedRelatedTo): void
     {
         $argumentManager = new ArgumentManager();
 

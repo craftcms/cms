@@ -119,7 +119,7 @@ class ArgumentManager extends Component
      * @throws GqlException
      * @throws InvalidConfigException
      */
-    public function prepareArguments($arguments): array
+    public function prepareArguments(array $arguments): array
     {
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {

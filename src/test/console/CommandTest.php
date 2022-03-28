@@ -374,7 +374,6 @@ class CommandTest
 
     /**
      * @param array $config
-     *
      * @return CommandTest
      */
     protected function addEventChainItem(array $config): CommandTest

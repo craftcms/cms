@@ -140,7 +140,6 @@ class CpHelperTest extends Unit
 
     /**
      * @dataProvider fieldMethodsDataProvider
-     *
      * @param string $needle
      * @param string $method
      * @param array $config

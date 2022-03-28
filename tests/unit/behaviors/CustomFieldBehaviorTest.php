@@ -31,8 +31,7 @@ class CustomFieldBehaviorTest extends Unit
 
     /**
      * @dataProvider existingFieldHandlesDataProvider
-     *
-     * @param $handle
+     * @param string $handle
      */
     public function testExistsInCustomFieldBehavior(string $handle)
     {

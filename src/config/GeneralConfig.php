@@ -1025,7 +1025,6 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var string|null The `Permissions-Policy` header that should be sent for web responses.
-     *
      * @since 3.6.14
      * @group System
      */

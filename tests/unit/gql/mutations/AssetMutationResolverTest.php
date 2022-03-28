@@ -19,13 +19,12 @@ class AssetMutationResolverTest extends TestCase
     /**
      * Test whether various argument combos set the correct scenario on the element.
      *
-     * @param $arguments
-     * @param $scenario
-     * @param mixed $exception
+     * @param array $arguments
+     * @param string $exception
      * @throws \Throwable
      * @dataProvider testVariousExceptionsProvider
      */
-    public function testVariousExceptions($arguments, $exception)
+    public function testVariousExceptions(array $arguments, string $exception)
     {
         $resolver = $this->make(Asset::class, [
             'requireSchemaAction' => null,
@@ -41,10 +40,7 @@ class AssetMutationResolverTest extends TestCase
         ]));
 
 
-        if ($exception) {
-            $this->expectExceptionMessage($exception);
-        }
-
+        $this->expectExceptionMessage($exception);
         $resolver->saveAsset(null, $arguments, null, $this->make(ResolveInfo::class));
     }
 

@@ -13,7 +13,6 @@ use craft\models\Site;
 use craft\search\SearchQuery;
 use Illuminate\Support\Collection;
 use yii\base\Arrayable;
-use yii\base\Model;
 use yii\db\Connection;
 use yii\db\QueryInterface;
 
@@ -1451,9 +1450,9 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @param Connection $db The database connection used to execute the query.
      * If this parameter is not given, the `db` application
      * component will be used.
-     * @return \craft\base\Element|array|null The resulting element. Null is returned if the query results in nothing.
+     * @return mixed The resulting element. Null is returned if the query results in nothing.
      */
-    public function one($db = null): Model|array|null;
+    public function one($db = null): mixed;
 
     /**
      * Executes the query and returns a single row of result at a given offset.
@@ -1461,10 +1460,10 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param Connection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return \craft\base\Element|array|null The element or row of the query result. Null is returned if the query
+     * @return mixed The element or row of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, ?Connection $db = null): Model|array|null;
+    public function nth(int $n, ?Connection $db = null): mixed;
 
     /**
      * Executes the query and returns the IDs of the resulting elements.

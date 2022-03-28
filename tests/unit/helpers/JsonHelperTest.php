@@ -21,7 +21,6 @@ class JsonHelperTest extends Unit
 {
     /**
      * @dataProvider decodeIfJsonDataProvider
-     *
      * @param mixed $expected
      * @param string $str
      */
@@ -45,7 +44,6 @@ class JsonHelperTest extends Unit
 
     /**
      * @dataProvider isJsonObjectDataProvider
-     *
      * @param bool $expected
      * @param string $str
      */

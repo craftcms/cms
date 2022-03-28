@@ -35,7 +35,6 @@ class LanguageValidatorTest extends Unit
 
     /**
      * @dataProvider validateValueDataProvider
-     *
      * @param array|null $expected
      * @param string $value
      * @param bool $onlySiteLangs
@@ -51,7 +50,6 @@ class LanguageValidatorTest extends Unit
 
     /**
      * @dataProvider validateAttributeDataProvider
-     *
      * @param bool $mustValidate
      * @param string $input
      * @param bool $onlySiteLocalIds

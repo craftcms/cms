@@ -363,7 +363,7 @@ class Users extends Component
      *
      * @param int $userId The user’s ID
      * @param string $key The preference’s key
-     * @param mixed|null $default The default value, if the preference hasn’t been set
+     * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
     public function getUserPreference(int $userId, string $key, mixed $default = null): mixed

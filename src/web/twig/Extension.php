@@ -810,7 +810,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $str
      * @param mixed $search
-     * @param mixed|null $replace
+     * @param mixed $replace
      * @return mixed
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed

@@ -31,11 +31,11 @@ abstract class ElementResolver extends Resolver
      *
      * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return mixed
      */
-    public static function resolveOne(mixed $source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
+    public static function resolveOne(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         $value = $query instanceof ElementQuery ? $query->one() : $query;

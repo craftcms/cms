@@ -60,7 +60,6 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * @dataProvider exceptionTypeAndNameDataProvider
-     *
      * @param Error $twigError
      * @param string $message
      */
@@ -71,7 +70,6 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * @dataProvider getTypeUrlDataProvider
-     *
      * @param string|null $expected
      * @param class-string $class
      * @param string|null $method
@@ -92,7 +90,6 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * @dataProvider isCoreFileDataProvider
-     *
      * @param bool $expected
      * @param string $file
      */

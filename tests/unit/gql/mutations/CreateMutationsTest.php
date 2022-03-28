@@ -86,7 +86,6 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider assetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
@@ -132,7 +131,6 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider categoryMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
@@ -178,7 +176,6 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider tagMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
@@ -223,7 +220,6 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider globalSetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
@@ -269,7 +265,6 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider entryMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */

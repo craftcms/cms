@@ -107,7 +107,7 @@ class CommandTest extends Unit
     /**
      * Updates a session row.
      *
-     * @param $values
+     * @param array $values
      * @return array
      * @throws Exception
      */

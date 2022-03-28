@@ -115,7 +115,6 @@ class GcTest extends Unit
 
     /**
      * @dataProvider gcDataProvider
-     *
      * @param int $remainingCount
      * @param string $leftoverId
      * @param string $table

@@ -52,7 +52,6 @@ class SearchTest extends Unit
 
     /**
      * @dataProvider searchElementsDataProvider
-     *
      * @param array $usernameOrEmailsForResult
      * @param array $usernameOrEmailsForQuery
      * @param string $searchQuery
@@ -155,11 +154,11 @@ class SearchTest extends Unit
     }
 
     /**
-     * @param $attributeName
-     * @param $searchIndex
+     * @param mixed $attributeName
+     * @param iterable $searchIndex
      * @return string
      */
-    private function _getSearchIndexValueByAttribute($attributeName, $searchIndex): string
+    private function _getSearchIndexValueByAttribute(mixed $attributeName, iterable $searchIndex): string
     {
         foreach (ArrayHelper::where($searchIndex, 'attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {

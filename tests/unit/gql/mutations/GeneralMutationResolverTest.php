@@ -46,8 +46,6 @@ class GeneralMutationResolverTest extends TestCase
 
     /**
      * Test whether data and value normalizes is stored on the resolver correctly.
-     *
-     * @param $data
      */
     public function testStoringResolverData()
     {
@@ -115,12 +113,12 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether populating an element with data behaves as expected.
      *
-     * @param $contentFields
-     * @param $arguments
+     * @param array $contentFields
+     * @param array $arguments
      * @throws \ReflectionException
      * @dataProvider populatingElementWithDataProvider
      */
-    public function testPopulatingElementWithData($contentFields, $arguments)
+    public function testPopulatingElementWithData(array $contentFields, array $arguments)
     {
         $entry = $this->make(Entry::class, [
             'setFieldValue' => Expected::exactly(count($contentFields)),

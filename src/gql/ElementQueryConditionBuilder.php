@@ -233,10 +233,9 @@ class ElementQueryConditionBuilder extends Component
      *
      * @param string $nodeName
      * @param mixed $parentField
-     *
      * @return bool
      */
-    private function _isAdditionalEagerLoadableNode(string $nodeName, $parentField): bool
+    private function _isAdditionalEagerLoadableNode(string $nodeName, mixed $parentField): bool
     {
         $nodeList = $this->_getKnownSpecialEagerLoadNodes();
 

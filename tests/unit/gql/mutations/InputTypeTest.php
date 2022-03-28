@@ -61,10 +61,10 @@ class InputTypeTest extends Unit
 
     /**
      * @dataProvider testMatrixInputDataProvider
-     * @param $matrixField
-     * @param $blockTypes
+     * @param MatrixField $matrixField
+     * @param MatrixBlockType[] $blockTypes
      */
-    public function testMatrixInput($matrixField, $blockTypes)
+    public function testMatrixInput(MatrixField $matrixField, array $blockTypes)
     {
         // Trigger addition to the registry
         $inputType = Matrix::getType($matrixField);
@@ -83,10 +83,10 @@ class InputTypeTest extends Unit
      * Test Matrix input type normalizing values
      *
      * @dataProvider matrixInputValueNormalizerDataProvider
-     * @param $input
-     * @param $normalized
+     * @param array $input
+     * @param array $normalized
      */
-    public function testMatrixInputValueNormalization($input, $normalized)
+    public function testMatrixInputValueNormalization(array $input, array $normalized)
     {
         self::assertEquals($normalized, Matrix::normalizeValue($input));
     }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -39,7 +39,6 @@ class PasswordValidatorTest extends Unit
 
     /**
      * @dataProvider passwordValidationDataProvider
-     *
      * @param string $inputValue
      * @param bool $mustValidate
      * @param string|null $currentPass
@@ -63,11 +62,10 @@ class PasswordValidatorTest extends Unit
 
     /**
      * @dataProvider customConfigDataProvider
-     *
      * @param mixed $input
-     * @param bool  $mustValidate
-     * @param int   $min
-     * @param int   $max
+     * @param bool $mustValidate
+     * @param int $min
+     * @param int $max
      */
     public function testCustomConfig(mixed $input, bool $mustValidate, int $min, int $max)
     {
@@ -84,8 +82,7 @@ class PasswordValidatorTest extends Unit
 
     /**
      * @dataProvider forceDiffValidationDataProvider
-     *
-     * @param bool   $mustValidate
+     * @param bool $mustValidate
      * @param string $input
      * @param string $currentPassword
      */

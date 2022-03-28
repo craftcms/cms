@@ -27,7 +27,6 @@ class SearchHelperTest extends Unit
 
     /**
      * @dataProvider normalizeKeywordsDataProviders
-     *
      * @param string $expected
      * @param string|string[] $str
      * @param array $ignore
