@@ -132,13 +132,13 @@ jobs:
       uses: codecov/codecov-action@v2
 
     - name: Slack notification
-      uses: 8398a7/action-slack@v3
+      id: slack
+      uses: slackapi/slack-github-action@v1.18.0
       with:
-        status: ${{ job.status }}
-        author_name: Bot the Builder # default: 8398a7@action-slack
-        fields: repo,commit,message,author # default: repo,commit
-        mention: here
-        if_mention: failure,cancelled
+        # Slack channel id, channel name, or user id to post message.
+        # See also: https://api.slack.com/methods/chat.postMessage#channels
+        channel-id: 'builds-craft'
+        # For posting a simple plain text message
+        slack-message: "GitHub build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: always() # Pick up events even if the job fails or is canceled.
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
