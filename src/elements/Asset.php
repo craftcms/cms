@@ -1489,10 +1489,11 @@ JS;
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
+     * @param bool|null $immediately Whether the image should be transformed immediately
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl(mixed $transform = null): ?string
+    public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new DefineAssetUrlEvent([
@@ -1542,8 +1543,11 @@ JS;
                 }
             }
 
-            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             $transform = ImageTransforms::normalizeTransform($transform);
+
+            if ($immediately === null) {
+                $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+            }
 
             try {
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
