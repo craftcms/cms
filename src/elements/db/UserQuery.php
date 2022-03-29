@@ -457,7 +457,9 @@ class UserQuery extends ElementQuery
             ->where(Db::parseParam('handle', $value))
             ->column();
 
+        /** @phpstan-ignore-next-line */
         if ($this->groupId && isset($glue)) {
+            /** @phpstan-ignore-next-line */
             array_unshift($this->groupId, $glue);
         }
 

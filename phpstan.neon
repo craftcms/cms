@@ -6,6 +6,7 @@ parameters:
     excludePaths:
         - src/config/composer-classes.php
         - src/config/mimeTypes.php
+        - src/services/Images.php
         - src/test/internal/*
         - src/views/debug/*
         - tests/_craft/*

@@ -98,7 +98,11 @@ class Component
             }
 
             $class = $config['type'];
-            unset($config['type'], $config['__class']);
+            unset($config['type']);
+
+            if (isset($config['__class'])) {
+                unset($config['__class']);
+            }
         }
 
         // Validate the component class
