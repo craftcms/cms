@@ -55,7 +55,6 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
      */
     public static function generateType(mixed $context): ObjectType
     {
-        /** @var MatrixBlockTypeModel $matrixBlockType */
         $typeName = MatrixBlockElement::gqlTypeNameByContext($context);
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {

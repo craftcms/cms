@@ -50,7 +50,6 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateType(mixed $context): ObjectType
     {
-        /** @var EntryTypeModel $entryType */
         $typeName = EntryElement::gqlTypeNameByContext($context);
 
         if ($createdType = GqlEntityRegistry::getEntity($typeName)) {

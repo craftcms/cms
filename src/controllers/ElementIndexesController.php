@@ -552,7 +552,6 @@ class ElementIndexesController extends BaseElementsController
         $filterConditionStr = $this->request->getBodyParam('filters');
         if ($filterConditionStr) {
             parse_str($filterConditionStr, $filterConditionConfig);
-            /** @var ElementConditionInterface $condition */
             $filterCondition = $conditionsService->createCondition($filterConditionConfig['condition']);
             $filterCondition->modifyQuery($query);
         }
