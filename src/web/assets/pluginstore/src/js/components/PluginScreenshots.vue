@@ -3,14 +3,16 @@
     <a
       v-for="(image, key) in thumbnails"
       :key="key"
-      class="tw-shrink-0 tw-snap-start tw-w-64 tw-overflow-hidden"
+      class="tw-shrink-0 tw-snap-start tw-w-64 tw-aspect-[4/3]"
       @click.prevent="zoomImage(key)"
     >
-      <img
-        :alt="'Plugin screenshot thumbnail ' + (key + 1) + '/' + thumbnails.length"
-        class="tw-rounded-md tw-object-cover tw-aspect-[4/3]"
-        :src="image"
-      >
+      <div class="tw-flex tw-justify-center tw-items-center tw-w-full tw-h-full">
+        <img
+          :alt="'Plugin screenshot thumbnail ' + (key + 1) + '/' + thumbnails.length"
+          class="tw-rounded-md tw-max-w-full tw-max-h-full"
+          :src="image"
+        >
+      </div>
     </a>
   </div>
 </template>
