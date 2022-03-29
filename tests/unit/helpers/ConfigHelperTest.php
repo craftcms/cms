@@ -38,8 +38,7 @@ class ConfigHelperTest extends Unit
      */
     public function testSizeInBytes($expected, $value)
     {
-        self::fail();
-        //self::assertSame($expected, ConfigHelper::sizeInBytes($value));
+        self::assertSame($expected, ConfigHelper::sizeInBytes($value));
     }
 
     /**
