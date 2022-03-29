@@ -4,18 +4,18 @@ parameters:
         - src
         - tests
     excludePaths:
+        - src/config/composer-classes.php
+        - src/config/mimeTypes.php
+        - src/test/internal/*
+        - src/views/debug/*
         - tests/_craft/*
         - tests/_data/*
         - tests/_output/*
-        - src/test/internal/*
-        - src/config/composer-classes.php
-        - src/config/mimeTypes.php
-        - src/views/debug/*
     scanDirectories:
         - tests/_craft/storage/runtime/compiled_classes/
     scanFiles:
-        - vendor/twig/twig/src/Extension/CoreExtension.php
         - vendor/codeception/codeception/autoload.php
+        - vendor/twig/twig/src/Extension/CoreExtension.php
     bootstrapFiles:
         - tests/_bootstrap.php
     stubFiles:
