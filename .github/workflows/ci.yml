@@ -143,14 +143,14 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Slack notification failure
-          uses: ravsamhq/notify-slack-action@v1
-          if: ${{ ! success() }}
-          with:
-            status: ${{ job.status }}
-            notification_title: '{workflow} has {status_message}'
-            message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> @here'
-            footer: '<{repo_url}|{repo}>'
-            notify_when: 'failure,warnings'
-          env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Slack notification failure
+        uses: ravsamhq/notify-slack-action@v1
+        if: ${{ ! success() }}
+        with:
+          status: ${{ job.status }}
+          notification_title: '{workflow} has {status_message}'
+          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> @here'
+          footer: '<{repo_url}|{repo}>'
+          notify_when: 'failure,warnings'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
