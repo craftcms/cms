@@ -92,6 +92,22 @@ class MissingFs extends Fs implements MissingComponentInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function read(string $path): string
+    {
+        throw new NotSupportedException('read() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function write(string $path, string $contents, array $config = []): void
+    {
+        throw new NotSupportedException('write() is not implemented.');
+    }
+
+    /**
      * @inheritdoc
      */
     public function directoryExists(string $path): bool

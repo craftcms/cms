@@ -336,7 +336,7 @@ class Categories extends Component
                 $layout->id = $groupRecord->fieldLayoutId;
                 $layout->type = Category::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $groupRecord->fieldLayoutId = $layout->id;
             } elseif ($groupRecord->fieldLayoutId) {
                 // Delete the field layout
