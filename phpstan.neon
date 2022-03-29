@@ -40,3 +40,5 @@ parameters:
     		- '#Variable \$behavior in PHPDoc tag @var does not exist#'
     		- '#Variable \$field in PHPDoc tag @var does not exist#'
     		- '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
+    		- '#Unsafe call to private method .* through static::#'
+    		- '#Unsafe access to private property .* through static::#'
