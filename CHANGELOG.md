@@ -7,6 +7,7 @@
 - Added `craft\base\FsInterface::write()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
+- Garbage collector now removes all empty temporary upload folders. ([#10746](https://github.com/craftcms/cms/issues/10746))
 
 ### Changed
 - Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))

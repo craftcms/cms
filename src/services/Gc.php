@@ -21,6 +21,7 @@ use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\fs\Temp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\records\Volume;
@@ -138,6 +139,8 @@ class Gc extends Component
         ]);
 
         $this->hardDeleteVolumes();
+
+        $this->removeEmptyTempFolders();
     }
 
     /**
@@ -291,6 +294,34 @@ SQL;
         }
 
         $this->db->createCommand($sql, ['type' => $elementType])->execute();
+    }
+
+    /**
+     * Find all temp upload folders with no assets in them and remove them.
+     *
+     * @throws \craft\errors\FsException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function removeEmptyTempFolders(): void
+    {
+        $emptyFolders = (new Query())
+            ->from(['folders' => Table::VOLUMEFOLDERS])
+            ->select(['folders.id', 'folders.path'])
+            ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
+            ->where(['folders.volumeId' => null, 'assets.id' => null])
+            ->andWhere(['not', ['folders.parentId' => null]])
+            ->pairs();
+
+        $fs = Craft::createObject(Temp::class);
+
+        foreach ($emptyFolders as $emptyFolderPath) {
+            if ($fs->directoryExists($emptyFolderPath)) {
+                $fs->deleteDirectory($emptyFolderPath);
+            }
+        }
+
+        VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
     }
 
     /**
