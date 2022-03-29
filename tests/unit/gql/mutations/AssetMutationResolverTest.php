@@ -44,7 +44,7 @@ class AssetMutationResolverTest extends TestCase
         $resolver->saveAsset(null, $arguments, null, $this->make(ResolveInfo::class));
     }
 
-    public function testVariousExceptionsProvider()
+    public function testVariousExceptionsProvider(): array
     {
         return [
             [['filename' => 'fake.jpg'], 'Impossible to create an asset without providing a file'],

@@ -39,13 +39,14 @@ use craft\models\Volume;
 use craft\services\Assets;
 use craft\services\ImageTransforms;
 use GraphQL\Type\Definition\ResolveInfo;
+use UnitTester;
 
 class ElementFieldResolverTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {
@@ -76,7 +77,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $sectionHandle = StringHelper::UUID();
         $typeHandle = StringHelper::UUID();
@@ -108,7 +109,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $mockElement = $this->make(
             AssetElement::class, [
@@ -130,7 +131,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $mockElement = $this->make(
             GlobalSetElement::class, [
@@ -153,7 +154,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $groupHandle = StringHelper::UUID();
 
@@ -180,7 +181,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $groupHandle = StringHelper::UUID();
 
@@ -207,7 +208,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $typeHandle = StringHelper::UUID();
 
@@ -237,7 +238,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $mockElement = $this->make(
             UserElement::class, [
@@ -270,10 +271,9 @@ class ElementFieldResolverTest extends Unit
      *
      * @param array $fieldArguments
      * @param mixed $expectedArguments
-     * @param bool $generateNow
      * @dataProvider assetTransformDataProvider
      */
-    public function testAssetUrlTransform($fieldArguments, $expectedArguments)
+    public function testAssetUrlTransform(array $fieldArguments, mixed $expectedArguments)
     {
         $imageTransformService = $this->make(ImageTransforms::class, [
             'getImageTransformer' => $this->make(ImageTransformer::class, [
@@ -429,7 +429,7 @@ class ElementFieldResolverTest extends Unit
         ];
     }
 
-    public function assetTransformDataProvider()
+    public function assetTransformDataProvider(): array
     {
         return [
             [['width' => 200, 'height' => 200], ['width' => 200, 'height' => 200]],
@@ -437,7 +437,6 @@ class ElementFieldResolverTest extends Unit
             [['width' => 200, 'height' => 500], ['width' => 200, 'height' => 500]],
             [['width' => 200, 'height' => 200, 'handle' => 'testHandle'], ['handle' => 'testHandle']],
             [['width' => 200, 'height' => 200, 'transform' => 'testHandle2'], ['handle' => 'testHandle2']],
-
         ];
     }
 }

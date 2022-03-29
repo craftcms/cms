@@ -39,14 +39,9 @@ use yii\base\InvalidArgumentException;
 class GcTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Gc
      */
-    protected $gc;
+    protected Gc $gc;
 
     /**
      * @return array

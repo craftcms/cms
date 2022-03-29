@@ -28,11 +28,6 @@ use yii\base\InvalidArgumentException;
 class AppHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      *
      */
     public function testEnv()
@@ -74,7 +69,7 @@ class AppHelperTest extends TestCase
      * @param bool|null $expected
      * @param mixed $value
      */
-    public function testParseBooleanEnv(?bool $expected, $value)
+    public function testParseBooleanEnv(?bool $expected, mixed $value)
     {
         self::assertSame($expected, App::parseBooleanEnv($value));
     }
@@ -130,7 +125,7 @@ class AppHelperTest extends TestCase
      * @param string|false $expected
      * @param int $edition
      */
-    public function testEditionHandle($expected, int $edition)
+    public function testEditionHandle(string|false $expected, int $edition)
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -145,7 +140,7 @@ class AppHelperTest extends TestCase
      * @param string|false $expected
      * @param int $edition
      */
-    public function testEditionName($expected, int $edition)
+    public function testEditionName(string|false $expected, int $edition)
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -160,7 +155,7 @@ class AppHelperTest extends TestCase
      * @param int|false $expected
      * @param string $handle
      */
-    public function testEditionIdByHandle($expected, string $handle)
+    public function testEditionIdByHandle(int|false $expected, string $handle)
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -175,7 +170,7 @@ class AppHelperTest extends TestCase
      * @param bool $expected
      * @param mixed $edition
      */
-    public function testIsValidEdition(bool $expected, $edition)
+    public function testIsValidEdition(bool $expected, mixed $edition)
     {
         self::assertSame($expected, App::isValidEdition($edition));
     }
@@ -238,7 +233,7 @@ class AppHelperTest extends TestCase
      * @param int|float $expected
      * @param string $value
      */
-    public function testPhpSizeToBytes($expected, string $value)
+    public function testPhpSizeToBytes(int|float $expected, string $value)
     {
         self::assertSame($expected, App::phpSizeToBytes($value));
     }

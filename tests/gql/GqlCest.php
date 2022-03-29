@@ -20,7 +20,7 @@ class GqlCest
     /**
      *
      */
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'entriesWithField' => [
@@ -35,7 +35,7 @@ class GqlCest
         ];
     }
 
-    private $tokenStatus;
+    private bool $tokenStatus;
 
     /**
      * @param FunctionalTester $I
@@ -69,7 +69,7 @@ class GqlCest
      * @return GqlSchema|null
      * @throws Exception
      */
-    public function _setSchema(int $schemaId)
+    public function _setSchema(int $schemaId): ?GqlSchema
     {
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getSchemaById($schemaId);
@@ -142,7 +142,7 @@ class GqlCest
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
             [$query, $response] = explode('-----RESPONSE DELIMITER-----', $case);
             [$schemaId, $query] = explode('-----TOKEN DELIMITER-----', $query);
-            $schema = $this->_setSchema(trim($schemaId));
+            $this->_setSchema(trim($schemaId));
             $I->amOnPage('?action=graphql/api&query=' . urlencode(trim($query)));
             $I->see(trim($response));
             $gqlService = Craft::$app->getGql();

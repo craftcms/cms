@@ -390,7 +390,6 @@ class Assets extends BaseRelationField
 
             /** @var Asset $class */
             $class = static::elementType();
-            /** @var ElementQuery $query */
             $query = $class::find();
 
             $targetSite = $this->targetSiteId($element);

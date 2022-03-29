@@ -22,16 +22,11 @@ use UnitTester;
 class ArrayHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider toArrayDataProvider
      * @param array $expected
      * @param mixed $object
      */
-    public function testToArray(array $expected, $object)
+    public function testToArray(array $expected, mixed $object)
     {
         self::assertSame($expected, ArrayHelper::toArray($object));
     }
@@ -67,7 +62,7 @@ class ArrayHelperTest extends Unit
      * @param mixed $appendable
      * @param bool $prepend
      */
-    public function testPrependOrAppend(array $expected, array $array, $appendable, bool $prepend)
+    public function testPrependOrAppend(array $expected, array $array, mixed $appendable, bool $prepend)
     {
         ArrayHelper::prependOrAppend($array, $appendable, $prepend);
         self::assertSame($expected, $array);
@@ -336,11 +331,11 @@ class ArrayHelperTest extends Unit
      * @dataProvider containsDataProvider
      * @param bool $expected
      * @param array $array
-     * @param string|\Closure $key
+     * @param callable|string $key
      * @param mixed $value
      * @param bool $strict
      */
-    public function testContains(bool $expected, array $array, $key, $value = true, bool $strict = false)
+    public function testContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false)
     {
         self::assertSame($expected, ArrayHelper::contains($array, $key, $value, $strict));
     }
@@ -350,11 +345,11 @@ class ArrayHelperTest extends Unit
      *
      * @param bool $expected
      * @param array $array
-     * @param string|\Closure $key
+     * @param callable|string $key
      * @param mixed $value
      * @param bool $strict
      */
-    public function testOnlyContains(bool $expected, array $array, $key, $value = true, bool $strict = false)
+    public function testOnlyContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false)
     {
         self::assertSame($expected, ArrayHelper::onlyContains($array, $key, $value, $strict));
     }
@@ -383,7 +378,7 @@ class ArrayHelperTest extends Unit
      * @param mixed $expected
      * @param array $array
      */
-    public function testFirstValue($expected, array $array)
+    public function testFirstValue(mixed $expected, array $array)
     {
         self::assertSame($expected, ArrayHelper::firstValue($array));
     }
@@ -396,7 +391,7 @@ class ArrayHelperTest extends Unit
      * @param string $newKey
      * @param mixed $default
      */
-    public function testRename(array $expected, array $array, string $oldKey, string $newKey, $default = null)
+    public function testRename(array $expected, array $array, string $oldKey, string $newKey, mixed $default = null)
     {
         ArrayHelper::rename($array, $oldKey, $newKey, $default);
         self::assertSame($expected, $array);
@@ -419,7 +414,7 @@ class ArrayHelperTest extends Unit
      * @param array $array
      * @param mixed $value
      */
-    public function testWithoutValue(array $expected, array $array, $value)
+    public function testWithoutValue(array $expected, array $array, mixed $value)
     {
         self::assertSame($expected, ArrayHelper::withoutValue($array, $value));
     }

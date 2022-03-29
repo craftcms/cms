@@ -22,23 +22,18 @@ use UnitTester;
 class SecurityTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Security
      */
-    protected $security;
+    protected Security $security;
 
     /**
      * @dataProvider redactIfSensitiveDataProvider
-     * @param string|array $expected
+     * @param mixed $expected
      * @param string $name
-     * @param string|array $value
+     * @param mixed $value
      * @param string[] $characters
      */
-    public function testRedactIfSensitive($expected, string $name, $value, array $characters)
+    public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $characters)
     {
         $this->security->sensitiveKeywords = $characters;
         self::assertSame($expected, $this->security->redactIfSensitive($name, $value));

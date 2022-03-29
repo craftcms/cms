@@ -20,11 +20,6 @@ use UnitTester;
 class ColorDataTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider rgbDataProvider
      * @param int $r
      * @param int $g

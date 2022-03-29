@@ -22,11 +22,6 @@ use UnitTester;
 class NumberHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider wordDataProvider
      * @param string $expected
      * @param int $num
@@ -81,7 +76,7 @@ class NumberHelperTest extends Unit
      * @param mixed $expected
      * @param mixed $var
      */
-    public function testMakeNumeric($expected, $var)
+    public function testMakeNumeric(mixed $expected, mixed $var)
     {
         self::assertSame($expected, Number::makeNumeric($var));
     }

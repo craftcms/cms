@@ -26,12 +26,12 @@ class LanguageValidatorTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var LanguageValidator
      */
-    protected $languageValidator;
+    protected LanguageValidator $languageValidator;
 
     /**
      * @dataProvider validateValueDataProvider

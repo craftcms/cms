@@ -67,7 +67,7 @@ class InputTypeTest extends Unit
     public function testMatrixInput(MatrixField $matrixField, array $blockTypes)
     {
         // Trigger addition to the registry
-        $inputType = Matrix::getType($matrixField);
+        Matrix::getType($matrixField);
 
         $fieldTypeName = $matrixField->handle . '_MatrixInput';
         self::assertNotFalse(GqlEntityRegistry::getEntity($fieldTypeName));

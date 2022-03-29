@@ -29,22 +29,22 @@ class UserTest extends TestCase
     /**
      * @var UnitTester
      */
-    public $tester;
+    public UnitTester $tester;
 
     /**
      * @var UserElement
      */
-    public $userElement;
+    public UserElement $userElement;
 
     /**
      * @var Config
      */
-    public $config;
+    public Config $config;
 
     /**
      * @var WebUser
      */
-    public $user;
+    public WebUser $user;
 
     /**
      *
@@ -229,7 +229,7 @@ class UserTest extends TestCase
      *
      * @param int $returnValue
      */
-    private function _passwordValidationStub($returnValue)
+    private function _passwordValidationStub(int $returnValue)
     {
         $this->tester->mockCraftMethods('security', ['validatePassword' => $returnValue]);
     }
@@ -251,9 +251,9 @@ class UserTest extends TestCase
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
      *
-     * @param int $returnValue
+     * @param int|null $returnValue
      */
-    private function _sessionGetStub($returnValue)
+    private function _sessionGetStub(?int $returnValue)
     {
         Session::reset();
 
@@ -278,7 +278,7 @@ class UserTest extends TestCase
     /**
      * @return mixed
      */
-    private function _getUsernameCookieName()
+    private function _getUsernameCookieName(): mixed
     {
         return Craft::$app->getUser()->usernameCookie['name'];
     }

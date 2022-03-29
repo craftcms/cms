@@ -38,12 +38,12 @@ class ViewTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      * @return array
@@ -88,7 +88,7 @@ class ViewTest extends TestCase
      * @param string|null $templateMode
      * @throws Exception
      */
-    public function testResolveTemplate($expected, string $name, ?string $templateMode = null)
+    public function testResolveTemplate(string|false $expected, string $name, ?string $templateMode = null)
     {
         if ($templateMode !== null) {
             $this->view->setTemplateMode($templateMode);
@@ -179,7 +179,7 @@ class ViewTest extends TestCase
      * @throws Exception
      * @throws Throwable
      */
-    public function testRenderObjectTemplate(string $expected, string $template, $object, array $variables = [])
+    public function testRenderObjectTemplate(string $expected, string $template, mixed $object, array $variables = [])
     {
         self::assertSame($expected, $this->view->renderObjectTemplate($template, $object, $variables));
     }

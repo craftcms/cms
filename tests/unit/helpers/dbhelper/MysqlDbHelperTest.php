@@ -26,11 +26,6 @@ use yii\base\NotSupportedException;
 class MysqlDbHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider sqlTypesDataProvider
      * @param string $type
      * @param bool $supported
@@ -48,7 +43,7 @@ class MysqlDbHelperTest extends Unit
      * @param int|null|false $expected
      * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity($expected, string $columnType)
+    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType)
     {
         self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
@@ -71,7 +66,7 @@ class MysqlDbHelperTest extends Unit
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParam($expected, string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false)
+    public function testParseParam(mixed $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false)
     {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }

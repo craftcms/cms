@@ -10,6 +10,7 @@ namespace crafttests\unit\validators;
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\ArrayValidator;
+use UnitTester;
 
 /**
  * Class ArrayValidator.
@@ -25,16 +26,12 @@ class ArrayValidatorTest extends Unit
     /**
      * @var ArrayValidator
      */
-    protected $arrayValidator;
+    protected ArrayValidator $arrayValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
-    /*
-     * @var UnitTester
-     */
-    protected $tester;
+    protected ExampleModel $model;
 
     /**
      * Test that if messages aren't provided when creating the array validator (i.e. not setting the $tooMany message),

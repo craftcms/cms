@@ -21,11 +21,6 @@ use UnitTester;
 class PathHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider ensurePathIsContainedDataProvider
      * @param bool $expected
      * @param string $path

@@ -30,14 +30,9 @@ use yii\base\ErrorException;
 class ErrorHandlerTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var ErrorHandler
      */
-    protected $errorHandler;
+    protected ErrorHandler $errorHandler;
 
     /**
      * Test that Twig runtime errors use the previous error (if it exists).

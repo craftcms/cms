@@ -42,32 +42,32 @@ class UsersTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var Users
      */
-    protected $users;
+    protected Users $users;
 
     /**
      * @var User
      */
-    protected $pendingUser;
+    protected User $pendingUser;
 
     /**
      * @var User
      */
-    protected $lockedUser;
+    protected User $lockedUser;
 
     /**
      * @var User
      */
-    protected $activeUser;
+    protected User $activeUser;
 
     /**
      * @var User
      */
-    protected $suspendedUser;
+    protected User $suspendedUser;
 
     public function _fixtures(): array
     {
@@ -540,9 +540,9 @@ class UsersTest extends TestCase
 
     /**
      * @param int|null $userId
-     * @return array|bool
+     * @return array|null
      */
-    protected function getUserQuery(?int $userId)
+    protected function getUserQuery(?int $userId): ?array
     {
         return (new Query())
             ->select('*')
@@ -555,7 +555,7 @@ class UsersTest extends TestCase
      * @param int|null $userId
      * @return User|null
      */
-    protected function getUser(?int $userId)
+    protected function getUser(?int $userId): ?User
     {
         return Craft::$app->getUsers()->getUserById($userId);
     }

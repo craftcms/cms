@@ -24,7 +24,7 @@ class LocalizationHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider normalizeLanguageDataProvider
@@ -55,7 +55,7 @@ class LocalizationHelperTest extends Unit
      * @param mixed $number
      * @param string|null $localeId
      */
-    public function testNormalizeNumber($expected, $number, ?string $localeId)
+    public function testNormalizeNumber(mixed $expected, mixed $number, ?string $localeId)
     {
         self::assertSame($expected, Localization::normalizeNumber($number, $localeId));
     }

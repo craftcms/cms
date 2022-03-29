@@ -27,13 +27,14 @@ use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
+use UnitTester;
 
 class CreateMutationsTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {
@@ -341,7 +342,7 @@ class CreateMutationsTest extends Unit
         self::assertArrayNotHasKey('appendToRoot', $draftMutation['args']);
     }
 
-    public function assetMutationDataProvider()
+    public function assetMutationDataProvider(): array
     {
         return [
             [
@@ -363,7 +364,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function categoryMutationDataProvider()
+    public function categoryMutationDataProvider(): array
     {
         return [
             [
@@ -385,7 +386,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function tagMutationDataProvider()
+    public function tagMutationDataProvider(): array
     {
         return [
             [
@@ -407,7 +408,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function entryMutationDataProvider()
+    public function entryMutationDataProvider(): array
     {
         return [
             [
@@ -433,7 +434,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function globalSetMutationDataProvider()
+    public function globalSetMutationDataProvider(): array
     {
         return [
             [

@@ -46,7 +46,7 @@ class Asset extends ElementMutationResolver
      * @return AssetElement
      * @throws Throwable if reasons.
      */
-    public function saveAsset(mixed $source, array $arguments, $context, ResolveInfo $resolveInfo): AssetElement
+    public function saveAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): AssetElement
     {
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
@@ -116,7 +116,7 @@ class Asset extends ElementMutationResolver
      * @param ResolveInfo $resolveInfo
      * @throws Throwable if reasons.
      */
-    public function deleteAsset(mixed $source, array $arguments, $context, ResolveInfo $resolveInfo): void
+    public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $assetId = $arguments['id'];
 

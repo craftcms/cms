@@ -34,12 +34,12 @@ class UrlHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var string
      */
-    protected $cpTrigger;
+    protected string $cpTrigger;
 
     /**
      * @dataProvider buildQueryDataProvider
@@ -138,7 +138,7 @@ class UrlHelperTest extends Unit
      * @param string $url
      * @param array|string $params
      */
-    public function testUrlWithParams(string $expected, string $url, $params)
+    public function testUrlWithParams(string $expected, string $url, array|string $params)
     {
         self::assertSame($expected, UrlHelper::urlWithParams($url, $params));
     }
@@ -223,7 +223,7 @@ class UrlHelperTest extends Unit
      * @param string|null $scheme
      * @param int|null $siteId
      */
-    public function testSiteUrl(string $expected, string $path, $params = null, ?string $scheme = null, ?int $siteId = null)
+    public function testSiteUrl(string $expected, string $path, array|string|null $params = null, ?string $scheme = null, ?int $siteId = null)
     {
         $scheme = $scheme ?? 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
@@ -655,7 +655,7 @@ class UrlHelperTest extends Unit
      * Swaps URL tokens.
      *
      * @param string $url
-     * @param string|null $scheme
+     * @param string $scheme
      * @return string
      */
     private function _prepExpectedUrl(string $url, string $scheme): string

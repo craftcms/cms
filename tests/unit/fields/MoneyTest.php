@@ -24,15 +24,9 @@ use UnitTester;
 class MoneyTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Money
      */
     public Money $field;
-
 
     /**
      * @inheritdoc
@@ -80,7 +74,7 @@ class MoneyTest extends Unit
      * @param string|null $locale
      * @return void
      */
-    public function testGetTableAttributeHtml($value, string $expected, ?string $locale = null): void
+    public function testGetTableAttributeHtml(mixed $value, string $expected, ?string $locale = null): void
     {
         if ($locale) {
             $oldLocaleId = Craft::$app->getFormattingLocale()->id;

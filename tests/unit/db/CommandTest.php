@@ -28,12 +28,12 @@ class CommandTest extends Unit
     /**
      * @var DateTime
      */
-    protected $sessionDate;
+    protected DateTime $sessionDate;
 
     /**
      * @var array
      */
-    private $_sessionData = [
+    private array $_sessionData = [
         'userId' => 1,
         'token' => 'test',
     ];
@@ -111,7 +111,7 @@ class CommandTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function updateSession($values): array
+    public function updateSession(array $values): array
     {
         $condition = [
             'userId' => $values['userId'],

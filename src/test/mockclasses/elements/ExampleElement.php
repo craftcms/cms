@@ -21,7 +21,7 @@ class ExampleElement extends Element
     /**
      * @var string|null
      */
-    public $uriFormat;
+    public ?string $uriFormat = null;
 
     /**
      * @var mixed

@@ -24,12 +24,7 @@ class UsernameValidatorTest extends Unit
     /**
      * @var UsernameValidator
      */
-    protected $usernameValidator;
-
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    protected UsernameValidator $usernameValidator;
 
     /**
      * @dataProvider validateValueDataProvider

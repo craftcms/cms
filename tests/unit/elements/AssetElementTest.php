@@ -28,7 +28,7 @@ class AssetElementTest extends TestCase
     /**
      * @var UnitTester
      */
-    public $tester;
+    protected UnitTester $tester;
 
     /**
      *

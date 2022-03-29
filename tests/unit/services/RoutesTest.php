@@ -25,15 +25,9 @@ use UnitTester;
 class RoutesTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Routes
      */
-    protected $routes;
-
+    protected Routes $routes;
 
     /**
      * @dataProvider saveRouteDataProvider

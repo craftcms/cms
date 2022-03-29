@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\conditions\ConditionInterface;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
@@ -475,10 +476,13 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function condition(): ?ElementConditionInterface
     {
-        if ($conditionConfig = $this->request->getBodyParam('condition')) {
-            return Craft::$app->getConditions()->createCondition($conditionConfig);
+        $conditionConfig = $this->request->getBodyParam('condition');
+
+        if (!$conditionConfig) {
+            return null;
         }
-        return null;
+
+        return Craft::$app->getConditions()->createCondition($conditionConfig);
     }
 
     /**

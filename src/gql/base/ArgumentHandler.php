@@ -37,7 +37,7 @@ abstract class ArgumentHandler implements ArgumentHandlerInterface
      * @param mixed $argumentValue
      * @return mixed
      */
-    abstract protected function handleArgument($argumentValue): mixed;
+    abstract protected function handleArgument(mixed $argumentValue): mixed;
 
     /**
      * @inheritdoc

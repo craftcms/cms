@@ -69,9 +69,9 @@ class SearchQueryTest extends Unit
      *
      * @param string|null $key
      * @param array|null $configOptions
-     * @return array|mixed
+     * @return mixed
      */
-    public function getConfigFromOptions(?string $key = null, array $configOptions = null)
+    public function getConfigFromOptions(?string $key = null, array $configOptions = null): mixed
     {
         if (!$configOptions) {
             return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -180,10 +180,10 @@ class SearchQueryTest extends Unit
     /**
      * @dataProvider searchQueryDataProviders
      * @param string $query
-     * @param array $configOptions
+     * @param array|null $configOptions
      * @param int|null $sizeOfArray
      */
-    public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuery(string $query, ?array $configOptions = null, int $sizeOfArray = null)
     {
         $search = new SearchQuery($query);
 

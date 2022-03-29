@@ -993,7 +993,7 @@ class AssetsController extends Controller
      * @return Response
      * @since 4.0.0
      */
-    public function actionIcon(string $extension)
+    public function actionIcon(string $extension): Response
     {
         $path = Assets::iconPath($extension);
 

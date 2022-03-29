@@ -22,11 +22,6 @@ use yii\base\InvalidArgumentException;
 class HtmlHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider encodeParamsDataProvider
      * @param string $expected
      * @param string $html
@@ -42,7 +37,7 @@ class HtmlHelperTest extends Unit
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTag($expected, string $tag)
+    public function testParseTag(array|false $expected, string $tag)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -72,7 +67,7 @@ class HtmlHelperTest extends Unit
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testAppendToTag($expected, string $tag, string $html, ?string $ifExists)
+    public function testAppendToTag(string|false $expected, string $tag, string $html, ?string $ifExists)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -89,7 +84,7 @@ class HtmlHelperTest extends Unit
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testPrependToTag($expected, string $tag, string $html, ?string $ifExists)
+    public function testPrependToTag(string|false $expected, string $tag, string $html, ?string $ifExists)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -104,7 +99,7 @@ class HtmlHelperTest extends Unit
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTagAttributes($expected, string $tag)
+    public function testParseTagAttributes(array|false $expected, string $tag)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -120,7 +115,7 @@ class HtmlHelperTest extends Unit
      * @param string $tag
      * @param array $attributes
      */
-    public function testModifyTagAttributes($expected, string $tag, array $attributes)
+    public function testModifyTagAttributes(string|false $expected, string $tag, array $attributes)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);

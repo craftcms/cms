@@ -30,12 +30,12 @@ class RequestTest extends TestCase
     /**
      * @var Request
      */
-    public $request;
+    protected Request $request;
 
     /**
      * @var UnitTester
      */
-    public $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
@@ -370,7 +370,7 @@ class RequestTest extends TestCase
      * @param string|null $name
      * @throws ReflectionException
      */
-    public function testGetParam($expected, $defaultValue, array $params, ?string $name)
+    public function testGetParam(mixed $expected, mixed $defaultValue, array $params, ?string $name)
     {
         self::assertSame($expected, $this->_getParam($name, $defaultValue, $params));
     }
@@ -593,7 +593,7 @@ class RequestTest extends TestCase
      * @return mixed
      * @throws ReflectionException
      */
-    private function _getParam(?string $name, $defaultValue, array $params)
+    private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
     }
@@ -603,7 +603,7 @@ class RequestTest extends TestCase
      * @return mixed
      * @throws ReflectionException
      */
-    private function _isCsrfValidForUser(string $token)
+    private function _isCsrfValidForUser(string $token): mixed
     {
         return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
     }
@@ -612,7 +612,7 @@ class RequestTest extends TestCase
      * @return mixed
      * @throws ReflectionException
      */
-    private function _generateCsrfToken()
+    private function _generateCsrfToken(): mixed
     {
         return $this->invokeMethod($this->request, 'generateCsrfToken');
     }

@@ -35,7 +35,7 @@ class CraftCodeceptionModuleTest extends Unit
     /**
      * @var UnitTester $tester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *

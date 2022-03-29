@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\ColorValidator;
 use ErrorException;
+use UnitTester;
 
 /**
  * Class ColorValidatorTest.
@@ -24,17 +25,17 @@ class ColorValidatorTest extends Unit
     /**
      * @var ColorValidator
      */
-    protected $colorValidator;
+    protected ColorValidator $colorValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
+    protected ExampleModel $model;
 
-    /*
-     * @var \UnitTester
+    /**
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *

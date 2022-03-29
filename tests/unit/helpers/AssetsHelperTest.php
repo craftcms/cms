@@ -29,7 +29,7 @@ class AssetsHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
@@ -175,7 +175,7 @@ class AssetsHelperTest extends Unit
      * @param array|false $expected
      * @param mixed $size
      */
-    public function testParseSrcsetSize($expected, $size)
+    public function testParseSrcsetSize(array|false $expected, mixed $size)
     {
         if (is_array($expected)) {
             self::assertSame($expected, Assets::parseSrcsetSize($size));

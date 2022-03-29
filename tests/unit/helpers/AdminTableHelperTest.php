@@ -20,11 +20,6 @@ use UnitTester;
 class AdminTableHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider paginationLinksDataProvider
      * @param array $expected
      * @param int $page

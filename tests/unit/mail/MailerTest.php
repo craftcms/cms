@@ -35,12 +35,12 @@ class MailerTest extends TestCase
     /**
      * @var TestMailer
      */
-    public $mailer;
+    public TestMailer $mailer;
 
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * Tests mail from key composition

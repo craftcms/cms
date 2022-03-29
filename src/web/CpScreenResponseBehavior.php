@@ -186,7 +186,7 @@ class CpScreenResponseBehavior extends Behavior
      * Sets the selected subnav item’s key in the global sidebar.
      *
      * @param string|null $value
-     * @return Response|self
+     * @return Response
      */
     public function selectedSubnavItem(?string $value): Response
     {

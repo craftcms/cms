@@ -22,9 +22,11 @@ use yii\web\IdentityInterface;
 class User extends Component
 {
     /**
-     * @var UserElement|IdentityInterface|false
+     * @var IdentityInterface|null
+     * @see getIdentity()
+     * @see setIdentity()
      */
-    private IdentityInterface|UserElement|false $_identity = false;
+    private ?IdentityInterface $_identity = null;
 
     /**
      * Returns whether the current user is an admin.
@@ -55,11 +57,11 @@ class User extends Component
      * Returns the current identity object.
      *
      * @param bool $autoRenew
-     * @return UserElement|null
+     * @return IdentityInterface|null
      */
-    public function getIdentity(bool $autoRenew = true): bool|UserElement|IdentityInterface|null
+    public function getIdentity(bool $autoRenew = true): IdentityInterface|null
     {
-        return $this->_identity ?: null;
+        return $this->_identity;
     }
 
     /**

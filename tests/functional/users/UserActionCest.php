@@ -27,17 +27,17 @@ class UserActionCest
     /**
      * @var string
      */
-    public $cpTrigger;
+    public string $cpTrigger;
 
     /**
-     * @var User
+     * @var User|null
      */
-    public $activeUser;
+    public ?User $activeUser;
 
     /**
-     * @var
+     * @var User|null
      */
-    public $currentUser;
+    public ?User $currentUser;
 
     /**
      * @param FunctionalTester $I
@@ -90,7 +90,7 @@ class UserActionCest
 
         $I->assertSame(
             (string)$this->activeUser->id,
-            (string)$user = Craft::$app->getUser()->getId()
+            (string)Craft::$app->getUser()->getId()
         );
     }
 }

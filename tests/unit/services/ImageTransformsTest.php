@@ -15,11 +15,6 @@ use craft\models\ImageTransform;
 class ImageTransformsTest extends Unit
 {
     /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    /**
      * Makes sure that extending transform correctly updates it.
      *
      * @dataProvider extendTransformDataProvider
@@ -43,7 +38,7 @@ class ImageTransformsTest extends Unit
         self::assertNotSame($extendedTransform, $transform);
     }
 
-    public function extendTransformDataProvider()
+    public function extendTransformDataProvider(): array
     {
         return [
             [

@@ -57,11 +57,11 @@ abstract class ElementResolver extends Resolver
      *
      * @param mixed $source
      * @param array $arguments
-     * @param array $context
+     * @param array|null $context
      * @param ResolveInfo $resolveInfo
      * @return mixed
      */
-    public static function resolveCount(mixed $source, array $arguments, $context, ResolveInfo $resolveInfo): mixed
+    public static function resolveCount(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         return $query->count();

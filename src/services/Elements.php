@@ -2110,7 +2110,7 @@ class Elements extends Component
      * @return EagerLoadPlan[]
      * @since 3.5.0
      */
-    public function createEagerLoadingPlans($with): array
+    public function createEagerLoadingPlans(string|array $with): array
     {
         // Normalize the paths and group based on the top level eager loading handle
         if (is_string($with)) {

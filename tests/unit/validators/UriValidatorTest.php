@@ -23,16 +23,12 @@ class UriValidatorTest extends Unit
     /**
      * @var UriValidator
      */
-    protected $uriValidator;
+    protected UriValidator $uriValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
-    /*
-     * @var UnitTester
-     */
-    protected $tester;
+    protected ExampleModel $model;
 
     /**
      * @dataProvider validateValueDataProvider

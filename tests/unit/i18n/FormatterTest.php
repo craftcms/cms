@@ -20,17 +20,12 @@ use UnitTester;
 class FormatterTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @param string $expected
      * @param mixed $value
      * @param int|null $decimals
      * @dataProvider asPercentDataProvider
      */
-    public function testAsPercent(string $expected, $value, ?int $decimals = null): void
+    public function testAsPercent(string $expected, mixed $value, ?int $decimals = null): void
     {
         self::assertSame($expected, Craft::$app->getFormatter()->asPercent($value, $decimals));
     }

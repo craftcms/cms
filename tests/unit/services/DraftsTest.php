@@ -35,24 +35,19 @@ use yii\base\Exception;
 class DraftsTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Elements
      */
-    protected $elements;
+    protected Elements $elements;
 
     /**
      * @var Drafts
      */
-    protected $drafts;
+    protected Drafts $drafts;
 
     /**
      * @var Revisions
      */
-    protected $revisions;
+    protected Revisions $revisions;
 
     /**
      * @return array
@@ -200,7 +195,7 @@ class DraftsTest extends Unit
 
     /**
      * @param Entry $entry
-     * @return Entry|DraftBehavior
+     * @return Entry
      * @throws Throwable
      */
     protected function _setupEntryDraft(Entry $entry): Entry

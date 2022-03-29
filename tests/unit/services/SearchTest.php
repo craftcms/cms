@@ -32,14 +32,9 @@ use UnitTester;
 class SearchTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Search
      */
-    protected $search;
+    protected Search $search;
 
     public function _fixtures(): array
     {

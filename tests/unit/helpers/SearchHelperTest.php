@@ -21,11 +21,6 @@ use UnitTester;
 class SearchHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider normalizeKeywordsDataProviders
      * @param string $expected
      * @param string|string[] $str
@@ -33,7 +28,7 @@ class SearchHelperTest extends Unit
      * @param bool $processCharMap
      * @param string|null $language
      */
-    public function testNormalizeKeywords(string $expected, $str, array $ignore = [], bool $processCharMap = true, ?string $language = null)
+    public function testNormalizeKeywords(string $expected, array|string $str, array $ignore = [], bool $processCharMap = true, ?string $language = null)
     {
         self::assertSame($expected, Search::normalizeKeywords($str, $ignore, $processCharMap, $language));
     }

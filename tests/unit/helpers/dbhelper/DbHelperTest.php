@@ -48,38 +48,38 @@ class DbHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var DateTimeZone
      */
-    protected $systemTimezone;
+    protected DateTimeZone $systemTimezone;
 
     /**
      * @var DateTimeZone
      */
-    protected $utcTimezone;
+    protected DateTimeZone $utcTimezone;
 
     /**
      * @var DateTimeZone
      */
-    protected $asiaTokyoTimezone;
+    protected DateTimeZone $asiaTokyoTimezone;
 
     /**
      * @var bool
      */
-    protected $isMysql;
+    protected bool $isMysql;
 
     /**
      * @dataProvider parseParamDataProvider
-     * @param mixed $expected
+     * @param string|array $expected
      * @param string $column
-     * @param string|int|array $value
+     * @param mixed $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      * @param string|null $columnType
      */
-    public function testParseParam($expected, string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
+    public function testParseParam(string|array $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
     {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive, $columnType));
     }
@@ -146,7 +146,7 @@ class DbHelperTest extends Unit
      * @throws Exception
      * @todo Set this up with a fixture or a migration so that we can *actually* delete tables
      */
-    public function testDeleteIfExists(int $expected, string $table, $condition = '', array $params = [])
+    public function testDeleteIfExists(int $expected, string $table, string|array $condition = '', array $params = [])
     {
         self::assertSame($expected, Db::deleteIfExists($table, $condition, $params));
     }
@@ -166,7 +166,7 @@ class DbHelperTest extends Unit
      * @param mixed $expected
      * @param mixed $value
      */
-    public function testPrepareValueForDb($expected, $value)
+    public function testPrepareValueForDb(mixed $expected, mixed $value)
     {
         self::assertSame($expected, Db::prepareValueForDb($value));
     }
@@ -239,7 +239,7 @@ class DbHelperTest extends Unit
      * @param int|null|false $expected
      * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity($expected, string $columnType)
+    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType)
     {
         self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
@@ -249,7 +249,7 @@ class DbHelperTest extends Unit
      * @param int|false $expected
      * @param string $columnType
      */
-    public function testGetMaxAllowedValueForNumericColumn($expected, string $columnType)
+    public function testGetMaxAllowedValueForNumericColumn(int|false $expected, string $columnType)
     {
         self::assertSame($expected, Db::getMaxAllowedValueForNumericColumn($columnType));
     }
@@ -259,7 +259,7 @@ class DbHelperTest extends Unit
      * @param int|false $expected
      * @param string $columnType
      */
-    public function testGetMinAllowedValueForNumericColumn($expected, string $columnType)
+    public function testGetMinAllowedValueForNumericColumn(int|false $expected, string $columnType)
     {
         self::assertSame($expected, Db::getMinAllowedValueForNumericColumn($columnType));
     }
@@ -269,7 +269,7 @@ class DbHelperTest extends Unit
      * @param array $expected
      * @param mixed $values
      */
-    public function testPrepareValuesForDb(array $expected, $values)
+    public function testPrepareValuesForDb(array $expected, mixed $values)
     {
         self::assertSame($expected, Db::prepareValuesForDb($values));
     }

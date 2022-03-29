@@ -22,14 +22,9 @@ use UnitTester;
 class FieldTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      *

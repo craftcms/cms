@@ -33,12 +33,12 @@ class ControllerTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var TestController
      */
-    private $controller;
+    private TestController $controller;
 
     /**
      *

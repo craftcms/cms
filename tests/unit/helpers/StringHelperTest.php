@@ -27,11 +27,6 @@ use function mb_strpos;
 class StringHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      *
      */
     public function testAsciiCharMap()
@@ -127,7 +122,7 @@ class StringHelperTest extends Unit
         }
 
         // detect duplicate values in the array
-        foreach (array_count_values($uniqueIds) as $uniqueId => $count) {
+        foreach (array_count_values($uniqueIds) as $count) {
             self::assertSame(1, $count);
         }
 
@@ -730,10 +725,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider linesDataProvider
-     * @param string[] $expected
+     * @param int $expected
      * @param string $string
      */
-    public function testLines(array $expected, string $string)
+    public function testLines(int $expected, string $string)
     {
         $actual = StringHelper::lines($string);
         self::assertCount($expected, $actual);
@@ -778,7 +773,7 @@ class StringHelperTest extends Unit
      * @param string $expected
      * @param string $string
      */
-    public function testMb4Encoding($expected, $string)
+    public function testMb4Encoding(string $expected, string $string)
     {
         $actual = StringHelper::encodeMb4($string);
         self::assertSame($expected, $actual);

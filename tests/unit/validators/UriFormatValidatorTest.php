@@ -10,6 +10,7 @@ namespace crafttests\unit\validators;
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\UriFormatValidator;
+use UnitTester;
 
 /**
  * Class UriFormatValidator.
@@ -23,16 +24,16 @@ class UriFormatValidatorTest extends Unit
     /**
      * @var UriFormatValidator
      */
-    protected $uriFormatValidator;
+    protected UriFormatValidator $uriFormatValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
+    protected ExampleModel $model;
     /*
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider validateAttributeDataProvider

@@ -24,13 +24,14 @@ use GraphQL\Language\Source;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use UnitTester;
 
 class ExtractEagerLoadingParameterTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {
@@ -87,7 +88,7 @@ class ExtractEagerLoadingParameterTest extends Unit
         );
     }
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'gqlTokens' => [
@@ -125,7 +126,7 @@ class ExtractEagerLoadingParameterTest extends Unit
         self::assertEquals($expectedParameters, $extractedConditions);
     }
 
-    public function eagerLoadingParameterExtractionProvider()
+    public function eagerLoadingParameterExtractionProvider(): array
     {
         $complexGql = <<<'GQL'
 {
@@ -354,7 +355,7 @@ GQL;
      * @return object
      * @throws \Exception
      */
-    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, string $returnType)
+    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, string $returnType): ResolveInfo
     {
         $fragments = [];
 

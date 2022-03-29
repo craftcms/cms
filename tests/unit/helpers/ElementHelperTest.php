@@ -30,7 +30,7 @@ class ElementHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
@@ -154,7 +154,7 @@ class ElementHelperTest extends Unit
             ]);
             ElementHelper::setUniqueUri($el);
             $result = true;
-        } catch (Exception $exception) {
+        } catch (Exception) {
             $result = false;
         }
 

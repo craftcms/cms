@@ -145,9 +145,7 @@ class MockElementQuery extends ElementQuery
     }
 
     /**
-     * Return a return value.
-     *
-     * @return Element|null
+     * @inheritdoc
      */
     public function one($db = null): ? Element
     {

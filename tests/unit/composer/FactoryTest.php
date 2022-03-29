@@ -28,12 +28,7 @@ class FactoryTest extends TestCase
     /**
      * @var Factory
      */
-    protected $factory;
-
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    protected Factory $factory;
 
     /**
      * @inheritdoc

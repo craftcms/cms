@@ -35,7 +35,7 @@ class ComponentHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider validateComponentClassDataProvider

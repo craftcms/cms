@@ -11,13 +11,14 @@ use Codeception\Stub\Expected;
 use craft\elements\Category;
 use craft\gql\resolvers\mutations\Category as CategoryResolver;
 use craft\test\TestCase;
+use UnitTester;
 
 class StructureOperationMutationTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {
@@ -69,7 +70,7 @@ class StructureOperationMutationTest extends TestCase
         $this->invokeMethod($resolver, 'performStructureOperations', [$element, $arguments]);
     }
 
-    public function structureOperationDataProvider()
+    public function structureOperationDataProvider(): array
     {
         return [
             [

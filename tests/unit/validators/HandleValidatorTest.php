@@ -10,6 +10,7 @@ namespace crafttests\unit\validators;
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\HandleValidator;
+use UnitTester;
 
 /**
  * Class HandleValidatorTest.
@@ -23,22 +24,17 @@ class HandleValidatorTest extends Unit
     /**
      * @var HandleValidator
      */
-    protected $handleValidator;
+    protected HandleValidator $handleValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
-
-    /*
-     * @var UnitTester
-     */
-    protected $tester;
+    protected ExampleModel $model;
 
     /**
      * @var array
      */
-    protected static $reservedWords = ['bird', 'is', 'the', 'word'];
+    protected static array $reservedWords = ['bird', 'is', 'the', 'word'];
 
     public function testStaticConstants()
     {

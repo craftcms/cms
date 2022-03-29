@@ -18,11 +18,6 @@ use GraphQL\Type\Definition\UnionType;
 class GqlHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    /**
      * Test Schema helper methods.
      *
      * @dataProvider schemaPermissionDataProvider
@@ -152,7 +147,7 @@ class GqlHelperTest extends Unit
         self::assertEquals($expected, GqlHelper::wrapInNonNull($input));
     }
 
-    public function wrapInNonNullProvider()
+    public function wrapInNonNullProvider(): array
     {
         $typeDef = [
             'name' => 'mock',
@@ -176,7 +171,7 @@ class GqlHelperTest extends Unit
     }
 
 
-    public function actionExtractionDataProvider()
+    public function actionExtractionDataProvider(): array
     {
         return [
             [
@@ -221,7 +216,7 @@ class GqlHelperTest extends Unit
         ];
     }
 
-    public function schemaPermissionDataProvider()
+    public function schemaPermissionDataProvider(): array
     {
         return [
             [
@@ -259,7 +254,7 @@ class GqlHelperTest extends Unit
         ];
     }
 
-    public function schemaPermissionDataProviderForExtraction()
+    public function schemaPermissionDataProviderForExtraction(): array
     {
         return [
             [

@@ -31,7 +31,7 @@ class ImageHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *
@@ -51,7 +51,7 @@ class ImageHelperTest extends Unit
      * @param int|float $sourceWidth
      * @param int|float $sourceHeight
      */
-    public function testCalculateMissingDimension(array $expected, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
+    public function testCalculateMissingDimension(array $expected, float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight)
     {
         self::assertSame($expected, Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight));
     }
@@ -79,7 +79,7 @@ class ImageHelperTest extends Unit
      * @param array|false $expected
      * @param string $file
      */
-    public function testPngImageInfo($expected, string $file)
+    public function testPngImageInfo(array|false $expected, string $file)
     {
         self::assertSame($expected, Image::pngImageInfo($file));
     }
@@ -124,7 +124,7 @@ class ImageHelperTest extends Unit
      * @param array|false $expected
      * @param resource $stream
      */
-    public function testImageSizeByStream($expected, $stream)
+    public function testImageSizeByStream(array|false $expected, $stream)
     {
         self::assertSame($expected, Image::imageSizeByStream($stream));
     }

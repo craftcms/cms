@@ -9,6 +9,7 @@ namespace craft\db;
 
 use PDO;
 use Throwable;
+use yii\db\Connection as YiiConnection;
 
 /**
  * @property bool $enableReplicas whether to enable read/write splitting by using [[replicas]] to read data.
@@ -48,11 +49,11 @@ use Throwable;
  * ]
  * ```
  * @property bool $shufflePrimaries whether to shuffle [[primaries]] before getting one.
- * @property-read Connection|null $primary The currently active primary connection. `null` is returned if no primary
+ * @property-read YiiConnection|null $primary The currently active primary connection. `null` is returned if no primary
  * connection is available. This property is read-only.
  * @property-read PDO $primaryPdo The PDO instance for the currently active primary connection. This property is
  * read-only.
- * @property-read Connection $replica The currently active replica connection. This property is read-only.
+ * @property-read YiiConnection $replica The currently active replica connection. This property is read-only.
  * @property-read PDO $replicaPdo The PDO instance for the currently active replica connection. This property
  * is read-only.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -224,10 +225,10 @@ trait PrimaryReplicaTrait
      *
      * @param bool $fallbackToPrimary whether to return the primary connection if no replica connections are
      * available.
-     * @return Connection|null the currently active replica connection. `null` is returned if no replica connections
+     * @return YiiConnection|null the currently active replica connection. `null` is returned if no replica connections
      * are available and `$fallbackToPrimary` is false.
      */
-    public function getReplica(bool $fallbackToPrimary = true): ?Connection
+    public function getReplica(bool $fallbackToPrimary = true): ?YiiConnection
     {
         return $this->getSlave($fallbackToPrimary);
     }
@@ -236,10 +237,10 @@ trait PrimaryReplicaTrait
      * Returns the currently active primary connection.
      * If this method is called for the first time, it will try to open a primary connection.
      *
-     * @return Connection|null the currently active primary connection. `null` is returned if no primary connection
+     * @return YiiConnection|null the currently active primary connection. `null` is returned if no primary connection
      * is available.
      */
-    public function getPrimary(): ?Connection
+    public function getPrimary(): ?YiiConnection
     {
         return $this->getMaster();
     }

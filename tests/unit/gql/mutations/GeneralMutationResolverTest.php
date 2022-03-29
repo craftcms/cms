@@ -15,6 +15,7 @@ use craft\elements\Entry;
 use craft\fields\Matrix;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
+use craft\gql\base\MutationResolver;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\helpers\StringHelper;
@@ -26,14 +27,19 @@ use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use UnitTester;
 
 class GeneralMutationResolverTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
-    protected $resolver;
+    protected UnitTester $tester;
+
+    /**
+     * @var MutationResolver
+     */
+    protected MutationResolver $resolver;
 
     protected function _before()
     {
@@ -170,7 +176,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($entry->title, $arguments['title']);
     }
 
-    public function populatingElementWithDataProvider()
+    public function populatingElementWithDataProvider(): array
     {
         return [
             [

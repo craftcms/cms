@@ -29,22 +29,22 @@ class DateTimeHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var DateTimeZone
      */
-    protected $systemTimezone;
+    protected DateTimeZone $systemTimezone;
 
     /**
      * @var DateTimeZone
      */
-    protected $utcTimezone;
+    protected DateTimeZone $utcTimezone;
 
     /**
      * @var DateTimeZone
      */
-    protected $asiaTokyoTimezone;
+    protected DateTimeZone $asiaTokyoTimezone;
 
     /**
      * @dataProvider constantsDataProvider
@@ -209,7 +209,7 @@ class DateTimeHelperTest extends Unit
      * @param string|false $expected
      * @param string $timeZone
      */
-    public function testNormalizeTimeZone($expected, string $timeZone)
+    public function testNormalizeTimeZone(string|false $expected, string $timeZone)
     {
         self::assertSame($expected, DateTimeHelper::normalizeTimeZone($timeZone));
     }
@@ -219,7 +219,7 @@ class DateTimeHelperTest extends Unit
      * @param bool $expected
      * @param mixed $value
      */
-    public function testIsIso8601(bool $expected, $value)
+    public function testIsIso8601(bool $expected, mixed $value)
     {
         self::assertSame($expected, DateTimeHelper::isIso8601($value));
     }
@@ -368,7 +368,7 @@ class DateTimeHelperTest extends Unit
      * @param string|false $expected
      * @param mixed $date
      */
-    public function testToIso8601($expected, $date)
+    public function testToIso8601(string|false $expected, mixed $date)
     {
         self::assertSame($expected, DateTimeHelper::toIso8601($date));
     }
@@ -386,9 +386,9 @@ class DateTimeHelperTest extends Unit
     /**
      * @dataProvider isValidTimeStampDataProvider
      * @param bool $expected
-     * @param string|int $timestamp
+     * @param mixed $timestamp
      */
-    public function testIsValidTimeStamp(bool $expected, $timestamp)
+    public function testIsValidTimeStamp(bool $expected, mixed $timestamp)
     {
         self::assertSame($expected, DateTimeHelper::isValidTimeStamp($timestamp));
     }
@@ -408,7 +408,7 @@ class DateTimeHelperTest extends Unit
      * @param string|string[] $expected
      * @param string $timeZone
      */
-    public function testTimeZoneOffset($expected, string $timeZone)
+    public function testTimeZoneOffset(string|array $expected, string $timeZone)
     {
         if (is_string($expected)) {
             self::assertSame($expected, DateTimeHelper::timeZoneOffset($timeZone));

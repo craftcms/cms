@@ -25,17 +25,17 @@ class PasswordValidatorTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var UserPasswordValidator
      */
-    protected $passwordValidator;
+    protected UserPasswordValidator $passwordValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
+    protected ExampleModel $model;
 
     /**
      * @dataProvider passwordValidationDataProvider

@@ -25,11 +25,6 @@ use UnitTester;
 class CustomFieldBehaviorTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    public $tester;
-
-    /**
      * @dataProvider existingFieldHandlesDataProvider
      * @param string $handle
      */

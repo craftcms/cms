@@ -77,7 +77,7 @@ class EntryMutationResolverTest extends TestCase
         $this->assertIsObject($entry);
     }
 
-    public function saveEntryDataProvider()
+    public function saveEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], Element::SCENARIO_ESSENTIALS],
@@ -86,7 +86,7 @@ class EntryMutationResolverTest extends TestCase
         ];
     }
 
-    public function saveNewEntryDataProvider()
+    public function saveNewEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], true],

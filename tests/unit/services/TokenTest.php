@@ -27,14 +27,9 @@ use UnitTester;
 class TokenTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Tokens
      */
-    protected $token;
+    protected Tokens $token;
 
     /**
      * @throws Exception

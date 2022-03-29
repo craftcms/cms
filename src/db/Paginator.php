@@ -47,10 +47,10 @@ use yii\di\Instance;
 class Paginator extends BaseObject
 {
     /**
-     * @var YiiConnection|null The DB connection to be used with the query.
+     * @var YiiConnection|array{class: class-string<YiiConnection>}|class-string<YiiConnection>|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
      */
-    public ?YiiConnection $db = null;
+    public YiiConnection|array|string|null $db = null;
 
     /**
      * @var int The number of results to include for each page

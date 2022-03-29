@@ -38,14 +38,9 @@ use yii\web\ServerErrorHttpException;
 class ExtensionTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     public function _fixtures(): array
     {

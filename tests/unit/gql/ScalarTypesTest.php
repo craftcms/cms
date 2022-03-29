@@ -28,14 +28,10 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Language\AST\ValueNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
+use UnitTester;
 
 class ScalarTypesTest extends Unit
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
     /**
      * Test the serialization of scalar data types
      *
@@ -149,7 +145,7 @@ class ScalarTypesTest extends Unit
     /**
      * @return array[]
      */
-    public function serializationDataProvider()
+    public function serializationDataProvider(): array
     {
         $now = new \DateTime();
 
@@ -185,7 +181,7 @@ class ScalarTypesTest extends Unit
     /**
      * @return array[]
      */
-    public function parsingValueDataProvider()
+    public function parsingValueDataProvider(): array
     {
         GqlEntityRegistry::setPrefix('');
 
@@ -211,7 +207,7 @@ class ScalarTypesTest extends Unit
     /**
      * @return array[]
      */
-    public function parsingLiteralDataProvider()
+    public function parsingLiteralDataProvider(): array
     {
         GqlEntityRegistry::setPrefix('');
 

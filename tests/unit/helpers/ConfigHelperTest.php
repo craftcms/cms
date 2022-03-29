@@ -26,14 +26,14 @@ class ConfigHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider sizeInBytesDataProvider
      * @param int|float $expected
      * @param int|string $value
      */
-    public function testSizeInBytes($expected, $value)
+    public function testSizeInBytes(int|float $expected, int|string $value)
     {
         self::assertSame($expected, ConfigHelper::sizeInBytes($value));
     }
@@ -44,7 +44,7 @@ class ConfigHelperTest extends Unit
      * @param mixed $value
      * @throws InvalidConfigException
      */
-    public function testDurationInSeconds(int $expected, $value)
+    public function testDurationInSeconds(int $expected, mixed $value)
     {
         self::assertSame($expected, ConfigHelper::durationInSeconds($value));
     }
@@ -81,7 +81,7 @@ class ConfigHelperTest extends Unit
      * @param mixed $value
      * @param string|null $siteHandle
      */
-    public function testLocalizedValue($expected, $value, ?string $siteHandle = null)
+    public function testLocalizedValue(mixed $expected, mixed $value, ?string $siteHandle = null)
     {
         self::assertSame($expected, ConfigHelper::localizedValue($value, $siteHandle));
     }

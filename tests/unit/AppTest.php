@@ -25,11 +25,6 @@ use yii\base\InvalidConfigException;
 class AppTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    public $tester;
-
-    /**
      * @dataProvider craftAppGetMethodsDataProvider
      * @param string $instance
      * @param array $map
@@ -52,6 +47,7 @@ class AppTest extends Unit
         $content = TestSetup::getCraftServiceMap();
 
         // Dont test mailer. The test get's all fussy about it being a mock.
+        /** @noinspection PhpParamsInspection */
         ArrayHelper::removeValue(
             $content, [Mailer::class, ['getMailer', 'mailer']]
         );

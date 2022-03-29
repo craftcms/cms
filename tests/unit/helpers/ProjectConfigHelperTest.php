@@ -17,11 +17,6 @@ use craft\services\ProjectConfig;
 class ProjectConfigHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider packedUnpackedDataProvider
      * @param array $unpackedData
      * @param array $packedData
@@ -155,7 +150,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function cleanupConfigDataProvider()
+    public function cleanupConfigDataProvider(): array
     {
         return [
             [
@@ -218,7 +213,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function splitIntoComponentsProvider()
+    public function splitIntoComponentsProvider(): array
     {
         return [
             [
@@ -370,7 +365,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function encodeTestDataProvider()
+    public function encodeTestDataProvider(): array
     {
         return [
             [
@@ -408,7 +403,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function touchDataProvider()
+    public function touchDataProvider(): array
     {
         $input1 = <<<EOL
 dateModified: 1603054241

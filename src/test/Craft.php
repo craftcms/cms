@@ -309,7 +309,7 @@ class Craft extends Yii2
      * @param mixed $path
      * @return string|false
      */
-    public static function normalizePathSeparators($path): string|false
+    public static function normalizePathSeparators(mixed $path): string|false
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
     }

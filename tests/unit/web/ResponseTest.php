@@ -22,12 +22,12 @@ class ResponseTest extends Unit
     /**
      * @var Response
      */
-    public $response;
+    public Response $response;
 
     /**
      * @dataProvider getContentTypeDataProvider
      * @param string|null $expected
-     * @param string $format
+     * @param string|null $format
      * @param string|null $contentType
      */
     public function testGetContentType(?string $expected, ?string $format = null, ?string $contentType = null)
@@ -76,7 +76,7 @@ class ResponseTest extends Unit
      * @param mixed $url
      * @dataProvider testRedirectDataProvider
      */
-    public function testRedirect(string $expected, $url)
+    public function testRedirect(string $expected, mixed $url)
     {
         $this->assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
     }

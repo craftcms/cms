@@ -28,32 +28,32 @@ class UserQueryTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var Users
      */
-    protected $users;
+    protected Users $users;
 
     /**
      * @var User
      */
-    protected $pendingUser;
+    protected User $pendingUser;
 
     /**
      * @var User
      */
-    protected $lockedUser;
+    protected User $lockedUser;
 
     /**
      * @var User
      */
-    protected $activeUser;
+    protected User $activeUser;
 
     /**
      * @var User
      */
-    protected $suspendedUser;
+    protected User $suspendedUser;
 
     public function _fixtures(): array
     {
