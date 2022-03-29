@@ -63,7 +63,6 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
      */
     public static function generateType(mixed $context): ObjectType
     {
-        /** @var GlobalSetElement $globalSet */
         $typeName = self::getName($context);
 
         $contentFieldGqlTypes = self::getContentFields($context);
