@@ -305,7 +305,7 @@ class Matrix extends Component
                     $layout->id = $blockTypeRecord->fieldLayoutId;
                     $layout->type = MatrixBlock::class;
                     $layout->uid = key($data['fieldLayouts']);
-                    $fieldsService->saveLayout($layout);
+                    $fieldsService->saveLayout($layout, false);
                     $blockTypeRecord->fieldLayoutId = $layout->id;
                 } elseif ($blockTypeRecord->fieldLayoutId) {
                     // Delete the field layout
