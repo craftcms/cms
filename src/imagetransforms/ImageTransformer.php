@@ -393,7 +393,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             ]);
             $this->trigger(static::EVENT_TRANSFORM_IMAGE, $event);
 
-            $stream = fopen($event->path, 'rb');
+            $stream = fopen($tempPath, 'rb');
             $transformFs->writeFileFromStream($transformPath, $stream, []);
 
             if (file_exists($event->path)) {
