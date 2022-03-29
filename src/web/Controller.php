@@ -234,7 +234,6 @@ abstract class Controller extends \yii\web\Controller
         $this->setFailFlash($message);
 
         if (!empty($routeParams)) {
-            /** @phpstan-ignore-next-line */
             Craft::$app->getUrlManager()->setRouteParams($routeParams);
         }
 
