@@ -144,8 +144,8 @@ class MailerHelper
         $security = Craft::$app->getSecurity();
 
         // Use the transport adapter settings if it was sent
+        /** @var BaseTransportAdapter $transportAdapter */
         if ($transportAdapter !== null) {
-            /** @var BaseTransportAdapter $transportAdapter */
             foreach ($transportAdapter->settingsAttributes() as $names) {
                 foreach ($names as $name) {
                     $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;

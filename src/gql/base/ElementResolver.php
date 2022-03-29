@@ -84,6 +84,7 @@ abstract class ElementResolver extends Resolver
 
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
+        /** @var ElementQuery $query */
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
         // If that's already preloaded, then, uhh, skip the preloading?
@@ -111,7 +112,6 @@ abstract class ElementResolver extends Resolver
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
 
-        /** @var ElementQuery $query */
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {
                 $query = $query->{$method}($parameters);

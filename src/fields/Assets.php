@@ -136,7 +136,7 @@ class Assets extends BaseRelationField
     public bool $allowUploads = true;
 
     /**
-     * @var bool|null Whether the available assets should be restricted to
+     * @var bool Whether the available assets should be restricted to
      * [[allowedKinds]]
      */
     public bool $restrictFiles = false;

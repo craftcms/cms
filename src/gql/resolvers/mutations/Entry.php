@@ -190,8 +190,8 @@ class Entry extends ElementMutationResolver
     protected function getEntryElement(array $arguments): EntryElement
     {
         /** @var Section $section */
-        /** @var EntryType $entryType */
         $section = $this->getResolutionData('section');
+        /** @var EntryType $entryType */
         $entryType = $this->getResolutionData('entryType');
 
         // Figure out whether the mutation is about an already saved entry
@@ -244,8 +244,8 @@ class Entry extends ElementMutationResolver
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
         /** @var Section $section */
-        /** @var EntryType $entryType */
         $section = $this->getResolutionData('section');
+        /** @var EntryType $entryType */
         $entryType = $this->getResolutionData('entryType');
 
         if (!empty($arguments['draftId'])) {

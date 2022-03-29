@@ -405,8 +405,8 @@ class ElementIndexesController extends BaseElementsController
             /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($this->source['condition']);
             $condition->queryParams = [];
+            /** @var ElementConditionRuleInterface $rule */
             foreach ($sourceCondition->getConditionRules() as $rule) {
-                /** @var ElementConditionRuleInterface $rule */
                 foreach ($rule->getExclusiveQueryParams() as $param) {
                     $condition->queryParams[] = $param;
                 }
@@ -414,8 +414,8 @@ class ElementIndexesController extends BaseElementsController
         }
 
         if ($this->condition) {
+            /** @var ElementConditionRuleInterface $rule */
             foreach ($this->condition->getConditionRules() as $rule) {
-                /** @var ElementConditionRuleInterface $rule */
                 foreach ($rule->getExclusiveQueryParams() as $param) {
                     $condition->queryParams[] = $param;
                 }
