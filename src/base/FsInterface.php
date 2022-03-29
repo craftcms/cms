@@ -71,7 +71,7 @@ interface FsInterface extends SavableComponentInterface
     public function read(string $path): string;
 
     /**
-     * Writes a file to a volume from a given stream.
+     * Writes a file to a fs from a given stream.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
