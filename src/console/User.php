@@ -7,6 +7,7 @@
 
 namespace craft\console;
 
+use craft\elements\User as UserElement;
 use yii\base\Component;
 use yii\base\InvalidValueException;
 use yii\web\IdentityInterface;
@@ -21,7 +22,7 @@ use yii\web\IdentityInterface;
 class User extends Component
 {
     /**
-     * @var IdentityInterface|null
+     * @var UserElement|null
      * @see getIdentity()
      * @see setIdentity()
      */
@@ -56,9 +57,9 @@ class User extends Component
      * Returns the current identity object.
      *
      * @param bool $autoRenew
-     * @return IdentityInterface|null
+     * @return UserElement|null
      */
-    public function getIdentity(bool $autoRenew = true): IdentityInterface|null
+    public function getIdentity(bool $autoRenew = true): UserElement|null
     {
         return $this->_identity;
     }
