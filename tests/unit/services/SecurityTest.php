@@ -10,7 +10,6 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\services\Security;
-use UnitTester;
 
 /**
  * Unit tests for the security service

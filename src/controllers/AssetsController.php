@@ -25,7 +25,6 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
-use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;

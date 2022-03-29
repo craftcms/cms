@@ -13,7 +13,6 @@ use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\fields\PlainText;
 use InvalidArgumentException;
-use UnitTester;
 
 /**
  * Unit tests for CustomFieldBehavior

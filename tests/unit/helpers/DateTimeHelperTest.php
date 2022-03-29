@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers;
 
-use Closure;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\DateTimeHelper;

@@ -10,7 +10,6 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\Number;
 use craft\test\mockclasses\ToString;
-use UnitTester;
 
 /**
  * Class NumberHelperTest.

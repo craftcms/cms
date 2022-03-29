@@ -22,7 +22,6 @@ use craft\services\Elements;
 use craft\services\Revisions;
 use crafttests\fixtures\EntryFixture;
 use Throwable;
-use UnitTester;
 use yii\base\Exception;
 
 /**

@@ -17,7 +17,6 @@ use Twig\Error\Error;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use UnitTester;
 use yii\base\ErrorException;
 
 /**

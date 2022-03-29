@@ -11,7 +11,6 @@ use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
 use stdClass;
-use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use function mb_strlen;

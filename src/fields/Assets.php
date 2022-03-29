@@ -13,7 +13,6 @@ use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;

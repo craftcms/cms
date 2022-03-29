@@ -10,7 +10,6 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
 use stdClass;
-use UnitTester;
 
 /**
  * Unit tests for the Array Helper class.

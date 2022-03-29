@@ -12,7 +12,6 @@ use Craft;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\services\Routes;
-use UnitTester;
 
 /**
  * Unit tests for routes service.

@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\AdminTable;
-use UnitTester;
 
 /**
  * Unit tests for the Admin Table Helper class.

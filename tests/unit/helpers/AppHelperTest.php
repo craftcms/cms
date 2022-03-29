@@ -14,7 +14,6 @@ use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
 use stdClass;
-use UnitTester;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 

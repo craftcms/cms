@@ -12,7 +12,6 @@ use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
-use yii\base\Model;
 use yii\db\Connection as YiiConnection;
 
 /**

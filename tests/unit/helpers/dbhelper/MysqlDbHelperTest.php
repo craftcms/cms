@@ -12,7 +12,6 @@ use Craft;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
-use UnitTester;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 

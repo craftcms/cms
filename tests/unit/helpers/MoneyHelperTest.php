@@ -12,7 +12,6 @@ use Craft;
 use craft\helpers\MoneyHelper;
 use Money\Currency;
 use Money\Money;
-use UnitTester;
 
 /**
  * Unit tests for the Money Helper class.

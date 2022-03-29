@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\fields\Money;
 use Money\Currency;
-use UnitTester;
 
 /**
  * Unit tests for the Money custom field.

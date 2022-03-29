@@ -15,7 +15,6 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use UnitTester;
 
 /**
  * Unit tests for the token service

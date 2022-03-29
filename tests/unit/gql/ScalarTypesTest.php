@@ -28,7 +28,6 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Language\AST\ValueNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
-use UnitTester;
 
 class ScalarTypesTest extends Unit
 {

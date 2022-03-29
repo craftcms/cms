@@ -208,8 +208,8 @@ class InterfaceAndGeneratorTest extends Unit
             [AssetInterface::class, [$this, 'mockVolumes'], [AssetElement::class, 'gqlTypeNameByContext']],
             [
                 ElementInterface::class, function() {
-                return ['Element'];
-            }, [BaseElement::class, 'gqlTypeNameByContext'],
+                    return ['Element'];
+                }, [BaseElement::class, 'gqlTypeNameByContext'],
             ],
             [EntryInterface::class, [$this, 'mockEntryTypes'], [EntryElement::class, 'gqlTypeNameByContext']],
             [GlobalSetInterface::class, [$this, 'mockGlobalSets'], [GlobalSetElement::class, 'gqlTypeNameByContext']],
@@ -218,8 +218,8 @@ class InterfaceAndGeneratorTest extends Unit
             [MatrixBlockInterface::class, [$this, 'mockMatrixBlocks'], [MatrixBlockElement::class, 'gqlTypeNameByContext']],
             [
                 UserInterface::class, function() {
-                return ['User'];
-            }, [UserElement::class, 'gqlTypeNameByContext'],
+                    return ['User'];
+                }, [UserElement::class, 'gqlTypeNameByContext'],
             ],
         ];
     }

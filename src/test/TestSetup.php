@@ -68,13 +68,13 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use PHPUnit\Framework\MockObject\MockObject;
+use yii\base\Application as BaseApplication;
 use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\mutex\Mutex;
-use yii\base\Application as BaseApplication;
 
 /**
  * Class TestSetup.

@@ -7,7 +7,6 @@
 
 namespace craft\console;
 
-use craft\elements\User as UserElement;
 use yii\base\Component;
 use yii\base\InvalidValueException;
 use yii\web\IdentityInterface;

@@ -9,7 +9,6 @@ namespace crafttests\unit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\UsernameValidator;
-use UnitTester;
 use yii\base\NotSupportedException;
 
 /**

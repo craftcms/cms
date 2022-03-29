@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Html;
-use UnitTester;
 use yii\base\InvalidArgumentException;
 
 /**

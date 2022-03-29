@@ -15,7 +15,6 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
 use crafttests\fixtures\UserFixture;
-use UnitTester;
 
 /**
  * Unit tests for the search service

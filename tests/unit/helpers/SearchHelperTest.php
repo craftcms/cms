@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Search;
-use UnitTester;
 
 /**
  * Unit tests for the Search Helper class.

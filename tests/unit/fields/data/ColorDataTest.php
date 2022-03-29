@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\fields\data\ColorData;
-use UnitTester;
 
 /**
  * Unit tests for the ColorData class.

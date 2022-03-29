@@ -11,7 +11,6 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
 use crafttests\fixtures\EntryWithFieldsFixture;
-use UnitTester;
 use yii\base\NotSupportedException;
 
 /**

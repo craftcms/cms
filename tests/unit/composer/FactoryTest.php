@@ -14,7 +14,6 @@ use Composer\Util\Loop;
 use Composer\Util\ProcessExecutor;
 use craft\composer\Factory;
 use craft\test\TestCase;
-use UnitTester;
 
 /**
  * Unit tests for craft\composer\Factory

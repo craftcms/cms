@@ -10,7 +10,6 @@ namespace crafttests\unit\web\twig;
 use Codeception\Test\Unit;
 use Craft;
 use craft\web\View;
-use UnitTester;
 
 /**
  * Unit tests for the Various functions in the Extension class.

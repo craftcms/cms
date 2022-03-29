@@ -10,7 +10,6 @@ namespace crafttests\unit\validators;
 use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\ArrayValidator;
-use UnitTester;
 
 /**
  * Class ArrayValidator.

@@ -399,7 +399,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             if (file_exists($event->path)) {
                 FileHelper::unlink($event->path);
             }
-
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }

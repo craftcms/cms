@@ -11,7 +11,6 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
-use UnitTester;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 

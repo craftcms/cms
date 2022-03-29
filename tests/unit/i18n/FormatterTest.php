@@ -9,7 +9,6 @@ namespace crafttests\unit\i18n;
 
 use Codeception\Test\Unit;
 use Craft;
-use UnitTester;
 
 /**
  * Unit tests for the Formatter class.

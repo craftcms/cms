@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Path;
-use UnitTester;
 
 /**
  * Class PathHelperTest.

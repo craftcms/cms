@@ -21,7 +21,6 @@ use crafttests\fixtures\GlobalSetFixture;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
 use TypeError;
-use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;

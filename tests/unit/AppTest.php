@@ -12,7 +12,6 @@ use Craft;
 use craft\helpers\ArrayHelper;
 use craft\mail\Mailer;
 use craft\test\TestSetup;
-use UnitTester;
 use yii\base\InvalidConfigException;
 
 /**
