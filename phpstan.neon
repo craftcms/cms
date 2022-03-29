@@ -42,3 +42,4 @@ parameters:
         - '#Variable \$behavior in PHPDoc tag @var does not exist#'
         - '#Variable \$field in PHPDoc tag @var does not exist#'
         - '#Variable \$revision in PHPDoc tag @var does not exist#'
+        - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
