@@ -638,6 +638,11 @@ class Gql extends Component
         $queries = [];
         $mutations = [];
 
+        // Sites
+        $components = $this->_getSiteSchemaComponents();
+        $label = Craft::t('app', 'Sites');
+        $queries[$label] = $components['query'] ?? [];
+
         // Elements
         $components = $this->_getElementSchemaComponents();
         $label = Craft::t('app', 'All elements');
@@ -1418,6 +1423,26 @@ class Gql extends Component
             ],
         ];
     }
+
+    /**
+     * Return site schema components.
+     *
+     * @return array
+     */
+    private function _getSiteSchemaComponents(): array
+    {
+        $sites = Craft::$app->getSites()->getAllSites(true);
+        $query = [];
+
+        foreach ($sites as $site) {
+            $query["sites.{$site->uid}:read"] = ['label' => Craft::t('app', 'Allow querying elements from the “{site}” site.', ['site' => $site->name])];
+        }
+
+        return [
+            'query' => $query
+        ];
+    }
+
 
     /**
      * Return section permissions.
