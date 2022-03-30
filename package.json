@@ -15,7 +15,7 @@
     "@craftcms/sass": "./packages/craftcms-sass",
     "@pixelandtonic/craftui": "~0.3.8",
     "accounting": "^0.4.1",
-    "axios": "^0.26.0",
+    "axios": "^0.26.1",
     "blueimp-file-upload": "^10.31.0",
     "d3": "^4.11.0",
     "d3-format": "^1.4.4",
