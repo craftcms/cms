@@ -16,6 +16,7 @@
 
 ### Removed
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
+- Removed `craft\services\ImageTransforms::getAllImageTransformerTypes()`.
 
 ### Fixed
 - Fixed a bug where Categories fields were showing spinners indefinitely. ([#10801](https://github.com/craftcms/cms/issues/10801))

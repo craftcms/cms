@@ -466,26 +466,6 @@ class ImageTransforms extends Component
     }
 
     /**
-     * Get all image transformer types.
-     *
-     * @return array
-     */
-    public function getAllImageTransformerTypes(): array
-    {
-        $transformerTypes = [
-            ImageTransformer::class,
-        ];
-
-        $event = new RegisterComponentTypesEvent([
-            'types' => $transformerTypes,
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
-
-        return $event->types;
-    }
-
-    /**
      * @template T of ImageTransformerInterface
      * @param class-string<T> $type
      * @param array $config
