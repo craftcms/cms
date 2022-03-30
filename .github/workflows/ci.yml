@@ -146,7 +146,7 @@ jobs:
       uses: codecov/codecov-action@v2
 
   notify_failure:
-    if: ${{ ! success() }}
+    if: always()
     runs-on: ubuntu-latest
     steps:
     - name: Slack notification failure
@@ -163,7 +163,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   notify_success:
-    if: ${{ success() }}
+    if: always()
     runs-on: ubuntu-latest
     needs: tests
     steps:
