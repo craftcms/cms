@@ -11,7 +11,7 @@ on:
     branches:
       - "**"
 jobs:
-  run:
+  craft_build:
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
@@ -131,18 +131,6 @@ jobs:
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
       uses: codecov/codecov-action@v2
 
-    - name: Slack notification success
-      uses: ravsamhq/notify-slack-action@v1
-      if: ${{ matrix.result == 'success' }}
-      with:
-        status: ${{ job.status }}
-        notification_title: '{workflow} has {status_message}'
-        message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
-        footer: '<{repo_url}|{repo}>'
-        notify_when: 'success'
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
       if: ${{ ! success() }}
@@ -156,3 +144,17 @@ jobs:
         mention_groups_when: 'failure,warnings'
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  notify:
+    if: always()
+    needs: craft_build
+    steps:
+      - uses: ravsamhq/notify-slack-action@v1
+        with:
+          status: ${{ job.status }}
+          notification_title: '{workflow} has {status_message}'
+          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
+          footer: '<{repo_url}|{repo}>'
+          notify_when: 'success'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
