@@ -822,16 +822,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     protected function requestParamName(ElementInterface $element): ?string
     {
-        if (!$element) {
-            return null;
-        }
-
         $namespace = $element->getFieldParamNamespace();
-
-        if (!$namespace === null) {
-            return null;
-        }
-
         return ($namespace ? $namespace . '.' : '') . $this->handle;
     }
 
