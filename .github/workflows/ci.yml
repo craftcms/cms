@@ -147,6 +147,7 @@ jobs:
 
   notify:
     if: always()
+    runs-on: ubuntu-latest
     needs: craft_build
     steps:
       - uses: ravsamhq/notify-slack-action@v1
