@@ -71,7 +71,7 @@ class ImageTransforms
      * Detect the auto web-safe format for the Asset. Returns null, if the Asset is not an image.
      *
      * @param Asset $asset
-     * @return mixed
+     * @return string
      * @throws AssetOperationException If attempting to detect an image format for a non-image.
      */
     public static function detectTransformFormat(Asset $asset): string
@@ -123,7 +123,8 @@ class ImageTransforms
 
             foreach ($parameters as $parameter => $value) {
                 if (in_array($parameter, $whiteList, true)) {
-                    $transform->{$parameter} = $value;
+                    /** @phpstan-ignore-next-line */
+                    $transform->$parameter = $value;
                 }
             }
 

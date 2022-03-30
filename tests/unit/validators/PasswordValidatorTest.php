@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -25,26 +25,25 @@ class PasswordValidatorTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var UserPasswordValidator
      */
-    protected $passwordValidator;
+    protected UserPasswordValidator $passwordValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
+    protected ExampleModel $model;
 
     /**
      * @dataProvider passwordValidationDataProvider
-     *
-     * @param      $inputValue
+     * @param string $inputValue
      * @param bool $mustValidate
      * @param string|null $currentPass
      */
-    public function testValidation($inputValue, bool $mustValidate, string $currentPass = null)
+    public function testValidation(string $inputValue, bool $mustValidate, string $currentPass = null)
     {
         $this->model->exampleParam = $inputValue;
 
@@ -63,13 +62,12 @@ class PasswordValidatorTest extends Unit
 
     /**
      * @dataProvider customConfigDataProvider
-     *
-     * @param $input
-     * @param $mustValidate
-     * @param $min
-     * @param $max
+     * @param mixed $input
+     * @param bool $mustValidate
+     * @param int $min
+     * @param int $max
      */
-    public function testCustomConfig($input, $mustValidate, $min, $max)
+    public function testCustomConfig(mixed $input, bool $mustValidate, int $min, int $max)
     {
         $passVal = new UserPasswordValidator(['min' => $min, 'max' => $max]);
         $this->model->exampleParam = $input;
@@ -84,12 +82,11 @@ class PasswordValidatorTest extends Unit
 
     /**
      * @dataProvider forceDiffValidationDataProvider
-     *
-     * @param $mustValidate
-     * @param $input
-     * @param $currentPassword
+     * @param bool $mustValidate
+     * @param string $input
+     * @param string $currentPassword
      */
-    public function testForceDiffValidation($mustValidate, $input, $currentPassword)
+    public function testForceDiffValidation(bool $mustValidate, string $input, string $currentPassword)
     {
         $this->passwordValidator->forceDifferent = true;
         $this->passwordValidator->currentPassword = Craft::$app->getSecurity()->hashPassword($currentPassword);

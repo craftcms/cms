@@ -1,15 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Path;
-use UnitTester;
 
 /**
  * Class PathHelperTest.
@@ -21,13 +20,7 @@ use UnitTester;
 class PathHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider ensurePathIsContainedDataProvider
-     *
      * @param bool $expected
      * @param string $path
      */

@@ -36,12 +36,12 @@ class SearchQueryTest extends Unit
     ];
 
     /**
-     * @param $token
-     * @param $configOptions
-     * @param $index
+     * @param SearchQueryTerm $token
+     * @param array|null $configOptions
+     * @param string|null $index
      * @return SearchQueryTerm
      */
-    public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
+    public function getWhatItShouldBe(SearchQueryTerm $token, ?array $configOptions, ?string $index): SearchQueryTerm
     {
         // Get whether the data provider gave us custom config options for this term based on the above searchParam
         $config = $this->getConfigFromOptions($index, $configOptions);
@@ -50,8 +50,8 @@ class SearchQueryTest extends Unit
     }
 
     /**
-     * @param $term
-     * @param $config
+     * @param string $term
+     * @param array $config
      * @return SearchQueryTerm
      */
     public function createDefaultSearchQueryTermFromString(string $term, array $config): SearchQueryTerm
@@ -69,9 +69,9 @@ class SearchQueryTest extends Unit
      *
      * @param string|null $key
      * @param array|null $configOptions
-     * @return array|mixed
+     * @return mixed
      */
-    public function getConfigFromOptions(string $key = null, array $configOptions = null)
+    public function getConfigFromOptions(?string $key = null, array $configOptions = null): mixed
     {
         if (!$configOptions) {
             return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -179,12 +179,11 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryDataProviders
-     *
      * @param string $query
-     * @param array $configOptions
+     * @param array|null $configOptions
      * @param int|null $sizeOfArray
      */
-    public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuery(string $query, ?array $configOptions = null, int $sizeOfArray = null)
     {
         $search = new SearchQuery($query);
 
@@ -203,7 +202,6 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryDataProviders
-     *
      * @param string $query
      * @param array|null $configOptions
      */

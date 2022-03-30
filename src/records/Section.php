@@ -11,6 +11,7 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Class Section record.
@@ -26,6 +27,7 @@ use yii\db\ActiveQueryInterface;
  * @property array|null $previewTargets Preview targets
  * @property Section_SiteSettings[] $siteSettings Site settings
  * @property Structure $structure Structure
+ * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

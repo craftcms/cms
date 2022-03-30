@@ -27,7 +27,7 @@ class CpHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
@@ -140,7 +140,6 @@ class CpHelperTest extends Unit
 
     /**
      * @dataProvider fieldMethodsDataProvider
-     *
      * @param string $needle
      * @param string $method
      * @param array $config

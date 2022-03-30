@@ -34,16 +34,15 @@ class UrlHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var string
      */
-    protected $cpTrigger;
+    protected string $cpTrigger;
 
     /**
      * @dataProvider buildQueryDataProvider
-     *
      * @param string $expected
      * @param array $params
      */
@@ -54,7 +53,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider isRootRelativeUrlDataProvider
-     *
      * @param string $url
      * @param bool $expected
      */
@@ -65,7 +63,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider isAbsoluteUrlDataProvider
-     *
      * @param bool $expected
      * @param string $url
      */
@@ -76,7 +73,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider isFulUrlDataProvider
-     *
      * @param bool $expected
      * @param string $url
      */
@@ -91,7 +87,6 @@ class UrlHelperTest extends Unit
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
      *
      * @dataProvider cpUrlCreationDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array $params
@@ -116,7 +111,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithSchemeDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param string $scheme
@@ -128,7 +122,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithTokenDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param string $token
@@ -141,19 +134,17 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithParametersDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param array|string $params
      */
-    public function testUrlWithParams(string $expected, string $url, $params)
+    public function testUrlWithParams(string $expected, string $url, array|string $params)
     {
         self::assertSame($expected, UrlHelper::urlWithParams($url, $params));
     }
 
     /**
      * @dataProvider stripQueryStringDataProvider
-     *
      * @param string $expected
      * @param string $url
      */
@@ -174,7 +165,6 @@ class UrlHelperTest extends Unit
      * Tests the UrlHelper::rootRelativeUrl() method.
      *
      * @dataProvider rootRelativeUrlDataProvider
-     *
      * @param string $url
      * @param string $expected
      */
@@ -187,7 +177,6 @@ class UrlHelperTest extends Unit
      * Tests the UrlHelper::url() method.
      *
      * @dataProvider urlFunctionDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array|null $params
@@ -203,7 +192,6 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider hostInfoDataProvider
-     *
      * @param string $expected
      * @param string $url
      */
@@ -229,14 +217,13 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider siteUrlDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array|string|null $params
      * @param string|null $scheme
      * @param int|null $siteId
      */
-    public function testSiteUrl(string $expected, string $path, $params = null, ?string $scheme = null, ?int $siteId = null)
+    public function testSiteUrl(string $expected, string $path, array|string|null $params = null, ?string $scheme = null, ?int $siteId = null)
     {
         $scheme = $scheme ?? 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
@@ -668,7 +655,7 @@ class UrlHelperTest extends Unit
      * Swaps URL tokens.
      *
      * @param string $url
-     * @param string|null $scheme
+     * @param string $scheme
      * @return string
      */
     private function _prepExpectedUrl(string $url, string $scheme): string

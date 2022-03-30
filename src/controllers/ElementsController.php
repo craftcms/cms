@@ -336,14 +336,14 @@ class ElementsController extends Controller
         if ($canEditMultipleSites) {
             if ($element->enabled && $element->id) {
                 $siteStatusesQuery = $element::find()
-                    ->select(['elements_sites.siteId', 'elements_sites.enabled'])
                     ->drafts($isDraft)
                     ->provisionalDrafts($element->isProvisionalDraft)
                     ->revisions($isRevision)
                     ->id($element->id)
                     ->siteId($propEditableSiteIds)
                     ->status(null)
-                    ->asArray();
+                    ->asArray()
+                    ->select(['elements_sites.siteId', 'elements_sites.enabled']);
                 $siteStatuses = array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
             } else {
                 // If the element isn't saved yet, assume other sites will share its current status
@@ -773,7 +773,6 @@ JS;
 
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $components[] = $element->getSidebarHtml(!$canSave);
-        ;
 
         if ($this->id) {
             $components[] = Cp::metadataHtml($element->getMetadata());

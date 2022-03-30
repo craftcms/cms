@@ -508,7 +508,7 @@ class FieldLayout extends Model
     /**
      * Returns the first layout element of a given type.
      *
-     * @template T
+     * @template T of FieldLayoutElement
      * @param class-string<T> $class
      * @return T|null The layout element, or `null` if none were found
      * @since 4.0.0
@@ -522,7 +522,7 @@ class FieldLayout extends Model
     /**
      * Returns the first visible layout element of a given type, taking conditions into account.
      *
-     * @template T
+     * @template T of FieldLayoutElement
      * @param class-string<T> $class
      * @param ElementInterface $element
      * @return T|null The layout element, or `null` if none were found

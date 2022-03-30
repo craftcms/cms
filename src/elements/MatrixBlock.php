@@ -12,7 +12,6 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
@@ -111,7 +110,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): MatrixBlockQuery
     {
         return new MatrixBlockQuery(static::class);
     }

@@ -13,11 +13,13 @@ use craft\base\FieldInterface;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
+use yii\base\Model;
 
 /**
  * Field Layout behavior.
  *
  * @property FieldLayout $fieldLayout
+ * @property ElementInterface|Model $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

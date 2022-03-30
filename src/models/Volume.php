@@ -93,7 +93,7 @@ class Volume extends Model
     private ?string $_fsHandle = null;
 
     /**
-     * @var FsInterface
+     * @var FsInterface|null
      * @see getTransformFs()
      * @see setTransformFs()
      */

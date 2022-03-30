@@ -12,7 +12,6 @@ use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
-use yii\base\Model;
 use yii\db\Connection as YiiConnection;
 
 /**
@@ -80,7 +79,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function where($condition, $params = []): self
+    public function where($condition, $params = []): static
     {
         if (!$condition) {
             $condition = null;
@@ -92,7 +91,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function andWhere($condition, $params = []): self
+    public function andWhere($condition, $params = []): static
     {
         if (!$condition) {
             return $this;
@@ -104,7 +103,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function orWhere($condition, $params = []): self
+    public function orWhere($condition, $params = []): static
     {
         if (!$condition) {
             return $this;
@@ -172,9 +171,8 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
-     * @return array|Model|null first row of the query result array, or `null` if there are no query results.
      */
-    public function one($db = null): Model|array|null
+    public function one($db = null): mixed
     {
         $limit = $this->limit;
         $this->limit = 1;
@@ -237,10 +235,10 @@ class Query extends \yii\db\Query
      * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return array|Model|null The row (in terms of an array) of the query result. Null is returned if the query
+     * @return mixed The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, ?YiiConnection $db = null): Model|array|null
+    public function nth(int $n, ?YiiConnection $db = null): mixed
     {
         $offset = $this->offset;
         $this->offset = ($offset ?: 0) + $n;

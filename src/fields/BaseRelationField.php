@@ -129,7 +129,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
-     *
      * @since 3.5.0
      */
     public bool $showSiteMenu = false;
@@ -208,7 +207,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected bool $sortable = true;
 
     /**
-     * @var ElementConditionInterface|array|null
+     * @var ElementConditionInterface|array{class: class-string<ElementConditionInterface>}|null
      * @see getSelectionCondition()
      * @see setSelectionCondition()
      */
@@ -1063,7 +1062,7 @@ JS;
      * Returns an array of the source keys the field should be able to select elements from.
      *
      * @param ElementInterface|null $element
-     * @return array|string
+     * @return array|string|null
      */
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {

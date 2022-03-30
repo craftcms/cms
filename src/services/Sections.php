@@ -654,6 +654,7 @@ class Sections extends Component
 
                 // Was this already selected?
                 if (!$isNewSection && isset($allOldSiteSettingsRecords[$siteId])) {
+                    /** @var Section_SiteSettingsRecord $siteSettingsRecord */
                     $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
                 } else {
                     $siteSettingsRecord = new Section_SiteSettingsRecord();
@@ -1197,10 +1198,10 @@ class Sections extends Component
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
             $entries = Entry::find()
-                ->drafts(null)
-                ->draftOf(false)
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
+                ->drafts(null)
+                ->draftOf(false)
                 ->status(null)
                 ->trashed()
                 ->site('*')
@@ -1357,10 +1358,10 @@ class Sections extends Component
             // Delete the entries, including unpublished drafts
             // (loop through all the sites in case there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
-                ->drafts(null)
-                ->draftOf(false)
                 ->status(null)
-                ->typeId($entryTypeRecord->id);
+                ->typeId($entryTypeRecord->id)
+                ->drafts(null)
+                ->draftOf(false);
 
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -1535,9 +1536,9 @@ class Sections extends Component
 
         $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
+            ->sectionId($section->id)
             ->drafts(null)
             ->provisionalDrafts(null)
-            ->sectionId($section->id)
             ->site('*')
             ->unique()
             ->id(['not', $entry->id])
@@ -1564,9 +1565,9 @@ class Sections extends Component
     {
         // Add all of the entries to the structure
         $query = Entry::find()
+            ->sectionId($sectionRecord->id)
             ->drafts(null)
             ->draftOf(false)
-            ->sectionId($sectionRecord->id)
             ->site('*')
             ->unique()
             ->status(null)

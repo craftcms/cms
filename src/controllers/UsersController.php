@@ -32,6 +32,7 @@ use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\services\Users;
+use craft\web\Application;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
 use craft\web\Request;
@@ -1994,7 +1995,9 @@ JS,
                     $this->request->setIsActionRequest(false);
                 }
 
-                return Craft::$app->handleRequest($this->request, true);
+                /** @var Application $app */
+                $app = Craft::$app;
+                return $app->handleRequest($this->request, true);
             } catch (NotFoundHttpException) {
                 // Just go with the CP template
             }

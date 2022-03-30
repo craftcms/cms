@@ -72,7 +72,7 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @template T
+     * @template T of TransportAdapterInterface
      * @param class-string<T> $type
      * @param array|null $settings
      * @return T
@@ -144,9 +144,11 @@ class MailerHelper
         $security = Craft::$app->getSecurity();
 
         // Use the transport adapter settings if it was sent
+        /** @var BaseTransportAdapter $transportAdapter */
         if ($transportAdapter !== null) {
             /** @var BaseTransportAdapter $transportAdapter */
-            foreach ($transportAdapter->settingsAttributes() as $name) {
+            $settingsAttributes = $transportAdapter->settingsAttributes();
+            foreach ($settingsAttributes as $name) {
                 $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
             }
         } else {
@@ -177,10 +179,10 @@ class MailerHelper
     /**
      * Normalizes a list of emails and returns them in a comma-separated list.
      *
-     * @param $emails
+     * @param mixed $emails
      * @return string
      */
-    private static function _emailList($emails): string
+    private static function _emailList(mixed $emails): string
     {
         $normalized = static::normalizeEmails($emails);
         if ($normalized === null) {

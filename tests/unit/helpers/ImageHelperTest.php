@@ -3,9 +3,9 @@
 /** @noinspection PhpParamsInspection */
 
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -31,7 +31,7 @@ class ImageHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *
@@ -45,21 +45,19 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider calculateMissingDimensionDataProvider
-     *
      * @param int[] $expected
      * @param int|float|null $targetWidth
      * @param int|float|null $targetHeight
      * @param int|float $sourceWidth
      * @param int|float $sourceHeight
      */
-    public function testCalculateMissingDimension(array $expected, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
+    public function testCalculateMissingDimension(array $expected, float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight)
     {
         self::assertSame($expected, Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight));
     }
 
     /**
      * @dataProvider canManipulateAsImageDataProvider
-     *
      * @param bool $expected
      * @param string $extension
      */
@@ -78,18 +76,16 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider pngImageInfoDataProvider
-     *
      * @param array|false $expected
      * @param string $file
      */
-    public function testPngImageInfo($expected, string $file)
+    public function testPngImageInfo(array|false $expected, string $file)
     {
         self::assertSame($expected, Image::pngImageInfo($file));
     }
 
     /**
      * @dataProvider canHaveExitDataProvider
-     *
      * @param bool $expected
      * @param string $filePath
      */
@@ -100,7 +96,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider imageSizeDataProvider
-     *
      * @param array $expected
      * @param string $filePath
      * @param bool $skipIfGd
@@ -116,7 +111,6 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider parseSvgSizeProvider
-     *
      * @param array $expected
      * @param string $svg
      */
@@ -127,11 +121,10 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider imageSizeByStreamDataProvider
-     *
      * @param array|false $expected
      * @param resource $stream
      */
-    public function testImageSizeByStream($expected, $stream)
+    public function testImageSizeByStream(array|false $expected, $stream)
     {
         self::assertSame($expected, Image::imageSizeByStream($stream));
     }
@@ -148,12 +141,11 @@ class ImageHelperTest extends Unit
 
     /**
      * @dataProvider exceptionTriggeringImageByStreamDataProvider
-     *
-     * @param $errorLogMessage
-     * @param $input
+     * @param string $errorLogMessage
+     * @param resource $input
      * @throws Exception
      */
-    public function testImageByStreamException($errorLogMessage, $input)
+    public function testImageByStreamException(string $errorLogMessage, $input)
     {
         Craft::setLogger(
             Stub::make(Logger::class, [

@@ -34,14 +34,14 @@ class Category extends ElementMutationResolver
     /**
      * Save a category using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return CategoryElement
      * @throws Throwable if reasons.
      */
-    public function saveCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): CategoryElement
+    public function saveCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): CategoryElement
     {
         /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->getResolutionData('categoryGroup');
@@ -80,13 +80,13 @@ class Category extends ElementMutationResolver
     /**
      * Delete a category identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @throws Throwable if reasons.
      */
-    public function deleteCategory($source, array $arguments, $context, ResolveInfo $resolveInfo): void
+    public function deleteCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $categoryId = $arguments['id'];
 

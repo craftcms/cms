@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers\FileHelper;
@@ -85,7 +85,6 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider normalizePathDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param string $ds
@@ -97,7 +96,6 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider isDirectoryEmptyDataProvider
-     *
      * @param bool $expected
      * @param string $dir
      * @throws ErrorException
@@ -125,7 +123,6 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider mimeTypeDataProvider
-     *
      * @param string|null $expected
      * @param string $file
      * @param string|null $magicFile
@@ -151,7 +148,6 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider sanitizeFilenameDataProvider
-     *
      * @param string $expected
      * @param string $filename
      * @param array $options
@@ -163,7 +159,6 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider isSvgDataProvider
-     *
      * @param bool $expected
      * @param string $file
      * @param string|null $magicFile
@@ -176,7 +171,6 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider isGifDataProvider
-     *
      * @param bool $expected
      * @param string $input
      * @param string|null $magicFile
@@ -189,16 +183,15 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider writeToFileDataProvider
-     *
-     * @param $content
-     * @param $file
-     * @param $contents
-     * @param $options
+     * @param string|false $content
+     * @param string $file
+     * @param string $contents
+     * @param array $options
      * @param bool $removeDir
      * @param string $removeableDir
      * @throws ErrorException
      */
-    public function testWriteToFile($content, $file, $contents, $options, $removeDir = false, $removeableDir = '')
+    public function testWriteToFile(string|false $content, string $file, string $contents, array $options, bool $removeDir = false, string $removeableDir = '')
     {
         FileHelper::writeToFile($file, $contents, $options);
 

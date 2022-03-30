@@ -15,6 +15,7 @@ use craft\mutex\Mutex;
 use craft\mutex\NullMutex;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
+use Exception;
 use UnitTester;
 use yii\base\NotSupportedException;
 use yii\mutex\Mutex as YiiMutex;
@@ -30,9 +31,9 @@ class ProjectConfigTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected $internal = [
+    protected array $internal = [
         'a' => 'b',
         'b' => [
             'c' => 'd',
@@ -43,7 +44,7 @@ class ProjectConfigTest extends TestCase
         'dateModified' => 1609452000,
     ];
 
-    protected $external = [
+    protected array $external = [
         'aa' => 'bb',
         'bb' => [
             'vc' => 'dd',
@@ -70,10 +71,10 @@ class ProjectConfigTest extends TestCase
     }
 
     /**
-     * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
-     * @throws \Exception
+     * @return ProjectConfig
+     * @throws Exception
      */
-    protected function getProjectConfig(array $internal = null, array $external = null, array $additionalConfig = [])
+    protected function getProjectConfig(array $internal = null, array $external = null, array $additionalConfig = []): ProjectConfig
     {
         $internal = $internal ?? $this->internal;
         $external = $external ?? $this->external;
@@ -116,24 +117,24 @@ class ProjectConfigTest extends TestCase
     }
 
     /**
-     * @param $path
-     * @param $useExternal
-     * @param $expectedValue
+     * @param string|null $path
+     * @param bool $useExternal
+     * @param mixed $expectedValue
+     * @throws Exception
      * @dataProvider getValueDataProvider
      */
-    public function testGettingValue($path, $useExternal, $expectedValue)
+    public function testGettingValue(?string $path, bool $useExternal, mixed $expectedValue)
     {
         $actualValue = $this->getProjectConfig()->get($path, $useExternal);
         self::assertSame($expectedValue, $actualValue);
     }
 
     /**
-     * @param $path
-     * @param $value
-     * @param $useExternal
+     * @param string $path
+     * @param mixed $value
      * @dataProvider setValueDataProvider
      */
-    public function testSettingValue($path, $value)
+    public function testSettingValue(string $path, mixed $value)
     {
         $projectConfig = $this->getProjectConfig();
         $projectConfig->set($path, $value);
@@ -214,7 +215,7 @@ class ProjectConfigTest extends TestCase
         $pc->saveModifiedConfigData();
     }
 
-    public function getConfigProvider()
+    public function getConfigProvider(): array
     {
         return [
             [
@@ -253,7 +254,7 @@ class ProjectConfigTest extends TestCase
         ];
     }
 
-    public function setConfigProvider()
+    public function setConfigProvider(): array
     {
         return [
             [
@@ -267,7 +268,7 @@ class ProjectConfigTest extends TestCase
         ];
     }
 
-    public function getValueDataProvider()
+    public function getValueDataProvider(): array
     {
         return [
             ['a', false, 'b'],
@@ -281,7 +282,7 @@ class ProjectConfigTest extends TestCase
         ];
     }
 
-    public function setValueDataProvider()
+    public function setValueDataProvider(): array
     {
         return [
             ['a', 'bar'],

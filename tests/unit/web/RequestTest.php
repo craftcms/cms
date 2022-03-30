@@ -30,12 +30,12 @@ class RequestTest extends TestCase
     /**
      * @var Request
      */
-    public $request;
+    protected Request $request;
 
     /**
      * @var UnitTester
      */
-    public $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
@@ -204,7 +204,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider isMobileBrowserDataProvider
-     *
      * @param bool $expected
      * @param string $userAgent
      * @param bool $detectTablets
@@ -284,7 +283,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider getUserIpDataProvider
-     *
      * @param string|null $expected
      * @param string|null $headerName
      * @param string|null $headerValue
@@ -301,7 +299,6 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider getClientOsDataProvider
-     *
      * @param string $expected
      * @param string $userAgent
      */
@@ -367,14 +364,13 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider getParamDataProvider
-     *
      * @param mixed $expected
      * @param mixed $defaultValue
      * @param array $params
      * @param string|null $name
      * @throws ReflectionException
      */
-    public function testGetParam($expected, $defaultValue, array $params, ?string $name)
+    public function testGetParam(mixed $expected, mixed $defaultValue, array $params, ?string $name)
     {
         self::assertSame($expected, $this->_getParam($name, $defaultValue, $params));
     }
@@ -420,11 +416,10 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider checkRequestSpecialPathDataProvider
-     *
-     * @param $path
+     * @param string $path
      * @throws ReflectionException
      */
-    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger($path)
+    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger(string $path)
     {
         // We want a CP request
         $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
@@ -598,17 +593,17 @@ class RequestTest extends TestCase
      * @return mixed
      * @throws ReflectionException
      */
-    private function _getParam(?string $name, $defaultValue, array $params)
+    private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
     }
 
     /**
-     * @param $token
+     * @param string $token
      * @return mixed
      * @throws ReflectionException
      */
-    private function _isCsrfValidForUser($token)
+    private function _isCsrfValidForUser(string $token): mixed
     {
         return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
     }
@@ -617,7 +612,7 @@ class RequestTest extends TestCase
      * @return mixed
      * @throws ReflectionException
      */
-    private function _generateCsrfToken()
+    private function _generateCsrfToken(): mixed
     {
         return $this->invokeMethod($this->request, 'generateCsrfToken');
     }

@@ -15,18 +15,19 @@ use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\services\Elements;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 class EntryMutationResolverTest extends TestCase
 {
     /**
      * Test whether various argument combos set the correct scenario on the element.
      *
-     * @param $arguments
-     * @param $scenario
-     * @throws \Throwable
+     * @param array $arguments
+     * @param string $scenario
+     * @throws Throwable
      * @dataProvider saveEntryDataProvider
      */
-    public function testSavingDraftOrEntrySetsRelevantScenario($arguments, $scenario)
+    public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario)
     {
         $entry = new Entry();
 
@@ -49,12 +50,12 @@ class EntryMutationResolverTest extends TestCase
     /**
      * Test that saving new entries does not attempt to identify them in the database.
      *
-     * @param $arguments
-     * @param $identifyCalled
-     * @throws \Throwable
+     * @param array $arguments
+     * @param bool $identifyCalled
+     * @throws Throwable
      * @dataProvider saveNewEntryDataProvider
      */
-    public function testSavingNewEntryDoesNotSearchForIt($arguments, $identifyCalled)
+    public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled)
     {
         $entry = new Entry();
         $query = $this->make(EntryQuery::class, [
@@ -76,7 +77,7 @@ class EntryMutationResolverTest extends TestCase
         $this->assertIsObject($entry);
     }
 
-    public function saveEntryDataProvider()
+    public function saveEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], Element::SCENARIO_ESSENTIALS],
@@ -85,7 +86,7 @@ class EntryMutationResolverTest extends TestCase
         ];
     }
 
-    public function saveNewEntryDataProvider()
+    public function saveNewEntryDataProvider(): array
     {
         return [
             [['draftId' => 5], true],

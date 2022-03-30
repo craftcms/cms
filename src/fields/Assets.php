@@ -13,7 +13,6 @@ use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
@@ -137,7 +136,7 @@ class Assets extends BaseRelationField
     public bool $allowUploads = true;
 
     /**
-     * @var bool|null Whether the available assets should be restricted to
+     * @var bool Whether the available assets should be restricted to
      * [[allowedKinds]]
      */
     public bool $restrictFiles = false;
@@ -390,7 +389,6 @@ class Assets extends BaseRelationField
 
             /** @var Asset $class */
             $class = static::elementType();
-            /** @var ElementQuery $query */
             $query = $class::find();
 
             $targetSite = $this->targetSiteId($element);

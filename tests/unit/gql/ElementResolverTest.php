@@ -15,13 +15,14 @@ use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\ResolveInfo;
+use UnitTester;
 
 class ElementResolverTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {

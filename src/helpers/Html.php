@@ -665,7 +665,7 @@ class Html extends \yii\helpers\Html
     public static function namespaceInputs(string $html, string $namespace): string
     {
         $markers = self::_escapeTextareas($html);
-        static::_namespaceInputs($html, $namespace);
+        self::_namespaceInputs($html, $namespace);
         return self::_restoreTextareas($html, $markers);
     }
 

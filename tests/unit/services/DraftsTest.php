@@ -22,7 +22,6 @@ use craft\services\Elements;
 use craft\services\Revisions;
 use crafttests\fixtures\EntryFixture;
 use Throwable;
-use UnitTester;
 use yii\base\Exception;
 
 /**
@@ -35,24 +34,19 @@ use yii\base\Exception;
 class DraftsTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Elements
      */
-    protected $elements;
+    protected Elements $elements;
 
     /**
      * @var Drafts
      */
-    protected $drafts;
+    protected Drafts $drafts;
 
     /**
      * @var Revisions
      */
-    protected $revisions;
+    protected Revisions $revisions;
 
     /**
      * @return array
@@ -123,7 +117,6 @@ class DraftsTest extends Unit
             throw new InvalidElementException($entry);
         }
 
-        /** @var Entry|RevisionBehavior $revision */
         $revision = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
@@ -134,7 +127,10 @@ class DraftsTest extends Unit
         self::assertNotNull($revision);
         self::assertSame($entry->dateUpdated->format('Y-m-d H:i:s'), $revision->dateCreated->format('Y-m-d H:i:s'));
         self::assertSame('With versioning EDITED', $revision->title);
-        self::assertSame('I am a change note.', $revision->revisionNotes);
+
+        /** @var RevisionBehavior $behavior */
+        $behavior = $revision->getBehavior('revision');
+        self::assertSame('I am a change note.', $behavior->revisionNotes);
     }
 
     /**
@@ -200,7 +196,7 @@ class DraftsTest extends Unit
 
     /**
      * @param Entry $entry
-     * @return Entry|DraftBehavior
+     * @return Entry
      * @throws Throwable
      */
     protected function _setupEntryDraft(Entry $entry): Entry

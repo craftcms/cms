@@ -63,8 +63,7 @@ class AddressesController extends Controller
     /**
      * Returns address fields’ HTML (sans country) for the given country and subdivisions.
      *
-     * $param string $namespace
-     *
+     * @param string $namespace
      * @param string $countryCode
      * @param string|null $administrativeArea
      * @param string|null $locality

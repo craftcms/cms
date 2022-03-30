@@ -32,11 +32,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 class TypeResolverTest extends Unit
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
     protected function _before()
     {
         $gqlService = Craft::$app->getGql();
@@ -49,7 +44,7 @@ class TypeResolverTest extends Unit
         Craft::$app->getGql()->flushCaches();
     }
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'entries' => [
@@ -113,7 +108,7 @@ class TypeResolverTest extends Unit
      * Run the test.
      *
      * @param class-string<ElementInterface> $elementType The element class providing the elements
-     * @param array $parameterSet Querying parameters to use
+     * @param array $params Querying parameters to use
      * @param class-string<Resolver> $resolverClass The resolver class being tested
      * @param boolean $mustNotBeSame Whether the results should differ instead
      * @throws \Exception
@@ -134,6 +129,7 @@ class TypeResolverTest extends Unit
 
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => [null]]);
 
+        /** @var Resolver $resolverClass */
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 
         if ($mustNotBeSame) {

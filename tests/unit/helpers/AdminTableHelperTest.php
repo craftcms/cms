@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\AdminTable;
-use UnitTester;
 
 /**
  * Unit tests for the Admin Table Helper class.
@@ -20,13 +19,7 @@ use UnitTester;
 class AdminTableHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider paginationLinksDataProvider
-     *
      * @param array $expected
      * @param int $page
      * @param int $total

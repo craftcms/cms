@@ -518,14 +518,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a decimal number.
      *
-     * @param $value
+     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
      * @return string
      * @since 3.6.0
      */
-    public function numberFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
             return '';
@@ -541,14 +541,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a percent number with "%" sign.
      *
-     * @param $value
+     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
      * @return string
      * @since 3.6.0
      */
-    public function percentageFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
             return '';
@@ -810,7 +810,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $str
      * @param mixed $search
-     * @param mixed|null $replace
+     * @param mixed $replace
      * @return mixed
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed

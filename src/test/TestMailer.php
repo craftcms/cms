@@ -34,7 +34,7 @@ class TestMailer extends Mailer
     public User|string|array|null $from = 'test@test.craft';
 
     /**
-     * @param $message
+     * @param string $message
      * @return bool
      */
     protected function sendMessage($message): bool

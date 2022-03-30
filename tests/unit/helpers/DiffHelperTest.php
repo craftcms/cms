@@ -20,27 +20,25 @@ class DiffHelperTest extends Unit
 {
     /**
      * @dataProvider compareDataProvider
-     *
      * @param bool $expected
      * @param mixed $a
      * @param mixed $b
      * @param bool $strict
      */
-    public function testCompare(bool $expected, $a, $b, bool $strict)
+    public function testCompare(bool $expected, mixed $a, mixed $b, bool $strict)
     {
         self::assertSame($expected, Diff::compare($a, $b, $strict));
     }
 
     /**
      * @dataProvider diffDataProvider
-     *
      * @param string $expected
      * @param mixed $from
      * @param mixed $to
      * @param int $indent
      * @param int $contextLines
      */
-    public function testDiff(string $expected, $from, $to, int $indent = 2, int $contextLines = 3)
+    public function testDiff(string $expected, mixed $from, mixed $to, int $indent = 2, int $contextLines = 3)
     {
         self::assertSame($expected, Diff::diff($from, $to, $indent, $contextLines));
     }

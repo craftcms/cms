@@ -28,7 +28,6 @@ class ModelTest extends Unit
      * Tests a model for errors.
      *
      * @dataProvider hasErrorsDataProvider
-     *
      * @param bool $expected
      * @param string $attribute
      * @param string $error
@@ -46,12 +45,11 @@ class ModelTest extends Unit
      * Test the DateTimeAttributes function of the base Model
      *
      * @dataProvider dateTimeAttributesDataProvider
-     *
-     * @param $paramName
-     * @param $dateForInput
+     * @param string $paramName
+     * @param string $dateForInput
      * @throws Exception
      */
-    public function testDateTimeAttributes($paramName, $dateForInput)
+    public function testDateTimeAttributes(string $paramName, string $dateForInput)
     {
         $model = new ExampleModel([$paramName => $dateForInput]);
 

@@ -120,12 +120,18 @@ class ApplyNewPropagationMethod extends BaseJob
 
                 // Duplicate those elements so their content can live on
                 while (!empty($otherSiteElements)) {
+                    /** @var ElementInterface $otherSiteElement */
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
                         $newElement = $elementsService->duplicateElement($otherSiteElement, [], false);
                     } catch (UnsupportedSiteException $e) {
                         // Just log it and move along
-                        Craft::warning("Unable to duplicate “{$otherSiteElement}” to site $otherSiteElement->siteId: " . $e->getMessage());
+                        Craft::warning(sprintf(
+                            "Unable to duplicate “%s” to site %d: %s",
+                            get_class($otherSiteElement),
+                            $otherSiteElement->siteId,
+                            $e->getMessage()
+                        ));
                         Craft::$app->getErrorHandler()->logException($e);
                         continue;
                     }
@@ -143,14 +149,14 @@ class ApplyNewPropagationMethod extends BaseJob
                         } else {
                             // Append the clone to the source's parent
                             $parentId = $elementType::find()
+                                ->site('*')
                                 ->ancestorOf($element->id)
                                 ->ancestorDist(1)
-                                ->select(['elements.id'])
-                                ->site('*')
                                 ->unique()
                                 ->status(null)
                                 ->drafts(null)
                                 ->provisionalDrafts(null)
+                                ->select(['elements.id'])
                                 ->scalar();
 
                             if ($parentId !== false) {

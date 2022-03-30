@@ -31,14 +31,14 @@ class Tag extends ElementMutationResolver
     /**
      * Save a tag using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return TagElement
      * @throws Throwable if reasons.
      */
-    public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo): TagElement
+    public function saveTag(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): TagElement
     {
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
@@ -74,13 +74,13 @@ class Tag extends ElementMutationResolver
     /**
      * Delete a tag identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @throws Throwable if reasons.
      */
-    public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo): void
+    public function deleteTag(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $tagId = $arguments['id'];
 

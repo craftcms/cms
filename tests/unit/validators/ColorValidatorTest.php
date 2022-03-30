@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\ColorValidator;
 use ErrorException;
+use UnitTester;
 
 /**
  * Class ColorValidatorTest.
@@ -24,17 +25,17 @@ class ColorValidatorTest extends Unit
     /**
      * @var ColorValidator
      */
-    protected $colorValidator;
+    protected ColorValidator $colorValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
+    protected ExampleModel $model;
 
-    /*
-     * @var \UnitTester
+    /**
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *
@@ -46,7 +47,6 @@ class ColorValidatorTest extends Unit
 
     /**
      * @dataProvider normalizeColorDataProvider
-     *
      * @param string $expected
      * @param string $color
      */
@@ -67,11 +67,10 @@ class ColorValidatorTest extends Unit
 
     /**
      * @dataProvider colorValidatorAttributesDataProvider
-     *
-     * @param $input
+     * @param string $input
      * @param bool $mustValidate
      */
-    public function testAttributeValidation($input, bool $mustValidate)
+    public function testAttributeValidation(string $input, bool $mustValidate)
     {
         $this->model->exampleParam = $input;
 

@@ -27,23 +27,24 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
+use UnitTester;
 
 class PrepareQueryTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    private $_volume;
-    private $_structure;
-    private $_categoryGroup;
-    private $_section;
-    private $_entryType;
-    private $_element;
-    private $_globalSet;
-    private $_tagGroup;
-    private $_userGroup;
+    private Volume $_volume;
+    private Structure $_structure;
+    private CategoryGroup $_categoryGroup;
+    private Section $_section;
+    private EntryType $_entryType;
+    private Element $_element;
+    private GlobalSet $_globalSet;
+    private TagGroup $_tagGroup;
+    private UserGroup $_userGroup;
 
 
     /**
@@ -109,7 +110,6 @@ class PrepareQueryTest extends Unit
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
      * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions
-     *
      * @dataProvider relationalFieldQueryPreparationProvider
      */
     public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null)
@@ -126,7 +126,7 @@ class PrepareQueryTest extends Unit
         self::assertTrue($testFunction($result));
     }
 
-    public function relationalFieldQueryPreparationProvider()
+    public function relationalFieldQueryPreparationProvider(): array
     {
         /**
          * Tests:

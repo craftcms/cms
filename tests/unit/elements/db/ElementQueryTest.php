@@ -25,7 +25,7 @@ class ElementQueryTest extends TestCase
      * @param mixed $relatedToParam
      * @param mixed $andRelatedToParam
      */
-    public function testAndRelatedTo($expected, $relatedToParam, $andRelatedToParam)
+    public function testAndRelatedTo(array|false $expected, mixed $relatedToParam, mixed $andRelatedToParam)
     {
         if ($expected === false) {
             self::expectException(NotSupportedException::class);

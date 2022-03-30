@@ -439,7 +439,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
         $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
         $usedFields = array_unique([

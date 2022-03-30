@@ -12,7 +12,6 @@ use Craft;
 use craft\helpers\MoneyHelper;
 use Money\Currency;
 use Money\Money;
-use UnitTester;
 
 /**
  * Unit tests for the Money Helper class.
@@ -23,42 +22,34 @@ use UnitTester;
 class MoneyHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider toMoneyDataProvider
-     *
      * @param mixed $value
      * @param Money|false $expected
      */
-    public function testToMoney($value, $expected): void
+    public function testToMoney(mixed $value, Money|false $expected): void
     {
         self::assertEquals($expected, MoneyHelper::toMoney($value));
     }
 
     /**
      * @dataProvider toDecimalDataProvider
-     *
      * @param mixed $value
      * @param mixed $expected
      * @return void
      */
-    public function testToDecimal($value, $expected): void
+    public function testToDecimal(mixed $value, mixed $expected): void
     {
         self::assertEquals($expected, MoneyHelper::toDecimal($value));
     }
 
     /**
      * @dataProvider toNumberDataProvider
-     *
      * @param mixed $value
      * @param mixed $expected
      * @param string|null $locale
      * @return void
      */
-    public function testToNumber($value, $expected, ?string $locale = null): void
+    public function testToNumber(mixed $value, mixed $expected, ?string $locale = null): void
     {
         if ($locale) {
             $oldLocale = Craft::$app->getFormattingLocale()->id;
@@ -74,13 +65,12 @@ class MoneyHelperTest extends Unit
 
     /**
      * @dataProvider toStringDataProvider
-     *
      * @param mixed $value
      * @param mixed $expected
      * @param string|null $locale
      * @return void
      */
-    public function testToString($value, $expected, ?string $locale = null): void
+    public function testToString(mixed $value, mixed $expected, ?string $locale = null): void
     {
         self::assertEquals($expected, MoneyHelper::toString($value, $locale));
     }

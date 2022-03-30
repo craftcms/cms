@@ -192,11 +192,11 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Traverse an argument list revursively and normalize the values.
      *
-     * @param $argumentDefinitions
-     * @param $mutationArguments
+     * @param array $argumentDefinitions
+     * @param array $mutationArguments
      * @return array
      */
-    private function _traverseAndNormalizeArguments($argumentDefinitions, $mutationArguments): array
+    private function _traverseAndNormalizeArguments(array $argumentDefinitions, array $mutationArguments): array
     {
         $normalized = [];
 

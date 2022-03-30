@@ -188,8 +188,8 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
         // 1 KB == 500 - 1,499 B
         $maxDiff = $multiplier / 2;
-        $minBytes = $this->value * $multiplier - $maxDiff;
-        $maxBytes = $this->value * $multiplier + $maxDiff - 1;
+        $minBytes = (int)$this->value * $multiplier - $maxDiff;
+        $maxBytes = (int)$this->value * $multiplier + $maxDiff - 1;
 
         return [$minBytes, $maxBytes];
     }

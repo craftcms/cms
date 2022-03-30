@@ -11,7 +11,6 @@ use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
 use stdClass;
-use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use function mb_strlen;
@@ -26,11 +25,6 @@ use function mb_strpos;
  */
 class StringHelperTest extends Unit
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      *
      */
@@ -61,12 +55,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider afterFirstDataProvider
-     * @param $expected
-     * @param $string
-     * @param $separator
-     * @param $caseSensitive
+     * @param string $expected
+     * @param string $string
+     * @param string $separator
+     * @param bool $caseSensitive
      */
-    public function testAfterFirst($expected, $string, $separator, $caseSensitive = true)
+    public function testAfterFirst(string $expected, string $string, string $separator, bool $caseSensitive = true)
     {
         $actual = StringHelper::afterFirst($string, $separator, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -74,12 +68,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider afterLastDataProvider
-     * @param $expected
-     * @param $string
-     * @param $separator
-     * @param $caseSensitive
+     * @param string $expected
+     * @param string $string
+     * @param string $separator
+     * @param bool $caseSensitive
      */
-    public function testAfterLast($expected, $string, $separator, $caseSensitive = true)
+    public function testAfterLast(string $expected, string $string, string $separator, bool $caseSensitive = true)
     {
         $actual = StringHelper::afterLast($string, $separator, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -87,11 +81,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider appendDataProvider
-     * @param $expected
-     * @param $string
-     * @param $append
+     * @param string $expected
+     * @param string $string
+     * @param string $append
      */
-    public function testAppend($expected, $string, $append)
+    public function testAppend(string $expected, string $string, string $append)
     {
         $actual = StringHelper::append($string, $append);
         self::assertSame($expected, $actual);
@@ -127,7 +121,7 @@ class StringHelperTest extends Unit
         }
 
         // detect duplicate values in the array
-        foreach (array_count_values($uniqueIds) as $uniqueId => $count) {
+        foreach (array_count_values($uniqueIds) as $count) {
             self::assertSame(1, $count);
         }
 
@@ -139,11 +133,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider atDataProvider
-     * @param $expected
-     * @param $string
-     * @param $position
+     * @param string $expected
+     * @param string $string
+     * @param int $position
      */
-    public function testAt($expected, $string, $position)
+    public function testAt(string $expected, string $string, int $position)
     {
         $actual = StringHelper::at($string, $position);
         self::assertSame($expected, $actual);
@@ -151,12 +145,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider beforeFirstDataProvider
-     * @param $expected
-     * @param $string
-     * @param $separator
+     * @param string $expected
+     * @param string $string
+     * @param string $separator
      * @param bool $caseSensitive
      */
-    public function testBeforeFirst($expected, $string, $separator, $caseSensitive = true)
+    public function testBeforeFirst(string $expected, string $string, string $separator, bool $caseSensitive = true)
     {
         $actual = StringHelper::beforeFirst($string, $separator, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -165,12 +159,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider beforeLastDataProvider
-     * @param $expected
-     * @param $string
-     * @param $separator
+     * @param string $expected
+     * @param string $string
+     * @param string $separator
      * @param bool $caseSensitive
      */
-    public function testBeforeLast($expected, $string, $separator, $caseSensitive = true)
+    public function testBeforeLast(string $expected, string $string, string $separator, bool $caseSensitive = true)
     {
         $actual = StringHelper::beforeLast($string, $separator, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -179,13 +173,13 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider betweenDataProvider
-     * @param $expected
-     * @param $string
-     * @param $firstChar
-     * @param $secondChar
-     * @param $offset
+     * @param string $expected
+     * @param string $string
+     * @param string $firstChar
+     * @param string $secondChar
+     * @param int|null $offset
      */
-    public function testBetween($expected, $string, $firstChar, $secondChar, $offset = null)
+    public function testBetween(string $expected, string $string, string $firstChar, string $secondChar, ?int $offset = null)
     {
         $actual = StringHelper::between($string, $firstChar, $secondChar, $offset);
         self::assertSame($expected, $actual);
@@ -193,11 +187,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider camelCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testCamelCase($expected, $string)
+    public function testCamelCase(string $expected, string $string)
     {
         $actual = StringHelper::camelCase($string);
         self::assertSame($expected, $actual);
@@ -205,10 +198,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider capitalizePersonalNameDataProvider
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testCapitalizePersonalName($expected, $string)
+    public function testCapitalizePersonalName(string $expected, string $string)
     {
         $actual = StringHelper::capitalizePersonalName($string);
         self::assertSame($expected, $actual);
@@ -216,11 +209,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider charsAsArrayDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string[] $expected
+     * @param string $string
      */
-    public function testCharsAsArray($expected, $string)
+    public function testCharsAsArray(array $expected, string $string)
     {
         $actual = StringHelper::charsAsArray($string);
         self::assertSame($expected, $actual);
@@ -228,26 +220,25 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider containsAllDataProvider
-     *
-     * @param      $expected
-     * @param      $haystack
-     * @param      $needle
+     * @param bool $expected
+     * @param string $haystack
+     * @param string[] $needles
      * @param bool $caseSensitive
      */
-    public function testContainsAll($expected, $haystack, $needle, $caseSensitive = true)
+    public function testContainsAll(bool $expected, string $haystack, array $needles, bool $caseSensitive = true)
     {
-        $actual = StringHelper::containsAll($haystack, $needle, $caseSensitive);
+        $actual = StringHelper::containsAll($haystack, $needles, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider containsAnyDataProvider
-     * @param $expected
-     * @param $haystack
-     * @param $needles
+     * @param bool $expected
+     * @param string $haystack
+     * @param string[] $needles
      * @param bool $caseSensitive
      */
-    public function testContainsAny($expected, $haystack, $needles, $caseSensitive = true)
+    public function testContainsAny(bool $expected, string $haystack, array $needles, bool $caseSensitive = true)
     {
         $actual = StringHelper::containsAny($haystack, $needles, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -255,11 +246,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider convertToUtf8DataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testConvertToUtf8($expected, $string)
+    public function testConvertToUtf8(string $expected, string $string)
     {
         $actual = StringHelper::convertToUtf8($string);
         self::assertSame($expected, $actual);
@@ -276,10 +266,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider dasherizeDataProvider
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testDasherize($expected, $string)
+    public function testDasherize(string $expected, string $string)
     {
         $actual = StringHelper::dasherize($string);
         self::assertSame($expected, $actual);
@@ -287,26 +277,24 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider delimitDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $delimited
+     * @param string $expected
+     * @param string $string
+     * @param string $delimiter
      */
-    public function testDelimit($expected, $string, $delimited)
+    public function testDelimit(string $expected, string $string, string $delimiter)
     {
-        $actual = StringHelper::delimit($string, $delimited);
+        $actual = StringHelper::delimit($string, $delimiter);
         self::assertSame($expected, $actual);
         self::assertIsString($actual);
     }
 
     /**
      * @dataProvider encDecDataProvider
-     *
-     * @param $string
+     * @param string $string
      * @throws Exception
      * @throws InvalidConfigException
      */
-    public function testEncDec($string)
+    public function testEncDec(string $string)
     {
         $enc = StringHelper::encenc($string);
         self::assertStringStartsWith('base64:', $enc);
@@ -315,12 +303,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider endsWithDataProvider
-     *
-     * @param $expected
-     * @param $haystack
-     * @param $needle
+     * @param bool $expected
+     * @param string $haystack
+     * @param string $needle
      */
-    public function testEndsWith($expected, $haystack, $needle)
+    public function testEndsWith(bool $expected, string $haystack, string $needle)
     {
         $actual = StringHelper::endsWith($haystack, $needle);
         self::assertSame($expected, $actual);
@@ -328,13 +315,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider endsWithAnyDataProvider
-     *
-     * @param $expected
-     * @param $haystack
-     * @param $needles
+     * @param bool $expected
+     * @param string $haystack
+     * @param string[] $needles
      * @param bool $caseSensitive
      */
-    public function testEndsWithAny($expected, $haystack, $needles, $caseSensitive = true)
+    public function testEndsWithAny(bool $expected, string $haystack, array $needles, bool $caseSensitive = true)
     {
         $actual = StringHelper::endsWithAny($haystack, $needles, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -342,11 +328,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider ensureLeftDataProvider
-     * @param $expected
-     * @param $string
-     * @param $prepend
+     * @param string $expected
+     * @param string $string
+     * @param string $prepend
      */
-    public function testEnsureLeft($expected, $string, $prepend)
+    public function testEnsureLeft(string $expected, string $string, string $prepend)
     {
         $actual = StringHelper::ensureLeft($string, $prepend);
         self::assertSame($expected, $actual);
@@ -354,11 +340,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider ensureRightDataProvider
-     * @param $expected
-     * @param $string
-     * @param $append
+     * @param string $expected
+     * @param string $string
+     * @param string $append
      */
-    public function testEnsureRight($expected, $string, $append)
+    public function testEnsureRight(string $expected, string $string, string $append)
     {
         $actual = StringHelper::ensureRight($string, $append);
         self::assertSame($expected, $actual);
@@ -366,11 +352,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider escapeDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testEscape($expected, $string)
+    public function testEscape(string $expected, string $string)
     {
         $actual = StringHelper::escape($string);
         self::assertSame($expected, $actual);
@@ -459,23 +444,22 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider firstDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $requiredChars
+     * @param string $expected
+     * @param string $string
+     * @param int $number
      */
-    public function testFirst($expected, $string, $requiredChars)
+    public function testFirst(string $expected, string $string, int $number)
     {
-        $actual = StringHelper::first($string, $requiredChars);
+        $actual = StringHelper::first($string, $number);
         self::assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider hasLowerCaseDataProvider
-     * @param $expected
-     * @param $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testHasLowerCase($expected, $string)
+    public function testHasLowerCase(bool $expected, string $string)
     {
         $actual = StringHelper::hasLowerCase($string);
         self::assertSame($expected, $actual);
@@ -483,10 +467,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider hasUpperCaseDataProvider
-     * @param $expected
-     * @param $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testHasUpperCase($expected, $string)
+    public function testHasUpperCase(bool $expected, string $string)
     {
         $actual = StringHelper::hasUpperCase($string);
         self::assertSame($expected, $actual);
@@ -494,12 +478,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider htmlDecodeDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      * @param int $flags
      */
-    public function testHtmlDecode($expected, $string, $flags = ENT_COMPAT)
+    public function testHtmlDecode(string $expected, string $string, int $flags = ENT_COMPAT)
     {
         $actual = StringHelper::htmlDecode($string, $flags);
         self::assertSame($expected, $actual);
@@ -507,12 +490,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider htmlEncodeDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      * @param int $flags
      */
-    public function testHtmlEncode($expected, $string, $flags = ENT_COMPAT)
+    public function testHtmlEncode(string $expected, string $string, int $flags = ENT_COMPAT)
     {
         $actual = StringHelper::htmlEncode($string, $flags);
         self::assertSame($expected, $actual);
@@ -520,11 +502,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider humanizeDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testHumanize($expected, $string)
+    public function testHumanize(string $expected, string $string)
     {
         $actual = StringHelper::humanize($string);
         self::assertSame($expected, $actual);
@@ -532,14 +513,13 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider indexOfDataProvider
-     *
-     * @param $expected
-     * @param $haystack
-     * @param $needle
+     * @param int|false $expected
+     * @param string $haystack
+     * @param string $needle
      * @param int $offset
      * @param bool $caseSensitive
      */
-    public function testIndexOf($expected, $haystack, $needle, $offset = 0, $caseSensitive = true)
+    public function testIndexOf(int|false $expected, string $haystack, string $needle, int $offset = 0, bool $caseSensitive = true)
     {
         $actual = StringHelper::indexOf($haystack, $needle, $offset, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -547,14 +527,13 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider indexOfLastDataProvider
-     *
-     * @param $expected
-     * @param $haystack
-     * @param $needle
+     * @param int|false $expected
+     * @param string $haystack
+     * @param string $needle
      * @param int $offset
      * @param bool $caseSensitive
      */
-    public function testIndexOfLast($expected, $haystack, $needle, $offset = 0, $caseSensitive = true)
+    public function testIndexOfLast(int|false $expected, string $haystack, string $needle, int $offset = 0, bool $caseSensitive = true)
     {
         $actual = StringHelper::indexOfLast($haystack, $needle, $offset, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -562,13 +541,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider insertDataProvider()
-     *
-     * @param      $expected
-     * @param      $string
-     * @param $substring
-     * @param $index
+     * @param string $expected
+     * @param string $string
+     * @param string $substring
+     * @param int $index
      */
-    public function testInsert($expected, $string, $substring, $index)
+    public function testInsert(string $expected, string $string, string $substring, int $index)
     {
         $actual = StringHelper::insert($string, $substring, $index);
         self::assertSame($expected, $actual);
@@ -576,12 +554,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isDataProvider()
-     *
-     * @param      $expected
-     * @param      $string
-     * @param      $pattern
+     * @param bool $expected
+     * @param string $string
+     * @param string $pattern
      */
-    public function testIs($expected, $string, $pattern)
+    public function testIs(bool $expected, string $string, string $pattern)
     {
         $actual = StringHelper::is($string, $pattern);
         self::assertSame($expected, $actual);
@@ -589,11 +566,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isAlphaDataProvider()
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsAlpha($expected, $string)
+    public function testIsAlpha(bool $expected, string $string)
     {
         $actual = StringHelper::isAlpha($string);
         self::assertSame($expected, $actual);
@@ -601,11 +577,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isAlphanumericDataProvider()
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsAlphanumeric($expected, $string)
+    public function testIsAlphanumeric(bool $expected, string $string)
     {
         $actual = StringHelper::isAlphanumeric($string);
         self::assertSame($expected, $actual);
@@ -613,11 +588,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isBase64DataProvider()
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsBase64($expected, $string)
+    public function testIsBase64(bool $expected, string $string)
     {
         $actual = StringHelper::isBase64($string);
         self::assertSame($expected, $actual);
@@ -625,11 +599,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isBlankDataProvider()
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsBlank($expected, $string)
+    public function testIsBlank(bool $expected, string $string)
     {
         $actual = StringHelper::isBlank($string);
         self::assertSame($expected, $actual);
@@ -637,11 +610,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isHexadecimalDataProvider
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsHexadecimal($expected, $string)
+    public function testIsHexadecimal(bool $expected, string $string)
     {
         $actual = StringHelper::isHexadecimal($string);
         self::assertSame($expected, $actual);
@@ -673,12 +645,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isJsonDataProvider
-     *
-     * @param      $expected
-     * @param      $string
-     * @param $onlyArrayOrObjectResultsAreValid
+     * @param bool $expected
+     * @param string $string
+     * @param bool $onlyArrayOrObjectResultsAreValid
      */
-    public function testIsJson($expected, $string, $onlyArrayOrObjectResultsAreValid)
+    public function testIsJson(bool $expected, string $string, bool $onlyArrayOrObjectResultsAreValid)
     {
         $actual = StringHelper::isJson($string, $onlyArrayOrObjectResultsAreValid);
         self::assertSame($expected, $actual);
@@ -686,11 +657,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isLowerCaseDataProvider
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsLowerCase($expected, $string)
+    public function testIsLowerCase(bool $expected, string $string)
     {
         $actual = StringHelper::isLowerCase($string);
         self::assertSame($expected, $actual);
@@ -698,11 +668,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider mb4DataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsMb4($expected, $string)
+    public function testIsMb4(bool $expected, string $string)
     {
         $actual = StringHelper::containsMb4($string);
         self::assertSame($expected, $actual);
@@ -710,11 +679,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isSerializedDataProvider
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsSerialized($expected, $string)
+    public function testIsSerialized(bool $expected, string $string)
     {
         $actual = StringHelper::isSerialized($string);
         self::assertSame($expected, $actual);
@@ -722,11 +690,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider isUpperCaseDataProvider
-     *
-     * @param      $expected
-     * @param      $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsUpperCase($expected, $string)
+    public function testIsUpperCase(bool $expected, string $string)
     {
         $actual = StringHelper::isUpperCase($string);
         self::assertSame($expected, $actual);
@@ -734,11 +701,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider uuidDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsUUID($expected, $string)
+    public function testIsUUID(bool $expected, string $string)
     {
         $actual = StringHelper::isUUID($string);
         self::assertSame($expected, $actual);
@@ -746,11 +712,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider whitespaceDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testIsWhitespace($expected, $string)
+    public function testIsWhitespace(bool $expected, string $string)
     {
         $actual = StringHelper::isWhitespace($string);
         self::assertSame($expected, $actual);
@@ -759,11 +724,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider linesDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param int $expected
+     * @param string $string
      */
-    public function testLines($expected, $string)
+    public function testLines(int $expected, string $string)
     {
         $actual = StringHelper::lines($string);
         self::assertCount($expected, $actual);
@@ -794,11 +758,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider lowerCaseFirstDataProvider
-     *
-     * @param      $expected
-     * @param      $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testLowercaseFirst($expected, $string)
+    public function testLowercaseFirst(string $expected, string $string)
     {
         $actual = StringHelper::lowercaseFirst($string);
         self::assertSame($expected, $actual);
@@ -806,11 +769,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider mb4EncodingDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testMb4Encoding($expected, $string)
+    public function testMb4Encoding(string $expected, string $string)
     {
         $actual = StringHelper::encodeMb4($string);
         self::assertSame($expected, $actual);
@@ -821,14 +783,13 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider padDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $length
-     * @param $padStr
-     * @param $padType
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $padStr
+     * @param string $padType
      */
-    public function testPad($expected, $string, $length, $padStr = ' ', $padType = 'right')
+    public function testPad(string $expected, string $string, int $length, string $padStr = ' ', string $padType = 'right')
     {
         $actual = StringHelper::pad($string, $length, $padStr, $padType);
         self::assertSame($expected, $actual);
@@ -836,13 +797,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider padBothDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $length
-     * @param $padStr
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $padStr
      */
-    public function testPadBoth($expected, $string, $length, $padStr = ' ')
+    public function testPadBoth(string $expected, string $string, int $length, string $padStr = ' ')
     {
         $actual = StringHelper::padBoth($string, $length, $padStr);
         self::assertSame($expected, $actual);
@@ -850,13 +810,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider padLeftDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $length
-     * @param $padStr
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $padStr
      */
-    public function testPadLeft($expected, $string, $length, $padStr = ' ')
+    public function testPadLeft(string $expected, string $string, int $length, string $padStr = ' ')
     {
         $actual = StringHelper::padLeft($string, $length, $padStr);
         self::assertSame($expected, $actual);
@@ -864,13 +823,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider padRightDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $length
-     * @param $padStr
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $padStr
      */
-    public function testPadRight($expected, $string, $length, $padStr = ' ')
+    public function testPadRight(string $expected, string $string, int $length, string $padStr = ' ')
     {
         $actual = StringHelper::padRight($string, $length, $padStr);
         self::assertSame($expected, $actual);
@@ -878,12 +836,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider prependDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $prependString
+     * @param string $expected
+     * @param string $string
+     * @param string $prependString
      */
-    public function testPrepend($expected, $string, $prependString)
+    public function testPrepend(string $expected, string $string, string $prependString)
     {
         $actual = StringHelper::prepend($string, $prependString);
         self::assertSame($expected, $actual);
@@ -891,20 +848,19 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider randomStringWithCharsDataProvider
-     *
-     * @param $valid
+     * @param string $string
      * @param int $length
      */
-    public function testRandomStringWithChars($valid, int $length)
+    public function testRandomStringWithChars(string $string, int $length)
     {
-        $str = StringHelper::randomStringWithChars($valid, $length);
+        $str = StringHelper::randomStringWithChars($string, $length);
         $strLen = mb_strlen($str);
 
         self::assertSame($length, $strLen);
 
         // Loop through the string and see if any of the characters aren't on the list of allowed chars.
         for ($i = 0; $i < $strLen; $i++) {
-            if (mb_strpos($valid, $str[$i]) === false) {
+            if (mb_strpos($string, $str[$i]) === false) {
                 $this->fail('Invalid chars');
             }
         }
@@ -912,12 +868,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider randomStringDataProvider
-     *
-     * @param $length
-     * @param $extendedChars
+     * @param int $length
+     * @param bool $extendedChars
      * @throws \Exception
      */
-    public function testRandomString($length = 36, $extendedChars = false)
+    public function testRandomString(int $length = 36, bool $extendedChars = false)
     {
         $random = StringHelper::randomString($length, $extendedChars);
         $len = strlen($random);
@@ -936,14 +891,13 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider regexReplaceDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $pattern
-     * @param $replacement
-     * @param $options
+     * @param string $expected
+     * @param string $string
+     * @param string $pattern
+     * @param string $replacement
+     * @param string $options
      */
-    public function testRegexReplace($expected, $string, $pattern, $replacement, $options = 'msr')
+    public function testRegexReplace(string $expected, string $string, string $pattern, string $replacement, string $options = 'msr')
     {
         $actual = StringHelper::regexReplace($string, $pattern, $replacement, $options);
         self::assertSame($expected, $actual);
@@ -951,12 +905,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider removeHtmlDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $allowableTags
+     * @param string $expected
+     * @param string $string
+     * @param string|null $allowableTags
      */
-    public function testRemoveHtml($expected, $string, $allowableTags = null)
+    public function testRemoveHtml(string $expected, string $string, ?string $allowableTags = null)
     {
         $actual = StringHelper::removeHtml($string, $allowableTags);
         self::assertSame($expected, $actual);
@@ -964,12 +917,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider removeHtmlBreakDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $replacement
+     * @param string $expected
+     * @param string $string
+     * @param string $replacement
      */
-    public function testRemoveHtmlBreak($expected, $string, $replacement = '')
+    public function testRemoveHtmlBreak(string $expected, string $string, string $replacement = '')
     {
         $actual = StringHelper::removeHtmlBreak($string, $replacement);
         self::assertSame($expected, $actual);
@@ -977,12 +929,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider removeLeftDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $substring
+     * @param string $expected
+     * @param string $string
+     * @param string $substring
      */
-    public function testRemoveLeft($expected, $string, $substring)
+    public function testRemoveLeft(string $expected, string $string, string $substring)
     {
         $actual = StringHelper::removeLeft($string, $substring);
         self::assertSame($expected, $actual);
@@ -990,12 +941,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider repeatDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $multiplier
+     * @param string $expected
+     * @param string $string
+     * @param int $multiplier
      */
-    public function testRepeat($expected, $string, $multiplier)
+    public function testRepeat(string $expected, string $string, int $multiplier)
     {
         $actual = StringHelper::repeat($string, $multiplier);
         self::assertSame($expected, $actual);
@@ -1003,14 +953,13 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider replaceAllDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $search
-     * @param $replacement
-     * @param $caseSensitive
+     * @param string $expected
+     * @param string $string
+     * @param string[] $search
+     * @param string|string[] $replacement
+     * @param bool $caseSensitive
      */
-    public function testReplaceAll($expected, $string, $search, $replacement, $caseSensitive = true)
+    public function testReplaceAll(string $expected, string $string, array $search, string|array $replacement, bool $caseSensitive = true)
     {
         $actual = StringHelper::replaceAll($string, $search, $replacement, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -1018,13 +967,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider replaceBeginningDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $search
-     * @param $replacement
+     * @param string $expected
+     * @param string $string
+     * @param string $search
+     * @param string $replacement
      */
-    public function testReplaceBeginning($expected, $string, $search, $replacement)
+    public function testReplaceBeginning(string $expected, string $string, string $search, string $replacement)
     {
         $actual = StringHelper::replaceBeginning($string, $search, $replacement);
         self::assertSame($expected, $actual);
@@ -1032,13 +980,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider replaceFirstDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $search
-     * @param $replacement
+     * @param string $expected
+     * @param string $string
+     * @param string $search
+     * @param string $replacement
      */
-    public function testReplaceFirst($expected, $string, $search, $replacement)
+    public function testReplaceFirst(string $expected, string $string, string $search, string $replacement)
     {
         $actual = StringHelper::replaceFirst($string, $search, $replacement);
         self::assertSame($expected, $actual);
@@ -1046,13 +993,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider replaceLastDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $search
-     * @param $replacement
+     * @param string $expected
+     * @param string $string
+     * @param string $search
+     * @param string $replacement
      */
-    public function testReplaceLast($expected, $string, $search, $replacement)
+    public function testReplaceLast(string $expected, string $string, string $search, string $replacement)
     {
         $actual = StringHelper::replaceLast($string, $search, $replacement);
         self::assertSame($expected, $actual);
@@ -1060,13 +1006,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider replaceEndingDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $search
-     * @param $replacement
+     * @param string $expected
+     * @param string $string
+     * @param string $search
+     * @param string $replacement
      */
-    public function testReplaceEnding($expected, $string, $search, $replacement)
+    public function testReplaceEnding(string $expected, string $string, string $search, string $replacement)
     {
         $actual = StringHelper::replaceEnding($string, $search, $replacement);
         self::assertSame($expected, $actual);
@@ -1074,11 +1019,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider reverseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testReverse($expected, $string)
+    public function testReverse(string $expected, string $string)
     {
         $actual = StringHelper::reverse($string);
         self::assertSame($expected, $actual);
@@ -1086,14 +1030,13 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider safeTruncateDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $length
-     * @param $substring
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $substring
      * @param bool $ignoreDoNotSplitWordsForOneWord
      */
-    public function testSafeTruncate($expected, $string, $length, $substring = '', $ignoreDoNotSplitWordsForOneWord = true)
+    public function testSafeTruncate(string $expected, string $string, int $length, string $substring = '', bool $ignoreDoNotSplitWordsForOneWord = true)
     {
         $actual = StringHelper::safeTruncate($string, $length, $substring, $ignoreDoNotSplitWordsForOneWord);
         self::assertSame($expected, $actual);
@@ -1101,13 +1044,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider shortenAfterWordDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $length
-     * @param $strAddOn
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $strAddOn
      */
-    public function testShortenAfterWord($expected, $string, $length, $strAddOn)
+    public function testShortenAfterWord(string $expected, string $string, int $length, string $strAddOn)
     {
         $actual = StringHelper::shortenAfterWord($string, $length, $strAddOn);
         self::assertSame($expected, $actual);
@@ -1115,14 +1057,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider shuffleDataProvider
-     *
-     * @param $string
+     * @param string $string
      */
-    public function testShuffle($string)
+    public function testShuffle(string $string)
     {
         $encoding = mb_internal_encoding();
         $result = StringHelper::shuffle($string);
-        ;
 
         self::assertSame(
             mb_strlen($string, $encoding),
@@ -1141,13 +1081,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider sliceDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $start
-     * @param null $end
+     * @param string $expected
+     * @param string $string
+     * @param int $start
+     * @param int|null $end
      */
-    public function testSlice($expected, $string, $start, $end = null)
+    public function testSlice(string $expected, string $string, int $start, ?int $end = null)
     {
         $actual = StringHelper::slice($string, $start, $end);
         self::assertSame($expected, $actual);
@@ -1155,13 +1094,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider slugifyDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $replacement
-     * @param null $language
+     * @param string $expected
+     * @param string $string
+     * @param string $replacement
+     * @param string|null $language
      */
-    public function testSlugify($expected, $string, $replacement = '-', $language = null)
+    public function testSlugify(string $expected, string $string, string $replacement = '-', ?string $language = null)
     {
         $actual = StringHelper::slugify($string, $replacement, $language);
         self::assertSame($expected, $actual);
@@ -1169,12 +1107,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider splitDataProvider
-     *
-     * @param        $expected
-     * @param        $string
+     * @param string[] $expected
+     * @param string $string
      * @param string $splitter
      */
-    public function testSplit($expected, $string, $splitter = ',')
+    public function testSplit(array $expected, string $string, string $splitter = ',')
     {
         $actual = StringHelper::split($string, $splitter);
         self::assertSame($expected, $actual);
@@ -1198,13 +1135,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider startsWithAnyDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $substrings
+     * @param bool $expected
+     * @param string $string
+     * @param string[] $substrings
      * @param bool $caseSensitive
      */
-    public function testStartsWithAny($expected, $string, $substrings, $caseSensitive = true)
+    public function testStartsWithAny(bool $expected, string $string, array $substrings, bool $caseSensitive = true)
     {
         $actual = StringHelper::startsWithAny($string, $substrings, $caseSensitive);
         self::assertSame($expected, $actual);
@@ -1255,11 +1191,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider stripHtmlDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testStripHtml($expected, $string)
+    public function testStripHtml(string $expected, string $string)
     {
         $actual = StringHelper::stripHtml($string);
         self::assertSame($expected, $actual);
@@ -1267,11 +1202,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider stripWhitespaceDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testStripWhitespace($expected, $string)
+    public function testStripWhitespace(string $expected, string $string)
     {
         $actual = StringHelper::stripWhitespace($string);
         self::assertSame($expected, $actual);
@@ -1279,13 +1213,12 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider substrDataProvider
-     *
-     * @param      $expected
-     * @param      $string
-     * @param      $start
-     * @param null $length
+     * @param string $expected
+     * @param string $string
+     * @param int $start
+     * @param int|null $length
      */
-    public function testSubstr($expected, $string, $start, $length = null)
+    public function testSubstr(string $expected, string $string, int $start, ?int $length = null)
     {
         $actual = StringHelper::substr($string, $start, $length);
         self::assertSame($expected, $actual);
@@ -1304,12 +1237,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider surroundDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $subString
+     * @param string $expected
+     * @param string $string
+     * @param string $subString
      */
-    public function testSurround($expected, $string, $subString)
+    public function testSurround(string $expected, string $string, string $subString)
     {
         $actual = StringHelper::surround($string, $subString);
         self::assertSame($expected, $actual);
@@ -1317,11 +1249,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider swapCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testSwapCase($expected, $string)
+    public function testSwapCase(string $expected, string $string)
     {
         $actual = StringHelper::swapCase($string);
         self::assertSame($expected, $actual);
@@ -1329,11 +1260,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider tidyDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testTidy($expected, $string)
+    public function testTidy(string $expected, string $string)
     {
         $actual = StringHelper::tidy($string);
         self::assertSame($expected, $actual);
@@ -1341,12 +1271,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider titleizeDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $ignore
+     * @param string $expected
+     * @param string $string
+     * @param string[]|null $ignore
      */
-    public function testTitleize($expected, $string, $ignore = [])
+    public function testTitleize(string $expected, string $string, ?array $ignore = null)
     {
         $actual = StringHelper::titleize($string, $ignore);
         self::assertSame($expected, $actual);
@@ -1354,12 +1283,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider titleizeForHumansDataProvider()
-     *
-     * @param $expected
-     * @param $string
-     * @param $ignore
+     * @param string $expected
+     * @param string $string
+     * @param string[] $ignore
      */
-    public function testTitleizeForHumans($expected, $string, $ignore = [])
+    public function testTitleizeForHumans(string $expected, string $string, array $ignore = [])
     {
         $actual = StringHelper::titleizeForHumans($string, $ignore);
         self::assertSame($expected, $actual);
@@ -1367,11 +1295,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toAsciiDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
+     * @param string|null $language
      */
-    public function testToAscii(string $expected, string $string, string $language = null)
+    public function testToAscii(string $expected, string $string, ?string $language = null)
     {
         $actual = StringHelper::toAscii($string, $language);
         self::assertSame($expected, $actual);
@@ -1379,11 +1307,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toBooleanDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param bool $expected
+     * @param string $string
      */
-    public function testToBoolean($expected, $string)
+    public function testToBoolean(bool $expected, string $string)
     {
         $actual = StringHelper::toBoolean($string);
         self::assertSame($expected, $actual);
@@ -1391,11 +1318,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toCamelCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToCamelCase($expected, $string)
+    public function testToCamelCase(string $expected, string $string)
     {
         $actual = StringHelper::toCamelCase($string);
         self::assertSame($expected, $actual);
@@ -1403,11 +1329,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toKebabCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToKebabCase($expected, $string)
+    public function testToKebabCase(string $expected, string $string)
     {
         $actual = StringHelper::toKebabCase($string);
         self::assertSame($expected, $actual);
@@ -1415,11 +1340,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toLowerCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToLowerCase($expected, $string)
+    public function testToLowerCase(string $expected, string $string)
     {
         $actual = StringHelper::toLowerCase($string);
         self::assertSame($expected, $actual);
@@ -1427,11 +1351,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toPascalCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToPascalCase($expected, $string)
+    public function testToPascalCase(string $expected, string $string)
     {
         $actual = StringHelper::toPascalCase($string);
         self::assertSame($expected, $actual);
@@ -1439,11 +1362,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider snakeCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToSnakeCase($expected, $string)
+    public function testToSnakeCase(string $expected, string $string)
     {
         $actual = StringHelper::toSnakeCase($string);
         self::assertSame($expected, $actual);
@@ -1451,12 +1373,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toSpacesDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      * @param int $tabLength
      */
-    public function testToSpaces($expected, $string, $tabLength = 4)
+    public function testToSpaces(string $expected, string $string, int $tabLength = 4)
     {
         $actual = StringHelper::toSpaces($string, $tabLength);
         self::assertSame($expected, $actual);
@@ -1464,25 +1385,23 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toStringDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $glue
+     * @param string $expected
+     * @param mixed $object
+     * @param string $glue
      */
-    public function testToString($expected, $string, $glue = ',')
+    public function testToString(string $expected, mixed $object, string $glue = ',')
     {
-        $actual = StringHelper::toString($string, $glue);
+        $actual = StringHelper::toString($object, $glue);
         self::assertSame($expected, $actual);
     }
 
     /**
      * @dataProvider toTabsDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param $tabLength
+     * @param string $expected
+     * @param string $string
+     * @param int $tabLength
      */
-    public function testToTabs($expected, $string, $tabLength = 4)
+    public function testToTabs(string $expected, string $string, int $tabLength = 4)
     {
         $actual = StringHelper::toTabs($string, $tabLength);
         self::assertSame($expected, $actual);
@@ -1490,11 +1409,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toTitleCaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToTitleCase($expected, $string)
+    public function testToTitleCase(string $expected, string $string)
     {
         $actual = StringHelper::toTitleCase($string);
         self::assertSame($expected, $actual);
@@ -1502,11 +1420,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toTransliterateDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToTransliterate($expected, $string)
+    public function testToTransliterate(string $expected, string $string)
     {
         $actual = StringHelper::toTransliterate($string);
         self::assertSame($expected, $actual);
@@ -1514,11 +1431,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider toUppercaseDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testToUppercase($expected, $string)
+    public function testToUppercase(string $expected, string $string)
     {
         $actual = StringHelper::toUpperCase($string);
         self::assertSame($expected, $actual);
@@ -1526,11 +1442,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider trimDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testTrim($expected, $string)
+    public function testTrim(string $expected, string $string)
     {
         $actual = StringHelper::trim($string);
         self::assertSame($expected, $actual);
@@ -1538,12 +1453,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider trimLeftDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param null $chars
+     * @param string $expected
+     * @param string $string
+     * @param string|null $chars
      */
-    public function testTrimLeft($expected, $string, $chars = null)
+    public function testTrimLeft(string $expected, string $string, ?string $chars = null)
     {
         $actual = StringHelper::trimLeft($string, $chars);
         self::assertSame($expected, $actual);
@@ -1551,12 +1465,11 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider trimRightDataProvider
-     *
-     * @param $expected
-     * @param $string
-     * @param null $chars
+     * @param string $expected
+     * @param string $string
+     * @param string|null $chars
      */
-    public function testTrimRight($expected, $string, $chars = null)
+    public function testTrimRight(string $expected, string $string, ?string $chars = null)
     {
         $actual = StringHelper::trimRight($string, $chars);
         self::assertSame($expected, $actual);
@@ -1564,11 +1477,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider upperCamelizeDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testUpperCamelize($expected, $string)
+    public function testUpperCamelize(string $expected, string $string)
     {
         $actual = StringHelper::upperCamelize($string);
         self::assertSame($expected, $actual);
@@ -1576,11 +1488,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider uppercaseFirstDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testUppercaseFirst($expected, $string)
+    public function testUppercaseFirst(string $expected, string $string)
     {
         $actual = StringHelper::upperCaseFirst($string);
         self::assertSame($expected, $actual);
@@ -1606,11 +1517,10 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider collapseWhitespaceDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
-    public function testWhitespaceCollapse($expected, $string)
+    public function testWhitespaceCollapse(string $expected, string $string)
     {
         $actual = StringHelper::collapseWhitespace($string);
         self::assertSame($expected, $actual);
@@ -1618,9 +1528,8 @@ class StringHelperTest extends Unit
 
     /**
      * @dataProvider idnToUtf8EmailDataProvider
-     *
-     * @param $expected
-     * @param $string
+     * @param string $expected
+     * @param string $string
      */
     public function testIdnToUtf8Email(string $expected, string $string)
     {

@@ -1025,7 +1025,6 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var string|null The `Permissions-Policy` header that should be sent for web responses.
-     *
      * @since 3.6.14
      * @group System
      */
@@ -1271,7 +1270,7 @@ class GeneralConfig extends BaseObject
     public string $resourceBaseUrl = '@web/cpresources';
 
     /**
-     * @var string|null The shell command Craft should execute to restore a database backup.
+     * @var string|null|false The shell command Craft should execute to restore a database backup.
      *
      * By default Craft will run `mysql` or `psql`, provided those libraries are in the `$PATH` variable for the user the web server is running as.
      *

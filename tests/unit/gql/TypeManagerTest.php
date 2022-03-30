@@ -16,11 +16,6 @@ use yii\base\Event;
 
 class TypeManagerTest extends Unit
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
     private ?Gql $_gqlService = null;
 
     protected function _before()
@@ -36,12 +31,11 @@ class TypeManagerTest extends Unit
      * Test whether it's possible to modify fields
      *
      * @dataProvider fieldModificationDataProvider
-     *
      * @param array $fields Array of fields
      * @param callable $callback Callback for modifications
-     * @param string $result expected result
+     * @param array $result expected result
      */
-    public function testFieldModification($fields, $callback, $result)
+    public function testFieldModification(array $fields, callable $callback, array $result)
     {
         $this->_gqlService->flushCaches();
         Event::on(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, $callback);
@@ -66,7 +60,7 @@ class TypeManagerTest extends Unit
         self::assertSame($fields, $this->_gqlService->prepareFieldDefinitions($fields, $cachedName));
     }
 
-    public function fieldModificationDataProvider()
+    public function fieldModificationDataProvider(): array
     {
         return [
             [

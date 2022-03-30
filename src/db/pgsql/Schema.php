@@ -110,7 +110,7 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * Returns the default backup command to execute.
      *
-     * @param string[]|null The table names whose data should be excluded from the backup
+     * @param string[]|null $ignoreTables The table names whose data should be excluded from the backup
      * @return string The command to execute
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string

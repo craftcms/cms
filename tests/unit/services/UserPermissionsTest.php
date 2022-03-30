@@ -35,17 +35,12 @@ class UserPermissionsTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var UserPermissions
      */
-    protected $userPermissions;
-
-    /**
-     * @var User
-     */
-    protected $activeUser;
+    protected UserPermissions $userPermissions;
 
     public function _fixtures(): array
     {

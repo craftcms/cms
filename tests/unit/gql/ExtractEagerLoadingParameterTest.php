@@ -17,20 +17,24 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
 use crafttests\fixtures\GqlSchemasFixture;
+use Exception;
 use GraphQL\Language\AST\DocumentNode;
+use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\NodeKind;
+use GraphQL\Language\AST\OperationDefinitionNode;
 use GraphQL\Language\Parser;
 use GraphQL\Language\Source;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use UnitTester;
 
 class ExtractEagerLoadingParameterTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {
@@ -87,7 +91,7 @@ class ExtractEagerLoadingParameterTest extends Unit
         );
     }
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'gqlTokens' => [
@@ -107,11 +111,10 @@ class ExtractEagerLoadingParameterTest extends Unit
      * @param array $variables Query variables
      * @param array $expectedParameters The expected eager-loading parameters.
      * @param string $returnType The return type of the GQL query
-     *
      * @throws \GraphQL\Error\SyntaxError
      * @dataProvider eagerLoadingParameterExtractionProvider
      */
-    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, $returnType)
+    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, string $returnType)
     {
         $documentNode = Parser::parse(new Source($query ?: '', 'GraphQL'));
         $resolveInfo = $this->_buildResolveInfo($documentNode, $variables, $returnType);
@@ -126,7 +129,7 @@ class ExtractEagerLoadingParameterTest extends Unit
         self::assertEquals($expectedParameters, $extractedConditions);
     }
 
-    public function eagerLoadingParameterExtractionProvider()
+    public function eagerLoadingParameterExtractionProvider(): array
     {
         $complexGql = <<<'GQL'
 {
@@ -351,16 +354,17 @@ GQL;
      *
      * @param DocumentNode $documentNode
      * @param array $variables
-     * @param $returnType
-     * @return object
-     * @throws \Exception
+     * @param string $returnType
+     * @return ResolveInfo
+     * @throws Exception
      */
-    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, $returnType)
+    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, string $returnType): ResolveInfo
     {
         $fragments = [];
 
         foreach ($documentNode->definitions as $definition) {
             if ($definition->kind === NodeKind::FRAGMENT_DEFINITION) {
+                /** @var FragmentDefinitionNode $definition */
                 $fragments[$definition->name->value] = $definition;
             }
         }
@@ -376,10 +380,13 @@ GQL;
             'name' => $returnType,
         ]);
 
+        /** @var OperationDefinitionNode|FragmentDefinitionNode $definition */
+        $definition = $documentNode->definitions[0];
+
         return $this->make(ResolveInfo::class, [
             'fragments' => $fragments,
             'fieldNodes' => [
-                $documentNode->definitions[0]->selectionSet->selections[0],
+                $definition->selectionSet->selections[0],
             ],
             'fieldName' => 'mockField',
             'variableValues' => $variables,

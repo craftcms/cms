@@ -1,21 +1,26 @@
 parameters:
-    level: 1
+    level: 2
     paths:
         - src
         - tests
     excludePaths:
         - src/config/composer-classes.php
         - src/config/mimeTypes.php
+        - src/image/*
         - src/services/Images.php
         - src/test/internal/*
         - src/views/debug/*
         - tests/_craft/*
         - tests/_data/*
         - tests/_output/*
+        - tests/_support/_generated/
     scanDirectories:
         - tests/_craft/storage/runtime/compiled_classes/
     scanFiles:
-        - vendor/codeception/codeception/autoload.php
+        - tests/_support/_generated/AcceptanceTesterActions.php
+        - tests/_support/_generated/FunctionalTesterActions.php
+        - tests/_support/_generated/GqlTesterActions.php
+        - tests/_support/_generated/UnitTesterActions.php
         - vendor/twig/twig/src/Extension/CoreExtension.php
     bootstrapFiles:
         - tests/_bootstrap.php
@@ -28,3 +33,8 @@ parameters:
             - end
         yii\base\ErrorHandler:
             - convertExceptionToError
+    ignoreErrors:
+        - '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
+        - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
+        - '#Variable \$field in PHPDoc tag @var does not exist#'
+        - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'

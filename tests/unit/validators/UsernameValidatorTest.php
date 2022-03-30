@@ -9,7 +9,6 @@ namespace crafttests\unit\validators;
 
 use Codeception\Test\Unit;
 use craft\validators\UsernameValidator;
-use UnitTester;
 use yii\base\NotSupportedException;
 
 /**
@@ -24,16 +23,10 @@ class UsernameValidatorTest extends Unit
     /**
      * @var UsernameValidator
      */
-    protected $usernameValidator;
-
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    protected UsernameValidator $usernameValidator;
 
     /**
      * @dataProvider validateValueDataProvider
-     *
      * @param array|null $expected
      * @param string|null $value
      * @throws NotSupportedException

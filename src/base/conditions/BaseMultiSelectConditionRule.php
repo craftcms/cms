@@ -126,7 +126,7 @@ JS;
     /**
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
      *
-     * @param callable|null Method for normalizing a given selected value.
+     * @param callable|null $normalizeValue Method for normalizing a given selected value.
      * @return array|null
      */
     protected function paramValue(?callable $normalizeValue = null): ?array

@@ -296,8 +296,9 @@ class Elements extends Component
     /**
      * Creates an element with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return ElementInterface The element
+     * @template T of ElementInterface
+     * @param class-string<T>|array{type: class-string<T>} $config The element’s class name, or its config, with a `type` value
+     * @return T The element
      */
     public function createElement(mixed $config): ElementInterface
     {
@@ -473,7 +474,7 @@ class Elements extends Component
      * the $id is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param int $elementId The element’s ID.
      * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
@@ -493,7 +494,7 @@ class Elements extends Component
      * the $uid is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param string $uid The element’s UID.
      * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
@@ -510,7 +511,7 @@ class Elements extends Component
     /**
      * Returns an element by its ID or UID.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
      * @param class-string<T>|null $elementType The element class.
@@ -852,9 +853,10 @@ class Elements extends Component
     /**
      * Updates the canonical element from a given derivative, such as a draft or revision.
      *
-     * @param ElementInterface $element The derivative element
+     * @template T of ElementInterface
+     * @param T $element The derivative element
      * @param array $newAttributes Any attributes to apply to the canonical element
-     * @return ElementInterface The updated canonical element
+     * @return T The updated canonical element
      * @throws InvalidArgumentException if the element is already a canonical element
      * @since 3.7.0
      */
@@ -968,17 +970,17 @@ class Elements extends Component
                 try {
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
-                        throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it wasn’t loaded with its content.");
+                        throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it wasn’t loaded with its content.");
                     }
 
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
                             if (ElementHelper::isRevision($element)) {
-                                throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it's a revision.");
+                                throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it's a revision.");
                             }
                         } catch (Throwable $rootException) {
-                            throw new InvalidElementException($element, "Skipped resaving $element ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
+                            throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
                         }
                     }
                 } catch (InvalidElementException $e) {
@@ -1110,11 +1112,12 @@ class Elements extends Component
     /**
      * Duplicates an element.
      *
-     * @param ElementInterface $element the element to duplicate
+     * @template T of ElementInterface
+     * @param T $element the element to duplicate
      * @param array $newAttributes any attributes to apply to the duplicate
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
-     * @return ElementInterface the duplicated element
+     * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws Throwable if reasons
@@ -1611,7 +1614,7 @@ class Elements extends Component
      * @param class-string<ElementInterface>|null $elementType The element class.
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
-     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
@@ -1653,7 +1656,7 @@ class Elements extends Component
      * Deletes an element.
      *
      * @param ElementInterface $element The element to be deleted
-     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
@@ -2106,11 +2109,11 @@ class Elements extends Component
     /**
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
-     * @param string|EagerLoadPlan[]|array
+     * @param string|EagerLoadPlan[]|array $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
      */
-    public function createEagerLoadingPlans($with): array
+    public function createEagerLoadingPlans(string|array $with): array
     {
         // Normalize the paths and group based on the top level eager loading handle
         if (is_string($with)) {
@@ -2851,7 +2854,7 @@ class Elements extends Component
             $siteElement = clone $element;
             $siteElement->siteId = $oldSiteElement->siteId;
             $siteElement->contentId = $oldSiteElement->contentId;
-            $siteElement->setEnabledForSite($oldSiteElement->enabledForSite);
+            $siteElement->setEnabledForSite($oldSiteElement->getEnabledForSite());
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;

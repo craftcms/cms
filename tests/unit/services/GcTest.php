@@ -26,7 +26,6 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use UnitTester;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -39,14 +38,9 @@ use yii\base\InvalidArgumentException;
 class GcTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Gc
      */
-    protected $gc;
+    protected Gc $gc;
 
     /**
      * @return array
@@ -115,7 +109,6 @@ class GcTest extends Unit
 
     /**
      * @dataProvider gcDataProvider
-     *
      * @param int $remainingCount
      * @param string $leftoverId
      * @param string $table
@@ -194,7 +187,7 @@ class GcTest extends Unit
      * indicate what titles are not allowed to be present.
      *
      * @param int $expectedRemoval
-     * @param array|null $notAllowedTitles
+     * @param array $notAllowedTitles
      */
     private function _doEntryTest(int $expectedRemoval, array $notAllowedTitles = [])
     {
@@ -223,6 +216,7 @@ class GcTest extends Unit
     {
         $date = (new DateTime('now', new DateTimeZone('UTC')))->sub(new DateInterval('P3D'))->format('Y-m-d H:i:s');
 
+        /** @var UserRecord[] $userRecords */
         $userRecords = UserRecord::find()
             ->where(['username' => ['user1', 'user2']])
             ->all();

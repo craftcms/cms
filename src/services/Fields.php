@@ -1317,6 +1317,7 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             // Get the current layout
+            /** @var FieldLayoutRecord|null $layoutRecord */
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
                 ->one();
@@ -1363,6 +1364,7 @@ class Fields extends Component
 
         foreach ($tabs as $tab) {
             if ($tab->id && isset($tabRecords[$tab->id])) {
+                /** @var FieldLayoutTabRecord $tabRecord */
                 $tabRecord = $tabRecords[$tab->id];
                 unset($tabRecords[$tab->id]);
             } else {

@@ -31,8 +31,9 @@ class Conditions extends Component
     /**
      * Creates a condition instance.
      *
-     * @param array{class: string}|string $config The condition class or configuration array
-     * @return ConditionInterface
+     * @template T of ConditionInterface
+     * @param array{class: class-string<T>}|string $config The condition class or configuration array
+     * @return T
      * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      * @throws InvalidConfigException
      */

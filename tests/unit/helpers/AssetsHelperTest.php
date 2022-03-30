@@ -29,7 +29,7 @@ class AssetsHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
@@ -42,7 +42,6 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider generateUrlDataProvider
-     *
      * @param string $expected
      * @param array $params
      * @throws InvalidConfigException
@@ -74,7 +73,6 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider prepareAssetNameDataProvider
-     *
      * @param string $expected
      * @param string $name
      * @param bool $isFilename
@@ -108,7 +106,6 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider filename2TitleDataProvider
-     *
      * @param string $expected
      * @param string $filename
      */
@@ -119,7 +116,6 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider getFileKindLabelDataProvider
-     *
      * @param string $expected
      * @param string $kind
      */
@@ -130,7 +126,6 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider getFileKindByExtensionDataProvider
-     *
      * @param string $expected
      * @param string $file
      */
@@ -141,7 +136,6 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider parseFileLocationDataProvider
-     *
      * @param array $expected
      * @param string $location
      * @throws Exception
@@ -178,11 +172,10 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider parseSrcsetSizeDataProvider
-     *
      * @param array|false $expected
      * @param mixed $size
      */
-    public function testParseSrcsetSize($expected, $size)
+    public function testParseSrcsetSize(array|false $expected, mixed $size)
     {
         if (is_array($expected)) {
             self::assertSame($expected, Assets::parseSrcsetSize($size));

@@ -38,12 +38,12 @@ class ViewTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      * @return array
@@ -59,7 +59,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider normalizeObjectTemplateDataProvider
-     *
      * @param string $expected
      * @param string $template
      */
@@ -84,13 +83,12 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider resolveTemplateDataProvider
-     *
      * @param string|false $expected
      * @param string $name
      * @param string|null $templateMode
      * @throws Exception
      */
-    public function testResolveTemplate($expected, string $name, ?string $templateMode = null)
+    public function testResolveTemplate(string|false $expected, string $name, ?string $templateMode = null)
     {
         if ($templateMode !== null) {
             $this->view->setTemplateMode($templateMode);
@@ -105,7 +103,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider privateResolveTemplateDataProvider
-     *
      * @param string|null $expected
      * @param string $basePath
      * @param string $name
@@ -175,7 +172,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider renderObjectTemplateDataProvider
-     *
      * @param string $expected
      * @param string $template
      * @param mixed $object
@@ -183,7 +179,7 @@ class ViewTest extends TestCase
      * @throws Exception
      * @throws Throwable
      */
-    public function testRenderObjectTemplate(string $expected, string $template, $object, array $variables = [])
+    public function testRenderObjectTemplate(string $expected, string $template, mixed $object, array $variables = [])
     {
         self::assertSame($expected, $this->view->renderObjectTemplate($template, $object, $variables));
     }
@@ -279,7 +275,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider namespaceInputsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string|null $namespace
@@ -292,7 +287,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider namespaceInputNameDataProvider
-     *
      * @param string $expected
      * @param string $string
      * @param string|null $namespace
@@ -304,7 +298,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider namespaceInputIdDataProvider
-     *
      * @param string $expected
      * @param string $string
      * @param string|null $namespace
@@ -316,7 +309,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider getTemplateRootsDataProvider
-     *
      * @param array $expected
      * @param string $which
      * @param array $roots
@@ -632,11 +624,11 @@ TWIG;
     }
 
     /**
-     * @param $category
+     * @param mixed $category
      * @param array $messages
      * @return string
      */
-    private function _generateTranslationJs($category, array $messages): string
+    private function _generateTranslationJs(mixed $category, array $messages): string
     {
         $category = Json::encode($category);
         $js = '';
@@ -650,11 +642,11 @@ TWIG;
     }
 
     /**
-     * @param $desiredJs
-     * @param $desiredPosition
+     * @param mixed $desiredJs
+     * @param mixed $desiredPosition
      * @throws \Exception
      */
-    private function _assertRegisterJsInputValues($desiredJs, $desiredPosition)
+    private function _assertRegisterJsInputValues(mixed $desiredJs, mixed $desiredPosition)
     {
         $this->view = Stub::construct(
             View::class,

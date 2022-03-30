@@ -15,7 +15,6 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
 use crafttests\fixtures\UserFixture;
-use UnitTester;
 
 /**
  * Unit tests for the search service
@@ -32,14 +31,9 @@ use UnitTester;
 class SearchTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Search
      */
-    protected $search;
+    protected Search $search;
 
     public function _fixtures(): array
     {
@@ -52,12 +46,11 @@ class SearchTest extends Unit
 
     /**
      * @dataProvider searchElementsDataProvider
-     *
-     * @param $usernameOrEmailsForResult
-     * @param $usernameOrEmailsForQuery
-     * @param $searchQuery
+     * @param array $usernameOrEmailsForResult
+     * @param array $usernameOrEmailsForQuery
+     * @param string $searchQuery
      */
-    public function testSearchElements($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $searchQuery)
+    public function testSearchElements(array $usernameOrEmailsForResult, array $usernameOrEmailsForQuery, string $searchQuery)
     {
         // Repackage the dataProvider data into something that can be used by the filter function
         $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
@@ -155,11 +148,11 @@ class SearchTest extends Unit
     }
 
     /**
-     * @param $attributeName
-     * @param $searchIndex
+     * @param mixed $attributeName
+     * @param iterable $searchIndex
      * @return string
      */
-    private function _getSearchIndexValueByAttribute($attributeName, $searchIndex): string
+    private function _getSearchIndexValueByAttribute(mixed $attributeName, iterable $searchIndex): string
     {
         foreach (ArrayHelper::where($searchIndex, 'attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {

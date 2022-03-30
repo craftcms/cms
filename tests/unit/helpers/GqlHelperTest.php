@@ -18,25 +18,18 @@ use GraphQL\Type\Definition\UnionType;
 class GqlHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    /**
      * Test Schema helper methods.
      *
      * @dataProvider schemaPermissionDataProvider
-     *
      * @param array $permissionSet list of permissions the active schema should have
      * @param string $permission A single permission to check
      * @param string $scope Permission check against this scope must return true
      * @param string $failingScope Permission check against this scope must return false
      * @param bool $failAll Whether all tests should fail.
-     *
      * @throws GqlException
      * @throws \yii\base\Exception
      */
-    public function testSchemaHelper($permissionSet, $permission, $scope, $failingScope, $failAll = false)
+    public function testSchemaHelper(array $permissionSet, string $permission, string $scope, string $failingScope, bool $failAll = false)
     {
         $this->_setSchemaWithPermissions($permissionSet);
 
@@ -56,10 +49,10 @@ class GqlHelperTest extends Unit
      * Test permission extraction from schema.
      *
      * @dataProvider schemaPermissionDataProviderForExtraction
-     *
-     * @param array $permissionSet list of permissions the schems should have
+     * @param array $permissionSet list of permissions the schemas should have
+     * @param array $expectedPairs
      */
-    public function testSchemaPermissionExtraction($permissionSet, $expectedPairs)
+    public function testSchemaPermissionExtraction(array $permissionSet, array $expectedPairs)
     {
         $this->_setSchemaWithPermissions($permissionSet);
         self::assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
@@ -131,8 +124,11 @@ class GqlHelperTest extends Unit
      * Test if entity actions are extracted correctly
      *
      * @dataProvider actionExtractionDataProvider
+     * @param array $scope
+     * @param string $entity
+     * @param array $result
      */
-    public function testEntityActionExtraction($scope, $entity, $result)
+    public function testEntityActionExtraction(array $scope, string $entity, array $result)
     {
         $this->_setSchemaWithPermissions($scope);
 
@@ -142,16 +138,16 @@ class GqlHelperTest extends Unit
     /**
      * Test GQL types correctly wrapped in NonNull type.
      *
-     * @param $input
-     * @param $expected
+     * @param mixed $input
+     * @param mixed $expected
      * @dataProvider wrapInNonNullProvider
      */
-    public function testWrapInNonNull($input, $expected)
+    public function testWrapInNonNull(mixed $input, mixed $expected)
     {
         self::assertEquals($expected, GqlHelper::wrapInNonNull($input));
     }
 
-    public function wrapInNonNullProvider()
+    public function wrapInNonNullProvider(): array
     {
         $typeDef = [
             'name' => 'mock',
@@ -175,7 +171,7 @@ class GqlHelperTest extends Unit
     }
 
 
-    public function actionExtractionDataProvider()
+    public function actionExtractionDataProvider(): array
     {
         return [
             [
@@ -220,7 +216,7 @@ class GqlHelperTest extends Unit
         ];
     }
 
-    public function schemaPermissionDataProvider()
+    public function schemaPermissionDataProvider(): array
     {
         return [
             [
@@ -258,7 +254,7 @@ class GqlHelperTest extends Unit
         ];
     }
 
-    public function schemaPermissionDataProviderForExtraction()
+    public function schemaPermissionDataProviderForExtraction(): array
     {
         return [
             [
@@ -324,9 +320,11 @@ class GqlHelperTest extends Unit
     }
 
     /**
-     * Set a schema with permission set
+     * Set a schema with permission set.
+     *
+     * @param array $scopeSet
      */
-    public function _setSchemaWithPermissions($scopeSet)
+    public function _setSchemaWithPermissions(array $scopeSet)
     {
         $gqlService = Craft::$app->getGql();
         $schema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => $scopeSet]);

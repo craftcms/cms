@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -10,7 +10,6 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\Number;
 use craft\test\mockclasses\ToString;
-use UnitTester;
 
 /**
  * Class NumberHelperTest.
@@ -22,13 +21,7 @@ use UnitTester;
 class NumberHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider wordDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -39,7 +32,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider upperAlphaDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -50,7 +42,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider lowerAlphaDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -61,7 +52,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider upperRomanDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -72,7 +62,6 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider lowerRomanDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
@@ -83,11 +72,10 @@ class NumberHelperTest extends Unit
 
     /**
      * @dataProvider makeNumericDataProvider
-     *
      * @param mixed $expected
      * @param mixed $var
      */
-    public function testMakeNumeric($expected, $var)
+    public function testMakeNumeric(mixed $expected, mixed $var)
     {
         self::assertSame($expected, Number::makeNumeric($var));
     }

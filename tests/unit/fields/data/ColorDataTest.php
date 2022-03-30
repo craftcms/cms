@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\fields\data\ColorData;
-use UnitTester;
 
 /**
  * Unit tests for the ColorData class.
@@ -20,13 +19,7 @@ use UnitTester;
 class ColorDataTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider rgbDataProvider
-     *
      * @param int $r
      * @param int $g
      * @param int $b
@@ -46,7 +39,6 @@ class ColorDataTest extends Unit
 
     /**
      * @dataProvider hslDataProvider
-     *
      * @param int $h
      * @param int $s
      * @param int $l

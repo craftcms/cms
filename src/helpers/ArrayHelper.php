@@ -344,7 +344,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array the array to extract value from
      * @param string $oldKey old key name of the array element
      * @param string $newKey new key name of the array element
-     * @param mixed|null $default the default value to be set if the specified old key does not exist
+     * @param mixed $default the default value to be set if the specified old key does not exist
      */
     public static function rename(array &$array, string $oldKey, string $newKey, mixed $default = null): void
     {

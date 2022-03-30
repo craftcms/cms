@@ -34,22 +34,22 @@ class UserElementTest extends TestCase
     /**
      * @var Users
      */
-    public $users;
+    public Users $users;
 
     /**
      * @var UnitTester
      */
-    public $tester;
+    protected UnitTester $tester;
 
     /**
      * @var User
      */
-    protected $activeUser;
+    protected User $activeUser;
 
     /**
      * @var User
      */
-    protected $inactiveUser;
+    protected User $inactiveUser;
 
     /**
      *

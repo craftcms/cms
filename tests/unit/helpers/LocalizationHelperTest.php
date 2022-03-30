@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -24,11 +24,10 @@ class LocalizationHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider normalizeLanguageDataProvider
-     *
      * @param string $expected
      * @param string $language
      */
@@ -52,12 +51,11 @@ class LocalizationHelperTest extends Unit
 
     /**
      * @dataProvider normalizeNumberDataProvider
-     *
      * @param mixed $expected
      * @param mixed $number
      * @param string|null $localeId
      */
-    public function testNormalizeNumber($expected, $number, ?string $localeId)
+    public function testNormalizeNumber(mixed $expected, mixed $number, ?string $localeId)
     {
         self::assertSame($expected, Localization::normalizeNumber($number, $localeId));
     }

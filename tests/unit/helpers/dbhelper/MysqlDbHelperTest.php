@@ -12,7 +12,6 @@ use Craft;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
-use UnitTester;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 
@@ -26,18 +25,12 @@ use yii\base\NotSupportedException;
 class MysqlDbHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider sqlTypesDataProvider
-     *
-     * @param $type
-     * @param $supported
+     * @param string $type
+     * @param bool $supported
      * @throws NotSupportedException
      */
-    public function testTypeSupport($type, $supported)
+    public function testTypeSupport(string $type, bool $supported)
     {
         $isSupported = Db::isTypeSupported($type);
         self::assertSame($supported, Db::isTypeSupported($type));
@@ -46,11 +39,10 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnStorageCapacityDataProvider
-     *
      * @param int|null|false $expected
      * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity($expected, string $columnType)
+    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType)
     {
         self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
@@ -67,21 +59,19 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
-     *
      * @param mixed $expected
      * @param string $column
      * @param string|int|array $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParam($expected, string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false)
+    public function testParseParam(mixed $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false)
     {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
     /**
      * @dataProvider getTextualColumnTypeByContentLengthDataProvider
-     *
      * @param string $expected
      * @param int $contentLength
      * @throws Exception

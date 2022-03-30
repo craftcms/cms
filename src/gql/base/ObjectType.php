@@ -38,7 +38,6 @@ abstract class ObjectType extends GqlObjectType
      * @param array $arguments arguments for resolving this field.
      * @param mixed $context The context shared between all resolvers
      * @param ResolveInfo $resolveInfo The resolve information
-     *
      * @return mixed $result
      * @throws GqlException if an error occurs
      */

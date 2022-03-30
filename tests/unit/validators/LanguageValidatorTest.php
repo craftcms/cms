@@ -26,16 +26,15 @@ class LanguageValidatorTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var LanguageValidator
      */
-    protected $languageValidator;
+    protected LanguageValidator $languageValidator;
 
     /**
      * @dataProvider validateValueDataProvider
-     *
      * @param array|null $expected
      * @param string $value
      * @param bool $onlySiteLangs
@@ -51,12 +50,11 @@ class LanguageValidatorTest extends Unit
 
     /**
      * @dataProvider validateAttributeDataProvider
-     *
-     * @param $mustValidate
-     * @param $input
+     * @param bool $mustValidate
+     * @param string $input
      * @param bool $onlySiteLocalIds
      */
-    public function testValidateAtrribute($mustValidate, $input, $onlySiteLocalIds = true)
+    public function testValidateAttribute(bool $mustValidate, string $input, bool $onlySiteLocalIds = true)
     {
         $this->tester->mockCraftMethods('i18n', ['getSiteLocaleIds' => ['nl', 'en-US']]);
 

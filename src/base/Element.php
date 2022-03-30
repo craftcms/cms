@@ -2474,11 +2474,11 @@ abstract class Element extends Component implements ElementInterface
         // Just fetch that one value ourselves
         if (!isset($this->_canonicalUid)) {
             $this->_canonicalUid = static::find()
-                ->select(['elements.uid'])
                 ->id($this->_canonicalId)
                 ->site('*')
                 ->status(null)
                 ->ignorePlaceholders()
+                ->select(['elements.uid'])
                 ->scalar();
         }
 

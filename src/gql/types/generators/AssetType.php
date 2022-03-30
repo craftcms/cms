@@ -55,7 +55,6 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateType(mixed $context): ObjectType
     {
-        /** @var Volume $volume */
         $typeName = AssetElement::gqlTypeNameByContext($context);
         $contentFieldGqlTypes = self::getContentFields($context);
 

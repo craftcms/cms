@@ -316,7 +316,7 @@ class IndexAssetsController extends Controller
             $this->stdout("{$e->volume->name}/{$e->indexEntry->uri}" . PHP_EOL);
         }
 
-        $selection = $this->prompt('>', [
+        $selection = (int)$this->prompt('>', [
             'validator' => function($input) use ($missingRecords) {
                 return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
             },

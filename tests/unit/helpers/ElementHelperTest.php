@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
@@ -30,7 +30,7 @@ class ElementHelperTest extends Unit
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
@@ -43,7 +43,6 @@ class ElementHelperTest extends Unit
 
     /**
      * @dataProvider generateSlugDataProvider
-     *
      * @param string $expected
      * @param string $input
      * @param bool|null $ascii
@@ -59,7 +58,6 @@ class ElementHelperTest extends Unit
 
     /**
      * @dataProvider normalizeSlugDataProvider
-     *
      * @param string $expected
      * @param string $slug
      */
@@ -84,7 +82,6 @@ class ElementHelperTest extends Unit
 
     /**
      * @dataProvider doesUriHaveSlugTagDataProvider
-     *
      * @param bool $expected
      * @param string $uriFormat
      */
@@ -95,7 +92,6 @@ class ElementHelperTest extends Unit
 
     /**
      * @dataProvider setUniqueUriDataProvider
-     *
      * @param array $expected
      * @param array $config
      * @param int $duplicates
@@ -158,7 +154,7 @@ class ElementHelperTest extends Unit
             ]);
             ElementHelper::setUniqueUri($el);
             $result = true;
-        } catch (Exception $exception) {
+        } catch (Exception) {
             $result = false;
         }
 

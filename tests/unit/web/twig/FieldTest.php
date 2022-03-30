@@ -10,7 +10,6 @@ namespace crafttests\unit\web\twig;
 use Codeception\Test\Unit;
 use Craft;
 use craft\web\View;
-use UnitTester;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -22,14 +21,9 @@ use UnitTester;
 class FieldTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      *

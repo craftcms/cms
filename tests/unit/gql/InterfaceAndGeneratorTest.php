@@ -21,6 +21,7 @@ use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\fields\Table;
 use craft\fs\Local;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -39,13 +40,14 @@ use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
 use GraphQL\Type\Definition\ObjectType;
+use UnitTester;
 
 class InterfaceAndGeneratorTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     protected function _before()
     {
@@ -142,13 +144,13 @@ class InterfaceAndGeneratorTest extends Unit
      * Test interfaces running type generators.
      *
      * @dataProvider interfaceDataProvider
-     *
-     * @param class-string $gqlInterfaceClass The interface class being tested
+     * @param class-string<SingularTypeInterface> $gqlInterfaceClass The interface class being tested
      * @param callable $getAllContexts The callback that provides an array of all contexts for generated types
      * @param callable $getTypeNameByContext The callback to generate the GQL type name by context
      */
     public function testInterfacesGeneratingTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext)
     {
+        /** @var string|SingularTypeInterface $gqlInterfaceClass */
         $gqlInterfaceClass::getType();
 
         foreach ($getAllContexts() as $context) {

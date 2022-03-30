@@ -1232,7 +1232,6 @@ class Gql extends Component
      * @param mixed $context
      * @param array|null $variables
      * @param string|null $operationName
-     *
      * @return string|null
      */
     private function _getCacheKey(
@@ -1308,8 +1307,8 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var SingularTypeInterface $type */
-            TypeLoader::registerType($type::getName(), $type . '::getType');
+            /** @var string|SingularTypeInterface $type */
+            TypeLoader::registerType($type::getName(), "$type::getType");
         }
 
         return $event->types;

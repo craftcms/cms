@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test;
@@ -68,6 +68,7 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use PHPUnit\Framework\MockObject\MockObject;
+use yii\base\Application as BaseApplication;
 use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -84,7 +85,7 @@ use yii\mutex\Mutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 class TestSetup
 {
@@ -173,7 +174,6 @@ class TestSetup
      * @param class-string<Migration> $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
-     *
      * @return bool
      * @throws InvalidConfigException
      * @throws MigrationException
@@ -498,13 +498,13 @@ class TestSetup
     /**
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param class-string<\yii\base\Application> $appClass
+     * @param class-string<BaseApplication>|null $appClass
      * @return MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = ''): MockObject
+    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], ?string $appClass = null): MockObject
     {
-        $appClass = $appClass ?: self::appClass();
+        $appClass = $appClass ?? self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
         $mockApp = self::getMock($test, $appClass);

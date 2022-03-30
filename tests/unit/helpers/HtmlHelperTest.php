@@ -9,7 +9,6 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Html;
-use UnitTester;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -22,13 +21,7 @@ use yii\base\InvalidArgumentException;
 class HtmlHelperTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider encodeParamsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param array $variables
@@ -40,11 +33,10 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider parseTagDataProvider
-     *
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTag($expected, string $tag)
+    public function testParseTag(array|false $expected, string $tag)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -69,13 +61,12 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider appendToTagDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testAppendToTag($expected, string $tag, string $html, ?string $ifExists)
+    public function testAppendToTag(string|false $expected, string $tag, string $html, ?string $ifExists)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -87,13 +78,12 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider prependToTagDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testPrependToTag($expected, string $tag, string $html, ?string $ifExists)
+    public function testPrependToTag(string|false $expected, string $tag, string $html, ?string $ifExists)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -105,11 +95,10 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider parseTagAttributesDataProvider
-     *
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTagAttributes($expected, string $tag)
+    public function testParseTagAttributes(array|false $expected, string $tag)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -121,12 +110,11 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider modifyTagAttributesDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param array $attributes
      */
-    public function testModifyTagAttributes($expected, string $tag, array $attributes)
+    public function testModifyTagAttributes(string|false $expected, string $tag, array $attributes)
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -138,7 +126,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider normalizeTagAttributesDataProvider
-     *
      * @param array $expected
      * @param array $attributes
      */
@@ -149,7 +136,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider idDataProvider
-     *
      * @param string $expected
      * @param string $id
      */
@@ -160,7 +146,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceInputNameDataProvider
-     *
      * @param string $expected
      * @param string $name
      * @param string|null $namespace
@@ -172,7 +157,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceIdDataProvider
-     *
      * @param string $expected
      * @param string $name
      * @param string|null $namespace
@@ -184,7 +168,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceInputsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string $namespace
@@ -196,7 +179,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider namespaceAttributesDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string $namespace
@@ -209,7 +191,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider widontDataProvider
-     *
      * @param string $expected
      * @param string $string
      */
@@ -220,7 +201,6 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider encodeInvalidTagsDataProvider
-     *
      * @param string $expected
      * @param string $html
      */

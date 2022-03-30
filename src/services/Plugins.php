@@ -1332,7 +1332,6 @@ class Plugins extends Component
      *
      * @param string $handle
      * @return array
-     *
      * @throws InvalidPluginException if plugin not found
      */
     private function _getPluginConfigData(string $handle): array

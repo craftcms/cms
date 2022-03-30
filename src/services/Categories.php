@@ -359,6 +359,7 @@ class Categories extends Component
 
             if (!$isNewCategoryGroup) {
                 // Get the old category group site settings
+                /** @var CategoryGroup_SiteSettingsRecord[] $allOldSiteSettingsRecords */
                 $allOldSiteSettingsRecords = CategoryGroup_SiteSettingsRecord::find()
                     ->where(['groupId' => $groupRecord->id])
                     ->indexBy('siteId')
@@ -579,8 +580,8 @@ class Categories extends Component
         try {
             // Delete the categories
             $categories = Category::find()
-                ->status(null)
                 ->groupId($categoryGroupRecord->id)
+                ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
 

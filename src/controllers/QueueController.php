@@ -10,11 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Json;
-use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as YiiDbException;
+use yii\queue\Queue;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -35,22 +35,21 @@ class QueueController extends Controller
      */
     protected array|bool|int $allowAnonymous = ['run'];
 
+    private QueueInterface $queue;
+
     /**
      * @inheritdoc
-     * @throws ServerErrorHttpException if the `queue` component doesn’t implement [[QueueInterface]]
+     * @throws ServerErrorHttpException
      */
-    public function beforeAction($action): bool
+    public function init(): void
     {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
+        parent::init();
 
-        // Make sure the queue uses our interface
-        if (!Craft::$app->getQueue() instanceof QueueInterface) {
-            throw new ServerErrorHttpException('The queue class ' . get_class(Craft::$app->getQueue()) . ' doesn’t support web-based runners.');
+        $queue = Craft::$app->getQueue();
+        if (!$queue instanceof QueueInterface) {
+            throw new ServerErrorHttpException(sprintf('The queue class %s doesn’t support web-based runners.', get_class($queue)));
         }
-
-        return true;
+        $this->queue = $queue;
     }
 
     /**
@@ -69,8 +68,7 @@ class QueueController extends Controller
         }
 
         // Make sure the queue isn't already running, and there are waiting jobs
-        $queue = Craft::$app->getQueue();
-        if ($queue->getHasReservedJobs() || !$queue->getHasWaitingJobs()) {
+        if ($this->queue->getHasReservedJobs() || !$this->queue->getHasWaitingJobs()) {
             return $this->response;
         }
 
@@ -81,7 +79,7 @@ class QueueController extends Controller
 
         // Run the queue
         App::maxPowerCaptain();
-        $queue->run();
+        $this->queue->run();
 
         return $this->response;
     }
@@ -100,7 +98,7 @@ class QueueController extends Controller
         $this->requirePermission('utility:queue-manager');
 
         $id = $this->request->getRequiredBodyParam('id');
-        Craft::$app->getQueue()->retry($id);
+        $this->queue->retry($id);
 
         return $this->actionRun();
     }
@@ -118,7 +116,7 @@ class QueueController extends Controller
         $this->requirePermission('utility:queue-manager');
 
         $id = $this->request->getRequiredBodyParam('id');
-        Craft::$app->getQueue()->release($id);
+        $this->queue->release($id);
 
         return $this->asSuccess();
     }
@@ -138,7 +136,7 @@ class QueueController extends Controller
         $this->requirePostRequest();
         $this->requirePermission('utility:queue-manager');
 
-        Craft::$app->getQueue()->releaseAll();
+        $this->queue->releaseAll();
 
         return $this->asSuccess();
     }
@@ -157,7 +155,7 @@ class QueueController extends Controller
         $this->requirePostRequest();
         $this->requirePermission('utility:queue-manager');
 
-        Craft::$app->getQueue()->retryAll();
+        $this->queue->retryAll();
 
         return $this->actionRun();
     }
@@ -173,11 +171,10 @@ class QueueController extends Controller
         $this->requirePermission('accessCp');
 
         $limit = $this->request->getParam('limit');
-        $queue = Craft::$app->getQueue();
 
         return $this->asJson([
-            'total' => $queue->getTotalJobs(),
-            'jobs' => $queue->getJobInfo($limit),
+            'total' => $this->queue->getTotalJobs(),
+            'jobs' => $this->queue->getJobInfo($limit),
         ]);
     }
 
@@ -200,7 +197,7 @@ class QueueController extends Controller
         ];
 
         try {
-            $details += Craft::$app->getQueue()->getJobDetails($jobId);
+            $details += $this->queue->getJobDetails($jobId);
         } catch (InvalidArgumentException) {
             $details += [
                 'description' => Craft::t('app', 'Completed job'),

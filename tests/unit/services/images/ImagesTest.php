@@ -13,7 +13,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Images;
 use Imagick;
-use UnitTester;
 use yii\base\Exception;
 
 /**
@@ -26,28 +25,22 @@ use yii\base\Exception;
 class ImagesTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Images
      */
-    protected $images;
+    protected Images $images;
 
     /**
      * @var string
      */
-    protected $path;
+    protected string $path;
 
     /**
      * @var string
      */
-    protected $sandboxPath;
+    protected string $sandboxPath;
 
     /**
      * @dataProvider checkMemoryForImageDataProvider
-     *
      * @param bool $expected
      * @param string $filePath
      */
@@ -132,7 +125,8 @@ class ImagesTest extends Unit
         Craft::$app->getConfig()->getGeneral()->transformGifs = false;
 
         $oldContents = file_get_contents($this->sandboxPath . 'example-gif.gif');
-        self::assertNull($this->images->cleanImage($this->sandboxPath . 'example-gif.gif'));
+
+        $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
         self::assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = true;
@@ -145,7 +139,9 @@ class ImagesTest extends Unit
      */
     public function testGetExifData()
     {
+        $this->_skipIfNoExif();
         $this->_skipIfNoImagick();
+
         $exifData = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
 
         $requiredValues = [
@@ -213,6 +209,16 @@ class ImagesTest extends Unit
     {
         if (!($this->images->getIsImagick() && method_exists(Imagick::class, 'getImageOrientation'))) {
             $this->markTestSkipped('Need Imagick to test this function.');
+        }
+    }
+
+    /**
+     *
+     */
+    private function _skipIfNoExif()
+    {
+        if (!extension_loaded('exif')) {
+            $this->markTestSkipped('Need ext-exif to test this function.');
         }
     }
 }

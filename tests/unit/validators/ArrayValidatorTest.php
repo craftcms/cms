@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -25,27 +25,22 @@ class ArrayValidatorTest extends Unit
     /**
      * @var ArrayValidator
      */
-    protected $arrayValidator;
+    protected ArrayValidator $arrayValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
-    /*
-     * @var UnitTester
-     */
-    protected $tester;
+    protected ExampleModel $model;
 
     /**
      * Test that if messages aren't provided when creating the array validator (i.e. not setting the $tooMany message),
      * they will be provided automatically.
      *
      * @dataProvider paramsToTestOnEmptyDataProvider
-     *
      * @param ArrayValidator $validator
-     * @param $variableName
+     * @param string $variableName
      */
-    public function testMessagingOnEmptyInputArray(ArrayValidator $validator, $variableName)
+    public function testMessagingOnEmptyInputArray(ArrayValidator $validator, string $variableName)
     {
         self::assertTrue(strlen($validator->$variableName) > 2);
 
@@ -68,11 +63,10 @@ class ArrayValidatorTest extends Unit
 
     /**
      * @dataProvider arrayValidatorValuesDataProvider
-     *
-     * @param      $inputValue
+     * @param mixed $inputValue
      * @param bool $mustValidate
      */
-    public function testValidation($inputValue, bool $mustValidate)
+    public function testValidation(mixed $inputValue, bool $mustValidate)
     {
         $this->arrayValidator->count = null;
 

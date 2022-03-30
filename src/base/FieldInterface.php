@@ -21,6 +21,8 @@ use yii\validators\Validator;
  *
  * @mixin FieldTrait
  * @mixin YiiComponent
+ * @mixin Model
+ * @mixin SavableComponentTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -61,7 +63,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```php
      * public static function valueType(): string
      * {
-     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
+     *      return 'int|string';
      * }
      * ```
      *

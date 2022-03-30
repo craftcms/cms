@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\db\Table;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\tags\TagCondition;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
@@ -106,7 +105,7 @@ class Tag extends Element
      * @inheritdoc
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): TagQuery
     {
         return new TagQuery(static::class);
     }

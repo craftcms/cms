@@ -12,7 +12,6 @@ use Craft;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\services\Routes;
-use UnitTester;
 
 /**
  * Unit tests for routes service.
@@ -25,19 +24,12 @@ use UnitTester;
 class RoutesTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Routes
      */
-    protected $routes;
-
+    protected Routes $routes;
 
     /**
      * @dataProvider saveRouteDataProvider
-     *
      * @param array $expected
      * @param array $uriParts
      * @param string $template

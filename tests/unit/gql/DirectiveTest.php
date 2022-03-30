@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\config\GeneralConfig;
 use craft\elements\Asset;
+use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
@@ -28,11 +29,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 class DirectiveTest extends Unit
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
     protected function _before()
     {
     }
@@ -45,12 +41,12 @@ class DirectiveTest extends Unit
      * Test directives
      *
      * @dataProvider directiveDataProvider
-     *
-     * @param string $in input string
+     * @param mixed $in input
+     * @param mixed $directiveClass
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
      */
-    public function testDirectivesBeingApplied($in, $directiveClass, array $directives, $result)
+    public function testDirectivesBeingApplied(mixed $in, mixed $directiveClass, array $directives, string $result)
     {
         $this->_registerDirective($directiveClass);
 
@@ -68,7 +64,7 @@ class DirectiveTest extends Unit
 
         self::assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
     }
-    
+
     /**
      * Test if transform is only correctly applied to URL.
      */
@@ -90,7 +86,7 @@ class DirectiveTest extends Unit
         self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
     }
 
-    public function directiveDataProvider()
+    public function directiveDataProvider(): array
     {
         $mockDirective = MockDirective::class;
         $formatDateTime = FormatDateTime::class;
@@ -140,7 +136,7 @@ class DirectiveTest extends Unit
         ];
     }
 
-    public function assetTransformDirectiveDataProvider()
+    public function assetTransformDirectiveDataProvider(): array
     {
         $assetTransform = Transform::class;
 
@@ -163,11 +159,11 @@ class DirectiveTest extends Unit
     /**
      * Build the JSON string to be used as a directive object
      *
-     * @param class-string $className
+     * @param class-string<Directive> $className
      * @param array $arguments
      * @return string
      */
-    private function _buildDirective(string $className, array $arguments = [])
+    private function _buildDirective(string $className, array $arguments = []): string
     {
         $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
         $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": "%s"}}';
@@ -177,17 +173,19 @@ class DirectiveTest extends Unit
             $argumentList[] = sprintf($argumentTemplate, $key, addslashes($value));
         }
 
+        /** @var string|Directive $className */
         return sprintf($directiveTemplate, $className::name(), implode(', ', $argumentList));
     }
 
     /**
      * Register a directive by class name.
      *
-     * @param $className
+     * @param class-string<Directive> $className
      */
-    private function _registerDirective($className)
+    private function _registerDirective(string $className)
     {
         // Make sure the mock directive is available in the entity registry
+        /** @var string|Directive $className */
         $directiveName = $className::name();
 
         Craft::$app->set('config', $this->make(Config::class, [

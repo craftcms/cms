@@ -17,17 +17,11 @@ use craft\services\ProjectConfig;
 class ProjectConfigHelperTest extends Unit
 {
     /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider packedUnpackedDataProvider
-     *
-     * @param array $field
-     * @param array $expectedResult
+     * @param array $unpackedData
+     * @param array $packedData
      */
-    public function testAssociativeArrayConfigTransforms($unpackedData, $packedData)
+    public function testAssociativeArrayConfigTransforms(array $unpackedData, array $packedData)
     {
         self::assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
         self::assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
@@ -35,20 +29,20 @@ class ProjectConfigHelperTest extends Unit
 
     /**
      * @dataProvider cleanupConfigDataProvider
-     * @param $inputData
-     * @param $expectedResult
+     * @param array $inputData
+     * @param array $expectedResult
      */
-    public function testCleanupConfig($inputData, $expectedResult)
+    public function testCleanupConfig(array $inputData, array $expectedResult)
     {
         self::assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
     /**
      * @dataProvider splitIntoComponentsProvider
-     * @param $inputData
-     * @param $expectedResult
+     * @param array $inputData
+     * @param array $expectedResult
      */
-    public function testSplitIntoComponents($inputData, $expectedResult)
+    public function testSplitIntoComponents(array $inputData, array $expectedResult)
     {
         self::assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
     }
@@ -84,11 +78,11 @@ class ProjectConfigHelperTest extends Unit
     }
 
     /**
-     * @param $incomingData
-     * @param $expectedResult
+     * @param mixed $incomingData
+     * @param string $expectedResult
      * @dataProvider encodeTestDataProvider
      */
-    public function testEncodeData($incomingData, $expectedResult)
+    public function testEncodeData(mixed $incomingData, string $expectedResult)
     {
         self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
     }
@@ -156,7 +150,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function cleanupConfigDataProvider()
+    public function cleanupConfigDataProvider(): array
     {
         return [
             [
@@ -219,7 +213,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function splitIntoComponentsProvider()
+    public function splitIntoComponentsProvider(): array
     {
         return [
             [
@@ -371,7 +365,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function encodeTestDataProvider()
+    public function encodeTestDataProvider(): array
     {
         return [
             [
@@ -409,7 +403,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function touchDataProvider()
+    public function touchDataProvider(): array
     {
         $input1 = <<<EOL
 dateModified: 1603054241

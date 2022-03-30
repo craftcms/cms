@@ -25,7 +25,6 @@ use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
@@ -132,7 +131,7 @@ class Category extends Element
      * @inheritdoc
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): CategoryQuery
     {
         return new CategoryQuery(static::class);
     }

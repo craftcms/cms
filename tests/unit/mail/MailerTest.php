@@ -35,23 +35,22 @@ class MailerTest extends TestCase
     /**
      * @var TestMailer
      */
-    public $mailer;
+    public TestMailer $mailer;
 
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * Tests mail from key composition
      *
      * @dataProvider fromKeyCompositionDataProvider
-     *
-     * @param $key
+     * @param string $key
      * @param array $variables
      * @throws InvalidConfigException
      */
-    public function testFromKeyComposition($key, array $variables = [])
+    public function testFromKeyComposition(string $key, array $variables = [])
     {
         $res = $this->mailer->composeFromKey($key, $variables);
         self::assertInstanceOf(Message::class, $res);

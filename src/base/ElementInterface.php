@@ -24,6 +24,7 @@ use yii\web\Response;
  *
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
+ * @mixin Component
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -187,7 +188,7 @@ interface ElementInterface extends ComponentInterface
      * $user = User::find()->email('*example.com')->one();
      * ```
      *
-     * @param mixed|null $criteria The element ID or a set of element criteria parameters
+     * @param mixed $criteria The element ID or a set of element criteria parameters
      * @return static|null Element instance matching the condition, or null if nothing matches.
      */
     public static function findOne(mixed $criteria = null): ?ElementInterface;
@@ -224,7 +225,7 @@ interface ElementInterface extends ComponentInterface
      * $users = User::find()->email('*example.com')->all();
      * ```
      *
-     * @param mixed|null $criteria The element ID, an array of IDs, or a set of element criteria parameters
+     * @param mixed $criteria The element ID, an array of IDs, or a set of element criteria parameters
      * @return static[] an array of Element instances, or an empty array if nothing matches.
      */
     public static function findAll(mixed $criteria = null): array;
@@ -1605,4 +1606,9 @@ interface ElementInterface extends ComponentInterface
      * @param int $structureId The structure ID
      */
     public function afterMoveInStructure(int $structureId): void;
+
+    /**
+     * Returns the string representation of the element.
+     */
+    public function __toString(): string;
 }

@@ -12,7 +12,6 @@ use Craft;
 use craft\helpers\ArrayHelper;
 use craft\mail\Mailer;
 use craft\test\TestSetup;
-use UnitTester;
 use yii\base\InvalidConfigException;
 
 /**
@@ -25,18 +24,12 @@ use yii\base\InvalidConfigException;
 class AppTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    public $tester;
-
-    /**
      * @dataProvider craftAppGetMethodsDataProvider
-     *
-     * @param $instance
-     * @param $map
+     * @param string $instance
+     * @param array $map
      * @throws InvalidConfigException
      */
-    public function testCraftAppGetMethods($instance, $map)
+    public function testCraftAppGetMethods(string $instance, array $map)
     {
         $func = $map[0];
         self::assertInstanceOf($instance, Craft::$app->$func());
@@ -53,6 +46,7 @@ class AppTest extends Unit
         $content = TestSetup::getCraftServiceMap();
 
         // Dont test mailer. The test get's all fussy about it being a mock.
+        /** @noinspection PhpParamsInspection */
         ArrayHelper::removeValue(
             $content, [Mailer::class, ['getMailer', 'mailer']]
         );

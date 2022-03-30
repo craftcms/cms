@@ -25,12 +25,12 @@ class PageRenderChecksCest
     /**
      * @var string
      */
-    public $cpTrigger;
+    public string $cpTrigger;
 
     /**
-     * @var
+     * @var User|null
      */
-    public $currentUser;
+    public ?User $currentUser;
 
     /**
      * @param FunctionalTester $I

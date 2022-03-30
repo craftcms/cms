@@ -29,7 +29,7 @@ class ActiveRecordTest extends Unit
     /**
      * @var UnitTester
      */
-    public $tester;
+    public UnitTester $tester;
 
     /**
      * Note this test is just here to verify that these are indeed craft\db\ActiveRecord classes.

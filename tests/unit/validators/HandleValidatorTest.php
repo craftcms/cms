@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
@@ -23,22 +23,17 @@ class HandleValidatorTest extends Unit
     /**
      * @var HandleValidator
      */
-    protected $handleValidator;
+    protected HandleValidator $handleValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
-
-    /*
-     * @var UnitTester
-     */
-    protected $tester;
+    protected ExampleModel $model;
 
     /**
      * @var array
      */
-    protected static $reservedWords = ['bird', 'is', 'the', 'word'];
+    protected static array $reservedWords = ['bird', 'is', 'the', 'word'];
 
     public function testStaticConstants()
     {
@@ -72,17 +67,14 @@ class HandleValidatorTest extends Unit
 
     /**
      * @dataProvider handleValidationDataProvider
-     *
      * @param bool $mustValidate
-     * @param      $input
+     * @param string $input
      */
-    public function testHandleValidation(bool $mustValidate, $input)
+    public function testHandleValidation(bool $mustValidate, string $input)
     {
         $this->model->exampleParam = $input;
 
-        $validatorResult = $this->handleValidator->validateAttribute($this->model, 'exampleParam');
-
-        self::assertNull($validatorResult);
+        $this->handleValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
             self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());

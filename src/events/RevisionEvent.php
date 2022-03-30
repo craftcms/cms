@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\behaviors\RevisionBehavior;
 use yii\base\Event;
 
 /**
@@ -40,7 +39,7 @@ class RevisionEvent extends Event
     public ?string $revisionNotes = null;
 
     /**
-     * @var ElementInterface|RevisionBehavior|null The revision associated with the event (if it exists yet)
+     * @var ElementInterface|null The revision associated with the event (if it exists yet)
      */
     public ?ElementInterface $revision = null;
 }

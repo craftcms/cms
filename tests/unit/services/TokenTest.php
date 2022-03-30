@@ -15,7 +15,6 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use UnitTester;
 
 /**
  * Unit tests for the token service
@@ -27,14 +26,9 @@ use UnitTester;
 class TokenTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Tokens
      */
-    protected $token;
+    protected Tokens $token;
 
     /**
      * @throws Exception

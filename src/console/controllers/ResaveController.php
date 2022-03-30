@@ -59,7 +59,7 @@ class ResaveController extends Controller
      * @var bool Whether to resave element revisions.
      * @since 3.7.35
      */
-    public $revisions = false;
+    public bool $revisions = false;
 
     /**
      * @var int|string|null The ID(s) of the elements to resave.

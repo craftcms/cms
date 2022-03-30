@@ -180,7 +180,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @param string|null $templateMode The template mode to use
-     * @return YiiResponse|TemplateResponseBehavior
+     * @return YiiResponse
      * @throws InvalidArgumentException if the view file does not exist.
      */
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): YiiResponse
@@ -199,7 +199,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a control panel screen response.
      *
-     * @return Response|CpScreenResponseBehavior
+     * @return Response
      * @since 4.0.0
      */
     public function asCpScreen(): Response
@@ -214,7 +214,6 @@ abstract class Controller extends \yii\web\Controller
      * Sends a failure response.
      *
      * @param string|null $message
-     * @param array|null $errors
      * @param array $data Additional data to include in the JSON response
      * @param array $routeParams The route params to send back to the template
      * @return YiiResponse|null

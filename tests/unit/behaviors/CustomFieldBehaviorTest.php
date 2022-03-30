@@ -13,7 +13,6 @@ use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\fields\PlainText;
 use InvalidArgumentException;
-use UnitTester;
 
 /**
  * Unit tests for CustomFieldBehavior
@@ -25,14 +24,8 @@ use UnitTester;
 class CustomFieldBehaviorTest extends Unit
 {
     /**
-     * @var UnitTester
-     */
-    public $tester;
-
-    /**
      * @dataProvider existingFieldHandlesDataProvider
-     *
-     * @param $handle
+     * @param string $handle
      */
     public function testExistsInCustomFieldBehavior(string $handle)
     {

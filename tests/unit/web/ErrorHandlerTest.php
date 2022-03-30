@@ -13,11 +13,10 @@ use craft\test\TestCase;
 use craft\web\ErrorHandler;
 use Exception;
 use ReflectionException;
-use Throwable;
+use Twig\Error\Error;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use UnitTester;
 use yii\base\ErrorException;
 
 /**
@@ -30,14 +29,9 @@ use yii\base\ErrorException;
 class ErrorHandlerTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var ErrorHandler
      */
-    protected $errorHandler;
+    protected ErrorHandler $errorHandler;
 
     /**
      * Test that Twig runtime errors use the previous error (if it exists).
@@ -60,18 +54,16 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * @dataProvider exceptionTypeAndNameDataProvider
-     *
-     * @param Throwable $exception
-     * @param $message
+     * @param Error $twigError
+     * @param string $message
      */
-    public function testGetExceptionName(Throwable $exception, $message)
+    public function testGetExceptionName(Error $twigError, string $message)
     {
-        self::assertSame($message, $this->errorHandler->getExceptionName($exception));
+        self::assertSame($message, $this->errorHandler->getExceptionName($twigError));
     }
 
     /**
      * @dataProvider getTypeUrlDataProvider
-     *
      * @param string|null $expected
      * @param class-string $class
      * @param string|null $method
@@ -92,7 +84,6 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * @dataProvider isCoreFileDataProvider
-     *
      * @param bool $expected
      * @param string $file
      */
