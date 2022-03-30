@@ -145,9 +145,12 @@ jobs:
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
       uses: codecov/codecov-action@v2
 
+  notify_failure:
+    if: ${{ ! success() }}
+    runs-on: ubuntu-latest
+    steps:
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
-      if: ${{ ! success() }}
       with:
         status: ${{ job.status }}
         notification_title: '<{run_url}|build> has {status_message}'
@@ -159,12 +162,12 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  notify:
+  notify_success:
     if: ${{ success() }}
     runs-on: ubuntu-latest
     needs: tests
     steps:
-      - name: Notify on success
+      - name: Slack notification success
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
