@@ -11,9 +11,17 @@ on:
     branches:
       - "**"
 jobs:
-  craft_build:
-    runs-on: ${{ matrix.operating-system }}
 
+  # Run ECS checks
+  ecs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run ECS checks
+        run: ecs check --ansi
+
+  tests:
+    runs-on: ${{ matrix.operating-system }}
+    needs: ecs
     strategy:
       matrix:
         operating-system: [ 'ubuntu-latest' ]
@@ -146,9 +154,9 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   notify:
-    if: success()
+    if: ${{ success() }}
     runs-on: ubuntu-latest
-    needs: craft_build
+    needs: tests
     steps:
       - name: Notify on success
         uses: ravsamhq/notify-slack-action@v1
