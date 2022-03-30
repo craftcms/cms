@@ -16,6 +16,7 @@ use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\GqlSchema;
+use craft\models\Site;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -439,6 +440,25 @@ class Gql
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
         return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('inactive', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Get a list of all allowed sites by Schema\
+     *
+     * @param GqlSchema|null $schema
+     * @return Site[]
+     * @since 4.0.0
+     */
+    public static function getAllowedSites(?GqlSchema $schema = null): array
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        $allowedSiteUids = $allowedEntities['sites'] ?? [];
+
+        $sites = Craft::$app->getSites()->getAllSites(true);
+
+        return array_filter($sites, static function (Site $site) use ($allowedSiteUids) {
+            return in_array($site->uid, $allowedSiteUids, true);
+        });
     }
 
     /**
