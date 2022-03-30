@@ -5048,6 +5048,9 @@ ul.tree,
 
 table.shadow-box,
 table.editable {
+  border-collapse: separate;
+  border-spacing: 0;
+
   thead:first-child,
   tbody:first-child {
     tr:first-child {
