@@ -155,7 +155,7 @@ jobs:
         with:
           status: ${{ job.status }}
           notification_title: '{branch} build has {status_message}'
-          message_format: '{emoji} {status_message} in <{repo_url}|{repo}> on {branch}'
+          message_format: '{emoji} {status_message} in <{repo_url}|{repo}> on {branch} - commit URL: <{commit_url}|{commit_sha}> - run URL: {run_url} - workflow URL: {workflow_url}'
           footer: '<{repo_url}|{repo}>'
           notify_when: 'success'
         env:
