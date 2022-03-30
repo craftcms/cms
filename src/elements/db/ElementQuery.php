@@ -335,7 +335,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @var string|array
      * @used-by orderBy()
      * @used-by addOrderBy()
      */
@@ -1387,6 +1386,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface[]|array
      */
     public function all($db = null): array
     {
@@ -1403,6 +1403,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface|array|null
      */
     public function one($db = null): mixed
     {
@@ -1450,6 +1451,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface|array|null
      */
     public function nth(int $n, ?Connection $db = null): mixed
     {

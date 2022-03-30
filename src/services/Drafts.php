@@ -470,6 +470,6 @@ class Drafts extends Component
             'notes' => $notes,
             'trackChanges' => $trackChanges,
         ], $this->db);
-        return $this->db->getLastInsertID(Table::DRAFTS);
+        return (int)$this->db->getLastInsertID(Table::DRAFTS);
     }
 }

@@ -455,6 +455,7 @@ class Structures extends Component
     private function _getRootElementRecord(int $structureId): StructureElement
     {
         if (!isset($this->_rootElementRecordsByStructureId[$structureId])) {
+            /** @var StructureElement|null $elementRecord */
             $elementRecord = StructureElement::find()
                 ->where(['structureId' => $structureId])
                 ->roots()

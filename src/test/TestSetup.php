@@ -9,6 +9,7 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
@@ -60,7 +61,7 @@ use craft\services\Utilities;
 use craft\services\Volumes;
 use craft\test\console\ConsoleTest;
 use craft\test\Craft as CraftTest;
-use craft\web\Application;
+use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\Request;
 use craft\web\Response;
@@ -68,7 +69,6 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use PHPUnit\Framework\MockObject\MockObject;
-use yii\base\Application as BaseApplication;
 use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -306,8 +306,7 @@ class TestSetup
             $preDefinedAppType = self::appType();
         }
 
-        return $preDefinedAppType === 'console' ? \craft\console\Application::class
-            : Application::class;
+        return $preDefinedAppType === 'console' ? ConsoleApplication::class : WebApplication::class;
     }
 
     /**
@@ -496,13 +495,14 @@ class TestSetup
     }
 
     /**
+     * @template T of ConsoleApplication|WebApplication
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param class-string<BaseApplication>|null $appClass
-     * @return MockObject
+     * @param class-string<T>|null $appClass
+     * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], ?string $appClass = null): MockObject
+    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], ?string $appClass = null): ConsoleApplication|WebApplication
     {
         $appClass = $appClass ?? self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
@@ -541,12 +541,13 @@ class TestSetup
     }
 
     /**
+     * @template T of object
      * @param CodeceptionTestCase $test
-     * @param class-string $class
-     * @return MockObject
+     * @param class-string<T> $class
+     * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMock(CodeceptionTestCase $test, string $class): MockObject
+    public static function getMock(CodeceptionTestCase $test, string $class): object
     {
         return $test->getMockBuilder($class)
             ->disableOriginalConstructor()

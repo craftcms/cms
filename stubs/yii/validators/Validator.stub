@@ -1,0 +1,11 @@
+<?php
+
+namespace yii\validators;
+
+class Validator
+{
+    /**
+     * @var string|null
+     */
+    public $message;
+}

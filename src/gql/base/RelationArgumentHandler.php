@@ -29,7 +29,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
      *
      * @param class-string<ElementInterface> $elementType
      * @param array $criteriaList
-     * @return int[]
+     * @return int[][]
      */
     protected function getIds(string $elementType, array $criteriaList = []): array
     {

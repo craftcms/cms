@@ -51,7 +51,7 @@ class MailerHelper
     /**
      * Returns all available mailer transport adapter classes.
      *
-     * @return string[]
+     * @return class-string<TransportAdapterInterface>[]
      */
     public static function allMailerTransportTypes(): array
     {

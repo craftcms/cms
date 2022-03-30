@@ -147,7 +147,7 @@ class MockElementQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function one($db = null): ? Element
+    public function one($db = null): mixed
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

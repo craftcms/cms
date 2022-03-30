@@ -1867,7 +1867,7 @@ class Elements extends Component
     /**
      * Returns all available element classes.
      *
-     * @return string[] The available element classes.
+     * @return class-string<ElementInterface>[] The available element classes.
      */
     public function getAllElementTypes(): array
     {
@@ -2578,7 +2578,7 @@ class Elements extends Component
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
                 $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
-                $elementRecord->dateDeleted = $element->dateDeleted;
+                $elementRecord->dateDeleted = Db::prepareDateForDb($element->dateDeleted);
 
                 if ($isNewElement) {
                     if (isset($element->dateCreated)) {

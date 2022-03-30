@@ -926,10 +926,10 @@ class GeneralConfig extends BaseObject
     public int $maxGraphqlResults = 0;
 
     /**
-     * @var int The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
+     * @var int|false The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
      * @group Security
      */
-    public int $maxInvalidLogins = 5;
+    public int|false $maxInvalidLogins = 5;
 
     /**
      * @var int|false The number of backups Craft should make before it starts deleting the oldest backups. If set to `false`, Craft will

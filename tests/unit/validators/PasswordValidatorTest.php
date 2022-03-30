@@ -105,6 +105,7 @@ class PasswordValidatorTest extends Unit
         $passVal = $this->passwordValidator;
 
         $this->tester->expectThrowable(\TypeError::class, function() use ($passVal) {
+            /** @phpstan-ignore-next-line */
             $passVal->isEmpty = 'craft_increment';
             $passVal->isEmpty(1);
         });

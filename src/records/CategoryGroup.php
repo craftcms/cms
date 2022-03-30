@@ -18,7 +18,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  *
  * @property int $id ID
  * @property int $structureId Structure ID
- * @property int $fieldLayoutId Field layout ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $defaultPlacement Default placement

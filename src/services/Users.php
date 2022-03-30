@@ -634,7 +634,7 @@ class Users extends Component
 
         // Update the User record
         $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->lastLoginDate = $now;
+        $userRecord->lastLoginDate = Db::prepareDateForDb($now);
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
 
@@ -662,7 +662,7 @@ class Users extends Component
         $userRecord = $this->_getUserRecordById($user->id);
         $now = DateTimeHelper::currentUTCDateTime();
 
-        $userRecord->lastInvalidLoginDate = $now;
+        $userRecord->lastInvalidLoginDate = Db::prepareDateForDb($now);
 
         if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
@@ -681,14 +681,14 @@ class Users extends Component
                     $userRecord->locked = true;
                     $userRecord->invalidLoginCount = null;
                     $userRecord->invalidLoginWindowStart = null;
-                    $userRecord->lockoutDate = $now;
+                    $userRecord->lockoutDate = Db::prepareDateForDb($now);
 
                     $user->locked = true;
                     $user->lockoutDate = $now;
                 }
             } else {
                 // Start the invalid login window and counter
-                $userRecord->invalidLoginWindowStart = $now;
+                $userRecord->invalidLoginWindowStart = Db::prepareDateForDb($now);
                 $userRecord->invalidLoginCount = 1;
             }
 
@@ -1097,7 +1097,7 @@ class Users extends Component
 
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
-        $userRecord->verificationCodeIssuedDate = $issueDate;
+        $userRecord->verificationCodeIssuedDate = Db::prepareDateForDb($issueDate);
 
         // Make sure they are set to pending, if not already active
         if (!$userRecord->active) {

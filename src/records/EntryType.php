@@ -18,7 +18,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  *
  * @property int $id ID
  * @property int $sectionId Section ID
- * @property int $fieldLayoutId Field layout ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
  * @property bool $hasTitleField Has title field

@@ -17,7 +17,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * Class Section record.
  *
  * @property int $id ID
- * @property int $structureId Structure ID
+ * @property int|null $structureId Structure ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $type Type

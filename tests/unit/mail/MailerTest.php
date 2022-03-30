@@ -246,6 +246,8 @@ class MailerTest extends TestCase
     {
         parent::_before();
 
-        $this->mailer = Craft::$app->getMailer();
+        /** @var TestMailer $mailer */
+        $mailer = Craft::$app->getMailer();
+        $this->mailer = $mailer;
     }
 }

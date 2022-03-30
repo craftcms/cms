@@ -1,5 +1,5 @@
 parameters:
-    level: 2
+    level: 3
     paths:
         - src
         - tests
@@ -25,7 +25,14 @@ parameters:
     bootstrapFiles:
         - tests/_bootstrap.php
     stubFiles:
-        - stubs/BaseYii.stub
+        - stubs/samdark/log/PsrTarget.stub
+        - stubs/yii/BaseYii.stub
+        - stubs/yii/db/Migration.stub
+        - stubs/yii/db/Query.stub
+        - stubs/yii/validators/UrlValidator.stub
+        - stubs/yii/validators/Validator.stub
+        - stubs/yii/web/ErrorHandler.stub
+        - stubs/yii/web/User.stub
     earlyTerminatingMethodCalls:
         Craft:
             - dd
@@ -36,5 +43,4 @@ parameters:
     ignoreErrors:
         - '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
-        - '#Variable \$field in PHPDoc tag @var does not exist#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'

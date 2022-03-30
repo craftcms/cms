@@ -181,7 +181,7 @@ class FieldLayout extends Model
     private array $_availableCustomFields;
 
     /**
-     * @var BaseField[][]
+     * @var BaseField[]
      * @see getAvailableNativeFields()
      */
     private array $_availableStandardFields;

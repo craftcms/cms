@@ -159,7 +159,7 @@ class Content extends Component
         } else {
             // Insert a new row and store its ID on the element
             Db::insert($this->contentTable, $values, $this->db);
-            $element->contentId = $this->db->getLastInsertID($this->contentTable);
+            $element->contentId = (int)$this->db->getLastInsertID($this->contentTable);
         }
 
         // Fire an 'afterSaveContent' event

@@ -17,7 +17,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * Class Volume record.
  *
  * @property int $id ID
- * @property int $fieldLayoutId Field layout ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $fs The filesystem handle, or an environment variable that references it

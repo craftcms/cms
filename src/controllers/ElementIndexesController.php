@@ -475,6 +475,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function condition(): ?ElementConditionInterface
     {
+        /** @var array{class: class-string<ElementConditionInterface>}|null $conditionConfig */
         $conditionConfig = $this->request->getBodyParam('condition');
 
         if (!$conditionConfig) {

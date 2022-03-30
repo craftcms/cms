@@ -469,7 +469,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function createAnother(): ?ElementInterface
+    public function createAnother(): ?self
     {
         $group = $this->getGroup();
 

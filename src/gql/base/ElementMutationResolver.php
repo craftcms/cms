@@ -10,7 +10,6 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\events\MutationPopulateElementEvent;
 use GraphQL\Error\UserError;
@@ -89,10 +88,11 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Populate the element with submitted data.
      *
-     * @param ElementInterface $element
+     * @template T of ElementInterface
+     * @param T $element
      * @param array $arguments
      * @param ResolveInfo|null $resolveInfo
-     * @return EntryElement
+     * @return T
      * @throws GqlException if data not found.
      */
     protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface

@@ -1283,7 +1283,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function createAnother(): ?ElementInterface
+    public function createAnother(): ?self
     {
         $section = $this->getSection();
 
@@ -1928,8 +1928,8 @@ EOD;
             $record->sectionId = (int)$this->sectionId;
             $record->typeId = $this->getTypeId();
             $record->authorId = $this->getAuthorId();
-            $record->postDate = $this->postDate;
-            $record->expiryDate = $this->expiryDate;
+            $record->postDate = Db::prepareDateForDb($this->postDate);
+            $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
             // Capture the dirty attributes from the record
             $dirtyAttributes = array_keys($record->getDirtyAttributes());

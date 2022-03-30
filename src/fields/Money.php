@@ -138,7 +138,8 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     {
         foreach (['defaultValue', 'min', 'max'] as $attr) {
             if ($this->$attr !== null) {
-                $this->$attr = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
+                $value = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
+                $this->$attr = $value !== false ? (float)$value : null;
             }
         }
 

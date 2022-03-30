@@ -5,7 +5,7 @@ namespace yii;
 class BaseYii
 {
     /**
-     * @var \craft\web\Application|\craft\console\Application
+     * @var \craft\web\Application|\craft\console\Application|null
      */
     public static $app;
 

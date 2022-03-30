@@ -262,7 +262,7 @@ class ImageTransforms extends Component
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
-                $transformRecord->parameterChangeTime = new DateTime('@' . time());
+                $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
                 $deleteTransformIndexes = true;
             }
 
@@ -556,7 +556,7 @@ class ImageTransforms extends Component
     /**
      * Return all available image transformers.
      *
-     * @return array
+     * @return class-string<ImageTransformerInterface>[]
      */
     public function getAllImageTransformers(): array
     {

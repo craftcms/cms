@@ -650,7 +650,7 @@ class Craft extends Yii2
         if ($eventRequirements->type === EventItem::TYPE_OTHERVALUE) {
             $this->assertSame(
                 $desiredValue,
-                $eventPropItem
+                (array)$eventPropItem
             );
         }
     }

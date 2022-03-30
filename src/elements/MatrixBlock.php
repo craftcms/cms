@@ -529,6 +529,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     private function _field(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @phpstan-ignore-next-line */
         return Craft::$app->getFields()->getFieldById($this->fieldId);
     }
 }

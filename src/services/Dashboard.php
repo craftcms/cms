@@ -85,7 +85,7 @@ class Dashboard extends Component
     /**
      * Returns all available widget type classes.
      *
-     * @return string[]
+     * @return class-string<WidgetInterface>[]
      */
     public function getAllWidgetTypes(): array
     {

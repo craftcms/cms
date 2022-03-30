@@ -1212,7 +1212,7 @@ class Db
      * @param string $table
      * @param string[] $uids
      * @param Connection|null $db The database connection to use
-     * @return string[]
+     * @return int[]
      * @since 3.1.0
      */
     public static function idsByUids(string $table, array $uids, ?Connection $db = null): array

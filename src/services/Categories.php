@@ -782,6 +782,7 @@ class Categories extends Component
         $query = $withTrashed ? CategoryGroupRecord::findWithTrashed() : CategoryGroupRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var CategoryGroupRecord */
         return $query->one() ?? new CategoryGroupRecord();
     }
 }

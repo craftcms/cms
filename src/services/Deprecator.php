@@ -137,7 +137,7 @@ class Deprecator extends Component
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
                 ]);
-                $log->id = $db->getLastInsertID();
+                $log->id = (int)$db->getLastInsertID();
             } catch (Exception $e) {
                 Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
                 // Craft probably isn’t installed yet

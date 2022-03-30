@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\db\Query;
@@ -299,24 +298,6 @@ class FieldLayoutTab extends FieldLayoutComponent
             $layoutElement->setLayout($this->getLayout());
             $this->_elements[] = $layoutElement;
         }
-    }
-
-    /**
-     * Returns the custom fields included in this tab.
-     *
-     * @return FieldInterface[]
-     */
-    public function getFields(): array
-    {
-        $fields = [];
-
-        foreach ($this->getElements() as $layoutElement) {
-            if ($layoutElement instanceof CustomField) {
-                $fields[] = $layoutElement;
-            }
-        }
-
-        return $fields;
     }
 
     /**

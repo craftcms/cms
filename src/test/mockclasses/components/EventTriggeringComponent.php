@@ -26,7 +26,7 @@ class EventTriggeringComponent extends Component
     public function triggerEvent(): void
     {
         $event = new Event();
-        $event->sender = ['22' => '44', '33' => '55'];
+        $event->sender = (object)['22' => '44', '33' => '55'];
 
         $this->trigger('event', $event);
     }

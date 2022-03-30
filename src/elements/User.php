@@ -1716,13 +1716,14 @@ class User extends Element implements IdentityInterface
 
         if ($changePassword = (isset($this->newPassword))) {
             $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
+            $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
 
             $record->password = $this->password = $hash;
             $record->invalidLoginWindowStart = null;
             $record->invalidLoginCount = $this->invalidLoginCount = null;
             $record->verificationCode = null;
             $record->verificationCodeIssuedDate = null;
-            $record->lastPasswordChangeDate = $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
+            $record->lastPasswordChangeDate = Db::prepareDateForDb($this->lastPasswordChangeDate);
 
             // If the user required a password reset *before this request*, then set passwordResetRequired to false
             if (!$isNew && $record->getOldAttribute('passwordResetRequired')) {

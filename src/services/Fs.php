@@ -76,7 +76,7 @@ class Fs extends Component
     /**
      * Returns all registered filesystem types.
      *
-     * @return string[]
+     * @return class-string<FsInterface>[]
      */
     public function getAllFilesystemTypes(): array
     {

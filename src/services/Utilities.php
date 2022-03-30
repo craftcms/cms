@@ -60,7 +60,7 @@ class Utilities extends Component
     /**
      * Returns all available utility type classes.
      *
-     * @return string[]
+     * @return class-string<UtilityInterface>[]
      */
     public function getAllUtilityTypes(): array
     {
@@ -140,7 +140,7 @@ class Utilities extends Component
     public function getUtilityTypeById(string $id): ?string
     {
         foreach ($this->getAllUtilityTypes() as $class) {
-            /** @var UtilityInterface $class */
+            /** @var string|UtilityInterface $class */
             if ($class::id() === $id) {
                 return $class;
             }

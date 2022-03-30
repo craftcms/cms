@@ -446,7 +446,7 @@ class Fields extends Component
     /**
      * Returns all available field type classes.
      *
-     * @return string[] The available field type classes
+     * @return class-string<FieldInterface>[] The available field type classes
      */
     public function getAllFieldTypes(): array
     {
@@ -1856,6 +1856,7 @@ class Fields extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldGroupRecord */
         return $query->one() ?? new FieldGroupRecord();
     }
 

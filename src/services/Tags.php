@@ -474,6 +474,7 @@ class Tags extends Component
         $query = $withTrashed ? TagGroupRecord::findWithTrashed() : TagGroupRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var TagGroupRecord */
         return $query->one() ?? new TagGroupRecord();
     }
 }

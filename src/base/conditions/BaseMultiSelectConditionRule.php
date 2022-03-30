@@ -75,7 +75,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      *
      * Options can be expressed as value/label pairs, or as arrays with `value` and `label` keys.
      *
-     * @return string[]
+     * @return string[]|array{value: string, label: string}[]
      */
     abstract protected function options(): array;
 

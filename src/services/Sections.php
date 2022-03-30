@@ -1617,6 +1617,7 @@ class Sections extends Component
         $query = $withTrashed ? SectionRecord::findWithTrashed() : SectionRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SectionRecord */
         return $query->one() ?? new SectionRecord();
     }
 
@@ -1632,6 +1633,7 @@ class Sections extends Component
         $query = $withTrashed ? EntryTypeRecord::findWithTrashed() : EntryTypeRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var EntryTypeRecord */
         return $query->one() ?? new EntryTypeRecord();
     }
 }

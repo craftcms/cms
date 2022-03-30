@@ -110,7 +110,7 @@ class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
+        if ($targetSiteId !== null && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
             if ($site) {
@@ -158,7 +158,7 @@ class RecentEntries extends Widget
     {
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId === false) {
+        if ($targetSiteId === null) {
             // Hopeless
             return [];
         }
@@ -208,9 +208,9 @@ class RecentEntries extends Widget
     /**
      * Returns the target site ID for the widget.
      *
-     * @return string|false
+     * @return int|null
      */
-    private function _getTargetSiteId(): string|false
+    private function _getTargetSiteId(): int|null
     {
         if (!Craft::$app->getIsMultiSite()) {
             return $this->siteId;
@@ -224,7 +224,7 @@ class RecentEntries extends Widget
 
         // If they aren't allowed to edit *any* sites, return false
         if (empty($editableSiteIds)) {
-            return false;
+            return null;
         }
 
         // Figure out which site was selected in the settings

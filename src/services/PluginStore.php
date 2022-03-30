@@ -108,7 +108,7 @@ class PluginStore extends Component
             $oauthTokenRecord = new OauthTokenRecord();
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
-            $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
+            $oauthTokenRecord->expiryDate = Db::prepareDateForDb($oauthToken->expiryDate);
             $oauthTokenRecord->save();
         }
     }

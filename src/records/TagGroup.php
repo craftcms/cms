@@ -17,7 +17,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * Class TagGroup record.
  *
  * @property int $id ID
- * @property int $fieldLayoutId Field layout ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
  * @property FieldLayout $fieldLayout Field layout

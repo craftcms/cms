@@ -2362,7 +2362,7 @@ JS;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
             $record->height = (int)$this->_height ?: null;
-            $record->dateModified = $this->dateModified;
+            $record->dateModified = Db::prepareDateForDb($this->dateModified);
 
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();

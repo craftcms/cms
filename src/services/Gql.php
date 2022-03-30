@@ -75,6 +75,7 @@ use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
@@ -1376,7 +1377,7 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
-     * @return Directive[]
+     * @return GqlDirective[]
      */
     private function _loadGqlDirectives(): array
     {
@@ -1742,8 +1743,8 @@ class Gql extends Component
 
         $tokenRecord->name = $token->name;
         $tokenRecord->enabled = $token->enabled;
-        $tokenRecord->expiryDate = $token->expiryDate;
-        $tokenRecord->lastUsed = $token->lastUsed;
+        $tokenRecord->expiryDate = Db::prepareDateForDb($token->expiryDate);
+        $tokenRecord->lastUsed = Db::prepareDateForDb($token->lastUsed);
         $tokenRecord->schemaId = $token->schemaId;
 
         if ($token->accessToken) {

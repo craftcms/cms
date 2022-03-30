@@ -167,7 +167,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     private function _byteRange(): array
     {
         if ($this->unit === self::UNIT_B) {
-            return [$this->value, $this->value];
+            return [(int)$this->value, (int)$this->value];
         }
 
         $multiplier = 1;

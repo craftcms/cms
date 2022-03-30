@@ -59,7 +59,7 @@ class MoneyTest extends Unit
      */
     public function testNormalizeValue(mixed $money, string $value, ?string $defaultValue, ?ElementInterface $element): void
     {
-        $this->field->defaultValue = $defaultValue;
+        $this->field->defaultValue = $defaultValue !== null ? (float)$defaultValue : null;
         $normalized = $this->field->normalizeValue($money, $element);
 
         self::assertInstanceOf(\Money\Money::class, $normalized);

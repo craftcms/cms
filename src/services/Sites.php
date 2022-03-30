@@ -1218,6 +1218,7 @@ class Sites extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteGroupRecord */
         return $query->one() ?? new SiteGroupRecord();
     }
 
@@ -1257,6 +1258,7 @@ class Sites extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteRecord */
         return $query->one() ?? new SiteRecord();
     }
 

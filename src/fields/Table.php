@@ -205,7 +205,7 @@ class Table extends Field
      */
     public function hasMinRows(): bool
     {
-        return $this->minRows;
+        return (bool)$this->minRows;
     }
 
     /**
@@ -213,7 +213,7 @@ class Table extends Field
      */
     public function hasMaxRows(): bool
     {
-        return $this->maxRows;
+        return (bool)$this->maxRows;
     }
 
     /**

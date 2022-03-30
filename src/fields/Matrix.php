@@ -1348,6 +1348,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $blocks[] = $block;
         }
 
+        /** @var MatrixBlock[] $blocks */
         return $blocks;
     }
 }

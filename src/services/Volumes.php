@@ -658,6 +658,7 @@ class Volumes extends Component
         $query = $withTrashed ? AssetVolumeRecord::findWithTrashed() : AssetVolumeRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var AssetVolumeRecord */
         return $query->one() ?? new AssetVolumeRecord();
     }
 }
