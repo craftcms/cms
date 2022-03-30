@@ -96,12 +96,6 @@
     "psr-4": {
       "craft\\": "src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
-    },
-    "autoload-dev": {
-      "psr-4": {
-        "crafttests\\fixtures\\": "tests/fixtures/",
-        "crafttests\\": "tests/"
-      }
     }
   },
   "autoload-dev": {
