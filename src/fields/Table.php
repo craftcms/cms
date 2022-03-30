@@ -660,6 +660,9 @@ class Table extends Field
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'static' => $static,
+            'allowAdd' => true,
+            'allowDelete' => true,
+            'allowReorder' => true,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
             'describedBy' => $this->describedBy,
         ]);
