@@ -23,7 +23,7 @@ jobs:
         run: composer install --no-interaction --no-ansi --no-progress
 
       - name: Run ECS checks
-        run: ecs check --ansi
+        run: vendor/bin/ecs check --ansi
 
   tests:
     runs-on: ${{ matrix.operating-system }}
