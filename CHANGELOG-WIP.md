@@ -36,7 +36,7 @@
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added the `enableLogging` database config setting for logging database queries. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - Added the `enableProfiling` database config setting for logging database query profiling information. ([#10659](https://github.com/craftcms/cms/pull/10659))
-- GraphQL schemas now include settings that determine which sites can be queried for elements. ([#10610](https://github.com/craftcms/cms/issues/10610))
+- GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added the `assets/icon` action.
 - Added the `assets/update-focal-point` action.
 - Added the `categories/create` action.

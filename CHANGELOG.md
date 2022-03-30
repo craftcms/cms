@@ -3,8 +3,7 @@
 ## Unreleased
 
 ### Added
-- Garbage collector now removes all empty temporary upload folders. ([#10746](https://github.com/craftcms/cms/issues/10746))
-- GraphQL schemas now include settings that determine which sites can be queried for elements. ([#10610](https://github.com/craftcms/cms/issues/10610))
+- GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.

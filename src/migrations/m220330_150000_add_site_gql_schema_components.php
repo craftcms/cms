@@ -23,7 +23,7 @@ class m220330_150000_add_site_gql_schema_components extends Migration
         if (version_compare($schemaVersion, '4.0.0.8', '<')) {
             $sites = $projectConfig->get(ProjectConfig::PATH_SITES) ?? [];
             $siteScopes = array_keys($sites);
-            array_walk($siteScopes, function (&$uid) {
+            array_walk($siteScopes, function(&$uid) {
                 $uid = "sites.$uid:read";
             });
 

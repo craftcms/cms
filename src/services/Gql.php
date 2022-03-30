@@ -1439,7 +1439,7 @@ class Gql extends Component
         }
 
         return [
-            'query' => $query
+            'query' => $query,
         ];
     }
 

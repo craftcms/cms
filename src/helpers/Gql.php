@@ -456,7 +456,7 @@ class Gql
 
         $sites = Craft::$app->getSites()->getAllSites(true);
 
-        return array_filter($sites, static function (Site $site) use ($allowedSiteUids) {
+        return array_filter($sites, static function(Site $site) use ($allowedSiteUids) {
             return in_array($site->uid, $allowedSiteUids, true);
         });
     }
