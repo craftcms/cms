@@ -104,6 +104,11 @@
       }
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "crafttests\\": "tests/"
+    }
+  },
   "scripts": {
     "check-cs": "ecs check --ansi",
     "fix-cs": "ecs check --ansi --fix",
