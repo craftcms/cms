@@ -154,7 +154,7 @@ jobs:
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
-          notification_title: 'cms {branch} build has {status_message}'
+          notification_title: '{branch} build has {status_message}'
           message_format: '{emoji} {status_message} in <{repo_url}|{repo}> on {branch}'
           footer: '<{repo_url}|{repo}>'
           notify_when: 'success'
