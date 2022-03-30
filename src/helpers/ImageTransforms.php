@@ -123,7 +123,8 @@ class ImageTransforms
 
             foreach ($parameters as $parameter => $value) {
                 if (in_array($parameter, $whiteList, true)) {
-                    $transform->{$parameter} = $value;
+                    /** @phpstan-ignore-next-line */
+                    $transform->$parameter = $value;
                 }
             }
 

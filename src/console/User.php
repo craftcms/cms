@@ -9,8 +9,6 @@ namespace craft\console;
 
 use craft\elements\User as UserElement;
 use yii\base\Component;
-use yii\base\InvalidValueException;
-use yii\web\IdentityInterface;
 
 /**
  * The User component provides APIs for managing the user authentication status.
@@ -26,7 +24,7 @@ class User extends Component
      * @see getIdentity()
      * @see setIdentity()
      */
-    private ?IdentityInterface $_identity = null;
+    private ?UserElement $_identity = null;
 
     /**
      * Returns whether the current user is an admin.
@@ -67,19 +65,12 @@ class User extends Component
     /**
      * Sets the user identity object.
      *
-     * @param IdentityInterface|null $identity The identity object. If null, it
+     * @param UserElement|null $identity The identity object. If null, it
      * means the current user will be a guest without any associated identity.
-     * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
-    public function setIdentity(?IdentityInterface $identity = null): void
+    public function setIdentity(?UserElement $identity = null): void
     {
-        if ($identity instanceof IdentityInterface) {
-            $this->_identity = $identity;
-        } elseif ($identity === null) {
-            $this->_identity = null;
-        } else {
-            throw new InvalidValueException('The identity object must implement IdentityInterface.');
-        }
+        $this->_identity = $identity;
     }
 
     /**

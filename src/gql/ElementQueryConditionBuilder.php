@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Component;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\EagerLoadPlan;
@@ -224,6 +223,7 @@ class ElementQueryConditionBuilder extends Component
             }
         }
 
+        /** @phpstan-ignore-next-line */
         $value = $argumentNode->value ?? null;
         return $argumentNode->kind === 'IntValue' ? (int)$value : $value;
     }
@@ -326,7 +326,11 @@ class ElementQueryConditionBuilder extends Component
     private function _extractTransformDirectiveArguments(Node $node): array
     {
         $arguments = [];
-        $directives = $node->directives ?? [];
+        if (isset($node->directives)) {
+            $directives = $node->directives;
+        } else {
+            $directives = [];
+        }
 
         foreach ($directives as $directive) {
             if ($directive->name->value === 'transform') {
@@ -404,7 +408,7 @@ class ElementQueryConditionBuilder extends Component
 
             // If that's a GraphQL field
             if ($subNode instanceof FieldNode) {
-                /** @var Field $craftContentField */
+                /** @var FieldInterface $craftContentField */
                 $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
@@ -449,7 +453,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // If this a custom Craft content field
                     if ($craftContentField) {
-                        /** @var EagerLoadingFieldInterface $craftContentField */
+                        /** @var FieldInterface|EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content

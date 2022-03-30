@@ -296,8 +296,9 @@ class Elements extends Component
     /**
      * Creates an element with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return ElementInterface The element
+     * @template T of ElementInterface
+     * @param class-string<T>|array{type: class-string<T>} $config The element’s class name, or its config, with a `type` value
+     * @return T The element
      */
     public function createElement(mixed $config): ElementInterface
     {
@@ -852,9 +853,10 @@ class Elements extends Component
     /**
      * Updates the canonical element from a given derivative, such as a draft or revision.
      *
-     * @param ElementInterface $element The derivative element
+     * @template T of ElementInterface
+     * @param T $element The derivative element
      * @param array $newAttributes Any attributes to apply to the canonical element
-     * @return ElementInterface The updated canonical element
+     * @return T The updated canonical element
      * @throws InvalidArgumentException if the element is already a canonical element
      * @since 3.7.0
      */
@@ -1110,11 +1112,12 @@ class Elements extends Component
     /**
      * Duplicates an element.
      *
-     * @param ElementInterface $element the element to duplicate
+     * @template T of ElementInterface
+     * @param T $element the element to duplicate
      * @param array $newAttributes any attributes to apply to the duplicate
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
-     * @return ElementInterface the duplicated element
+     * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws Throwable if reasons

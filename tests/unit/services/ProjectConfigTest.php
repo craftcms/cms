@@ -15,6 +15,7 @@ use craft\mutex\Mutex;
 use craft\mutex\NullMutex;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
+use Exception;
 use UnitTester;
 use yii\base\NotSupportedException;
 use yii\mutex\Mutex as YiiMutex;
@@ -70,8 +71,8 @@ class ProjectConfigTest extends TestCase
     }
 
     /**
-     * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
-     * @throws \Exception
+     * @return ProjectConfig
+     * @throws Exception
      */
     protected function getProjectConfig(array $internal = null, array $external = null, array $additionalConfig = []): ProjectConfig
     {
@@ -119,7 +120,7 @@ class ProjectConfigTest extends TestCase
      * @param string|null $path
      * @param bool $useExternal
      * @param mixed $expectedValue
-     * @throws \Exception
+     * @throws Exception
      * @dataProvider getValueDataProvider
      */
     public function testGettingValue(?string $path, bool $useExternal, mixed $expectedValue)

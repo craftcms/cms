@@ -18,6 +18,7 @@ use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
 use craft\errors\GqlException;
+use craft\gql\base\ObjectType;
 use craft\gql\types\elements\Asset as AssetGqlType;
 use craft\gql\types\elements\Category as CategoryGqlType;
 use craft\gql\types\elements\Entry as EntryGqlType;
@@ -311,7 +312,7 @@ class ElementFieldResolverTest extends Unit
      * Run the test on an element for a type class with the property name.
      *
      * @param mixed $element
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param class-string<ObjectType> $gqlTypeClass The Gql type class
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -319,7 +320,9 @@ class ElementFieldResolverTest extends Unit
     {
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
         $resolve = function() use ($gqlTypeClass, $element, $resolveInfo) {
-            return $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);
+            /** @var ObjectType $type */
+            $type = $this->make($gqlTypeClass);
+            return $type->resolveWithDirectives($element, [], null, $resolveInfo);
         };
 
         if (is_callable($result)) {

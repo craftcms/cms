@@ -1,5 +1,5 @@
 parameters:
-    level: 1
+    level: 2
     paths:
         - src
         - tests
@@ -13,9 +13,14 @@ parameters:
         - tests/_craft/*
         - tests/_data/*
         - tests/_output/*
+        - tests/_support/_generated/
     scanDirectories:
         - tests/_craft/storage/runtime/compiled_classes/
     scanFiles:
+        - tests/_support/_generated/AcceptanceTesterActions.php
+        - tests/_support/_generated/FunctionalTesterActions.php
+        - tests/_support/_generated/GqlTesterActions.php
+        - tests/_support/_generated/UnitTesterActions.php
         - vendor/codeception/codeception/autoload.php
         - vendor/twig/twig/src/Extension/CoreExtension.php
     bootstrapFiles:
@@ -37,9 +42,5 @@ parameters:
         - '#Call to an undefined method Throwable::getTraceAsString\(\)#'
         - '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
-        - '#Unsafe access to private property .* through static::#'
-        - '#Unsafe call to private method .* through static::#'
-        - '#Variable \$behavior in PHPDoc tag @var does not exist#'
         - '#Variable \$field in PHPDoc tag @var does not exist#'
-        - '#Variable \$revision in PHPDoc tag @var does not exist#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'

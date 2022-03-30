@@ -42,7 +42,7 @@ class Gql
     public static function isSchemaAwareOf(array|string $components, ?GqlSchema $schema = null): bool
     {
         try {
-            $schema = static::_schema($schema);
+            $schema = self::_schema($schema);
         } catch (GqlException) {
             return false;
         }
@@ -72,7 +72,7 @@ class Gql
     public static function extractAllowedEntitiesFromSchema(string $action = 'read', ?GqlSchema $schema = null): array
     {
         try {
-            $schema = static::_schema($schema);
+            $schema = self::_schema($schema);
         } catch (GqlException) {
             return [];
         }
@@ -92,7 +92,7 @@ class Gql
     public static function canSchema(string $component, string $action = 'read', ?GqlSchema $schema = null): bool
     {
         try {
-            $schema = static::_schema($schema);
+            $schema = self::_schema($schema);
         } catch (GqlException) {
             return false;
         }
@@ -110,7 +110,7 @@ class Gql
     public static function extractEntityAllowedActions(string $entity, ?GqlSchema $schema = null): array
     {
         try {
-            $schema = static::_schema($schema);
+            $schema = self::_schema($schema);
         } catch (GqlException) {
             return [];
         }

@@ -1561,26 +1561,30 @@ class Entry extends Element
 
             case 'revisionNotes':
                 /** @var Entry|null $revision */
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
+                    return '';
+                }
                 /** @var RevisionBehavior|null $behavior */
-                if (
-                    ($revision = $this->getCurrentRevision()) === null ||
-                    ($behavior = $revision->getBehavior('revision')) === null
-                ) {
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
                     return '';
                 }
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
                 /** @var Entry|null $revision */
-                /** @var RevisionBehavior|null $behavior */
-                if (
-                    ($revision = $this->getCurrentRevision()) === null ||
-                    ($behavior = $revision->getBehavior('revision')) === null ||
-                    ($creator = $behavior->getCreator()) === null
-                ) {
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
                     return '';
                 }
-                return Cp::elementHtml($creator);
+                /** @var RevisionBehavior|null $behavior */
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
+                    return '';
+                }
+                $creator = $behavior->getCreator();
+                return $creator ? Cp::elementHtml($creator) : '';
 
             case 'drafts':
                 if (!$this->hasEagerLoadedElements('drafts')) {

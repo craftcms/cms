@@ -14,7 +14,6 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -392,7 +391,6 @@ class ElementIndexesController extends BaseElementsController
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType();
         $id = $this->request->getRequiredBodyParam('id');
-        /** @var ElementCondition $condition */
         $condition = $elementType::createCondition();
         $condition->mainTag = 'div';
         $condition->id = $id;
@@ -405,18 +403,20 @@ class ElementIndexesController extends BaseElementsController
             /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($this->source['condition']);
             $condition->queryParams = [];
-            /** @var ElementConditionRuleInterface $rule */
             foreach ($sourceCondition->getConditionRules() as $rule) {
-                foreach ($rule->getExclusiveQueryParams() as $param) {
+                /** @var ElementConditionRuleInterface $rule */
+                $params = $rule->getExclusiveQueryParams();
+                foreach ($params as $param) {
                     $condition->queryParams[] = $param;
                 }
             }
         }
 
         if ($this->condition) {
-            /** @var ElementConditionRuleInterface $rule */
             foreach ($this->condition->getConditionRules() as $rule) {
-                foreach ($rule->getExclusiveQueryParams() as $param) {
+                /** @var ElementConditionRuleInterface $rule */
+                $params = $rule->getExclusiveQueryParams();
+                foreach ($params as $param) {
                     $condition->queryParams[] = $param;
                 }
             }
@@ -471,7 +471,7 @@ class ElementIndexesController extends BaseElementsController
      * Returns the condition that should be applied to the element query.
      *
      * @return ElementConditionInterface|null
-     * @return 4.0.0
+     * @since 4.0.0
      */
     protected function condition(): ?ElementConditionInterface
     {
@@ -552,6 +552,7 @@ class ElementIndexesController extends BaseElementsController
         $filterConditionStr = $this->request->getBodyParam('filters');
         if ($filterConditionStr) {
             parse_str($filterConditionStr, $filterConditionConfig);
+            /** @var ElementConditionInterface $filterCondition */
             $filterCondition = $conditionsService->createCondition($filterConditionConfig['condition']);
             $filterCondition->modifyQuery($query);
         }
@@ -677,7 +678,7 @@ class ElementIndexesController extends BaseElementsController
 
             if ($this->elementQuery->trashed) {
                 if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
-                    $action->hard = true;
+                    $action->setHardDelete();
                 } elseif (!$action instanceof Restore) {
                     unset($actions[$i]);
                 }

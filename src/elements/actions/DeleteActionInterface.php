@@ -15,6 +15,7 @@ namespace craft\elements\actions;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.5
+ * @mixin Delete
  */
 interface DeleteActionInterface
 {

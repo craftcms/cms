@@ -74,7 +74,7 @@ abstract class ElementResolver extends Resolver
      * @param array $arguments
      * @param array|null $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementQuery|array
+     * @return ElementQuery|Collection
      */
     protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQuery|Collection
     {

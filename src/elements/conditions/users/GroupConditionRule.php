@@ -64,7 +64,8 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        foreach ($element->getGroups() as $group) {
+        $groups = $element->getGroups();
+        foreach ($groups as $group) {
             if ($this->matchValue($group->uid)) {
                 return true;
             }

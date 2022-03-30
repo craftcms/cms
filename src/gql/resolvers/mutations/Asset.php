@@ -86,7 +86,6 @@ class Asset extends ElementMutationResolver
             ]);
         }
 
-        /** @var AssetElement $asset */
         if (empty($newFolderId)) {
             if (!$canIdentify) {
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;

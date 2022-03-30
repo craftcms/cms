@@ -467,7 +467,6 @@ class Connection extends \yii\db\Connection
         // Nuke any temp connection files that might have been created.
         try {
             if ($this->getIsMysql()) {
-                /** @var craft\db\mysql\Schema $schema */
                 $schema = $this->getSchema();
                 @unlink($schema->tempMyCnfPath);
             }

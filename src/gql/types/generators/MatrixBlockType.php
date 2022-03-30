@@ -17,7 +17,6 @@ use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\types\elements\MatrixBlock;
-use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 
 /**
  * Class MatrixBlockType

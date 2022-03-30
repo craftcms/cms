@@ -146,10 +146,10 @@ class MailerHelper
         // Use the transport adapter settings if it was sent
         /** @var BaseTransportAdapter $transportAdapter */
         if ($transportAdapter !== null) {
-            foreach ($transportAdapter->settingsAttributes() as $names) {
-                foreach ($names as $name) {
-                    $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
-                }
+            /** @var BaseTransportAdapter $transportAdapter */
+            $settingsAttributes = $transportAdapter->settingsAttributes();
+            foreach ($settingsAttributes as $name) {
+                $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
             }
         } else {
             // Otherwise just output whatever public properties we have available on the transport

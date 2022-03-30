@@ -117,7 +117,6 @@ class DraftsTest extends Unit
             throw new InvalidElementException($entry);
         }
 
-        /** @var Entry|RevisionBehavior $revision */
         $revision = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
@@ -128,7 +127,10 @@ class DraftsTest extends Unit
         self::assertNotNull($revision);
         self::assertSame($entry->dateUpdated->format('Y-m-d H:i:s'), $revision->dateCreated->format('Y-m-d H:i:s'));
         self::assertSame('With versioning EDITED', $revision->title);
-        self::assertSame('I am a change note.', $revision->revisionNotes);
+
+        /** @var RevisionBehavior $behavior */
+        $behavior = $revision->getBehavior('revision');
+        self::assertSame('I am a change note.', $behavior->revisionNotes);
     }
 
     /**

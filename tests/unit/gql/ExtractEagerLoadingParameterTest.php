@@ -17,8 +17,11 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
 use crafttests\fixtures\GqlSchemasFixture;
+use Exception;
 use GraphQL\Language\AST\DocumentNode;
+use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\NodeKind;
+use GraphQL\Language\AST\OperationDefinitionNode;
 use GraphQL\Language\Parser;
 use GraphQL\Language\Source;
 use GraphQL\Type\Definition\ObjectType;
@@ -352,8 +355,8 @@ GQL;
      * @param DocumentNode $documentNode
      * @param array $variables
      * @param string $returnType
-     * @return object
-     * @throws \Exception
+     * @return ResolveInfo
+     * @throws Exception
      */
     private function _buildResolveInfo(DocumentNode $documentNode, array $variables, string $returnType): ResolveInfo
     {
@@ -361,6 +364,7 @@ GQL;
 
         foreach ($documentNode->definitions as $definition) {
             if ($definition->kind === NodeKind::FRAGMENT_DEFINITION) {
+                /** @var FragmentDefinitionNode $definition */
                 $fragments[$definition->name->value] = $definition;
             }
         }
@@ -376,10 +380,13 @@ GQL;
             'name' => $returnType,
         ]);
 
+        /** @var OperationDefinitionNode|FragmentDefinitionNode $definition */
+        $definition = $documentNode->definitions[0];
+
         return $this->make(ResolveInfo::class, [
             'fragments' => $fragments,
             'fieldNodes' => [
-                $documentNode->definitions[0]->selectionSet->selections[0],
+                $definition->selectionSet->selections[0],
             ],
             'fieldName' => 'mockField',
             'variableValues' => $variables,

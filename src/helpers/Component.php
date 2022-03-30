@@ -79,7 +79,7 @@ class Component
     /**
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
-     * @template T of craft\base\ComponentInterface
+     * @template T of ComponentInterface
      * @param class-string<T>|array{type: class-string<T>, __class: class-string<T>} $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @param class-string<T>|null $instanceOf The class or interface that the component must be an instance of.
      * @return T The component

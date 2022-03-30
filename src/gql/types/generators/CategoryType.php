@@ -17,7 +17,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\types\elements\Category;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\CategoryGroup;
 
 /**
  * Class CategoryType

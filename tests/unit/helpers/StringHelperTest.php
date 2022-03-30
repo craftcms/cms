@@ -1063,7 +1063,6 @@ class StringHelperTest extends Unit
     {
         $encoding = mb_internal_encoding();
         $result = StringHelper::shuffle($string);
-        ;
 
         self::assertSame(
             mb_strlen($string, $encoding),

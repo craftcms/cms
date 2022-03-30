@@ -29,7 +29,7 @@ class Diff
     public static function diff(mixed $from, mixed $to, int $indent = 2, int $contextLines = 3): string
     {
         $diff = '';
-        $lines = static::_diff($from, $to, $indent, 0);
+        $lines = self::_diff($from, $to, $indent, 0);
         $lastChange = null;
 
         foreach ($lines as $i => $line) {
@@ -90,11 +90,11 @@ class Diff
             (!is_array($to) || !ArrayHelper::isAssociative($to))
         ) {
             if (static::compare($from, $to)) {
-                return static::_buildLinesForValue($from, $indent, $level);
+                return self::_buildLinesForValue($from, $indent, $level);
             } else {
                 $lines = [];
-                array_push($lines, ...static::_buildLinesForValue($from, $indent, $level, '-'));
-                array_push($lines, ...static::_buildLinesForValue($to, $indent, $level, '+'));
+                array_push($lines, ...self::_buildLinesForValue($from, $indent, $level, '-'));
+                array_push($lines, ...self::_buildLinesForValue($to, $indent, $level, '+'));
                 return $lines;
             }
         }
@@ -111,21 +111,21 @@ class Diff
                 // Output any keys in $to that come before this one
                 if ($toPos > $toCursor) {
                     $newKeys = array_slice($toKeys, $toCursor, $toPos - $toCursor);
-                    array_push($lines, ...static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
+                    array_push($lines, ...self::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
                 }
 
-                $lines[] = static::_buildLine("$key:", $indent, $level);
-                array_push($lines, ...static::_diff($value, $to[$key], $indent, $level + 1));
+                $lines[] = self::_buildLine("$key:", $indent, $level);
+                array_push($lines, ...self::_diff($value, $to[$key], $indent, $level + 1));
                 $toCursor = $toPos + 1;
             } else {
-                array_push($lines, ...static::_buildLinesForValue([$key => $value], $indent, $level, '-'));
+                array_push($lines, ...self::_buildLinesForValue([$key => $value], $indent, $level, '-'));
             }
         }
 
         // Output any remaining $to keys
         $newKeys = array_slice($toKeys, $toCursor);
         if (!empty($newKeys)) {
-            array_push($lines, ...static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
+            array_push($lines, ...self::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
         }
 
         return $lines;
@@ -136,7 +136,7 @@ class Diff
         $lines = [];
         $yamlLines = explode("\n", rtrim(Yaml::dump($value, 20 - $level, $indent)));
         foreach ($yamlLines as $line) {
-            $lines[] = static::_buildLine($line, $indent, $level, $char);
+            $lines[] = self::_buildLine($line, $indent, $level, $char);
         }
         return $lines;
     }

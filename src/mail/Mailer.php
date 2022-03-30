@@ -177,6 +177,7 @@ class Mailer extends \yii\symfonymailer\Mailer
         try {
             return parent::send($message);
         } catch (TransportExceptionInterface $e) {
+            /** @phpstan-ignore-next-line */
             $eMessage = $e->getMessage();
 
             // Remove the stack trace to get rid of any sensitive info.

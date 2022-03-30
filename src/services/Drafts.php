@@ -104,13 +104,14 @@ class Drafts extends Component
     /**
      * Creates a new draft for the given element.
      *
-     * @param ElementInterface $canonical The element to create a draft for
+     * @template T of ElementInterface
+     * @param T $canonical The element to create a draft for
      * @param int $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
      * @param array $newAttributes any attributes to apply to the draft
      * @param bool $provisional Whether to create a provisional draft
-     * @return ElementInterface The new draft
+     * @return T The new draft
      * @throws Throwable
      */
     public function createDraft(
@@ -248,8 +249,9 @@ class Drafts extends Component
      *
      * If an unpublished draft is passed, its draft data will simply be removed from it.
      *
-     * @param ElementInterface $draft The draft
-     * @return ElementInterface The canonical element with the draft applied to it
+     * @template T of ElementInterface
+     * @param T $draft The draft
+     * @return T The canonical element with the draft applied to it
      * @throws Throwable
      * @since 3.6.0
      */

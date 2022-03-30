@@ -1283,6 +1283,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
             // Existing block?
             if (isset($oldBlocksById[$blockId])) {
+                /** @var MatrixBlock $block */
                 $block = $oldBlocksById[$blockId];
                 $dirty = !empty($blockData);
 

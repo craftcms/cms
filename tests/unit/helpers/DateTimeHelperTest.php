@@ -417,16 +417,6 @@ class DateTimeHelperTest extends Unit
     }
 
     /**
-     *
-     */
-    public function testTimezoneOffsetException()
-    {
-        $this->tester->expect(Exception::class, function() {
-            DateTimeHelper::timeZoneOffset('invalid');
-        });
-    }
-
-    /**
      * @return array
      */
     public function constantsDataProvider(): array
