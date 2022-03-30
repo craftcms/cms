@@ -19,7 +19,7 @@ use yii\base\Event;
 class RegisterGqlTypesEvent extends Event
 {
     /**
-     * @var SingularTypeInterface[] List of GraphQL Type definition classes
+     * @var class-string<SingularTypeInterface>[] List of GraphQL Type definition classes
      */
     public array $types = [];
 }
