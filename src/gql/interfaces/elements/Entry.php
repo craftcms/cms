@@ -11,6 +11,7 @@ use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
+use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
@@ -49,6 +50,7 @@ class Entry extends Structure
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all entries.',
             'resolveType' => self::class . '::resolveElementTypeName',
+            'resolve' => EntryResolver::class . '::resolve',
         ]));
 
         EntryType::generateTypes();

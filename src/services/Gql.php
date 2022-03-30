@@ -60,8 +60,10 @@ use craft\gql\types\Mutation;
 use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
+use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -74,13 +76,20 @@ use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Language\Parser;
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Schema;
+use GraphQL\Utils\AST;
+use GraphQL\Utils\BuildSchema;
+use GraphQL\Utils\SchemaPrinter;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
+use Opis\Closure\SerializableClosure;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -333,6 +342,31 @@ class Gql extends Component
     const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
 
     /**
+     * Marker to indicate serialized function
+     * @since 3.7.38
+     */
+    const SERIALIZE_MARKER = '#serialized#';
+    /**
+     * @since 3.7.38
+     */
+    const AST_FILENAME = 'ast.php';
+
+    /**
+     * @since 3.7.38
+     */
+    const RESOLVER_FILENAME = 'resolvers.php';
+
+    /**
+     * @var bool Whether the GraphQL service is currently collecting resolvers.
+     */
+    private $_collectingResolvers = false;
+
+    /**
+     * @var array A list of collected resolvers
+     */
+    private $_collectedResolvers = [];
+
+    /**
      * Save a GQL Token record based on the model.
      *
      * @param GqlToken $token
@@ -363,6 +397,23 @@ class Gql extends Component
     }
 
     /**
+     * Get the schema definition folder path based on the schema.
+     *
+     * @param GqlSchema $schema
+     * @return string
+     */
+    protected function getCachedSchemaDefDir(GqlSchema $schema): string
+    {
+        $path = Craft::$app->getPath()->getGqlSchemaPath() . DIRECTORY_SEPARATOR . 'schema-' . StringHelper::replace($schema->uid, '*', 'full');
+
+        if (!file_exists($path) || !is_dir($path)) {
+            FileHelper::createDirectory($path);
+        }
+
+        return $path;
+    }
+
+    /**
      * @var Schema Currently loaded schema definition
      */
     private $_schemaDef;
@@ -382,57 +433,224 @@ class Gql extends Component
      * Returns the GraphQL schema.
      *
      * @param GqlSchema $schema
-     * @param bool $prebuildSchema should the schema be deep-scanned and pre-built instead of lazy-loaded
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
-    public function getSchemaDef(GqlSchema $schema = null, $prebuildSchema = false): Schema
+    public function getSchemaDef(GqlSchema $schema = null): Schema
     {
         if ($schema) {
             $this->setActiveSchema($schema);
         }
-        if (!$this->_schemaDef || $prebuildSchema) {
-            // Either cached version was not found or we need a pre-built schema.
-            $registeredTypes = $this->_registerGqlTypes();
-            $this->_registerGqlQueries();
-            $this->_registerGqlMutations();
 
-            $schemaConfig = [
-                'typeLoader' => TypeLoader::class . '::loadType',
-                'query' => TypeLoader::loadType('Query'),
-                'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives(),
-            ];
+        $enableCaching = Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching;
 
-            // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
-            // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
-            if (!$prebuildSchema) {
-                $this->_schemaDef = new Schema($schemaConfig);
+        if ($enableCaching) {
+            if ($schemaDef = $this->getCachedSchemaDef($schema)) {
+                $this->_schemaDef = $schemaDef;
                 return $this->_schemaDef;
             }
 
-            foreach ($registeredTypes as $registeredType) {
-                if (method_exists($registeredType, 'getTypeGenerator')) {
-                    /** @var GeneratorInterface $typeGeneratorClass */
-                    $typeGeneratorClass = $registeredType::getTypeGenerator();
+            $this->startCollectingResolvers();
+        }
 
-                    if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
-                        foreach ($typeGeneratorClass::generateTypes() as $type) {
-                            $schemaConfig['types'][] = $type;
-                        }
+        // Either cached version was not found or we need a pre-built schema.
+        $registeredTypes = $this->_registerGqlTypes();
+        $queryType = $this->_registerGqlQueries();
+        $this->_registerGqlMutations();
+
+        $schemaConfig = [
+            'typeLoader' => TypeLoader::class . '::loadType',
+            'query' => $queryType,
+            'mutation' => TypeLoader::loadType('Mutation'),
+            'directives' => $this->_loadGqlDirectives(),
+        ];
+
+        foreach ($registeredTypes as $registeredType) {
+            if (method_exists($registeredType, 'getTypeGenerator')) {
+                /** @var GeneratorInterface $typeGeneratorClass */
+                $typeGeneratorClass = $registeredType::getTypeGenerator();
+
+                if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
+                    foreach ($typeGeneratorClass::generateTypes() as $type) {
+                        $schemaConfig['types'][] = $type;
                     }
                 }
             }
+        }
 
-            try {
-                $this->_schemaDef = new Schema($schemaConfig);
-                $this->_schemaDef->getTypeMap();
-            } catch (\Throwable $exception) {
-                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
-            }
+        try {
+            $this->_schemaDef = new Schema($schemaConfig);
+            $this->_schemaDef->getTypeMap();
+        } catch (\Throwable $exception) {
+            throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
+        }
+
+        if ($enableCaching) {
+            $resolvers = $this->finishCollectingResolvers();
+            $this->setCachedSchemaDef($schema, $this->_schemaDef, $resolvers);
         }
 
         return $this->_schemaDef;
+    }
+
+    /**
+     * Attempt to collect a resolver from a type config array.
+     *
+     * @param string $typeName
+     * @param array $config
+     */
+    public function attemptToCollectResolver(string $typeName, array $config): void
+    {
+        if (StringHelper::endsWith($typeName, 'mutation', false)) {
+            return;
+        }
+
+        if ($this->_collectingResolvers) {
+            if (!empty($config['resolve'])) {
+                $this->_collectedResolvers[$typeName . '||resolve'] = $config['resolve'];
+            }
+
+            if (!empty($config['resolveType'])) {
+                $this->_collectedResolvers[$typeName . '||resolveType'] = $config['resolveType'];
+            }
+
+            if (!empty($config['fields'])) {
+                if (is_callable($config['fields'])) {
+                    $fields = $config['fields']();
+                } else {
+                    $fields = $config['fields'];
+                }
+
+                // Trim the resolvers
+                $resolvers = [];
+                foreach ($fields as $fieldName => $fieldConfig) {
+                    if (is_array($fieldConfig) && !empty($fieldConfig['resolve'])) {
+                        $resolvers[$fieldName] = $fieldConfig['resolve'];
+                    }
+                }
+                $resolveField = function($source, $args, $context, ResolveInfo $info) use ($resolvers) {
+                    $fieldName = $info->fieldName;
+                    if (array_key_exists($fieldName, $resolvers)) {
+                        return $resolvers[$fieldName]($source, $args, $context, $info);
+                    }
+
+                    return $source->{$fieldName} ?? null;
+                };
+
+                $this->_collectedResolvers[$typeName . '||resolveField'] = $resolveField;
+            }
+        }
+    }
+
+    /**
+     * Start collecting resolvers.
+     */
+    protected function startCollectingResolvers()
+    {
+        $this->_collectingResolvers = true;
+        $this->_collectedResolvers = [];
+    }
+
+    /**
+     * Finish collecting any resolvers and return them.
+     *
+     * @return array
+     */
+    protected function finishCollectingResolvers(): array
+    {
+        $this->_collectingResolvers = false;
+        $collectedResolvers = $this->_collectedResolvers;
+        $this->_collectedResolvers = [];
+
+        return $collectedResolvers;
+    }
+
+    /**
+     * Get the cached schema definition for a given schema.
+     *
+     * @param GqlSchema $schema
+     * @return GqlSchema|Schema|null
+     */
+    public function getCachedSchemaDef(GqlSchema $schema)
+    {
+        $astFilePath = $this->getCachedSchemaDefDir($schema) . DIRECTORY_SEPARATOR . self::AST_FILENAME;
+        $resolverFilePath = $this->getCachedSchemaDefDir($schema) . DIRECTORY_SEPARATOR . self::RESOLVER_FILENAME;
+        if (file_exists($astFilePath) && file_exists($resolverFilePath)) {
+            try {
+                App::maxPowerCaptain();
+                $ast = AST::fromArray(require $astFilePath);
+                $resolvers = require $resolverFilePath;
+
+                $schema = BuildSchema::build($ast, function($typeConfig) use ($resolvers) {
+                    $typeName = $typeConfig['name'];
+
+                    // If we have a resolver for this type name, merge those bad boys in
+                    if (array_key_exists($typeName, $resolvers)) {
+                        $resolversForType = $resolvers[$typeName];
+                        foreach ($resolversForType as $resolverType => &$resolver) {
+                            if (is_string($resolver) && StringHelper::startsWith($resolver, self::SERIALIZE_MARKER)) {
+                                $serializedString = StringHelper::removeLeft($resolver, self::SERIALIZE_MARKER);
+                                /** @var SerializableClosure $wrapper */
+                                $wrapper = unserialize($serializedString, ['allowed_classes' => [SerializableClosure::class]]);
+                                $resolver = $wrapper->getClosure();
+                            }
+                        }
+                        unset($resolver);
+                        $typeConfig = array_merge($typeConfig, $resolversForType);
+                    }
+
+                    return $typeConfig;
+                });
+            } catch (\Throwable $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+        return $schema;
+    }
+
+    /**
+     * Cache a schemadef sans resolvers to a file.
+     *
+     * @param GqlSchema $schema
+     * @param Schema $schemaDef
+     * @throws \GraphQL\Error\SyntaxError
+     */
+    public function setCachedSchemaDef(GqlSchema $schema, Schema $schemaDef, array $collectedResolvers)
+    {
+        $folderPath = $this->getCachedSchemaDefDir($schema);
+        $resolverFilePath = $folderPath . DIRECTORY_SEPARATOR . self::RESOLVER_FILENAME;
+
+        try {
+            $resolverList = [];
+
+            foreach ($collectedResolvers as $resolverKey => $resolver) {
+                [$typeName, $resolverType] = explode('||', $resolverKey);
+
+                if ($resolver instanceof \Closure) {
+                    $resolver = '#serialized#'.serialize(new SerializableClosure($resolver));
+                }
+
+                $resolverList[$typeName][$resolverType] = $resolver;
+            }
+
+            $resolverFile = "<?php\n return " . var_export($resolverList, true) . ";\n";
+            FileHelper::writeToFile($resolverFilePath, $resolverFile);
+            unset($resolverList);
+
+            App::maxPowerCaptain();
+            $astFilePath = $folderPath . DIRECTORY_SEPARATOR . self::AST_FILENAME;
+            $schemaDocument = SchemaPrinter::doPrint($schemaDef);
+            $ast = Parser::parse($schemaDocument);
+            $astFile = "<?php\nreturn " . var_export(AST::toArray($ast), true) . ";\n";
+
+            FileHelper::writeToFile($astFilePath, $astFile);
+        } catch (\Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+        }
     }
 
     /**
@@ -531,7 +749,11 @@ class Gql extends Component
                 $event->result = $cachedResult;
             } else {
                 $isIntrospectionQuery = StringHelper::containsAny($event->query, ['__schema', '__type']);
-                $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
+
+                $start = microtime(true);
+
+                $schemaDef = $this->getSchemaDef($schema);
+                $schemaTime = microtime(true) - $start;
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheTags();
 
@@ -553,6 +775,7 @@ class Gql extends Component
                 if (empty($event->result['errors']) && $cacheKey) {
                     $this->setCachedResult($cacheKey, $event->result, $dep);
                 }
+                $event->result['debug'] = $schemaTime;
             }
         }
 
@@ -580,7 +803,7 @@ class Gql extends Component
      */
     public function getCachedResult($cacheKey)
     {
-        return Craft::$app->getCache()->get($cacheKey) ?: null;
+        return null;//Craft::$app->getCache()->get($cacheKey) ?: null;
     }
 
     /**
@@ -1287,6 +1510,7 @@ class Gql extends Component
         array $variables = null,
         string $operationName = null
     ) {
+        return null;
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -1382,9 +1606,10 @@ class Gql extends Component
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
-        TypeLoader::registerType('Query', function() use ($event) {
-            return call_user_func(Query::class . '::getType', $event->queries);
-        });
+        return GqlEntityRegistry::createEntity('Query', new ObjectType([
+            'name' => 'Query',
+            'fields' => $event->queries
+        ]));
     }
 
     /**

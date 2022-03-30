@@ -25,4 +25,8 @@ abstract class Query
      * @return array
      */
     abstract public static function getQueries($checkToken = true): array;
+
+    public static function getPreparedQueries(): array {
+        return static::getQueries();
+    }
 }

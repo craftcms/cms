@@ -99,6 +99,25 @@ class Path extends Component
     }
 
     /**
+     * Return the path to the `storage/gql-schemas` directory.
+     *
+     * @param bool $create
+     * @return string
+     * @throws Exception
+     * @since 3.7.34
+     */
+    public function getGqlSchemaPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath() . DIRECTORY_SEPARATOR . 'gql-schemas';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist

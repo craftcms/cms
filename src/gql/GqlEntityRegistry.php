@@ -106,6 +106,10 @@ class GqlEntityRegistry
             return $entity;
         });
 
+        if (!empty($entity->config)) {
+            Craft::$app->getGql()->attemptToCollectResolver($entityName, $entity->config);
+        }
+
         return $entity;
     }
 

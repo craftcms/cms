@@ -37,11 +37,19 @@ abstract class Generator
 
         $contentFields = $context->getFields();
         $contentFieldGqlTypes = [];
+        $gqlService = Craft::$app->getGql();
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
             if ($contentField->includeInGqlSchema($schema)) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+                $type = $contentField->getContentGqlType();
+
+                if (is_array($type)) {
+                    $gqlService->attemptToCollectResolver($type['name'], $type);
+                }
+
+                $contentFieldGqlTypes[$contentField->handle] = $type;
+
             }
         }
 
