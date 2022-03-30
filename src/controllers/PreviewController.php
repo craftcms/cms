@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\web\Application;
 use craft\web\Controller;
 use Exception;
 use Throwable;
@@ -169,10 +170,12 @@ class PreviewController extends Controller
         $this->request->checkIfActionRequest(true, false);
 
         // Re-route the request, this time ignoring the token
-        $urlManager = Craft::$app->getUrlManager();
+        /** @var Application $app */
+        $app = Craft::$app;
+        $urlManager = $app->getUrlManager();
         $urlManager->checkToken = false;
         $urlManager->setRouteParams([], false);
         $urlManager->setMatchedElement(null);
-        return Craft::$app->handleRequest($this->request, true);
+        return $app->handleRequest($this->request, true);
     }
 }
