@@ -133,8 +133,7 @@ jobs:
 
     - name: Slack notification success
       uses: ravsamhq/notify-slack-action@v1
-      if: ${{ needs.run.result == 'success' }}
-      needs: run
+      if: ${{ matrix.result == 'success' }}
       with:
         status: ${{ job.status }}
         notification_title: '{workflow} has {status_message}'
