@@ -136,8 +136,8 @@ jobs:
       if: ${{ ! success() }}
       with:
         status: ${{ job.status }}
-        notification_title: 'cms {branch} build has {status_message}'
-        message_format: '{emoji} {status_message} in <{repo_url}|{repo}> on {branch}'
+        notification_title: '<{run_url}|build> has {status_message}'
+        message_format: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
         footer: '<{repo_url}|{repo}>'
         notify_when: 'failure,warnings'
         mention_groups: 'SGFL9NKNZ'
@@ -154,8 +154,8 @@ jobs:
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
-          notification_title: '{branch} build has {status_message}'
-          message_format: '{emoji} {status_message} in <{repo_url}|{repo}> on {branch}'
+          notification_title: '<{run_url}|build> has {status_message}'
+          message_format: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
           footer: '<{repo_url}|{repo}>'
           notify_when: 'success'
         env:
