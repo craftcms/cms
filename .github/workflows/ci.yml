@@ -16,6 +16,12 @@ jobs:
   ecs:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-ansi --no-progress
+
       - name: Run ECS checks
         run: ecs check --ansi
 
