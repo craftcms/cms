@@ -63,6 +63,9 @@ jobs:
       - name: Copy tests .env
         run: cp ./tests/.env.example.mysql ./tests/.env
 
+      - name: Create folders
+        run: mkdir tests/_craft/storage/runtime/compiled_classes
+
       - name: Build Codeception support files
         run: "vendor/bin/codecept build"
 
