@@ -185,6 +185,11 @@ class Craft extends Yii
      */
     private static function _autoloadCustomFieldBehavior(): void
     {
+        if (!isset(static::$app)) {
+            // Nothing we can do about it yet
+            return;
+        }
+
         if (!static::$app->getIsInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
             self::_generateCustomFieldBehavior([], null, false, true);

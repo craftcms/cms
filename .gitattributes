@@ -16,6 +16,7 @@
 /ecs.php export-ignore
 /gulpfile.js export-ignore
 /lerna.json export-ignore
+/lib/craft/behaviors/CustomFieldBehavior.php export-ignore
 /package-lock.json export-ignore
 /package.json export-ignore
 /packages/ export-ignore
