@@ -492,7 +492,7 @@ class Gql
      */
     public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, ?array $context): string
     {
-        $fieldName = array_slice($resolveInfo->path, -1)[0];
+        $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
         /** @var ElementQueryConditionBuilder|null $conditionBuilder */

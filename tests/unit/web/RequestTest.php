@@ -384,9 +384,7 @@ class RequestTest extends TestCase
         $this->request->checkIfActionRequest(true);
 
         self::assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
-
         self::assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
-        self::assertFalse($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
     /**
