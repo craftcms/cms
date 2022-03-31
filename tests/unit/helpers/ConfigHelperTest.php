@@ -13,6 +13,7 @@ use DateTime;
 use stdClass;
 use UnitTester;
 use yii\base\InvalidConfigException;
+use Hoa\Exception;
 
 /**
  * Class ConfigHelperTest.
