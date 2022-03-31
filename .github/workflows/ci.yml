@@ -215,7 +215,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   notify_success:
-    if: always()
+    if: success()
     runs-on: ubuntu-latest
     needs: tests
     steps:
