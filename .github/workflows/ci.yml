@@ -70,7 +70,7 @@ jobs:
         run: "vendor/bin/codecept build"
 
       - name: Run PHPStan checks
-        run: "vendor/bin/phpstan --memory-limit=1G"
+        run: "vendor/bin/phpstan --memory-limit=2G"
 
       - name: Slack notification failure
         uses: ravsamhq/notify-slack-action@v1
