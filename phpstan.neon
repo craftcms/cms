@@ -25,8 +25,8 @@ parameters:
     bootstrapFiles:
         - tests/_bootstrap.php
     stubFiles:
-        - stubs/GraphQL\Type\Definition\FieldDefinition.stub
-        - stubs/GraphQL\Type\Definition\ResolveInfo.stub
+        - stubs/GraphQL/Type/Definition/FieldDefinition.stub
+        - stubs/GraphQL/Type/Definition/ResolveInfo.stub
         - stubs/samdark/log/PsrTarget.stub
         - stubs/yii/BaseYii.stub
         - stubs/yii/db/Migration.stub
