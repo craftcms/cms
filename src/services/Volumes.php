@@ -134,26 +134,6 @@ class Volumes extends Component
     }
 
     /**
-     * Returns all volume IDs that have public URLs.
-     *
-     * @return int[]
-     */
-    public function getPublicVolumeIds(): array
-    {
-        return ArrayHelper::getColumn($this->getPublicVolumes(), 'id', false);
-    }
-
-    /**
-     * Returns all volumes that have public URLs.
-     *
-     * @return Volume[]
-     */
-    public function getPublicVolumes(): array
-    {
-        return $this->_volumes()->where('hasUrls')->all();
-    }
-
-    /**
      * Returns the total number of volumes.
      *
      * @return int
