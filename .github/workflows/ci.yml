@@ -25,6 +25,19 @@ jobs:
       - name: Run ECS checks
         run: vendor/bin/ecs check --ansi
 
+      - name: Slack notification failure
+        uses: ravsamhq/notify-slack-action@v1
+        with:
+          status: ${{ job.status }}
+          notification_title: '<{run_url}|build> has {status_message}'
+          message_format: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
+          footer: '<{repo_url}|{repo}>'
+          notify_when: 'failure,warnings'
+          mention_groups: 'SGFL9NKNZ'
+          mention_groups_when: 'failure,warnings'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   tests:
     runs-on: ${{ matrix.operating-system }}
     needs: ecs
@@ -145,10 +158,6 @@ jobs:
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
       uses: codecov/codecov-action@v2
 
-  notify_failure:
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
       with:
