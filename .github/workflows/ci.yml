@@ -24,15 +24,16 @@ jobs:
   ecs:
     runs-on: ubuntu-latest
 
-    - name: Slack notification build started
-      uses: ravsamhq/notify-slack-action@v1
-      with:
-        status: ${{ job.status }}
-        notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
-        message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
-        footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Slack notification build started
+        uses: ravsamhq/notify-slack-action@v1
+        with:
+          status: ${{ job.status }}
+          notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+          message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+          footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Checkout
         uses: actions/checkout@v3
