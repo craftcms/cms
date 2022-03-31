@@ -64,7 +64,7 @@ jobs:
         run: "vendor/bin/codecept build"
 
       - name: Copy tests .env
-        run: cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
+        run: cp ./tests/.env.example.mysql ./tests/.env
 
       - name: Run PHPStan checks
         run: "vendor/bin/phpstan --memory-limit=1G"
