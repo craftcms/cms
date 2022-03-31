@@ -70,24 +70,22 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if (!$this->getIsInstalled()) {
-            [$firstSeg] = explode('/', $route, 2);
-            if ($route !== 'install/plugin' && !in_array($firstSeg, ['install', 'setup'], true)) {
-                // Is the connection valid at least?
-                if (!$this->getIsDbConnectionValid()) {
-                    Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
-                } else {
-                    $infoTable = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
-                    // Figure out the exception that is getting thrown
-                    $e = null;
-                    try {
-                        (new Query())->from([Table::INFO])->where(['id' => 1])->one();
-                    } catch (Throwable $e) {
-                        $e = $e->getPrevious() ?? $e;
-                    }
-                    Console::outputWarning("Craft can’t fetch the `$infoTable` table row." . ($e ? PHP_EOL . 'Exception: ' . $e->getMessage() : ''), false);
+        if (!$this->getIsInstalled() && $this->_requireInfoTable($route)) {
+            // Is the connection valid at least?
+            if (!$this->getIsDbConnectionValid()) {
+                Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
+            } else {
+                $infoTable = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
+                // Figure out the exception that is getting thrown
+                $e = null;
+                try {
+                    (new Query())->from([Table::INFO])->where(['id' => 1])->one();
+                } catch (Throwable $e) {
+                    $e = $e->getPrevious() ?? $e;
                 }
+                Console::outputWarning("Craft can’t fetch the `$infoTable` table row." . ($e ? PHP_EOL . 'Exception: ' . $e->getMessage() : ''), false);
             }
+
         }
 
         return parent::runAction($route, $params);
@@ -169,5 +167,16 @@ class Application extends \yii\console\Application
         }
 
         return $component;
+    }
+
+    private function _requireInfoTable($route): bool
+    {
+        [$firstSeg] = explode('/', $route, 2);
+
+        if (in_array($firstSeg, ['install', 'setup', 'db', 'help'], true)) {
+            return false;
+        }
+
+        return true;
     }
 }
