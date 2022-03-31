@@ -85,7 +85,6 @@ class Application extends \yii\console\Application
                 }
                 Console::outputWarning("Craft can’t fetch the `$infoTable` table row." . ($e ? PHP_EOL . 'Exception: ' . $e->getMessage() : ''), false);
             }
-
         }
 
         return parent::runAction($route, $params);
