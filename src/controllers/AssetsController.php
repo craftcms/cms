@@ -798,10 +798,6 @@ class AssetsController extends Controller
 
             $folder = $asset->getFolder();
 
-            if ($folder === null) {
-                throw new BadRequestHttpException('The folder cannot be found');
-            }
-
             // Do what you want with your own photo.
             if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
                 $this->requireVolumePermissionByAsset('editImages', $asset);

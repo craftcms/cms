@@ -1061,7 +1061,7 @@ JS;
     {
         $this->requirePostRequest();
 
-        /** @var Element|DraftBehavior $element */
+        /** @var Element|DraftBehavior|null $element */
         $element = $this->_element();
 
         if (!$element || $element->getIsRevision()) {

@@ -133,6 +133,7 @@ class Application extends \yii\web\Application
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
+                /** @phpstan-ignore-next-line */
                 new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
@@ -423,7 +424,7 @@ class Application extends \yii\web\Application
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
         if (!(
             ($user && $user->admin && $user->getPreference($pref)) ||
-            (YII_DEBUG && $request->getHeaders()->get('X-Debug') === 'enable')
+            (App::devMode() && $request->getHeaders()->get('X-Debug') === 'enable')
         )) {
             return;
         }
@@ -574,7 +575,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (YII_DEBUG) {
+            if (App::devMode()) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();

@@ -401,7 +401,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $this->setMatchedElement($element ?: false);
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Element URI: ' . $path,
                 'match' => $this->_matchedElement instanceof ElementInterface,
@@ -425,7 +425,7 @@ class UrlManager extends \yii\web\UrlManager
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 
-            if (YII_DEBUG) {
+            if (App::devMode()) {
                 Craft::debug([
                     'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
@@ -457,7 +457,7 @@ class UrlManager extends \yii\web\UrlManager
             ? Craft::$app->getConfig()->getGeneral()->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
             : null;
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Discoverable change password URL',
                 'match' => $redirectUri !== null,
@@ -521,7 +521,7 @@ class UrlManager extends \yii\web\UrlManager
         $matches = $this->_isPublicTemplatePath($request);
         $path = $request->getPathInfo();
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Template: ' . $path,
                 'match' => $matches,
@@ -550,7 +550,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $token = $request->getToken();
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
                 'match' => $token !== null,

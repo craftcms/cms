@@ -59,6 +59,17 @@ class App
     private static array $_basePaths;
 
     /**
+     * Returns whether Dev Mode is enabled.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function devMode(): bool
+    {
+        return YII_DEBUG;
+    }
+
+    /**
      * Returns an environment variable, falling back to a PHP constant of the same name.
      *
      * @param string $name The environment variable name
@@ -647,7 +658,9 @@ class App
                 '#' . $i . ' ' .
                 ($frame['class'] ?? '') .
                 ($frame['type'] ?? '') .
+                /** @phpstan-ignore-next-line */
                 ($frame['function'] ?? '') . '()' .
+                /** @phpstan-ignore-next-line */
                 (isset($frame['file']) ? ' called at [' . ($frame['file'] ?? '') . ':' . ($frame['line'] ?? '') . ']' : '');
         }
 
@@ -762,7 +775,7 @@ class App
                 $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
-            'enableSchemaCache' => !YII_DEBUG,
+            'enableSchemaCache' => !static::devMode(),
         ];
 
         if ($driver === Connection::DRIVER_PGSQL && $dbConfig->setSchemaOnConnect && $dbConfig->schema) {

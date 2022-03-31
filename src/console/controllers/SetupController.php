@@ -269,6 +269,7 @@ EOD;
             }
         }
 
+        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto test;
@@ -391,7 +392,7 @@ EOD;
             } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
-                $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
+                $defaultSchemas = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $searchPath))) ?: ['public'];
 
                 // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {

@@ -120,7 +120,7 @@ class Asset extends ElementMutationResolver
         $assetId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        /** @var AssetElement $asset */
+        /** @var AssetElement|null $asset */
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {

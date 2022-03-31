@@ -20,6 +20,10 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 {
     /**
      * @inheritdoc
+     * @param object|array|string|null $object
+     * @param array $properties
+     * @param bool $recursive
+     * @return array
      */
     public static function toArray($object, $properties = [], $recursive = true): array
     {
@@ -348,6 +352,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function rename(array &$array, string $oldKey, string $newKey, mixed $default = null): void
     {
+        /** @phpstan-ignore-next-line */
         if (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array)) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
         }

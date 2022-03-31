@@ -404,7 +404,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
         Craft::$app->getDeprecator()->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
-        if (($charset = $env->getCharset()) !== null) {
+        $charset = $env->getCharset();
+        if ($charset) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
         }
         return ucwords(strtolower($string));
@@ -1017,14 +1018,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return array_filter($arr);
         }
 
-        // todo: remove this version check when we drop support for Twig < 2.13.1
-        if (version_compare(TwigEnvironment::VERSION, '2.13.1', '<')) {
-            /** @noinspection PhpParamsInspection */
-            /** @phpstan-ignore-next-line */
-            $filtered = twig_array_filter($arr, $arrow);
-        } else {
-            $filtered = twig_array_filter($env, $arr, $arrow);
-        }
+        $filtered = twig_array_filter($env, $arr, $arrow);
 
         if (is_array($filtered)) {
             return $filtered;
@@ -1526,7 +1520,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'systemName' => $systemName,
             'view' => $this->view,
 
-            'devMode' => YII_DEBUG,
+            'devMode' => App::devMode(),
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,

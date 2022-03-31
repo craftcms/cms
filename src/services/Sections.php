@@ -1136,11 +1136,12 @@ class Sections extends Component
         ProjectConfigHelper::ensureAllSectionsProcessed();
 
         $section = $this->getSectionByUid($data['section']);
-        $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
-        if (!$section || !$entryTypeRecord) {
+        if (!$section) {
             return;
         }
+
+        $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 

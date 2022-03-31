@@ -110,8 +110,9 @@ class Dashboard extends Component
     /**
      * Creates a widget with a given config.
      *
-     * @param mixed $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
-     * @return WidgetInterface
+     * @template T of WidgetInterface
+     * @param class-string<T>|array{type: class-string<T>} $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @return T
      */
     public function createWidget(mixed $config): WidgetInterface
     {

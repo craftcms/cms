@@ -669,12 +669,9 @@ class ElementIndexesController extends BaseElementsController
                 if (is_string($action)) {
                     $action = ['type' => $action];
                 }
+                /** @var array{type: class-string<ElementActionInterface>} $action */
                 $action['elementType'] = $elementType;
                 $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
-
-                if ($actions[$i] === null) {
-                    unset($actions[$i]);
-                }
             }
 
             if ($this->elementQuery->trashed) {
@@ -730,10 +727,6 @@ class ElementIndexesController extends BaseElementsController
                 }
                 $exporter['elementType'] = $elementType;
                 $exporters[$i] = Craft::$app->getElements()->createExporter($exporter);
-
-                if ($exporters[$i] === null) {
-                    unset($exporters[$i]);
-                }
             }
         }
 

@@ -144,7 +144,7 @@ class MailerHelper
         $security = Craft::$app->getSecurity();
 
         // Use the transport adapter settings if it was sent
-        /** @var BaseTransportAdapter $transportAdapter */
+        /** @var BaseTransportAdapter|null $transportAdapter */
         if ($transportAdapter !== null) {
             /** @var BaseTransportAdapter $transportAdapter */
             $settingsAttributes = $transportAdapter->settingsAttributes();
@@ -153,7 +153,9 @@ class MailerHelper
             }
         } else {
             // Otherwise just output whatever public properties we have available on the transport
-            foreach ((array)$transportAdapter as $name => $value) {
+            /** @var array $asArray */
+            $asArray = (array)$transportAdapter;
+            foreach ($asArray as $name => $value) {
                 $transportSettings[Inflector::camel2words($name, true)] = $value;
             }
         }
@@ -185,7 +187,7 @@ class MailerHelper
     private static function _emailList(mixed $emails): string
     {
         $normalized = static::normalizeEmails($emails);
-        if ($normalized === null) {
+        if (empty($normalized)) {
             return '';
         }
         $list = [];

@@ -296,8 +296,6 @@ class UserPermissions extends Component
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
-
-        /** @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
         // No group - no permissions to change.

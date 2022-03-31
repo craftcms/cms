@@ -144,9 +144,9 @@ class ElementQueryConditionBuilder extends Component
      */
     public function extractQueryConditions(?FieldInterface $startingParentField = null): array
     {
-        $startingNode = $this->_resolveInfo->fieldNodes[0];
+        $startingNode = reset($this->_resolveInfo->fieldNodes);
 
-        if ($startingNode === null) {
+        if (!$startingNode) {
             return [];
         }
 
@@ -408,7 +408,7 @@ class ElementQueryConditionBuilder extends Component
 
             // If that's a GraphQL field
             if ($subNode instanceof FieldNode) {
-                /** @var FieldInterface $craftContentField */
+                /** @var FieldInterface|null $craftContentField */
                 $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
@@ -424,7 +424,7 @@ class ElementQueryConditionBuilder extends Component
                     $plan = new EagerLoadPlan();
 
                     // Any arguments?
-                    $arguments = $this->_extractArguments($subNode->arguments ?? []);
+                    $arguments = $this->_extractArguments($subNode->arguments);
 
                     $transformEagerLoadArguments = [];
 
@@ -509,7 +509,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
+                        /** @var InlineFragmentNode|FragmentDefinitionNode|null $wrappingFragment */
                         if ($wrappingFragment) {
                             $plan->when = function(Element $element) use ($wrappingFragment) {
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;

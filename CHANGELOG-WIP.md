@@ -229,6 +229,7 @@
 - Added `craft\gql\base\SingularTypeInterface`.
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
 - Added `craft\helpers\App::cliOption()`.
+- Added `craft\helpers\App::devMode()`.
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.

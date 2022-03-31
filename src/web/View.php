@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
+use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -302,7 +303,7 @@ class View extends \yii\web\View
             $twig->addExtension(new GlobalsExtension());
         }
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             $twig->addExtension(new DebugExtension());
         }
 
@@ -1596,6 +1597,7 @@ JS;
             $handled = false;
             foreach ($this->_hooks[$hook] as $method) {
                 $return .= $method($context, $handled);
+                /** @var bool $handled */
                 if ($handled) {
                     break;
                 }
@@ -1950,7 +1952,7 @@ JS;
             $this->_twigOptions['autoescape'] = 'js';
         }
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             $this->_twigOptions['debug'] = true;
             $this->_twigOptions['strict_variables'] = true;
         }

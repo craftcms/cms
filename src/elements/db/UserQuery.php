@@ -121,7 +121,7 @@ class UserQuery extends ElementQuery
     public ?bool $hasPhoto = null;
 
     /**
-     * @var string|int|false|null The permission that the resulting users must have.
+     * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
      * // fetch users with CP access
@@ -140,7 +140,7 @@ class UserQuery extends ElementQuery
     public mixed $can = null;
 
     /**
-     * @var int|int[]|null The user group ID(s) that the resulting users must belong to.
+     * @var mixed The user group ID(s) that the resulting users must belong to.
      * ---
      * ```php
      * // fetch the authors
@@ -160,32 +160,32 @@ class UserQuery extends ElementQuery
     public mixed $groupId = null;
 
     /**
-     * @var string|string[]|null The email address that the resulting users must have.
+     * @var mixed The email address that the resulting users must have.
      * @used-by email()
      */
     public mixed $email = null;
 
     /**
-     * @var string|string[]|null The username that the resulting users must have.
+     * @var mixed The username that the resulting users must have.
      * @used-by username()
      */
     public mixed $username = null;
 
     /**
-     * @var string|string[]|null The full name that the resulting users must have.
+     * @var mixed The full name that the resulting users must have.
      * @used-by fullName()
      * @since 4.0.0
      */
     public mixed $fullName = null;
 
     /**
-     * @var string|string[]|null The first name that the resulting users must have.
+     * @var mixed The first name that the resulting users must have.
      * @used-by firstName()
      */
     public mixed $firstName = null;
 
     /**
-     * @var string|string[]|null The last name that the resulting users must have.
+     * @var mixed The last name that the resulting users must have.
      * @used-by lastName()
      */
     public mixed $lastName = null;
@@ -367,7 +367,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|int|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $can
      */
@@ -407,7 +407,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|UserGroup|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $groupId
      */
@@ -457,9 +457,7 @@ class UserQuery extends ElementQuery
             ->where(Db::parseParam('handle', $value))
             ->column();
 
-        /** @phpstan-ignore-next-line */
         if ($this->groupId && isset($glue)) {
-            /** @phpstan-ignore-next-line */
             array_unshift($this->groupId, $glue);
         }
 
@@ -495,7 +493,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $groupId
      */
@@ -532,7 +530,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $email
      */
@@ -574,7 +572,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $username
      */
@@ -610,7 +608,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $fullName
      * @since 4.0.0
@@ -647,7 +645,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $firstName
      */
@@ -683,7 +681,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $lastName
      */
@@ -803,7 +801,7 @@ class UserQuery extends ElementQuery
      */
     public function withGroups(bool $value = true): static
     {
-        $this->withGroups = true;
+        $this->withGroups = $value;
         return $this;
     }
 

@@ -517,7 +517,7 @@ class ElementHelper
      */
     public static function setNextPrevOnElements(iterable $elements): void
     {
-        /** @var ElementInterface $lastElement */
+        /** @var ElementInterface|null $lastElement */
         $lastElement = null;
 
         foreach ($elements as $element) {
@@ -573,7 +573,7 @@ class ElementHelper
             }
 
             if ($source === null) {
-                return null;
+                break;
             }
 
             // Is that the end of the path?

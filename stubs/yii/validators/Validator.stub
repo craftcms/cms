@@ -8,4 +8,9 @@ class Validator
      * @var string|null
      */
     public $message;
+
+    /**
+     * @var callable|null
+     */
+    public $isEmpty;
 }

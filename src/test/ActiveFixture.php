@@ -47,7 +47,7 @@ class ActiveFixture extends BaseActiveFixture
                 unset($row['fieldLayoutType']);
 
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout) {
+                if ($fieldLayout->id) {
                     $row['fieldLayoutId'] = $fieldLayout->id;
                 } else {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");

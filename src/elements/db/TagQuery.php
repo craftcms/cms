@@ -46,7 +46,7 @@ class TagQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null|false The tag group ID(s) that the resulting tags must be in.
+     * @var mixed The tag group ID(s) that the resulting tags must be in.
      * ---
      * ```php
      * // fetch tags in the Topics group
@@ -106,7 +106,7 @@ class TagQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|TagGroup|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $groupId
      */
@@ -155,7 +155,7 @@ class TagQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @uses $groupId
      */

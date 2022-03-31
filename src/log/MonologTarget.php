@@ -35,14 +35,9 @@ class MonologTarget extends PsrTarget
     public $addTimestampToContext;
 
     /**
-     * @inheritdoc
-     */
-    public $extractExceptionTrace = !YII_DEBUG;
-
-    /**
      * @var bool
      */
-    public bool $allowLineBreaks = YII_DEBUG;
+    public bool $allowLineBreaks;
 
     /**
      * @inheritdoc
@@ -99,7 +94,7 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
 
     /**
-     * @var Logger $logger
+     * @var Logger|null $logger
      */
     protected $logger;
 
@@ -138,7 +133,7 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $this->level = $this->level ?? (YII_DEBUG ? LogLevel::DEBUG : LogLevel::WARNING);
+        $this->level = $this->level ?? (App::devMode() ? LogLevel::DEBUG : LogLevel::WARNING);
         $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
         $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
         $this->formatter = $this->formatter ?? new LineFormatter(

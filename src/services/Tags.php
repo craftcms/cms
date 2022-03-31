@@ -324,10 +324,6 @@ class Tags extends Component
      */
     public function deleteTagGroup(TagGroup $tagGroup): bool
     {
-        if (!$tagGroup) {
-            return false;
-        }
-
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([

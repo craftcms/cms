@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
+use craft\helpers\App;
 use craft\helpers\Json;
 use GuzzleHttp\Exception\ClientException;
 use Throwable;
@@ -265,7 +266,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     private function _showExceptionView(): bool
     {
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             return true;
         }
 
@@ -283,6 +284,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function shouldRenderSimpleHtml(): bool
     {
+        /** @phpstan-ignore-next-line */
         return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
     }
 }

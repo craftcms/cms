@@ -22,7 +22,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $name Name
  * @property string $handle Handle
  * @property string $defaultPlacement Default placement
- * @property Structure $structure Structure
+ * @property Structure|null $structure Structure
  * @property FieldLayout $fieldLayout Field layout
  * @property CategoryGroup_SiteSettings[] $siteSettings Site settings
  * @property Category[] $categories Categories

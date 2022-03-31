@@ -1717,11 +1717,11 @@ class ProjectConfig extends Component
             return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
-        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
             return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
-        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             $config = (new Query())
                 ->select(['config'])
                 ->from([Table::INFO])
@@ -1755,6 +1755,7 @@ class ProjectConfig extends Component
                     if (!is_array($current)) {
                         $current = [];
                     }
+                    /** @phpstan-ignore-next-line */
                     if (!array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }

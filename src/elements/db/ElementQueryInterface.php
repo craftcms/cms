@@ -171,7 +171,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|string|false|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @since 3.2.0
      */
@@ -203,7 +203,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @since 3.2.0
      */
@@ -347,7 +347,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @since 3.2.0
      */
@@ -379,7 +379,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @since 3.2.0
      */
@@ -419,7 +419,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * This can be combined with [[fixedOrder()]] if you want the results to be returned in a specific order.
      * :::
      *
-     * @param int|int[]|false|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function id(mixed $value): static;
@@ -443,7 +443,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function uid(mixed $value): static;
@@ -476,7 +476,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->one();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @since 3.7.0
      */
@@ -687,7 +687,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param string|string[]|Site $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function site(mixed $value): static;
@@ -722,7 +722,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param int|int[]|string|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function siteId(mixed $value): static;
@@ -813,7 +813,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param int|array|ElementInterface|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function relatedTo(mixed $value): static;
@@ -841,7 +841,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param int|array|ElementInterface|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      * @since 3.6.11
      */
@@ -878,7 +878,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function title(mixed $value): static;
@@ -920,7 +920,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function slug(mixed $value): static;
@@ -962,7 +962,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function uri(mixed $value): static;
@@ -994,7 +994,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      *     ->all();
      * ```
      *
-     * @param string|array|SearchQuery|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function search(mixed $value): static;
@@ -1002,7 +1002,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results based on a reference string.
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return static self reference
      */
     public function ref(mixed $value): static;

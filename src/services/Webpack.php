@@ -216,10 +216,7 @@ class Webpack extends Component
                 throw new Exception('Could not connect to dev server.');
             }
 
-            if (!$body = $res->getBody()) {
-                throw new Exception('Response has no body.');
-            }
-
+            $body = $res->getBody();
             $contents = $body->getContents();
             $json = json_decode($contents, true);
 

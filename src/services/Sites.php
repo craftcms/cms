@@ -383,7 +383,7 @@ class Sites extends Component
             return false;
         }
 
-        /** @var SiteGroupRecord $groupRecord */
+        /** @var SiteGroupRecord|null $groupRecord */
         $groupRecord = SiteGroupRecord::find()
             ->where(['id' => $group->id])
             ->one();

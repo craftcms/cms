@@ -322,7 +322,7 @@ interface ElementInterface extends ComponentInterface
      * :::
      *
      * @param string $source The selected source’s key.
-     * @return array The available element actions.
+     * @return array<ElementActionInterface|class-string<ElementActionInterface>|array{type: class-string<ElementActionInterface>}> The available element actions.
      */
     public static function actions(string $source): array;
 

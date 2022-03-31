@@ -1201,7 +1201,7 @@ JS,
             if ($isCurrentUser) {
                 // If there was a newPassword input but it was empty, pretend it didn't exist
                 $user->newPassword = $this->request->getBodyParam('newPassword') ?: null;
-                $returnCsrfToken = $returnCsrfToken || $user->newPassword !== null;
+                $returnCsrfToken = $user->newPassword !== null;
             }
         }
 

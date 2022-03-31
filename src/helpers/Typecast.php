@@ -76,6 +76,7 @@ final class Typecast
             case self::TYPE_INT_FLOAT:
             case self::TYPE_STRING:
                 if ($value === null || is_scalar($value)) {
+                    /** @var self::TYPE_BOOL|self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_STRING $typeName */
                     $value = match ($typeName) {
                         self::TYPE_BOOL => (bool)$value,
                         self::TYPE_FLOAT => (float)$value,

@@ -80,14 +80,7 @@ trait SoftDeleteTrait
     public static function find(): ActiveQuery
     {
         $query = parent::find();
-
-        if ($query instanceof ActiveQuery) {
-            $alias = $query->getAlias();
-            $column = "$alias.dateDeleted";
-        } else {
-            $column = 'dateDeleted';
-        }
-
+        $column = sprintf('%s.dateDeleted', $query->getAlias());
         return $query->where([$column => null]);
     }
 

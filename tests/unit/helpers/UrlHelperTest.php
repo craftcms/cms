@@ -488,8 +488,8 @@ class UrlHelperTest extends Unit
                 '',
             ],
             'ensure-scheme-is-overridden' => [
-                $https ? self::ABSOLUTE_URL_HTTPS . '?token=value' : self::ABSOLUTE_URL . '?token=value',
-                $https ? self::ABSOLUTE_URL : self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS . '?token=value',
+                self::ABSOLUTE_URL,
                 'value',
             ],
             'no-protocol' => [

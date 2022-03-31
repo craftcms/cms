@@ -411,7 +411,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /** @var FieldGroupRecord $groupRecord */
+        /** @var FieldGroupRecord|null $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -565,8 +565,9 @@ class Fields extends Component
     /**
      * Creates a field with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return FieldInterface The field
+     * @template T of FieldInterface
+     * @param class-string<T>|array{type: class-string<T>, id?: int|string, uid?: string} $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @return T The field
      */
     public function createField(mixed $config): FieldInterface
     {
@@ -1250,8 +1251,9 @@ class Fields extends Component
     /**
      * Creates a field layout element instance from its config.
      *
-     * @param array $config
-     * @return FieldLayoutElement
+     * @template T of FieldLayoutElement
+     * @param array{type: class-string<T>} $config
+     * @return T
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
      */

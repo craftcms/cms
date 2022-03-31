@@ -1,5 +1,5 @@
 parameters:
-    level: 3
+    level: 4
     paths:
         - src
         - tests
@@ -29,9 +29,13 @@ parameters:
         - stubs/yii/BaseYii.stub
         - stubs/yii/db/Migration.stub
         - stubs/yii/db/Query.stub
+        - stubs/yii/validators/UniqueValidator.stub
         - stubs/yii/validators/UrlValidator.stub
         - stubs/yii/validators/Validator.stub
+        - stubs/yii/web/AssetManager.stub
         - stubs/yii/web/ErrorHandler.stub
+        - stubs/yii/web/Request.stub
+        - stubs/yii/web/Response.stub
         - stubs/yii/web/User.stub
     earlyTerminatingMethodCalls:
         Craft:
@@ -43,4 +47,5 @@ parameters:
     ignoreErrors:
         - '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
+        - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'

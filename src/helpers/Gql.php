@@ -360,14 +360,15 @@ class Gql
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive $directiveEntity */
+                /** @var Directive|false $directiveEntity */
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
-                $arguments = [];
 
                 // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
                 if (!$directiveEntity) {
                     continue;
                 }
+
+                $arguments = [];
 
                 if (isset($directive->arguments[0])) {
                     foreach ($directive->arguments as $argument) {
@@ -491,10 +492,10 @@ class Gql
      */
     public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, ?array $context): string
     {
-        $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
+        $fieldName = array_slice($resolveInfo->path, -1)[0];
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
-        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        /** @var ElementQueryConditionBuilder|null $conditionBuilder */
         $conditionBuilder = $context['conditionBuilder'] ?? null;
 
         if ($isAlias) {

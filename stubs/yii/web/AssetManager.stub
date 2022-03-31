@@ -1,0 +1,11 @@
+<?php
+
+namespace yii\web;
+
+class AssetManager
+{
+    /**
+     * @var callable|null
+     */
+    public $hashCallback;
+}

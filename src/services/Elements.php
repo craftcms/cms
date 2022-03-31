@@ -1256,7 +1256,7 @@ class Elements extends Component
                         $siteQuery->revisions();
                     }
 
-                    /** @var Element $siteElement */
+                    /** @var ElementInterface|null $siteElement */
                     $siteElement = $siteQuery->one();
 
                     if ($siteElement === null) {
@@ -1896,8 +1896,9 @@ class Elements extends Component
     /**
      * Creates an element action with a given config.
      *
-     * @param mixed $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return ElementActionInterface The element action
+     * @template T of ElementActionInterface
+     * @param class-string<T>|array{type: class-string<T>} $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @return T The element action
      */
     public function createAction(mixed $config): ElementActionInterface
     {
@@ -1907,8 +1908,9 @@ class Elements extends Component
     /**
      * Creates an element exporter with a given config.
      *
-     * @param mixed $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return ElementExporterInterface The element exporter
+     * @template T of ElementExporterInterface
+     * @param class-string<T>|array{type: class-string<T>} $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @return T The element exporter
      */
     public function createExporter(mixed $config): ElementExporterInterface
     {
@@ -2109,7 +2111,7 @@ class Elements extends Component
     /**
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
-     * @param string|EagerLoadPlan[]|array $with
+     * @param string|array<EagerLoadPlan|array|string> $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
      */

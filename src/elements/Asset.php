@@ -399,7 +399,7 @@ class Asset extends Element
             preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
             $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
         ) {
-            $isTemp = $volume instanceof Temp;
+            $isTemp = $volume->getFs() instanceof Temp;
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -572,7 +572,7 @@ class Asset extends Element
     {
         $volume = $folder->getVolume();
 
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             $volumeHandle = 'temp';
         } elseif (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
@@ -985,7 +985,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             return true;
         }
 
@@ -1012,7 +1012,7 @@ class Asset extends Element
     protected function cpEditUrl(): ?string
     {
         $volume = $this->getVolume();
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             return null;
         }
 
@@ -2311,7 +2311,7 @@ JS;
         // Set the field layout
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
 
-        if (!$volume instanceof Temp) {
+        if (!$volume->getFs() instanceof Temp) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -2439,7 +2439,7 @@ JS;
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
+        if ($volume->getFs() instanceof Temp || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
@@ -2595,8 +2595,6 @@ JS;
                 $oldVolume->getFs()->deleteFile($oldPath);
             }
 
-            $exception = null;
-
             // Upload the file to the new location
             try {
                 $newVolume->getFs()->writeFileFromStream($newPath, $stream, [
@@ -2604,16 +2602,12 @@ JS;
                 ]);
             } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
+                throw $exception;
             } finally {
                 // If the volume has not already disconnected the stream, clean it up.
                 if (is_resource($stream)) {
                     fclose($stream);
                 }
-            }
-
-            // Re-throw it, after we've made sure that the stream is disconnected.
-            if ($exception !== null) {
-                throw $exception;
             }
         }
 

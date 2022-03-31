@@ -425,9 +425,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $blockTypeFields[$blockTypeId] = [];
             $totalNewFields = 0;
             $fieldLayout = $blockType->getFieldLayout();
-            if (!$fieldLayout) {
-                continue;
-            }
             $tabs = $fieldLayout->getTabs();
             if (empty($tabs)) {
                 continue;

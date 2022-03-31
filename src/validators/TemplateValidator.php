@@ -25,11 +25,6 @@ class TemplateValidator extends Validator
     public string $templateMode = View::TEMPLATE_MODE_SITE;
 
     /**
-     * @var string user-defined error message used when the value is not a string.
-     */
-    public $message;
-
-    /**
      * @inheritdoc
      */
     public function init(): void

@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
@@ -173,13 +174,13 @@ class GraphqlController extends Controller
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
                 }
-                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
+                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, App::devMode());
             } catch (Throwable $e) {
                 Craft::$app->getErrorHandler()->logException($e);
                 $result[$key] = [
                     'errors' => [
                         [
-                            'message' => YII_DEBUG || $e instanceof InvalidValueException
+                            'message' => App::devMode() || $e instanceof InvalidValueException
                                 ? $e->getMessage()
                                 : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
                         ],
@@ -559,11 +560,6 @@ class GraphqlController extends Controller
         }
 
         $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-
-        if (!$token) {
-            throw new NotFoundHttpException('Public schema not found');
-        }
-
         $title = Craft::t('app', 'Edit the public GraphQL schema');
 
         return $this->renderTemplate('graphql/schemas/_edit', compact(

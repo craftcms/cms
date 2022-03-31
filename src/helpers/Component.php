@@ -49,6 +49,7 @@ class Component
             throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
         }
 
+        /** @var class-string $class */
         if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
             if (!$throwException) {
                 return false;
@@ -80,7 +81,7 @@ class Component
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
      * @template T of ComponentInterface
-     * @param class-string<T>|array{type: class-string<T>, __class: class-string<T>} $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param class-string<T>|array{type: class-string<T>, __class?: string} $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @param class-string<T>|null $instanceOf The class or interface that the component must be an instance of.
      * @return T The component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
@@ -98,11 +99,7 @@ class Component
             }
 
             $class = $config['type'];
-            unset($config['type']);
-
-            if (isset($config['__class'])) {
-                unset($config['__class']);
-            }
+            unset($config['type'], $config['__class']);
         }
 
         // Validate the component class

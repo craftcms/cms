@@ -100,7 +100,6 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
-use craft\web\Response as WebResponse;
 use craft\web\View;
 use Yii;
 use yii\base\Application;
@@ -595,14 +594,13 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        $request = $this->getRequest();
-        if ($request instanceof ConsoleRequest) {
+        if (!$this instanceof WebApplication) {
             return false;
         }
 
         /** @var Cache $cache */
         $cache = $this->getCache();
-        return $cache->get('editionTestableDomain@' . $request->getHostName());
+        return $cache->get(sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName()));
     }
 
     /**
@@ -627,7 +625,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
+        return App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -1450,9 +1448,8 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        $response = $this->getResponse();
-        if ($response instanceof WebResponse) {
-            $response->setNoCacheHeaders();
+        if ($this instanceof WebApplication) {
+            $this->getResponse()->setNoCacheHeaders();
         }
     }
 

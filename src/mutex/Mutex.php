@@ -47,7 +47,7 @@ class Mutex extends YiiMutex
         $this->_init();
 
         if (!isset($this->mutex)) {
-            if (YII_DEBUG) {
+            if (App::devMode()) {
                 // Use NullMutex for Dev Mode, since they’re not really needed for development,
                 // and partially to avoid Windows/Linux filesystem conflicts
                 $this->mutex = NullMutex::class;

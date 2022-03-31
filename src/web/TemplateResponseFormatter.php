@@ -33,7 +33,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
      */
     public function format($response)
     {
-        /** @var TemplateResponseBehavior $behavior */
+        /** @var TemplateResponseBehavior|null $behavior */
         $behavior = $response->getBehavior(TemplateResponseBehavior::NAME);
 
         if (!$behavior) {

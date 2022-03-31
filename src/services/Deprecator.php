@@ -406,9 +406,7 @@ class Deprecator extends Component
 
         foreach ($args as $key => $value) {
             // Cap it off at 5
-            $count++;
-
-            if ($count == 5) {
+            if (++$count === 5) {
                 $strArgs[] = '...';
                 break;
             }
@@ -439,10 +437,6 @@ class Deprecator extends Component
                 $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
-            }
-
-            if ($count == 5) {
-                break;
             }
         }
 

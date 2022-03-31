@@ -439,7 +439,7 @@ class ImageTransforms extends Component
                 }
 
                 // Only set the height if the reference transform has a height set on it
-                if ($refTransform && $refTransform->height) {
+                if ($refTransform->height) {
                     if ($sizeUnit === 'w') {
                         $transform['height'] = (int)ceil($refTransform->height * $transform['width'] / $refTransform->width);
                     } else {

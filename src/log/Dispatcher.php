@@ -8,6 +8,7 @@
 namespace craft\log;
 
 use Craft;
+use craft\helpers\App;
 use Illuminate\Support\Collection;
 
 /**
@@ -64,16 +65,18 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
-            $config = array_merge($this->monologTargetConfig, [
-                'name' => $name,
-                'enabled' => false,
-            ]);
+            $config = $this->monologTargetConfig + [
+                    'name' => $name,
+                    'enabled' => false,
+                    'extractExceptionTrace' => !App::devMode(),
+                    'allowLineBreaks' => App::devMode(),
+                ];
 
             return [$name => new MonologTarget($config)];
         });
 
         // Enabled via QueueLogBehavior
-        if (!YII_DEBUG) {
+        if (!App::devMode()) {
             $queueTarget = $targets->get(static::TARGET_QUEUE);
             // TODO: Ask about except/levels
             $queueTarget->except = ['yii\*'];

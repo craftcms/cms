@@ -283,7 +283,7 @@ class ElementFieldResolverTest extends Unit
                     return 'ok';
                 },
             ]),
-            'getTransformByHandle' => function($handle): ?ImageTransform {
+            'getTransformByHandle' => function($handle): ImageTransform {
                 return new ImageTransform(['handle' => $handle]);
             },
         ]);

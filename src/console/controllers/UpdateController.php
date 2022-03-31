@@ -592,7 +592,7 @@ class UpdateController extends Controller
                 $session->setIdentity(null);
             }
 
-            if (!App::licenseKey()) {
+            if (App::licenseKey() === null) {
                 $this->stderr('License key creation was unsuccessful.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }

@@ -150,8 +150,6 @@ class IndexAssetsController extends Controller
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
             $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
 
-            $startAt = is_numeric($startAt) ? (int)$startAt : 0;
-
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
             $missingRecords = [];

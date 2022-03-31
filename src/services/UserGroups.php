@@ -377,10 +377,6 @@ class UserGroups extends Component
     {
         Craft::$app->requireEdition(Craft::Pro);
 
-        if (!$group) {
-            return false;
-        }
-
         // Fire a 'beforeDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([

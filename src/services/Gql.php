@@ -374,9 +374,7 @@ class Gql extends Component
 
             foreach ($registeredTypes as $registeredType) {
                 if (method_exists($registeredType, 'getTypeGenerator')) {
-                    /** @var GeneratorInterface $typeGeneratorClass */
                     $typeGeneratorClass = $registeredType::getTypeGenerator();
-
                     if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
                         foreach ($typeGeneratorClass::generateTypes() as $type) {
                             $schemaConfig['types'][] = $type;

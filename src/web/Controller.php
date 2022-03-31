@@ -607,6 +607,8 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * @inheritdoc
+     * @param string|array|null $url
+     * @param int $statusCode
      * @return YiiResponse
      */
     public function redirect($url, $statusCode = 302): YiiResponse

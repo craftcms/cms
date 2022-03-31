@@ -101,7 +101,7 @@ class Entry extends ElementMutationResolver
         $siteId = $arguments['siteId'] ?? null;
 
         $elementService = Craft::$app->getElements();
-        /** @var EntryElement $entry */
+        /** @var EntryElement|null $entry */
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
@@ -128,7 +128,7 @@ class Entry extends ElementMutationResolver
     {
         $entryId = $arguments['id'];
 
-        /** @var EntryElement $entry */
+        /** @var EntryElement|null $entry */
         $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
 
         if (!$entry) {
@@ -160,12 +160,13 @@ class Entry extends ElementMutationResolver
      */
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
     {
-        /** @var EntryElement|DraftBehavior $draft */
+        /** @var EntryElement|DraftBehavior|null $draft */
         $draft = Craft::$app->getElements()
             ->createElementQuery(EntryElement::class)
             ->status(null)
             ->provisionalDrafts($arguments['provisional'] ?? false)
-            ->draftId($arguments['id'])->one();
+            ->draftId($arguments['id'])
+            ->one();
 
         if (!$draft) {
             throw new Error('Unable to perform the action.');

@@ -181,7 +181,7 @@ class FieldLayout extends Model
     private array $_availableCustomFields;
 
     /**
-     * @var BaseField[]
+     * @var array<BaseField|class-string<BaseField>|array{class: class-string<BaseField>}>
      * @see getAvailableNativeFields()
      */
     private array $_availableStandardFields;
@@ -261,7 +261,7 @@ class FieldLayout extends Model
     /**
      * Sets the layout’s tabs.
      *
-     * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
+     * @param array<array|FieldLayoutTab> $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
      * objects or arrays defining the tab’s attributes.
      */
     public function setTabs(array $tabs): void

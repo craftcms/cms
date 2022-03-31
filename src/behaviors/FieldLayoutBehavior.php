@@ -36,7 +36,7 @@ class FieldLayoutBehavior extends Behavior
     public ?string $idAttribute = null;
 
     /**
-     * @var int|string|callable The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
+     * @var int|string|callable|null The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
      */
     private $_fieldLayoutId;
 

@@ -140,7 +140,7 @@ class PluginStore extends Component
 
         $token = new CraftIdToken($oauthTokenRecord->getAttributes());
 
-        if (!$token || ($token && $token->hasExpired())) {
+        if ($token->hasExpired()) {
             return null;
         }
 

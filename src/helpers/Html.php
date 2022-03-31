@@ -452,7 +452,7 @@ class Html extends \yii\helpers\Html
     /**
      * Explodes a `class` attribute into an array.
      *
-     * @param string|string[]|bool|null $value
+     * @param mixed $value
      * @return string[]
      * @since 3.5.0
      */
@@ -473,7 +473,7 @@ class Html extends \yii\helpers\Html
     /**
      * Explodes a `style` attribute into an array of property/value pairs.
      *
-     * @param string|string[]|bool|null $value
+     * @param mixed $value
      * @return string[]
      * @since 3.5.0
      */

@@ -237,6 +237,8 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * @inheritdoc
+     * @param string|DateTime|null $value
+     * @return string
      */
     public function asText($value): string
     {

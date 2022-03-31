@@ -175,25 +175,4 @@ class Content extends Component
 
         return true;
     }
-
-    /**
-     * Removes the column prefixes from a given row.
-     *
-     * @param array $row
-     * @return array
-     */
-    private function _removeColumnPrefixesFromRow(array $row): array
-    {
-        foreach ($row as $column => $value) {
-            if (str_starts_with($column, $this->fieldColumnPrefix)) {
-                $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
-                $row[$fieldHandle] = $value;
-                unset($row[$column]);
-            } elseif (!in_array($column, ['id', 'elementId', 'title', 'dateCreated', 'dateUpdated', 'uid', 'siteId'], true)) {
-                unset($row[$column]);
-            }
-        }
-
-        return $row;
-    }
 }

@@ -28,7 +28,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
-use craft\search\SearchQuery;
 use ReflectionClass;
 use ReflectionProperty;
 use yii\base\ArrayableTrait;
@@ -140,7 +139,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $draftId = null;
 
     /**
-     * @var int|string|false|null The source element ID that drafts should be returned for.
+     * @var mixed The source element ID that drafts should be returned for.
      *
      * This can be set to one of the following:
      *
@@ -192,19 +191,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|false|null The element ID(s). Prefix IDs with `'not '` to exclude them.
+     * @var mixed The element ID(s). Prefix IDs with `'not '` to exclude them.
      * @used-by id()
      */
     public mixed $id = null;
 
     /**
-     * @var string|string[]|null The element UID(s). Prefix UIDs with `'not '` to exclude them.
+     * @var mixed The element UID(s). Prefix UIDs with `'not '` to exclude them.
      * @used-by uid()
      */
     public mixed $uid = null;
 
     /**
-     * @var int|int[]|null The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
+     * @var mixed The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
      * @used-by siteSettingsId()
      * @since 3.7.0
      */
@@ -251,7 +250,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $dateUpdated = null;
 
     /**
-     * @var int|int[]|string|null The site ID(s) that the elements should be returned in, or `'*'` if elements
+     * @var mixed The site ID(s) that the elements should be returned in, or `'*'` if elements
      * should be returned in all supported sites.
      * @used-by site()
      * @used-by siteId()
@@ -279,7 +278,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public bool $leaves = false;
 
     /**
-     * @var int|array|ElementInterface|null The element relation criteria.
+     * @var mixed The element relation criteria.
      *
      * See [Relations](https://craftcms.com/docs/4.x/relations.html) for supported syntax options.
      *
@@ -288,25 +287,25 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $relatedTo = null;
 
     /**
-     * @var string|string[]|null The title that resulting elements must have.
+     * @var mixed The title that resulting elements must have.
      * @used-by title()
      */
     public mixed $title = null;
 
     /**
-     * @var string|string[]|null The slug that resulting elements must have.
+     * @var mixed The slug that resulting elements must have.
      * @used-by slug()
      */
     public mixed $slug = null;
 
     /**
-     * @var string|string[]|null The URI that the resulting element must have.
+     * @var mixed The URI that the resulting element must have.
      * @used-by uri()
      */
     public mixed $uri = null;
 
     /**
-     * @var string|array|SearchQuery|null The search term to filter the resulting elements by.
+     * @var mixed The search term to filter the resulting elements by.
      *
      * See [Searching](https://craftcms.com/docs/4.x/searching.html) for supported syntax options.
      *
@@ -315,7 +314,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $search = null;
 
     /**
-     * @var string|string[]|null The reference code(s) used to identify the element(s).
+     * @var mixed The reference code(s) used to identify the element(s).
      *
      * This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
      *
@@ -350,7 +349,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?bool $withStructure = null;
 
     /**
-     * @var int|false|null The structure ID that should be used to join in the structureelements table.
+     * @var mixed The structure ID that should be used to join in the structureelements table.
      * @used-by structureId()
      */
     public mixed $structureId = null;
@@ -2066,9 +2065,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
+        /** @var string[]|string|null $statuses */
         $statuses = $this->status;
         if (!is_array($statuses)) {
-            $statuses = is_string($statuses) ? StringHelper::split($statuses) : [$statuses];
+            $statuses = $statuses ? StringHelper::split($statuses) : [];
         }
 
         $firstVal = strtolower(reset($statuses));

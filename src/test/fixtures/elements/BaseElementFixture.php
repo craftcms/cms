@@ -68,7 +68,7 @@ abstract class BaseElementFixture extends DbFixture
             $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
             if ($fieldLayoutType) {
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout) {
+                if ($fieldLayout->id) {
                     $element->fieldLayoutId = $fieldLayout->id;
                 } else {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
