@@ -51,6 +51,7 @@ jobs:
   # Run PHPStan checks
   phpstan:
     runs-on: ubuntu-latest
+    needs: ecs
 
     steps:
       - name: Checkout
@@ -82,7 +83,7 @@ jobs:
   # Run Craft tests
   tests:
     runs-on: ${{ matrix.operating-system }}
-    needs: ecs
+    needs: phpstan
     strategy:
       matrix:
         operating-system: [ 'ubuntu-latest' ]
