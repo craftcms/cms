@@ -10,11 +10,20 @@ on:
   pull_request:
     branches:
       - "**"
+
+env:
+  SLACK_NOTIFICATION_TITLE: '<{run_url}|build> has {status_message}'
+  SLACK_NOTIFICATION_MESSAGE_FORMAT: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
+  SLACK_NOTIFICATION_FOOTER: '<{repo_url}|{repo}>'
+  SLACK_NOTIFICATION_ERROR_LEVELS: 'failure,warnings'
+  SLACK_NOTIFICATION_GROUP_ID: 'SGFL9NKNZ'
+
 jobs:
 
-  # Run ECS checks
+  # Run ECS checks outside of the matrix
   ecs:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -25,9 +34,62 @@ jobs:
       - name: Run ECS checks
         run: vendor/bin/ecs check --ansi
 
+      - name: Slack notification failure
+        uses: ravsamhq/notify-slack-action@v1
+        if: always()
+        with:
+          status: ${{ job.status }}
+          notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+          message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+          footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
+          notify_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+          mention_groups: ${{ env.SLACK_NOTIFICATION_GROUP_ID }}
+          mention_groups_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Run PHPStan checks outside of the matrix
+  phpstan:
+    runs-on: ubuntu-latest
+    needs: ecs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-ansi --no-progress
+
+      - name: Copy tests .env
+        run: cp ./tests/.env.example.mysql ./tests/.env
+
+      - name: Create folders
+        run: mkdir tests/_craft/storage/runtime/compiled_classes
+
+      - name: Build Codeception support files
+        run: "vendor/bin/codecept build"
+
+      - name: Run PHPStan checks
+        run: "vendor/bin/phpstan --memory-limit=1G"
+
+      - name: Slack notification failure
+        uses: ravsamhq/notify-slack-action@v1
+        if: always()
+        with:
+          status: ${{ job.status }}
+          notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+          message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+          footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
+          notify_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+          mention_groups: ${{ env.SLACK_NOTIFICATION_GROUP_ID }}
+          mention_groups_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Run Craft tests in the matrix
   tests:
     runs-on: ${{ matrix.operating-system }}
-    needs: ecs
+    needs: phpstan
     strategy:
       matrix:
         operating-system: [ 'ubuntu-latest' ]
@@ -145,25 +207,22 @@ jobs:
       if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
       uses: codecov/codecov-action@v2
 
-  notify_failure:
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
+      if: always()
       with:
         status: ${{ job.status }}
-        notification_title: '<{run_url}|build> has {status_message}'
-        message_format: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
-        footer: '<{repo_url}|{repo}>'
-        notify_when: 'failure,warnings'
-        mention_groups: 'SGFL9NKNZ'
-        mention_groups_when: 'failure,warnings'
+        notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+        message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+        footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
+        notify_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+        mention_groups: ${{ env.SLACK_NOTIFICATION_GROUP_ID }}
+        mention_groups_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   notify_success:
-    if: always()
+    if: success()
     runs-on: ubuntu-latest
     needs: tests
     steps:
@@ -171,9 +230,9 @@ jobs:
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
-          notification_title: '<{run_url}|build> has {status_message}'
-          message_format: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
-          footer: '<{repo_url}|{repo}>'
+          notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+          message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+          footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
           notify_when: 'success'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
