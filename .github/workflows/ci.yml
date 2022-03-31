@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - develop
-      - main
-      - feature/**
-      - 4.0
+  pull_request:
 jobs:
   craft_build:
     runs-on: ${{ matrix.operating-system }}
