@@ -6,7 +6,6 @@ on:
       - develop
       - main
       - feature/**
-      - 4.0
   pull_request:
     branches:
       - "**"
