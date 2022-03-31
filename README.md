@@ -6,7 +6,7 @@
 
 Craft is a flexible, user-friendly CMS for creating custom digital experiences on the web and beyond.
 
-It features:
+It features::
 
 - An intuitive, user-friendly control panel for content creation and administrative tasks.
 - A clean-slate approach to content modeling that doesn’t make any assumptions about the content you need to manage.
