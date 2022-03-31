@@ -388,69 +388,6 @@ class RequestTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testCheckRequestTypeWithDirectTrigger()
-    {
-        $this->setInaccessibleProperty($this->request, '_segments', [
-            Craft::$app->getConfig()->getGeneral()->actionTrigger,
-            'do-stuff',
-        ]);
-
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
-    /**
-     *
-     */
-    public function testCheckRequestTypeWithQueryTrigger()
-    {
-        // We want a CP request
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->request->setQueryParams(['action' => 'do/stuff']);
-
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
-    /**
-     * @dataProvider checkRequestSpecialPathDataProvider
-     * @param string $path
-     * @throws ReflectionException
-     */
-    public function testCheckRequestTypeOnCpRequestWithSpecialPathTrigger(string $path)
-    {
-        // We want a CP request
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->setInaccessibleProperty($this->request, '_path', $path);
-
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
-    /**
-     *
-     */
-    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogin()
-    {
-        $genConfig = Craft::$app->getConfig()->getGeneral();
-
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLoginPath(), '/'));
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
-    /**
-     *
-     */
-    public function testCheckRequestTypeOnSiteRequestWithSpecialPathTriggerLogout()
-    {
-        $genConfig = Craft::$app->getConfig()->getGeneral();
-
-        $this->setInaccessibleProperty($this->request, '_isCpRequest', true);
-        $this->setInaccessibleProperty($this->request, '_path', trim($genConfig->getLogoutPath(), '/'));
-        $this->checkRequestAndAssertIsSingleAction();
-    }
-
-    /**
      * @dataProvider normalizeParamDataProvider
      */
     public function testNormalizeParam(string $expected, string $name)
@@ -458,15 +395,6 @@ class RequestTest extends TestCase
         $method = (new ReflectionClass(Request::class))->getMethod('_normalizeParam');
         $method->setAccessible(true);
         $this->assertSame($expected, $method->invokeArgs(Craft::$app->getRequest(), [$name]));
-    }
-
-    /**
-     *
-     */
-    public function checkRequestAndAssertIsSingleAction()
-    {
-        $this->request->checkIfActionRequest(true);
-        self::assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
     /**
