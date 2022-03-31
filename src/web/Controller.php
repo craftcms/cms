@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\ModelInterface;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -273,7 +274,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a failure response for a model.
      *
-     * @param Model $model The model that was being operated on
+     * @param Model|ModelInterface $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -282,7 +283,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelFailure(
-        Model $model,
+        Model|ModelInterface $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -306,7 +307,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a success response for a model.
      *
-     * @param Model $model The model that was being operated on
+     * @param Model|ModelInterface $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -315,7 +316,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelSuccess(
-        Model $model,
+        Model|ModelInterface $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],

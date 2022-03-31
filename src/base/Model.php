@@ -26,7 +26,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Model extends \yii\base\Model
+abstract class Model extends \yii\base\Model implements ModelInterface
 {
     use ClonefixTrait;
 
