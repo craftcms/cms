@@ -6,7 +6,44 @@ on:
       - develop
   pull_request:
 
+env:
+  SLACK_NOTIFICATION_TITLE: '<{run_url}|build> has {status_message}'
+  SLACK_NOTIFICATION_MESSAGE_FORMAT: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
+  SLACK_NOTIFICATION_FOOTER: '<{repo_url}|{repo}>'
+  SLACK_NOTIFICATION_ERROR_LEVELS: 'failure,warnings'
+  SLACK_NOTIFICATION_GROUP_ID: 'SGFL9NKNZ'
+
 jobs:
+
+  # Run ECS checks outside of the matrix
+  ecs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-ansi --no-progress
+
+      - name: Run ECS checks
+        run: vendor/bin/ecs check --ansi
+
+      - name: Slack notification failure
+        uses: ravsamhq/notify-slack-action@v1
+        # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
+        if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
+        with:
+          status: ${{ job.status }}
+          notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+          message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+          footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
+          notify_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+          mention_groups: ${{ env.SLACK_NOTIFICATION_GROUP_ID }}
+          mention_groups_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   tests:
     runs-on: ${{ matrix.operating-system }}
 
@@ -133,12 +170,12 @@ jobs:
       if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
       with:
         status: ${{ job.status }}
-        notification_title: '<{run_url}|build> has {status_message}'
-        message_format: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
-        footer: '<{repo_url}|{repo}>'
-        notify_when: 'failure,warnings'
-        mention_groups: 'SGFL9NKNZ'
-        mention_groups_when: 'failure,warnings'
+        notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+        message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+        footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
+        notify_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+        mention_groups: ${{ env.SLACK_NOTIFICATION_GROUP_ID }}
+        mention_groups_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
@@ -151,9 +188,9 @@ jobs:
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
-          notification_title: '<{run_url}|build> has {status_message}'
-          message_format: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
-          footer: '<{repo_url}|{repo}>'
+          notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+          message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+          footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
           notify_when: 'success'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
