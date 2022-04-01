@@ -4,11 +4,7 @@ on:
   push:
     branches:
       - develop
-      - main
-      - feature/**
   pull_request:
-    branches:
-      - "**"
 
 env:
   SLACK_NOTIFICATION_TITLE: '<{run_url}|build> has {status_message}'
