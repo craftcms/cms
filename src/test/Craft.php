@@ -14,6 +14,7 @@ use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\ElementNotFoundException;
@@ -24,9 +25,11 @@ use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
+use craft\web\Application as WebApplication;
 use DateTime;
 use Exception;
 use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
 use Throwable;
 use Yii;
@@ -163,7 +166,8 @@ class Craft extends Yii2
 
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
-            $mockApp = TestSetup::getMockApp($test);
+            /** @var ConsoleApplication|WebApplication|MockObject $mockApp */
+            $mockApp = TestSetup::getMockModule($test);
             \Craft::$app = $mockApp;
             Yii::$app = $mockApp;
 
@@ -565,7 +569,7 @@ class Craft extends Yii2
             );
         }
     }
-    
+
     /**
      * @param string $description
      */
@@ -688,8 +692,7 @@ class Craft extends Yii2
         $componentMap = call_user_func([$moduleClass, 'getComponentMap']);
 
         // Set it.
-        /** @phpstan-ignore-next-line */
-        \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockApp($test, $componentMap, $moduleClass);
+        \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockModule($test, $componentMap, $moduleClass);
     }
 
     /**

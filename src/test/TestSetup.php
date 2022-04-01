@@ -68,10 +68,12 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use PHPUnit\Framework\MockObject\MockObject;
 use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\Module;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -297,7 +299,7 @@ class TestSetup
 
     /**
      * @param string $preDefinedAppType
-     * @return string
+     * @return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
@@ -494,19 +496,19 @@ class TestSetup
     }
 
     /**
-     * @template T of ConsoleApplication|WebApplication
+     * @template T of Module
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param class-string<T>|null $appClass
+     * @param class-string<T>|null $moduleClass
      * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], ?string $appClass = null): ConsoleApplication|WebApplication
+    public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
     {
-        $appClass = $appClass ?? self::appClass();
+        $moduleClass = $moduleClass ?? self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
-        $mockApp = self::getMock($test, $appClass);
+        $mockApp = self::getMock($test, $moduleClass);
 
         $mockMapForMagicGet = [];
 
@@ -540,13 +542,13 @@ class TestSetup
     }
 
     /**
-     * @template T of object
+     * @template T
      * @param CodeceptionTestCase $test
      * @param class-string<T> $class
-     * @return T
+     * @return T|MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMock(CodeceptionTestCase $test, string $class): object
+    public static function getMock(CodeceptionTestCase $test, string $class)
     {
         return $test->getMockBuilder($class)
             ->disableOriginalConstructor()

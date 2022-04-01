@@ -540,6 +540,7 @@
 - `craft\services\Users::CONFIG_USERS_KEY` has been moved to `craft\services\ProjectConfig::PATH_USERS`.
 - `craft\services\Volumes::CONFIG_VOLUME_KEY` has been moved to `craft\services\ProjectConfig::PATH_VOLUMES`.
 - `craft\test\fixtures\elements\BaseElementFixture` now validates elements with the `live` scenario if they are enabled, canonical, and not a provisional draft.
+- `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
 - `craft\web\Request::getBodyParam()` now accepts nested param names in the `foo[bar][baz]` format.
 - `craft\web\Request::getBodyParams()` and `getBodyParam()` now check for an `X-Craft-Namespace` header. If present, only params that begin with its value will be returned, excluding the namespace.
 - `craft\web\View::renderString()` now has an `$escapeHtml` argument.
