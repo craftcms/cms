@@ -4,11 +4,10 @@ on:
   push:
     branches:
       - develop
-      - main
-      - feature/**
-      - 4.0
+  pull_request:
+
 jobs:
-  craft_build:
+  tests:
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
@@ -130,7 +129,8 @@ jobs:
 
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
-      if: ${{ ! success() }}
+      # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
+      if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
       with:
         status: ${{ job.status }}
         notification_title: '<{run_url}|build> has {status_message}'
@@ -145,7 +145,7 @@ jobs:
   notify:
     if: success()
     runs-on: ubuntu-latest
-    needs: craft_build
+    needs: tests
     steps:
       - name: Notify on success
         uses: ravsamhq/notify-slack-action@v1
