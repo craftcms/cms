@@ -455,10 +455,10 @@ class ArrayHelperTest extends TestCase
      */
     public function toArrayDataProvider(): array
     {
-        $stdClass2 = new StdClass();
+        $stdClass2 = new stdClass();
         $stdClass2->subProp = 'value';
 
-        $stdClass = new StdClass();
+        $stdClass = new stdClass();
         $stdClass->prop1 = '11';
         $stdClass->prop2 = '22';
         $stdClass->prop3 = $stdClass2;
