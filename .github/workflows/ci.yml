@@ -129,7 +129,7 @@ jobs:
 
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
-      if: ${{ ! success() }}
+      if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
       with:
         status: ${{ job.status }}
         notification_title: '<{run_url}|build> has {status_message}'
