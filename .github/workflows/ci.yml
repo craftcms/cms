@@ -31,7 +31,8 @@ jobs:
 
       - name: Slack notification failure
         uses: ravsamhq/notify-slack-action@v1
-        if: always()
+        # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
+        if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
         with:
           status: ${{ job.status }}
           notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
@@ -69,7 +70,8 @@ jobs:
 
       - name: Slack notification failure
         uses: ravsamhq/notify-slack-action@v1
-        if: always()
+        # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
+        if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
         with:
           status: ${{ job.status }}
           notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
@@ -204,7 +206,8 @@ jobs:
 
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
-      if: always()
+      # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
+      if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
       with:
         status: ${{ job.status }}
         notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
