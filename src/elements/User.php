@@ -56,11 +56,11 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property Asset|null $photo the user's photo
- * @property UserGroup[] $groups the user's groups
- * @property string $name the user's full name or username
- * @property string|null $friendlyName the user's first name or username
- * @property-read Address[]|null $addresses the user's addresses
+ * @property Asset|null $photo the user’s photo
+ * @property UserGroup[] $groups the user’s groups
+ * @property string $name the user’s full name or username
+ * @property string|null $friendlyName the user’s first name or username
+ * @property-read Address[]|null $addresses the user’s addresses
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  * @property-read DateTime|null $cooldownEndTime the time when the user will be over their cooldown period
  * @property-read array $preferences the user’s preferences
@@ -944,7 +944,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Gets the user's addresses.
+     * Gets the user’s addresses.
      *
      * @return Address[]
      * @since 4.0.0
@@ -1026,7 +1026,7 @@ class User extends Element implements IdentityInterface
     /**
      * Determines whether the user is allowed to be logged in with a given password.
      *
-     * @param string $password The user's plain text password.
+     * @param string $password The user’s plain text password.
      * @return bool
      */
     public function authenticate(string $password): bool
@@ -1075,7 +1075,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the user's groups.
+     * Returns the user’s groups.
      *
      * @return UserGroup[]
      */
@@ -1128,7 +1128,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the user's full name.
+     * Returns the user’s full name.
      *
      * @return string|null
      * @deprecated in 4.0.0. [[fullName]] should be used instead.
@@ -1139,7 +1139,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the user's full name or username.
+     * Returns the user’s full name or username.
      *
      * @return string
      */
@@ -1179,7 +1179,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the user's first name or username.
+     * Returns the user’s first name or username.
      *
      * @return string|null
      */
@@ -1395,9 +1395,9 @@ class User extends Element implements IdentityInterface
      */
     public function getCooldownEndTime(): ?DateTime
     {
-        // There was an old bug that where a user's lockoutDate could be null if they've
+        // There was an old bug that where a user’s lockoutDate could be null if they’ve
         // passed their cooldownDuration already, but there account status is still locked.
-        // If that's the case, just let it return null as if they are past the cooldownDuration.
+        // If that’s the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
@@ -1411,7 +1411,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
+     * Returns the remaining cooldown time for this user, if they’ve entered their password incorrectly too many times.
      *
      * @return DateInterval|null
      */
@@ -1524,7 +1524,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the user's photo.
+     * Returns the user’s photo.
      *
      * @return Asset|null
      */

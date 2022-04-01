@@ -277,7 +277,7 @@ trait ApplicationTrait
     /**
      * Sets the target application language.
      *
-     * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool|null $useUserLanguage Whether the user’s preferred language should be used.
      * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
     public function updateTargetLanguage(?bool $useUserLanguage = null): void
@@ -304,7 +304,7 @@ trait ApplicationTrait
     /**
      * Returns the target app language.
      *
-     * @param bool $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool $useUserLanguage Whether the user’s preferred language should be used.
      * @return string
      */
     public function getTargetLanguage(bool $useUserLanguage = true): string
@@ -1518,7 +1518,7 @@ trait ApplicationTrait
      */
     private function _getFallbackLanguage(): string
     {
-        // See if we have the CP translated in one of the user's browsers preferred language(s)
+        // See if we have the CP translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
             $languages = $this->getI18n()->getAppLocaleIds();
             return $this->getRequest()->getPreferredLanguage($languages);

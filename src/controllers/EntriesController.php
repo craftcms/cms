@@ -197,7 +197,7 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
         $section = $entry->getSection();
 
-        // Is this another user's entry (and it's not a Single)?
+        // Is this another user’s entry (and it’s not a Single)?
         if (
             $entry->id &&
             !$duplicate &&

@@ -1164,7 +1164,7 @@ class AssetsController extends Controller
         if (!$asset->getVolumeId()) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it's the user's temporary folder
+            // Skip permission check only if it’s the user’s temporary folder
             if ($userTemporaryFolder->id == $asset->folderId) {
                 return;
             }
@@ -1207,7 +1207,7 @@ class AssetsController extends Controller
         if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it's the user's temporary folder
+            // Skip permission check only if it’s the user’s temporary folder
             if ($userTemporaryFolder->id == $folder->id) {
                 return;
             }
