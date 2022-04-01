@@ -8,12 +8,12 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Stub;
-use Codeception\Test\Unit;
 use Craft;
 use craft\db\Command;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use Exception;
 use UnitTester;
@@ -25,7 +25,7 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ElementHelperTest extends Unit
+class ElementHelperTest extends TestCase
 {
     /**
      * @var UnitTester

@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\UrlHelper;
+use craft\test\TestCase;
 use craft\test\TestSetup;
 use UnitTester;
 use yii\base\Exception;
@@ -21,7 +22,7 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UrlHelperTest extends Unit
+class UrlHelperTest extends TestCase
 {
     public const ABSOLUTE_URL = 'http://craftcms.com/';
     public const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';

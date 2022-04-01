@@ -8,6 +8,7 @@
 namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
+use craft\test\TestCase;
 use craft\web\Response;
 
 /**
@@ -17,7 +18,7 @@ use craft\web\Response;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ResponseTest extends Unit
+class ResponseTest extends TestCase
 {
     /**
      * @var Response

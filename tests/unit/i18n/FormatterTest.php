@@ -9,6 +9,7 @@ namespace crafttests\unit\i18n;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Formatter class.
@@ -16,7 +17,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FormatterTest extends Unit
+class FormatterTest extends TestCase
 {
     /**
      * @param string $expected

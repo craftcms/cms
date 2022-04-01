@@ -12,6 +12,7 @@ use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use Exception;
@@ -24,7 +25,7 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ActiveRecordTest extends Unit
+class ActiveRecordTest extends TestCase
 {
     /**
      * @var UnitTester

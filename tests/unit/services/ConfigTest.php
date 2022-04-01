@@ -12,6 +12,7 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the config service
@@ -20,7 +21,7 @@ use Craft;
  * @author Oliver Stark <os@fortrabbit.com>
  * @since 4.0
  */
-class ConfigTest extends Unit
+class ConfigTest extends TestCase
 {
     public function testDotEnvPathIsNotABooleanString(): void
     {

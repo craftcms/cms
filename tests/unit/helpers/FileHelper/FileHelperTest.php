@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers\FileHelper;
 
-use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
+use craft\test\TestCase;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class FileHelperTest extends Unit
+class FileHelperTest extends TestCase
 {
     protected UnitTester $tester;
 

@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\ColorValidator;
 use ErrorException;
 use UnitTester;
@@ -20,7 +20,7 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ColorValidatorTest extends Unit
+class ColorValidatorTest extends TestCase
 {
     /**
      * @var ColorValidator

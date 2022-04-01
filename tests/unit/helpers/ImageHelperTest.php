@@ -11,9 +11,9 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Stub;
-use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\Image;
+use craft\test\TestCase;
 use Exception;
 use TypeError;
 use UnitTester;
@@ -26,7 +26,7 @@ use yii\log\Logger;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ImageHelperTest extends Unit
+class ImageHelperTest extends TestCase
 {
     /**
      * @var UnitTester

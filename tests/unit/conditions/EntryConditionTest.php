@@ -13,6 +13,7 @@ use Craft;
 use craft\elements\conditions\entries\AuthorGroupConditionRule;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\SlugConditionRule;
+use craft\test\TestCase;
 
 /**
  * Unit tests for entry conditions.
@@ -20,7 +21,7 @@ use craft\elements\conditions\SlugConditionRule;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class EntryConditionTest extends Unit
+class EntryConditionTest extends TestCase
 {
     public function testCanAddRules(): void
     {

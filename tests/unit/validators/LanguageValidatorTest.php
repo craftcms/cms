@@ -7,9 +7,9 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\LanguageValidator;
 use UnitTester;
 use yii\base\NotSupportedException;
@@ -21,7 +21,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class LanguageValidatorTest extends Unit
+class LanguageValidatorTest extends TestCase
 {
     /**
      * @var UnitTester

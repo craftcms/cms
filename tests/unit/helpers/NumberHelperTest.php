@@ -7,9 +7,9 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Number;
 use craft\test\mockclasses\ToString;
+use craft\test\TestCase;
 
 /**
  * Class NumberHelperTest.
@@ -18,7 +18,7 @@ use craft\test\mockclasses\ToString;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class NumberHelperTest extends Unit
+class NumberHelperTest extends TestCase
 {
     /**
      * @dataProvider wordDataProvider

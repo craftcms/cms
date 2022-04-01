@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Diff;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Diff Helper class.
@@ -16,7 +17,7 @@ use craft\helpers\Diff;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
  */
-class DiffHelperTest extends Unit
+class DiffHelperTest extends TestCase
 {
     /**
      * @dataProvider compareDataProvider

@@ -16,6 +16,7 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\EntryTypeFixture;
 use crafttests\fixtures\SectionsFixture;
@@ -35,7 +36,7 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class GcTest extends Unit
+class GcTest extends TestCase
 {
     /**
      * @var Gc

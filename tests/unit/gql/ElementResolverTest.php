@@ -7,17 +7,17 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
 
-class ElementResolverTest extends Unit
+class ElementResolverTest extends TestCase
 {
     /**
      * @var UnitTester

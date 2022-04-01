@@ -9,6 +9,7 @@ namespace crafttests\unit\fields\data;
 
 use Codeception\Test\Unit;
 use craft\fields\data\ColorData;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the ColorData class.
@@ -16,7 +17,7 @@ use craft\fields\data\ColorData;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.26
  */
-class ColorDataTest extends Unit
+class ColorDataTest extends TestCase
 {
     /**
      * @dataProvider rgbDataProvider

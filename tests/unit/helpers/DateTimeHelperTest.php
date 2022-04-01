@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\DateTimeHelper;
+use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -23,7 +24,7 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class DateTimeHelperTest extends Unit
+class DateTimeHelperTest extends TestCase
 {
     /**
      * @var UnitTester

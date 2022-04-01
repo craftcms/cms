@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use yii\db\Exception;
@@ -23,7 +24,7 @@ use yii\db\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class CommandTest extends Unit
+class CommandTest extends TestCase
 {
     /**
      * @var DateTime

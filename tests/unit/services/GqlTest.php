@@ -7,7 +7,6 @@
 
 namespace craftunit\services;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\db\Table;
 use craft\elements\GlobalSet;
@@ -40,13 +39,14 @@ use craft\services\UserGroups;
 use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
-class GqlTest extends Unit
+class GqlTest extends TestCase
 {
     /**
      * @var UnitTester

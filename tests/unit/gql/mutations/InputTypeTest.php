@@ -7,7 +7,6 @@
 
 namespace craftunit\gql\mutations;
 
-use Codeception\Test\Unit;
 use craft\base\Field;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Checkboxes;
@@ -22,11 +21,12 @@ use craft\gql\types\input\Matrix;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
 
-class InputTypeTest extends Unit
+class InputTypeTest extends TestCase
 {
     public function testFileInput(): void
     {

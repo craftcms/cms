@@ -7,7 +7,6 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\db\EagerLoadPlan;
 use craft\fields\Assets;
@@ -16,6 +15,7 @@ use craft\fields\Matrix;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
+use craft\test\TestCase;
 use crafttests\fixtures\GqlSchemasFixture;
 use Exception;
 use GraphQL\Error\SyntaxError;
@@ -30,7 +30,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use UnitTester;
 
-class ExtractEagerLoadingParameterTest extends Unit
+class ExtractEagerLoadingParameterTest extends TestCase
 {
     /**
      * @var UnitTester

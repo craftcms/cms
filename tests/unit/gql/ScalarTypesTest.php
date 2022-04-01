@@ -7,7 +7,6 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft as Craft;
 use craft\elements\Entry;
 use craft\errors\GqlException;
@@ -18,6 +17,7 @@ use craft\gql\types\DateTime;
 use craft\gql\types\Money;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
+use craft\test\TestCase;
 use DateTimeZone;
 use Exception;
 use GraphQL\Error\Error;
@@ -30,7 +30,7 @@ use GraphQL\Language\AST\ValueNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
 
-class ScalarTypesTest extends Unit
+class ScalarTypesTest extends TestCase
 {
     /**
      * Test the serialization of scalar data types

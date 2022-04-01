@@ -14,6 +14,7 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
+use craft\test\TestCase;
 use crafttests\fixtures\UserFixture;
 
 /**
@@ -28,7 +29,7 @@ use crafttests\fixtures\UserFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchTest extends Unit
+class SearchTest extends TestCase
 {
     /**
      * @var Search

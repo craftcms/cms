@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\records\Token;
 use craft\services\Tokens;
+use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -23,7 +24,7 @@ use Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class TokenTest extends Unit
+class TokenTest extends TestCase
 {
     /**
      * @var Tokens

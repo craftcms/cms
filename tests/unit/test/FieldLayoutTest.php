@@ -10,6 +10,7 @@ namespace crafttests\unit\test;
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use yii\base\NotSupportedException;
 
@@ -20,7 +21,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class FieldLayoutTest extends Unit
+class FieldLayoutTest extends TestCase
 {
     public function _fixtures(): array
     {

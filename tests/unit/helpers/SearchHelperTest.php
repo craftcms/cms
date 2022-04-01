@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Search;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Search Helper class.
@@ -17,7 +18,7 @@ use craft\helpers\Search;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchHelperTest extends Unit
+class SearchHelperTest extends TestCase
 {
     /**
      * @dataProvider normalizeKeywordsDataProviders

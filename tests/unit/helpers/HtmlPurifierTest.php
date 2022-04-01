@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\HtmlPurifier;
+use craft\test\TestCase;
 use HTMLPurifier_Config;
 
 /**
@@ -19,7 +19,7 @@ use HTMLPurifier_Config;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class HtmlPurifierTest extends Unit
+class HtmlPurifierTest extends TestCase
 {
     /**
      * @dataProvider cleanUtf8DataProvider

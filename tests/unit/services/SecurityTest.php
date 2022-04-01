@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\services\Security;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the security service
@@ -18,7 +19,7 @@ use craft\services\Security;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SecurityTest extends Unit
+class SecurityTest extends TestCase
 {
     /**
      * @var Security

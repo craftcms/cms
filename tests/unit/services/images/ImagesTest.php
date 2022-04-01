@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Images;
+use craft\test\TestCase;
 use Imagick;
 use yii\base\Exception;
 
@@ -22,7 +23,7 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ImagesTest extends Unit
+class ImagesTest extends TestCase
 {
     /**
      * @var Images

@@ -7,16 +7,16 @@
 
 namespace craftunit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 use yii\base\Exception;
 
-class GqlHelperTest extends Unit
+class GqlHelperTest extends TestCase
 {
     /**
      * Test Schema helper methods.

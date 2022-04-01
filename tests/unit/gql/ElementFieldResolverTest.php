@@ -7,7 +7,6 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\base\Fs;
 use craft\elements\Asset;
@@ -39,11 +38,12 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\Assets;
 use craft\services\ImageTransforms;
+use craft\test\TestCase;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
 
-class ElementFieldResolverTest extends Unit
+class ElementFieldResolverTest extends TestCase
 {
     /**
      * @var UnitTester

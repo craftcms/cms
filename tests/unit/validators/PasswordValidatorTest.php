@@ -7,9 +7,9 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\UserPasswordValidator;
 use TypeError;
 use UnitTester;
@@ -21,7 +21,7 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PasswordValidatorTest extends Unit
+class PasswordValidatorTest extends TestCase
 {
     /**
      * @var UnitTester

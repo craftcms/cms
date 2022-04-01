@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use stdClass;
@@ -27,7 +28,7 @@ use yii\db\Schema;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class DbHelperTest extends Unit
+class DbHelperTest extends TestCase
 {
     public const MULTI_PARSEPARAM_NOT = [
         'or',

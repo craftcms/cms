@@ -7,12 +7,12 @@
 
 namespace crafttests\unit\services;
 
-use Codeception\Test\Unit;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
+use craft\test\TestCase;
 
-class ImageTransformsTest extends Unit
+class ImageTransformsTest extends TestCase
 {
     /**
      * Makes sure that extending transform correctly updates it.

@@ -10,6 +10,7 @@ namespace crafttests\unit\base;
 use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use Exception;
@@ -22,7 +23,7 @@ use TypeError;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ModelTest extends Unit
+class ModelTest extends TestCase
 {
     /**
      * Tests a model for errors.

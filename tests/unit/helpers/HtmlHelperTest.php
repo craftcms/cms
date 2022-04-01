@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Html;
+use craft\test\TestCase;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -18,7 +19,7 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class HtmlHelperTest extends Unit
+class HtmlHelperTest extends TestCase
 {
     /**
      * @dataProvider encodeParamsDataProvider

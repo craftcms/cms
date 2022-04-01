@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
+use craft\test\TestCase;
 use stdClass;
 
 /**
@@ -18,7 +19,7 @@ use stdClass;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ArrayHelperTest extends Unit
+class ArrayHelperTest extends TestCase
 {
     /**
      * @dataProvider toArrayDataProvider

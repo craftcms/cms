@@ -12,6 +12,7 @@ use Craft;
 use craft\errors\ElementNotFoundException;
 use craft\events\ConfigEvent;
 use craft\helpers\StringHelper;
+use craft\test\TestCase;
 use UnitTester;
 
 /**
@@ -20,7 +21,7 @@ use UnitTester;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.16
  */
-class GlobalsTest extends Unit
+class GlobalsTest extends TestCase
 {
     /**
      * @var UnitTester

@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\ConfigHelper;
+use craft\test\TestCase;
 use DateTime;
 use stdClass;
 use UnitTester;
@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ConfigHelperTest extends Unit
+class ConfigHelperTest extends TestCase
 {
     /**
      * @var UnitTester

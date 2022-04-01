@@ -7,7 +7,6 @@
 
 namespace craftunit\gql\mutations;
 
-use Codeception\Test\Unit;
 use craft\elements\GlobalSet;
 use craft\fields\Number;
 use craft\fields\PlainText;
@@ -27,11 +26,12 @@ use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
+use craft\test\TestCase;
 use Exception;
 use UnitTester;
 use yii\base\InvalidConfigException;
 
-class CreateMutationsTest extends Unit
+class CreateMutationsTest extends TestCase
 {
     /**
      * @var UnitTester

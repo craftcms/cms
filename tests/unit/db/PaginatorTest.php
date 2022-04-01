@@ -13,6 +13,7 @@ use craft\db\Paginator;
 use craft\db\Query;
 use craft\db\Table;
 use craft\records\Session;
+use craft\test\TestCase;
 use UnitTester;
 use yii\db\Exception;
 
@@ -23,7 +24,7 @@ use yii\db\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PaginatorTest extends Unit
+class PaginatorTest extends TestCase
 {
     /**
      * @var Paginator

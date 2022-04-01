@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\ArrayHelper;
 use craft\mail\Mailer;
+use craft\test\TestCase;
 use craft\test\TestSetup;
 use yii\base\InvalidConfigException;
 
@@ -21,7 +22,7 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class AppTest extends Unit
+class AppTest extends TestCase
 {
     /**
      * @dataProvider craftAppGetMethodsDataProvider

@@ -12,6 +12,7 @@ use Craft;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
+use craft\test\TestCase;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 
@@ -22,7 +23,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class MysqlDbHelperTest extends Unit
+class MysqlDbHelperTest extends TestCase
 {
     /**
      * @dataProvider sqlTypesDataProvider

@@ -7,13 +7,13 @@
 
 namespace crafttests\unit\test;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\components\EventTriggeringComponent;
+use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -30,7 +30,7 @@ use yii\base\Event;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class CraftCodeceptionModuleTest extends Unit
+class CraftCodeceptionModuleTest extends TestCase
 {
     /**
      * @var UnitTester $tester

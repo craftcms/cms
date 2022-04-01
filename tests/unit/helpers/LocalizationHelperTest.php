@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Localization;
+use craft\test\TestCase;
 use UnitTester;
 use yii\base\InvalidArgumentException;
 
@@ -19,7 +19,7 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class LocalizationHelperTest extends Unit
+class LocalizationHelperTest extends TestCase
 {
     /**
      * @var UnitTester

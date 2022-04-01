@@ -20,6 +20,7 @@ use craft\errors\InvalidElementException;
 use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\Revisions;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use Throwable;
 use yii\base\Exception;
@@ -31,7 +32,7 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class DraftsTest extends Unit
+class DraftsTest extends TestCase
 {
     /**
      * @var Elements

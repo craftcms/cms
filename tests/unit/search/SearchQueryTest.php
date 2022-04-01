@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use craft\test\TestCase;
 
 /**
  * Unit tests for SearchTest
@@ -24,7 +25,7 @@ use craft\search\SearchQueryTermGroup;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchQueryTest extends Unit
+class SearchQueryTest extends TestCase
 {
     public const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,

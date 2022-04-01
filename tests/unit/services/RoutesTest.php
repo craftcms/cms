@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\services\Routes;
+use craft\test\TestCase;
 
 /**
  * Unit tests for routes service.
@@ -21,7 +22,7 @@ use craft\services\Routes;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class RoutesTest extends Unit
+class RoutesTest extends TestCase
 {
     /**
      * @var Routes

@@ -7,7 +7,6 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -27,9 +26,10 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
+use craft\test\TestCase;
 use UnitTester;
 
-class PrepareQueryTest extends Unit
+class PrepareQueryTest extends TestCase
 {
     /**
      * @var UnitTester

@@ -7,10 +7,10 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
+use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use UnitTester;
 use yii\base\Exception;
@@ -24,7 +24,7 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class AssetsHelperTest extends Unit
+class AssetsHelperTest extends TestCase
 {
     /**
      * @var UnitTester

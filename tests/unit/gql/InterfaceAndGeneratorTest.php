@@ -7,7 +7,6 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\base\Element as BaseElement;
 use craft\elements\Asset as AssetElement;
@@ -40,11 +39,12 @@ use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
+use craft\test\TestCase;
 use Exception;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 
-class InterfaceAndGeneratorTest extends Unit
+class InterfaceAndGeneratorTest extends TestCase
 {
     /**
      * @var UnitTester

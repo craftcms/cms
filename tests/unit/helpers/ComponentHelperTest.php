@@ -18,6 +18,7 @@ use craft\helpers\Component;
 use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
+use craft\test\TestCase;
 use Exception;
 use Throwable;
 use UnitTester;
@@ -30,7 +31,7 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ComponentHelperTest extends Unit
+class ComponentHelperTest extends TestCase
 {
     /**
      * @var UnitTester

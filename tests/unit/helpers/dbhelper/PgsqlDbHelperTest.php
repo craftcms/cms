@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
+use craft\test\TestCase;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 
@@ -21,7 +22,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PgsqlDbHelperTest extends Unit
+class PgsqlDbHelperTest extends TestCase
 {
     /**
      * @dataProvider sqlTypesDataProvider

@@ -7,7 +7,6 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
@@ -23,6 +22,7 @@ use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -31,7 +31,7 @@ use crafttests\fixtures\UserFixture;
 use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 
-class TypeResolverTest extends Unit
+class TypeResolverTest extends TestCase
 {
     protected function _before(): void
     {

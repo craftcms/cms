@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Json;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Json Helper class.
@@ -17,7 +18,7 @@ use craft\helpers\Json;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class JsonHelperTest extends Unit
+class JsonHelperTest extends TestCase
 {
     /**
      * @dataProvider decodeIfJsonDataProvider

@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\HandleValidator;
 
 /**
@@ -18,7 +18,7 @@ use craft\validators\HandleValidator;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class HandleValidatorTest extends Unit
+class HandleValidatorTest extends TestCase
 {
     /**
      * @var HandleValidator

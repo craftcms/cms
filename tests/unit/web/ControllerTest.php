@@ -10,6 +10,7 @@ namespace crafttests\unit\web;
 use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\controllers\TestController;
+use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
@@ -28,7 +29,7 @@ use yii\web\ForbiddenHttpException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ControllerTest extends Unit
+class ControllerTest extends TestCase
 {
     /**
      * @var UnitTester

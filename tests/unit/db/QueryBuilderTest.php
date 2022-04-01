@@ -9,6 +9,7 @@ namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\test\TestCase;
 use yii\db\Schema;
 
 /**
@@ -17,7 +18,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.4
  */
-class QueryBuilderTest extends Unit
+class QueryBuilderTest extends TestCase
 {
     /**
      * @dataProvider createTableOptionsDataProvider

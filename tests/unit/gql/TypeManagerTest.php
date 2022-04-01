@@ -7,14 +7,14 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\events\DefineGqlTypeFieldsEvent;
 use craft\gql\TypeManager;
 use craft\services\Gql;
+use craft\test\TestCase;
 use yii\base\Event;
 
-class TypeManagerTest extends Unit
+class TypeManagerTest extends TestCase
 {
     private ?Gql $_gqlService = null;
 

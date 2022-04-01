@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
+use craft\test\TestCase;
 use craft\validators\UsernameValidator;
 use yii\base\NotSupportedException;
 
@@ -18,7 +18,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UsernameValidatorTest extends Unit
+class UsernameValidatorTest extends TestCase
 {
     /**
      * @var UsernameValidator

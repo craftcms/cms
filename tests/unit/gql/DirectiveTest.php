@@ -7,7 +7,6 @@
 
 namespace craftunit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\config\GeneralConfig;
 use craft\elements\Asset;
@@ -24,11 +23,12 @@ use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
 
-class DirectiveTest extends Unit
+class DirectiveTest extends TestCase
 {
     protected function _before(): void
     {

@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
 use craft\helpers\Cp;
+use craft\test\TestCase;
 use craft\web\twig\TemplateLoaderException;
 use crafttests\fixtures\SitesFixture;
 use UnitTester;
@@ -22,7 +23,7 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
  */
-class CpHelperTest extends Unit
+class CpHelperTest extends TestCase
 {
     /**
      * @var UnitTester

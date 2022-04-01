@@ -12,6 +12,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\fields\Money;
+use craft\test\TestCase;
 use Money\Currency;
 
 /**
@@ -20,7 +21,7 @@ use Money\Currency;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MoneyTest extends Unit
+class MoneyTest extends TestCase
 {
     /**
      * @var Money

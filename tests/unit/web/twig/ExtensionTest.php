@@ -15,6 +15,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
@@ -36,7 +37,7 @@ use yii\web\ServerErrorHttpException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ExtensionTest extends Unit
+class ExtensionTest extends TestCase
 {
     /**
      * @var View

@@ -7,14 +7,14 @@
 
 namespace craftunit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
+use craft\test\TestCase;
 
-class ProjectConfigHelperTest extends Unit
+class ProjectConfigHelperTest extends TestCase
 {
     /**
      * @dataProvider packedUnpackedDataProvider

@@ -12,6 +12,7 @@ use Craft;
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\fields\PlainText;
+use craft\test\TestCase;
 use InvalidArgumentException;
 
 /**
@@ -21,7 +22,7 @@ use InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.4.0
  */
-class CustomFieldBehaviorTest extends Unit
+class CustomFieldBehaviorTest extends TestCase
 {
     /**
      * @dataProvider existingFieldHandlesDataProvider

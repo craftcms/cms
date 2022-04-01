@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
+use craft\test\TestCase;
 use stdClass;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -26,7 +27,7 @@ use const ENT_QUOTES;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class StringHelperTest extends Unit
+class StringHelperTest extends TestCase
 {
     /**
      *
