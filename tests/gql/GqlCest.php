@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace tests\gql;
+namespace crafttests\gql;
 
 use Craft;
 use craft\models\GqlSchema;

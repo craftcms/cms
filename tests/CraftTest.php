@@ -5,6 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+namespace crafttests;
+
 use craft\helpers\App;
 use PHPUnit\Framework\TestCase;
 

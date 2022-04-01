@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
 use Craft;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
