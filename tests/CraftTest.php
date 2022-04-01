@@ -18,7 +18,7 @@ class CraftTest extends TestCase
     public function testParseEnv(): void
     {
         // Arrange
-        putenv("CRAFT_TEST=testing");
+        putenv('CRAFT_TEST=testing');
 
         // Act
         $env = App::parseEnv('$CRAFT_TEST');
@@ -34,7 +34,7 @@ class CraftTest extends TestCase
     public function testParseEnvReturnsTrue(): void
     {
         // Arrange
-        putenv("CRAFT_TEST=true");
+        putenv('CRAFT_TEST=true');
 
         // Act
         $env = App::parseEnv('$CRAFT_TEST');
@@ -51,7 +51,7 @@ class CraftTest extends TestCase
     public function testParseEnvReturnsFalse(): void
     {
         // Arrange
-        putenv("CRAFT_TEST=false");
+        putenv('CRAFT_TEST=false');
 
         // Act
         $env = App::parseEnv('$CRAFT_TEST');

@@ -635,10 +635,10 @@ TWIG;
         foreach ($messages as $message => $translation) {
             $translation = Json::encode($translation);
             $message = Json::encode($message);
-            $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$category}][{$message}] = {$translation};";
+            $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[$category][$message] = $translation;";
         }
 
-        return "if (typeof Craft.translations[{$category}] === 'undefined') {" . PHP_EOL . "    Craft.translations[{$category}] = {};" . PHP_EOL . '}' . PHP_EOL . $js;
+        return "if (typeof Craft.translations[$category] === 'undefined') {" . PHP_EOL . "    Craft.translations[$category] = {};" . PHP_EOL . '}' . PHP_EOL . $js;
     }
 
     /**

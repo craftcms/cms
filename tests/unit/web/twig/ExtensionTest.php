@@ -1009,11 +1009,11 @@ class ExtensionTest extends TestCase
         self::assertStringContainsString('id="Symbols"', $svg);
 
         $svg = $this->view->renderString('{{ svg(contents) }}', compact('contents'));
-        self::assertStringStartsWith("<svg", $svg);
+        self::assertStringStartsWith('<svg', $svg);
         self::assertRegExp('/id="\w+\-Symbols"/', $svg);
 
         $svg = $this->view->renderString('{{ svg(contents, namespace=false) }}', compact('contents'));
-        self::assertStringStartsWith("<svg", $svg);
+        self::assertStringStartsWith('<svg', $svg);
         self::assertStringContainsString('id="Symbols"', $svg);
 
         // deprecated

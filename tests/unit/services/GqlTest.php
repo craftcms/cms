@@ -72,7 +72,7 @@ class GqlTest extends TestCase
      */
     public function testCreatingSchemaFail(): void
     {
-        $this->expectExceptionMessage("No schema is active.");
+        $this->expectExceptionMessage('No schema is active.');
         $this->expectException(GqlException::class);
 
         $gqlService = Craft::$app->getGql();

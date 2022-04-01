@@ -73,7 +73,7 @@ class ScalarTypesTest extends TestCase
      */
     public function testDateTimeParseValueAndLiteral(): void
     {
-        $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
+        $timeAsStr = (new \DateTime('now'))->format('Y-m-d H:i:s');
 
         $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
         $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));

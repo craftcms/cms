@@ -126,7 +126,7 @@ class DirectiveTest extends TestCase
             ['what time is it?', $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], 'what time is it?'],
 
             // Markdown
-            ["Some *string*", $markDownDirective, [$this->_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
+            ['Some *string*', $markDownDirective, [$this->_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
 
             // Money
             'money-number' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[0])], '1,234.56'],

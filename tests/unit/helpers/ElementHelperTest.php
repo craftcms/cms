@@ -100,7 +100,7 @@ class ElementHelperTest extends TestCase
     public function testSetUniqueUri(array $expected, array $config, int $duplicates = 0): void
     {
         if ($duplicates) {
-            $db = \Craft::$app->getDb();
+            $db = Craft::$app->getDb();
             $this->tester->mockDbMethods([
                 'createCommand' => function($sql, $params) use (&$duplicates, &$db) {
                     /* @var Command $command */

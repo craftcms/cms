@@ -302,7 +302,7 @@ class GeneralMutationResolverTest extends TestCase
             'one' => $entry,
         ]);
 
-        \Craft::$app->set('elements', $this->make(Elements::class, [
+        Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
             'createElementQuery' => $query,
         ]));
