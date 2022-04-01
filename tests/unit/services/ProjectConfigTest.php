@@ -55,7 +55,7 @@ class ProjectConfigTest extends TestCase
 
     private YiiMutex $_originalMutex;
 
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->_originalMutex = Craft::$app->getMutex();
@@ -64,7 +64,7 @@ class ProjectConfigTest extends TestCase
         ]));
     }
 
-    protected function _after()
+    protected function _after(): void
     {
         parent::_after();
         Craft::$app->set('mutex', $this->_originalMutex);
@@ -97,7 +97,7 @@ class ProjectConfigTest extends TestCase
     /**
      * Test if rebuilding project config ignores the `readOnly` flag.
      */
-    public function testRebuildIgnoresReadOnly()
+    public function testRebuildIgnoresReadOnly(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $readOnly = $projectConfig->readOnly;
@@ -123,7 +123,7 @@ class ProjectConfigTest extends TestCase
      * @throws Exception
      * @dataProvider getValueDataProvider
      */
-    public function testGettingValue(?string $path, bool $useExternal, mixed $expectedValue)
+    public function testGettingValue(?string $path, bool $useExternal, mixed $expectedValue): void
     {
         $actualValue = $this->getProjectConfig()->get($path, $useExternal);
         self::assertSame($expectedValue, $actualValue);
@@ -134,7 +134,7 @@ class ProjectConfigTest extends TestCase
      * @param mixed $value
      * @dataProvider setValueDataProvider
      */
-    public function testSettingValue(string $path, mixed $value)
+    public function testSettingValue(string $path, mixed $value): void
     {
         $projectConfig = $this->getProjectConfig();
         $projectConfig->set($path, $value);
@@ -143,7 +143,7 @@ class ProjectConfigTest extends TestCase
         self::assertSame($value, $actual);
     }
 
-    public function testSettingNewValueModifiesTimestamp()
+    public function testSettingNewValueModifiesTimestamp(): void
     {
         $projectConfig = $this->getProjectConfig();
         $path = 'randomString';
@@ -157,7 +157,7 @@ class ProjectConfigTest extends TestCase
         self::assertNotSame($initialTimestamp, $projectConfig->get('dateModified'));
     }
 
-    public function testSettingValueIgnoresExternalValue()
+    public function testSettingValueIgnoresExternalValue(): void
     {
         $internal = [
             'common' => [
@@ -184,7 +184,7 @@ class ProjectConfigTest extends TestCase
         self::assertSame(null, $pc->get('common.fizz', true));
     }
 
-    public function testPreventChangesIfReadOnly()
+    public function testPreventChangesIfReadOnly(): void
     {
         $pc = $this->getProjectConfig();
         $pc->readOnly = true;
@@ -192,7 +192,7 @@ class ProjectConfigTest extends TestCase
         $pc->set('path', 'value');
     }
 
-    public function testSettingValueChangesTimestamp()
+    public function testSettingValueChangesTimestamp(): void
     {
         $pc = $this->getProjectConfig();
         $timestamp = $pc->get('dateModified');
@@ -200,7 +200,7 @@ class ProjectConfigTest extends TestCase
         self::assertNotSame($timestamp, $pc->get('dateModified'));
     }
 
-    public function testEventsFiredAndDeltaStored()
+    public function testEventsFiredAndDeltaStored(): void
     {
         $pc = $this->getProjectConfig(null, null, [
             'trigger' => Expected::atLeastOnce(),

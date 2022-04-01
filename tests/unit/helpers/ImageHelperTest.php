@@ -36,7 +36,7 @@ class ImageHelperTest extends Unit
     /**
      *
      */
-    public function testConstants()
+    public function testConstants(): void
     {
         self::assertSame(3, Image::EXIF_IFD0_ROTATE_180);
         self::assertSame(6, Image::EXIF_IFD0_ROTATE_90);
@@ -51,7 +51,7 @@ class ImageHelperTest extends Unit
      * @param int|float $sourceWidth
      * @param int|float $sourceHeight
      */
-    public function testCalculateMissingDimension(array $expected, float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight)
+    public function testCalculateMissingDimension(array $expected, float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight): void
     {
         self::assertSame($expected, Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight));
     }
@@ -61,7 +61,7 @@ class ImageHelperTest extends Unit
      * @param bool $expected
      * @param string $extension
      */
-    public function testCanManipulateAsImage(bool $expected, string $extension)
+    public function testCanManipulateAsImage(bool $expected, string $extension): void
     {
         self::assertSame($expected, Image::canManipulateAsImage($extension));
     }
@@ -69,7 +69,7 @@ class ImageHelperTest extends Unit
     /**
      *
      */
-    public function testWebSafeFormats()
+    public function testWebSafeFormats(): void
     {
         self::assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp', 'avif'], Image::webSafeFormats());
     }
@@ -79,7 +79,7 @@ class ImageHelperTest extends Unit
      * @param array|false $expected
      * @param string $file
      */
-    public function testPngImageInfo(array|false $expected, string $file)
+    public function testPngImageInfo(array|false $expected, string $file): void
     {
         self::assertSame($expected, Image::pngImageInfo($file));
     }
@@ -89,7 +89,7 @@ class ImageHelperTest extends Unit
      * @param bool $expected
      * @param string $filePath
      */
-    public function testCanHaveExifData(bool $expected, string $filePath)
+    public function testCanHaveExifData(bool $expected, string $filePath): void
     {
         self::assertSame($expected, Image::canHaveExifData($filePath));
     }
@@ -100,7 +100,7 @@ class ImageHelperTest extends Unit
      * @param string $filePath
      * @param bool $skipIfGd
      */
-    public function testImageSize(array $expected, string $filePath, bool $skipIfGd)
+    public function testImageSize(array $expected, string $filePath, bool $skipIfGd): void
     {
         if ($skipIfGd && Craft::$app->getImages()->getIsGd()) {
             $this->markTestSkipped('Need Imagick to test this function.');
@@ -114,7 +114,7 @@ class ImageHelperTest extends Unit
      * @param array $expected
      * @param string $svg
      */
-    public function testParseSvgSize(array $expected, string $svg)
+    public function testParseSvgSize(array $expected, string $svg): void
     {
         self::assertSame($expected, Image::parseSvgSize($svg));
     }
@@ -124,7 +124,7 @@ class ImageHelperTest extends Unit
      * @param array|false $expected
      * @param resource $stream
      */
-    public function testImageSizeByStream(array|false $expected, $stream)
+    public function testImageSizeByStream(array|false $expected, $stream): void
     {
         self::assertSame($expected, Image::imageSizeByStream($stream));
     }
@@ -132,7 +132,7 @@ class ImageHelperTest extends Unit
     /**
      *
      */
-    public function testNoResourceImageByStreamExceptions()
+    public function testNoResourceImageByStreamExceptions(): void
     {
         $this->tester->expectThrowable(TypeError::class, function() {
             /** @phpstan-ignore-next-line */
@@ -146,7 +146,7 @@ class ImageHelperTest extends Unit
      * @param resource $input
      * @throws Exception
      */
-    public function testImageByStreamException(string $errorLogMessage, $input)
+    public function testImageByStreamException(string $errorLogMessage, $input): void
     {
         Craft::setLogger(
             Stub::make(Logger::class, [

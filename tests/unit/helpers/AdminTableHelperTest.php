@@ -25,7 +25,7 @@ class AdminTableHelperTest extends Unit
      * @param int $total
      * @param int $limit
      */
-    public function testPaginationLinks(array $expected, int $page, int $total, int $limit)
+    public function testPaginationLinks(array $expected, int $page, int $total, int $limit): void
     {
         self::assertSame($expected, AdminTable::paginationLinks($page, $total, $limit));
     }

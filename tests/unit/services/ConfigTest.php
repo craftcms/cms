@@ -22,7 +22,7 @@ use Craft;
  */
 class ConfigTest extends Unit
 {
-    public function testDotEnvPathIsNotABooleanString()
+    public function testDotEnvPathIsNotABooleanString(): void
     {
         Craft::setAlias('@root', CRAFT_TESTS_PATH);
 

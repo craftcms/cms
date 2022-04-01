@@ -22,7 +22,7 @@ use craft\elements\conditions\SlugConditionRule;
  */
 class EntryConditionTest extends Unit
 {
-    public function testCanAddRules()
+    public function testCanAddRules(): void
     {
         $config = [
             'class' => EntryCondition::class,

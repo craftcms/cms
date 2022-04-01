@@ -24,7 +24,7 @@ class ElementResolverTest extends Unit
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
@@ -40,14 +40,14 @@ class ElementResolverTest extends Unit
         );
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test different query resolvers
      */
-    public function testResolveOneAndCount()
+    public function testResolveOneAndCount(): void
     {
         $testUid = StringHelper::UUID();
         $testCount = random_int(1, 1000);

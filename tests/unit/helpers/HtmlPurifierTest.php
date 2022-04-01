@@ -26,7 +26,7 @@ class HtmlPurifierTest extends Unit
      * @param string $expected
      * @param string $string
      */
-    public function testCleanUtf8(string $expected, string $string)
+    public function testCleanUtf8(string $expected, string $string): void
     {
         self::assertSame($expected, HtmlPurifier::cleanUtf8($string));
     }
@@ -34,7 +34,7 @@ class HtmlPurifierTest extends Unit
     /**
      *
      */
-    public function testConfigure()
+    public function testConfigure(): void
     {
         $config = HTMLPurifier_Config::createDefault();
         HtmlPurifier::configure($config);

@@ -27,7 +27,7 @@ class EntryMutationResolverTest extends TestCase
      * @throws Throwable
      * @dataProvider saveEntryDataProvider
      */
-    public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario)
+    public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
         $entry = new Entry();
 
@@ -55,7 +55,7 @@ class EntryMutationResolverTest extends TestCase
      * @throws Throwable
      * @dataProvider saveNewEntryDataProvider
      */
-    public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled)
+    public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
         $entry = new Entry();
         $query = $this->make(EntryQuery::class, [

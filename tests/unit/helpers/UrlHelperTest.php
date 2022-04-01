@@ -46,7 +46,7 @@ class UrlHelperTest extends Unit
      * @param string $expected
      * @param array $params
      */
-    public function testBuildQuery(string $expected, array $params)
+    public function testBuildQuery(string $expected, array $params): void
     {
         self::assertSame($expected, UrlHelper::buildQuery($params));
     }
@@ -56,7 +56,7 @@ class UrlHelperTest extends Unit
      * @param string $url
      * @param bool $expected
      */
-    public function testIsRootRelativeUrl(bool $expected, string $url)
+    public function testIsRootRelativeUrl(bool $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::isRootRelativeUrl($url));
     }
@@ -66,7 +66,7 @@ class UrlHelperTest extends Unit
      * @param bool $expected
      * @param string $url
      */
-    public function testIsAbsoluteUrl(bool $expected, string $url)
+    public function testIsAbsoluteUrl(bool $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::isAbsoluteUrl($url));
     }
@@ -76,7 +76,7 @@ class UrlHelperTest extends Unit
      * @param bool $expected
      * @param string $url
      */
-    public function testIsFullUrl(bool $expected, string $url)
+    public function testIsFullUrl(bool $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::isFullUrl($url));
     }
@@ -92,7 +92,7 @@ class UrlHelperTest extends Unit
      * @param array $params
      * @param string $scheme
      */
-    public function testCpUrlCreation(string $expected, string $path, array $params, string $scheme = 'https')
+    public function testCpUrlCreation(string $expected, string $path, array $params, string $scheme = 'https'): void
     {
         $this->tester->mockCraftMethods('request', [
             'getIsSecureConnection' => false,
@@ -115,7 +115,7 @@ class UrlHelperTest extends Unit
      * @param string $url
      * @param string $scheme
      */
-    public function testUrlWithScheme(string $expected, string $url, string $scheme)
+    public function testUrlWithScheme(string $expected, string $url, string $scheme): void
     {
         self::assertSame($expected, UrlHelper::urlWithScheme($url, $scheme));
     }
@@ -126,7 +126,7 @@ class UrlHelperTest extends Unit
      * @param string $url
      * @param string $token
      */
-    public function testUrlWithToken(string $expected, string $url, string $token)
+    public function testUrlWithToken(string $expected, string $url, string $token): void
     {
         Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
         self::assertSame($expected, UrlHelper::urlWithToken($url, $token));
@@ -138,7 +138,7 @@ class UrlHelperTest extends Unit
      * @param string $url
      * @param array|string $params
      */
-    public function testUrlWithParams(string $expected, string $url, array|string $params)
+    public function testUrlWithParams(string $expected, string $url, array|string $params): void
     {
         self::assertSame($expected, UrlHelper::urlWithParams($url, $params));
     }
@@ -148,7 +148,7 @@ class UrlHelperTest extends Unit
      * @param string $expected
      * @param string $url
      */
-    public function testStripQueryString(string $expected, string $url)
+    public function testStripQueryString(string $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::stripQueryString($url));
     }
@@ -156,7 +156,7 @@ class UrlHelperTest extends Unit
     /**
      * @dataProvider encodeParamsDataProvider
      */
-    public function testEncodeParams(string $expected, string $url)
+    public function testEncodeParams(string $expected, string $url): void
     {
         $this->assertSame($expected, UrlHelper::encodeParams($url));
     }
@@ -168,7 +168,7 @@ class UrlHelperTest extends Unit
      * @param string $url
      * @param string $expected
      */
-    public function testRootRelativeUrl(string $expected, string $url)
+    public function testRootRelativeUrl(string $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::rootRelativeUrl($url));
     }
@@ -183,7 +183,7 @@ class UrlHelperTest extends Unit
      * @param string|null $scheme
      * @param bool|null $showScriptName
      */
-    public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null)
+    public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null): void
     {
         $scheme = $scheme ?? 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
@@ -195,7 +195,7 @@ class UrlHelperTest extends Unit
      * @param string $expected
      * @param string $url
      */
-    public function testHostInfoRetrieval(string $expected, string $url)
+    public function testHostInfoRetrieval(string $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::hostInfo($url));
     }
@@ -203,7 +203,7 @@ class UrlHelperTest extends Unit
     /**
      *
      */
-    public function testSchemeForTokenizedBasedOnConfig()
+    public function testSchemeForTokenizedBasedOnConfig(): void
     {
         // Run down the logic to see what we will need to require.
         $config = Craft::$app->getConfig()->getGeneral();
@@ -223,7 +223,7 @@ class UrlHelperTest extends Unit
      * @param string|null $scheme
      * @param int|null $siteId
      */
-    public function testSiteUrl(string $expected, string $path, array|string|null $params = null, ?string $scheme = null, ?int $siteId = null)
+    public function testSiteUrl(string $expected, string $path, array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): void
     {
         $scheme = $scheme ?? 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
@@ -233,7 +233,7 @@ class UrlHelperTest extends Unit
     /**
      *
      */
-    public function testTokenizedSiteUrl()
+    public function testTokenizedSiteUrl(): void
     {
         $this->tester->mockCraftMethods('request', [
             'getToken' => 't0k3n',
@@ -259,7 +259,7 @@ class UrlHelperTest extends Unit
     /**
      *
      */
-    public function testSiteUrlExceptions()
+    public function testSiteUrlExceptions(): void
     {
         $this->tester->expectThrowable(Exception::class, function() {
             UrlHelper::siteUrl('', null, null, 12892);
@@ -645,7 +645,7 @@ class UrlHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->cpTrigger = $generalConfig->cpTrigger;

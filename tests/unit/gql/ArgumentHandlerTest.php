@@ -40,7 +40,7 @@ class ArgumentHandlerTest extends Unit
      * @param array $expectedResult
      * @throws \Exception
      */
-    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult)
+    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult): void
     {
         $gql = Craft::$app->getGql();
         $gql->flushCaches();

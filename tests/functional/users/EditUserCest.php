@@ -48,7 +48,7 @@ class EditUserCest
     /**
      * @param FunctionalTester $I
      */
-    public function testMyAccountPage(FunctionalTester $I)
+    public function testMyAccountPage(FunctionalTester $I): void
     {
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 

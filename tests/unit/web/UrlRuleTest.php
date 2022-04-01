@@ -22,7 +22,7 @@ class UrlRuleTest extends Unit
     /**
      *
      */
-    public function testUrlRule()
+    public function testUrlRule(): void
     {
         $rule = new UrlRule(['template' => 'templates/index', 'pattern' => '{handle}', 'variables' => ['2', '22']]);
         self::assertSame('templates/render', $rule->route);

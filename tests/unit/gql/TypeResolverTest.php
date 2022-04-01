@@ -32,14 +32,14 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 class TypeResolverTest extends Unit
 {
-    protected function _before()
+    protected function _before(): void
     {
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
     }
 
-    protected function _after()
+    protected function _after(): void
     {
         Craft::$app->getGql()->flushCaches();
     }
@@ -68,7 +68,7 @@ class TypeResolverTest extends Unit
     /**
      * Test resolving a related element.
      **/
-    public function testRunGqlResolveTest()
+    public function testRunGqlResolveTest(): void
     {
         // Not using a data provider for this because of fixture load/unload on *every* iteration.
         $data = [

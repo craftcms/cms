@@ -34,7 +34,7 @@ class ActiveRecordTest extends Unit
     /**
      * Note this test is just here to verify that these are indeed craft\db\ActiveRecord classes.
      */
-    public function testIsCraftAr()
+    public function testIsCraftAr(): void
     {
         self::assertInstanceOf(ActiveRecord::class, new Volume());
         self::assertInstanceOf(ActiveRecord::class, new Session());
@@ -43,7 +43,7 @@ class ActiveRecordTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDateCreated()
+    public function testDateCreated(): void
     {
         $date = new DateTime('now', new DateTimeZone('UTC'));
         $session = $this->ensureSession();
@@ -56,7 +56,7 @@ class ActiveRecordTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDateUpdated()
+    public function testDateUpdated(): void
     {
         $session = $this->ensureSession();
 
@@ -84,7 +84,7 @@ class ActiveRecordTest extends Unit
     /**
      *
      */
-    public function testUuid()
+    public function testUuid(): void
     {
         $session = $this->ensureSession();
 
@@ -96,7 +96,7 @@ class ActiveRecordTest extends Unit
     /**
      *
      */
-    public function testUUIDThatIsntValid()
+    public function testUUIDThatIsntValid(): void
     {
         $session = new Session();
         $session->userId = 1;
@@ -113,7 +113,7 @@ class ActiveRecordTest extends Unit
     /**
      *
      */
-    public function testNoUUid()
+    public function testNoUUid(): void
     {
         $session = new Session();
         $session->userId = 1;

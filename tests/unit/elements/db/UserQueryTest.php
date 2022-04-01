@@ -67,7 +67,7 @@ class UserQueryTest extends TestCase
     /**
      *
      */
-    public function testFindAll()
+    public function testFindAll(): void
     {
         // Our admin user + Our active user + Our locked user are defaults
         $all = User::find()->all();
@@ -77,7 +77,7 @@ class UserQueryTest extends TestCase
     /**
      *
      */
-    public function testCount()
+    public function testCount(): void
     {
         $count = User::find()->count();
         self::assertSame('5', (string)$count);
@@ -86,7 +86,7 @@ class UserQueryTest extends TestCase
     /*
      *
      */
-    public function testFindResults()
+    public function testFindResults(): void
     {
         $this->userQueryFindTest([], []);
 
@@ -101,7 +101,7 @@ class UserQueryTest extends TestCase
     /**
      *
      */
-    public function testMultipleStatuses()
+    public function testMultipleStatuses(): void
     {
         $results = User::find()
             ->status([User::STATUS_SUSPENDED, User::STATUS_PENDING])
@@ -113,7 +113,7 @@ class UserQueryTest extends TestCase
     /**
      *
      */
-    public function testFindInvalidParamCombination()
+    public function testFindInvalidParamCombination(): void
     {
         self::assertNull(
             User::find()
@@ -126,7 +126,7 @@ class UserQueryTest extends TestCase
     /**
      *
      */
-    public function testSearchByGroup()
+    public function testSearchByGroup(): void
     {
         self::assertNull(User::find()->groupId('1000')->one());
 
@@ -154,7 +154,7 @@ class UserQueryTest extends TestCase
     /**
      * @todo More
      */
-    public function testCan()
+    public function testCan(): void
     {
         Craft::$app->setEdition(Craft::Pro);
 
@@ -206,7 +206,7 @@ class UserQueryTest extends TestCase
      * @internal We are not going to fixture this one as we need to count very specifically the amount of users
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -264,7 +264,7 @@ class UserQueryTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         parent::_after();
 

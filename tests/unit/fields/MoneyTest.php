@@ -30,7 +30,7 @@ class MoneyTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->field = new Money();
     }

@@ -27,7 +27,7 @@ class GlobalsTest extends Unit
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
     }
 
@@ -36,7 +36,7 @@ class GlobalsTest extends Unit
     /**
      * Test if rebuilding project congif ignores the `readOnly` flag.
      */
-    public function testAbortOnUnsavedElement()
+    public function testAbortOnUnsavedElement(): void
     {
         $configEvent = new ConfigEvent([
             'path' => 'globalSets.testUid',

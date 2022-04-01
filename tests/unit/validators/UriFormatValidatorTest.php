@@ -41,7 +41,7 @@ class UriFormatValidatorTest extends Unit
      * @param string $input
      * @param bool $requireSlug
      */
-    public function testValidateAttribute(bool $mustValidate, string $input, bool $requireSlug = false)
+    public function testValidateAttribute(bool $mustValidate, string $input, bool $requireSlug = false): void
     {
         $this->model->exampleParam = $input;
         $this->uriFormatValidator->requireSlug = $requireSlug;
@@ -78,7 +78,7 @@ class UriFormatValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->uriFormatValidator = new UriFormatValidator();

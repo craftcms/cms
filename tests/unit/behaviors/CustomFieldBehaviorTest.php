@@ -27,7 +27,7 @@ class CustomFieldBehaviorTest extends Unit
      * @dataProvider existingFieldHandlesDataProvider
      * @param string $handle
      */
-    public function testExistsInCustomFieldBehavior(string $handle)
+    public function testExistsInCustomFieldBehavior(string $handle): void
     {
         // Make sure it exists
         new CustomFieldBehavior();
@@ -40,7 +40,7 @@ class CustomFieldBehaviorTest extends Unit
     /**
      * Test that adding a field doesnt automatically modify the CustomFieldBehavior
      */
-    public function testRetrofittingDontWork()
+    public function testRetrofittingDontWork(): void
     {
         $field = new PlainText();
         $field->name = 'testRetrofittingDontWork1';

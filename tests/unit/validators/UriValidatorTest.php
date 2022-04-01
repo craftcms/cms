@@ -36,7 +36,7 @@ class UriValidatorTest extends Unit
      * @param mixed $input
      * @param string|null $pattern
      */
-    public function testValidateValue(bool $mustValidate, mixed $input, string $pattern = null)
+    public function testValidateValue(bool $mustValidate, mixed $input, string $pattern = null): void
     {
         if ($pattern) {
             $this->uriValidator->pattern = $pattern;
@@ -69,7 +69,7 @@ class UriValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->uriValidator = new UriValidator();

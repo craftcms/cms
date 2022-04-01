@@ -65,7 +65,7 @@ class DraftsTest extends Unit
      *
      * @throws Throwable
      */
-    public function testPublishDraft()
+    public function testPublishDraft(): void
     {
         $entry = Entry::find()
             ->title('Pending 1')
@@ -101,7 +101,7 @@ class DraftsTest extends Unit
      * @throws ElementNotFoundException
      * @throws Exception
      */
-    public function testEntryRevisions()
+    public function testEntryRevisions(): void
     {
         $entry = Entry::find()
             ->title('With versioning')
@@ -139,7 +139,7 @@ class DraftsTest extends Unit
      * @throws ElementNotFoundException
      * @throws Exception
      */
-    public function testEntryRevertToVersion()
+    public function testEntryRevertToVersion(): void
     {
         $data = $this->_setupEntryRevert('With versioning', ['title' => 'Changed title']);
         /** @var Entry $entry */
@@ -218,7 +218,7 @@ class DraftsTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->elements = Craft::$app->getElements();

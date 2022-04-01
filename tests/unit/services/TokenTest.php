@@ -33,7 +33,7 @@ class TokenTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCreateToken()
+    public function testCreateToken(): void
     {
         $dt = (new DateTime('now', new DateTimeZone('UTC')))->add(new DateInterval('P1D'));
         $token = $this->token->createToken('do/stuff', 1, $dt);
@@ -54,7 +54,7 @@ class TokenTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCreateTokenDefaults()
+    public function testCreateTokenDefaults(): void
     {
         Craft::$app->getConfig()->getGeneral()->defaultTokenDuration = 10000;
 
@@ -79,7 +79,7 @@ class TokenTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 

@@ -41,7 +41,7 @@ class CpHelperTest extends Unit
     /**
      *
      */
-    public function testElementHtml()
+    public function testElementHtml(): void
     {
         /** @var User $user */
         $user = User::findOne(1);
@@ -99,7 +99,7 @@ class CpHelperTest extends Unit
     /**
      *
      */
-    public function testFieldHtml()
+    public function testFieldHtml(): void
     {
         self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
         self::assertStringContainsString('<label id="id-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
@@ -144,7 +144,7 @@ class CpHelperTest extends Unit
      * @param string $method
      * @param array $config
      */
-    public function testFieldMethods(string $needle, string $method, array $config = [])
+    public function testFieldMethods(string $needle, string $method, array $config = []): void
     {
         self::assertStringContainsString($needle, call_user_func([Cp::class, $method], $config));
     }

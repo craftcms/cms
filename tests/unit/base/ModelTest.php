@@ -33,7 +33,7 @@ class ModelTest extends Unit
      * @param string $error
      * @param string $searchParam
      */
-    public function testHasErrors(bool $expected, string $attribute, string $error, string $searchParam)
+    public function testHasErrors(bool $expected, string $attribute, string $error, string $searchParam): void
     {
         $model1 = new ExampleModel();
         $model1->addError($attribute, $error);
@@ -49,7 +49,7 @@ class ModelTest extends Unit
      * @param string $dateForInput
      * @throws Exception
      */
-    public function testDateTimeAttributes(string $paramName, string $dateForInput)
+    public function testDateTimeAttributes(string $paramName, string $dateForInput): void
     {
         $model = new ExampleModel([$paramName => $dateForInput]);
 
@@ -63,7 +63,7 @@ class ModelTest extends Unit
     /**
      * Test that if you pass in a MySql date string to a param not specified in dateTimeAttributes it is left alone(Not converted to \DateTime)
      */
-    public function testAutomaticDetectionOfDatesDoesntHappen()
+    public function testAutomaticDetectionOfDatesDoesntHappen(): void
     {
         $model = new ExampleModel(['exampleParam' => '2018-11-12 20:00:00']);
 
@@ -73,7 +73,7 @@ class ModelTest extends Unit
     /**
      * Test that if you create an empty model and then set the param it isn't converted to \DateTime
      */
-    public function testRetroFittingDoesntWork()
+    public function testRetroFittingDoesntWork(): void
     {
         $model = new ExampleModel();
         $model->exampleDateParam = '2018-11-12 20:00:00';
@@ -157,7 +157,7 @@ class ModelTest extends Unit
     /**
      * Basic merge test
      */
-    public function testMergingOfErrors()
+    public function testMergingOfErrors(): void
     {
         $model1 = new ExampleModel();
         $model2 = new ExampleModel();
@@ -174,7 +174,7 @@ class ModelTest extends Unit
     /**
      * What happens if both models have errors?
      */
-    public function testMergingWithExistingParams()
+    public function testMergingWithExistingParams(): void
     {
         $model1 = new ExampleModel();
         $model1->addError('exampleParam', 'thisAintGood');
@@ -194,7 +194,7 @@ class ModelTest extends Unit
     /**
      * Test what happens when we pass in an attribute prefix at addModelErrors.
      */
-    public function testAttributePrefix()
+    public function testAttributePrefix(): void
     {
         $model1 = new ExampleModel();
         $model1->addError('exampleParam', 'thisAintGood');

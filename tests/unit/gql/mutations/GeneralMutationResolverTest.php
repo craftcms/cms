@@ -41,19 +41,19 @@ class GeneralMutationResolverTest extends TestCase
      */
     protected MutationResolver $resolver;
 
-    protected function _before()
+    protected function _before(): void
     {
         $this->resolver = new EntryMutationResolver();
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test whether data and value normalizes is stored on the resolver correctly.
      */
-    public function testStoringResolverData()
+    public function testStoringResolverData(): void
     {
         $testKey = 'someKey';
         $testString = StringHelper::randomString();
@@ -100,7 +100,7 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether schemas are enforced correctly
      */
-    public function testSchemaActionRequirements()
+    public function testSchemaActionRequirements(): void
     {
         $this->resolver = new EntryMutationResolver();
 
@@ -124,7 +124,7 @@ class GeneralMutationResolverTest extends TestCase
      * @throws \ReflectionException
      * @dataProvider populatingElementWithDataProvider
      */
-    public function testPopulatingElementWithData(array $contentFields, array $arguments)
+    public function testPopulatingElementWithData(array $contentFields, array $arguments): void
     {
         $entry = $this->make(Entry::class, [
             'setFieldValue' => Expected::exactly(count($contentFields)),
@@ -146,7 +146,7 @@ class GeneralMutationResolverTest extends TestCase
      *
      * @throws \ReflectionException
      */
-    public function testImmutableAttributes()
+    public function testImmutableAttributes(): void
     {
         $testId = random_int(1, 9999);
         $testUid = StringHelper::UUID();
@@ -205,7 +205,7 @@ class GeneralMutationResolverTest extends TestCase
      * @throws \ReflectionException
      * @throws \yii\base\InvalidConfigException
      */
-    public function testSavingElementWithValidationError()
+    public function testSavingElementWithValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
             'saveElement' => Expected::once(false),
@@ -231,7 +231,7 @@ class GeneralMutationResolverTest extends TestCase
      * @throws \ReflectionException
      * @throws \yii\base\InvalidConfigException
      */
-    public function testSavingElementWithoutValidationError()
+    public function testSavingElementWithoutValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
             'saveElement' => false,
@@ -256,7 +256,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($scenario, $entry->getScenario());
     }
 
-    public function testNestedNormalizers()
+    public function testNestedNormalizers(): void
     {
         $values = [];
 

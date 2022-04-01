@@ -55,7 +55,7 @@ class ScalarTypesTest extends Unit
      * @param string|null $exceptionThrown
      * @throws Error
      */
-    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown = null)
+    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown = null): void
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -70,7 +70,7 @@ class ScalarTypesTest extends Unit
      *
      * @throws Error
      */
-    public function testDateTimeParseValueAndLiteral()
+    public function testDateTimeParseValueAndLiteral(): void
     {
         $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
 
@@ -88,7 +88,7 @@ class ScalarTypesTest extends Unit
      * @param string|null $exceptionThrown
      * @throws Exception
      */
-    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown = null)
+    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown = null): void
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -105,7 +105,7 @@ class ScalarTypesTest extends Unit
      *
      * @throws Error
      */
-    public function testTimeZoneConfigSetting()
+    public function testTimeZoneConfigSetting(): void
     {
         Craft::$app->setTimeZone('America/New_York');
 

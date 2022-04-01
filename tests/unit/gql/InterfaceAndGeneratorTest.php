@@ -49,7 +49,7 @@ class InterfaceAndGeneratorTest extends Unit
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL token
         $this->tester->mockMethods(
@@ -135,7 +135,7 @@ class InterfaceAndGeneratorTest extends Unit
         );
     }
 
-    protected function _after()
+    protected function _after(): void
     {
         Craft::$app->getGql()->flushCaches();
     }
@@ -148,7 +148,7 @@ class InterfaceAndGeneratorTest extends Unit
      * @param callable $getAllContexts The callback that provides an array of all contexts for generated types
      * @param callable $getTypeNameByContext The callback to generate the GQL type name by context
      */
-    public function testInterfacesGeneratingTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext)
+    public function testInterfacesGeneratingTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext): void
     {
         /** @var string|SingularTypeInterface $gqlInterfaceClass */
         $gqlInterfaceClass::getType();
@@ -169,7 +169,7 @@ class InterfaceAndGeneratorTest extends Unit
      *
      * @throws \craft\errors\GqlException
      */
-    public function testTableRowTypeGenerator()
+    public function testTableRowTypeGenerator(): void
     {
         $tableField = $this->make(Table::class, [
             'columns' => [

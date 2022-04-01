@@ -18,12 +18,12 @@ class TypeManagerTest extends Unit
 {
     private ?Gql $_gqlService = null;
 
-    protected function _before()
+    protected function _before(): void
     {
         $this->_gqlService = Craft::$app->getGql();
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -35,7 +35,7 @@ class TypeManagerTest extends Unit
      * @param callable $callback Callback for modifications
      * @param array $result expected result
      */
-    public function testFieldModification(array $fields, callable $callback, array $result)
+    public function testFieldModification(array $fields, callable $callback, array $result): void
     {
         $this->_gqlService->flushCaches();
         Event::on(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, $callback);
@@ -48,7 +48,7 @@ class TypeManagerTest extends Unit
     /**
      * Test whether the cache works and flushing the GQL cache flushes it too.
      */
-    public function testFieldCache()
+    public function testFieldCache(): void
     {
         $this->_gqlService->flushCaches();
         $cachedName = 'someName';

@@ -33,7 +33,7 @@ class AssetElementTest extends TestCase
     /**
      *
      */
-    public function testTransformWithOverrideParameters()
+    public function testTransformWithOverrideParameters(): void
     {
 
         // Set up asset to have an URL and a mock transform

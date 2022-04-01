@@ -24,7 +24,7 @@ class AssetMutationResolverTest extends TestCase
      * @throws \Throwable
      * @dataProvider testVariousExceptionsProvider
      */
-    public function testVariousExceptions(array $arguments, string $exception)
+    public function testVariousExceptions(array $arguments, string $exception): void
     {
         $resolver = $this->make(Asset::class, [
             'requireSchemaAction' => null,

@@ -49,7 +49,7 @@ class ElementFieldResolverTest extends Unit
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
@@ -66,7 +66,7 @@ class ElementFieldResolverTest extends Unit
         );
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -78,7 +78,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $sectionHandle = StringHelper::UUID();
         $typeHandle = StringHelper::UUID();
@@ -110,7 +110,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             AssetElement::class, [
@@ -132,7 +132,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             GlobalSetElement::class, [
@@ -155,7 +155,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $groupHandle = StringHelper::UUID();
 
@@ -182,7 +182,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $groupHandle = StringHelper::UUID();
 
@@ -209,7 +209,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $typeHandle = StringHelper::UUID();
 
@@ -239,7 +239,7 @@ class ElementFieldResolverTest extends Unit
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             UserElement::class, [
@@ -274,7 +274,7 @@ class ElementFieldResolverTest extends Unit
      * @param mixed $expectedArguments
      * @dataProvider assetTransformDataProvider
      */
-    public function testAssetUrlTransform(array $fieldArguments, mixed $expectedArguments)
+    public function testAssetUrlTransform(array $fieldArguments, mixed $expectedArguments): void
     {
         $imageTransformService = $this->make(ImageTransforms::class, [
             'getImageTransformer' => $this->make(ImageTransformer::class, [

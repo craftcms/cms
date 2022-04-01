@@ -100,7 +100,7 @@ class SearchQueryTest extends Unit
     /**
      *
      */
-    public function testSearchQueryGrouping()
+    public function testSearchQueryGrouping(): void
     {
         $search = new SearchQuery('i live OR die');
 
@@ -121,7 +121,7 @@ class SearchQueryTest extends Unit
     /**
      *
      */
-    public function testOnlyOr()
+    public function testOnlyOr(): void
     {
         $search = new SearchQuery('OR');
         self::assertSame([], $search->getTokens());
@@ -130,7 +130,7 @@ class SearchQueryTest extends Unit
     /*
      * Test that additional default _termOptions are respected
      */
-    public function testAdditionalDefaultTerms()
+    public function testAdditionalDefaultTerms(): void
     {
         $search = new SearchQuery('search', [
             'exclude' => true,
@@ -155,7 +155,7 @@ class SearchQueryTest extends Unit
     /**
      * Test the defaults of the SearchQuery class
      */
-    public function testDefaultQueryTokens()
+    public function testDefaultQueryTokens(): void
     {
         $search = new SearchQuery('search');
 
@@ -183,7 +183,7 @@ class SearchQueryTest extends Unit
      * @param array|null $configOptions
      * @param int|null $sizeOfArray
      */
-    public function testSearchQuery(string $query, ?array $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuery(string $query, ?array $configOptions = null, int $sizeOfArray = null): void
     {
         $search = new SearchQuery($query);
 
@@ -205,7 +205,7 @@ class SearchQueryTest extends Unit
      * @param string $query
      * @param array|null $configOptions
      */
-    public function testSearchQuerySortOrder(string $query, array $configOptions = null)
+    public function testSearchQuerySortOrder(string $query, array $configOptions = null): void
     {
         $exploded = explode(' ', $query);
         foreach ((new SearchQuery($query))->getTokens() as $index => $token) {

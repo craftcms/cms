@@ -34,7 +34,7 @@ class FieldLayoutTest extends Unit
     /**
      * @throws NotSupportedException
      */
-    public function testFieldLayoutMatrix()
+    public function testFieldLayoutMatrix(): void
     {
         $tableNames = Craft::$app->getDb()->getSchema()->tableNames;
         $matrixTableName = Craft::$app->getDb()->tablePrefix . 'matrixcontent_matrixfirst';

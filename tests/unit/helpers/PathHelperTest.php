@@ -24,7 +24,7 @@ class PathHelperTest extends Unit
      * @param bool $expected
      * @param string $path
      */
-    public function testEnsurePathIsContained(bool $expected, string $path)
+    public function testEnsurePathIsContained(bool $expected, string $path): void
     {
         self::assertSame($expected, Path::ensurePathIsContained($path));
     }

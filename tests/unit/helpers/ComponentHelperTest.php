@@ -43,7 +43,7 @@ class ComponentHelperTest extends Unit
      * @param class-string|null $instanceOf
      * @param class-string $exceptionClass
      */
-    public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = \Throwable::class)
+    public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = \Throwable::class): void
     {
         self::assertSame($expected, Component::validateComponentClass($class, $instanceOf));
         if (!$expected) {
@@ -58,7 +58,7 @@ class ComponentHelperTest extends Unit
      * @dataProvider successfulComponentCreationDataProvider
      * @param callable $callback
      */
-    public function testSuccessfulComponentCreation(callable $callback)
+    public function testSuccessfulComponentCreation(callable $callback): void
     {
         self::assertInstanceOf(
             ComponentInterface::class,
@@ -72,7 +72,7 @@ class ComponentHelperTest extends Unit
      * @param string|null $desiredParent
      * @param string $requiredException
      */
-    public function testFailedComponentExceptions(array $settings, ?string $desiredParent, string $requiredException)
+    public function testFailedComponentExceptions(array $settings, ?string $desiredParent, string $requiredException): void
     {
         $this->tester->expectThrowable(
             $requiredException,
@@ -85,7 +85,7 @@ class ComponentHelperTest extends Unit
     /**
      * @todo Figure out a way to test plugin functionality. Probably create a mock plugin under /_support/mockclasses
      */
-    public function testComponentCreation()
+    public function testComponentCreation(): void
     {
     }
 
@@ -94,7 +94,7 @@ class ComponentHelperTest extends Unit
      * @param array $expected
      * @param array $config
      */
-    public function testMergeSettings(array $expected, array $config)
+    public function testMergeSettings(array $expected, array $config): void
     {
         self::assertSame($expected, Component::mergeSettings($config));
     }
@@ -105,7 +105,7 @@ class ComponentHelperTest extends Unit
      * @param string|null $icon
      * @param string $label
      */
-    public function testIconSvg(string $needle, ?string $icon, string $label)
+    public function testIconSvg(string $needle, ?string $icon, string $label): void
     {
         self::assertStringContainsString($needle, Component::iconSvg($icon, $label));
     }

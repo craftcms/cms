@@ -36,7 +36,7 @@ class RoutesTest extends Unit
      * @param string|null $siteUid
      * @param string|null $routeUid
      */
-    public function testSaveRoute(array $expected, array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null)
+    public function testSaveRoute(array $expected, array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null): void
     {
         $uid = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
         self::assertTrue(StringHelper::isUUID($uid));
@@ -126,7 +126,7 @@ class RoutesTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->routes = Craft::$app->getRoutes();

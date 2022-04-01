@@ -49,7 +49,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testInit()
+    public function testInit(): void
     {
         $oldServer = $_SERVER;
 
@@ -208,7 +208,7 @@ class RequestTest extends TestCase
      * @param string $userAgent
      * @param bool $detectTablets
      */
-    public function testIsMobileBrowser(bool $expected, string $userAgent, bool $detectTablets = false)
+    public function testIsMobileBrowser(bool $expected, string $userAgent, bool $detectTablets = false): void
     {
         $this->request->getHeaders()->set('User-Agent', $userAgent);
         self::assertSame($expected, $this->request->isMobileBrowser($detectTablets));
@@ -217,7 +217,7 @@ class RequestTest extends TestCase
     /**
      * @throws BadRequestHttpException
      */
-    public function testGetRequiredParam()
+    public function testGetRequiredParam(): void
     {
         $this->request->setBodyParams(['test' => 'RAAA']);
         self::assertSame('RAAA', $this->request->getRequiredParam('test'));
@@ -230,7 +230,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetParamWithBody()
+    public function testGetParamWithBody(): void
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
         self::assertSame('RAAA', $this->request->getParam('bodyTest'));
@@ -239,7 +239,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetParamWithQuery()
+    public function testGetParamWithQuery(): void
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
         self::assertSame('RAAA', $this->request->getParam('queryTest'));
@@ -248,7 +248,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetParamDefault()
+    public function testGetParamDefault(): void
     {
         self::assertSame('default', $this->request->getParam('not-a-param', 'default'));
     }
@@ -256,7 +256,7 @@ class RequestTest extends TestCase
     /**
      * @throws BadRequestHttpException
      */
-    public function testGetRequiredQueryParam()
+    public function testGetRequiredQueryParam(): void
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
         $this->tester->expectThrowable(BadRequestHttpException::class, function() {
@@ -270,7 +270,7 @@ class RequestTest extends TestCase
     /**
      * @throws BadRequestHttpException
      */
-    public function testGetRequiredBodyParam()
+    public function testGetRequiredBodyParam(): void
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
         $this->tester->expectThrowable(BadRequestHttpException::class, function() {
@@ -288,7 +288,7 @@ class RequestTest extends TestCase
      * @param string|null $headerValue
      * @param int $filterOptions
      */
-    public function testGetUserIp(?string $expected, ?string $headerName, ?string $headerValue, int $filterOptions = 0)
+    public function testGetUserIp(?string $expected, ?string $headerName, ?string $headerValue, int $filterOptions = 0): void
     {
         if ($headerName !== null) {
             $this->request->getHeaders()->set($headerName, $headerValue);
@@ -302,7 +302,7 @@ class RequestTest extends TestCase
      * @param string $expected
      * @param string $userAgent
      */
-    public function testGetClientOs(string $expected, string $userAgent)
+    public function testGetClientOs(string $expected, string $userAgent): void
     {
         $this->request->getHeaders()->set('User-Agent', $userAgent);
         self::assertSame($expected, $this->request->getClientOs());
@@ -311,7 +311,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetCsrfToken()
+    public function testGetCsrfToken(): void
     {
         $token = $this->request->getCsrfToken();
 
@@ -324,7 +324,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGenerateCsrfToken()
+    public function testGenerateCsrfToken(): void
     {
         $token = $this->_generateCsrfToken();
         self::assertSame(40, strlen($token));
@@ -343,7 +343,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testCsrfTokenValidForCurrentUser()
+    public function testCsrfTokenValidForCurrentUser(): void
     {
         $this->_setMockUser();
         $token = $this->_generateCsrfToken();
@@ -354,7 +354,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testCsrfTokenValidFailure()
+    public function testCsrfTokenValidFailure(): void
     {
         $token = $this->_generateCsrfToken();
 
@@ -370,7 +370,7 @@ class RequestTest extends TestCase
      * @param string|null $name
      * @throws ReflectionException
      */
-    public function testGetParam(mixed $expected, mixed $defaultValue, array $params, ?string $name)
+    public function testGetParam(mixed $expected, mixed $defaultValue, array $params, ?string $name): void
     {
         self::assertSame($expected, $this->_getParam($name, $defaultValue, $params));
     }
@@ -378,7 +378,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testCheckRequestTypeWithTokenParam()
+    public function testCheckRequestTypeWithTokenParam(): void
     {
         $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
         $this->request->checkIfActionRequest(true);
@@ -390,7 +390,7 @@ class RequestTest extends TestCase
     /**
      * @dataProvider normalizeParamDataProvider
      */
-    public function testNormalizeParam(string $expected, string $name)
+    public function testNormalizeParam(string $expected, string $name): void
     {
         $method = (new ReflectionClass(Request::class))->getMethod('_normalizeParam');
         $method->setAccessible(true);
@@ -503,7 +503,7 @@ class RequestTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 

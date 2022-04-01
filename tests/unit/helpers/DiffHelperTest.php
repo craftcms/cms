@@ -25,7 +25,7 @@ class DiffHelperTest extends Unit
      * @param mixed $b
      * @param bool $strict
      */
-    public function testCompare(bool $expected, mixed $a, mixed $b, bool $strict)
+    public function testCompare(bool $expected, mixed $a, mixed $b, bool $strict): void
     {
         self::assertSame($expected, Diff::compare($a, $b, $strict));
     }
@@ -38,7 +38,7 @@ class DiffHelperTest extends Unit
      * @param int $indent
      * @param int $contextLines
      */
-    public function testDiff(string $expected, mixed $from, mixed $to, int $indent = 2, int $contextLines = 3)
+    public function testDiff(string $expected, mixed $from, mixed $to, int $indent = 2, int $contextLines = 3): void
     {
         self::assertSame($expected, Diff::diff($from, $to, $indent, $contextLines));
     }

@@ -36,7 +36,7 @@ class ExtractEagerLoadingParameterTest extends Unit
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getSchemaById(1000);
@@ -100,7 +100,7 @@ class ExtractEagerLoadingParameterTest extends Unit
         ];
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -114,7 +114,7 @@ class ExtractEagerLoadingParameterTest extends Unit
      * @throws \GraphQL\Error\SyntaxError
      * @dataProvider eagerLoadingParameterExtractionProvider
      */
-    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, string $returnType)
+    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, string $returnType): void
     {
         $documentNode = Parser::parse(new Source($query ?: '', 'GraphQL'));
         $resolveInfo = $this->_buildResolveInfo($documentNode, $variables, $returnType);

@@ -13,7 +13,7 @@ class CraftTest extends TestCase
     /**
      *
      */
-    public function testParseEnv()
+    public function testParseEnv(): void
     {
         // Arrange
         putenv("CRAFT_TEST=testing");
@@ -29,7 +29,7 @@ class CraftTest extends TestCase
     /**
      *
      */
-    public function testParseEnvReturnsTrue()
+    public function testParseEnvReturnsTrue(): void
     {
         // Arrange
         putenv("CRAFT_TEST=true");
@@ -46,7 +46,7 @@ class CraftTest extends TestCase
     /**
      *
      */
-    public function testParseEnvReturnsFalse()
+    public function testParseEnvReturnsFalse(): void
     {
         // Arrange
         putenv("CRAFT_TEST=false");

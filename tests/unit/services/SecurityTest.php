@@ -32,7 +32,7 @@ class SecurityTest extends Unit
      * @param mixed $value
      * @param string[] $characters
      */
-    public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $characters)
+    public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $characters): void
     {
         $this->security->sensitiveKeywords = $characters;
         self::assertSame($expected, $this->security->redactIfSensitive($name, $value));
@@ -76,7 +76,7 @@ class SecurityTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 

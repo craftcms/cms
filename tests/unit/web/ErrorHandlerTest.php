@@ -38,7 +38,7 @@ class ErrorHandlerTest extends TestCase
      *
      * @throws Exception
      */
-    public function testHandleTwigException()
+    public function testHandleTwigException(): void
     {
         // Disable clear output as this throws: Test code or tested code did not (only) close its own output buffers
         $this->errorHandler = Stub::construct(ErrorHandler::class, [], [
@@ -57,7 +57,7 @@ class ErrorHandlerTest extends TestCase
      * @param Error $twigError
      * @param string $message
      */
-    public function testGetExceptionName(Error $twigError, string $message)
+    public function testGetExceptionName(Error $twigError, string $message): void
     {
         self::assertSame($message, $this->errorHandler->getExceptionName($twigError));
     }
@@ -69,7 +69,7 @@ class ErrorHandlerTest extends TestCase
      * @param string|null $method
      * @throws ReflectionException
      */
-    public function testGetTypeUrl(?string $expected, string $class, ?string $method)
+    public function testGetTypeUrl(?string $expected, string $class, ?string $method): void
     {
         self::assertSame($expected, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
     }
@@ -77,7 +77,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * @throws ErrorException
      */
-    public function testHandleError()
+    public function testHandleError(): void
     {
         self::assertTrue($this->errorHandler->handleError(0, 'Narrowing occurred during type inference. Please file a bug report', 'test.php', 10));
     }
@@ -87,7 +87,7 @@ class ErrorHandlerTest extends TestCase
      * @param bool $expected
      * @param string $file
      */
-    public function testIsCoreFile(bool $expected, string $file)
+    public function testIsCoreFile(bool $expected, string $file): void
     {
         self::assertSame($expected, $this->errorHandler->isCoreFile(Craft::getAlias($file)));
     }
@@ -139,7 +139,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -153,7 +153,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         // Remove the dir created in _before
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');

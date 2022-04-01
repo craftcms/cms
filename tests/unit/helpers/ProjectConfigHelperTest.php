@@ -21,7 +21,7 @@ class ProjectConfigHelperTest extends Unit
      * @param array $unpackedData
      * @param array $packedData
      */
-    public function testAssociativeArrayConfigTransforms(array $unpackedData, array $packedData)
+    public function testAssociativeArrayConfigTransforms(array $unpackedData, array $packedData): void
     {
         self::assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
         self::assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
@@ -32,7 +32,7 @@ class ProjectConfigHelperTest extends Unit
      * @param array $inputData
      * @param array $expectedResult
      */
-    public function testCleanupConfig(array $inputData, array $expectedResult)
+    public function testCleanupConfig(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
@@ -42,7 +42,7 @@ class ProjectConfigHelperTest extends Unit
      * @param array $inputData
      * @param array $expectedResult
      */
-    public function testSplitIntoComponents(array $inputData, array $expectedResult)
+    public function testSplitIntoComponents(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
     }
@@ -52,7 +52,7 @@ class ProjectConfigHelperTest extends Unit
      * @param string $input
      * @param string $expected
      */
-    public function testTouch(string $input, string $expected)
+    public function testTouch(string $input, string $expected): void
     {
         // Make sure they both end in a newline
         $input = StringHelper::ensureRight($input, "\n");
@@ -82,7 +82,7 @@ class ProjectConfigHelperTest extends Unit
      * @param string $expectedResult
      * @dataProvider encodeTestDataProvider
      */
-    public function testEncodeData(mixed $incomingData, string $expectedResult)
+    public function testEncodeData(mixed $incomingData, string $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
     }

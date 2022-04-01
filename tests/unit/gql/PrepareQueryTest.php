@@ -50,7 +50,7 @@ class PrepareQueryTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL token
         $this->tester->mockMethods(
@@ -82,7 +82,7 @@ class PrepareQueryTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         $this->_volume->delete();
         $this->_structure->delete();
@@ -112,7 +112,7 @@ class PrepareQueryTest extends Unit
      * @param callable|null $testLoader The callable that will set up the test conditions
      * @dataProvider relationalFieldQueryPreparationProvider
      */
-    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null)
+    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null): void
     {
         // Set up the test
         if ($testLoader) {

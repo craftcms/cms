@@ -32,7 +32,7 @@ class FactoryTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->factory = new Factory();
     }
@@ -40,7 +40,7 @@ class FactoryTest extends TestCase
     /**
      * Test creating an archive manager which doesnt have zip and phar archivers. .
      */
-    public function testCreateArchiveManager()
+    public function testCreateArchiveManager(): void
     {
         $config = new Config();
         $io = new NullIO();

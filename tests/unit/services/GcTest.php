@@ -72,7 +72,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunForDeletedEntriesWithDefaultDuration()
+    public function testRunForDeletedEntriesWithDefaultDuration(): void
     {
         $this->_doEntryTest(1, [
             'Deleted 40 days ago',
@@ -82,7 +82,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunForDeletedEntriesWithCustomDuration()
+    public function testRunForDeletedEntriesWithCustomDuration(): void
     {
         // 5 Days
         Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
@@ -96,7 +96,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunDeleteAllTrashed()
+    public function testRunDeleteAllTrashed(): void
     {
         $this->gc->deleteAllTrashed = true;
 
@@ -114,7 +114,7 @@ class GcTest extends Unit
      * @param string $table
      * @param array $ids
      */
-    public function testGc(int $remainingCount, string $leftoverId, string $table, array $ids)
+    public function testGc(int $remainingCount, string $leftoverId, string $table, array $ids): void
     {
         $this->gc->run(true);
 
@@ -130,7 +130,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunForExpiringUsers()
+    public function testRunForExpiringUsers(): void
     {
         // 2 days
         Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 60 * 60 * 24 * 2;
@@ -174,7 +174,7 @@ class GcTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 

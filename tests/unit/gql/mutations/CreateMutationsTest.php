@@ -36,7 +36,7 @@ class CreateMutationsTest extends Unit
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock all the things
         $this->tester->mockCraftMethods('volumes', [
@@ -78,7 +78,7 @@ class CreateMutationsTest extends Unit
         ]);
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -90,7 +90,7 @@ class CreateMutationsTest extends Unit
      * @dataProvider assetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-    public function testCreateAssetMutations(array $scopes, array $mutationNames)
+    public function testCreateAssetMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -108,7 +108,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given volume has expected arguments and returns a certain type
      */
-    public function testCreateAssetSaveMutation()
+    public function testCreateAssetSaveMutation(): void
     {
         $volume = $this->make(Volume::class, [
                 '__call' => function($name, $args) {
@@ -135,7 +135,7 @@ class CreateMutationsTest extends Unit
      * @dataProvider categoryMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-    public function testCreateCategoryMutations(array $scopes, array $mutationNames)
+    public function testCreateCategoryMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -153,7 +153,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given category group has expected arguments and returns a certain type
      */
-    public function testCreateCategorySaveMutation()
+    public function testCreateCategorySaveMutation(): void
     {
         $categoryGroup = $this->make(CategoryGroup::class, [
                 '__call' => function($name, $args) {
@@ -180,7 +180,7 @@ class CreateMutationsTest extends Unit
      * @dataProvider tagMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-    public function testCreateTagMutations(array $scopes, array $mutationNames)
+    public function testCreateTagMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -198,7 +198,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given tag group has expected arguments and returns a certain type
      */
-    public function testCreateTagSaveMutation()
+    public function testCreateTagSaveMutation(): void
     {
         $tagGroup = $this->make(TagGroup::class, [
                 '__call' => function($name, $args) {
@@ -224,7 +224,7 @@ class CreateMutationsTest extends Unit
      * @dataProvider globalSetMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-    public function testCreateGlobalSetMutations(array $scopes, array $mutationNames)
+    public function testCreateGlobalSetMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -242,7 +242,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given global set has expected arguments and returns a certain type
      */
-    public function testCreateGlobalSetSaveMutation()
+    public function testCreateGlobalSetSaveMutation(): void
     {
         $globalSet = $this->make(GlobalSet::class, [
                 '__call' => function($name, $args) {
@@ -269,7 +269,7 @@ class CreateMutationsTest extends Unit
      * @dataProvider entryMutationDataProvider
      * @throws \yii\base\InvalidConfigException
      */
-    public function testCreateEntryMutations(array $scopes, array $mutationNames)
+    public function testCreateEntryMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -287,7 +287,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given tag group has expected arguments and returns a certain type
      */
-    public function testCreateEntrySaveMutation()
+    public function testCreateEntrySaveMutation(): void
     {
         $single = $this->make(EntryType::class, [
                 '__call' => function($name, $args) {

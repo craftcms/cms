@@ -25,7 +25,7 @@ class ColorDataTest extends Unit
      * @param int $b
      * @param string $hex
      */
-    public function testRgb(int $r, int $g, int $b, string $hex)
+    public function testRgb(int $r, int $g, int $b, string $hex): void
     {
         $color = new ColorData($hex);
         self::assertSame($r, $color->getRed());
@@ -44,7 +44,7 @@ class ColorDataTest extends Unit
      * @param int $l
      * @param string $hex
      */
-    public function testHsl(int $h, int $s, int $l, string $hex)
+    public function testHsl(int $h, int $s, int $l, string $hex): void
     {
         $color = new ColorData($hex);
         self::assertSame($h, $color->getHue());

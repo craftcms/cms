@@ -31,7 +31,7 @@ class LocalizationHelperTest extends Unit
      * @param string $expected
      * @param string $language
      */
-    public function testNormalizeLanguage(string $expected, string $language)
+    public function testNormalizeLanguage(string $expected, string $language): void
     {
         self::assertSame($expected, Localization::normalizeLanguage($language));
     }
@@ -39,7 +39,7 @@ class LocalizationHelperTest extends Unit
     /**
      *
      */
-    public function testLanguageNormalizationExceptions()
+    public function testLanguageNormalizationExceptions(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Localization::normalizeLanguage('dutch');
@@ -55,7 +55,7 @@ class LocalizationHelperTest extends Unit
      * @param mixed $number
      * @param string|null $localeId
      */
-    public function testNormalizeNumber(mixed $expected, mixed $number, ?string $localeId)
+    public function testNormalizeNumber(mixed $expected, mixed $number, ?string $localeId): void
     {
         self::assertSame($expected, Localization::normalizeNumber($number, $localeId));
     }

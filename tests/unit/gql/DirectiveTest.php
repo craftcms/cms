@@ -29,11 +29,11 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 class DirectiveTest extends Unit
 {
-    protected function _before()
+    protected function _before(): void
     {
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -46,7 +46,7 @@ class DirectiveTest extends Unit
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
      */
-    public function testDirectivesBeingApplied(mixed $in, mixed $directiveClass, array $directives, string $result)
+    public function testDirectivesBeingApplied(mixed $in, mixed $directiveClass, array $directives, string $result): void
     {
         $this->_registerDirective($directiveClass);
 
@@ -68,7 +68,7 @@ class DirectiveTest extends Unit
     /**
      * Test if transform is only correctly applied to URL.
      */
-    public function testTransformOnlyUrl()
+    public function testTransformOnlyUrl(): void
     {
         /** @var Asset $asset */
         $asset = $this->make(Asset::class, ['filename' => StringHelper::randomString() . '.jpg']);

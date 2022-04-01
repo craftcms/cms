@@ -28,7 +28,7 @@ use GraphQL\Type\Definition\NonNull;
 
 class InputTypeTest extends Unit
 {
-    public function testFileInput()
+    public function testFileInput(): void
     {
         self::assertInstanceOf(InputType::class, File::getType());
     }
@@ -40,7 +40,7 @@ class InputTypeTest extends Unit
      * @param bool $isMulti
      * @dataProvider multipleOptionsDataProvider
      */
-    public function testMultipleOptions(Field $field, bool $isMulti)
+    public function testMultipleOptions(Field $field, bool $isMulti): void
     {
         $type = $field->getContentGqlMutationArgumentType();
 
@@ -64,7 +64,7 @@ class InputTypeTest extends Unit
      * @param MatrixField $matrixField
      * @param MatrixBlockType[] $blockTypes
      */
-    public function testMatrixInput(MatrixField $matrixField, array $blockTypes)
+    public function testMatrixInput(MatrixField $matrixField, array $blockTypes): void
     {
         // Trigger addition to the registry
         Matrix::getType($matrixField);
@@ -86,7 +86,7 @@ class InputTypeTest extends Unit
      * @param array $input
      * @param array $normalized
      */
-    public function testMatrixInputValueNormalization(array $input, array $normalized)
+    public function testMatrixInputValueNormalization(array $input, array $normalized): void
     {
         self::assertEquals($normalized, Matrix::normalizeValue($input));
     }

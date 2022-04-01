@@ -24,7 +24,7 @@ class JsonHelperTest extends Unit
      * @param mixed $expected
      * @param string $str
      */
-    public function testDecodeIfJson(mixed $expected, string $str)
+    public function testDecodeIfJson(mixed $expected, string $str): void
     {
         self::assertSame($expected, Json::decodeIfJson($str));
     }
@@ -47,7 +47,7 @@ class JsonHelperTest extends Unit
      * @param bool $expected
      * @param string $str
      */
-    public function testIsJsonObject(bool $expected, string $str)
+    public function testIsJsonObject(bool $expected, string $str): void
     {
         self::assertSame($expected, Json::isJsonObject($str));
     }

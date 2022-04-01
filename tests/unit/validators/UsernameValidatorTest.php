@@ -31,7 +31,7 @@ class UsernameValidatorTest extends Unit
      * @param string|null $value
      * @throws NotSupportedException
      */
-    public function testValidateValue(?array $expected, ?string $value)
+    public function testValidateValue(?array $expected, ?string $value): void
     {
         self::assertSame($expected, $this->usernameValidator->validateValue($value));
     }
@@ -50,7 +50,7 @@ class UsernameValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->usernameValidator = new UsernameValidator();
     }

@@ -24,7 +24,7 @@ class ElementRelationParamParserTest extends TestCase
      * @param array $expected
      * @param mixed $param
      */
-    public function testNormalizeRelatedToParam(array $expected, mixed $param)
+    public function testNormalizeRelatedToParam(array $expected, mixed $param): void
     {
         self::assertEquals($expected, ElementRelationParamParser::normalizeRelatedToParam($param));
     }
@@ -50,7 +50,7 @@ class ElementRelationParamParserTest extends TestCase
      * @param array|false $expected
      * @param mixed $param
      */
-    public function testNormalizeRelatedToCriteria(array|false $expected, mixed $param)
+    public function testNormalizeRelatedToCriteria(array|false $expected, mixed $param): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);

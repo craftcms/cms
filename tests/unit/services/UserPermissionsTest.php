@@ -70,7 +70,7 @@ class UserPermissionsTest extends TestCase
     /**
      *
      */
-    public function testGetAllPermissions()
+    public function testGetAllPermissions(): void
     {
         $permissions = [];
 
@@ -92,7 +92,7 @@ class UserPermissionsTest extends TestCase
     /**
      * @throws WrongEditionException
      */
-    public function testDoesGroupHavePermission()
+    public function testDoesGroupHavePermission(): void
     {
         self::assertFalse(
             $this->userPermissions->doesGroupHavePermission(1000, 'accessCp')
@@ -125,7 +125,7 @@ class UserPermissionsTest extends TestCase
      * @throws WrongEditionException
      * @todo Tests for _filterOrphanedPermissions - use codecov.io for this.
      */
-    public function testDoesUserHavePermission()
+    public function testDoesUserHavePermission(): void
     {
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
@@ -154,7 +154,7 @@ class UserPermissionsTest extends TestCase
     /**
      * @throws WrongEditionException
      */
-    public function testPermissionGet()
+    public function testPermissionGet(): void
     {
         // Setup user and craft
         $this->userPermissions->saveGroupPermissions(1001, ['utility:php-info']);
@@ -181,7 +181,7 @@ class UserPermissionsTest extends TestCase
     /**
      * @throws WrongEditionException
      */
-    public function testChangedGroupPermissions()
+    public function testChangedGroupPermissions(): void
     {
         // Setup user and craft
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
@@ -204,7 +204,7 @@ class UserPermissionsTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         Craft::$app->setEdition(Craft::Pro);
         Craft::$app->getProjectConfig()->rebuild();

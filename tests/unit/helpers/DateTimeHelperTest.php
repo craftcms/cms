@@ -50,7 +50,7 @@ class DateTimeHelperTest extends Unit
      * @param int $expected
      * @param int $actual
      */
-    public function testConstants(int $expected, int $actual)
+    public function testConstants(int $expected, int $actual): void
     {
         self::assertSame($expected, $actual);
     }
@@ -58,7 +58,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCurrentUtcDateTime()
+    public function testCurrentUtcDateTime(): void
     {
         self::assertSame(
             (new DateTime('now', $this->utcTimezone))->format('Y-m-d H:i:s'),
@@ -69,7 +69,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCurrentUtcDateTimeStamp()
+    public function testCurrentUtcDateTimeStamp(): void
     {
         self::assertSame(
             DateTimeHelper::currentTimeStamp(),
@@ -83,7 +83,7 @@ class DateTimeHelperTest extends Unit
      * @param int $seconds
      * @param bool $showSeconds
      */
-    public function testSecondsToHumanTimeDuration(string $expected, int $seconds, bool $showSeconds = true)
+    public function testSecondsToHumanTimeDuration(string $expected, int $seconds, bool $showSeconds = true): void
     {
         self::assertSame($expected, DateTimeHelper::secondsToHumanTimeDuration($seconds, $showSeconds));
     }
@@ -101,7 +101,7 @@ class DateTimeHelperTest extends Unit
      * @param callable $expectedResult
      * @throws Exception
      */
-    public function testUtcIgnorance(mixed $value, callable $expectedResult)
+    public function testUtcIgnorance(mixed $value, callable $expectedResult): void
     {
         $expectedResult = $expectedResult();
 
@@ -124,7 +124,7 @@ class DateTimeHelperTest extends Unit
      * @param mixed $value
      * @throws Exception
      */
-    public function testToDateTime(callable|DateTime|false $expected, mixed $value)
+    public function testToDateTime(callable|DateTime|false $expected, mixed $value): void
     {
         if (is_callable($expected)) {
             $expected = $expected();
@@ -147,7 +147,7 @@ class DateTimeHelperTest extends Unit
      * @param mixed $value
      * @throws Exception
      */
-    public function testUtcDefault(mixed $value)
+    public function testUtcDefault(mixed $value): void
     {
         $toDateTime = DateTimeHelper::toDateTime($value, false, false);
         self::assertSame($this->utcTimezone->getName(), $toDateTime->getTimezone()->getName());
@@ -162,7 +162,7 @@ class DateTimeHelperTest extends Unit
      * @param DateTimeZone $expectedTimezone
      * @throws Exception
      */
-    public function testToDateTimeRespectsTz(mixed $value, DateTime $expectedResult, DateTimeZone $expectedTimezone)
+    public function testToDateTimeRespectsTz(mixed $value, DateTime $expectedResult, DateTimeZone $expectedTimezone): void
     {
         $toDateTime = DateTimeHelper::toDateTime($value, false, false);
 
@@ -179,7 +179,7 @@ class DateTimeHelperTest extends Unit
      * @param string|null $closureParam
      * @throws Exception
      */
-    public function testToDateTimeCreation(mixed $value, callable $expectedResult, ?string $closureParam = null)
+    public function testToDateTimeCreation(mixed $value, callable $expectedResult, ?string $closureParam = null): void
     {
         $expectedResult = $closureParam ? $expectedResult($closureParam) : $expectedResult();
 
@@ -192,7 +192,7 @@ class DateTimeHelperTest extends Unit
     /**
      * DateTimeHelper::toDateTime:145-148
      */
-    public function testEmptyArrayDateDefault()
+    public function testEmptyArrayDateDefault(): void
     {
         $dt = DateTimeHelper::toDateTime(['date' => '', 'time' => '08:00PM']);
 
@@ -208,7 +208,7 @@ class DateTimeHelperTest extends Unit
      * @param string|false $expected
      * @param string $timeZone
      */
-    public function testNormalizeTimeZone(string|false $expected, string $timeZone)
+    public function testNormalizeTimeZone(string|false $expected, string $timeZone): void
     {
         self::assertSame($expected, DateTimeHelper::normalizeTimeZone($timeZone));
     }
@@ -218,7 +218,7 @@ class DateTimeHelperTest extends Unit
      * @param bool $expected
      * @param mixed $value
      */
-    public function testIsIso8601(bool $expected, mixed $value)
+    public function testIsIso8601(bool $expected, mixed $value): void
     {
         self::assertSame($expected, DateTimeHelper::isIso8601($value));
     }
@@ -230,7 +230,7 @@ class DateTimeHelperTest extends Unit
      * @param bool $showSeconds
      * @throws Exception
      */
-    public function testHumanIntervalFromDuration(string $expected, string $duration, bool $showSeconds = true)
+    public function testHumanIntervalFromDuration(string $expected, string $duration, bool $showSeconds = true): void
     {
         $dateInterval = new DateInterval($duration);
         self::assertSame($expected, DateTimeHelper::humanDurationFromInterval($dateInterval, $showSeconds));
@@ -239,7 +239,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testIsToday()
+    public function testIsToday(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isToday($dateTime));
@@ -257,7 +257,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testYesterday()
+    public function testYesterday(): void
     {
         $dateTime = new DateTime('now');
 
@@ -277,7 +277,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testThisYearCheck()
+    public function testThisYearCheck(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisYear($dateTime));
@@ -292,7 +292,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testThisWeek()
+    public function testThisWeek(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisWeek($dateTime));
@@ -311,7 +311,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testIsInThePast()
+    public function testIsInThePast(): void
     {
         $systemTz = new DateTimeZone(Craft::$app->getTimeZone());
         $dateTime = new DateTime('now', $systemTz);
@@ -328,7 +328,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testIsThisMonth()
+    public function testIsThisMonth(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisMonth($dateTime));
@@ -343,7 +343,7 @@ class DateTimeHelperTest extends Unit
      * @param int $longResult
      * @param int $input
      */
-    public function testSecondsToInterval(int $shortResult, int $longResult, int $input)
+    public function testSecondsToInterval(int $shortResult, int $longResult, int $input): void
     {
         $interval = DateTimeHelper::secondsToInterval($input);
         self::assertSame($shortResult, $interval->s);
@@ -356,7 +356,7 @@ class DateTimeHelperTest extends Unit
      * @param string $duration
      * @throws Exception
      */
-    public function testIntervalToSeconds(int $expected, string $duration)
+    public function testIntervalToSeconds(int $expected, string $duration): void
     {
         $dateInterval = new DateInterval($duration);
         self::assertSame($expected, DateTimeHelper::intervalToSeconds($dateInterval));
@@ -367,7 +367,7 @@ class DateTimeHelperTest extends Unit
      * @param string|false $expected
      * @param mixed $date
      */
-    public function testToIso8601(string|false $expected, mixed $date)
+    public function testToIso8601(string|false $expected, mixed $date): void
     {
         self::assertSame($expected, DateTimeHelper::toIso8601($date));
     }
@@ -377,7 +377,7 @@ class DateTimeHelperTest extends Unit
      * @param string $expected
      * @param string $timeZone
      */
-    public function testTimeZoneAbbreviation(string $expected, string $timeZone)
+    public function testTimeZoneAbbreviation(string $expected, string $timeZone): void
     {
         self::assertSame($expected, DateTimeHelper::timeZoneAbbreviation($timeZone));
     }
@@ -387,7 +387,7 @@ class DateTimeHelperTest extends Unit
      * @param bool $expected
      * @param mixed $timestamp
      */
-    public function testIsValidTimeStamp(bool $expected, mixed $timestamp)
+    public function testIsValidTimeStamp(bool $expected, mixed $timestamp): void
     {
         self::assertSame($expected, DateTimeHelper::isValidTimeStamp($timestamp));
     }
@@ -397,7 +397,7 @@ class DateTimeHelperTest extends Unit
      * @param bool $expected
      * @param string $intervalString
      */
-    public function testIsValidIntervalString(bool $expected, string $intervalString)
+    public function testIsValidIntervalString(bool $expected, string $intervalString): void
     {
         self::assertSame($expected, DateTimeHelper::isValidIntervalString($intervalString));
     }
@@ -407,7 +407,7 @@ class DateTimeHelperTest extends Unit
      * @param string|string[] $expected
      * @param string $timeZone
      */
-    public function testTimeZoneOffset(string|array $expected, string $timeZone)
+    public function testTimeZoneOffset(string|array $expected, string $timeZone): void
     {
         if (is_string($expected)) {
             self::assertSame($expected, DateTimeHelper::timeZoneOffset($timeZone));
@@ -757,7 +757,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         Craft::$app->setTimeZone('America/Los_Angeles');
         $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
