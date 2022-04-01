@@ -445,7 +445,7 @@ class AppController extends Controller
     }
 
     /**
-     * Updates a plugin's license key.
+     * Updates a plugin’s license key.
      *
      * @return Response
      */

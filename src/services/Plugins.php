@@ -92,12 +92,12 @@ class Plugins extends Component
     public const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     * @event PluginEvent The event that is triggered before a plugin’s settings are saved
      */
     public const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
 
     /**
-     * @event PluginEvent The event that is triggered after a plugin's settings are saved
+     * @event PluginEvent The event that is triggered after a plugin’s settings are saved
      */
     public const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 
@@ -249,9 +249,9 @@ class Plugins extends Component
                     ]));
                 }
 
-                // If we're not updating, check if the plugin's version number changed, but not its schema version.
+                // If we're not updating, check if the plugin’s version number changed, but not its schema version.
                 if (!Craft::$app->getIsInMaintenanceMode() && $hasVersionChanged && !$this->isPluginUpdatePending($plugin)) {
-                    // Update our record of the plugin's version number
+                    // Update our record of the plugin’s version number
                     Db::update(Table::PLUGINS, [
                         'version' => $plugin->getVersion(),
                     ], [
@@ -701,7 +701,7 @@ class Plugins extends Component
     }
 
     /**
-     * Saves a plugin's settings.
+     * Saves a plugin’s settings.
      *
      * @param PluginInterface $plugin The plugin
      * @param array $settings The plugin’s new settings
@@ -728,7 +728,7 @@ class Plugins extends Component
             return false;
         }
 
-        // Update the plugin's settings in the project config
+        // Update the plugin’s settings in the project config
         $pluginSettings = $plugin->getSettings();
         $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray()) : [];
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
@@ -1165,7 +1165,7 @@ class Plugins extends Component
         // Validate the license key
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 
-        // Set the plugin's license key in the project config
+        // Set the plugin’s license key in the project config
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.licenseKey', $normalizedLicenseKey, "Set license key for plugin “{$handle}”");
 
         // Update our cache of it
@@ -1174,7 +1174,7 @@ class Plugins extends Component
             $this->_storedPluginInfo[$handle]['licenseKey'] = $normalizedLicenseKey;
         }
 
-        // If we've cached the plugin's license key status, update the cache
+        // If we've cached the plugin’s license key status, update the cache
         if ($this->getPluginLicenseKeyStatus($handle) !== LicenseKeyStatus::Unknown) {
             $this->setPluginLicenseKeyStatus($handle, LicenseKeyStatus::Unknown);
         }
@@ -1227,8 +1227,8 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @param string|null $licenseKeyStatus The plugin’s license key status
-     * @param string|null $licensedEdition The plugin's licensed edition, if the key is valid
-     * @throws InvalidPluginException if the plugin isn't installed
+     * @param string|null $licensedEdition The plugin’s licensed edition, if the key is valid
+     * @throws InvalidPluginException if the plugin isn’t installed
      */
     public function setPluginLicenseKeyStatus(string $handle, ?string $licenseKeyStatus = null, ?string $licensedEdition = null): void
     {
