@@ -24,7 +24,7 @@ use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
@@ -32,8 +32,10 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\web\CpScreenResponseBehavior;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\web\Response;
 
 /**
  * Category represents a category element.
@@ -128,7 +130,7 @@ class Category extends Element
      * @inheritdoc
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): CategoryQuery
     {
         return new CategoryQuery(static::class);
     }
@@ -146,7 +148,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var CategoryGroup $context */
         return $context->handle . '_Category';
@@ -156,7 +158,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var CategoryGroup $context */
         return ['categorygroups.' . $context->uid];
@@ -166,7 +168,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var CategoryGroup $context */
         return 'save_' . $context->handle . '_Category';
@@ -203,7 +205,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(string $source): array
     {
         $fieldLayouts = [];
         if (
@@ -235,7 +237,7 @@ class Category extends Element
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupById($matches[1]);
-        } else if (preg_match('/^group:(.+)$/', $source, $matches)) {
+        } elseif (preg_match('/^group:(.+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupByUid($matches[1]);
         }
 
@@ -443,7 +445,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function route()
+    protected function route(): array|string|null
     {
         // Make sure the category group is set to have URLs for this site
         $siteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -461,6 +463,31 @@ class Category extends Element
                 ],
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createAnother(): ?self
+    {
+        $group = $this->getGroup();
+
+        /** @var self $category */
+        $category = Craft::createObject([
+            'class' => self::class,
+            'groupId' => $this->groupId,
+            'siteId' => $this->siteId,
+        ]);
+
+        $category->enabled = $this->enabled;
+        $category->setEnabledForSite($this->getEnabledForSite());
+
+        // Structure parent
+        if ($group->maxLevels !== 1) {
+            $category->setParentId($this->getParentId());
+        }
+
+        return $category;
     }
 
     /**
@@ -556,7 +583,7 @@ class Category extends Element
         $path = sprintf('categories/%s/%s', $group->handle, $this->getCanonicalId());
 
         // Ignore homepage/temp slugs
-        if ($this->slug && strpos($this->slug, '__') !== 0) {
+        if ($this->slug && !str_starts_with($this->slug, '__')) {
             $path .= "-$this->slug";
         }
 
@@ -575,7 +602,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
         $group = $this->getGroup();
 
@@ -600,7 +627,8 @@ class Category extends Element
             }
         }
 
-        return $crumbs;
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**
@@ -616,10 +644,89 @@ class Category extends Element
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
+        $fields = [
             $this->slugFieldHtml($static),
-            parent::metaFieldsHtml($static),
-        ]);
+        ];
+
+        $fields[] = (function() use ($static) {
+            if ($parentId = $this->getParentId()) {
+                $parent = Craft::$app->getCategories()->getCategoryById($parentId, $this->siteId, [
+                    'drafts' => null,
+                    'draftOf' => false,
+                ]);
+            } else {
+                // If the category already has structure data, use it. Otherwise, use its canonical category
+                $parent = static::find()
+                    ->siteId($this->siteId)
+                    ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
+                    ->ancestorDist(1)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->one();
+            }
+
+            $group = $this->getGroup();
+
+            return Cp::elementSelectFieldHtml([
+                'label' => Craft::t('app', 'Parent'),
+                'id' => 'parentId',
+                'name' => 'parentId',
+                'elementType' => self::class,
+                'selectionLabel' => Craft::t('app', 'Choose'),
+                'sources' => ["group:$group->uid"],
+                'criteria' => $this->_parentOptionCriteria($group),
+                'limit' => 1,
+                'elements' => $parent ? [$parent] : [],
+                'disabled' => $static,
+            ]);
+        })();
+
+        $fields[] = parent::metaFieldsHtml($static);
+
+        return implode("\n", $fields);
+    }
+
+    private function _parentOptionCriteria(CategoryGroup $group): array
+    {
+        $parentOptionCriteria = [
+            'siteId' => $this->siteId,
+            'groupId' => $group->id,
+            'status' => null,
+            'drafts' => null,
+            'draftOf' => false,
+        ];
+
+        // Prevent the current entry, or any of its descendants, from being selected as a parent
+        if ($this->id) {
+            $excludeIds = self::find()
+                ->descendantOf($this)
+                ->drafts(null)
+                ->draftOf(false)
+                ->status(null)
+                ->ids();
+            $excludeIds[] = $this->getCanonicalId();
+            $parentOptionCriteria['id'] = array_merge(['not'], $excludeIds);
+        }
+
+        if ($group->maxLevels) {
+            if ($this->id) {
+                // Figure out how deep the ancestors go
+                $maxDepth = self::find()
+                    ->select('level')
+                    ->descendantOf($this)
+                    ->status(null)
+                    ->leaves()
+                    ->scalar();
+                $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
+            } else {
+                $depth = 1;
+            }
+
+            $parentOptionCriteria['level'] = sprintf('<=%s', $group->maxLevels - $depth);
+        }
+
+        return $parentOptionCriteria;
     }
 
     /**
@@ -690,7 +797,7 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -702,7 +809,7 @@ class Category extends Element
                 $record = CategoryRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid category ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid category ID: $this->id");
                 }
             } else {
                 $record = new CategoryRecord();

@@ -140,7 +140,7 @@ class RepairController extends Controller
             ])
             ->all();
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $query->elementType;
         $displayName = $elementType::pluralLowerDisplayName();
 
@@ -172,13 +172,13 @@ class RepairController extends Controller
                 if (!$element->level) {
                     $issue = 'was missing from structure';
                     $newLevel = 1;
-                } else if ($element->level < 1) {
+                } elseif ($element->level < 1) {
                     $issue = "had unexpected level ($element->level)";
                     $newLevel = 1;
-                } else if ($element->level > $level + 1 && (!$structure->maxLevels || $level < $structure->maxLevels)) {
+                } elseif ($element->level > $level + 1 && (!$structure->maxLevels || $level < $structure->maxLevels)) {
                     $issue = "had unexpected level ($element->level)";
                     $newLevel = !empty($ancestors) ? $level + 1 : 1;
-                } else if ($structure->maxLevels && $element->level > $structure->maxLevels) {
+                } elseif ($structure->maxLevels && $element->level > $structure->maxLevels) {
                     $issue = "exceeded the max level ($structure->maxLevels)";
                     $newLevel = isset($ancestors[$level - 2]) ? $level : 1;
                 } else {
@@ -209,7 +209,7 @@ class RepairController extends Controller
                             if (!$this->dryRun) {
                                 $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
                             }
-                        } else if (!$this->dryRun) {
+                        } elseif (!$this->dryRun) {
                             $structuresService->append($structureId, $element, $parentElement, Structures::MODE_INSERT);
                         }
                     }
@@ -223,7 +223,7 @@ class RepairController extends Controller
 
                 if ($removed) {
                     $this->stdout('*', Console::FG_YELLOW);
-                } else if ($issue) {
+                } elseif ($issue) {
                     $this->stdout('✖', Console::FG_RED);
                 } else {
                     $this->stdout('✔', Console::FG_GREEN);
@@ -234,9 +234,9 @@ class RepairController extends Controller
                 if ($element->getIsDraft() || $element->getIsRevision()) {
                     if ($element->isProvisionalDraft) {
                         $revLabel = 'provisional draft';
-                    } else if ($element->getIsUnpublishedDraft()) {
+                    } elseif ($element->getIsUnpublishedDraft()) {
                         $revLabel = 'unpublished draft';
-                    } else if ($element->getIsDraft()) {
+                    } elseif ($element->getIsDraft()) {
                         /** @var DraftBehavior|ElementInterface $element */
                         $revLabel = 'draft' . ($element->draftName ? ": $element->draftName" : '');
                     } else {
@@ -248,7 +248,7 @@ class RepairController extends Controller
 
                 if ($removed) {
                     $this->stdout(' - removed', Console::FG_YELLOW);
-                } else if ($issue) {
+                } elseif ($issue) {
                     $this->stdout(" - $issue", Console::FG_RED);
                 }
 
@@ -301,7 +301,7 @@ class RepairController extends Controller
      * @param mixed $value
      * @return mixed
      */
-    private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, $value)
+    private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, mixed $value): mixed
     {
         if (is_array($value)) {
             // Is this a packed array?

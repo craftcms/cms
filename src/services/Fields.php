@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
@@ -83,7 +84,7 @@ class Fields extends Component
      *
      * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
      *
-     * See [Field Types](https://craftcms.com/docs/3.x/extend/field-types.html) for documentation on creating field types.
+     * See [Field Types](https://craftcms.com/docs/4.x/extend/field-types.html) for documentation on creating field types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -410,7 +411,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /** @var FieldGroupRecord $groupRecord */
+        /** @var FieldGroupRecord|null $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -445,7 +446,7 @@ class Fields extends Component
     /**
      * Returns all available field type classes.
      *
-     * @return string[] The available field type classes
+     * @return class-string<FieldInterface>[] The available field type classes
      */
     public function getAllFieldTypes(): array
     {
@@ -526,7 +527,7 @@ class Fields extends Component
         $types = [];
 
         foreach ($this->getAllFieldTypes() as $class) {
-            /** @var string|FieldInterface $class */
+            /** @var class-string<FieldInterface>|FieldInterface $class */
             if ($class === get_class($field)) {
                 if ($includeCurrent) {
                     $types[] = $class;
@@ -564,10 +565,11 @@ class Fields extends Component
     /**
      * Creates a field with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return FieldInterface The field
+     * @template T of FieldInterface
+     * @param class-string<T>|array{type: class-string<T>, id?: int|string, uid?: string} $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @return T The field
      */
-    public function createField($config): FieldInterface
+    public function createField(mixed $config): FieldInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -599,7 +601,7 @@ class Fields extends Component
      *
      * @return MemoizableArray<FieldInterface>
      */
-    private function _fields($context = null): MemoizableArray
+    private function _fields(mixed $context = null): MemoizableArray
     {
         if (!isset($this->_fields)) {
             $fields = [];
@@ -631,7 +633,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
-    public function getAllFields($context = null): array
+    public function getAllFields(mixed $context = null): array
     {
         return $this->_fields($context)->all();
     }
@@ -688,7 +690,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle(string $handle, $context = null): ?FieldInterface
+    public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
     {
         return $this->_fields($context)->firstWhere('handle', $handle, true);
     }
@@ -792,13 +794,16 @@ class Fields extends Component
 
         $this->prepFieldForSave($field);
         $configData = $this->createFieldConfig($field);
+        $appliedConfig = false;
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
             $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
-            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
-        } else {
-            // Otherwise just save it to the DB
+            $appliedConfig = Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
+        }
+
+        if (!$appliedConfig) {
+            // If it's not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 
@@ -829,7 +834,7 @@ class Fields extends Component
             if (empty($field->uid)) {
                 $field->uid = StringHelper::UUID();
             }
-        } else if (!$field->uid) {
+        } elseif (!$field->uid) {
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
 
@@ -1091,37 +1096,38 @@ class Fields extends Component
     /**
      * Returns a field layout by its associated element type.
      *
-     * @param string $type The associated element type
+     * @param class-string<ElementInterface> $type The associated element type
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (array_key_exists($type, $this->_layoutsByType)) {
-            return $this->_layoutsByType[$type];
+        if (!isset($this->_layoutsByType[$type])) {
+            if (Craft::$app->getIsInstalled()) {
+                $result = $this->_createLayoutQuery()
+                    ->andWhere(['type' => $type])
+                    ->one();
+            }
+
+            if (isset($result)) {
+                if (!isset($this->_layoutsById[$result['id']])) {
+                    $this->_layoutsById[$result['id']] = new FieldLayout($result);
+                }
+
+                $this->_layoutsByType[$type] = $this->_layoutsById[$result['id']];
+            } else {
+                $this->_layoutsByType[$type] = new FieldLayout([
+                    'type' => $type,
+                ]);
+            }
         }
 
-        $result = $this->_createLayoutQuery()
-            ->andWhere(['type' => $type])
-            ->one();
-
-        if (!$result) {
-            return $this->_layoutsByType[$type] = new FieldLayout([
-                'type' => $type,
-            ]);
-        }
-
-        $id = $result['id'];
-        if (!isset($this->_layoutsById[$id])) {
-            $this->_layoutsById[$id] = new FieldLayout($result);
-        }
-
-        return $this->_layoutsByType[$type] = $this->_layoutsById[$id];
+        return $this->_layoutsByType[$type];
     }
 
     /**
      * Returns all of the field layouts associated with a given element type.
      *
-     * @param string $type
+     * @param class-string<ElementInterface> $type
      * @return FieldLayout[] The field layouts
      * @since 3.5.0
      */
@@ -1245,8 +1251,9 @@ class Fields extends Component
     /**
      * Creates a field layout element instance from its config.
      *
-     * @param array $config
-     * @return FieldLayoutElement
+     * @template T of FieldLayoutElement
+     * @param array{type: class-string<T>} $config
+     * @return T
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
      */
@@ -1312,6 +1319,7 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             // Get the current layout
+            /** @var FieldLayoutRecord|null $layoutRecord */
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
                 ->one();
@@ -1358,9 +1366,13 @@ class Fields extends Component
 
         foreach ($tabs as $tab) {
             if ($tab->id && isset($tabRecords[$tab->id])) {
+                /** @var FieldLayoutTabRecord $tabRecord */
                 $tabRecord = $tabRecords[$tab->id];
                 unset($tabRecords[$tab->id]);
             } else {
+                if (!isset($tab->uid)) {
+                    $tab->uid = StringHelper::UUID();
+                }
                 $tabRecord = new FieldLayoutTabRecord();
                 $tabRecord->layoutId = $layout->id;
                 $tabRecord->uid = $tab->uid;
@@ -1422,7 +1434,7 @@ class Fields extends Component
      * @param int|int[] $layoutId The field layout’s ID
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById($layoutId): bool
+    public function deleteLayoutById(array|int $layoutId): bool
     {
         if (!$layoutId) {
             return false;
@@ -1470,7 +1482,7 @@ class Fields extends Component
     /**
      * Deletes field layouts associated with a given element type.
      *
-     * @param string $type The element type
+     * @param class-string<ElementInterface> $type The element type
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool
@@ -1508,8 +1520,8 @@ class Fields extends Component
     {
         $fieldVersion = Craft::$app->getInfo()->fieldVersion;
 
-        // If it doesn't start with `2@`, then it needs to be updated
-        if ($fieldVersion === null || strpos($fieldVersion, '2@') !== 0) {
+        // If it doesn't start with `3@`, then it needs to be updated
+        if ($fieldVersion === null || !str_starts_with($fieldVersion, '3@')) {
             return null;
         }
 
@@ -1528,7 +1540,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = '2@' . StringHelper::randomString(10);
+        $info->fieldVersion = '3@' . StringHelper::randomString(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 
@@ -1686,7 +1698,7 @@ class Fields extends Component
                 $db->createCommand()
                     ->alterColumn($table, $oldName, $type)
                     ->execute();
-            } catch (DbException $e) {
+            } catch (DbException) {
                 // Just rename the old column and pretend it didn’t exist
                 $transaction->rollBack();
                 $transaction = $db->beginTransaction();
@@ -1797,7 +1809,7 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        return (new Query)
+        return (new Query())
             ->select([
                 'id',
                 'type',
@@ -1835,17 +1847,18 @@ class Fields extends Component
      * @param bool $withTrashed Whether to include trashed field groups in search
      * @return FieldGroupRecord
      */
-    private function _getGroupRecord($criteria, bool $withTrashed = false): FieldGroupRecord
+    private function _getGroupRecord(int|string $criteria, bool $withTrashed = false): FieldGroupRecord
     {
         $query = $withTrashed ? FieldGroupRecord::findWithTrashed() : FieldGroupRecord::find();
 
         if (is_numeric($criteria)) {
             $query->where(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->where(['uid' => $criteria]);
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldGroupRecord */
         return $query->one() ?? new FieldGroupRecord();
     }
 

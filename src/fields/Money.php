@@ -20,6 +20,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\MoneyHelper;
 use craft\validators\MoneyValidator;
+use GraphQL\Type\Definition\Type;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
@@ -55,24 +56,24 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     }
 
     /**
-     * @var string The default currency
+     * @var non-empty-string The default currency
      */
     public string $currency = 'USD';
 
     /**
      * @var int|float|null The default value for new elements
      */
-    public $defaultValue;
+    public int|null|float $defaultValue = null;
 
     /**
      * @var int|float|null The minimum allowed number
      */
-    public $min = 0;
+    public int|null|float $min = 0;
 
     /**
      * @var int|float|null The maximum allowed number
      */
-    public $max;
+    public int|null|float $max = null;
 
     /**
      * @var bool Whether to show the currency label.
@@ -137,7 +138,8 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     {
         foreach (['defaultValue', 'min', 'max'] as $attr) {
             if ($this->$attr !== null) {
-                $this->$attr = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
+                $value = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
+                $this->$attr = $value !== false ? (float)$value : null;
             }
         }
 
@@ -159,7 +161,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof MoneyLibrary) {
             return $value;
@@ -192,11 +194,11 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param ElementInterface|null $element
      * @return string|null
      */
-    public function serializeValue($value, ElementInterface $element = null): ?string
+    public function serializeValue(mixed $value, ElementInterface $element = null): ?string
     {
         if (!$value) {
             return null;
@@ -210,7 +212,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      * @param mixed $value
      * @return string|null
      */
-    private function _normalizeNumber($value): ?string
+    private function _normalizeNumber(mixed $value): ?string
     {
         if ($value === '') {
             return null;
@@ -221,10 +223,10 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             if ($value['value'] === '') {
                 return null;
             }
-            $value['currency'] = $this->currency;
 
-            $value = MoneyHelper::toMoney($value);
-            return $value ? $value->getAmount() : null;
+            $value['currency'] = $this->currency;
+            $money = MoneyHelper::toMoney($value);
+            return $money ? $money->getAmount() : null;
         }
 
         $money = new MoneyLibrary($value, new Currency($this->currency));
@@ -234,7 +236,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
         $view = Craft::$app->getView();
@@ -313,7 +315,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return null;
     }
@@ -321,17 +323,17 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         return MoneyHelper::toString($value) ?: '';
     }
 
     /**
      * @param ElementQueryInterface $query
-     * @param $value
+     * @param mixed $value
      * @return void
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         /** @var ElementQuery $query */
         if ($value !== null) {
@@ -343,7 +345,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return MoneyType::getType();
     }
@@ -351,7 +353,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,

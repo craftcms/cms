@@ -16,7 +16,7 @@ use craft\models\FieldLayout;
 use craft\models\Site;
 use Illuminate\Support\Collection;
 use Twig\Markup;
-
+use yii\web\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
@@ -24,6 +24,7 @@ use Twig\Markup;
  *
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
+ * @mixin Component
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -190,7 +191,7 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $criteria The element ID or a set of element criteria parameters
      * @return static|null Element instance matching the condition, or null if nothing matches.
      */
-    public static function findOne($criteria = null): ?ElementInterface;
+    public static function findOne(mixed $criteria = null): ?static;
 
     /**
      * Returns a list of elements that match the specified ID(s) or a set of element criteria parameters.
@@ -227,7 +228,7 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $criteria The element ID, an array of IDs, or a set of element criteria parameters
      * @return static[] an array of Element instances, or an empty array if nothing matches.
      */
-    public static function findAll($criteria = null): array;
+    public static function findAll(mixed $criteria = null): array;
 
     /**
      * Returns an element condition for the element type.
@@ -309,7 +310,7 @@ interface ElementInterface extends ComponentInterface
     public static function fieldLayouts(string $source): array;
 
     /**
-     * Returns the available [element actions](https://craftcms.com/docs/3.x/extend/element-action-types.html) for a
+     * Returns the available [element actions](https://craftcms.com/docs/4.x/extend/element-action-types.html) for a
      * given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
@@ -321,7 +322,7 @@ interface ElementInterface extends ComponentInterface
      * :::
      *
      * @param string $source The selected source’s key.
-     * @return array The available element actions.
+     * @return array<ElementActionInterface|class-string<ElementActionInterface>|array{type: class-string<ElementActionInterface>}> The available element actions.
      */
     public static function actions(string $source): array;
 
@@ -491,12 +492,12 @@ interface ElementInterface extends ComponentInterface
      * }
      * ```
      *
-     * @param ElementInterface[] $sourceElements An array of the source elements
+     * @param self[] $sourceElements An array of the source elements
      * @param string $handle The property handle used to identify which target elements should be included in the map
-     * @return array|false|null The eager-loading element ID mappings, false if no mappings exist, or null if the result
+     * @return array|null|false The eager-loading element ID mappings, false if no mappings exist, or null if the result
      * should be ignored
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle);
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
 
     /**
      * Returns the GraphQL type name by an element's context.
@@ -505,7 +506,7 @@ interface ElementInterface extends ComponentInterface
      * @return string
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string;
+    public static function gqlTypeNameByContext(mixed $context): string;
 
     /**
      * Returns the GraphQL mutation name by an element's context.
@@ -514,7 +515,7 @@ interface ElementInterface extends ComponentInterface
      * @return string
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string;
+    public static function gqlMutationNameByContext(mixed $context): string;
 
     /**
      * Returns the GraphQL scopes required by element's context.
@@ -523,7 +524,7 @@ interface ElementInterface extends ComponentInterface
      * @return array
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array;
+    public static function gqlScopesByContext(mixed $context): array;
 
     /**
      * Returns the element’s ID.
@@ -572,18 +573,18 @@ interface ElementInterface extends ComponentInterface
      * If this is a draft or revision, the canonical element will be returned.
      *
      * @param bool $anySite Whether the canonical element can be retrieved in any site
-     * @return static
+     * @return self
      * @since 3.7.0
      */
-    public function getCanonical(bool $anySite = false): ElementInterface;
+    public function getCanonical(bool $anySite = false): self;
 
     /**
      * Sets the canonical version of the element.
      *
-     * @param static $element
+     * @param self $element
      * @since 3.7.0
      */
-    public function setCanonical(ElementInterface $element): void;
+    public function setCanonical(self $element): void;
 
     /**
      * Returns the element’s canonical ID.
@@ -662,7 +663,7 @@ interface ElementInterface extends ComponentInterface
      * - `enabledByDefault` (boolean) – Whether the element should be enabled in this site by default
      *   (`true` by default)
      *
-     * @return int[]|array
+     * @return array
      */
     public function getSupportedSites(): array;
 
@@ -695,7 +696,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return mixed The route that the request should use, or null if no special action should be taken
      */
-    public function getRoute();
+    public function getRoute(): mixed;
 
     /**
      * Returns whether this element represents the site homepage.
@@ -749,9 +750,9 @@ interface ElementInterface extends ComponentInterface
      *
      * Note that permissions don’t need to be considered here. The created element’s [[canSave()]] method will be called before saving.
      *
-     * @return ElementInterface|null
+     * @return self|null
      */
-    public function createAnother(): ?ElementInterface;
+    public function createAnother(): ?self;
 
     /**
      * Returns whether the given user is authorized to view this element’s edit page.
@@ -829,6 +830,15 @@ interface ElementInterface extends ComponentInterface
     public function hasRevisions(): bool;
 
     /**
+     * Prepares the response for the element’s Edit screen.
+     *
+     * @param Response $response The response being prepared
+     * @param string $containerId The ID of the element editor’s container element
+     * @since 4.0.0
+     */
+    public function prepareEditScreen(Response $response, string $containerId): void;
+
+    /**
      * Returns the element’s edit URL in the control panel.
      *
      * @return string|null
@@ -838,28 +848,18 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL that users should be redirected to after editing the element.
      *
-     * @return string
+     * @return string|null
      * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
 
     /**
-     * Returns the breadcrumbs for the element’s edit page.
-     *
-     * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
-     *
-     * @return array
-     * @since 4.0.0
-     */
-    public function getCrumbs(): array;
-
-    /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.
      *
-     * @return string|null
+     * @return string
      * @since 4.0.0
      */
-    public function getAddlButtons(): string;
+    public function getAdditionalButtons(): string;
 
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
@@ -932,7 +932,7 @@ interface ElementInterface extends ComponentInterface
      * @param bool|bool[] $enabledForSite
      * @since 3.4.0
      */
-    public function setEnabledForSite($enabledForSite): void;
+    public function setEnabledForSite(array|bool $enabledForSite): void;
 
     /**
      * Returns the element’s status.
@@ -944,46 +944,46 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the same element in other locales.
      *
-     * @return ElementQueryInterface[]|static[]
+     * @return ElementQueryInterface|Collection
      */
-    public function getLocalized();
+    public function getLocalized(): ElementQueryInterface|Collection;
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.
      *
      * @param mixed $criteria
-     * @return static|null
+     * @return self|null
      */
-    public function getNext($criteria = false): ?ElementInterface;
+    public function getNext(mixed $criteria = false): ?self;
 
     /**
      * Returns the previous element relative to this one, from a given set of criteria.
      *
      * @param mixed $criteria
-     * @return static|null
+     * @return self|null
      */
-    public function getPrev($criteria = false): ?ElementInterface;
+    public function getPrev(mixed $criteria = false): ?self;
 
     /**
      * Sets the default next element.
      *
-     * @param static|false $element
+     * @param self|false $element
      */
-    public function setNext($element): void;
+    public function setNext(self|false $element): void;
 
     /**
      * Sets the default previous element.
      *
-     * @param static|false $element
+     * @param self|false $element
      */
-    public function setPrev($element): void;
+    public function setPrev(self|false $element): void;
 
     /**
      * Returns the element’s parent.
      *
-     * @return static|null
+     * @return self|null
      */
-    public function getParent(): ?ElementInterface;
+    public function getParent(): ?self;
 
     /**
      * Returns the parent element’s URI, if there is one.
@@ -997,53 +997,53 @@ interface ElementInterface extends ComponentInterface
     /**
      * Sets the element’s parent.
      *
-     * @param static|null $parent
+     * @param self|null $parent
      */
-    public function setParent(?ElementInterface $parent = null): void;
+    public function setParent(?self $parent = null): void;
 
     /**
      * Returns the element’s ancestors.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|static[]
+     * @return ElementQueryInterface|Collection
      */
-    public function getAncestors(?int $dist = null);
+    public function getAncestors(?int $dist = null): ElementQueryInterface|Collection;
 
     /**
      * Returns the element’s descendants.
      *
      * @param int|null $dist
-     * @return ElementQueryInterface|static[]
+     * @return ElementQueryInterface|Collection
      */
-    public function getDescendants(?int $dist = null);
+    public function getDescendants(?int $dist = null): ElementQueryInterface|Collection;
 
     /**
      * Returns the element’s children.
      *
-     * @return ElementQueryInterface|static[]
+     * @return ElementQueryInterface|Collection
      */
-    public function getChildren();
+    public function getChildren(): ElementQueryInterface|Collection;
 
     /**
      * Returns all of the element’s siblings.
      *
-     * @return ElementQueryInterface|static[]
+     * @return ElementQueryInterface|Collection
      */
-    public function getSiblings();
+    public function getSiblings(): ElementQueryInterface|Collection;
 
     /**
      * Returns the element’s previous sibling.
      *
-     * @return static|null
+     * @return self|null
      */
-    public function getPrevSibling(): ?ElementInterface;
+    public function getPrevSibling(): ?self;
 
     /**
      * Returns the element’s next sibling.
      *
-     * @return static|null
+     * @return self|null
      */
-    public function getNextSibling(): ?ElementInterface;
+    public function getNextSibling(): ?self;
 
     /**
      * Returns whether the element has descendants.
@@ -1062,58 +1062,58 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element is an ancestor of another one.
      *
-     * @param static $element
+     * @param self $element
      * @return bool
      */
-    public function isAncestorOf(ElementInterface $element): bool;
+    public function isAncestorOf(self $element): bool;
 
     /**
      * Returns whether this element is a descendant of another one.
      *
-     * @param static $element
+     * @param self $element
      * @return bool
      */
-    public function isDescendantOf(ElementInterface $element): bool;
+    public function isDescendantOf(self $element): bool;
 
     /**
      * Returns whether this element is a direct parent of another one.
      *
-     * @param static $element
+     * @param self $element
      * @return bool
      */
-    public function isParentOf(ElementInterface $element): bool;
+    public function isParentOf(self $element): bool;
 
     /**
      * Returns whether this element is a direct child of another one.
      *
-     * @param static $element
+     * @param self $element
      * @return bool
      */
-    public function isChildOf(ElementInterface $element): bool;
+    public function isChildOf(self $element): bool;
 
     /**
      * Returns whether this element is a sibling of another one.
      *
-     * @param static $element
+     * @param self $element
      * @return bool
      */
-    public function isSiblingOf(ElementInterface $element): bool;
+    public function isSiblingOf(self $element): bool;
 
     /**
      * Returns whether this element is the direct previous sibling of another one.
      *
-     * @param static $element
+     * @param self $element
      * @return bool
      */
-    public function isPrevSiblingOf(ElementInterface $element): bool;
+    public function isPrevSiblingOf(self $element): bool;
 
     /**
      * Returns whether this element is the direct next sibling of another one.
      *
-     * @param static $element
+     * @param self $element
      * @return bool
      */
-    public function isNextSiblingOf(ElementInterface $element): bool;
+    public function isNextSiblingOf(self $element): bool;
 
     /**
      * Treats custom fields as array offsets.
@@ -1267,7 +1267,7 @@ interface ElementInterface extends ComponentInterface
      * @return mixed The field value
      * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
-    public function getFieldValue(string $fieldHandle);
+    public function getFieldValue(string $fieldHandle): mixed;
 
     /**
      * Sets the value for a given field.
@@ -1275,7 +1275,7 @@ interface ElementInterface extends ComponentInterface
      * @param string $fieldHandle The field handle whose value needs to be set
      * @param mixed $value The value to set on the field
      */
-    public function setFieldValue(string $fieldHandle, $value): void;
+    public function setFieldValue(string $fieldHandle, mixed $value): void;
 
     /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
@@ -1415,7 +1415,7 @@ interface ElementInterface extends ComponentInterface
      * Sets some eager-loaded elements on a given handle.
      *
      * @param string $handle The handle that was used to eager-load the elements
-     * @param ElementInterface[] $elements The eager-loaded elements
+     * @param self[] $elements The eager-loaded elements
      */
     public function setEagerLoadedElements(string $handle, array $elements): void;
 
@@ -1472,10 +1472,10 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s current revision, if one exists.
      *
-     * @return static|null
+     * @return self|null
      * @since 3.2.0
      */
-    public function getCurrentRevision(): ?ElementInterface;
+    public function getCurrentRevision(): ?self;
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
@@ -1606,4 +1606,9 @@ interface ElementInterface extends ComponentInterface
      * @param int $structureId The structure ID
      */
     public function afterMoveInStructure(int $structureId): void;
+
+    /**
+     * Returns the string representation of the element.
+     */
+    public function __toString(): string;
 }

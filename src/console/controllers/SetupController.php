@@ -75,7 +75,7 @@ class SetupController extends Controller
      * @var bool Whether existing environment variables should be used as the default values by the `db-creds` command.
      * @see _env()
      */
-    private $_useEnvDefaults = true;
+    private bool $_useEnvDefaults = true;
 
     /**
      * @inheritdoc
@@ -269,6 +269,7 @@ EOD;
             }
         }
 
+        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto test;
@@ -310,7 +311,7 @@ EOD;
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $dbConfig = new DbConfig();
             }
         }
@@ -362,9 +363,9 @@ EOD;
             }
 
             if (
-                strpos($message, 'Access denied for user') !== false ||
-                strpos($message, 'no password supplied') !== false ||
-                strpos($message, 'password authentication failed for user') !== false
+                str_contains($message, 'Access denied for user') ||
+                str_contains($message, 'no password supplied') ||
+                str_contains($message, 'password authentication failed for user')
             ) {
                 $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
                 $badUserCredentials = true;
@@ -388,18 +389,18 @@ EOD;
                     'default' => $this->schema ?? App::env('DB_SCHEMA') ?? 'public',
                 ]);
                 $db->createCommand("SET search_path TO $this->schema;")->execute();
-            } else if ($this->schema === null) {
+            } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
-                $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
+                $defaultSchemas = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $searchPath))) ?: ['public'];
 
                 // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {
                     $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
-                } catch (DbException $e) {
+                } catch (DbException) {
                     try {
                         $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
-                    } catch (DbException $e) {
+                    } catch (DbException) {
                         $allSchemas = null;
                     }
                 }
@@ -446,7 +447,7 @@ EOD;
             if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if (
+        } elseif (
             !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
             !$this->_setEnvVar('DB_SERVER', $this->server) ||
             !$this->_setEnvVar('DB_PORT', $this->port) ||
@@ -534,7 +535,7 @@ EOD;
         $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!Platform::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
-            if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
+            if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));
             }
         }
@@ -544,11 +545,11 @@ EOD;
     /**
      * Sets an environment variable value in the project’s `.env` file.
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
      * @return bool
      */
-    private function _setEnvVar($name, $value): bool
+    private function _setEnvVar(string $name, mixed $value): bool
     {
         $configService = Craft::$app->getConfig();
         $path = $configService->getDotEnvPath();

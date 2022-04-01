@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,6 +9,7 @@ declare(strict_types = 1);
 
 namespace craft\models;
 
+use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\Model;
 use craft\helpers\ImageTransforms;
 use craft\validators\DateTimeValidator;
@@ -34,7 +36,7 @@ class ImageTransformIndex extends Model
     public ?int $assetId = null;
 
     /**
-     * @var string The image transformer
+     * @var class-string<ImageTransformerInterface> The image transformer
      */
     public string $transformer = ImageTransform::DEFAULT_TRANSFORMER;
 
@@ -92,16 +94,6 @@ class ImageTransformIndex extends Model
      * @var ImageTransform|null The transform associated with this index
      */
     private ?ImageTransform $_transform = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'dateIndexed';
-        return $attributes;
-    }
 
     /**
      * @inheritdoc

@@ -56,7 +56,7 @@ class UriFormatValidator extends Validator
                     $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
                         'setting' => 'actionTrigger',
                     ]));
-                } else if ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
+                } elseif ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
                     $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
                         'setting' => 'cpTrigger',
                     ]));

@@ -8,6 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
+use craft\helpers\App;
 use yii\base\Exception;
 
 /**
@@ -45,7 +46,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     {
         $messages = parent::loadMessagesFromFile($messageFile);
 
-        if ($messages === null && !YII_DEBUG) {
+        if ($messages === null && !App::devMode()) {
             // avoid logs about missing translation files
             $messages = [];
         }
@@ -84,7 +85,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
 
             if (empty($messages)) {
                 $messages = $fallbackMessages;
-            } else if (!empty($fallbackMessages)) {
+            } elseif (!empty($fallbackMessages)) {
                 foreach ($fallbackMessages as $key => $value) {
                     if (!empty($value) && empty($messages[$key])) {
                         $messages[$key] = $value;

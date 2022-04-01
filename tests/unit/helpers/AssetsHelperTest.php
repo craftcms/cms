@@ -7,10 +7,10 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
+use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use UnitTester;
 use yii\base\Exception;
@@ -24,30 +24,29 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class AssetsHelperTest extends Unit
+class AssetsHelperTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
         return [
             'assets' => [
-                'class' => AssetFixture::class
-            ]
+                'class' => AssetFixture::class,
+            ],
         ];
     }
 
     /**
      * @dataProvider generateUrlDataProvider
-     *
      * @param string $expected
      * @param array $params
      * @throws InvalidConfigException
      */
-    public function testGenerateUrl(string $expected, array $params)
+    public function testGenerateUrl(string $expected, array $params): void
     {
         $assetQuery = Asset::find();
 
@@ -56,15 +55,15 @@ class AssetsHelperTest extends Unit
         }
 
         $asset = $assetQuery->one();
-        $volume = $asset->getVolume();
+        $fs = $asset->getFs();
 
-        self::assertSame($expected, Assets::generateUrl($volume, $asset));
+        self::assertSame($expected, Assets::generateUrl($fs, $asset));
     }
 
     /**
      * @throws Exception
      */
-    public function testTempFilePath()
+    public function testTempFilePath(): void
     {
         $tempPath = Assets::tempFilePath();
         self::assertNotFalse(strpos($tempPath, '' . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'temp'));
@@ -74,13 +73,12 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider prepareAssetNameDataProvider
-     *
      * @param string $expected
      * @param string $name
      * @param bool $isFilename
      * @param bool $preventPluginModifications
      */
-    public function testPrepareAssetName(string $expected, string $name, bool $isFilename, bool $preventPluginModifications)
+    public function testPrepareAssetName(string $expected, string $name, bool $isFilename, bool $preventPluginModifications): void
     {
         self::assertSame($expected, Assets::prepareAssetName($name, $isFilename, $preventPluginModifications));
     }
@@ -88,7 +86,7 @@ class AssetsHelperTest extends Unit
     /**
      *
      */
-    public function testPrepareAssetNameAsciiRemove()
+    public function testPrepareAssetNameAsciiRemove(): void
     {
         Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
         self::assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
@@ -97,59 +95,52 @@ class AssetsHelperTest extends Unit
     /**
      *
      */
-    public function testConfigSeparator()
+    public function testConfigSeparator(): void
     {
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
         self::assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
-        self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
-
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
+        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = false;
         self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
     /**
      * @dataProvider filename2TitleDataProvider
-     *
      * @param string $expected
      * @param string $filename
      */
-    public function testFilename2Title(string $expected, string $filename)
+    public function testFilename2Title(string $expected, string $filename): void
     {
         self::assertSame($expected, Assets::filename2Title($filename));
     }
 
     /**
      * @dataProvider getFileKindLabelDataProvider
-     *
      * @param string $expected
      * @param string $kind
      */
-    public function testGetFileKindLabel(string $expected, string $kind)
+    public function testGetFileKindLabel(string $expected, string $kind): void
     {
         self::assertSame($expected, Assets::getFileKindLabel($kind));
     }
 
     /**
      * @dataProvider getFileKindByExtensionDataProvider
-     *
      * @param string $expected
      * @param string $file
      */
-    public function testGetFileKindByExtension(string $expected, string $file)
+    public function testGetFileKindByExtension(string $expected, string $file): void
     {
         self::assertSame($expected, Assets::getFileKindByExtension($file));
     }
 
     /**
      * @dataProvider parseFileLocationDataProvider
-     *
      * @param array $expected
      * @param string $location
      * @throws Exception
      */
-    public function testParseFileLocation(array $expected, string $location)
+    public function testParseFileLocation(array $expected, string $location): void
     {
         self::assertSame($expected, Assets::parseFileLocation($location));
     }
@@ -157,7 +148,7 @@ class AssetsHelperTest extends Unit
     /**
      *
      */
-    public function testParseFileLocationException()
+    public function testParseFileLocationException(): void
     {
         $this->tester->expectThrowable(Exception::class, function() {
             Assets::parseFileLocation('!@#$%^&*()_');
@@ -173,7 +164,7 @@ class AssetsHelperTest extends Unit
     /**
      *
      */
-    public function testMaxUploadSize()
+    public function testMaxUploadSize(): void
     {
         Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
         self::assertSame(1, Assets::getMaxUploadSize());
@@ -181,11 +172,10 @@ class AssetsHelperTest extends Unit
 
     /**
      * @dataProvider parseSrcsetSizeDataProvider
-     *
      * @param array|false $expected
      * @param mixed $size
      */
-    public function testParseSrcsetSize($expected, $size)
+    public function testParseSrcsetSize(array|false $expected, mixed $size): void
     {
         if (is_array($expected)) {
             self::assertSame($expected, Assets::parseSrcsetSize($size));
@@ -202,7 +192,7 @@ class AssetsHelperTest extends Unit
     public function generateUrlDataProvider(): array
     {
         return [
-            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
+            ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']],
         ];
     }
 
@@ -248,7 +238,7 @@ class AssetsHelperTest extends Unit
             ['Audio', 'audio'],
             ['Text', 'text'],
             ['PHP', 'php'],
-            ['unknown', 'Raaa']
+            ['unknown', 'Raaa'],
         ];
     }
 
@@ -259,7 +249,7 @@ class AssetsHelperTest extends Unit
     {
         return [
             [[2, '.'], '{folder:2}.'],
-            [[2, '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
+            [[2, '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()'],
         ];
     }
 

@@ -17,6 +17,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             this._attachUploader();
         }
 
+        this.updateAddElementsBtn();
+
         this.addListener(this.$elementsContainer, 'keydown', this._onKeyDown.bind(this));
         this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
     },
@@ -152,23 +154,20 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
         }
     },
 
-    replaceElement: function(elementId, replaceWithId) {
-        var parameters = {
-            elementId: replaceWithId,
-            siteId: this.settings.criteria.siteId,
-            thumbSize: this.settings.viewMode
-        };
+    enableAddElementsBtn: function() {
+        if (this.$uploadBtn) {
+            this.$uploadBtn.removeClass('hidden');
+        }
 
-        Craft.postActionRequest('elements/get-element-html', parameters, data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
-                this.removeElement($existing);
-                let elementInfo = Craft.getElementInfo(data.html);
-                this.selectElements([elementInfo]);
-            }
-        });
+        this.base();
+    },
+
+    disableAddElementsBtn: function() {
+        if (this.$uploadBtn) {
+            this.$uploadBtn.addClass('hidden');
+        }
+
+        this.base();
     },
 
     refreshThumbnail: function(elementId) {
@@ -178,15 +177,15 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             thumbSize: this.settings.viewMode
         };
 
-        Craft.postActionRequest('elements/get-element-html', parameters, data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
+        Craft.sendActionRequest('POST', 'elements/get-element-html', {data})
+            .then((response) => {
                 var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
-                $existing.find('.elementthumb').replaceWith($(data.html).find('.elementthumb'));
+                $existing.find('.elementthumb').replaceWith($(response.data.html).find('.elementthumb'));
                 this.thumbLoader.load($existing);
-            }
-        });
+            })
+            .catch(({response}) => {
+                alert(response.data.message);
+            });
     },
 
     /**
@@ -254,22 +253,24 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                 thumbSize: this.settings.viewMode
             };
 
-            Craft.postActionRequest('elements/get-element-html', parameters, data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    var html = $(data.html);
-                    Craft.appendHeadHtml(data.headHtml);
+            Craft.sendActionRequest('POST', 'elements/get-element-html', {
+                data: parameters
+            })
+                .then((response) => {
+                    var html = $(response.data.html);
+                    Craft.appendHeadHtml(response.data.headHtml);
                     this.selectUploadedFile(Craft.getElementInfo(html));
-                }
 
-                // Last file
-                if (this.uploader.isLastUpload()) {
-                    this.progressBar.hideProgressBar();
-                    this.$container.removeClass('uploading');
-                    this.$container.trigger('change');
-                }
-            });
+                    // Last file
+                    if (this.uploader.isLastUpload()) {
+                        this.progressBar.hideProgressBar();
+                        this.$container.removeClass('uploading');
+                        this.$container.trigger('change');
+                    }
+                })
+                .catch(({response}) => {
+                    alert(response.data.message);
+                });
 
             Craft.cp.runQueue();
         }

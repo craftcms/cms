@@ -54,21 +54,24 @@ class AssetIndexesController extends Controller
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
 
         if (empty($volumes)) {
-            return $this->asErrorJson(Craft::t('app', 'No volumes specified.'));
+            return $this->asFailure(Craft::t('app', 'No volumes specified.'));
         }
 
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages);
         $sessionData = $this->prepareSessionData($indexingSession);
 
-        $response = ['session' => $sessionData];
+        $data = ['session' => $sessionData];
+        $error = null;
 
         if ($indexingSession->totalEntries === 0) {
-            $response['stop'] = $indexingSession->id;
-            $response['error'] = Craft::t('app', 'Nothing to index.');
+            $data['stop'] = $indexingSession->id;
+            $error = Craft::t('app', 'Nothing to index.');
             Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
         }
 
-        return $this->asJson($response);
+        return $error ?
+            $this->asFailure($error, $data) :
+            $this->asSuccess(data: $data);
     }
 
     /**
@@ -83,7 +86,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);
@@ -92,7 +95,7 @@ class AssetIndexesController extends Controller
             Craft::$app->getAssetIndexer()->stopIndexingSession($session);
         }
 
-        return $this->asJson(['stop' => $sessionId]);
+        return $this->asSuccess(data: ['stop' => $sessionId]);
     }
 
     /**
@@ -106,7 +109,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $assetIndexer = Craft::$app->getAssetIndexer();
@@ -115,7 +118,7 @@ class AssetIndexesController extends Controller
         // Have to account for the fact that some people might be processing this in parallel
         // If the indexing session no longer exists - most likely a parallel user finished it
         if (!$indexingSession) {
-            return $this->asJson(['stop' => $sessionId]);
+            return $this->asSuccess(data: ['stop' => $sessionId]);
         }
 
         $skipDialog = false;
@@ -133,7 +136,7 @@ class AssetIndexesController extends Controller
                 // If nothing out of ordinary, just end it.
                 if (empty($indexingSession->skippedEntries) && empty($indexingSession->missingEntries)) {
                     $assetIndexer->stopIndexingSession($indexingSession);
-                    return $this->asJson(['stop' => $sessionId]);
+                    return $this->asSuccess(data: ['stop' => $sessionId]);
                 }
             }
         } else {
@@ -141,7 +144,7 @@ class AssetIndexesController extends Controller
         }
 
         $sessionData = $this->prepareSessionData($indexingSession);
-        return $this->asJson(['session' => $sessionData, 'skipDialog' => $skipDialog]);
+        return $this->asSuccess(data: ['session' => $sessionData, 'skipDialog' => $skipDialog]);
     }
 
     /**
@@ -156,21 +159,21 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $assetIndexer = Craft::$app->getAssetIndexer();
         $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
 
         if (!$indexingSession || !$indexingSession->actionRequired) {
-            return $this->asErrorJson(Craft::t('app', 'Cannot find the indexing session, or there’s nothing to review.'));
+            return $this->asFailure(Craft::t('app', 'Cannot find the indexing session, or there’s nothing to review.'));
         }
 
         $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
         $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
 
         $sessionData = $this->prepareSessionData($indexingSession);
-        return $this->asJson(['session' => $sessionData]);
+        return $this->asSuccess(data: ['session' => $sessionData]);
     }
 
     /**
@@ -184,7 +187,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asErrorJson(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
         }
 
         $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);
@@ -201,19 +204,19 @@ class AssetIndexesController extends Controller
         }
 
         if (!empty($deleteFiles)) {
-            Craft::$app->getImageTransforms()->deleteTransformIndexDataByAssetIds($deleteFiles);
             $assets = Asset::find()
                 ->status(null)
                 ->id($deleteFiles)
                 ->all();
 
             foreach ($assets as $asset) {
+                Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
                 $asset->keepFileOnDelete = true;
                 Craft::$app->getElements()->deleteElement($asset);
             }
         }
 
-        return $this->asJson(['stop' => $sessionId]);
+        return $this->asSuccess(data: ['stop' => $sessionId]);
     }
 
     /**

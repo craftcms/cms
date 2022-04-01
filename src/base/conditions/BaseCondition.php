@@ -40,9 +40,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public string $mainTag = 'form';
 
     /**
-     * @var string The ID of the condition builder
+     * @var string|null The ID of the condition builder
      */
-    public string $id;
+    public ?string $id = null;
 
     /**
      * @var string The root input name of the condition builder
@@ -60,9 +60,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public bool $forProjectConfig = false;
 
     /**
-     * @var string The “Add a rule” button label.
+     * @var string|null The “Add a rule” button label.
      */
-    public string $addRuleLabel;
+    public ?string $addRuleLabel = null;
 
     /**
      * @var Collection

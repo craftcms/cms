@@ -15,6 +15,7 @@ use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
@@ -54,19 +55,19 @@ class Revisions extends Component
     public const EVENT_AFTER_REVERT_TO_REVISION = 'afterRevertToRevision';
 
     /**
-     * Creates a new revision for the given element.
+     * Creates a new revision for the given element and returns its ID.
      *
-     * If the element appears to have not changed since its last revision, its last revision will be returned instead.
+     * If the element appears to have not changed since its last revision, its last revision’s ID will be returned instead.
      *
      * @param ElementInterface $canonical The element to create a revision for
      * @param int|null $creatorId The user ID that the revision should be attributed to
      * @param string|null $notes The revision notes
      * @param array $newAttributes any attributes to apply to the draft
      * @param bool $force Whether to force a new revision even if the element doesn't appear to have changed since the last revision
-     * @return ElementInterface The new revision
+     * @return int The revision ID
      * @throws Throwable
      */
-    public function createRevision(ElementInterface $canonical, ?int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
+    public function createRevision(ElementInterface $canonical, ?int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): int
     {
         // Make sure the source isn't a draft or revision
         if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
@@ -84,40 +85,30 @@ class Revisions extends Component
         $num = ArrayHelper::remove($newAttributes, 'revisionNum');
 
         if (!$force || !$num) {
-            // Find the source's last revision number, if it has one
-            $lastRevisionNum = $db->usePrimary(function() use ($canonical) {
+            $lastRevisionInfo = Craft::$app->getDb()->usePrimary(function() use ($canonical) {
                 return (new Query())
-                    ->select(['num'])
-                    ->from([Table::REVISIONS])
-                    ->where(['canonicalId' => $canonical->id])
-                    ->orderBy(['num' => SORT_DESC])
-                    ->limit(1)
-                    ->scalar();
+                    ->select(['e.id', 'r.num', 'e.dateCreated'])
+                    ->from(['e' => Table::ELEMENTS])
+                    ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[e.revisionId]]')
+                    ->where(['r.canonicalId' => $canonical->id])
+                    ->orderBy(['r.num' => SORT_DESC])
+                    ->one();
             });
 
-            if (!$force && $lastRevisionNum) {
-                // Get the revision, if it exists for the source's site
-                /** @var ElementInterface|RevisionBehavior|null $lastRevision */
-                $lastRevision = $db->usePrimary(function() use ($canonical, $lastRevisionNum) {
-                    return $canonical::find()
-                        ->revisionOf($canonical)
-                        ->siteId($canonical->siteId)
-                        ->status(null)
-                        ->andWhere(['revisions.num' => $lastRevisionNum])
-                        ->one();
-                });
-
-                // If the source hasn't been updated since the revision's creation date,
-                // there's no need to create a new one
-                if ($lastRevision && $canonical->dateUpdated->getTimestamp() === $lastRevision->dateCreated->getTimestamp()) {
-                    $mutex->release($lockKey);
-                    return $lastRevision;
-                }
+            if (
+                !$force &&
+                $lastRevisionInfo &&
+                DateTimeHelper::toDateTime($lastRevisionInfo['dateCreated'])->getTimestamp() === $canonical->dateUpdated->getTimestamp()
+            ) {
+                // The canonical element hasn't been updated since the last revision's creation date,
+                // so there's no need to create a new one
+                $mutex->release($lockKey);
+                return $lastRevisionInfo['id'];
             }
 
             // Get the next revision number for this element
-            if ($lastRevisionNum) {
-                $num = $lastRevisionNum + 1;
+            if ($lastRevisionInfo) {
+                $num = $lastRevisionInfo['num'] + 1;
             } else {
                 $num = 1;
             }
@@ -150,7 +141,7 @@ class Revisions extends Component
                 'creatorId' => $creatorId,
                 'num' => $num,
                 'notes' => $notes,
-            ], false);
+            ]);
 
             // Duplicate the element
             $newAttributes['canonicalId'] = $canonical->id;
@@ -197,7 +188,7 @@ class Revisions extends Component
             ]), 2049);
         }
 
-        return $revision;
+        return $revision->id;
     }
 
     /**

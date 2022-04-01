@@ -336,9 +336,9 @@ class Categories extends Component
                 $layout->id = $groupRecord->fieldLayoutId;
                 $layout->type = Category::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $groupRecord->fieldLayoutId = $layout->id;
-            } else if ($groupRecord->fieldLayoutId) {
+            } elseif ($groupRecord->fieldLayoutId) {
                 // Delete the field layout
                 Craft::$app->getFields()->deleteLayoutById($groupRecord->fieldLayoutId);
                 $groupRecord->fieldLayoutId = null;
@@ -359,6 +359,7 @@ class Categories extends Component
 
             if (!$isNewCategoryGroup) {
                 // Get the old category group site settings
+                /** @var CategoryGroup_SiteSettingsRecord[] $allOldSiteSettingsRecords */
                 $allOldSiteSettingsRecords = CategoryGroup_SiteSettingsRecord::find()
                     ->where(['groupId' => $groupRecord->id])
                     ->indexBy('siteId')
@@ -437,7 +438,7 @@ class Categories extends Component
                             'elementId' => $categoryIds,
                             'siteId' => $sitesNowWithoutUrls,
                         ]);
-                    } else if (!empty($sitesWithNewUriFormats)) {
+                    } elseif (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
                             App::maxPowerCaptain();
 
@@ -579,8 +580,8 @@ class Categories extends Component
         try {
             // Delete the categories
             $categories = Category::find()
-                ->status(null)
                 ->groupId($categoryGroupRecord->id)
+                ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
 
@@ -693,7 +694,7 @@ class Categories extends Component
      * @param array $criteria
      * @return Category|null
      */
-    public function getCategoryById(int $categoryId, $siteId = null, array $criteria = []): ?Category
+    public function getCategoryById(int $categoryId, mixed $siteId = null, array $criteria = []): ?Category
     {
         if (!$categoryId) {
             return null;
@@ -714,7 +715,6 @@ class Categories extends Component
             return null;
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, $criteria);
     }
 
@@ -782,6 +782,7 @@ class Categories extends Component
         $query = $withTrashed ? CategoryGroupRecord::findWithTrashed() : CategoryGroupRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var CategoryGroupRecord */
         return $query->one() ?? new CategoryGroupRecord();
     }
 }

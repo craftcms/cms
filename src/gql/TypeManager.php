@@ -56,7 +56,7 @@ class TypeManager extends Component
      * @param array $fields
      * @param string $typeName
      * @return array
-     * @deprecated in 4.0.0. Use [[craft\services\Gql::prepareFieldDefinition()]] instead.
+     * @deprecated in 4.0.0. Use [[craft\services\Gql::prepareFieldDefinitions()]] instead.
      */
     public static function prepareFieldDefinitions(array $fields, string $typeName): array
     {

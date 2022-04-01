@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use Closure;
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -79,6 +78,7 @@ use yii\validators\BooleanValidator;
 use yii\validators\NumberValidator;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
+use yii\web\Response;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
@@ -320,10 +320,10 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining additional buttons that should be shown at the top of the element’s edit page.
-     * @see getAddlButtons()
+     * @see getAdditionalButtons()
      * @since 4.0.0
      */
-    public const EVENT_DEFINE_ADDL_BUTTONS = 'defineAddlButtons';
+    public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
 
     /**
      * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
@@ -347,15 +347,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_METADATA = 'defineMetadata';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view the element’s edit page.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_VIEW,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -367,15 +367,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to save the element in its current state.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to save the element in its current state.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_SAVE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -387,15 +387,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to create drafts for the element.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to create drafts for the element.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_CREATE_DRAFTS,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -407,15 +407,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to duplicate the element.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to duplicate the element.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_DUPLICATE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -427,15 +427,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to delete the element.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_DELETE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -447,15 +447,15 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
 
     /**
-     * @event AuthorizeUserEvent The event that is triggered when determining whether a user is authorized to delete the element for its current site.
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete the element for its current site.
      *
-     * To authorize the user, set [[AuthorizeUserEvent::$authorized]] to `true`.
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
      *
      * ```php
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_AUTHORIZE_DELETE_FOR_SITE,
-     *     function(AuthorizeUserEvent $event) {
+     *     function(AuthorizationCheckEvent $event) {
      *         $event->authorized = true;
      *     }
      * );
@@ -751,7 +751,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function findOne($criteria = null): ?ElementInterface
+    public static function findOne(mixed $criteria = null): ?static
     {
         return static::findByCondition($criteria, true);
     }
@@ -759,7 +759,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function findAll($criteria = null): array
+    public static function findAll(mixed $criteria = null): array
     {
         return static::findByCondition($criteria, false);
     }
@@ -957,7 +957,7 @@ abstract class Element extends Component implements ElementInterface
                 } else {
                     unset($viewState['order']);
                 }
-            } else if ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
+            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
                 $elementQuery->orderBy($orderBy);
 
                 if ((!is_array($orderBy) || !isset($orderBy['score'])) && !empty($viewState['orderHistory'])) {
@@ -1008,13 +1008,9 @@ abstract class Element extends Component implements ElementInterface
     {
         /** @var ElementQuery $elementQuery */
         // Is this a custom field?
-        if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-            $fieldId = $matches[1];
-            $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-            if ($field) {
-                $field->modifyElementIndexQuery($elementQuery);
-            }
+        if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+            $fieldUid = $matches[1];
+            Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
         }
     }
 
@@ -1119,7 +1115,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         switch ($handle) {
             case 'descendants':
@@ -1197,9 +1193,8 @@ abstract class Element extends Component implements ElementInterface
 
         // Build the descendant condition & params
         $condition = ['or'];
-        $params = [];
 
-        foreach ($elementStructureData as $i => $elementStructureDatum) {
+        foreach ($elementStructureData as $elementStructureDatum) {
             $thisElementCondition = [
                 'and',
                 ['structureId' => $elementStructureDatum['structureId']],
@@ -1212,7 +1207,6 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $condition[] = $thisElementCondition;
-            $params[":sourceId$i"] = $elementStructureDatum['elementId'];
         }
 
         // Fetch the descendant data
@@ -1285,9 +1279,8 @@ abstract class Element extends Component implements ElementInterface
 
         // Build the ancestor condition & params
         $condition = ['or'];
-        $params = [];
 
-        foreach ($elementStructureData as $i => $elementStructureDatum) {
+        foreach ($elementStructureData as $elementStructureDatum) {
             $thisElementCondition = [
                 'and',
                 ['structureId' => $elementStructureDatum['structureId']],
@@ -1300,7 +1293,6 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $condition[] = $thisElementCondition;
-            $params[":sourceId$i"] = $elementStructureDatum['elementId'];
         }
 
         // Fetch the ancestor data
@@ -1394,7 +1386,7 @@ abstract class Element extends Component implements ElementInterface
         // Get the source element IDs
         $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
-        $map = (new Query)
+        $map = (new Query())
             ->select([
                 'source' => 'se.id',
                 'target' => 're.id',
@@ -1529,7 +1521,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         // Default to the same type
         return 'Element';
@@ -1539,7 +1531,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         // Default to the same type
         return 'saveElement';
@@ -1549,7 +1541,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         // Default to no scopes required
         return [];
@@ -1563,7 +1555,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $dir `asc` or `desc`
      * @return array|ExpressionInterface|false
      */
-    private static function _indexOrderBy(string $sourceKey, string $attribute, string $dir)
+    private static function _indexOrderBy(string $sourceKey, string $attribute, string $dir): ExpressionInterface|array|false
     {
         $dir = strcasecmp($dir, 'desc') === 0 ? SORT_DESC : SORT_ASC;
         $columns = self::_indexOrderByColumns($sourceKey, $attribute, $dir);
@@ -1583,7 +1575,7 @@ abstract class Element extends Component implements ElementInterface
             if ($i === 0) {
                 // The first column's sort direction is always user-defined
                 $result[$column] = $dir;
-            } else if (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
+            } elseif (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
                 $result[$matches[1]] = strcasecmp($matches[2], 'desc') ? SORT_ASC : SORT_DESC;
             } else {
                 $result[$column] = SORT_ASC;
@@ -1599,7 +1591,7 @@ abstract class Element extends Component implements ElementInterface
      * @param int $dir
      * @return bool|string|array|ExpressionInterface
      */
-    private static function _indexOrderByColumns(string $sourceKey, string $attribute, int $dir)
+    private static function _indexOrderByColumns(string $sourceKey, string $attribute, int $dir): ExpressionInterface|bool|array|string
     {
         if (!$attribute) {
             return false;
@@ -1618,7 +1610,7 @@ abstract class Element extends Component implements ElementInterface
                     }
                     return $sortOption['orderBy'];
                 }
-            } else if ($key === $attribute) {
+            } elseif ($key === $attribute) {
                 return $key;
             }
         }
@@ -1634,10 +1626,10 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @var string|null Revision creator ID to be saved
+     * @var int|null Revision creator ID to be saved
      * @see setRevisionCreatorId()
      */
-    protected ?string $revisionCreatorId = null;
+    protected ?int $revisionCreatorId = null;
 
     /**
      * @var string|null Revision notes to be saved
@@ -1655,16 +1647,16 @@ abstract class Element extends Component implements ElementInterface
     private ?int $_canonicalId = null;
 
     /**
-     * @var static|false
+     * @var ElementInterface|false|null
      * @see getCanonical()
      */
-    private $_canonical;
+    private ElementInterface|false|null $_canonical = null;
 
     /**
-     * @var static|null
+     * @var ElementInterface|null
      * @see getCanonical()
      */
-    private $_canonicalAnySite;
+    private ElementInterface|null $_canonicalAnySite = null;
 
     /**
      * @var string|null
@@ -1745,28 +1737,28 @@ abstract class Element extends Component implements ElementInterface
     private array $_dirtyFields = [];
 
     /**
-     * @var static|false
+     * @var ElementInterface|false
      */
-    private $_nextElement;
+    private ElementInterface|false $_nextElement;
 
     /**
-     * @var static|false
+     * @var ElementInterface|false
      */
-    private $_prevElement;
+    private ElementInterface|false $_prevElement;
 
     /**
      * @var int|false|null Parent ID
      * @see getParentId()
      * @see setParentId()
      */
-    private $_parentId;
+    private int|false|null $_parentId = null;
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getParent()
      * @see setParent()
      */
-    private $_parent;
+    private ElementInterface|false|null $_parent = null;
 
     /**
      * @var bool|null
@@ -1775,16 +1767,16 @@ abstract class Element extends Component implements ElementInterface
     private ?bool $_hasNewParent = null;
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getPrevSibling()
      */
-    private $_prevSibling;
+    private ElementInterface|false|null $_prevSibling = null;
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getNextSibling()
      */
-    private $_nextSibling;
+    private ElementInterface|false|null $_nextSibling = null;
 
     /**
      * @var Collection[]
@@ -1801,17 +1793,17 @@ abstract class Element extends Component implements ElementInterface
     private array $_eagerLoadedElementCounts = [];
 
     /**
-     * @var static|false
+     * @var ElementInterface|false|null
      * @see getCurrentRevision()
      */
-    private $_currentRevision;
+    private ElementInterface|false|null $_currentRevision = null;
 
     /**
      * @var bool|bool[]
      * @see getEnabledForSite()
      * @see setEnabledForSite()
      */
-    private $_enabledForSite = true;
+    private array|bool $_enabledForSite = true;
 
     /**
      * @var string|null
@@ -1856,6 +1848,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the string representation of the element.
      *
      * @return string
+     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {
@@ -1941,7 +1934,7 @@ abstract class Element extends Component implements ElementInterface
 
         try {
             parent::__set($name, $value);
-        } catch (InvalidCallException | UnknownPropertyException $e) {
+        } catch (InvalidCallException|UnknownPropertyException $e) {
             // Is this is a field?
             if ($this->fieldByHandle($name) !== null) {
                 $this->setFieldValue($name, $value);
@@ -1966,14 +1959,13 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['customFields'] = [
-            'class' => CustomFieldBehavior::class,
-            'canSetProperties' => false,
+        return [
+            'customFields' => [
+                'class' => CustomFieldBehavior::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**
@@ -1992,6 +1984,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $this->_initialized = true;
+
+        // Stop allowing setting custom field values directly on the behavior
+        /** @var CustomFieldBehavior $behavior */
+        $behavior = $this->getBehavior('customFields');
+        $behavior->canSetProperties = false;
     }
 
     /**
@@ -2149,7 +2146,7 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasUris()) {
             try {
                 $language = $this->getSite()->language;
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $language = null;
             }
 
@@ -2211,16 +2208,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'dateLastMerged';
-        return $attributes;
-    }
-
-    /**
      * Normalizes a field’s validation rule.
      *
      * @param string $attribute
@@ -2230,7 +2217,7 @@ abstract class Element extends Component implements ElementInterface
      * @return Validator
      * @throws InvalidConfigException
      */
-    private function _normalizeFieldValidator(string $attribute, $rule, FieldInterface $field, callable $isEmpty): Validator
+    private function _normalizeFieldValidator(string $attribute, mixed $rule, FieldInterface $field, callable $isEmpty): Validator
     {
         if ($rule instanceof Validator) {
             return $rule;
@@ -2255,7 +2242,7 @@ abstract class Element extends Component implements ElementInterface
             array_unshift($rule, $attribute);
         }
 
-        if ($rule[1] instanceof Closure || $field->hasMethod($rule[1])) {
+        if (is_callable($rule[1]) || $field->hasMethod($rule[1])) {
             // InlineValidator assumes that the closure is on the model being validated
             // so it won’t pass a reference to the element
             $rule['params'] = [
@@ -2293,7 +2280,7 @@ abstract class Element extends Component implements ElementInterface
         /** @var array|null $params */
         [$field, $method, $fieldParams] = $params;
 
-        if (is_string($method)) {
+        if (is_string($method) && !is_callable($method)) {
             $method = [$field, $method];
         }
 
@@ -2321,7 +2308,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $columnType
      * @param mixed $value
      */
-    private function _validateCustomFieldContentSizeInternal(string $attribute, FieldInterface $field, string $columnType, $value): void
+    private function _validateCustomFieldContentSizeInternal(string $attribute, FieldInterface $field, string $columnType, mixed $value): void
     {
         $simpleColumnType = Db::getSimplifiedColumnType($columnType);
 
@@ -2487,11 +2474,11 @@ abstract class Element extends Component implements ElementInterface
         // Just fetch that one value ourselves
         if (!isset($this->_canonicalUid)) {
             $this->_canonicalUid = static::find()
-                ->select(['elements.uid'])
                 ->id($this->_canonicalId)
                 ->site('*')
                 ->status(null)
                 ->ignorePlaceholders()
+                ->select(['elements.uid'])
                 ->scalar();
         }
 
@@ -2537,7 +2524,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function mergeCanonicalChanges(): void
     {
-        if (($canonical = $this->getCanonical()) === null) {
+        if (($canonical = $this->getCanonical()) === $this) {
             return;
         }
 
@@ -2632,7 +2619,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getRoute()
+    public function getRoute(): mixed
     {
         // Give plugins a chance to set this
         if ($this->hasEventHandlers(self::EVENT_SET_ROUTE)) {
@@ -2653,7 +2640,7 @@ abstract class Element extends Component implements ElementInterface
      * @return string|array|null The route that the request should use, or null if no special action should be taken
      * @see getRoute()
      */
-    protected function route()
+    protected function route(): array|string|null
     {
         return null;
     }
@@ -2806,9 +2793,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getCpEditRoute(): ?string
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
-
     }
 
     /**
@@ -2830,7 +2816,7 @@ abstract class Element extends Component implements ElementInterface
 
         if ($this->getIsDraft() && !$this->isProvisionalDraft) {
             $params['draftId'] = $this->draftId;
-        } else if ($this->getIsRevision()) {
+        } elseif ($this->getIsRevision()) {
             $params['revisionId'] = $this->revisionId;
         }
 
@@ -2859,19 +2845,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function getAdditionalButtons(): string
     {
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAddlButtons(): string
-    {
-        // Fire a defineAddlButtons event
+        // Fire a defineAdditionalButtons event
         $event = new DefineHtmlEvent();
-        $this->trigger(self::EVENT_DEFINE_ADDL_BUTTONS, $event);
+        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
         return $event->html;
     }
 
@@ -2890,7 +2868,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
                 $previewTargets = $event->previewTargets;
             }
-        } else if ($url = $this->getUrl()) {
+        } elseif ($url = $this->getUrl()) {
             $previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
@@ -2995,7 +2973,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setEnabledForSite($enabledForSite): void
+    public function setEnabledForSite(array|bool $enabledForSite): void
     {
         if (is_array($enabledForSite)) {
             foreach ($enabledForSite as &$value) {
@@ -3027,7 +3005,7 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getLocalized()
+    public function getLocalized(): ElementQueryInterface|Collection
     {
         // Eager-loaded?
         if (($localized = $this->getEagerLoadedElements('localized')) !== null) {
@@ -3104,8 +3082,7 @@ abstract class Element extends Component implements ElementInterface
             return $this->_parentId ?: null;
         }
 
-        $parent = $this->getParent();
-        return $parent ? $parent->id : null;
+        return $this->getParent()?->id;
     }
 
     /**
@@ -3114,7 +3091,7 @@ abstract class Element extends Component implements ElementInterface
      * @param int|int[]|string|false|null $parentId
      * @since 4.0.0
      */
-    public function setParentId($parentId): void
+    public function setParentId(mixed $parentId): void
     {
         if (is_array($parentId)) {
             $parentId = reset($parentId);
@@ -3144,8 +3121,8 @@ abstract class Element extends Component implements ElementInterface
             } else {
                 $ancestors = $this->getAncestors(1);
                 // Eager-loaded?
-                if (is_array($ancestors)) {
-                    $this->_parent = reset($ancestors);
+                if ($ancestors instanceof Collection) {
+                    $this->_parent = $ancestors->first();
                 } else {
                     $this->_parent = $ancestors
                             ->status(null)
@@ -3255,16 +3232,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAncestors(?int $dist = null)
+    public function getAncestors(?int $dist = null): ElementQueryInterface|Collection
     {
         // Eager-loaded?
         if (($ancestors = $this->getEagerLoadedElements('ancestors')) !== null) {
             if ($dist === null) {
                 return $ancestors;
             }
-            return ArrayHelper::where($ancestors, function(self $element) use ($dist) {
-                return $element->level >= $this->level - $dist;
-            }, true, true, false);
+            return $ancestors->filter(fn(self $element) => $element->level >= $this->level - $dist);
         }
 
         return static::find()
@@ -3277,16 +3252,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getDescendants(?int $dist = null)
+    public function getDescendants(?int $dist = null): ElementQueryInterface|Collection
     {
         // Eager-loaded?
         if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
             if ($dist === null) {
                 return $descendants;
             }
-            return ArrayHelper::where($descendants, function(self $element) use ($dist) {
-                return $element->level <= $this->level + $dist;
-            }, true, true, false);
+            return $descendants->filter(fn(self $element) => $element->level <= $this->level + $dist);
         }
 
         return static::find()
@@ -3299,7 +3272,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getChildren()
+    public function getChildren(): ElementQueryInterface|Collection
     {
         // Eager-loaded?
         if (($children = $this->getEagerLoadedElements('children')) !== null) {
@@ -3312,7 +3285,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSiblings()
+    public function getSiblings(): ElementQueryInterface|Collection
     {
         return static::find()
             ->structureId($this->structureId)
@@ -3327,7 +3300,7 @@ abstract class Element extends Component implements ElementInterface
     {
         if (!isset($this->_prevSibling)) {
             /** @var ElementQuery $query */
-            $query = $this->_prevSibling = static::find();
+            $query = static::find();
             $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
@@ -3349,7 +3322,7 @@ abstract class Element extends Component implements ElementInterface
     {
         if (!isset($this->_nextSibling)) {
             /** @var ElementQuery $query */
-            $query = $this->_nextSibling = static::find();
+            $query = static::find();
             $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
@@ -3370,8 +3343,8 @@ abstract class Element extends Component implements ElementInterface
     public function getHasDescendants(): bool
     {
         $descendants = $this->getDescendants();
-        if (is_array($descendants)) {
-            return (bool)$descendants;
+        if ($descendants instanceof Collection) {
+            return $descendants->isNotEmpty();
         }
         return $descendants->exists();
     }
@@ -3382,8 +3355,8 @@ abstract class Element extends Component implements ElementInterface
     public function getTotalDescendants(): int
     {
         $descendants = $this->getDescendants();
-        if (is_array($descendants)) {
-            return count($descendants);
+        if ($descendants instanceof Collection) {
+            return $descendants->count();
         }
         return $descendants->count();
     }
@@ -3469,7 +3442,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    function getAttributeStatus(string $attribute): ?array
+    public function getAttributeStatus(string $attribute): ?array
     {
         if ($this->isAttributeModified($attribute)) {
             return [
@@ -3674,7 +3647,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldValue(string $fieldHandle)
+    public function getFieldValue(string $fieldHandle): mixed
     {
         // Was this field’s value eager-loaded?
         if ($this->hasEagerLoadedElements($fieldHandle)) {
@@ -3690,7 +3663,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setFieldValue(string $fieldHandle, $value): void
+    public function setFieldValue(string $fieldHandle, mixed $value): void
     {
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $value;
@@ -3741,7 +3714,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _outdatedFields(): array
     {
-        if (!static::trackChanges() || $this->getIsCanonical()) {
+        if (!static::trackChanges() || !$this->getIsDraft() || $this->getIsCanonical()) {
             return [];
         }
 
@@ -3860,7 +3833,7 @@ abstract class Element extends Component implements ElementInterface
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
-            } else if (
+            } elseif (
                 isset($this->_fieldParamNamePrefix) &&
                 $this->_fieldParamNamePrefix !== '' &&
                 UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
@@ -3955,12 +3928,14 @@ abstract class Element extends Component implements ElementInterface
             case 'draftCreator':
                 if ($behavior = $this->getBehavior('draft')) {
                     /** @var DraftBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
                 if ($behavior = $this->getBehavior('revision')) {
                     /** @var RevisionBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
@@ -4212,9 +4187,9 @@ abstract class Element extends Component implements ElementInterface
 
             default:
                 // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+                if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+                    $fieldUid = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
 
                     if ($field) {
                         if ($field instanceof PreviewableFieldInterface) {
@@ -4225,7 +4200,7 @@ abstract class Element extends Component implements ElementInterface
                                 // The field might not actually belong to this element
                                 try {
                                     $value = $this->getFieldValue($field->handle);
-                                } catch (InvalidFieldException $e) {
+                                } catch (InvalidFieldException) {
                                     return '';
                                 }
                             }
@@ -4264,7 +4239,11 @@ abstract class Element extends Component implements ElementInterface
 
         if (!$static && static::hasStatuses()) {
             // Is this a multi-site element?
-            $components[] = '<!-- STATUS -->';
+            $components[] = $this->statusFieldHtml();
+        }
+
+        if ($this->hasRevisions() && !$this->getIsRevision()) {
+            $components[] = $this->notesFieldHtml();
         }
 
         // Fire a defineSidebarHtml event
@@ -4339,6 +4318,79 @@ JS,
     }
 
     /**
+     * Returns the status field HTML for the sidebar.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    protected function statusFieldHtml(): string
+    {
+        $supportedSites = ElementHelper::supportedSitesForElement($this, true);
+        $allEditableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
+        $propSiteIds = array_column($propSites, 'siteId');
+        $propEditableSiteIds = array_intersect($propSiteIds, $allEditableSiteIds);
+        $addlEditableSites = array_values(array_filter($supportedSites, fn($site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds)));
+
+        if (count($supportedSites) > 1) {
+            $expandStatusBtn = (count($propEditableSiteIds) > 1 || $addlEditableSites)
+                ? Html::button('', [
+                    'class' => ['expand-status-btn', 'btn'],
+                    'data' => [
+                        'icon' => 'ellipsis',
+                    ],
+                ])
+                : '';
+            $statusField = Cp::lightswitchFieldHtml([
+                'fieldClass' => "enabled-for-site-$this->siteId-field",
+                'label' => Craft::t('site', $this->getSite()->getName()) .
+                    $expandStatusBtn,
+                'name' => "enabledForSite[$this->siteId]",
+                'on' => $this->enabled && $this->getEnabledForSite(),
+                'status' => $this->getAttributeStatus('enabled'),
+            ]);
+        } else {
+            $statusField = Cp::lightswitchFieldHtml([
+                'id' => 'enabled',
+                'label' => Craft::t('app', 'Enabled'),
+                'name' => 'enabled',
+                'on' => $this->enabled,
+                'disabled' => $this->getIsRevision(),
+                'status' => $this->getAttributeStatus('enabled'),
+            ]);
+        }
+
+        return Html::beginTag('fieldset') .
+            Html::tag('legend', Craft::t('app', 'Status'), ['class' => 'h6']) .
+            Html::tag('div', $statusField, ['class' => 'meta']) .
+            Html::endTag('fieldset');
+    }
+
+    /**
+     * Returns the notes field HTML for the sidebar.
+     *
+     * @return string
+     * @since 4.0.0
+     */
+    protected function notesFieldHtml(): string
+    {
+        /** @var static|DraftBehavior $this */
+        return Cp::textareaFieldHtml([
+            'label' => Craft::t('app', 'Notes about your changes'),
+            'labelClass' => 'h6',
+            'class' => ['nicetext', 'notes'],
+            'name' => 'notes',
+            'value' => $this->getIsCanonical() || $this->isProvisionalDraft ? $this->revisionNotes : $this->draftNotes,
+            'rows' => 1,
+            'inputAttributes' => [
+                'aria' => [
+                    'label' => Craft::t('app', 'Notes about your changes'),
+                ],
+            ],
+        ]);
+    }
+
+    /**
      * Returns whether the element has a field layout with at least one tab.
      *
      * @return bool Returns whether the element has a field layout with at least one tab.
@@ -4391,7 +4443,7 @@ JS,
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {
                     $revision = $this;
-                } else if ($this->getIsCanonical() || $this->isProvisionalDraft) {
+                } elseif ($this->getIsCanonical() || $this->isProvisionalDraft) {
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }
@@ -4618,9 +4670,9 @@ JS,
      *
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param bool $one Whether this method is called by [[findOne()]] or [[findAll()]]
-     * @return self|self[]|null
+     * @return static|static[]|null
      */
-    protected static function findByCondition($criteria, bool $one)
+    protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {
         $query = static::find();
 
@@ -4656,7 +4708,7 @@ JS,
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = $this->getFieldContext();
         $fieldLayout = $this->getFieldLayout();
-        $this->_fieldsByHandle[$handle] = $fieldLayout ? $fieldLayout->getFieldByHandle($handle) : null;
+        $this->_fieldsByHandle[$handle] = $fieldLayout?->getFieldByHandle($handle);
         $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];
@@ -4712,7 +4764,7 @@ JS,
      * @param int $dir
      * @return ElementInterface|null
      */
-    private function _getRelativeElement($criteria, int $dir): ?ElementInterface
+    private function _getRelativeElement(mixed $criteria, int $dir): ?ElementInterface
     {
         if (!isset($this->id)) {
             return null;

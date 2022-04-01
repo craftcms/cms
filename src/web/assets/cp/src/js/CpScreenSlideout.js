@@ -208,7 +208,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
 
     updateHeaderVisibility: function() {
         // Should the header be shown regardless of viewport size?
-        const forceShow = this.hasTabs || this.hasCpLink || this.showingLoadSpinner;
+        const forceShow = this.settings.showHeader || this.hasTabs || this.hasCpLink || this.showingLoadSpinner;
 
         if (forceShow || this.hasSidebar) {
             this.$header.removeClass('hidden');
@@ -441,8 +441,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
                     'X-Craft-Namespace': this.namespace,
                 },
             })
-            .then(this.handleSubmitResponse)
-            .catch(this.handleSubmitError)
+            .then(response => {
+                this.handleSubmitResponse(response);
+            })
+            .catch(() => {
+                this.handleSubmitError();
+            })
             .finally(() => {
                 this.hideSubmitSpinner();
             });
@@ -523,6 +527,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
     defaults: {
         params: {},
         requestOptions: {},
+        showHeader: null,
         closeOnSubmit: true,
     },
 });

@@ -34,7 +34,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     }
 
     /**
-     * @var string
+     * @var class-string<ElementInterface>
      * @since 3.0.30
      */
     protected string $elementType;

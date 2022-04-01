@@ -45,7 +45,7 @@ class AssetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|string|null The volume ID(s) that the resulting assets must be in.
+     * @var mixed The volume ID(s) that the resulting assets must be in.
      * ---
      * ```php
      * // fetch assets in the Logos volume
@@ -62,13 +62,13 @@ class AssetQuery extends ElementQuery
      * @used-by volume()
      * @used-by volumeId()
      */
-    public $volumeId;
+    public mixed $volumeId = null;
 
     /**
-     * @var int|int[]|null The asset folder ID(s) that the resulting assets must be in.
+     * @var mixed The asset folder ID(s) that the resulting assets must be in.
      * @used-by folderId()
      */
-    public $folderId;
+    public mixed $folderId = null;
 
     /**
      * @var int|null The user ID that the resulting assets must have been uploaded by.
@@ -78,13 +78,13 @@ class AssetQuery extends ElementQuery
     public ?int $uploaderId = null;
 
     /**
-     * @var string|string[]|null The filename(s) that the resulting assets must have.
+     * @var mixed The filename(s) that the resulting assets must have.
      * @used-by filename()
      */
-    public $filename;
+    public mixed $filename = null;
 
     /**
-     * @var string|string[]|null The file kind(s) that the resulting assets must be.
+     * @var mixed The file kind(s) that the resulting assets must be.
      *
      * Supported file kinds:
      * - access
@@ -123,7 +123,7 @@ class AssetQuery extends ElementQuery
      * ```
      * @used-by kind()
      */
-    public $kind;
+    public mixed $kind = null;
 
     /**
      * @var bool|null Whether the query should filter assets depending on whether they have alternative text.
@@ -151,7 +151,7 @@ class AssetQuery extends ElementQuery
      * ```
      * @used-by width()
      */
-    public $width;
+    public mixed $width = null;
 
     /**
      * @var mixed The height (in pixels) that the resulting assets must have.
@@ -172,19 +172,19 @@ class AssetQuery extends ElementQuery
      * ```
      * @used-by height()
      */
-    public $height;
+    public mixed $height = null;
 
     /**
      * @var mixed The size (in bytes) that the resulting assets must have.
      * @used-by size()
      */
-    public $size;
+    public mixed $size = null;
 
     /**
      * @var mixed The Date Modified that the resulting assets must have.
      * @used-by dateModified()
      */
-    public $dateModified;
+    public mixed $dateModified = null;
 
     /**
      * @var bool Whether the query should search the subfolders of [[folderId]].
@@ -193,7 +193,7 @@ class AssetQuery extends ElementQuery
     public bool $includeSubfolders = false;
 
     /**
-     * @var string|array|null The asset transform indexes that should be eager-loaded, if they exist
+     * @var mixed The asset transform indexes that should be eager-loaded, if they exist
      * ---
      * ```php{4}
      * // fetch images with their 'thumb' transforms preloaded
@@ -211,7 +211,7 @@ class AssetQuery extends ElementQuery
      * ```
      * @used-by withTransforms()
      */
-    public $withTransforms;
+    public mixed $withTransforms = null;
 
     /**
      * @inheritdoc
@@ -254,15 +254,15 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|Volume|null $value The property value
-     * @return self self reference
+     * @param mixed $value The property value
+     * @return static self reference
      * @uses $volumeId
      */
-    public function volume($value): self
+    public function volume(mixed $value): static
     {
         if ($value instanceof Volume) {
             $this->volumeId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])
@@ -305,11 +305,11 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|string|null $value The property value
-     * @return self self reference
+     * @param mixed $value The property value
+     * @return static self reference
      * @uses $volumeId
      */
-    public function volumeId($value): self
+    public function volumeId(mixed $value): static
     {
         $this->volumeId = $value;
         return $this;
@@ -349,11 +349,11 @@ class AssetQuery extends ElementQuery
      * This can be combined with [[includeSubfolders()]] if you want to include assets in all the subfolders of a certain folder.
      * :::
      *
-     * @param int|int[]|null $value The property value
-     * @return self self reference
+     * @param mixed $value The property value
+     * @return static self reference
      * @uses $folderId
      */
-    public function folderId($value): self
+    public function folderId(mixed $value): static
     {
         $this->folderId = $value;
         return $this;
@@ -386,15 +386,15 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param int|User|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $uploaderId
      * @since 3.4.0
      */
-    public function uploader($value): self
+    public function uploader(int|User|null $value): static
     {
         if ($value instanceof User) {
             $this->uploaderId = $value->id;
-        } else if (is_numeric($value)) {
+        } elseif (is_numeric($value)) {
             $this->uploaderId = $value;
         } else {
             throw new InvalidArgumentException('Invalid uploader value');
@@ -433,11 +433,11 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
-     * @return self self reference
+     * @param mixed $value The property value
+     * @return static self reference
      * @uses $filename
      */
-    public function filename($value): self
+    public function filename(mixed $value): static
     {
         $this->filename = $value;
         return $this;
@@ -492,11 +492,11 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
-     * @return self self reference
+     * @param mixed $value The property value
+     * @return static self reference
      * @uses $kind
      */
-    public function kind($value): self
+    public function kind(mixed $value): static
     {
         $this->kind = $value;
         return $this;
@@ -506,10 +506,10 @@ class AssetQuery extends ElementQuery
      * Narrows the query results based on whether the assets have alternative text.
      *
      * @param bool|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $hasAlt
      */
-    public function hasAlt(?bool $value = true): self
+    public function hasAlt(?bool $value = true): static
     {
         $this->hasAlt = $value;
         return $this;
@@ -545,10 +545,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $width
      */
-    public function width($value): self
+    public function width(mixed $value): static
     {
         $this->width = $value;
         return $this;
@@ -584,10 +584,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $height
      */
-    public function height($value): self
+    public function height(mixed $value): static
     {
         $this->height = $value;
         return $this;
@@ -621,10 +621,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $size
      */
-    public function size($value): self
+    public function size(mixed $value): static
     {
         $this->size = $value;
         return $this;
@@ -662,10 +662,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $dateModified
      */
-    public function dateModified($value): self
+    public function dateModified(mixed $value): static
     {
         $this->dateModified = $value;
         return $this;
@@ -699,10 +699,10 @@ class AssetQuery extends ElementQuery
      * :::
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $includeSubfolders
      */
-    public function includeSubfolders(bool $value = true): self
+    public function includeSubfolders(bool $value = true): static
     {
         $this->includeSubfolders = $value;
         return $this;
@@ -752,10 +752,10 @@ class AssetQuery extends ElementQuery
      * ```
      *
      * @param string|array|null $value The transforms to include.
-     * @return self The query object itself
+     * @return static The query object itself
      * @uses $withTransforms
      */
-    public function withTransforms(?array $value = null): self
+    public function withTransforms(string|array|null $value = null): static
     {
         $this->withTransforms = $value;
         return $this;
@@ -766,6 +766,7 @@ class AssetQuery extends ElementQuery
      */
     public function afterPopulate(array $elements): array
     {
+        /** @var Asset[] $elements */
         $elements = parent::afterPopulate($elements);
 
         // Eager-load transforms?
@@ -886,9 +887,9 @@ class AssetQuery extends ElementQuery
 
         if (empty($this->volumeId)) {
             $this->volumeId = is_array($this->volumeId) ? [] : null;
-        } else if (is_numeric($this->volumeId)) {
+        } elseif (is_numeric($this->volumeId)) {
             $this->volumeId = [$this->volumeId];
-        } else if (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
+        } elseif (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])

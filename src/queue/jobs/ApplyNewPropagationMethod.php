@@ -31,9 +31,9 @@ use craft\services\Structures;
 class ApplyNewPropagationMethod extends BaseJob
 {
     /**
-     * @var string|ElementInterface The element type to use
+     * @var class-string<ElementInterface> The element type to use
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var array|null The element criteria that determines which elements the
@@ -46,14 +46,16 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     public function execute($queue): void
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->site('*')
+            ->preferSites([Craft::$app->getSites()->getPrimarySite()->id])
             ->unique()
             ->status(null)
             ->drafts(null)
-            ->provisionalDrafts(null);
+            ->provisionalDrafts(null)
+            ->revisions(null);
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
@@ -101,7 +103,7 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->status(null)
                     ->drafts(null)
                     ->provisionalDrafts(null)
-                    ->orderBy(null)
+                    ->orderBy([])
                     ->indexBy('siteId')
                     ->all();
 
@@ -118,12 +120,18 @@ class ApplyNewPropagationMethod extends BaseJob
 
                 // Duplicate those elements so their content can live on
                 while (!empty($otherSiteElements)) {
+                    /** @var ElementInterface $otherSiteElement */
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
                         $newElement = $elementsService->duplicateElement($otherSiteElement, [], false);
                     } catch (UnsupportedSiteException $e) {
                         // Just log it and move along
-                        Craft::warning("Unable to duplicate “{$otherSiteElement}” to site $otherSiteElement->siteId: " . $e->getMessage());
+                        Craft::warning(sprintf(
+                            "Unable to duplicate “%s” to site %d: %s",
+                            get_class($otherSiteElement),
+                            $otherSiteElement->siteId,
+                            $e->getMessage()
+                        ));
                         Craft::$app->getErrorHandler()->logException($e);
                         continue;
                     }
@@ -141,14 +149,14 @@ class ApplyNewPropagationMethod extends BaseJob
                         } else {
                             // Append the clone to the source's parent
                             $parentId = $elementType::find()
+                                ->site('*')
                                 ->ancestorOf($element->id)
                                 ->ancestorDist(1)
-                                ->select(['elements.id'])
-                                ->site('*')
                                 ->unique()
                                 ->status(null)
                                 ->drafts(null)
                                 ->provisionalDrafts(null)
+                                ->select(['elements.id'])
                                 ->scalar();
 
                             if ($parentId !== false) {

@@ -1,22 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\mockclasses\elements;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
 
 /**
- * MockElementQuery is used to mimic element query and help mocking element query results.
+ * MockElementQuery is used to mimic element queries and mock their results
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.5
+ * @since 3.5
  */
 class MockElementQuery extends ElementQuery
 {
@@ -27,29 +28,30 @@ class MockElementQuery extends ElementQuery
      *
      * @var array
      */
-    protected $returnValues = [];
+    protected array $returnValues = [];
 
     /**
      * The element query properties
      *
      * @var array
      */
-    protected $properties = [];
+    protected array $properties = [];
 
     /**
      * MockElementQuery constructor.
      */
     public function __construct()
     {
-        parent::__construct('MockElement', []);
+        parent::__construct(ExampleElement::class, []);
     }
 
     /**
      * Generate a more specific query class for the provided element type class.
      *
-     * @param $elementClass
+     * @param class-string<ElementInterface> $elementClass
+     * @return ElementQuery
      */
-    public static function generateSpecificQueryClass($elementClass): ElementQuery
+    public static function generateSpecificQueryClass(string $elementClass): ElementQuery
     {
         $parts = explode('\\', $elementClass);
 
@@ -67,7 +69,7 @@ class MockElementQuery extends ElementQuery
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $prefix . '.php';
         file_put_contents($tempPath, $classData);
         include($tempPath);
-        $instance = new $className;
+        $instance = new $className();
         unlink($tempPath);
 
         return $instance;
@@ -88,8 +90,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Setter for mock query arguments.
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
      */
     public function __set($name, $value)
     {
@@ -99,7 +101,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Check if a property has been set already.
      *
-     * @param $name
+     * @param string $name
      * @return bool
      */
     public function __isset($name): bool
@@ -110,7 +112,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Getter for mock query arguments.
      *
-     * @param $name
+     * @param string $name
+     * @return mixed
      */
     public function __get($name)
     {
@@ -120,19 +123,20 @@ class MockElementQuery extends ElementQuery
     /**
      * Mock setting query arguments via a method call.
      *
-     * @param $method
-     * @param $arguments
+     * @param string $name
+     * @param array $params
      * @return self
      */
-    public function __call($method, $arguments): self
+    public function __call($name, $params): self
     {
-        $this->properties[$method] = reset($arguments);
+        $this->properties[$name] = reset($params);
         return $this;
     }
 
     /**
      * Return all the return values.
      *
+     * @param mixed $db
      * @return array
      */
     public function all($db = null): array
@@ -141,11 +145,9 @@ class MockElementQuery extends ElementQuery
     }
 
     /**
-     * Return a return value.
-     *
-     * @return array|ElementInterface|null
+     * @inheritdoc
      */
-    public function one($db = null)
+    public function one($db = null): mixed
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

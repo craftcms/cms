@@ -37,7 +37,7 @@ trait MutexTrait
     /**
      * Initializes the component.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

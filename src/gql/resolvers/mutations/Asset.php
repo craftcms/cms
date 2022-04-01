@@ -39,14 +39,14 @@ class Asset extends ElementMutationResolver
     /**
      * Save an asset using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return AssetElement
      * @throws Throwable if reasons.
      */
-    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): AssetElement
+    public function saveAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): AssetElement
     {
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
@@ -86,7 +86,6 @@ class Asset extends ElementMutationResolver
             ]);
         }
 
-        /** @var AssetElement $asset */
         if (empty($newFolderId)) {
             if (!$canIdentify) {
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
@@ -104,25 +103,24 @@ class Asset extends ElementMutationResolver
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
         $asset = $this->saveElement($asset);
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $elementService->getElementById($asset->id, AssetElement::class);
     }
 
     /**
      * Delete an asset identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @throws Throwable if reasons.
      */
-    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo): void
+    public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $assetId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        /** @var AssetElement $asset */
+        /** @var AssetElement|null $asset */
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
@@ -173,7 +171,6 @@ class Asset extends ElementMutationResolver
         $filename = null;
 
         if (!empty($fileInformation['fileData'])) {
-
             $dataString = $fileInformation['fileData'];
             $fileData = null;
 
@@ -189,7 +186,7 @@ class Asset extends ElementMutationResolver
                     if (isset($matches['type'])) {
                         try {
                             $extension = FileHelper::getExtensionByMimeType($matches['type']);
-                        } catch (InvalidArgumentException $e) {
+                        } catch (InvalidArgumentException) {
                         }
                     }
                     if (!$extension) {
@@ -206,7 +203,7 @@ class Asset extends ElementMutationResolver
             } else {
                 throw new UserError('Invalid file data provided');
             }
-        } else if (!empty($fileInformation['url'])) {
+        } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
             if (empty($fileInformation['filename'])) {
@@ -242,5 +239,4 @@ class Asset extends ElementMutationResolver
     {
         return Craft::createGuzzleClient();
     }
-
 }

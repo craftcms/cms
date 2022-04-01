@@ -27,6 +27,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 
         this.$configInput = this.$container.children('input[data-config-input]');
         this._config = JSON.parse(this.$configInput.val());
+        if (!this._config.tabs) {
+            this._config.tabs = [];
+        }
 
         let $workspace = this.$container.children('.fld-workspace');
         this.$tabContainer = $workspace.children('.fld-tabs');
@@ -386,7 +389,11 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     },
 
     get config() {
-        return this.designer.config.tabs.find(c => c.uid === this.uid) || {};
+        const config = this.designer.config.tabs.find(c => c.uid === this.uid) || {};
+        if (!config.elements) {
+            config.elements = [];
+        }
+        return config;
     },
 
     set config(config) {

@@ -92,14 +92,9 @@ class Duplicate extends ElementAction
                 continue;
             }
 
-            $newAttributes = [];
-            if ($element::hasTitles() && (!$element->getIsDraft() || $element->getIsUnpublishedDraft())) {
-                $newAttributes['title'] = Craft::t('app', '{title} copy', ['title' => $element->title]);
-            }
-
             try {
-                $duplicate = $elementsService->duplicateElement($element, $newAttributes);
-            } catch (Throwable $e) {
+                $duplicate = $elementsService->duplicateElement($element);
+            } catch (Throwable) {
                 // Validation error
                 $failCount++;
                 continue;
@@ -111,7 +106,7 @@ class Duplicate extends ElementAction
             if ($newParent) {
                 // Append it to the duplicate of $element's parent
                 $structuresService->append($element->structureId, $duplicate, $newParent);
-            } else if ($element->structureId) {
+            } elseif ($element->structureId) {
                 // Place it right next to the original element
                 $structuresService->moveAfter($element->structureId, $duplicate, $element);
             }

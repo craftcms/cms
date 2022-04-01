@@ -14,8 +14,8 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
+use craft\test\TestCase;
 use crafttests\fixtures\UserFixture;
-use UnitTester;
 
 /**
  * Unit tests for the search service
@@ -23,41 +23,35 @@ use UnitTester;
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/3.x/searching.html
+ * https://craftcms.com/docs/4.x/searching.html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchTest extends Unit
+class SearchTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var Search
      */
-    protected $search;
+    protected Search $search;
 
     public function _fixtures(): array
     {
         return [
             'users' => [
                 'class' => UserFixture::class,
-            ]
+            ],
         ];
     }
 
     /**
      * @dataProvider searchElementsDataProvider
-     *
-     * @param $usernameOrEmailsForResult
-     * @param $usernameOrEmailsForQuery
-     * @param $searchQuery
+     * @param array $usernameOrEmailsForResult
+     * @param array $usernameOrEmailsForQuery
+     * @param string $searchQuery
      */
-    public function testSearchElements($usernameOrEmailsForResult, $usernameOrEmailsForQuery, $searchQuery)
+    public function testSearchElements(array $usernameOrEmailsForResult, array $usernameOrEmailsForQuery, string $searchQuery): void
     {
         // Repackage the dataProvider data into something that can be used by the filter function
         $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
@@ -80,15 +74,15 @@ class SearchTest extends Unit
      *
      * @todo test with fields and multisite using entries
      */
-    public function testIndexElementAttributes()
+    public function testIndexElementAttributes(): void
     {
         // Create a user
         $user = new User();
         $user->active = true;
         $user->username = 'testIndexElementAttributes1';
         $user->email = 'testIndexElementAttributes1@test.com';
-        $user->firstName = 'john smith';
-        $user->lastName = 'WIL K ER SON!';
+        $user->firstName = 'john';
+        $user->lastName = 'wilkerson';
         $user->id = 1;
 
         // Index them.
@@ -98,9 +92,8 @@ class SearchTest extends Unit
         $searchIndex = (new Query())->from([Table::SEARCHINDEX])->where(['elementId' => $user->id])->all();
 
         self::assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
-        self::assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
-        self::assertSame(' wil k er son ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
-        self::assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
+        self::assertSame(' john ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
+        self::assertSame(' wilkerson ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
     }
 
     /**
@@ -132,7 +125,7 @@ class SearchTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -142,7 +135,7 @@ class SearchTest extends Unit
     /**
      * @inheritDoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         parent::_after();
 
@@ -156,11 +149,11 @@ class SearchTest extends Unit
     }
 
     /**
-     * @param $attributeName
-     * @param $searchIndex
+     * @param mixed $attributeName
+     * @param iterable $searchIndex
      * @return string
      */
-    private function _getSearchIndexValueByAttribute($attributeName, $searchIndex): string
+    private function _getSearchIndexValueByAttribute(mixed $attributeName, iterable $searchIndex): string
     {
         foreach (ArrayHelper::where($searchIndex, 'attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {

@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use craft\web\View;
+
 /**
  * TemplateEvent class.
  *
@@ -26,7 +28,7 @@ class TemplateEvent extends CancelableEvent
     public array $variables;
 
     /**
-     * @var string The template mode to be used
+     * @var View::TEMPLATE_MODE_CP|View::TEMPLATE_MODE_SITE The template mode to be used
      * @since 3.4.0
      */
     public string $templateMode;

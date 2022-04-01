@@ -45,8 +45,9 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
     protected function matchFieldValue($value): bool
     {
         if ($value instanceof MultiOptionsFieldData) {
+            /** @phpstan-ignore-next-line */
             $value = array_map(fn(OptionData $option) => $option->value, (array)$value);
-        } else if ($value instanceof SingleOptionFieldData) {
+        } elseif ($value instanceof SingleOptionFieldData) {
             $value = $value->value;
         }
 

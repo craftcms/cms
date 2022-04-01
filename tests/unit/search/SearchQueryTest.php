@@ -11,12 +11,13 @@ use Codeception\Test\Unit;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use craft\test\TestCase;
 
 /**
  * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/3.x/searching.html
+ * https://craftcms.com/docs/4.x/searching.html
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
@@ -24,9 +25,9 @@ use craft\search\SearchQueryTermGroup;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchQueryTest extends Unit
+class SearchQueryTest extends TestCase
 {
-    const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
+    public const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,
         'exact' => false,
         'subLeft' => false,
@@ -36,12 +37,12 @@ class SearchQueryTest extends Unit
     ];
 
     /**
-     * @param $token
-     * @param $configOptions
-     * @param $index
+     * @param SearchQueryTerm $token
+     * @param array|null $configOptions
+     * @param string|null $index
      * @return SearchQueryTerm
      */
-    public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
+    public function getWhatItShouldBe(SearchQueryTerm $token, ?array $configOptions, ?string $index): SearchQueryTerm
     {
         // Get whether the data provider gave us custom config options for this term based on the above searchParam
         $config = $this->getConfigFromOptions($index, $configOptions);
@@ -50,8 +51,8 @@ class SearchQueryTest extends Unit
     }
 
     /**
-     * @param $term
-     * @param $config
+     * @param string $term
+     * @param array $config
      * @return SearchQueryTerm
      */
     public function createDefaultSearchQueryTermFromString(string $term, array $config): SearchQueryTerm
@@ -69,9 +70,9 @@ class SearchQueryTest extends Unit
      *
      * @param string|null $key
      * @param array|null $configOptions
-     * @return array|mixed
+     * @return mixed
      */
-    public function getConfigFromOptions(string $key = null, array $configOptions = null)
+    public function getConfigFromOptions(?string $key = null, array $configOptions = null): mixed
     {
         if (!$configOptions) {
             return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
@@ -93,14 +94,14 @@ class SearchQueryTest extends Unit
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
         self::assertSame([
-            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
+            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase,
         ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
 
     /**
      *
      */
-    public function testSearchQueryGrouping()
+    public function testSearchQueryGrouping(): void
     {
         $search = new SearchQuery('i live OR die');
 
@@ -121,7 +122,7 @@ class SearchQueryTest extends Unit
     /**
      *
      */
-    public function testOnlyOr()
+    public function testOnlyOr(): void
     {
         $search = new SearchQuery('OR');
         self::assertSame([], $search->getTokens());
@@ -130,7 +131,7 @@ class SearchQueryTest extends Unit
     /*
      * Test that additional default _termOptions are respected
      */
-    public function testAdditionalDefaultTerms()
+    public function testAdditionalDefaultTerms(): void
     {
         $search = new SearchQuery('search', [
             'exclude' => true,
@@ -155,7 +156,7 @@ class SearchQueryTest extends Unit
     /**
      * Test the defaults of the SearchQuery class
      */
-    public function testDefaultQueryTokens()
+    public function testDefaultQueryTokens(): void
     {
         $search = new SearchQuery('search');
 
@@ -179,12 +180,11 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryDataProviders
-     *
      * @param string $query
-     * @param array $configOptions
+     * @param array|null $configOptions
      * @param int|null $sizeOfArray
      */
-    public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuery(string $query, ?array $configOptions = null, int $sizeOfArray = null): void
     {
         $search = new SearchQuery($query);
 
@@ -203,11 +203,10 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryDataProviders
-     *
      * @param string $query
      * @param array|null $configOptions
      */
-    public function testSearchQuerySortOrder(string $query, array $configOptions = null)
+    public function testSearchQuerySortOrder(string $query, array $configOptions = null): void
     {
         $exploded = explode(' ', $query);
         foreach ((new SearchQuery($query))->getTokens() as $index => $token) {
@@ -274,7 +273,7 @@ class SearchQueryTest extends Unit
             ['i said body::test', ['2' => $attributeConfig], 3],
 
             ['i have spaces and lines', null, 5],
-            ['"i" said Hello', ['0' => $firstQuote], 3]
+            ['"i" said Hello', ['0' => $firstQuote], 3],
         ];
     }
 }

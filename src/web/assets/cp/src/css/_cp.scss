@@ -161,6 +161,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: grid;
   grid-template-columns: 30px auto;
   grid-gap: 10px;
+  height: 100%;
   padding: 0 10px;
   position: relative;
   flex: 0 0 50px;
@@ -581,6 +582,16 @@ li.breadcrumb-toggle-wrapper {
   display: none;
 }
 
+#account-menu {
+  ul {
+    li {
+      a {
+        max-width: calc(100% + 28px) !important;
+      }
+    }
+  }
+}
+
 #announcements-btn {
   @include header-btn;
   width: 40px;
@@ -663,8 +674,7 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-.breadcrumb-toggle-wrapper,
-.account-toggle-wrapper {
+[data-wrapper] {
   position: relative;
 }
 
@@ -1057,6 +1067,12 @@ li.breadcrumb-toggle-wrapper {
         @include pane;
       }
     }
+
+    .notes {
+      border-radius: 5px;
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
   }
 }
 
@@ -1251,11 +1267,14 @@ li.breadcrumb-toggle-wrapper {
 
 /* Sidebar */
 .sidebar {
-  padding: var(--m) 0;
   width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
-  background-color: $grey050;
+
+  &:not(.drag-helper) {
+    padding: var(--m) 0;
+    background-color: $grey050;
+  }
 
   .heading {
     position: relative;
@@ -1268,7 +1287,7 @@ li.breadcrumb-toggle-wrapper {
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $mediumTextColor;
+      color: $lightTextColor;
       font-size: 11px;
       font-weight: bold;
     }
@@ -1386,6 +1405,7 @@ li.breadcrumb-toggle-wrapper {
 
       .toggle {
         position: absolute;
+        z-index: 1;
         height: 34px;
         top: 0;
         width: var(--xl);
@@ -1423,17 +1443,18 @@ li.breadcrumb-toggle-wrapper {
 /* flexbox field layouts */
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields,
-.so-content > .flex-fields {
+.so-content .flex-fields {
+  --row-gap: var(--xl);
   display: flex;
-  gap: var(--xl) 0;
+  gap: var(--row-gap) 0;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--xl) * -1);
-  width: calc(100% + var(--xl) * 2);
+  margin: 0 calc(var(--row-gap) * -1);
+  width: calc(100% + var(--row-gap) * 2);
 
   & > * {
     margin: 0 !important;
-    padding: 0 var(--xl);
+    padding: 0 var(--row-gap);
     box-sizing: border-box;
   }
 
@@ -1454,31 +1475,6 @@ li.breadcrumb-toggle-wrapper {
     &, &:last-child {
       position: relative;
       width: 100%;
-      //flex: 4 0 100%;
-
-      // 4 cols for >= 1536px
-      @media only screen and (min-width: $minXlUiWidth) {
-        &.width-25 {
-          width: 25%;
-          //flex: 1 0 25%;
-        }
-        &.width-50 {
-          width: 50%;
-          //flex: 2 0 50%;
-        }
-        &.width-75 {
-          width: 75%;
-          //flex: 3 0 75%;
-        }
-      }
-
-      // 2 cols fol 712 - 1536px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
-        &.width-25,
-        &.width-50 {
-          width: calc(50% - 12px);
-        }
-      }
 
       &:before {
         position: absolute;
@@ -1489,6 +1485,48 @@ li.breadcrumb-toggle-wrapper {
         content: '';
         // same BG color as the hairline around the content pane’s 1px shadow
         background-color: transparentize($grey200, 0.5);
+      }
+    }
+  }
+}
+
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields {
+  & > :not(h2):not(hr) {
+    &, &:last-child {
+      // 4 cols for >= 1536px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25 {
+          width: 25%;
+        }
+        &.width-50 {
+          width: 50%;
+        }
+        &.width-75 {
+          width: 75%;
+        }
+      }
+
+      // 2 cols for 712 - 1536px
+      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
+      }
+    }
+  }
+}
+
+.so-content .flex-fields {
+  & > :not(h2):not(hr) {
+    &, &:last-child {
+      // 2 cols for >= 712px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
       }
     }
   }

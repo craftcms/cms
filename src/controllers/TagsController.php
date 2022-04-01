@@ -158,7 +158,7 @@ class TagsController extends Controller
 
         Craft::$app->getTags()->deleteTagGroupById($groupId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -249,13 +249,10 @@ class TagsController extends Controller
 
         // Don't validate required custom fields
         if (!Craft::$app->getElements()->saveElement($tag)) {
-            return $this->asJson([
-                'success' => false,
-            ]);
+            return $this->asFailure();
         }
 
-        return $this->asJson([
-            'success' => true,
+        return $this->asSuccess(data: [
             'id' => $tag->id,
         ]);
     }

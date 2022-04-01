@@ -1,19 +1,19 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\errors\MigrationException;
-use craft\feeds\Feeds;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -34,7 +34,6 @@ use craft\services\Deprecator;
 use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\services\Entries;
-use craft\services\EntryRevisions;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Images;
@@ -62,7 +61,7 @@ use craft\services\Utilities;
 use craft\services\Volumes;
 use craft\test\console\ConsoleTest;
 use craft\test\Craft as CraftTest;
-use craft\web\Application;
+use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\Request;
 use craft\web\Response;
@@ -74,6 +73,7 @@ use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\Module;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -86,7 +86,7 @@ use yii\mutex\Mutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 class TestSetup
 {
@@ -103,12 +103,12 @@ class TestSetup
     /**
      * @var array Project Config data
      */
-    private static $_parsedProjectConfig = [];
+    private static array $_parsedProjectConfig = [];
 
     /**
      * @var Config|null An instance of the config service.
      */
-    private static $_configService = null;
+    private static ?Config $_configService = null;
 
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
@@ -116,7 +116,7 @@ class TestSetup
      * @return mixed
      * @throws InvalidConfigException
      */
-    public static function warmCraft()
+    public static function warmCraft(): mixed
     {
         $app = self::createTestCraftObjectConfig();
         $app['isInstalled'] = false;
@@ -172,10 +172,9 @@ class TestSetup
     }
 
     /**
-     * @param string $class
+     * @param class-string<Migration> $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
-     *
      * @return bool
      * @throws InvalidConfigException
      * @throws MigrationException
@@ -190,7 +189,7 @@ class TestSetup
 
         if (!$migration instanceof Migration) {
             throw new InvalidArgumentException(
-                'Migration class is not an instance of: ' . Migration::class . ''
+                'Migration class is not an instance of: ' . Migration::class
             );
         }
 
@@ -284,15 +283,14 @@ class TestSetup
     }
 
     /**
-     * Determine the app type. If the parent is `craft\test\console\ConsoleTest`.
-     * Its a console test. Else, web.
+     * Determine the app type (console or web).
      *
      * @return string
      */
     public static function appType(): string
     {
         $appType = 'web';
-        if (CraftTest::$currentTest instanceof ConsoleTest) {
+        if (isset(CraftTest::$currentTest) && CraftTest::$currentTest instanceof ConsoleTest) {
             $appType = 'console';
         }
 
@@ -301,7 +299,7 @@ class TestSetup
 
     /**
      * @param string $preDefinedAppType
-     * @return string
+     * @return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
@@ -309,8 +307,7 @@ class TestSetup
             $preDefinedAppType = self::appType();
         }
 
-        return $preDefinedAppType === 'console' ? \craft\console\Application::class
-            : Application::class;
+        return $preDefinedAppType === 'console' ? ConsoleApplication::class : WebApplication::class;
     }
 
     /**
@@ -330,11 +327,11 @@ class TestSetup
         $translationsPath = realpath(CRAFT_TRANSLATIONS_PATH);
 
         // Log errors to craft/storage/logs/phperrors.log
-        ini_set('log_errors', 1);
+        ini_set('log_errors', '1');
         ini_set('error_log', $storagePath . '/logs/phperrors.log');
 
         error_reporting(E_ALL);
-        ini_set('display_errors', 1);
+        ini_set('display_errors', '1');
         defined('YII_DEBUG') || define('YII_DEBUG', true);
         defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
 
@@ -380,7 +377,7 @@ class TestSetup
     }
 
     /**
-     * @param string $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
+     * @param string|null $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
      * @throws ErrorException
      */
     public static function setupProjectConfig(?string $projectConfigFolder = null): void
@@ -436,7 +433,7 @@ class TestSetup
      *
      * @return array|false
      */
-    public static function useProjectConfig()
+    public static function useProjectConfig(): array|false
     {
         $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
 
@@ -467,7 +464,7 @@ class TestSetup
         ];
 
         // Replace the default site with what is desired by the project config. If project config is enabled.
-        if ($projectConfig = self::useProjectConfig()) {
+        if (self::useProjectConfig()) {
             $existingProjectConfig = self::getSeedProjectConfigData();
 
             if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {
@@ -499,18 +496,19 @@ class TestSetup
     }
 
     /**
+     * @template T of Module
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param string $appClass
-     * @return MockObject
+     * @param class-string<T>|null $moduleClass
+     * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = ''): MockObject
+    public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
     {
-        $appClass = $appClass ?: self::appClass();
+        $moduleClass = $moduleClass ?? self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
-        $mockApp = self::getMock($test, $appClass);
+        $mockApp = self::getMock($test, $moduleClass);
 
         $mockMapForMagicGet = [];
 
@@ -544,12 +542,13 @@ class TestSetup
     }
 
     /**
+     * @template T
      * @param CodeceptionTestCase $test
-     * @param string $class
-     * @return MockObject
+     * @param class-string<T> $class
+     * @return T|MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMock(CodeceptionTestCase $test, string $class): MockObject
+    public static function getMock(CodeceptionTestCase $test, string $class)
     {
         return $test->getMockBuilder($class)
             ->disableOriginalConstructor()

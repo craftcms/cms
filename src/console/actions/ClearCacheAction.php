@@ -37,7 +37,7 @@ class ClearCacheAction extends Action
     /**
      * @var array|null
      */
-    public ?array $params;
+    public ?array $params = null;
 
     /**
      * Clears the caches.
@@ -52,14 +52,14 @@ class ClearCacheAction extends Action
         if (is_string($this->action)) {
             try {
                 FileHelper::clearDirectory($this->action);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // the directory doesn't exist
             } catch (Throwable $e) {
                 $error = "Could not clear the directory $this->label: " . $e->getMessage();
                 $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }
-        } else if (isset($this->params)) {
+        } elseif (isset($this->params)) {
             try {
                 call_user_func_array($this->action, $this->params);
             } catch (Throwable $e) {

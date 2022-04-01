@@ -10,8 +10,7 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
-use craft\helpers\StringHelper;
-use Swift_SendmailTransport;
+use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
@@ -35,31 +34,18 @@ class Sendmail extends BaseTransportAdapter
 
     /**
      * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        // Config normalization
-        if (($config['command'] ?? null) === '') {
-            unset($config['command']);
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'command',
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'command',
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**
@@ -129,11 +115,14 @@ class Sendmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function defineTransport()
+    public function defineTransport(): array|AbstractTransport
     {
+        // Replace any spaces with `%20` according to https://symfony.com/doc/current/mailer.html#other-options
+        $command = (App::parseEnv($this->command) ?: self::DEFAULT_COMMAND);
+        $command = str_replace(' ', '%20', $command);
+
         return [
-            'class' => Swift_SendmailTransport::class,
-            'command' => $this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND,
+            'dsn' => 'sendmail://default?command=' . $command,
         ];
     }
 
@@ -149,7 +138,7 @@ class Sendmail extends BaseTransportAdapter
         $command = Craft::$app->getProjectConfig()->get('email.transportSettings.command');
 
         return array_unique(array_filter([
-            !StringHelper::startsWith($command, '$') ? $command : null,
+            !str_starts_with($command, '$') ? $command : null,
             self::DEFAULT_COMMAND,
             ini_get('sendmail_path'),
         ]));

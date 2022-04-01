@@ -9,9 +9,11 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use DateTime;
 use Throwable;
@@ -192,7 +194,7 @@ class UsersController extends Controller
 
         if ($this->password) {
             $user->newPassword = $this->password;
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             if ($this->confirm('Set a password for this user?', false)) {
                 $user->newPassword = $this->passwordPrompt([
                     'validator' => $this->createAttributeValidator($user, 'newPassword'),
@@ -223,7 +225,7 @@ class UsersController extends Controller
         // Most likely an invalid group ID will throw…
         try {
             Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -323,7 +325,7 @@ class UsersController extends Controller
             }
 
             $user->inheritorOnDelete = $inheritor;
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             $this->deleteContent = $this->confirm("Delete user “{$user->username}” and their content?");
 
             if (!$this->deleteContent) {
@@ -371,7 +373,7 @@ class UsersController extends Controller
                 $this->stderr('Unable to set new password on user: ' . $user->getFirstError('newPassword') . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             $this->passwordPrompt([
                 'validator' => $this->createAttributeValidator($user, 'newPassword'),
             ]);
@@ -423,6 +425,20 @@ class UsersController extends Controller
     }
 
     /**
+     * Logs all users out of the system.
+     *
+     * @return int
+     * @since 3.7.33
+     */
+    public function actionLogoutAll(): int
+    {
+        $this->stdout('Logging all users out ... ');
+        Db::truncateTable(Table::SESSIONS);
+        $this->stdout("done\n", Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Resolves a `user` argument.
      *
      * @param string $value The `user` argument value
@@ -432,7 +448,7 @@ class UsersController extends Controller
     private function _user(string $value): User
     {
         if (is_numeric($value)) {
-            $user = Craft::$app->getUsers()->getUserById($value);
+            $user = Craft::$app->getUsers()->getUserById((int)$value);
             if (!$user) {
                 throw new InvalidArgumentException("No user exists with the ID: $value");
             }

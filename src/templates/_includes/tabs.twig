@@ -3,43 +3,49 @@
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {% set selectedTab = selectedTab ?? tabs|keys|first %}
+{% set tablistLabel = tablistLabel ?? 'Primary fields'|t('app') %}
 {% set tabs = tabs|map((tab, tabId) => tab|merge({
     selected: tabId == selectedTab,
         class: (tab.class ?? [])|explodeClass,
 })) %}
 
-{% tag 'nav' with containerAttributes %}
-    <ul class="scrollable">
-        {% for tabId, tab in tabs %}
-            {% tag 'li' with {
+{% tag 'div' with containerAttributes %}
+    {% tag 'div'  with {
+        class: 'scrollable',
+        role: 'tablist',
+        aria: {
+            label: tablistLabel,
+        },
+    } %}
+        {% for containerId, tab in tabs %}
+            {% tag 'a' with {
+                id: tab.tabId ?? "tab-#{containerId}",
+                class: (tab.selected ? ['sel'] : [])|merge(tab.class),
+                tabindex: tab.selected ? '0' : '-1',
+                href: tab.url,
+                role: 'tab',
                 data: {
-                    id: tabId,
-                }
+                    id: containerId,
+                },
+                aria: {
+                    controls: containerId,
+                    selected: tab.selected ? 'true' : 'false',
+                },
             } %}
-                {% tag 'a' with {
-                    id: "tab-#{tabId}",
-                    class: (tab.selected ? ['sel'] : [])|merge(tab.class),
-                    tabindex: tab.selected ? '0' : '-1',
-                    href: tab.url,
-                    data: {
-                        id: tabId,
-                    },
-                } %}
-                    {{ tab.label }}
-                    {% if 'error' in tab.class %}
-                        {{ tag('span', {
-                            aria: {
-                                label: 'This tab contains errors'|t('app'),
-                            },
-                            data: {
-                                icon: 'alert',
-                            }
-                        }) }}
-                    {% endif %}
-                {% endtag %}
+                {{ tab.label }}
+                {% if 'error' in tab.class %}
+                    {{ tag('span', {
+                        aria: {
+                            label: 'This tab contains errors'|t('app'),
+                        },
+                        data: {
+                            icon: 'alert',
+                        }
+                    }) }}
+                {% endif %}
             {% endtag %}
         {% endfor %}
-    </ul>
+    {%  endtag %}
     {{ tag('button', {
         type: 'button',
         class: 'btn menubtn hidden',
@@ -50,13 +56,13 @@
     }) }}
     <div class="menu">
         <ul class="padded" role="listbox">
-            {% for tabId, tab in tabs %}
+            {% for containerId, tab in tabs %}
                 <li>
                     {% tag 'a' with {
                         class: tab.selected ? 'sel' : null,
                         href: tab.url,
                         data: {
-                            id: tabId,
+                            id: containerId,
                         },
                     } %}
                         {{ tab.label }}

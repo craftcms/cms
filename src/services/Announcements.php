@@ -131,7 +131,7 @@ class Announcements extends Component
             ->update(Table::ANNOUNCEMENTS, [
                 'unread' => false,
                 'dateRead' => Db::prepareDateForDb(new DateTime()),
-            ], ['id' => $ids, 'userId' => $userId], [], false)
+            ], ['id' => $ids, 'userId' => $userId])
             ->execute();
     }
 }

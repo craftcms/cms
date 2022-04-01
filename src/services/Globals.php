@@ -261,8 +261,8 @@ class Globals extends Component
         }
 
         return GlobalSet::find()
-            ->siteId($siteId)
             ->handle($globalSetHandle)
+            ->siteId($siteId)
             ->one();
     }
 
@@ -298,7 +298,7 @@ class Globals extends Component
             $globalSet->sortOrder = (new Query())
                     ->from([Table::GLOBALSETS])
                     ->max('[[sortOrder]]') + 1;
-        } else if (!$globalSet->uid) {
+        } elseif (!$globalSet->uid) {
             $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }
 
@@ -343,9 +343,9 @@ class Globals extends Component
                 $layout->id = $globalSetRecord->fieldLayoutId;
                 $layout->type = GlobalSet::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $globalSetRecord->fieldLayoutId = $layout->id;
-            } else if ($globalSetRecord->fieldLayoutId) {
+            } elseif ($globalSetRecord->fieldLayoutId) {
                 // Delete the field layout
                 Craft::$app->getFields()->deleteLayoutById($globalSetRecord->fieldLayoutId);
                 $globalSetRecord->fieldLayoutId = null;
@@ -355,6 +355,7 @@ class Globals extends Component
             $element = null;
             $elementsService = Craft::$app->getElements();
             if (!$globalSetRecord->getIsNewRecord()) {
+                /** @var GlobalSet|null $element */
                 $element = GlobalSet::find()
                     ->id($globalSetRecord->id)
                     ->trashed(null)
@@ -585,6 +586,7 @@ class Globals extends Component
         $query = $withTrashed ? GlobalSetRecord::findWithTrashed() : GlobalSetRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var GlobalSetRecord */
         return $query->one() ?? new GlobalSetRecord();
     }
 }

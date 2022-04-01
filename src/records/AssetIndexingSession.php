@@ -9,7 +9,6 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use DateTime;
 
 /**
  * Class AssetIndexData record.
@@ -21,8 +20,8 @@ use DateTime;
  * @property bool $cacheRemoteImages Whether remote images should be cached locally.
  * @property bool $isCli Whether indeing is run via CLI.
  * @property bool $actionRequired Whether action is required.
- * @property DateTime $dateUpdated Time when indexing session was last updated.
- * @property DateTime $dateCreated Time when indexing session was last updated.
+ * @property string $dateUpdated Time when indexing session was last updated.
+ * @property string $dateCreated Time when indexing session was last updated.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

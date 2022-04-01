@@ -116,7 +116,7 @@ class SearchQuery
 
             // Does it start with a quote?
 
-            if ($token && (StringHelper::startsWith($token, '\'') || StringHelper::startsWith($token, '"'))) {
+            if ($token && (str_starts_with($token, "'") || str_starts_with($token, '"'))) {
                 // Is the end quote at the end of this very token?
                 if (StringHelper::last($token, 1) === StringHelper::first($token, 1)) {
                     $token = mb_substr($token, 1, -1);
@@ -134,7 +134,7 @@ class SearchQuery
             }
 
             if ($token) {
-                if (substr($token, -1) === '*') {
+                if (str_ends_with($token, '*')) {
                     $term->subRight = true;
                     $token = mb_substr($token, 0, -1);
                 }

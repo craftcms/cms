@@ -30,7 +30,7 @@ class UploadedFile extends \yii\web\UploadedFile
      */
     public static function getInstanceByName($name, bool $ensureTempFileExists = true): ?self
     {
-        /** @var static $instance */
+        /** @var static|null $instance */
         $instance = parent::getInstanceByName(self::_normalizeName($name));
         if ($instance === null) {
             return null;
@@ -85,7 +85,7 @@ class UploadedFile extends \yii\web\UploadedFile
      * @return string|false the path to the temp file, or false if the file wasn't saved successfully
      * @see error
      */
-    public function saveAsTempFile(bool $deleteTempFile = true)
+    public function saveAsTempFile(bool $deleteTempFile = true): string|false
     {
         if ($this->error != UPLOAD_ERR_OK) {
             return false;

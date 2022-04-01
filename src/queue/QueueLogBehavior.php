@@ -8,7 +8,9 @@
 namespace craft\queue;
 
 use Craft;
-use craft\log\FileTarget;
+use craft\log\Dispatcher;
+use craft\log\MonologTarget;
+use Illuminate\Support\Collection;
 use yii\queue\ExecEvent;
 
 /**
@@ -47,7 +49,7 @@ class QueueLogBehavior extends VerboseBehavior
     public function beforeExec(ExecEvent $event): void
     {
         if (!$this->_jobExecuted) {
-            $this->_changeLogFile();
+            $this->_enableLogTarget();
         }
 
         $this->_jobStartedAt = microtime(true);
@@ -68,42 +70,33 @@ class QueueLogBehavior extends VerboseBehavior
      */
     public function afterError(ExecEvent $event): void
     {
-        $duration = $this->_formattedDuration();
+        $message = sprintf('%s - Error', parent::jobTitle($event));
 
-        if (!$event->error) {
-            Craft::error(sprintf('%s - Error (time: %s)', parent::jobTitle($event), $duration), __METHOD__);
-            return;
+        if (isset($this->_jobStartedAt)) {
+            $message .= sprintf(' (time: %s)', $this->_formattedDuration());
         }
 
-        $error = $event->error->getMessage();
-        Craft::error(sprintf('%s - Error (time: %s): %s', parent::jobTitle($event), $duration, $error), __METHOD__);
-        Craft::$app->getErrorHandler()->logException($event->error);
+        if ($event->error) {
+            $message .= sprintf(': %s', $event->error->getMessage());
+        }
+
+        Craft::error($message, __METHOD__);
+
+        if ($event->error) {
+            Craft::$app->getErrorHandler()->logException($event->error);
+        }
     }
 
     /**
-     * Changes the file that logs will get flushed to.
+     * Enables the log target logs will get flushed to.
      */
-    private function _changeLogFile(): void
+    private function _enableLogTarget(): void
     {
-        $logDispatcher = Craft::$app->getLog();
-
-        foreach ($logDispatcher->targets as $target) {
-            if ($target instanceof FileTarget) {
-                // Log to queue.log
-                $target->logFile = Craft::getAlias('@storage/logs/queue.log');
-
-                // Don't log global vars
-                $target->logVars = [];
-
-                // Prevent verbose system logs
-                if (!YII_DEBUG) {
-                    $target->except = ['yii\*'];
-                    $target->setLevels(['info', 'warning', 'error']);
-                }
-
-                break;
-            }
-        }
+        Collection::make(Craft::$app->getLog()->targets)
+            ->whereInstanceOf(MonologTarget::class)
+            ->each(function(MonologTarget $target) {
+                $target->enabled = $target->name === Dispatcher::TARGET_QUEUE;
+            });
     }
 
     /**

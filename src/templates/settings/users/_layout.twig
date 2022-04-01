@@ -9,7 +9,8 @@
 
 {% set navItems = {
     groups: CraftEdition == CraftPro ? { label: "User Groups"|t('app'), url: url('settings/users') },
-    fields: { label: "Fields"|t('app'), url: url('settings/users/fields') },
+    fields: { label: "User Fields"|t('app'), url: url('settings/users/fields') },
+    addressFields: { label: "Address Fields"|t('app'), url: url('settings/users/address-fields') },
     settings: { label: "Settings"|t('app'), url: url('settings/users/settings') }
 }|filter %}
 

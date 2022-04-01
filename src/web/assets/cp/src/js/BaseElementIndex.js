@@ -815,25 +815,22 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 data: params,
                 cancelToken: this._createCancelToken(),
             }).then((response) => {
-                this.setIndexAvailable();
-                if (response.data.success) {
-                    // Update the count text too
-                    this._resetCount();
-                    this._updateView(viewParams, response.data);
+                // Update the count text too
+                this._resetCount();
+                this._updateView(viewParams, response.data);
 
-                    if (typeof response.data.badgeCounts !== 'undefined') {
-                        this._updateBadgeCounts(response.data.badgeCounts);
-                    }
-
-                    if (response.data.message) {
-                        Craft.cp.displayNotice(response.data.message);
-                    }
-
-                    this.afterAction(action, params);
-                } else {
-                    Craft.cp.displayError(response.data.message);
+                if (typeof response.data.badgeCounts !== 'undefined') {
+                    this._updateBadgeCounts(response.data.badgeCounts);
                 }
-            }).catch(() => {
+
+                if (response.data.message) {
+                    Craft.cp.displayNotice(response.data.message);
+                }
+
+                this.afterAction(action, params);
+            }).catch(({response}) => {
+                Craft.cp.displayError(response.data.message);
+            }).finally(() => {
                 this.setIndexAvailable();
             });
         }

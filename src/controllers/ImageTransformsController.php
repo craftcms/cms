@@ -101,8 +101,8 @@ class ImageTransformsController extends Controller
         $transform->id = $this->request->getBodyParam('transformId');
         $transform->name = $this->request->getBodyParam('name');
         $transform->handle = $this->request->getBodyParam('handle');
-        $transform->width = $this->request->getBodyParam('width');
-        $transform->height = $this->request->getBodyParam('height');
+        $transform->width = $this->request->getBodyParam('width') ?: null;
+        $transform->height = $this->request->getBodyParam('height') ?: null;
         $transform->mode = $this->request->getBodyParam('mode');
         $transform->position = $this->request->getBodyParam('position');
         $transform->quality = $this->request->getBodyParam('quality');
@@ -142,16 +142,13 @@ class ImageTransformsController extends Controller
         }
 
         if (!$success) {
-            // Send the transform back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'transform' => $transform,
-            ]);
-
-            return null;
+            return $this->asModelFailure($transform, modelName: 'transform');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Transform saved.'));
-        return $this->redirectToPostedUrl($transform);
+        return $this->asModelSuccess(
+            $transform,
+            Craft::t('app', 'Transform saved.'),
+        );
     }
 
     /**
@@ -168,6 +165,6 @@ class ImageTransformsController extends Controller
 
         Craft::$app->getImageTransforms()->deleteTransformById($transformId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

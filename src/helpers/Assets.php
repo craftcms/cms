@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -17,12 +18,12 @@ use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Assets
@@ -65,7 +66,7 @@ class Assets
      */
     public static function tempFilePath(string $extension = 'tmp'): string
     {
-        $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
+        $extension = str_contains($extension, '.') ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true) . '.' . $extension;
         $path = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename;
 
@@ -78,20 +79,20 @@ class Assets
     }
 
     /**
-     * Generates a URL for a given Assets file in a Source Type.
+     * Generates a URL for a given Assets file on a filesystem.
      *
-     * @param Volume $volume
+     * @param FsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public static function generateUrl(Volume $volume, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $baseUrl = $volume->getFs()->getRootUrl();
+        $baseUrl = $fs->getRootUrl();
         $folderPath = $asset->folderPath;
-        $appendix = static::urlAppendix($volume, $asset, $dateUpdated);
+        $appendix = static::urlAppendix($asset, $dateUpdated);
 
         return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->getFilename()) . $appendix);
     }
@@ -99,12 +100,11 @@ class Assets
     /**
      * Get appendix for a URL based on its Source caching settings.
      *
-     * @param Volume $volume
      * @param Asset $asset
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      */
-    public static function urlAppendix(Volume $volume, Asset $asset, ?DateTime $dateUpdated = null): string
+    public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return '';
@@ -616,7 +616,7 @@ class Assets
             ];
 
             // Merge with the extraFileKinds setting
-            static::$_fileKinds = ArrayHelper::merge(static::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
+            self::$_fileKinds = ArrayHelper::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
 
             // Allow plugins to modify file kinds
             $event = new RegisterAssetFileKindsEvent([
@@ -627,7 +627,7 @@ class Assets
             self::$_fileKinds = $event->fileKinds;
 
             // Sort by label
-            ArrayHelper::multisort(static::$_fileKinds, 'label');
+            ArrayHelper::multisort(self::$_fileKinds, 'label');
         }
     }
 
@@ -636,10 +636,10 @@ class Assets
      *
      * @param int $assetId
      * @param int $size
-     * @return false|string
+     * @return string|false
      * @throws Exception in case of failure
      */
-    public static function getImageEditorSource(int $assetId, int $size)
+    public static function getImageEditorSource(int $assetId, int $size): string|false
     {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
@@ -709,7 +709,7 @@ class Assets
      *
      * @return int|float
      */
-    public static function getMaxUploadSize()
+    public static function getMaxUploadSize(): float|int
     {
         $maxUpload = ConfigHelper::sizeInBytes(ini_get('upload_max_filesize'));
         $maxPost = ConfigHelper::sizeInBytes(ini_get('post_max_size'));
@@ -769,7 +769,7 @@ class Assets
      * @throws InvalidArgumentException if the size can’t be parsed
      * @since 3.5.0
      */
-    public static function parseSrcsetSize($size): array
+    public static function parseSrcsetSize(mixed $size): array
     {
         if (is_numeric($size)) {
             $size = $size . 'w';
@@ -805,5 +805,55 @@ class Assets
         fclose($outputStream);
 
         return $bytes;
+    }
+
+    /**
+     * Returns the URL to an asset icon for a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.0.0
+     */
+    public static function iconUrl(string $extension): string
+    {
+        return UrlHelper::actionUrl('assets/icon', [
+            'extension' => $extension,
+        ]);
+    }
+
+    /**
+     * Returns the file path to an asset icon for a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.0.0
+     */
+    public static function iconPath(string $extension): string
+    {
+        $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
+
+        $extLength = strlen($extension);
+        if ($extLength <= 3) {
+            $textSize = '20';
+        } elseif ($extLength === 4) {
+            $textSize = '17';
+        } else {
+            if ($extLength > 5) {
+                $extension = substr($extension, 0, 4) . '…';
+            }
+            $textSize = '14';
+        }
+
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
+        $svg = str_replace('<!-- EXT -->', $textNode, $svg);
+
+        FileHelper::writeToFile($path, $svg);
+        return $path;
     }
 }

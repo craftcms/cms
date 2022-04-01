@@ -31,7 +31,7 @@ class CraftConnector extends Yii2
     /**
      * @var array
      */
-    protected $emails = [];
+    protected array $emails = [];
 
     /**
      * @inheritdoc
@@ -44,11 +44,11 @@ class CraftConnector extends Yii2
     /**
      * We override to prevent a bug with the matching of user agent and session.
      *
-     * @param $user
+     * @param mixed $user
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
      */
-    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true): void
+    public function findAndLoginUser(mixed $user, bool $disableRequiredUserAgent = true): void
     {
         $oldRequirement = Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession;
         if ($disableRequiredUserAgent) {
@@ -81,7 +81,7 @@ class CraftConnector extends Yii2
      * @param Application $app
      * @throws InvalidPluginException
      */
-    public function resetRequest(Application $app): void
+    protected function resetRequest(Application $app): void
     {
         parent::resetRequest($app);
         $app->getRequest()->setIsConsoleRequest(false);
@@ -107,6 +107,7 @@ class CraftConnector extends Yii2
                 $module = new $moduleClass($moduleId, Craft::$app);
             }
 
+            /** @var class-string<Module>|Module $moduleClass */
             $moduleClass::setInstance(
                 $module
             );

@@ -1,19 +1,17 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\ConfigHelper;
-use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use DateTime;
 use stdClass;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -23,32 +21,30 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ConfigHelperTest extends Unit
+class ConfigHelperTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider sizeInBytesDataProvider
-     *
      * @param int|float $expected
      * @param int|string $value
      */
-    public function testSizeInBytes($expected, $value)
+    public function testSizeInBytes(int|float $expected, int|string $value): void
     {
         self::assertSame($expected, ConfigHelper::sizeInBytes($value));
     }
 
     /**
      * @dataProvider durationInSecondsDataProvider
-     *
      * @param int $expected
      * @param mixed $value
      * @throws InvalidConfigException
      */
-    public function testDurationInSeconds(int $expected, $value)
+    public function testDurationInSeconds(int $expected, mixed $value): void
     {
         self::assertSame($expected, ConfigHelper::durationInSeconds($value));
     }
@@ -56,12 +52,12 @@ class ConfigHelperTest extends Unit
     /**
      *
      */
-    public function testDurationSecondsException()
+    public function testDurationSecondsException(): void
     {
         $this->tester->expectThrowable(
             InvalidConfigException::class, function() {
-            ConfigHelper::durationInSeconds(true);
-        });
+                ConfigHelper::durationInSeconds(true);
+            });
 
         $this->tester->expectThrowable(InvalidConfigException::class, function() {
             ConfigHelper::durationInSeconds(['test' => 'test']);
@@ -81,12 +77,11 @@ class ConfigHelperTest extends Unit
 
     /**
      * @dataProvider localizedValueDataProvider
-     *
      * @param mixed $expected
      * @param mixed $value
      * @param string|null $siteHandle
      */
-    public function testLocalizedValue($expected, $value, ?string $siteHandle = null)
+    public function testLocalizedValue(mixed $expected, mixed $value, ?string $siteHandle = null): void
     {
         self::assertSame($expected, ConfigHelper::localizedValue($value, $siteHandle));
     }
@@ -103,8 +98,8 @@ class ConfigHelperTest extends Unit
             // If variable is callable.  Ensure the handle gets passed into the callable.
             [
                 'imahandle', function($handle) {
-                return $handle;
-            }, 'imahandle'
+                    return $handle;
+                }, 'imahandle',
             ],
             ['imnotavalue', ['imnotahandle' => 'imnotavalue', 'anotherkey' => 'anothervalue'], 'imahandle'],
             ['string', 'string'],
@@ -133,9 +128,6 @@ class ConfigHelperTest extends Unit
             [4, '4'],
             [5, 5],
             [0, 'M5'],
-            [0, false],
-            [1, true],
-            [0, null],
         ];
     }
 
