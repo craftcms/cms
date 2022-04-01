@@ -14,7 +14,7 @@
 ### Changed
 - Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))
 - Image thumbnails now use registered image transformers when available.
-- `craft\elements\Asset::getUrl()` now has an `$immediately` argement.
+- `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
 
 ### Removed
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
