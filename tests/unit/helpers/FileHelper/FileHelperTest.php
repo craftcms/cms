@@ -35,7 +35,6 @@ class FileHelperTest extends Unit
      */
     public function testCreateRemove()
     {
-        self::fail();
         $location = dirname(__DIR__, 4) . '/at-root';
         FileHelper::createDirectory('at-root');
         self::assertDirectoryExists($location);
