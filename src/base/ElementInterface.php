@@ -500,27 +500,27 @@ interface ElementInterface extends ComponentInterface
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
 
     /**
-     * Returns the GraphQL type name by an element's context.
+     * Returns the GraphQL type name by an element’s context.
      *
-     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
      * @return string
      * @since 3.3.0
      */
     public static function gqlTypeNameByContext(mixed $context): string;
 
     /**
-     * Returns the GraphQL mutation name by an element's context.
+     * Returns the GraphQL mutation name by an element’s context.
      *
-     * @param mixed $context The element's context, such as a volume, entry type, or Matrix block type.
+     * @param mixed $context The element’s context, such as a volume, entry type, or Matrix block type.
      * @return string
      * @since 3.5.0
      */
     public static function gqlMutationNameByContext(mixed $context): string;
 
     /**
-     * Returns the GraphQL scopes required by element's context.
+     * Returns the GraphQL scopes required by element’s context.
      *
-     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element’s context, such as a Volume, Entry Type or Matrix Block Type.
      * @return array
      * @since 3.3.0
      */

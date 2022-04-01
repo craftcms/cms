@@ -830,7 +830,7 @@ class Elements extends Component
                 $this->saveElement($siteElement, false, false);
             }
 
-            // Now the $element's site
+            // Now the $element’s site
             $element->mergeCanonicalChanges();
             $element->dateLastMerged = new DateTime();
             $element->mergingCanonicalChanges = true;
@@ -866,7 +866,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // "Duplicate" the derivative element with the canonical element's ID, UID, and content ID
+        // "Duplicate" the derivative element with the canonical element’s ID, UID, and content ID
         $canonical = $element->getCanonical();
 
         $newAttributes += [
@@ -1132,7 +1132,7 @@ class Elements extends Component
         // Ensure all fields have been normalized
         $element->getFieldValues();
 
-        // Create our first clone for the $element's site
+        // Create our first clone for the $element’s site
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = StringHelper::UUID();
@@ -1216,12 +1216,12 @@ class Elements extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Start with $element's site
+            // Start with $element’s site
             if (!$this->_saveElementInternal($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
-            // Should we add the clone to the source element's structure?
+            // Should we add the clone to the source element’s structure?
             if (
                 $placeInStructure &&
                 $element->structureId &&
@@ -1687,7 +1687,7 @@ class Elements extends Component
                     // Re-fetch the record since its lft and rgt attributes just changed
                     $record = StructureElementRecord::findOne($record->id);
                 }
-                // Delete this element's node
+                // Delete this element’s node
                 $record->deleteWithChildren();
             }
 
@@ -1707,7 +1707,7 @@ class Elements extends Component
                     ->softDelete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
 
-                // Also soft delete the element's drafts & revisions
+                // Also soft delete the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id);
             }
 
@@ -1824,7 +1824,7 @@ class Elements extends Component
                     ->restore(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
 
-                // Also restore the element's drafts & revisions
+                // Also restore the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
 
                 // Restore its search indexes
@@ -2641,7 +2641,7 @@ class Elements extends Component
                 }
             }
 
-            // Save the element's site settings record
+            // Save the element’s site settings record
             if (!$isNewElement) {
                 $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
                     'elementId' => $element->id,
@@ -2816,7 +2816,7 @@ class Elements extends Component
             ]));
         }
 
-        // Clear the element's record of dirty fields
+        // Clear the element’s record of dirty fields
         $element->markAsClean();
         $element->firstSave = $originalFirstSave;
         $element->propagateAll = $originalPropagateAll;
@@ -2898,7 +2898,7 @@ class Elements extends Component
                         $element->isFieldDirty($field->handle) &&
                         $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
                     ) {
-                        // Copy the initial element's value over
+                        // Copy the initial element’s value over
                         $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                     }
                 }

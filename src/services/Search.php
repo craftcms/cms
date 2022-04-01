@@ -146,7 +146,7 @@ class Search extends Component
             }
         }
 
-        // Clear the element's current search keywords
+        // Clear the element’s current search keywords
         $deleteCondition = [
             'elementId' => $element->id,
             'siteId' => $element->siteId,

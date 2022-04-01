@@ -1542,7 +1542,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Sets the entry's author.
+     * Sets the entry’s author.
      *
      * @param Asset|null $photo
      */

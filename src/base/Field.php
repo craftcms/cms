@@ -827,7 +827,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns whether this is the first time the element's content has been edited.
+     * Returns whether this is the first time the element’s content has been edited.
      *
      * @param ElementInterface|null $element
      * @return bool

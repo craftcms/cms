@@ -24,7 +24,7 @@ class BatchElementActionEvent extends ElementQueryEvent
     public ElementInterface $element;
 
     /**
-     * @var int The element's position in the query (1-indexed)
+     * @var int The element’s position in the query (1-indexed)
      */
     public int $position;
 

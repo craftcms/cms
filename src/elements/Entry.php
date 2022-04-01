@@ -62,8 +62,8 @@ use yii\web\Response;
  * @property int $typeId the entry type’s ID
  * @property int|null $authorId the entry author’s ID
  * @property EntryType $type the entry type
- * @property Section $section the entry's section
- * @property User|null $author the entry's author
+ * @property Section $section the entry’s section
+ * @property User|null $author the entry’s author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -951,7 +951,7 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry's section is enabled for
+     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry’s section is enabled for
      */
     public function getUriFormat(): ?string
     {
@@ -1068,7 +1068,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the entry's section.
+     * Returns the entry’s section.
      *
      * ---
      * ```php
@@ -1216,7 +1216,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the entry's author.
+     * Returns the entry’s author.
      *
      * ---
      * ```php
@@ -1246,7 +1246,7 @@ class Entry extends Element
     }
 
     /**
-     * Sets the entry's author.
+     * Sets the entry’s author.
      *
      * @param User|null $author
      */
@@ -1788,7 +1788,7 @@ EOD;
     }
 
     /**
-     * Updates the entry's title, if its entry type has a dynamic title format.
+     * Updates the entry’s title, if its entry type has a dynamic title format.
      *
      * @since 3.0.3
      */
@@ -1798,7 +1798,7 @@ EOD;
         if (!$entryType->hasTitleField) {
             // Make sure that the locale has been loaded in case the title format has any Date/Time fields
             Craft::$app->getLocale();
-            // Set Craft to the entry's site's language, in case the title format has any static translations
+            // Set Craft to the entry’s site’s language, in case the title format has any static translations
             $language = Craft::$app->language;
             Craft::$app->language = $this->getSite()->language;
             $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
@@ -1944,7 +1944,7 @@ EOD;
                     $this->_placeInStructure($isNew, $section);
                 }
 
-                // Update the entry's descendants, who may be using this entry's URI in their own URIs
+                // Update the entry’s descendants, who may be using this entry’s URI in their own URIs
                 if (!$isNew) {
                     Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
                 }

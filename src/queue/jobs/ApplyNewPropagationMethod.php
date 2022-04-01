@@ -136,7 +136,7 @@ class ApplyNewPropagationMethod extends BaseJob
                         continue;
                     }
 
-                    // Should we add the clone to the source element's structure?
+                    // Should we add the clone to the source element’s structure?
                     if (
                         $element->structureId &&
                         $element->root &&
