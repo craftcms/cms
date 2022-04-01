@@ -12,6 +12,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionObject;
+use yii\test\Fixture;
 
 /**
  * Class TestCase
@@ -22,6 +23,14 @@ use ReflectionObject;
  */
 class TestCase extends Unit
 {
+    /**
+     * @return array{class: class-string<Fixture>}[]
+     */
+    public function _fixtures(): array
+    {
+        return [];
+    }
+
     /**
      * Returns a callable that checks whether the passed in object is an instance of the $class param
      *
