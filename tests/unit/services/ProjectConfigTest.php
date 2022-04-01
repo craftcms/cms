@@ -71,10 +71,13 @@ class ProjectConfigTest extends TestCase
     }
 
     /**
+     * @param array|null $internal
+     * @param array|null $external
+     * @param array $additionalConfig
      * @return ProjectConfig
      * @throws Exception
      */
-    protected function getProjectConfig(array $internal = null, array $external = null, array $additionalConfig = []): ProjectConfig
+    protected function getProjectConfig(?array $internal = null, ?array $external = null, array $additionalConfig = []): ProjectConfig
     {
         $internal = $internal ?? $this->internal;
         $external = $external ?? $this->external;
