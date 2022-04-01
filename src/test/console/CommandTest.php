@@ -65,7 +65,7 @@ class CommandTest
     protected CommandTestItem|array $eventChain = [];
 
     /**
-     * @var integer
+     * @var int
      */
     protected int $currentIndex;
 

@@ -111,7 +111,7 @@ class TypeResolverTest extends TestCase
      * @param class-string<ElementInterface> $elementType The element class providing the elements
      * @param array $params Querying parameters to use
      * @param class-string<Resolver> $resolverClass The resolver class being tested
-     * @param boolean $mustNotBeSame Whether the results should differ instead
+     * @param bool $mustNotBeSame Whether the results should differ instead
      * @throws Exception
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
