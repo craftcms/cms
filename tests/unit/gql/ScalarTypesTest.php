@@ -93,9 +93,11 @@ class ScalarTypesTest extends TestCase
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
+            /** @noinspection PhpParamsInspection */
             /** @phpstan-ignore-next-line */
             $type->parseLiteral($testValue);
         } else {
+            /** @noinspection PhpParamsInspection */
             /** @phpstan-ignore-next-line */
             self::assertSame($match, $type->parseLiteral($testValue));
         }
