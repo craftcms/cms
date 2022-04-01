@@ -5,8 +5,9 @@ on:
     branches:
       - develop
   pull_request:
+
 jobs:
-  craft_build:
+  tests:
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
@@ -143,7 +144,7 @@ jobs:
   notify:
     if: success()
     runs-on: ubuntu-latest
-    needs: craft_build
+    needs: tests
     steps:
       - name: Notify on success
         uses: ravsamhq/notify-slack-action@v1
