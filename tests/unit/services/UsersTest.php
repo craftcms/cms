@@ -623,7 +623,7 @@ class UsersTest extends TestCase
     /**
      * @inheritdoc
      */
-    public function _after()
+    protected function _after()
     {
         parent::_after();
 
