@@ -46,6 +46,7 @@ jobs:
 
   tests:
     runs-on: ${{ matrix.operating-system }}
+    needs: ecs
 
     strategy:
       matrix:
