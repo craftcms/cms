@@ -43,6 +43,7 @@ use craft\test\mockclasses\gql\MockType;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 class GqlTest extends Unit
@@ -151,7 +152,7 @@ class GqlTest extends Unit
     /**
      * Test query events
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testQueryEvents(): void
     {
@@ -251,7 +252,7 @@ class GqlTest extends Unit
      * Test if token affects the schema.
      *
      * @throws GqlException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testTokenAffectSchema(): void
     {
@@ -406,7 +407,7 @@ class GqlTest extends Unit
     /**
      * Test all Gql Token operations.
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testTokenOperations(): void
     {
@@ -454,7 +455,7 @@ class GqlTest extends Unit
     /**
      * Test all Gql Schema operations.
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testSchemaOperations(): void
     {

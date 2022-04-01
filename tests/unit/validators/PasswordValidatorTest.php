@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\UserPasswordValidator;
+use TypeError;
 use UnitTester;
 
 /**
@@ -104,7 +105,7 @@ class PasswordValidatorTest extends Unit
     {
         $passVal = $this->passwordValidator;
 
-        $this->tester->expectThrowable(\TypeError::class, function() use ($passVal) {
+        $this->tester->expectThrowable(TypeError::class, function() use ($passVal) {
             /** @phpstan-ignore-next-line */
             $passVal->isEmpty = 'craft_increment';
             $passVal->isEmpty(1);

@@ -18,6 +18,8 @@ use craft\fields\PlainText;
 use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
+use DateInterval;
+use DateTime;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
 use TypeError;
@@ -517,11 +519,11 @@ class ExtensionTest extends Unit
             '4 days',
             '{{ d|date("%d days") }}',
             [
-                'd' => new \DateInterval('P2Y4DT6H8M'),
+                'd' => new DateInterval('P2Y4DT6H8M'),
             ]
         );
 
-        $d = new \DateTime('2021-01-20 10:00:00');
+        $d = new DateTime('2021-01-20 10:00:00');
 
         // ICU format
         $this->testRenderResult(
@@ -548,7 +550,7 @@ class ExtensionTest extends Unit
      */
     public function testTimeFilter(): void
     {
-        $d = new \DateTime('2021-01-20 10:00:00');
+        $d = new DateTime('2021-01-20 10:00:00');
 
         // ICU format
         $this->testRenderResult(
@@ -575,7 +577,7 @@ class ExtensionTest extends Unit
      */
     public function testDatetimeFilter(): void
     {
-        $d = new \DateTime('2021-01-20 10:00:00');
+        $d = new DateTime('2021-01-20 10:00:00');
 
         // ICU format
         $this->testRenderResult(
@@ -602,9 +604,9 @@ class ExtensionTest extends Unit
      */
     public function testAtomFilter(): void
     {
-        $d = new \DateTime();
+        $d = new DateTime();
         $this->testRenderResult(
-            $d->format(\DateTime::ATOM),
+            $d->format(DateTime::ATOM),
             '{{ d|atom }}',
             compact('d')
         );
@@ -615,9 +617,9 @@ class ExtensionTest extends Unit
      */
     public function testRssFilter(): void
     {
-        $d = new \DateTime();
+        $d = new DateTime();
         $this->testRenderResult(
-            $d->format(\DateTime::RSS),
+            $d->format(DateTime::RSS),
             '{{ d|rss }}',
             compact('d')
         );
@@ -628,9 +630,9 @@ class ExtensionTest extends Unit
      */
     public function testHttpdateFilter(): void
     {
-        $d = new \DateTime();
+        $d = new DateTime();
         $this->testRenderResult(
-            $d->format(\DateTime::RFC7231),
+            $d->format(DateTime::RFC7231),
             '{{ d|httpdate }}',
             compact('d')
         );

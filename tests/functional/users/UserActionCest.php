@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\helpers\UrlHelper;
 use FunctionalTester;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 
@@ -41,7 +42,7 @@ class UserActionCest
 
     /**
      * @param FunctionalTester $I
-     * @throws \Throwable
+     * @throws Throwable
      * @throws WrongEditionException
      * @throws Exception
      */

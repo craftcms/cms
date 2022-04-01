@@ -19,6 +19,7 @@ use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
 use Exception;
+use Throwable;
 use UnitTester;
 use yii\base\InvalidConfigException;
 
@@ -43,7 +44,7 @@ class ComponentHelperTest extends Unit
      * @param class-string|null $instanceOf
      * @param class-string $exceptionClass
      */
-    public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = \Throwable::class): void
+    public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = Throwable::class): void
     {
         self::assertSame($expected, Component::validateComponentClass($class, $instanceOf));
         if (!$expected) {

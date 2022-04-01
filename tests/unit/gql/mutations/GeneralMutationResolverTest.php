@@ -27,7 +27,9 @@ use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use ReflectionException;
 use UnitTester;
+use yii\base\InvalidConfigException;
 
 class GeneralMutationResolverTest extends TestCase
 {
@@ -121,7 +123,7 @@ class GeneralMutationResolverTest extends TestCase
      *
      * @param array $contentFields
      * @param array $arguments
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @dataProvider populatingElementWithDataProvider
      */
     public function testPopulatingElementWithData(array $contentFields, array $arguments): void
@@ -144,7 +146,7 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Tests whether immutable attributes are immutable indeed.
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function testImmutableAttributes(): void
     {
@@ -202,8 +204,8 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element with validation errors throws the right exception.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
     public function testSavingElementWithValidationError(): void
     {
@@ -228,8 +230,8 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element that is enabled correctly changes the scenario before saving.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
     public function testSavingElementWithoutValidationError(): void
     {

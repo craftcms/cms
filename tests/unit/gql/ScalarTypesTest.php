@@ -18,6 +18,7 @@ use craft\gql\types\DateTime;
 use craft\gql\types\Money;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
+use DateTimeZone;
 use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\BooleanValueNode;
@@ -109,7 +110,7 @@ class ScalarTypesTest extends Unit
     {
         Craft::$app->setTimeZone('America/New_York');
 
-        $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+        $dateTime = new \DateTime('now', new DateTimeZone('UTC'));
         $dateField = $this->make(Date::class, [
             'showTimeZone' => false,
             'handle' => 'fieldName',
@@ -155,7 +156,7 @@ class ScalarTypesTest extends Unit
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
-            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()))->format(FormatDateTime::DEFAULT_FORMAT)],
+            [DateTime::getType(), clone $now, $now->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()))->format(FormatDateTime::DEFAULT_FORMAT)],
 
             [Number::getType(), 'testString', 'testString'],
             [Number::getType(), '', null],

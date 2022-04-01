@@ -13,8 +13,11 @@ use craft\test\mockclasses\ToString;
 use stdClass;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use function base64_decode;
 use function mb_strlen;
 use function mb_strpos;
+use function serialize;
+use const ENT_QUOTES;
 
 /**
  * Unit tests for the String Helper class.
@@ -2590,7 +2593,7 @@ class StringHelperTest extends Unit
         return [
             ['&', '&amp;'],
             ['"', '&quot;'],
-            ["'", '&#039;', \ENT_QUOTES],
+            ["'", '&#039;', ENT_QUOTES],
             ['<', '&lt;'],
             ['>', '&gt;'],
         ];
@@ -2604,7 +2607,7 @@ class StringHelperTest extends Unit
         return [
             ['&amp;', '&'],
             ['&quot;', '"'],
-            ['&#039;', "'", \ENT_QUOTES],
+            ['&#039;', "'", ENT_QUOTES],
             ['&lt;', '<'],
             ['&gt;', '>'],
         ];
@@ -2847,10 +2850,10 @@ class StringHelperTest extends Unit
             [false, ''],
             [true, 'a:1:{s:3:"foo";s:3:"bar";}'],
             [false, 'a:1:{s:3:"foo";s:3:"bar"}'],
-            [true, \serialize(['foo' => 'bar'])],
+            [true, serialize(['foo' => 'bar'])],
             [true, 'a:1:{s:5:"fòô";s:5:"bàř";}'],
             [false, 'a:1:{s:5:"fòô";s:5:"bàř"}'],
-            [true, \serialize(['fòô' => 'bár'])],
+            [true, serialize(['fòô' => 'bár'])],
         ];
     }
 
@@ -3885,7 +3888,7 @@ class StringHelperTest extends Unit
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
-        $string_mb = \base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
+        $string_mb = base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
 
         return [
             [$euc_jp, '0123こ', true, 'EUC-JP'],
@@ -3900,8 +3903,8 @@ class StringHelperTest extends Unit
             [$string_ascii, 'abc', true, null],
             [$string_ascii, 'bc', false, null],
             [$string_ascii, '', true, null],
-            [$string_mb, \base64_decode('5pel5pys6Kqe', true), true, null],
-            [$string_mb, \base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
+            [$string_mb, base64_decode('5pel5pys6Kqe', true), true, null],
+            [$string_mb, base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
             [$string_mb, '', true, null],
             ['Τὴ γλῶσσα μοῦ ἔδωσαν ἑλληνικὴ', 'ΤῊ', false, null],
         ];
@@ -3914,7 +3917,7 @@ class StringHelperTest extends Unit
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
-        $string_mb = \base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
+        $string_mb = base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
 
         return [
             [$euc_jp, 'い。', true, 'EUC-JP'],
@@ -3929,8 +3932,8 @@ class StringHelperTest extends Unit
             [$string_ascii, 'def', true, null],
             [$string_ascii, 'de', false, null],
             [$string_ascii, '', true, null],
-            [$string_mb, \base64_decode('77yZ44CC', true), true, null],
-            [$string_mb, \base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
+            [$string_mb, base64_decode('77yZ44CC', true), true, null],
+            [$string_mb, base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
             [$string_mb, '', true, null],
             ['Τὴ γλῶσσα μοῦ ἔδωσαν ἑλληνικὴ', 'ἙΛΛΗΝΙΚῊ', false, null],
         ];
@@ -3943,7 +3946,7 @@ class StringHelperTest extends Unit
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
-        $string_mb = \base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
+        $string_mb = base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
 
         return [
             [$euc_jp, '0123こ', true, 'EUC-JP'],
@@ -3959,8 +3962,8 @@ class StringHelperTest extends Unit
             [$string_ascii, 'AbC', true, null],
             [$string_ascii, 'bc', false, null],
             [$string_ascii, '', true, null],
-            [$string_mb, \base64_decode('5pel5pys6Kqe', true), true, null],
-            [$string_mb, \base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
+            [$string_mb, base64_decode('5pel5pys6Kqe', true), true, null],
+            [$string_mb, base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
             [$string_mb, '', true, null],
             ['Τὴ γλῶσσα μοῦ ἔδωσαν ἑλληνικὴ', 'ΤῊ', true, null],
         ];
@@ -3973,7 +3976,7 @@ class StringHelperTest extends Unit
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
         $string_ascii = 'abc def';
-        $string_mb = \base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
+        $string_mb = base64_decode('5pel5pys6Kqe44OG44Kt44K544OI44Gn44GZ44CCMDEyMzTvvJXvvJbvvJfvvJjvvJnjgII=', true);
 
         return [
             [$euc_jp, 'い。', true, 'EUC-JP'],
@@ -3989,8 +3992,8 @@ class StringHelperTest extends Unit
             [$string_ascii, 'DeF', true, null],
             [$string_ascii, 'de', false, null],
             [$string_ascii, '', true, null],
-            [$string_mb, \base64_decode('77yZ44CC', true), true, null],
-            [$string_mb, \base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
+            [$string_mb, base64_decode('77yZ44CC', true), true, null],
+            [$string_mb, base64_decode('44GT44KT44Gr44Gh44Gv44CB5LiW55WM', true), false, null],
             [$string_mb, '', true, null],
             // ['Τὴ γλῶσσα μοῦ ἔδωσαν ἑλληνικὴ', 'ἙΛΛΗΝΙΚῊ', true, null], // php 7.3 thingy
         ];

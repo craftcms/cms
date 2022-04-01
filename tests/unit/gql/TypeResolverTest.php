@@ -28,6 +28,7 @@ use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
 use crafttests\fixtures\UserFixture;
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class TypeResolverTest extends Unit
@@ -111,7 +112,7 @@ class TypeResolverTest extends Unit
      * @param array $params Querying parameters to use
      * @param class-string<Resolver> $resolverClass The resolver class being tested
      * @param boolean $mustNotBeSame Whether the results should differ instead
-     * @throws \Exception
+     * @throws Exception
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {

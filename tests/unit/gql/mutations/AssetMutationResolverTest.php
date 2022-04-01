@@ -7,12 +7,14 @@
 
 namespace craftunit\gql\mutations;
 
+use Craft;
 use craft\gql\resolvers\mutations\Asset;
 use craft\models\VolumeFolder;
 use craft\records\Volume;
 use craft\services\Assets;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 class AssetMutationResolverTest extends TestCase
 {
@@ -21,7 +23,7 @@ class AssetMutationResolverTest extends TestCase
      *
      * @param array $arguments
      * @param string $exception
-     * @throws \Throwable
+     * @throws Throwable
      * @dataProvider testVariousExceptionsProvider
      */
     public function testVariousExceptions(array $arguments, string $exception): void
@@ -34,7 +36,7 @@ class AssetMutationResolverTest extends TestCase
         $resolver->setResolutionData('volume', new Volume(['id' => 1]));
 
         $folder = new VolumeFolder(['id' => 1, 'volumeId' => 1]);
-        \Craft::$app->set('assets', $this->make(Assets::class, [
+        Craft::$app->set('assets', $this->make(Assets::class, [
             'getRootFolderByVolumeId' => $folder,
             'getFolderById' => $folder,
         ]));

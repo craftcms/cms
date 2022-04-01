@@ -25,6 +25,7 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\models\GqlSchema;
 use craft\services\Gql;
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
@@ -38,7 +39,7 @@ class ArgumentHandlerTest extends Unit
      * @dataProvider integrationTestDataProvider
      * @param string $argumentString
      * @param array $expectedResult
-     * @throws \Exception
+     * @throws Exception
      */
     public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult): void
     {

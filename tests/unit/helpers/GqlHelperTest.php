@@ -14,6 +14,7 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use yii\base\Exception;
 
 class GqlHelperTest extends Unit
 {
@@ -27,7 +28,7 @@ class GqlHelperTest extends Unit
      * @param string $failingScope Permission check against this scope must return false
      * @param bool $failAll Whether all tests should fail.
      * @throws GqlException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testSchemaHelper(array $permissionSet, string $permission, string $scope, string $failingScope, bool $failAll = false): void
     {
@@ -77,7 +78,7 @@ class GqlHelperTest extends Unit
     /**
      * Test whether `canQuery*` functions work correctly
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testSchemaQueryAbility(): void
     {

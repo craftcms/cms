@@ -8,6 +8,7 @@
 namespace craftunit\gql\mutations;
 
 use Codeception\Stub\Expected;
+use Craft;
 use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
@@ -39,7 +40,7 @@ class EntryMutationResolverTest extends TestCase
             'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
 
-        \Craft::$app->set('elements', $this->make(Elements::class, [
+        Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
         ]));
 
@@ -68,7 +69,7 @@ class EntryMutationResolverTest extends TestCase
             'identifyEntry' => $identifyCalled ? Expected::atLeastOnce($query) : Expected::never($query),
         ]);
 
-        \Craft::$app->set('elements', $this->make(Elements::class, [
+        Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
             'createElementQuery' => $query,
         ]));

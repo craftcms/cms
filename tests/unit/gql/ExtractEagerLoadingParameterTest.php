@@ -18,6 +18,7 @@ use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
 use crafttests\fixtures\GqlSchemasFixture;
 use Exception;
+use GraphQL\Error\SyntaxError;
 use GraphQL\Language\AST\DocumentNode;
 use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\NodeKind;
@@ -111,7 +112,7 @@ class ExtractEagerLoadingParameterTest extends Unit
      * @param array $variables Query variables
      * @param array $expectedParameters The expected eager-loading parameters.
      * @param string $returnType The return type of the GQL query
-     * @throws \GraphQL\Error\SyntaxError
+     * @throws SyntaxError
      * @dataProvider eagerLoadingParameterExtractionProvider
      */
     public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, string $returnType): void

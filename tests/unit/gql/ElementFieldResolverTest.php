@@ -39,6 +39,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\Assets;
 use craft\services\ImageTransforms;
+use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
 
@@ -85,7 +86,7 @@ class ElementFieldResolverTest extends Unit
 
         $mockElement = $this->make(
             EntryElement::class, [
-                'postDate' => new \DateTime(),
+                'postDate' => new DateTime(),
                 '__get' => function($property) {
                     // Assume fields 'plainTextField' and 'typeface'
                     return in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property;

@@ -27,7 +27,9 @@ use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
+use Exception;
 use UnitTester;
+use yii\base\InvalidConfigException;
 
 class CreateMutationsTest extends Unit
 {
@@ -88,7 +90,7 @@ class CreateMutationsTest extends Unit
      * @param array $scopes
      * @param array $mutationNames
      * @dataProvider assetMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testCreateAssetMutations(array $scopes, array $mutationNames): void
     {
@@ -133,7 +135,7 @@ class CreateMutationsTest extends Unit
      * @param array $scopes
      * @param array $mutationNames
      * @dataProvider categoryMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testCreateCategoryMutations(array $scopes, array $mutationNames): void
     {
@@ -178,7 +180,7 @@ class CreateMutationsTest extends Unit
      * @param array $scopes
      * @param array $mutationNames
      * @dataProvider tagMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testCreateTagMutations(array $scopes, array $mutationNames): void
     {
@@ -222,7 +224,7 @@ class CreateMutationsTest extends Unit
      * @param array $scopes
      * @param array $mutationNames
      * @dataProvider globalSetMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testCreateGlobalSetMutations(array $scopes, array $mutationNames): void
     {
@@ -267,7 +269,7 @@ class CreateMutationsTest extends Unit
      * @param array $scopes
      * @param array $mutationNames
      * @dataProvider entryMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function testCreateEntryMutations(array $scopes, array $mutationNames): void
     {
@@ -450,7 +452,7 @@ class CreateMutationsTest extends Unit
 
     /**
      * @param array $scopes
-     * @throws \Exception
+     * @throws Exception
      */
     private function _mockScope(array $scopes)
     {

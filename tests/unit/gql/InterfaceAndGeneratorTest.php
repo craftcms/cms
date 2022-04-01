@@ -17,6 +17,7 @@ use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\Tag as TagElement;
 use craft\elements\User as UserElement;
+use craft\errors\GqlException;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\fields\Table;
@@ -39,6 +40,7 @@ use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
+use Exception;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 
@@ -167,7 +169,7 @@ class InterfaceAndGeneratorTest extends Unit
     /**
      * Test table row generator
      *
-     * @throws \craft\errors\GqlException
+     * @throws GqlException
      */
     public function testTableRowTypeGenerator(): void
     {
@@ -228,7 +230,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock the volumes for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockVolumes(): array
     {
@@ -256,7 +258,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock the entry types for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockEntryTypes(): array
     {
@@ -286,7 +288,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock the global sets for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockGlobalSets(): array
     {
@@ -306,7 +308,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock a category group for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockCategoryGroups(): array
     {
@@ -326,7 +328,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock a tag group for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockTagGroups(): array
     {
@@ -346,7 +348,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock matrix blocks.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockMatrixBlocks(): array
     {
