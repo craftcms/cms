@@ -21,7 +21,7 @@ class Serializable implements SerializableInterface
     /**
      * @inheritdoc
      */
-    public function serialize(): mixed
+    public function serialize(): string
     {
         return 'Serialized data';
     }
