@@ -89,7 +89,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return array_filter([
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
-            self::OPERATOR_RELATED_TO
+            self::OPERATOR_RELATED_TO,
         ]);
     }
 
