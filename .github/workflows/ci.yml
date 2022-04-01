@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - '4.0'
   pull_request:
 
 env:
@@ -31,8 +32,8 @@ jobs:
 
       - name: Slack notification failure
         uses: ravsamhq/notify-slack-action@v1
-        # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
-        if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
+        # Only send Slack notification on failure if it's on a branch
+        if: ${{ ! success() && startsWith(github.ref, 'refs/heads/') }}}}
         with:
           status: ${{ job.status }}
           notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
@@ -70,8 +71,8 @@ jobs:
 
       - name: Slack notification failure
         uses: ravsamhq/notify-slack-action@v1
-        # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
-        if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
+        # Only send Slack notification on failure if it's on a branch
+        if: ${{ ! success() && startsWith(github.ref, 'refs/heads/') }}}}
         with:
           status: ${{ job.status }}
           notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
@@ -206,8 +207,8 @@ jobs:
 
     - name: Slack notification failure
       uses: ravsamhq/notify-slack-action@v1
-      # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
-      if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
+      # Only send Slack notification on failure if it's on a branch
+      if: ${{ ! success() && startsWith(github.ref, 'refs/heads/') }}}}
       with:
         status: ${{ job.status }}
         notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
