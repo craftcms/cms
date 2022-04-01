@@ -766,6 +766,7 @@ class AssetQuery extends ElementQuery
      */
     public function afterPopulate(array $elements): array
     {
+        /** @var Asset[] $elements */
         $elements = parent::afterPopulate($elements);
 
         // Eager-load transforms?

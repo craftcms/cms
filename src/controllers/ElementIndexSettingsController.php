@@ -47,7 +47,7 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $conditionsService = Craft::$app->getConditions();
         $view = Craft::$app->getView();

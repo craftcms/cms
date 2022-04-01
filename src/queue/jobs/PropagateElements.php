@@ -87,7 +87,7 @@ class PropagateElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -98,7 +98,7 @@ class PropagateElements extends BaseJob
         $query
             ->offset(null)
             ->limit(null)
-            ->orderBy(null);
+            ->orderBy([]);
 
         return $query;
     }

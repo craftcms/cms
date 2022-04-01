@@ -123,7 +123,7 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
-            /** @var string|TransportAdapterInterface $transportAdapterType */
+            /** @var class-string<TransportAdapterInterface>|TransportAdapterInterface $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [

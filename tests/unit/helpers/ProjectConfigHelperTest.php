@@ -68,7 +68,7 @@ class ProjectConfigHelperTest extends Unit
 
         // Test
         $timestamp = time();
-        $expected = str_replace('__TIMESTAMP__', $timestamp, $expected);
+        $expected = str_replace('__TIMESTAMP__', (string)$timestamp, $expected);
         ProjectConfigHelper::touch($timestamp);
         self::assertSame($expected, file_get_contents($path));
 

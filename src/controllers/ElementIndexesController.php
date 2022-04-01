@@ -37,7 +37,7 @@ use yii\web\Response;
 class ElementIndexesController extends BaseElementsController
 {
     /**
-     * @var string
+     * @var class-string<ElementInterface>
      */
     protected string $elementType;
 
@@ -217,7 +217,7 @@ class ElementIndexesController extends BaseElementsController
         $actionCriteria = (clone $this->elementQuery)
             ->offset(0)
             ->limit(null)
-            ->orderBy(null)
+            ->orderBy([])
             ->positionedAfter(null)
             ->positionedBefore(null)
             ->id($elementIds);
@@ -259,7 +259,7 @@ class ElementIndexesController extends BaseElementsController
         $responseData = $this->elementResponseData(true, true);
 
         // Send updated badge counts
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $formatter = Craft::$app->getFormatter();
         foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
@@ -333,7 +333,7 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    /** @var string|ElementInterface $elementType */
+                    /** @var class-string<ElementInterface>|ElementInterface $elementType */
                     $elementType = $this->elementType;
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                     break;
@@ -388,7 +388,7 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionFilterHud(): Response
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $id = $this->request->getRequiredBodyParam('id');
         $condition = $elementType::createCondition();
@@ -508,7 +508,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementQuery(): ElementQueryInterface
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
         $conditionsService = Craft::$app->getConditions();
@@ -565,7 +565,7 @@ class ElementIndexesController extends BaseElementsController
             $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
-                ->orderBy(null)
+                ->orderBy([])
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->status(null);
@@ -610,7 +610,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $responseData = [];
         $view = $this->getView();
@@ -657,7 +657,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $actions = $elementType::actions($this->sourceKey);
 
@@ -713,7 +713,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $exporters = $elementType::exporters($this->sourceKey);
 

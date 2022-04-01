@@ -161,7 +161,7 @@ class Assets extends BaseRelationField
     public bool $showUnpermittedFiles = false;
 
     /**
-     * @var string How related assets should be presented within element index views.
+     * @var self::PREVIEW_MODE_FULL|self::PREVIEW_MODE_THUMBS How related assets should be presented within element index views.
      * @since 3.5.11
      */
     public string $previewMode = self::PREVIEW_MODE_FULL;

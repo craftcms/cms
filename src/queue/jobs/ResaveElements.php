@@ -88,7 +88,7 @@ class ResaveElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 

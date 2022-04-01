@@ -65,7 +65,7 @@ class DashboardController extends Controller
         $widgetTypeInfo = [];
 
         foreach ($widgetTypes as $widgetType) {
-            /** @var WidgetInterface $widgetType */
+            /** @var class-string<WidgetInterface>|WidgetInterface $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }

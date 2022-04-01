@@ -21,7 +21,7 @@ use yii\base\Arrayable;
 trait MissingComponentTrait
 {
     /**
-     * @var class-string The expected component class name.
+     * @var class-string<ComponentInterface> The expected component class name.
      */
     public string $expectedType;
 

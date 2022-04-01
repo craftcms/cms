@@ -85,7 +85,7 @@ class Table extends Field
     public ?array $defaults = null;
 
     /**
-     * @var string The type of database column the field should have in the content table
+     * @var 'auto'|Schema::TYPE_STRING|Schema::TYPE_TEXT|'mediumtext' The type of database column the field should have in the content table
      */
     public string $columnType = Schema::TYPE_TEXT;
 

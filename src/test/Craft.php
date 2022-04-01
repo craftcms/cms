@@ -9,7 +9,7 @@ namespace craft\test;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
-use Codeception\PHPUnit\TestCase;
+use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
@@ -157,6 +157,7 @@ class Craft extends Yii2
      */
     public function _before(TestInterface $test): void
     {
+        /** @var TestCase $test */
         self::$currentTest = $test;
 
         parent::_before($test);
@@ -422,7 +423,7 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
@@ -656,10 +657,10 @@ class Craft extends Yii2
     }
 
     /**
-     * @param TestCase $test
+     * @param CodeceptionTestCase $test
      * @throws ReflectionException
      */
-    protected function mockModulesAndPlugins(TestCase $test): void
+    protected function mockModulesAndPlugins(CodeceptionTestCase $test): void
     {
         foreach ($this->_getConfig('plugins') as $plugin) {
             $moduleClass = $plugin['class'];
@@ -674,11 +675,11 @@ class Craft extends Yii2
     }
 
     /**
-     * @param TestCase $test
+     * @param CodeceptionTestCase $test
      * @param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
-    protected function addModule(TestCase $test, string $moduleClass): void
+    protected function addModule(CodeceptionTestCase $test, string $moduleClass): void
     {
         if (!method_exists($moduleClass, 'getComponentMap')) {
             return;
@@ -688,6 +689,7 @@ class Craft extends Yii2
         $componentMap = call_user_func([$moduleClass, 'getComponentMap']);
 
         // Set it.
+        /** @phpstan-ignore-next-line */
         \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockApp($test, $componentMap, $moduleClass);
     }
 

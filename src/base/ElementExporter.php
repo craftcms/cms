@@ -24,7 +24,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
     }
 
     /**
-     * @var string
+     * @var class-string<ElementInterface>
      */
     protected string $elementType;
 

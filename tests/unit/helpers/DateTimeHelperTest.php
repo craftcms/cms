@@ -61,7 +61,7 @@ class DateTimeHelperTest extends Unit
     public function testCurrentUtcDateTime()
     {
         self::assertSame(
-            (new DateTime(null, $this->utcTimezone))->format('Y-m-d H:i:s'),
+            (new DateTime('now', $this->utcTimezone))->format('Y-m-d H:i:s'),
             DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s')
         );
     }
@@ -73,7 +73,7 @@ class DateTimeHelperTest extends Unit
     {
         self::assertSame(
             DateTimeHelper::currentTimeStamp(),
-            (new DateTime(null, $this->utcTimezone))->getTimestamp()
+            (new DateTime('now', $this->utcTimezone))->getTimestamp()
         );
     }
 

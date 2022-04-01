@@ -156,7 +156,7 @@ class ElementSources extends Component
      */
     public function getAvailableTableAttributes(string $elementType): array
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $attributes = $elementType::tableAttributes();
 
         // Normalize
@@ -224,7 +224,7 @@ class ElementSources extends Component
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
-            /** @var string|ElementInterface $elementType */
+            /** @var class-string<ElementInterface>|ElementInterface $elementType */
             $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
         }
         return $this->_fieldLayouts[$elementType][$sourceKey];
@@ -310,7 +310,7 @@ class ElementSources extends Component
      */
     private function _nativeSources(string $elementType, string $context): array
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $sources = $elementType::sources($context);
         $normalized = [];
         foreach ($sources as $source) {

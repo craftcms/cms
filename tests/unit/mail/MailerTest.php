@@ -203,7 +203,7 @@ class MailerTest extends TestCase
 
     protected function _sendMail(?string $to = null)
     {
-        $user = Craft::$app->getUsers()->getUserById('1');
+        $user = Craft::$app->getUsers()->getUserById(1);
         $message = $this->mailer->composeFromKey('account_activation', [
             'user' => $user,
             'link' => 'https://craftcms.com',

@@ -227,9 +227,9 @@ class UserTest extends TestCase
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
      *
-     * @param int $returnValue
+     * @param bool $returnValue
      */
-    private function _passwordValidationStub(int $returnValue)
+    private function _passwordValidationStub(bool $returnValue)
     {
         $this->tester->mockCraftMethods('security', ['validatePassword' => $returnValue]);
     }
@@ -272,7 +272,7 @@ class UserTest extends TestCase
      */
     private function _getUser(): ?UserElement
     {
-        return Craft::$app->getUsers()->getUserById('1');
+        return Craft::$app->getUsers()->getUserById(1);
     }
 
     /**

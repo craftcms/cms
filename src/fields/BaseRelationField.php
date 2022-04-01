@@ -78,7 +78,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns the element class associated with this field type.
      *
-     * @return string The Element class name
+     * @return class-string<ElementInterface> The Element class name
      */
     abstract public static function elementType(): string;
 
@@ -444,7 +444,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return $value;
         }
 
-        /** @var ElementInterface $class */
+        /** @var class-string<ElementInterface>|ElementInterface $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()

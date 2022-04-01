@@ -535,6 +535,7 @@ class App
         }
 
         $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
+        /** @phpstan-ignore-next-line */
         set_error_handler(function() {
         });
         $result = ini_set('memory_limit', $testValue);

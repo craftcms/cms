@@ -1,7 +1,7 @@
 <?php
 
 /** @noinspection PhpInconsistentReturnPointsInspection */
-declare(strict_types=1);
+declare(strict_types = 1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace craft\fs;
 
 use craft\base\Fs;
+use craft\base\FsInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use Generator;
@@ -19,6 +20,7 @@ use yii\base\NotSupportedException;
 /**
  * MissingFs represents a filesystem with an invalid class.
  *
+ * @property class-string<FsInterface> $expectedType
  * @property-read false $rootUrl
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

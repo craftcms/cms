@@ -113,7 +113,7 @@ class Console extends \yii\helpers\Console
         foreach ($lines as $line) {
             $extra = $width - strlen($line);
             if ($center) {
-                static::output(static::ansiFormat(str_repeat(' ', floor($extra / 2) + $xPad) . $line . str_repeat(' ', ceil($extra / 2) + $xPad), $format));
+                static::output(static::ansiFormat(str_repeat(' ', (int)floor($extra / 2) + $xPad) . $line . str_repeat(' ', (int)ceil($extra / 2) + $xPad), $format));
             } else {
                 static::output(static::ansiFormat(str_repeat(' ', $xPad) . $line . str_repeat(' ', $extra + $xPad), $format));
             }

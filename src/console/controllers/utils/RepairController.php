@@ -140,7 +140,7 @@ class RepairController extends Controller
             ])
             ->all();
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $query->elementType;
         $displayName = $elementType::pluralLowerDisplayName();
 

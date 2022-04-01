@@ -114,7 +114,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public string $contentTable;
 
     /**
-     * @var string Propagation method
+     * @var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL Propagation method
      *
      * This will be set to one of the following:
      *

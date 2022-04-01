@@ -1454,10 +1454,10 @@ class Request extends \yii\web\Request
             ?? false;
         if ($siteId) {
             $siteId = Craft::$app->getSecurity()->validateData($siteId);
-            if ($siteId === false) {
+            if (!is_numeric($siteId)) {
                 throw new BadRequestHttpException('Invalid site token');
             }
-            $site = $this->sites->getSiteById($siteId, true);
+            $site = $this->sites->getSiteById((int)$siteId, true);
             if (!$site) {
                 throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
             }

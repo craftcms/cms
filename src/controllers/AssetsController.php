@@ -838,7 +838,7 @@ class AssetsController extends Controller
             $generalConfig->upscaleImages = true;
 
             if ($zoom !== 1.0) {
-                $transformer->scaleImage($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+                $transformer->scaleImage((int)($originalImageWidth * $zoom), (int)($originalImageHeight * $zoom));
             }
 
             $generalConfig->upscaleImages = $upscale;
@@ -870,7 +870,7 @@ class AssetsController extends Controller
             }
 
             if ($imageCropped) {
-                $transformer->crop($x, $y, $width, $height);
+                $transformer->crop((int)$x, (int)$y, (int)$width, (int)$height);
             }
 
             if ($imageChanged) {

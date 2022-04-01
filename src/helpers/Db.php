@@ -26,6 +26,7 @@ use yii\db\Exception as DbException;
 use yii\db\ExpressionInterface;
 use yii\db\pgsql\Schema as YiiPgqslSchema;
 use yii\db\Query as YiiQuery;
+use yii\db\QueryInterface;
 use yii\db\Schema;
 
 /**
@@ -245,7 +246,7 @@ class Db
 
         // Figure out the max length
         $maxAbsSize = (int)max(abs($min), abs($max));
-        $length = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $decimals;
+        $length = ($maxAbsSize ? mb_strlen((string)$maxAbsSize) : 0) + $decimals;
 
         // Decimal or int?
         if ($decimals > 0) {
@@ -1576,12 +1577,12 @@ class Db
      * reflect any changes that have been made over the main DB connection, if a transaction is currently
      * active.
      *
-     * @param YiiQuery $query The query that should be executed
+     * @param QueryInterface $query The query that should be executed
      * @param int $batchSize The number of rows to be fetched in each batch
      * @return BatchQueryResult The batched query to be iterated on
      * @since 3.7.0
      */
-    public static function batch(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    public static function batch(QueryInterface $query, int $batchSize = 100): BatchQueryResult
     {
         return self::_batch($query, $batchSize, false);
     }
@@ -1605,12 +1606,12 @@ class Db
      * reflect any changes that have been made over the main DB connection, if a transaction is currently
      * active.
      *
-     * @param YiiQuery $query The query that should be executed
+     * @param QueryInterface $query The query that should be executed
      * @param int $batchSize The number of rows to be fetched in each batch
      * @return BatchQueryResult The batched query to be iterated on
      * @since 3.7.0
      */
-    public static function each(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    public static function each(QueryInterface $query, int $batchSize = 100): BatchQueryResult
     {
         return self::_batch($query, $batchSize, true);
     }
@@ -1618,12 +1619,12 @@ class Db
     /**
      * Starts a new batch query for batch() and each().
      *
-     * @param YiiQuery $query
+     * @param QueryInterface $query
      * @param int $batchSize
      * @param bool $each
      * @return BatchQueryResult
      */
-    private static function _batch(YiiQuery $query, int $batchSize, bool $each): BatchQueryResult
+    private static function _batch(QueryInterface $query, int $batchSize, bool $each): BatchQueryResult
     {
         $db = self::db();
         $unbuffered = $db->getIsMysql() && Craft::$app->getConfig()->getDb()->useUnbufferedConnections;

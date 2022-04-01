@@ -208,7 +208,7 @@ class UsersTest extends TestCase
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
-            ['1000', '1001', '1002']
+            [1000, 1001, 1002]
         );
 
         $groups = $this->activeUser->getGroups();
@@ -225,7 +225,7 @@ class UsersTest extends TestCase
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
-            ['1000']
+            [1000]
         );
 
         $groups = $this->activeUser->getGroups();
@@ -236,7 +236,7 @@ class UsersTest extends TestCase
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
-            ['1001', '1002']
+            [1001, 1002]
         );
 
         // There should now be 2 - not three.

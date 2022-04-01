@@ -1933,7 +1933,7 @@ class Elements extends Component
         }
 
         foreach ($this->getAllElementTypes() as $class) {
-            /** @var string|ElementInterface $class */
+            /** @var class-string<ElementInterface>|ElementInterface $class */
             if (
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
@@ -2635,7 +2635,7 @@ class Elements extends Component
 
                     // If there's a temp ID, update the URI
                     if ($element->tempId && $element->uri) {
-                        $element->uri = str_replace($element->tempId, $element->id, $element->uri);
+                        $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
                         $element->tempId = null;
                     }
                 }

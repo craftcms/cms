@@ -49,7 +49,7 @@ class Volume extends Model
     public ?string $handle = null;
 
     /**
-     * @var string Title translation method
+     * @var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM Title translation method
      */
     public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 

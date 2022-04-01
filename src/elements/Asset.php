@@ -78,8 +78,8 @@ use yii\web\Response;
 /**
  * Asset represents an asset element.
  *
- * @property int|float|null $height the image height
- * @property int|float|null $width the image width
+ * @property int|null $height the image height
+ * @property int|null $width the image width
  * @property int|null $volumeId the volume ID
  * @property string $filename the filename (with extension)
  * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
@@ -302,6 +302,7 @@ class Asset extends Element
     public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'uploader') {
+            /** @var User|null $uploader */
             $uploader = $elements[0] ?? null;
             $this->setUploader($uploader);
         } else {
@@ -721,14 +722,14 @@ class Asset extends Element
     private string $_filename;
 
     /**
-     * @var int|float|null Width
+     * @var int|null Width
      */
-    private int|float|null $_width = null;
+    private int|null $_width = null;
 
     /**
-     * @var int|float|null Height
+     * @var int|null Height
      */
-    private int|float|null $_height = null;
+    private int|null $_height = null;
 
     /**
      * @var array|null Focal point
@@ -1713,10 +1714,10 @@ JS;
      * Returns the image height.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
-     * @return int|float|null
+     * @return int|null
      */
 
-    public function getHeight(mixed $transform = null): float|int|null
+    public function getHeight(mixed $transform = null): ?int
     {
         return $this->_dimensions($transform)[1];
     }
@@ -1724,9 +1725,9 @@ JS;
     /**
      * Sets the image height.
      *
-     * @param float|int|null $height the image height
+     * @param int|null $height the image height
      */
-    public function setHeight(float|int|null $height): void
+    public function setHeight(?int $height): void
     {
         $this->_height = $height;
     }
@@ -1735,9 +1736,9 @@ JS;
      * Returns the image width.
      *
      * @param array|string|ImageTransform|null $transform A transform handle or configuration that should be applied to the image
-     * @return int|float|null
+     * @return int|null
      */
-    public function getWidth(array|string|ImageTransform $transform = null): float|int|null
+    public function getWidth(array|string|ImageTransform $transform = null): ?int
     {
         return $this->_dimensions($transform)[0];
     }
@@ -1745,9 +1746,9 @@ JS;
     /**
      * Sets the image width.
      *
-     * @param float|int|null $width the image width
+     * @param int|null $width the image width
      */
-    public function setWidth(float|int|null $width): void
+    public function setWidth(?int $width): void
     {
         $this->_width = $width;
     }

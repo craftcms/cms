@@ -527,7 +527,7 @@ class Fields extends Component
         $types = [];
 
         foreach ($this->getAllFieldTypes() as $class) {
-            /** @var string|FieldInterface $class */
+            /** @var class-string<FieldInterface>|FieldInterface $class */
             if ($class === get_class($field)) {
                 if ($includeCurrent) {
                     $types[] = $class;

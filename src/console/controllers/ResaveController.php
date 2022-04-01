@@ -316,7 +316,7 @@ class ResaveController extends Controller
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {

@@ -130,14 +130,14 @@ class UserQueryTest extends TestCase
     {
         self::assertNull(User::find()->groupId('1000')->one());
 
-        Craft::$app->getUsers()->assignUserToGroups($this->activeUser->id, ['1000', '1001', '1002']);
+        Craft::$app->getUsers()->assignUserToGroups($this->activeUser->id, [1000, 1001, 1002]);
 
         self::assertSame('1', (string)User::find()->groupId('1000')->count());
         self::assertSame('0', (string)User::find()->groupId('123121223')->count());
         self::assertSame('1', (string)User::find()->groupId(['1001', 1002])->count());
         self::assertSame('1', (string)User::find()->groupId(['1001', '123121223'])->count());
 
-        Craft::$app->getUsers()->assignUserToGroups($this->lockedUser->id, ['1000', '1002']);
+        Craft::$app->getUsers()->assignUserToGroups($this->lockedUser->id, [1000, 1002]);
         self::assertSame('2', (string)User::find()->groupId(['1001', '1002'])->count());
         self::assertSame('1', (string)User::find()->groupId(['1001'])->count());
 

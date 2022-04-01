@@ -198,7 +198,7 @@ class AppHelperTest extends TestCase
     public function testPhpConfigValueAsBool()
     {
         $displayErrorsValue = ini_get('display_errors');
-        @ini_set('display_errors', 1);
+        @ini_set('display_errors', '1');
         self::assertTrue(App::phpConfigValueAsBool('display_errors'));
         @ini_set('display_errors', $displayErrorsValue);
 

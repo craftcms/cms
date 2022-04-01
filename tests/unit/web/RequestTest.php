@@ -549,7 +549,7 @@ class RequestTest extends TestCase
     private function _setMockUser()
     {
         Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById('1')
+            Craft::$app->getUsers()->getUserById(1)
         );
     }
 

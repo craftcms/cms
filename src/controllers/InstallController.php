@@ -249,7 +249,7 @@ class InstallController extends Controller
             } else {
                 $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
                 $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
-                $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
+                $configService->setDotEnvVar('DB_PORT', (string)$dbConfig->port);
                 $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
             }
 

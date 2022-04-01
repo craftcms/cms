@@ -47,7 +47,7 @@ class UtilitiesController extends Controller
             array_splice($utilities, $key, 1);
         }
 
-        /** @var string|UtilityInterface $firstUtility */
+        /** @var class-string<UtilityInterface>|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
         return $this->redirect('utilities/' . $firstUtility::id());
@@ -70,7 +70,7 @@ class UtilitiesController extends Controller
             throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
-        /** @var string|UtilityInterface $class */
+        /** @var class-string<UtilityInterface>|UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
             throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
@@ -292,7 +292,7 @@ class UtilitiesController extends Controller
         $info = [];
 
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
-            /** @var string|UtilityInterface $class */
+            /** @var class-string<UtilityInterface>|UtilityInterface $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
@@ -341,7 +341,7 @@ class UtilitiesController extends Controller
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var string|UtilityInterface $class */
+        /** @var class-string<UtilityInterface>|UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $class::displayName(),
         ]);

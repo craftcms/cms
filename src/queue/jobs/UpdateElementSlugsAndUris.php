@@ -90,7 +90,7 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private function _createElementQuery(): ElementQueryInterface
     {
-        /** @var string|ElementInterface $class */
+        /** @var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         return $class::find()

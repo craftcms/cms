@@ -42,7 +42,7 @@ class MockElementQuery extends ElementQuery
      */
     public function __construct()
     {
-        parent::__construct('MockElement', []);
+        parent::__construct(ExampleElement::class, []);
     }
 
     /**

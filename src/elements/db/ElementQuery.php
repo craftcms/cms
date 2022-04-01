@@ -1194,7 +1194,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();
         }
-        /** @var string|ElementInterface $class */
+        /** @var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Make sure the siteId param is set
@@ -1648,7 +1648,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $element;
         }
 
-        /** @var string|ElementInterface $class */
+        /** @var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Instantiate the element
@@ -2060,7 +2060,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStatusParam(string $class): void
     {
-        /** @var string|ElementInterface $class */
+        /** @var class-string<ElementInterface>|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }
@@ -2439,7 +2439,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        /** @var string|ElementInterface $class */
+        /** @var class-string<ElementInterface>|ElementInterface $class */
         if ($element instanceof ElementInterface && !$element->lft) {
             $element = $element->getCanonicalId();
 

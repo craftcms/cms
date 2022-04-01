@@ -824,7 +824,7 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param string[] $siteIds The site IDs in their new order
+     * @param int[] $siteIds The site IDs in their new order
      * @return bool Whether the sites were reordered successfully
      * @throws Throwable if reasons
      */

@@ -1014,6 +1014,7 @@ class UserQuery extends ElementQuery
      */
     public function afterPopulate(array $elements): array
     {
+        /** @var User[] $elements */
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?

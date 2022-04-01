@@ -92,8 +92,10 @@ class ScalarTypesTest extends Unit
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
+            /** @phpstan-ignore-next-line */
             $type->parseLiteral($testValue);
         } else {
+            /** @phpstan-ignore-next-line */
             self::assertSame($match, $type->parseLiteral($testValue));
         }
     }

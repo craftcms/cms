@@ -46,7 +46,7 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     public function execute($queue): void
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->site('*')
@@ -103,7 +103,7 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->status(null)
                     ->drafts(null)
                     ->provisionalDrafts(null)
-                    ->orderBy(null)
+                    ->orderBy([])
                     ->indexBy('siteId')
                     ->all();
 

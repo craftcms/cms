@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\helpers;
+namespace crafttests\unit\fields\data;
 
 use Codeception\Test\Unit;
 use craft\fields\data\ColorData;

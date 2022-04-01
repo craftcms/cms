@@ -1147,7 +1147,7 @@ class Gql extends Component
     public function getContentArguments(array $contexts, string $elementType): array
     {
         /** @var FieldLayoutBehavior[] $contexts */
-        /** @var string|BaseElementInterface $elementType */
+        /** @var class-string<BaseElementInterface>|BaseElementInterface $elementType */
         if (!array_key_exists($elementType, $this->_contentFieldCache)) {
             $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
             $contentArguments = [];
@@ -1311,7 +1311,7 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var string|SingularTypeInterface $type */
+            /** @var class-string<SingularTypeInterface>|SingularTypeInterface $type */
             TypeLoader::registerType($type::getName(), "$type::getType");
         }
 

@@ -94,7 +94,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     public ?string $suffix = null;
 
     /**
-     * @var string How the number should be formatted in element index views.
+     * @var self::FORMAT_DECIMAL|self::FORMAT_CURRENCY|self::FORMAT_NONE How the number should be formatted in element index views.
      * @since 3.5.11
      */
     public string $previewFormat = self::FORMAT_DECIMAL;

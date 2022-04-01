@@ -616,10 +616,12 @@ class Entry extends Element
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         if ($handle === 'author') {
+            /** @phpstan-ignore-next-line */
             $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
                 return $entry->getAuthorId() !== null;
             });
 
+            /** @phpstan-ignore-next-line */
             $map = array_map(function(self $entry) {
                 return [
                     'source' => $entry->id,

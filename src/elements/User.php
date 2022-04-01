@@ -1515,6 +1515,7 @@ class User extends Element implements IdentityInterface
     public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'photo') {
+            /** @var Asset|null $photo */
             $photo = $elements[0] ?? null;
             $this->setPhoto($photo);
         } else {

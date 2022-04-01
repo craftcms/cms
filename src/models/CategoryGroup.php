@@ -65,7 +65,7 @@ class CategoryGroup extends Model
     public ?int $maxLevels = null;
 
     /**
-     * @var string Default placement
+     * @var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END Default placement
      * @since 3.7.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;

@@ -677,8 +677,8 @@ class ElementsController extends Controller
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
-                Html::hiddenInput('elementId', $canonical->id) .
-                Html::hiddenInput('revisionId', $element->revisionId) .
+                Html::hiddenInput('elementId', (string)$canonical->id) .
+                Html::hiddenInput('revisionId', (string)$element->revisionId) .
                 Html::beginTag('div', ['class' => 'secondary-buttons']) .
                 Html::button(Craft::t('app', 'Revert content from this revision'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -736,15 +736,15 @@ JS;
 
         if ($canSave) {
             if ($element->id) {
-                $components[] = Html::hiddenInput('elementId', $element->getCanonicalId());
+                $components[] = Html::hiddenInput('elementId', (string)$element->getCanonicalId());
             }
 
             if ($element->siteId) {
-                $components[] = Html::hiddenInput('siteId', $element->siteId);
+                $components[] = Html::hiddenInput('siteId', (string)$element->siteId);
             }
 
             if ($element->fieldLayoutId) {
-                $components[] = Html::hiddenInput('fieldLayoutId', $element->fieldLayoutId);
+                $components[] = Html::hiddenInput('fieldLayoutId', (string)$element->fieldLayoutId);
             }
 
             if ($isUnpublishedDraft && $this->_fresh) {
@@ -940,6 +940,7 @@ JS;
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
+            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
         }
 
@@ -1448,7 +1449,7 @@ JS;
             throw new BadRequestHttpException('Request missing required param.');
         }
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $this->_validateElementType($elementType);
 
         if ($strictSite) {

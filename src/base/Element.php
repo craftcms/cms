@@ -3928,12 +3928,14 @@ abstract class Element extends Component implements ElementInterface
             case 'draftCreator':
                 if ($behavior = $this->getBehavior('draft')) {
                     /** @var DraftBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
                 if ($behavior = $this->getBehavior('revision')) {
                     /** @var RevisionBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;

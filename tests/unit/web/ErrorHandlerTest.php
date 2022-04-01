@@ -79,7 +79,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testHandleError()
     {
-        self::assertNull($this->errorHandler->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
+        self::assertTrue($this->errorHandler->handleError(0, 'Narrowing occurred during type inference. Please file a bug report', 'test.php', 10));
     }
 
     /**

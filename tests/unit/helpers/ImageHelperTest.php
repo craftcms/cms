@@ -135,6 +135,7 @@ class ImageHelperTest extends Unit
     public function testNoResourceImageByStreamExceptions()
     {
         $this->tester->expectThrowable(TypeError::class, function() {
+            /** @phpstan-ignore-next-line */
             Image::imageSizeByStream(1);
         });
     }

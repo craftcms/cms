@@ -62,7 +62,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         $headers = $response->getHeaders();
 
         if (Craft::$app->getConfig()->getGeneral()->sendContentLengthHeader) {
-            $headers->setDefault('content-length', strlen($response->content));
+            $headers->setDefault('content-length', (string)strlen($response->content));
         }
 
         // Set the MIME type for the request based on the matched template's file extension (unless the

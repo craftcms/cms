@@ -142,7 +142,7 @@ class GqlCest
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
             [$query, $response] = explode('-----RESPONSE DELIMITER-----', $case);
             [$schemaId, $query] = explode('-----TOKEN DELIMITER-----', $query);
-            $this->_setSchema(trim($schemaId));
+            $this->_setSchema((int)trim($schemaId));
             $I->amOnPage('?action=graphql/api&query=' . urlencode(trim($query)));
             $I->see(trim($response));
             $gqlService = Craft::$app->getGql();

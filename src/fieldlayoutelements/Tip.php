@@ -30,7 +30,7 @@ class Tip extends BaseUiElement
     public string $tip = '';
 
     /**
-     * @var string The tip style (`tip` or `warning`)
+     * @var self::STYLE_TIP|self::STYLE_WARNING The tip style (`tip` or `warning`)
      */
     public string $style = self::STYLE_TIP;
 

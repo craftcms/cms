@@ -100,7 +100,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         }
 
         if ($this->elementType !== null) {
-            /** @var string|ElementInterface $elementType */
+            /** @var class-string<ElementInterface>|ElementInterface $elementType */
             $elementType = $this->elementType;
 
             if ($elementType::hasContent() && $elementType::hasTitles()) {

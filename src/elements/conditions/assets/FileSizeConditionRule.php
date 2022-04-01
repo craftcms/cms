@@ -27,7 +27,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     public const UNIT_GB = 'GB';
 
     /**
-     * @var string The size unit
+     * @var self::UNIT_B|self::UNIT_KB|self::UNIT_MB|self::UNIT_GB The size unit
      */
     public string $unit = self::UNIT_B;
 
