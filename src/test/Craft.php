@@ -31,7 +31,6 @@ use ReflectionException;
 use Throwable;
 use Yii;
 use yii\base\Application;
-use yii\base\Component;
 use yii\base\ErrorException as YiiBaseErrorException;
 use yii\base\Event;
 use yii\base\Exception as YiiBaseException;
@@ -335,7 +334,7 @@ class Craft extends Yii2
     /**
      * Ensure that an event is triggered by the $callback() function.
      *
-     * @param class-string<Component> $class
+     * @param string $class
      * @param string $eventName
      * @param callable $callback
      * @param string $eventInstance
@@ -415,7 +414,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll Whether `status(null)` and `trashed(null)` should be applied
