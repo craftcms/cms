@@ -47,13 +47,11 @@ $createFolder = function($path) {
 
 $findConfigPath = function($cliName, $envName) use ($findConfig, $createFolder) {
     $path = $findConfig($cliName, $envName);
-
-    if ($path) {
-        $createFolder($path);
-        return realpath($path);
+    if (!$path) {
+        return null;
     }
-
-    return null;
+    $createFolder($path);
+    return realpath($path);
 };
 
 $ensureFolderIsReadable = function($path, $writableToo = false) {
