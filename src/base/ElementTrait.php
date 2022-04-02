@@ -23,7 +23,7 @@ trait ElementTrait
     public ?int $id = null;
 
     /**
-     * @var string|null The element’s temporary ID (only used if the element's URI format contains {id})
+     * @var string|null The element’s temporary ID (only used if the element’s URI format contains {id})
      */
     public ?string $tempId = null;
 

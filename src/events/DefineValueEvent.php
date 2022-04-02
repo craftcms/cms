@@ -20,5 +20,5 @@ class DefineValueEvent extends Event
     /**
      * @var mixed The value being defined by the event
      */
-    public $value;
+    public mixed $value = null;
 }

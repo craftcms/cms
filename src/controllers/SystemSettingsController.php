@@ -76,7 +76,7 @@ class SystemSettingsController extends Controller
         $systemSettings['retryDuration'] = (int)$this->request->getBodyParam('retryDuration') ?: null;
         $systemSettings['timeZone'] = $this->request->getBodyParam('timeZone');
 
-        if (strpos($systemSettings['live'], '$') !== 0) {
+        if (!str_starts_with($systemSettings['live'], '$')) {
             $systemSettings['live'] = (bool)$systemSettings['live'];
         }
 
@@ -103,7 +103,7 @@ class SystemSettingsController extends Controller
         if ($adapter === null) {
             try {
                 $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-            } catch (MissingComponentException $e) {
+            } catch (MissingComponentException) {
                 $adapter = new Sendmail();
                 $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
                     'type' => $settings->transportType,
@@ -123,7 +123,7 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
-            /** @var string|TransportAdapterInterface $transportAdapterType */
+            /** @var class-string<TransportAdapterInterface>|TransportAdapterInterface $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [

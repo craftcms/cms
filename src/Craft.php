@@ -42,7 +42,6 @@ class Craft extends Yii
 
     /**
      * @inheritdoc
-     *
      * @template T
      * @param class-string<T>|array{class: class-string<T>}|callable(): T $type
      * @param array $params
@@ -73,7 +72,7 @@ class Craft extends Yii
      * @since 3.1.0
      * @deprecated in 3.7.29. [[App::parseEnv()]] should be used instead.
      */
-    public static function parseEnv(?string $str = null)
+    public static function parseEnv(?string $str = null): string|null|false
     {
         return App::parseEnv($str);
     }
@@ -93,7 +92,7 @@ class Craft extends Yii
      * @since 3.7.22
      * @deprecated in 3.7.29. [[App::parseBooleanEnv()]] should be used instead.
      */
-    public static function parseBooleanEnv($value): ?bool
+    public static function parseBooleanEnv(mixed $value): ?bool
     {
         return App::parseBooleanEnv($value);
     }
@@ -105,7 +104,7 @@ class Craft extends Yii
      * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
      * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
      */
-    public static function dump($var, int $depth = 10, bool $highlight = true): void
+    public static function dump(mixed $var, int $depth = 10, bool $highlight = true): void
     {
         VarDumper::dump($var, $depth, $highlight);
     }
@@ -119,7 +118,7 @@ class Craft extends Yii
      * Defaults to `true` for web requests and `false` for console requests.
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd($var, int $depth = 10, ?bool $highlight = null): void
+    public static function dd(mixed $var, int $depth = 10, ?bool $highlight = null): void
     {
         // Turn off output buffering and discard OB contents
         while (ob_get_length() !== false) {
@@ -172,7 +171,7 @@ class Craft extends Yii
     /**
      * Class autoloader.
      *
-     * @param string $className
+     * @param class-string $className
      */
     public static function autoload($className): void
     {
@@ -186,6 +185,11 @@ class Craft extends Yii
      */
     private static function _autoloadCustomFieldBehavior(): void
     {
+        if (!isset(static::$app)) {
+            // Nothing we can do about it yet
+            return;
+        }
+
         if (!static::$app->getIsInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
             self::_generateCustomFieldBehavior([], null, false, true);
@@ -248,7 +252,7 @@ class Craft extends Yii
         if (!$fieldVersionExists) {
             try {
                 $fieldsService->updateFieldVersion();
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 // Craft probably isn't installed yet.
             }
         }
@@ -286,8 +290,9 @@ EOD;
         }
 
         // Load the template
-        $fileContents = file_get_contents(static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' .
-            DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template');
+        $templatePath = static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template';
+        FileHelper::invalidate($templatePath);
+        $fileContents = file_get_contents($templatePath);
 
         // Replace placeholders with generated code
         $fileContents = str_replace(
@@ -321,12 +326,12 @@ EOD;
                     $b = basename($path);
                     return (
                         $b !== $basename &&
-                        strpos($b, 'CustomFieldBehavior') === 0 &&
+                        str_starts_with($b, 'CustomFieldBehavior') &&
                         filemtime($path) < $time
                     );
                 },
             ]);
-        } else if ($load) {
+        } elseif ($load) {
             // Just evaluate the code
             eval(preg_replace('/^<\?php\s*/', '', $fileContents));
         }

@@ -9,6 +9,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
     $newEntryBtn: null,
 
     init: function(elementType, $container, settings) {
+        this.publishableSections = [];
         this.on('selectSource', this.updateButton.bind(this));
         this.on('selectSite', this.updateButton.bind(this));
         this.base(elementType, $container, settings);
@@ -16,15 +17,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
     afterInit: function() {
         // Find which of the visible sections the user has permission to create new entries in
-        this.publishableSections = [];
-
-        for (var i = 0; i < Craft.publishableSections.length; i++) {
-            var section = Craft.publishableSections[i];
-
-            if (this.getSourceByKey('section:' + section.uid)) {
-                this.publishableSections.push(section);
-            }
-        }
+        this.publishableSections = Craft.publishableSections.filter(s => !!this.getSourceByKey(`section:${s.uid}`));
 
         this.base();
     },
@@ -34,13 +27,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         if (this.settings.context === 'index' && typeof defaultSectionHandle !== 'undefined') {
             if (defaultSectionHandle === 'singles') {
                 return 'singles';
-            } else {
-                for (var i = 0; i < this.$sources.length; i++) {
-                    var $source = $(this.$sources[i]);
+            }
 
-                    if ($source.data('handle') === defaultSectionHandle) {
-                        return $source.data('key');
-                    }
+            for (let i = 0; i < this.$sources.length; i++) {
+                const $source = $(this.$sources[i]);
+                if ($source.data('handle') === defaultSectionHandle) {
+                    return $source.data('key');
                 }
             }
         }
@@ -53,7 +45,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             return;
         }
 
-        var handle;
+        let handle;
 
         // Get the handle of the selected source
         if (this.$source.data('key') === 'singles') {
@@ -65,8 +57,6 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         // Update the New Entry button
         // ---------------------------------------------------------------------
 
-        var i, href, label;
-
         if (this.publishableSections.length) {
             // Remove the old button, if there is one
             if (this.$newEntryBtnGroup) {
@@ -74,83 +64,87 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             }
 
             // Determine if they are viewing a section that they have permission to create entries in
-            var selectedSection;
+            const selectedSection = this.publishableSections.find(s => s.handle === handle);
 
-            if (handle) {
-                for (i = 0; i < this.publishableSections.length; i++) {
-                    if (this.publishableSections[i].handle === handle) {
-                        selectedSection = this.publishableSections[i];
-                        break;
-                    }
-                }
-            }
-
-            this.$newEntryBtnGroup = $('<div class="btngroup submit"/>');
-            var $menuBtn;
+            this.$newEntryBtnGroup = $('<div class="btngroup submit" data-wrapper/>');
+            let $menuBtn;
+            const menuId = 'new-entry-menu-' + Craft.randomString(10);
 
             // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
             // Otherwise only show a menu button
             if (selectedSection) {
-                href = this._getSectionTriggerHref(selectedSection);
-                label = (this.settings.context === 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
-                this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + ' role="button" tabindex="0">' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
+                this.$newEntryBtn = Craft.ui.createButton({
+                    label: this.settings.context === 'index'
+                        ? Craft.t('app', 'New entry')
+                        : Craft.t('app', 'New {section} entry', {
+                            section: selectedSection.name,
+                        }),
+                    spinner: true,
+                })
+                    .addClass('submit add icon')
+                    .appendTo(this.$newEntryBtnGroup);
 
-                if (this.settings.context !== 'index') {
-                    this.addListener(this.$newEntryBtn, 'click', function(ev) {
-                        this._openCreateEntryModal(ev.currentTarget.getAttribute('data-id'));
-                    });
-                }
+                this.addListener(this.$newEntryBtn, 'click', () => {
+                    this._createEntry(selectedSection.id);
+                });
 
                 if (this.publishableSections.length > 1) {
                     $menuBtn = $('<button/>', {
                         type: 'button',
-                        class: 'btn submit menubtn',
+                        class: 'btn submit menubtn btngroup-btn-last',
+                        'aria-controls': menuId,
+                        'data-disclosure-trigger': '',
                     }).appendTo(this.$newEntryBtnGroup);
                 }
             } else {
-                this.$newEntryBtn = $menuBtn = $('<button/>', {
-                    type: 'button',
-                    class: 'btn submit add icon menubtn',
-                    text: Craft.t('app', 'New entry'),
-                }).appendTo(this.$newEntryBtnGroup);
+                this.$newEntryBtn = $menuBtn = Craft.ui.createButton({
+                    label: Craft.t('app', 'New entry'),
+                    spinner: true,
+                })
+                    .addClass('submit add icon menubtn btngroup-btn-last')
+                    .attr('aria-controls', menuId)
+                    .attr('data-disclosure-trigger', '')
+                    .appendTo(this.$newEntryBtnGroup);
             }
 
+            this.addButton(this.$newEntryBtnGroup);
+
             if ($menuBtn) {
-                var menuHtml = '<div class="menu"><ul>';
+                const $menuContainer = $('<div/>', {
+                    id: menuId,
+                    class: 'menu menu--disclosure',
+                }).appendTo(this.$newEntryBtnGroup);
+                const $ul = $('<ul/>').appendTo($menuContainer);
 
-                for (i = 0; i < this.publishableSections.length; i++) {
-                    var section = this.publishableSections[i];
-
+                for (const section of this.publishableSections) {
                     if (
                         (this.settings.context === 'index' && $.inArray(this.siteId, section.sites) !== -1) ||
                         (this.settings.context !== 'index' && section !== selectedSection)
                     ) {
-                        href = this._getSectionTriggerHref(section);
-                        label = (this.settings.context === 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
-                        menuHtml += '<li><a ' + href + '>' + Craft.escapeHtml(label) + '</a></li>';
+                        const $li = $('<li/>').appendTo($ul);
+                        const $a = $('<a/>', {
+                            role: 'button',
+                            tabindex: '0',
+                            text: Craft.t('app', 'New {section} entry', {
+                                section: section.name,
+                            }),
+                        }).appendTo($li);
+                        this.addListener($a, 'click', () => {
+                            $menuBtn.data('trigger').hide();
+                            this._createEntry(section.id);
+                        });
                     }
                 }
 
-                menuHtml += '</ul></div>';
-
-                $(menuHtml).appendTo(this.$newEntryBtnGroup);
-                var menuBtn = new Garnish.MenuBtn($menuBtn);
-
-                if (this.settings.context !== 'index') {
-                    menuBtn.on('optionSelect', ev => {
-                        this._openCreateEntryModal(ev.option.getAttribute('data-id'));
-                    });
-                }
+                new Garnish.DisclosureMenu($menuBtn);
             }
-
-            this.addButton(this.$newEntryBtnGroup);
         }
 
         // Update the URL if we're on the Entries index
         // ---------------------------------------------------------------------
 
         if (this.settings.context === 'index' && typeof history !== 'undefined') {
-            var uri = 'entries';
+            let uri = 'entries';
 
             if (handle) {
                 uri += '/' + handle;
@@ -161,39 +155,20 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         }
     },
 
-    _getSectionTriggerHref: function(section) {
-        if (this.settings.context === 'index') {
-            const uri = `entries/${section.handle}/new`;
-            const site = this.getSite();
-            const params = site ? {site: site.handle} : undefined;
-            return `href="${Craft.getUrl(uri, params)}"`;
-        }
-
-        return `data-id="${section.id}"`;
-    },
-
-    _openCreateEntryModal: function(sectionId) {
+    _createEntry: function(sectionId) {
         if (this.$newEntryBtn.hasClass('loading')) {
+            console.warn('New entry creation already in progress.');
             return;
         }
 
         // Find the section
-        var section;
-
-        for (var i = 0; i < this.publishableSections.length; i++) {
-            if (this.publishableSections[i].id == sectionId) {
-                section = this.publishableSections[i];
-                break;
-            }
-        }
+        const section = this.publishableSections.find(s => s.id === sectionId);
 
         if (!section) {
-            return;
+            throw `Invalid section ID: ${sectionId}`;
         }
 
-        this.$newEntryBtn.addClass('inactive');
-        var newEntryBtnText = this.$newEntryBtn.text();
-        this.$newEntryBtn.text(Craft.t('app', 'New {section} entry', {section: section.name}));
+        this.$newEntryBtn.addClass('loading');
 
         Craft.sendActionRequest('POST', 'elements/create', {
             data: {
@@ -204,27 +179,33 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 enabled: section.canSave ? 1 : 0,
             },
         }).then(ev => {
-            const slideout = Craft.createElementEditor(this.elementType, {
-                siteId: this.siteId,
-                elementId: ev.data.element.id,
-                draftId: ev.data.element.draftId,
-            });
-            slideout.on('submit', () => {
-                // Make sure the right section is selected
-                const sectionSourceKey = `section:${section.uid}`;
+            if (this.settings.context === 'index') {
+                document.location.href = Craft.getUrl(ev.data.cpEditUrl, {fresh: 1});
+            } else {
+                const slideout = Craft.createElementEditor(this.elementType, {
+                    siteId: this.siteId,
+                    elementId: ev.data.element.id,
+                    draftId: ev.data.element.draftId,
+                    params: {
+                        fresh: 1,
+                    },
+                });
+                slideout.on('submit', () => {
+                    // Make sure the right section is selected
+                    const sectionSourceKey = `section:${section.uid}`;
 
-                if (this.sourceKey !== sectionSourceKey) {
-                    this.selectSourceByKey(sectionSourceKey);
-                }
+                    if (this.sourceKey !== sectionSourceKey) {
+                        this.selectSourceByKey(sectionSourceKey);
+                    }
 
-                this.selectElementAfterUpdate(ev.data.element.id);
-                this.updateElements();
-            });
-            slideout.on('close', () => {
-                this.$newEntryBtn.removeClass('inactive').text(newEntryBtnText);
-            });
+                    this.selectElementAfterUpdate(ev.data.element.id);
+                    this.updateElements();
+                });
+            }
+        }).finally(() => {
+            this.$newEntryBtn.removeClass('loading');
         });
-    }
+    },
 });
 
 // Register it!

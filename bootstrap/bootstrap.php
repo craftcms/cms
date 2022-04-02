@@ -96,7 +96,7 @@ $environment = $findConfig('--env', 'CRAFT_ENVIRONMENT') ?? $_SERVER['SERVER_NAM
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-if (!App::env('CRAFT_LICENSE_KEY')) {
+if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
     $licenseKeyPath = App::env('CRAFT_LICENSE_KEY_PATH');
 
     // Validate permissions on the license key file path (default config/) and storage/

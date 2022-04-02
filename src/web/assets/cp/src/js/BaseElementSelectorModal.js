@@ -184,9 +184,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.postActionRequest('element-selector-modals/body', data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.$body.html(response.html);
+        Craft.sendActionRequest('POST', 'element-selector-modals/body', {data})
+            .then((response) => {
+                this.$body.html(response.data.html);
 
                 if (this.$body.has('.sidebar:not(.hidden)').length) {
                     this.$body.addClass('has-sidebar');
@@ -217,8 +217,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                         this.selectElements();
                     }
                 });
-            }
-        });
+            });
     }
 }, {
     defaults: {

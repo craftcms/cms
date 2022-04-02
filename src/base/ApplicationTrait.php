@@ -15,10 +15,12 @@ use craft\db\MigrationManager;
 use craft\db\mysql\Schema;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
+use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -26,10 +28,18 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
-use craft\fieldlayoutelements\AssetAltField;
-use craft\fieldlayoutelements\AssetTitleField;
-use craft\fieldlayoutelements\EntryTitleField;
+use craft\fieldlayoutelements\addresses\AddressField;
+use craft\fieldlayoutelements\addresses\CountryCodeField;
+use craft\fieldlayoutelements\addresses\LabelField;
+use craft\fieldlayoutelements\addresses\LatLongField;
+use craft\fieldlayoutelements\addresses\OrganizationField;
+use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
+use craft\fieldlayoutelements\assets\AltField;
+use craft\fieldlayoutelements\assets\AssetTitleField;
+use craft\fieldlayoutelements\entries\EntryTitleField;
+use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\users\AddressesField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Session;
@@ -40,6 +50,7 @@ use craft\mail\Mailer;
 use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
+use craft\services\Addresses;
 use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
@@ -89,7 +100,6 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
-use craft\web\Response as WebResponse;
 use craft\web\View;
 use Yii;
 use yii\base\Application;
@@ -110,6 +120,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @property bool $isInstalled Whether Craft is installed
  * @property int $edition The active Craft edition
+ * @property-read Addresses $addresses The addresses service
  * @property-read Announcements $announcements The announcements service
  * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
@@ -250,7 +261,7 @@ trait ApplicationTrait
     /**
      * @var Info|null
      */
-    private ?Info $_info;
+    private ?Info $_info = null;
 
     /**
      * @var bool
@@ -266,7 +277,7 @@ trait ApplicationTrait
     /**
      * Sets the target application language.
      *
-     * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool|null $useUserLanguage Whether the user’s preferred language should be used.
      * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
     public function updateTargetLanguage(?bool $useUserLanguage = null): void
@@ -293,7 +304,7 @@ trait ApplicationTrait
     /**
      * Returns the target app language.
      *
-     * @param bool $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool $useUserLanguage Whether the user’s preferred language should be used.
      * @return string
      */
     public function getTargetLanguage(bool $useUserLanguage = true): string
@@ -338,7 +349,7 @@ trait ApplicationTrait
         if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
-        } else if (isset($this->_isInstalled)) {
+        } elseif (isset($this->_isInstalled)) {
             return $this->_isInstalled;
         }
 
@@ -360,9 +371,9 @@ trait ApplicationTrait
 
             $info = $this->getInfo(true);
             return $this->_isInstalled = !empty($info->id);
-        } catch (DbException | ServerErrorHttpException $e) {
+        } catch (DbException|ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
-            if ($e instanceof DbException && strpos($e->getMessage(), 'Redis') !== false) {
+            if ($e instanceof DbException && str_contains($e->getMessage(), 'Redis')) {
                 throw $e;
             }
 
@@ -389,6 +400,7 @@ trait ApplicationTrait
      *
      * @return string
      * @since 3.2.0
+     * @deprecated in 4.0.0
      */
     public function getInstalledSchemaVersion(): string
     {
@@ -424,7 +436,7 @@ trait ApplicationTrait
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
                     ->from([
-                        'x' => (new Query)
+                        'x' => (new Query())
                             ->select([new Expression('1')])
                             ->from([Table::SITES])
                             ->limit(2),
@@ -582,14 +594,13 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        $request = $this->getRequest();
-        if ($request instanceof ConsoleRequest) {
+        if (!$this instanceof WebApplication) {
             return false;
         }
 
         /** @var Cache $cache */
         $cache = $this->getCache();
-        return $cache->get('editionTestableDomain@' . $request->getHostName());
+        return $cache->get(sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName()));
     }
 
     /**
@@ -614,7 +625,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live'), true);
+        return App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -672,7 +683,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException | DbConnectException $e) {
+        } catch (DbException|DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -734,9 +745,8 @@ trait ApplicationTrait
      */
     public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
-
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
         }
 
         if (!$info->validate($attributeNames)) {
@@ -782,7 +792,7 @@ trait ApplicationTrait
 
         try {
             $name = $this->getSites()->getPrimarySite()->getName();
-        } catch (SiteNotFoundException $e) {
+        } catch (SiteNotFoundException) {
             $name = null;
         }
 
@@ -809,7 +819,7 @@ trait ApplicationTrait
     {
         try {
             $this->getDb()->open();
-        } catch (DbConnectException | InvalidConfigException $e) {
+        } catch (DbConnectException|InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -822,6 +832,18 @@ trait ApplicationTrait
 
     // Service Getters
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the addresses service.
+     *
+     * @return Addresses The addresses service
+     * @since 4.0.0
+     */
+    public function getAddresses(): Addresses
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('addresses');
+    }
 
     /**
      * Returns the announcements service.
@@ -1416,7 +1438,7 @@ trait ApplicationTrait
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $request = $this->getRequest();
+        $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1426,9 +1448,8 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        $response = $this->getResponse();
-        if ($response instanceof WebResponse) {
-            $response->setNoCacheHeaders();
+        if ($this instanceof WebApplication) {
+            $this->getResponse()->setNoCacheHeaders();
         }
     }
 
@@ -1497,7 +1518,7 @@ trait ApplicationTrait
      */
     private function _getFallbackLanguage(): string
     {
-        // See if we have the CP translated in one of the user's browsers preferred language(s)
+        // See if we have the CP translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
             $languages = $this->getI18n()->getAppLocaleIds();
             return $this->getRequest()->getPreferredLanguage($languages);
@@ -1521,12 +1542,24 @@ trait ApplicationTrait
                 case Tag::class:
                     $event->fields[] = TitleField::class;
                     break;
+                case Address::class:
+                    $event->fields[] = LabelField::class;
+                    $event->fields[] = OrganizationField::class;
+                    $event->fields[] = OrganizationTaxIdField::class;
+                    $event->fields[] = FullNameField::class;
+                    $event->fields[] = CountryCodeField::class;
+                    $event->fields[] = AddressField::class;
+                    $event->fields[] = LatLongField::class;
+                    break;
                 case Asset::class:
                     $event->fields[] = AssetTitleField::class;
-                    $event->fields[] = AssetAltField::class;
+                    $event->fields[] = AltField::class;
                     break;
                 case Entry::class:
                     $event->fields[] = EntryTitleField::class;
+                    break;
+                case User::class:
+                    $event->fields[] = AddressesField::class;
                     break;
             }
         });
@@ -1538,6 +1571,10 @@ trait ApplicationTrait
     private function _registerConfigListeners(): void
     {
         $this->getProjectConfig()
+            // Address field layout
+            ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
+            ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
+            ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
             // Field groups
             ->onAdd(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))
             ->onUpdate(ProjectConfig::PATH_FIELD_GROUPS . '.{uid}', $this->_proxy('fields', 'handleChangedGroup'))

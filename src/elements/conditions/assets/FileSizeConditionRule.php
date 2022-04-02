@@ -21,13 +21,13 @@ use yii\base\InvalidValueException;
  */
 class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
-    const UNIT_B = 'B';
-    const UNIT_KB = 'KB';
-    const UNIT_MB = 'MB';
-    const UNIT_GB = 'GB';
+    public const UNIT_B = 'B';
+    public const UNIT_KB = 'KB';
+    public const UNIT_MB = 'MB';
+    public const UNIT_GB = 'GB';
 
     /**
-     * @var string The size unit
+     * @var self::UNIT_B|self::UNIT_KB|self::UNIT_MB|self::UNIT_GB The size unit
      */
     public string $unit = self::UNIT_B;
 
@@ -45,7 +45,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     protected function inputHtml(): string
     {
         return Html::tag('div',
-            parent::getHtml() .
+            parent::inputHtml() .
             Cp::selectHtml([
                 'name' => 'unit',
                 'options' => [
@@ -131,22 +131,15 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
         [$minBytes, $maxBytes] = $this->_byteRange();
 
-        switch ($this->operator) {
-            case self::OPERATOR_EQ:
-                return $element->size >= $minBytes && $element->size <= $maxBytes;
-            case self::OPERATOR_NE:
-                return $element->size < $minBytes || $element->size > $maxBytes;
-            case self::OPERATOR_LT:
-                return $element->size < $minBytes;
-            case self::OPERATOR_LTE:
-                return $element->size <= $minBytes;
-            case self::OPERATOR_GT:
-                return $element->size > $maxBytes;
-            case self::OPERATOR_GTE:
-                return $element->size >= $maxBytes;
-            default:
-                throw new InvalidValueException("Invalid file size operator: $this->operator");
-        }
+        return match ($this->operator) {
+            self::OPERATOR_EQ => $element->size >= $minBytes && $element->size <= $maxBytes,
+            self::OPERATOR_NE => $element->size < $minBytes || $element->size > $maxBytes,
+            self::OPERATOR_LT => $element->size < $minBytes,
+            self::OPERATOR_LTE => $element->size <= $minBytes,
+            self::OPERATOR_GT => $element->size > $maxBytes,
+            self::OPERATOR_GTE => $element->size >= $maxBytes,
+            default => throw new InvalidValueException("Invalid file size operator: $this->operator"),
+        };
     }
 
     /**
@@ -161,7 +154,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
                 self::UNIT_KB,
                 self::UNIT_MB,
                 self::UNIT_GB,
-            ]
+            ],
         ];
         return $rules;
     }
@@ -174,7 +167,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     private function _byteRange(): array
     {
         if ($this->unit === self::UNIT_B) {
-            return [$this->value, $this->value];
+            return [(int)$this->value, (int)$this->value];
         }
 
         $multiplier = 1;
@@ -195,8 +188,8 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
         // 1 KB == 500 - 1,499 B
         $maxDiff = $multiplier / 2;
-        $minBytes = $this->value * $multiplier - $maxDiff;
-        $maxBytes = $this->value * $multiplier + $maxDiff - 1;
+        $minBytes = (int)$this->value * $multiplier - $maxDiff;
+        $maxBytes = (int)$this->value * $multiplier + $maxDiff - 1;
 
         return [$minBytes, $maxBytes];
     }

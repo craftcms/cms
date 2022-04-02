@@ -20,7 +20,7 @@ use yii\base\Event;
 class EagerLoadElementsEvent extends Event
 {
     /**
-     * @var string The source element type
+     * @var class-string<ElementInterface> The source element type
      */
     public string $elementType;
 

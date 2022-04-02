@@ -78,16 +78,4 @@ class CraftIdToken extends Model
 
         return $expiryDate->getTimestamp() - $now->getTimestamp();
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-
-        $attributes[] = 'expiryDate';
-
-        return $attributes;
-    }
 }

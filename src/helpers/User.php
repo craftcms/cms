@@ -33,11 +33,7 @@ class User
                 $message = Craft::t('app', 'Account locked.');
                 break;
             case UserElement::AUTH_ACCOUNT_COOLDOWN:
-                $timeRemaining = null;
-
-                if ($user !== null) {
-                    $timeRemaining = $user->getRemainingCooldownTime();
-                }
+                $timeRemaining = $user?->getRemainingCooldownTime();
 
                 if ($timeRemaining) {
                     $message = Craft::t('app', 'Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDurationFromInterval($timeRemaining)]);

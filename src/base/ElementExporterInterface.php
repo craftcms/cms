@@ -28,7 +28,7 @@ interface ElementExporterInterface extends ComponentInterface
     /**
      * Sets the element type on the exporter.
      *
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      */
     public function setElementType(string $elementType): void;
 
@@ -46,7 +46,7 @@ interface ElementExporterInterface extends ComponentInterface
      * @param ElementQueryInterface $query The element query
      * @return array|string|callable|resource
      */
-    public function export(ElementQueryInterface $query);
+    public function export(ElementQueryInterface $query): mixed;
 
     /**
      * Returns the filename that the export file should have.

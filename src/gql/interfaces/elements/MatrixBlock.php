@@ -7,9 +7,9 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\MatrixBlockType;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
@@ -65,16 +65,16 @@ class MatrixBlock extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'fieldId' => [
                 'name' => 'fieldId',
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the field that owns the matrix block.',
             ],
-            'ownerId' => [
-                'name' => 'ownerId',
+            'primaryOwnerId' => [
+                'name' => 'primaryOwnerId',
                 'type' => Type::nonNull(Type::int()),
-                'description' => 'The ID of the element that owns the matrix block.',
+                'description' => 'The ID of the primary owner of the Matrix block.',
             ],
             'typeId' => [
                 'name' => 'typeId',

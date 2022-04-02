@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Throwable;
@@ -62,7 +63,7 @@ class EntriesController extends BaseEntriesController
         $sitesService = Craft::$app->getSites();
 
         if (!in_array($site->id, $editableSiteIds)) {
-            // If there's more than one possibility and entries doen’t propagate to all sites, let the user choose
+            // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
                 return $this->renderTemplate('_special/sitepicker', [
                     'siteIds' => $editableSiteIds,
@@ -155,14 +156,14 @@ class EntriesController extends BaseEntriesController
             throw new ServerErrorHttpException(sprintf('Unable to save entry as a draft: %s', implode(', ', $entry->getErrorSummary(true))));
         }
 
-        // Set its position in the structure if a before/after parma was passed
+        // Set its position in the structure if a before/after param was passed
         if ($section->type === Section::TYPE_STRUCTURE) {
             if ($nextId = $this->request->getParam('before')) {
                 $nextEntry = Craft::$app->getEntries()->getEntryById($nextId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
                 Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
-            } else if ($prevId = $this->request->getParam('after')) {
+            } elseif ($prevId = $this->request->getParam('after')) {
                 $prevEntry = Craft::$app->getEntries()->getEntryById($prevId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
@@ -171,7 +172,9 @@ class EntriesController extends BaseEntriesController
         }
 
         // Redirect to its edit page
-        return $this->redirect($entry->getCpEditUrl());
+        return $this->redirect(UrlHelper::urlWithParams($entry->getCpEditUrl(), [
+            'fresh' => 1,
+        ]));
     }
 
     /**
@@ -181,7 +184,6 @@ class EntriesController extends BaseEntriesController
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
      * @throws ForbiddenHttpException
-     * @deprecated in 4.0.0
      */
     public function actionSaveEntry(bool $duplicate = false): ?Response
     {
@@ -195,7 +197,7 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
         $section = $entry->getSection();
 
-        // Is this another user's entry (and it's not a Single)?
+        // Is this another user’s entry (and it’s not a Single)?
         if (
             $entry->id &&
             !$duplicate &&
@@ -225,22 +227,19 @@ class EntriesController extends BaseEntriesController
                 $clone = $e->element;
 
                 if ($this->request->getAcceptsJson()) {
-                    return $this->asJson([
-                        'success' => false,
-                        'errors' => $clone->getErrors(),
-                    ]);
+                    return $this->asModelFailure($clone);
                 }
-
-                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
 
                 // Send the original entry back to the template, with any validation errors on the clone
                 $entry->addErrors($clone->getErrors());
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry,
-                ]);
 
-                return null;
+                return $this->asModelFailure(
+                    $entry,
+                    Craft::t('app', 'Couldn’t duplicate entry.'),
+                    'entry'
+                );
             } catch (Throwable $e) {
+                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -258,7 +257,7 @@ class EntriesController extends BaseEntriesController
         if ($entry->enabled) {
             if ($entry->id) {
                 $this->requirePermission("saveEntries:$section->uid");
-            } else if (!$currentUser->can("saveEntries:$section->uid")) {
+            } elseif (!$currentUser->can("saveEntries:$section->uid")) {
                 $entry->enabled = false;
             }
         }
@@ -289,20 +288,11 @@ class EntriesController extends BaseEntriesController
         }
 
         if (!$success) {
-            if ($this->request->getAcceptsJson()) {
-                return $this->asJson([
-                    'errors' => $entry->getErrors(),
-                ]);
-            }
-
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
-
-            // Send the entry back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                $entryVariable => $entry,
-            ]);
-
-            return null;
+            return $this->asModelFailure(
+                $entry,
+                Craft::t('app', 'Couldn’t save entry.'),
+                $entryVariable
+            );
         }
 
         // See if the user happens to have a provisional entry. If so delete it.
@@ -318,33 +308,31 @@ class EntriesController extends BaseEntriesController
             Craft::$app->getElements()->deleteElement($provisional, true);
         }
 
-        if ($this->request->getAcceptsJson()) {
-            $return = [];
+        $data = [];
 
-            $return['success'] = true;
-            $return['id'] = $entry->id;
-            $return['title'] = $entry->title;
-            $return['slug'] = $entry->slug;
+        if ($this->request->getAcceptsJson()) {
+            $data['id'] = $entry->id;
+            $data['title'] = $entry->title;
+            $data['slug'] = $entry->slug;
 
             if ($this->request->getIsCpRequest()) {
-                $return['cpEditUrl'] = $entry->getCpEditUrl();
+                $data['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
             if (($author = $entry->getAuthor()) !== null) {
-                $return['authorUsername'] = $author->username;
+                $data['authorUsername'] = $author->username;
             }
 
-            $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
-            $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
-            $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
-
-            return $this->asJson($return);
+            $data['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+            $data['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+            $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
         }
 
-        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
-            'type' => Entry::displayName(),
-        ]));
-        return $this->redirectToPostedUrl($entry);
+        return $this->asModelSuccess(
+            $entry,
+            Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
+            data: $data,
+        );
     }
 
     /**

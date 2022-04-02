@@ -52,11 +52,11 @@ class CategoryQuery extends ElementQuery
     public bool $editable = false;
 
     /**
-     * @var int|int[]|null The category group ID(s) that the resulting categories must be in.
+     * @var mixed The category group ID(s) that the resulting categories must be in.
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @inheritdoc
@@ -86,10 +86,10 @@ class CategoryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $editable
      */
-    public function editable(bool $value = true): self
+    public function editable(bool $value = true): static
     {
         $this->editable = $value;
         return $this;
@@ -124,16 +124,16 @@ class CategoryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|CategoryGroup|null $value The property value
-     * @return self self reference
+     * @param mixed $value The property value
+     * @return static self reference
      * @uses $groupId
      */
-    public function group($value): self
+    public function group(mixed $value): static
     {
         if ($value instanceof CategoryGroup) {
             $this->structureId = ($value->structureId ?: false);
             $this->groupId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from(Table::CATEGORYGROUPS)
@@ -174,11 +174,11 @@ class CategoryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
-     * @return self self reference
+     * @param mixed $value The property value
+     * @return static self reference
      * @uses $groupId
      */
-    public function groupId($value): self
+    public function groupId(mixed $value): static
     {
         $this->groupId = $value;
         return $this;
@@ -251,9 +251,9 @@ class CategoryQuery extends ElementQuery
     {
         if (empty($this->groupId)) {
             $this->groupId = is_array($this->groupId) ? [] : null;
-        } else if (is_numeric($this->groupId)) {
+        } elseif (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
-        } else if (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::CATEGORYGROUPS])

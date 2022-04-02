@@ -24,7 +24,7 @@ class m211201_131000_filesystems extends Migration
 
         $this->update(Table::VOLUMES, [
             'fs' => new Expression('[[handle]]'),
-        ], '', [], false);
+        ], updateTimestamp: false);
 
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres
@@ -50,7 +50,7 @@ class m211201_131000_filesystems extends Migration
                     'type' => $type,
                     'hasUrls' => $volumeData['hasUrls'],
                     'url' => $volumeData['url'],
-                    'settings' => $volumeData['settings']
+                    'settings' => $volumeData['settings'],
                 ];
 
                 $volumeData['fs'] = $volumeData['handle'];

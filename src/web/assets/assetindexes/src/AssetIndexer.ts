@@ -28,17 +28,19 @@ type AssetIndexingSessionModel = {
 }
 
 type CraftResponse = {
-    session?: AssetIndexingSessionModel
-    stop?: number
+    message?: string,
+    errors?: Array<string>,
+    session?: AssetIndexingSessionModel,
+    stop?: number,
     error?: string,
-    skipDialog?: boolean
+    skipDialog?: boolean,
 }
 
 type ConcurrentTask = {
     sessionId: number,
     action: string,
     params: any,
-    callback?: () => void
+    callback?: () => void,
 }
 
 /**
@@ -159,34 +161,43 @@ export class AssetIndexer {
     }
 
     /**
-     * Process an indexing response.
+     * Process a failed indexing response.
      *
      * @param response
-     * @param textStatus
      */
-    public processResponse(response: CraftResponse, textStatus: string): void {
+    public processFailureResponse(response): void {
+        const responseData: CraftResponse = response.data;
         this._currentConnectionCount--;
+        this._updateCurrentIndexingSession();
 
-        if (textStatus === 'success' && response.error) {
-            alert(response.error);
+        alert(responseData.message);
 
-            if (response.stop) {
-                this.discardIndexingSession(response.stop);
-            }
-
-            // A mere error shall not stop the party.
-            this.runTasks();
-            return;
+        if (responseData.stop) {
+            this.discardIndexingSession(responseData.stop);
         }
 
-        if (textStatus === 'success' && response.session) {
-            const session = this.createSessionFromModel(response.session);
+        // A mere error shall not stop the party.
+        this.runTasks();
+        return;
+    }
+
+    /**
+     * Process a successful indexing response.
+     *
+     * @param response
+     */
+    public processSuccessResponse(response): void {
+        const responseData: CraftResponse = response.data;
+        this._currentConnectionCount--;
+
+        if (responseData.session) {
+            const session = this.createSessionFromModel(responseData.session);
             this.indexingSessions[session.getSessionId()] = session;
             this.renderIndexingSessionRow(session);
 
             this._updateCurrentIndexingSession();
 
-            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
+            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !responseData.skipDialog) {
                 if (!this._prunedSessionIds.includes(this._currentIndexingSession as number)) {
                     this.reviewSession(session);
                 } else {
@@ -201,8 +212,8 @@ export class AssetIndexer {
 
         this._updateCurrentIndexingSession();
 
-        if (textStatus === 'success' && response.stop) {
-            this.discardIndexingSession(response.stop);
+        if (responseData.stop) {
+            this.discardIndexingSession(responseData.stop);
         }
     }
 
@@ -346,12 +357,12 @@ export class AssetIndexer {
         });
     }
 
-    public startIndexing(params: any, cb: () => void): void
+    public startIndexing(data: any, cb: () => void): void
     {
-        Craft.postActionRequest(IndexingActions.START, params, (response: CraftResponse, textStatus: string) => {
-            this.processResponse(response, textStatus);
-            cb();
-        });
+        Craft.sendActionRequest('POST', IndexingActions.START, {data})
+            .then((response) => this.processSuccessResponse(response))
+            .catch(({response}) => this.processFailureResponse(response))
+            .finally(() => cb());
     }
 
     public performIndexingStep(): void
@@ -441,12 +452,15 @@ export class AssetIndexer {
         while (this._tasksWaiting.length + this._priorityTasks.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
             this._currentConnectionCount++;
             const task = this._priorityTasks.length > 0 ? this._priorityTasks.shift()! : this._tasksWaiting.shift()!;
-            Craft.postActionRequest(task.action, task.params, (response: CraftResponse, textStatus: string) => {
-                this.processResponse(response, textStatus);
-                if (task.callback) {
-                    task.callback();
-                }
-            });
+
+            Craft.sendActionRequest('POST', task.action, {data: task.params})
+                .then((response) => this.processSuccessResponse(response))
+                .catch(({response}) => this.processFailureResponse(response))
+                .finally(() => {
+                    if (task.callback) {
+                        task.callback();
+                    }
+                });
         }
     }
 

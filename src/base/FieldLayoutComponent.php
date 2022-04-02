@@ -13,7 +13,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\helpers\Cp;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 
 /**
@@ -28,9 +27,9 @@ use craft\models\FieldLayout;
 abstract class FieldLayoutComponent extends Model
 {
     /**
-     * @var string The UUID of the layout element.
+     * @var string|null The UUID of the layout element.
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @var FieldLayout The field layout tab this element belongs to
@@ -52,18 +51,6 @@ abstract class FieldLayoutComponent extends Model
      * @see setElementCondition()
      */
     private ?ElementConditionInterface $_elementCondition = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
-        }
-    }
 
     /**
      * Returns the layout this element belongs to.
@@ -118,9 +105,9 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Sets the user condition for this layout element.
      *
-     * @param UserCondition|string|array{class: string}|null $userCondition
+     * @param UserCondition|class-string<UserCondition>|array{class: class-string<UserCondition>}|null $userCondition
      */
-    public function setUserCondition($userCondition): void
+    public function setUserCondition(mixed $userCondition): void
     {
         $this->_userCondition = $this->_normalizeCondition($userCondition);
     }
@@ -138,9 +125,9 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Sets the element condition for this layout element.
      *
-     * @param ElementConditionInterface|string|array{class: string}|null $elementCondition
+     * @param ElementConditionInterface|class-string<ElementConditionInterface>|array{class: class-string<ElementConditionInterface>}|null $elementCondition
      */
-    public function setElementCondition($elementCondition): void
+    public function setElementCondition(mixed $elementCondition): void
     {
         $this->_elementCondition = $this->_normalizeCondition($elementCondition);
     }
@@ -148,10 +135,11 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Normalizes a condition.
      *
-     * @param ConditionInterface|string|array{class: string}|null $condition
-     * @return ConditionInterface|null
+     * @template T of ConditionInterface
+     * @param T|class-string<T>|array{class: class-string<T>}|null $condition
+     * @return T|null
      */
-    private function _normalizeCondition($condition): ?ConditionInterface
+    private function _normalizeCondition(mixed $condition): ?ConditionInterface
     {
         if ($condition !== null) {
             if (!$condition instanceof ConditionInterface) {
@@ -217,7 +205,7 @@ abstract class FieldLayoutComponent extends Model
             /** @var ElementInterface|string|null $elementType */
             $elementType = $this->getLayout()->type;
 
-            if ($elementType) {
+            if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
                 $elementCondition = $this->_elementCondition ?? $elementType::createCondition();
                 $elementCondition->mainTag = 'div';
                 $elementCondition->id = 'element-condition';
@@ -230,7 +218,7 @@ abstract class FieldLayoutComponent extends Model
                     ]),
                     'instructions' => Craft::t('app', 'Only show when editing {type} that match the following rules:', [
                         'type' => $elementType::pluralLowerDisplayName(),
-                    ])
+                    ]),
                 ]);
             }
         }
@@ -250,6 +238,8 @@ abstract class FieldLayoutComponent extends Model
 
     /**
      * Returns whether the layout element should be shown in an edit form for the given element.
+     *
+     * This will only be called if the field layout component has been saved with a [[uid|UUID]] already.
      *
      * @param ElementInterface|null $element
      * @return bool

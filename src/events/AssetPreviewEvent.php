@@ -27,7 +27,7 @@ class AssetPreviewEvent extends Event
     /**
      * An AssetPreview handler
      *
-     * @var AssetPreviewHandlerInterface $previewHandler
+     * @var AssetPreviewHandlerInterface|null $previewHandler
      */
-    public AssetPreviewHandlerInterface $previewHandler;
+    public ?AssetPreviewHandlerInterface $previewHandler = null;
 }

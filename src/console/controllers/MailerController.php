@@ -26,10 +26,10 @@ use yii\console\ExitCode;
 class MailerController extends Controller
 {
     /**
-     * @var string Email address that should receive the test message.
+     * @var string|null Email address that should receive the test message.
      * @since 3.5.0
      */
-    public string $to;
+    public ?string $to = null;
 
     /**
      * @inheritdoc

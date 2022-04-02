@@ -14,10 +14,8 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
@@ -39,7 +37,7 @@ use yii\web\Response;
 class ElementIndexesController extends BaseElementsController
 {
     /**
-     * @var string
+     * @var class-string<ElementInterface>
      */
     protected string $elementType;
 
@@ -70,9 +68,9 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $viewState = null;
 
     /**
-     * @var ElementQueryInterface|ElementQuery|null
+     * @var ElementQueryInterface|null
      */
-    protected $elementQuery;
+    protected ?ElementQueryInterface $elementQuery = null;
 
     /**
      * @var ElementActionInterface[]|null
@@ -216,14 +214,13 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Perform the action
-        /** @var ElementQuery $actionCriteria */
-        $actionCriteria = clone $this->elementQuery;
-        $actionCriteria->offset = 0;
-        $actionCriteria->limit = null;
-        $actionCriteria->orderBy = null;
-        $actionCriteria->positionedAfter = null;
-        $actionCriteria->positionedBefore = null;
-        $actionCriteria->id = $elementIds;
+        $actionCriteria = (clone $this->elementQuery)
+            ->offset(0)
+            ->limit(null)
+            ->orderBy([])
+            ->positionedAfter(null)
+            ->positionedBefore(null)
+            ->id($elementIds);
 
         // Fire a 'beforePerformAction' event
         $event = new ElementActionEvent([
@@ -254,31 +251,28 @@ class ElementIndexesController extends BaseElementsController
             return $this->response;
         }
 
-        $responseData = [
-            'success' => $success,
-            'message' => $message,
-        ];
+        if (!$success) {
+            return $this->asFailure($message);
+        }
 
-        if ($success) {
-            // Send a new set of elements
-            $responseData = array_merge($responseData, $this->elementResponseData(true, true));
+        // Send a new set of elements
+        $responseData = $this->elementResponseData(true, true);
 
-            // Send updated badge counts
-            /** @var string|ElementInterface $elementType */
-            $elementType = $this->elementType;
-            $formatter = Craft::$app->getFormatter();
-            foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
-                if (isset($source['key'])) {
-                    if (isset($source['badgeCount'])) {
-                        $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
-                    } else {
-                        $responseData['badgeCounts'][$source['key']] = null;
-                    }
+        // Send updated badge counts
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
+        $elementType = $this->elementType;
+        $formatter = Craft::$app->getFormatter();
+        foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
+            if (isset($source['key'])) {
+                if (isset($source['badgeCount'])) {
+                    $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
+                } else {
+                    $responseData['badgeCounts'][$source['key']] = null;
                 }
             }
         }
 
-        return $this->asJson($responseData);
+        return $this->asSuccess($message, data: $responseData);
     }
 
     /**
@@ -339,12 +333,12 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    /** @var string|ElementInterface $elementType */
+                    /** @var class-string<ElementInterface>|ElementInterface $elementType */
                     $elementType = $this->elementType;
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                     break;
             }
-        } else if (
+        } elseif (
             is_callable($export) ||
             is_resource($export) ||
             (is_array($export) && isset($export[0]) && is_resource($export[0]))
@@ -394,10 +388,9 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionFilterHud(): Response
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $id = $this->request->getRequiredBodyParam('id');
-        /** @var ElementCondition $condition */
         $condition = $elementType::createCondition();
         $condition->mainTag = 'div';
         $condition->id = $id;
@@ -412,7 +405,8 @@ class ElementIndexesController extends BaseElementsController
             $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
-                foreach ($rule->getExclusiveQueryParams() as $param) {
+                $params = $rule->getExclusiveQueryParams();
+                foreach ($params as $param) {
                     $condition->queryParams[] = $param;
                 }
             }
@@ -421,7 +415,8 @@ class ElementIndexesController extends BaseElementsController
         if ($this->condition) {
             foreach ($this->condition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
-                foreach ($rule->getExclusiveQueryParams() as $param) {
+                $params = $rule->getExclusiveQueryParams();
+                foreach ($params as $param) {
                     $condition->queryParams[] = $param;
                 }
             }
@@ -476,14 +471,18 @@ class ElementIndexesController extends BaseElementsController
      * Returns the condition that should be applied to the element query.
      *
      * @return ElementConditionInterface|null
-     * @return 4.0.0
+     * @since 4.0.0
      */
     protected function condition(): ?ElementConditionInterface
     {
-        if ($conditionConfig = $this->request->getBodyParam('condition')) {
-            return Craft::$app->getConditions()->createCondition($conditionConfig);
+        /** @var array{class: class-string<ElementConditionInterface>}|null $conditionConfig */
+        $conditionConfig = $this->request->getBodyParam('condition');
+
+        if (!$conditionConfig) {
+            return null;
         }
-        return null;
+
+        return Craft::$app->getConditions()->createCondition($conditionConfig);
     }
 
     /**
@@ -509,7 +508,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementQuery(): ElementQueryInterface
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
         $conditionsService = Craft::$app->getConditions();
@@ -554,7 +553,7 @@ class ElementIndexesController extends BaseElementsController
         $filterConditionStr = $this->request->getBodyParam('filters');
         if ($filterConditionStr) {
             parse_str($filterConditionStr, $filterConditionConfig);
-            /** @var ElementConditionInterface $condition */
+            /** @var ElementConditionInterface $filterCondition */
             $filterCondition = $conditionsService->createCondition($filterConditionConfig['condition']);
             $filterCondition->modifyQuery($query);
         }
@@ -563,18 +562,16 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $this->request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
-            $descendantQuery = clone $query;
-            $descendantQuery
+            $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
-                ->orderBy(null)
+                ->orderBy([])
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->status(null);
 
             // Get the actual elements
-            $collapsedElementsQuery = clone $descendantQuery;
-            $collapsedElements = $collapsedElementsQuery
+            $collapsedElements = (clone $descendantQuery)
                 ->id($collapsedElementIds)
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
@@ -588,8 +585,7 @@ class ElementIndexesController extends BaseElementsController
                         continue;
                     }
 
-                    $elementDescendantsQuery = clone $descendantQuery;
-                    $elementDescendantIds = $elementDescendantsQuery
+                    $elementDescendantIds = (clone $descendantQuery)
                         ->descendantOf($element)
                         ->ids();
 
@@ -614,7 +610,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $responseData = [];
         $view = $this->getView();
@@ -661,7 +657,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $actions = $elementType::actions($this->sourceKey);
 
@@ -673,21 +669,18 @@ class ElementIndexesController extends BaseElementsController
                 if (is_string($action)) {
                     $action = ['type' => $action];
                 }
+                /** @var array{type: class-string<ElementActionInterface>} $action */
                 $action['elementType'] = $elementType;
                 $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
-
-                if ($actions[$i] === null) {
-                    unset($actions[$i]);
-                }
             }
 
             if ($this->elementQuery->trashed) {
                 if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
-                    $action->hard = true;
-                } else if (!$action instanceof Restore) {
+                    $action->setHardDelete();
+                } elseif (!$action instanceof Restore) {
                     unset($actions[$i]);
                 }
-            } else if ($action instanceof Restore) {
+            } elseif ($action instanceof Restore) {
                 unset($actions[$i]);
             }
         }
@@ -720,7 +713,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $exporters = $elementType::exporters($this->sourceKey);
 
@@ -733,11 +726,7 @@ class ElementIndexesController extends BaseElementsController
                     $exporter = ['type' => $exporter];
                 }
                 $exporter['elementType'] = $elementType;
-                $exporters[$i] = $exporter = Craft::$app->getElements()->createExporter($exporter);
-
-                if ($exporters[$i] === null) {
-                    unset($exporters[$i]);
-                }
+                $exporters[$i] = Craft::$app->getElements()->createExporter($exporter);
             }
         }
 

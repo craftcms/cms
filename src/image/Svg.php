@@ -160,7 +160,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         // TODO If we encounter a focal point, rasterize and crop with focal.
         if (is_array($cropPosition)) {

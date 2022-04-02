@@ -7,12 +7,12 @@
 
 namespace craft\test;
 
-use Closure;
 use Codeception\Test\Unit;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionObject;
+use yii\test\Fixture;
 
 /**
  * Class TestCase
@@ -24,10 +24,18 @@ use ReflectionObject;
 class TestCase extends Unit
 {
     /**
-     * Returns a callback/Closure that checks whether the passed in object is an instance of the $class param
+     * @return array{class: class-string<Fixture>}[]
+     */
+    public function _fixtures(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns a callable that checks whether the passed in object is an instance of the $class param
      *
-     * @param string $class
-     * @return Closure
+     * @param class-string $class
+     * @return callable
      */
     public function assertObjectIsInstanceOfClassCallback(string $class): callable
     {
@@ -39,14 +47,14 @@ class TestCase extends Unit
     /**
      * Sets an inaccessible object property to a designated value.
      *
-     * @param $object
-     * @param $propertyName
-     * @param $value
+     * @param object|string $object
+     * @param string $propertyName
+     * @param mixed $value
      * @param bool $revoke whether to make property inaccessible after setting
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L155
      */
-    protected function setInaccessibleProperty($object, $propertyName, $value, bool $revoke = true): void
+    protected function setInaccessibleProperty(object|string $object, string $propertyName, mixed $value, bool $revoke = true): void
     {
         $class = new ReflectionClass($object);
 
@@ -66,14 +74,14 @@ class TestCase extends Unit
     /**
      * Gets an inaccessible object property.
      *
-     * @param $object
-     * @param $propertyName
+     * @param object|string $object
+     * @param string $propertyName
      * @param bool $revoke whether to make property inaccessible after getting
      * @return mixed
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L176
      */
-    protected function getInaccessibleProperty($object, $propertyName, bool $revoke = true)
+    protected function getInaccessibleProperty(object|string $object, string $propertyName, bool $revoke = true): mixed
     {
         $class = new ReflectionClass($object);
 
@@ -95,15 +103,15 @@ class TestCase extends Unit
     /**
      * Invokes an inaccessible method on an object
      *
-     * @param $object
-     * @param $method
+     * @param object|string $object
+     * @param string $method
      * @param array $args
      * @param bool $revoke whether to make method inaccessible after execution
      * @return mixed
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeMethod($object, $method, array $args = [], bool $revoke = true)
+    protected function invokeMethod(object|string $object, string $method, array $args = [], bool $revoke = true): mixed
     {
         $method = (new ReflectionObject($object))->getMethod($method);
         return $this->_invokeMethodInternal($method, $object, $args, $revoke);
@@ -112,15 +120,15 @@ class TestCase extends Unit
     /**
      * Invokes an inaccessible static method on a class
      *
-     * @param $object
-     * @param $method
+     * @param object|string $className
+     * @param string $method
      * @param array $args
      * @param bool $revoke whether to make method inaccessible after execution
      * @return mixed
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L134
      */
-    protected function invokeStaticMethod($className, $method, array $args = [], bool $revoke = true)
+    protected function invokeStaticMethod(object|string $className, string $method, array $args = [], bool $revoke = true): mixed
     {
         $method = (new ReflectionClass($className))->getMethod($method);
         return $this->_invokeMethodInternal($method, null, $args, $revoke);
@@ -128,13 +136,13 @@ class TestCase extends Unit
 
     /**
      * @param ReflectionMethod $method
-     * @param $object
+     * @param object|null $object
      * @param array $args
      * @param bool $revoke
      * @return mixed
      * @throws ReflectionException
      */
-    private function _invokeMethodInternal(ReflectionMethod $method, $object = null, array $args = [], bool $revoke = true)
+    private function _invokeMethodInternal(ReflectionMethod $method, ?object $object = null, array $args = [], bool $revoke = true): mixed
     {
         $method->setAccessible(true);
         $result = $method->invokeArgs($object, $args);

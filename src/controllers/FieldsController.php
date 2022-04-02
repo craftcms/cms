@@ -73,15 +73,10 @@ class FieldsController extends Controller
         $group->name = $this->request->getRequiredBodyParam('name');
 
         if (!$fieldsService->saveGroup($group)) {
-            return $this->asJson([
-                'errors' => $group->getErrors(),
-            ]);
+            return $this->asModelFailure($group);
         }
 
-        return $this->asJson([
-            'success' => true,
-            'group' => $group->getAttributes(),
-        ]);
+        return $this->asModelSuccess($group, modelName: 'group');
     }
 
     /**
@@ -97,11 +92,9 @@ class FieldsController extends Controller
         $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
 
-        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
-
-        return $this->asJson([
-            'success' => $success,
-        ]);
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Group deleted.')) :
+            $this->asFailure();
     }
 
     // Fields
@@ -361,26 +354,22 @@ JS;
 
         $fieldId = $this->request->getBodyParam('fieldId') ?? $this->request->getRequiredBodyParam('id');
         $fieldsService = Craft::$app->getFields();
+        /** @var FieldInterface|Field|null $field */
         $field = $fieldsService->getFieldById($fieldId);
 
         if (!$field) {
             throw new BadRequestHttpException("Invalid field ID: $fieldId");
         }
 
-        $success = $fieldsService->deleteField($field);
-
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => $success]);
+        if (!$fieldsService->deleteField($field)) {
+            return $this->asModelFailure($field, Craft::t('app', 'Couldn’t delete “{name}”.', [
+                'name' => $field->name,
+            ]));
         }
 
-        if (!$success) {
-            throw new ServerErrorHttpException("Unable to delete field ID $fieldId");
-        }
-
-        Craft::$app->getSession()->setNotice(Craft::t('app', '“{name}” deleted.', [
+        return $this->asModelSuccess($field, Craft::t('app', '“{name}” deleted.', [
             'name' => $field->name,
         ]));
-        return $this->redirectToPostedUrl();
     }
 
     // Field Layouts

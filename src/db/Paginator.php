@@ -47,10 +47,10 @@ use yii\di\Instance;
 class Paginator extends BaseObject
 {
     /**
-     * @var YiiConnection|null The DB connection to be used with the query.
+     * @var YiiConnection|array{class: class-string<YiiConnection>}|class-string<YiiConnection>|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
      */
-    public ?YiiConnection $db = null;
+    public YiiConnection|array|string|null $db = null;
 
     /**
      * @var int The number of results to include for each page
@@ -58,9 +58,9 @@ class Paginator extends BaseObject
     public int $pageSize = 100;
 
     /**
-     * @var QueryInterface|YiiQuery The query being paginated
+     * @var QueryInterface The query being paginated
      */
-    protected $query;
+    protected QueryInterface $query;
 
     /**
      * @var int The total query count
@@ -121,20 +121,23 @@ class Paginator extends BaseObject
      *
      * @return int|float
      */
-    public function getTotalResults()
+    public function getTotalResults(): float|int
     {
         if (isset($this->totalResults)) {
             return $this->totalResults;
         }
 
-        $this->totalResults = $this->query->count('*', $this->db);
+        /** @var YiiQuery $query */
+        $query = $this->query;
+
+        $this->totalResults = $query->count('*', $this->db);
 
         // Factor in the offset and limit
-        if ($this->query->offset) {
-            $this->totalResults = max(0, $this->totalResults - $this->query->offset);
+        if ($query->offset) {
+            $this->totalResults = max(0, $this->totalResults - $query->offset);
         }
-        if ($this->query->limit && $this->totalResults > $this->query->limit) {
-            $this->totalResults = $this->query->limit;
+        if ($query->limit && $this->totalResults > $query->limit) {
+            $this->totalResults = $query->limit;
         }
 
         return $this->totalResults;
@@ -191,7 +194,10 @@ class Paginator extends BaseObject
             return $this->_pageResults;
         }
 
-        $pageOffset = ($this->query->offset ?? 0) + $this->getPageOffset();
+        /** @var YiiQuery $query */
+        $query = $this->query;
+
+        $pageOffset = ($query->offset ?? 0) + $this->getPageOffset();
 
         // Have we reached the last page, and would the default page size bleed past the total results?
         if ($this->pageSize * $this->currentPage > $this->getTotalResults()) {
@@ -204,16 +210,16 @@ class Paginator extends BaseObject
             return [];
         }
 
-        $limit = $this->query->limit;
-        $offset = $this->query->offset;
+        $limit = $query->limit;
+        $offset = $query->offset;
 
-        $this->_pageResults = $this->query
+        $this->_pageResults = $query
             ->offset($pageOffset)
             ->limit($pageLimit)
             ->all($this->db);
 
-        $this->query->limit = $limit;
-        $this->query->offset = $offset;
+        $query->limit = $limit;
+        $query->offset = $offset;
 
         return $this->_pageResults;
     }
@@ -221,7 +227,7 @@ class Paginator extends BaseObject
     /**
      * Sets the results for the current page.
      *
-     * @param array
+     * @param array $pageResults
      * @since 3.1.22
      */
     public function setPageResults(array $pageResults): void
@@ -234,7 +240,7 @@ class Paginator extends BaseObject
      *
      * @return int|float
      */
-    public function getPageOffset()
+    public function getPageOffset(): float|int
     {
         return $this->pageSize * ($this->currentPage - 1);
     }

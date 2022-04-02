@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Path;
 use craft\helpers\Template;
+use craft\web\Application;
 use craft\web\Controller;
 use craft\web\View;
 use ErrorException;
@@ -40,7 +41,7 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -66,7 +67,7 @@ class TemplatesController extends Controller
             // Allow anonymous access to the Login template even if the site is offline
             if ($this->request->getIsLoginRequest()) {
                 $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
-            } else if ($this->request->getIsSiteRequest()) {
+            } elseif ($this->request->getIsSiteRequest()) {
                 $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
             }
         }
@@ -97,7 +98,9 @@ class TemplatesController extends Controller
         }
 
         // Merge any additional route params
-        $routeParams = Craft::$app->getUrlManager()->getRouteParams();
+        /** @var Application $app */
+        $app = Craft::$app;
+        $routeParams = $app->getUrlManager()->getRouteParams();
         unset($routeParams['template'], $routeParams['template']);
         $variables = array_merge($variables, $routeParams);
 
@@ -199,9 +202,9 @@ class TemplatesController extends Controller
 
             if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
                 $template = $prefix . $statusCode;
-            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix . 'offline')) {
+            } elseif ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix . 'offline')) {
                 $template = $prefix . 'offline';
-            } else if ($this->getView()->doesTemplateExist($prefix . 'error')) {
+            } elseif ($this->getView()->doesTemplateExist($prefix . 'error')) {
                 $template = $prefix . 'error';
             }
         }

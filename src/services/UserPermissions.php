@@ -23,7 +23,6 @@ use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
-use craft\models\Volume;
 use craft\records\UserPermission as UserPermissionRecord;
 use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use yii\base\Component;
@@ -206,7 +205,7 @@ class UserPermissions extends Component
     }
 
     /**
-     * Returns all of a given user's permissions.
+     * Returns all of a given user’s permissions.
      *
      * @param int $userId
      * @return array
@@ -297,8 +296,6 @@ class UserPermissions extends Component
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
-
-        /** @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
         // No group - no permissions to change.
@@ -345,20 +342,17 @@ class UserPermissions extends Component
                 'accessSiteWhenSystemIsOff' => [
                     'label' => Craft::t('app', 'Access the site when the system is off'),
                 ],
-                'accessCp' => array_merge(
-                    [
-                        'label' => Craft::t('app', 'Access the control panel'),
-                        'nested' => [
-                            'accessCpWhenSystemIsOff' => [
-                                'label' => Craft::t('app', 'Access the control panel when the system is offline'),
-                            ],
-                            'performUpdates' => [
-                                'label' => Craft::t('app', 'Perform Craft CMS and plugin updates'),
-                            ],
+                'accessCp' => [
+                    'label' => Craft::t('app', 'Access the control panel'),
+                    'nested' => array_merge([
+                        'accessCpWhenSystemIsOff' => [
+                            'label' => Craft::t('app', 'Access the control panel when the system is offline'),
                         ],
-                    ],
-                    $pluginPermissions
-                ),
+                        'performUpdates' => [
+                            'label' => Craft::t('app', 'Perform Craft CMS and plugin updates'),
+                        ],
+                    ], $pluginPermissions),
+                ],
             ],
         ];
     }
@@ -406,7 +400,7 @@ class UserPermissions extends Component
                             ],
                         ],
                         $assignGroupPermissions
-                    )
+                    ),
                 ],
                 'deleteUsers' => [
                     'label' => Craft::t('app', 'Delete users'),
@@ -726,7 +720,7 @@ class UserPermissions extends Component
      *
      * @param array $postedPermissions The posted permissions.
      * @param array $groupPermissions Permissions the user is already assigned
-     * to via their group, if we're saving a user's permissions.
+     * to via their group, if we’re saving a user’s permissions.
      * @return array The permissions we'll actually let them save.
      */
     private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array

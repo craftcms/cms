@@ -59,9 +59,9 @@ class QuickPost extends Widget
     public ?array $fields = null;
 
     /**
-     * @var Section|false
+     * @var Section|false|null
      */
-    private $_section;
+    private Section|false|null $_section = null;
 
     /**
      * @inheritdoc
@@ -78,13 +78,6 @@ class QuickPost extends Widget
             }
 
             unset($config['sections']);
-        }
-
-        // Config normalization
-        foreach (['section', 'entryType', 'fields'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
         }
 
         parent::__construct($config);

@@ -45,14 +45,11 @@ class PluginsController extends Controller
 
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
         $edition = $this->request->getBodyParam('edition');
+        $success = Craft::$app->getPlugins()->installPlugin($pluginHandle, $edition);
 
-        if (Craft::$app->getPlugins()->installPlugin($pluginHandle, $edition)) {
-            $this->setSuccessFlash(Craft::t('app', 'Plugin installed.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t install plugin.'));
-        }
-
-        return $this->redirectToPostedUrl();
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Plugin installed.')) :
+            $this->asFailure(Craft::t('app', 'Couldn’t install plugin.'));
     }
 
     /**
@@ -67,12 +64,7 @@ class PluginsController extends Controller
         $edition = $this->request->getRequiredBodyParam('edition');
         Craft::$app->getPlugins()->switchEdition($pluginHandle, $edition);
 
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => true]);
-        }
-
-        $this->setSuccessFlash(Craft::t('app', 'Plugin edition changed.'));
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t('app', 'Plugin edition changed.'));
     }
 
     /**
@@ -84,14 +76,11 @@ class PluginsController extends Controller
     {
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
+        $success = Craft::$app->getPlugins()->uninstallPlugin($pluginHandle);
 
-        if (Craft::$app->getPlugins()->uninstallPlugin($pluginHandle)) {
-            $this->setSuccessFlash(Craft::t('app', 'Plugin uninstalled.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t uninstall plugin.'));
-        }
-
-        return $this->redirectToPostedUrl();
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Plugin uninstalled.')) :
+            $this->asFailure(Craft::t('app', 'Couldn’t uninstall plugin.'));
     }
 
     /**
@@ -102,7 +91,7 @@ class PluginsController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionEditPluginSettings(string $handle, ?PluginInterface $plugin = null)
+    public function actionEditPluginSettings(string $handle, ?PluginInterface $plugin = null): mixed
     {
         if (
             $plugin === null &&
@@ -123,14 +112,11 @@ class PluginsController extends Controller
     {
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
+        $success = Craft::$app->getPlugins()->enablePlugin($pluginHandle);
 
-        if (Craft::$app->getPlugins()->enablePlugin($pluginHandle)) {
-            $this->setSuccessFlash(Craft::t('app', 'Plugin enabled.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t enable plugin.'));
-        }
-
-        return $this->redirectToPostedUrl();
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Plugin enabled.')) :
+            $this->asFailure(Craft::t('app', 'Couldn’t enable plugin.'));
     }
 
     /**
@@ -143,13 +129,11 @@ class PluginsController extends Controller
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
 
-        if (Craft::$app->getPlugins()->disablePlugin($pluginHandle)) {
-            $this->setSuccessFlash(Craft::t('app', 'Plugin disabled.'));
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t disable plugin.'));
-        }
+        $success = Craft::$app->getPlugins()->disablePlugin($pluginHandle);
 
-        return $this->redirectToPostedUrl();
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Plugin disabled.')) :
+            $this->asFailure(Craft::t('app', 'Couldn’t disable plugin.'));
     }
 
     /**
@@ -169,18 +153,13 @@ class PluginsController extends Controller
             throw new NotFoundHttpException('Plugin not found');
         }
 
-        if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save plugin settings.'));
+        $success = Craft::$app->getPlugins()->savePluginSettings($plugin, $settings);
 
-            // Send the plugin back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'plugin' => $plugin,
-            ]);
-
-            return null;
-        }
-
-        $this->setSuccessFlash(Craft::t('app', 'Plugin settings saved.'));
-        return $this->redirectToPostedUrl();
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Plugin settings saved.')) :
+            $this->asFailure(
+                Craft::t('app', 'Couldn’t save plugin settings.'),
+                routeParams: ['plugin' => $plugin]
+            );
     }
 }

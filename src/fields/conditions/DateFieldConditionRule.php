@@ -28,7 +28,7 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
      */
     protected function matchFieldValue($value): bool
     {
-        /** @var DateTime|null */
+        /** @var DateTime|null $value */
         return $this->matchValue($value);
     }
 }

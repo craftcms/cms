@@ -54,13 +54,18 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
         $query->groupId($this->paramValue(fn($uid) => $userGroups->getGroupByUid($uid)->id ?? null));
     }
 
+
     /**
-     * @inheritdoc
+     * @param \craft\base\ElementInterface $element
+     *
+     * @return bool
+     * @throws \yii\base\InvalidConfigException
      */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        foreach ($element->getGroups() as $group) {
+        $groups = $element->getGroups();
+        foreach ($groups as $group) {
             if ($this->matchValue($group->uid)) {
                 return true;
             }

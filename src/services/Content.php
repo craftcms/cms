@@ -29,12 +29,12 @@ use yii\di\Instance;
 class Content extends Component
 {
     /**
-     * @event ElementContentEvent The event that is triggered before an element's content is saved.
+     * @event ElementContentEvent The event that is triggered before an element’s content is saved.
      */
     public const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
 
     /**
-     * @event ElementContentEvent The event that is triggered after an element's content is saved.
+     * @event ElementContentEvent The event that is triggered after an element’s content is saved.
      */
     public const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 
@@ -42,7 +42,7 @@ class Content extends Component
      * @var Connection|array|string The database connection to use
      * @since 3.5.6
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var string
@@ -69,10 +69,10 @@ class Content extends Component
     }
 
     /**
-     * Saves an element's content.
+     * Saves an element’s content.
      *
-     * @param ElementInterface $element The element whose content we're saving.
-     * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
+     * @param ElementInterface $element The element whose content we’re saving.
+     * @return bool Whether the content was saved successfully. If it wasn’t, any validation errors will be saved on the
      * element and its content model.
      * @throws Exception if $element has not been saved yet
      */
@@ -158,8 +158,8 @@ class Content extends Component
             ], [], true, $this->db);
         } else {
             // Insert a new row and store its ID on the element
-            Db::insert($this->contentTable, $values, true, $this->db);
-            $element->contentId = $this->db->getLastInsertID($this->contentTable);
+            Db::insert($this->contentTable, $values, $this->db);
+            $element->contentId = (int)$this->db->getLastInsertID($this->contentTable);
         }
 
         // Fire an 'afterSaveContent' event
@@ -174,26 +174,5 @@ class Content extends Component
         $this->fieldContext = $originalFieldContext;
 
         return true;
-    }
-
-    /**
-     * Removes the column prefixes from a given row.
-     *
-     * @param array $row
-     * @return array
-     */
-    private function _removeColumnPrefixesFromRow(array $row): array
-    {
-        foreach ($row as $column => $value) {
-            if (strpos($column, $this->fieldColumnPrefix) === 0) {
-                $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
-                $row[$fieldHandle] = $value;
-                unset($row[$column]);
-            } else if (!in_array($column, ['id', 'elementId', 'title', 'dateCreated', 'dateUpdated', 'uid', 'siteId'], true)) {
-                unset($row[$column]);
-            }
-        }
-
-        return $row;
     }
 }

@@ -21,22 +21,22 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
     requireElevatedSession: function(callback) {
         this.callback = callback;
 
-        // Check the time remaining on the user's elevated session (if any)
+        // Check the time remaining on the user’s elevated session (if any)
         this.fetchingTimeout = true;
 
-        Craft.postActionRequest('users/get-elevated-session-timeout', (response, textStatus) => {
-            this.fetchingTimeout = false;
-
-            if (textStatus === 'success') {
-                // Is there still enough time left or has it been disabled?
-                if (response.timeout === false || response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout) {
+        Craft.sendActionRequest('POST', 'users/get-elevated-session-timeout')
+            .then((response) => {
+                this.fetchingTimeout = false;
+                if (response.data.timeout === false || response.data.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout) {
                     this.callback();
                 } else {
                     // Show the password modal
                     this.showPasswordModal();
                 }
-            }
-        });
+            })
+            .catch(() => {
+                this.fetchingTimeout = false;
+            });
     },
 
     showPasswordModal: function() {
@@ -112,22 +112,18 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
             currentPassword: this.$passwordInput.val()
         };
 
-        Craft.postActionRequest('users/start-elevated-session', data, (response, textStatus) => {
-            this.$submitBtn.removeClass('loading');
-
-            if (textStatus === 'success') {
-                if (response.success) {
-                    this.passwordModal.hide();
-                    this.callback();
-                } else {
-                    this.showPasswordError(response.message || Craft.t('app', 'Incorrect password.'));
-                    Garnish.shake(this.passwordModal.$container);
-                    this.focusPasswordInput();
-                }
-            } else {
-                this.showPasswordError();
-            }
-        });
+        Craft.sendActionRequest('POST', 'users/start-elevated-session', {data})
+            .then((response) => {
+                this.$submitBtn.removeClass('loading');
+                this.passwordModal.hide();
+                this.callback();
+            })
+            .catch(({response}) => {
+                this.$submitBtn.removeClass('loading');
+                this.showPasswordError(response.data.message || Craft.t('app', 'Incorrect password.'));
+                Garnish.shake(this.passwordModal.$container);
+                this.focusPasswordInput();
+            });
     },
 
     showPasswordError: function(error) {

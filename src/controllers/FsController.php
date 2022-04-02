@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Cp;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -78,7 +77,6 @@ class FsController extends Controller
             }
         }
 
-        /** @var FsInterface[] $allFs */
         $allFsTypes = Craft::$app->getFs()->getAllFilesystemTypes();
 
         $fsInstances = [];
@@ -136,6 +134,7 @@ class FsController extends Controller
         $fsService = Craft::$app->getFs();
         $type = $this->request->getBodyParam('type');
 
+        /** @var FsInterface|Fs $fs */
         $fs = $fsService->createFilesystem([
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),
@@ -146,7 +145,7 @@ class FsController extends Controller
         ]);
 
         if (!$fsService->saveFilesystem($fs)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t save filesystem.'), $fs, 'filesystem');
+            return $this->asModelFailure($fs, Craft::t('app', 'Couldn’t save filesystem.'), 'filesystem');
         }
 
         // Remove the old one?
@@ -158,7 +157,7 @@ class FsController extends Controller
             }
         }
 
-        return $this->asSuccess(Craft::t('app', 'Filesystem saved.'), $fs, 'filesystem');
+        return $this->asModelSuccess($fs, Craft::t('app', 'Filesystem saved.'), 'filesystem');
     }
 
     /**
@@ -176,6 +175,6 @@ class FsController extends Controller
             $fsService->removeFilesystem($fs);
         }
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

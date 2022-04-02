@@ -34,6 +34,7 @@ use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
+use craft\web\assets\tailwindreset\TailwindResetAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
@@ -53,6 +54,7 @@ class CpAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
+        TailwindResetAsset::class,
         AxiosAsset::class,
         D3Asset::class,
         ElementResizeDetectorAsset::class,
@@ -122,6 +124,7 @@ JS;
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
+            'Are you sure you want to delete this address?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
@@ -273,6 +276,7 @@ JS;
             'This month',
             'This week',
             'This year',
+            'Tip',
             'To {date}',
             'To',
             'Today',
@@ -284,6 +288,7 @@ JS;
             'Upload files',
             'User Groups',
             'View',
+            'Warning',
             'What do you want to do with their content?',
             'What do you want to do?',
             'You must specify a tab name.',
@@ -325,11 +330,10 @@ JS;
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
-        $view = Craft::$app->getView();
 
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** @var string|ElementInterface $elementType */
+            /** @var class-string<ElementInterface>|ElementInterface $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
                 $elementType::pluralDisplayName(),
@@ -346,6 +350,7 @@ JS;
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'apiParams' => Craft::$app->apiParams,
+            'appId' => Craft::$app->id,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
             'baseApiUrl' => Craft::$app->baseApiUrl,
@@ -417,7 +422,7 @@ JS;
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
             'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
-            'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
+            'firstDay' => (int)(($currentUser?->getPreference('weekStartDay')) ?? $generalConfig->defaultWeekStartDay),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
@@ -453,7 +458,7 @@ JS;
     }
 
     /**
-     * @param $generalConfig GeneralConfig
+     * @param GeneralConfig $generalConfig
      * @return array|null
      */
     private function _httpProxy(GeneralConfig $generalConfig): ?array
@@ -477,9 +482,9 @@ JS;
 
     /**
      * @param GeneralConfig $generalConfig
-     * @return array|false|null
+     * @return array|null|false
      */
-    private function _previewIframeResizerOptions(GeneralConfig $generalConfig)
+    private function _previewIframeResizerOptions(GeneralConfig $generalConfig): array|null|false
     {
         if (!$generalConfig->useIframeResizer) {
             return false;

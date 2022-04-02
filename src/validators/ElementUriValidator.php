@@ -54,7 +54,7 @@ class ElementUriValidator extends UriValidator
 
         try {
             ElementHelper::setUniqueUri($model);
-        } catch (OperationAbortedException $e) {
+        } catch (OperationAbortedException) {
             // Not a big deal if the element isn't enabled yet
             if (
                 $model->enabled &&

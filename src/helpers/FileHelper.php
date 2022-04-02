@@ -52,7 +52,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
         // Is this a UNC network share path?
-        $isUnc = (strpos($path, '//') === 0 || strpos($path, '\\\\') === 0);
+        $isUnc = (str_starts_with($path, '//') || str_starts_with($path, '\\\\'));
 
         // Normalize the path
         $path = parent::normalizePath($path, $ds);
@@ -106,7 +106,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
             try {
                 $fs->remove($dir);
-            } catch (IOException $e2) {
+            } catch (IOException) {
                 // throw the original exception instead
                 throw $e;
             }
@@ -272,7 +272,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         // Handle invalid SVG mime type reported by PHP (https://bugs.php.net/bug.php?id=79045)
-        if (strpos($mimeType, 'image/svg') === 0) {
+        if (str_starts_with($mimeType, 'image/svg')) {
             return 'image/svg+xml';
         }
 
@@ -434,7 +434,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
         try {
             return parent::unlink($path);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return false;
         }
     }
@@ -544,7 +544,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 if (!is_dir($refPath) || static::hasAnythingChanged($path, $refPath)) {
                     return true;
                 }
-            } else if (!is_file($refPath) || filemtime($path) > filemtime($refPath)) {
+            } elseif (!is_file($refPath) || filemtime($path) > filemtime($refPath)) {
                 return true;
             }
         }
@@ -708,12 +708,12 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * Return a file extension for the given MIME type.
      *
-     * @param $mimeType
+     * @param string $mimeType
      * @return string
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      * @since 3.5.15
      */
-    public static function getExtensionByMimeType($mimeType): string
+    public static function getExtensionByMimeType(string $mimeType): string
     {
         $extensions = FileHelper::getExtensionsByMimeType($mimeType);
 
@@ -724,14 +724,11 @@ class FileHelper extends \yii\helpers\FileHelper
         $extension = reset($extensions);
 
         // Manually correct for some types.
-        switch ($extension) {
-            case 'svgz':
-                return 'svg';
-            case 'jpe':
-                return 'jpg';
-        }
-
-        return $extension;
+        return match ($extension) {
+            'svgz' => 'svg',
+            'jpe' => 'jpg',
+            default => $extension,
+        };
     }
 
     /**
@@ -762,5 +759,4 @@ class FileHelper extends \yii\helpers\FileHelper
             }
         }
     }
-
 }

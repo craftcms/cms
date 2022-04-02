@@ -23,7 +23,7 @@ class RelatedTags extends RelationArgumentHandler
     /**
      * @inheritdoc
      */
-    protected function handleArgument($argumentValue)
+    protected function handleArgument($argumentValue): mixed
     {
         $argumentValue = parent::handleArgument($argumentValue);
         return $this->getIds(Tag::class, $argumentValue);

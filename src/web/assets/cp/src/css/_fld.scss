@@ -175,15 +175,15 @@ $gridColor: hsl(212, 50%, 95%);
   &.has-conditions:after {
     position: absolute;
     content: ' ';
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    left: 2px;
     z-index: -1;
-    border: 4px solid transparent;
+    border: 2px solid transparent;
     border-radius: $mediumBorderRadius;
     background-image: linear-gradient($color, $color),
-    repeating-linear-gradient(-45deg, transparentize($grey400, 0.9), transparentize($grey500, 0.9) 10px, transparent 10px, transparent 20px);
+    repeating-linear-gradient(-45deg, $white, $white 5px, transparent 5px, transparent 10px);
     background-origin: border-box;
     background-clip: content-box, border-box;
   }

@@ -62,7 +62,7 @@ class MigrationManager extends Component
     /**
      * @var Connection|array|string The DB connection object or the application component ID of the DB connection
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var string The migrations table name
@@ -92,7 +92,7 @@ class MigrationManager extends Component
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
-    public function createMigration(string $name)
+    public function createMigration(string $name): \yii\db\Migration|MigrationInterface
     {
         if (!is_dir($this->migrationPath)) {
             throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
@@ -102,7 +102,7 @@ class MigrationManager extends Component
         $class = $this->migrationNamespace . '\\' . $name;
         require_once $file;
 
-        return new $class;
+        return new $class();
     }
 
     /**
@@ -199,11 +199,11 @@ class MigrationManager extends Component
     /**
      * Upgrades with the specified migration.
      *
-     * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
+     * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to apply, or the migration itself
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
-    public function migrateUp($migration): void
+    public function migrateUp(\yii\db\Migration|string|MigrationInterface $migration): void
     {
         [$migrationName, $migration] = $this->_normalizeMigration($migration);
 
@@ -260,11 +260,11 @@ class MigrationManager extends Component
     /**
      * Downgrades with the specified migration.
      *
-     * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
+     * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to revert, or the migration itself
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
-    public function migrateDown($migration): void
+    public function migrateDown(\yii\db\Migration|string|MigrationInterface $migration): void
     {
         [$migrationName, $migration] = $this->_normalizeMigration($migration);
 
@@ -427,10 +427,10 @@ class MigrationManager extends Component
     /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
-     * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
+     * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to apply, or the migration itself
      * @return array
      */
-    private function _normalizeMigration($migration): array
+    private function _normalizeMigration(\yii\db\Migration|string|MigrationInterface $migration): array
     {
         if (is_string($migration)) {
             $migrationName = $migration;

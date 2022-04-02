@@ -76,9 +76,9 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @param string|int $elementId
+     * @param mixed $elementId
      */
-    public function setElementId($elementId): void
+    public function setElementId(mixed $elementId): void
     {
         if (is_array($elementId)) {
             $elementId = reset($elementId);
@@ -123,7 +123,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
+        /** @var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         return $elementType::find()
             ->id($this->_elementId)
@@ -144,10 +144,10 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param ElementInterface|ElementInterface[]|int|int[]|null $value
+     * @param ElementInterface|int|array<ElementInterface|int>|null $value
      * @return bool
      */
-    protected function matchValue($value): bool
+    protected function matchValue(mixed $value): bool
     {
         $elementId = $this->getElementId();
 

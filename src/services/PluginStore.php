@@ -100,18 +100,15 @@ class PluginStore extends Component
         } else {
             // Save token to database
 
-            $oauthTokenRecord = OauthTokenRecord::find()
+            OauthTokenRecord::find()
                 ->where(['userId' => $userId])
-                ->one();
-
-            if ($oauthTokenRecord) {
-                $oauthTokenRecord->delete();
-            }
+                ->one()
+                ?->delete();
 
             $oauthTokenRecord = new OauthTokenRecord();
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
-            $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
+            $oauthTokenRecord->expiryDate = Db::prepareDateForDb($oauthToken->expiryDate);
             $oauthTokenRecord->save();
         }
     }
@@ -143,7 +140,7 @@ class PluginStore extends Component
 
         $token = new CraftIdToken($oauthTokenRecord->getAttributes());
 
-        if (!$token || ($token && $token->hasExpired())) {
+        if ($token->hasExpired()) {
             return null;
         }
 
@@ -156,17 +153,12 @@ class PluginStore extends Component
     public function deleteToken(): void
     {
         // Delete DB token
-
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        $oauthToken = OauthTokenRecord::find()
+        OauthTokenRecord::find()
             ->where(['userId' => $userId])
-            ->one();
-
-        if ($oauthToken) {
-            $oauthToken->delete();
-        }
-
+            ->one()
+            ?->delete();
 
         // Delete session token
         Session::remove('pluginStore.token');
@@ -196,10 +188,10 @@ class PluginStore extends Component
     /**
      * Returns the token by user ID.
      *
-     * @param $userId
+     * @param int $userId
      * @return CraftIdToken|null
      */
-    public function getTokenByUserId($userId): ?CraftIdToken
+    public function getTokenByUserId(int $userId): ?CraftIdToken
     {
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 

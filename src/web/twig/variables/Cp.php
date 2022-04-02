@@ -337,7 +337,7 @@ class Cp extends Component
         $foundSelectedItem = false;
 
         foreach ($navItems as &$item) {
-            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'] . '/'))) {
+            if (!$foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
                 if (!isset($item['subnav'])) {
                     $item['subnav'] = false;
@@ -491,7 +491,7 @@ class Cp extends Component
      *
      * @param bool $includeAliases Whether aliases should be included in the list
      * (only enable this if the setting defines a URL or file path)
-     * @return string[]
+     * @return array{label: string, data: array}[]
      * @since 3.1.0
      */
     public function getEnvSuggestions(bool $includeAliases = false): array
@@ -555,7 +555,7 @@ class Cp extends Component
                 return [];
             }
 
-            $allowedValues = array_flip($allowedValues);
+            $allowedValues = array_flip(array_filter($allowedValues));
         }
 
         $options = [];
@@ -596,18 +596,21 @@ class Cp extends Component
         $options = [];
 
         foreach (array_keys($_SERVER) as $var) {
-            if (
-                is_string($var) &&
-                is_string($value = App::env($var)) &&
-                $value !== '' &&
-                ($boolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE)) !== null
-            ) {
+            if (!is_string($var)) {
+                continue;
+            }
+            $value = App::env($var);
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $booleanValue = is_bool($value) ? $value : filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+            if ($booleanValue !== null) {
                 $options[] = [
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
                         'data' => [
-                            'boolean' => $boolean,
+                            'boolean' => $booleanValue,
                         ],
                     ],
                 ];
@@ -729,7 +732,7 @@ class Cp extends Component
     /**
      * Returns the available template path suggestions for template inputs.
      *
-     * @return string[]
+     * @return array{label: string, data: array}[]
      * @since 3.1.0
      */
     public function getTemplateSuggestions(): array
@@ -786,7 +789,7 @@ class Cp extends Component
 
                     // Is it in a site template directory?
                     foreach ($sites as $handle => $name) {
-                        if (strpos($template, $handle . DIRECTORY_SEPARATOR) === 0) {
+                        if (str_starts_with($template, $handle . DIRECTORY_SEPARATOR)) {
                             $hint = $name;
                             $template = substr($template, strlen($handle) + 1);
                             break;

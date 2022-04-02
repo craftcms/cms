@@ -84,7 +84,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
         return $value !== '' ? $value : null;
     }
@@ -92,7 +92,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ElementInterface $element = null): mixed
     {
         return $value !== null ? StringHelper::idnToUtf8Email($value) : null;
     }
@@ -100,7 +100,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'email',
@@ -127,7 +127,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return TextFieldConditionRule::class;
     }
@@ -135,7 +135,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';

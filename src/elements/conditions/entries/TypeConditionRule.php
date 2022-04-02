@@ -45,8 +45,8 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
      */
     private array $_sections = [];
 
-    public string $sectionUid = '';
-    public string $entryTypeUid = '';
+    public ?string $sectionUid = null;
+    public ?string $entryTypeUid = null;
 
     /**
      * @inheritdoc
@@ -57,7 +57,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
 
         // Set a default section
         if (!$this->sectionUid) {
-            $this->sectionUid = ArrayHelper::firstValue($this->_sections)->uid;
+            $this->sectionUid = ArrayHelper::firstValue($this->_sections)?->uid;
         }
 
         // Once we have a section, set a default entry type
@@ -137,8 +137,15 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
      */
     private function _ensureEntryType(): void
     {
-        if (!$this->entryTypeUid || !ArrayHelper::keyExists($this->entryTypeUid, $this->_entryTypeOptions())) {
-            $this->entryTypeUid = ArrayHelper::firstKey($this->_entryTypeOptions());
+        if (!$this->sectionUid) {
+            $this->entryTypeUid = null;
+            return;
+        }
+
+        $entryTypeOptions = $this->_entryTypeOptions();
+
+        if (!$this->entryTypeUid || !ArrayHelper::keyExists($this->entryTypeUid, $entryTypeOptions)) {
+            $this->entryTypeUid = ArrayHelper::firstKey($entryTypeOptions);
         }
     }
 
@@ -170,6 +177,7 @@ class TypeConditionRule extends BaseConditionRule implements ElementConditionRul
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue($element->getType()->uid);
+        $typeId = Db::idByUid(Table::ENTRYTYPES, $this->entryTypeUid);
+        return $element->getType()->id === (int)$typeId;
     }
 }

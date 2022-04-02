@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\elements\User;
-use yii\base\Event;
 
 /**
  * Create Element Check Event

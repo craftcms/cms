@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\base\ElementInterface;
 use yii\base\Event;
 
 /**
@@ -18,7 +19,7 @@ use yii\base\Event;
 class DefineSourceSortOptionsEvent extends Event
 {
     /**
-     * @var string The element type class
+     * @var class-string<ElementInterface> The element type class
      */
     public string $elementType;
 

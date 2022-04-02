@@ -31,7 +31,7 @@ abstract class BaseRevisionBehavior extends Behavior
     /**
      * @var User|null|false The creator
      */
-    private $_creator;
+    private User|false|null $_creator = null;
 
     /**
      * Returns the draft’s creator.

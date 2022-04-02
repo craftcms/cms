@@ -203,7 +203,7 @@ class Tags extends Component
 
         if ($isNewTagGroup) {
             $tagGroup->uid = StringHelper::UUID();
-        } else if (!$tagGroup->uid) {
+        } elseif (!$tagGroup->uid) {
             $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }
 
@@ -246,9 +246,9 @@ class Tags extends Component
                 $layout->id = $tagGroupRecord->fieldLayoutId;
                 $layout->type = Tag::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $tagGroupRecord->fieldLayoutId = $layout->id;
-            } else if ($tagGroupRecord->fieldLayoutId) {
+            } elseif ($tagGroupRecord->fieldLayoutId) {
                 // Delete the field layout
                 Craft::$app->getFields()->deleteLayoutById($tagGroupRecord->fieldLayoutId);
                 $tagGroupRecord->fieldLayoutId = null;
@@ -324,10 +324,6 @@ class Tags extends Component
      */
     public function deleteTagGroup(TagGroup $tagGroup): bool
     {
-        if (!$tagGroup) {
-            return false;
-        }
-
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
@@ -367,8 +363,8 @@ class Tags extends Component
         try {
             // Delete the tags
             $tags = Tag::find()
-                ->status(null)
                 ->groupId($tagGroupRecord->id)
+                ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
 
@@ -459,7 +455,6 @@ class Tags extends Component
      */
     public function getTagById(int $tagId, ?int $siteId = null): ?Tag
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 
@@ -475,6 +470,7 @@ class Tags extends Component
         $query = $withTrashed ? TagGroupRecord::findWithTrashed() : TagGroupRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var TagGroupRecord */
         return $query->one() ?? new TagGroupRecord();
     }
 }

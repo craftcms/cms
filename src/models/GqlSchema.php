@@ -34,12 +34,12 @@ class GqlSchema extends Model
     /**
      * @var array The schema’s scope
      */
-    public $scope = [];
+    public array $scope = [];
 
     /**
-     * @var array Whether this schema is public
+     * @var bool Whether this schema is public
      */
-    public $isPublic = false;
+    public bool $isPublic = false;
 
     /**
      * @var string|null $uid
@@ -54,11 +54,11 @@ class GqlSchema extends Model
 
     public function __construct($config = [])
     {
-        parent::__construct($config);
-
-        if (is_string($this->scope)) {
-            $this->scope = Json::decode($this->scope);
+        if (isset($config['scope']) && is_string($config['scope'])) {
+            $config['scope'] = Json::decode($config['scope']);
         }
+
+        parent::__construct($config);
     }
 
     /**
@@ -116,7 +116,7 @@ class GqlSchema extends Model
                 $parts = explode('.', $permission);
                 if (count($parts) === 2) {
                     $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
-                } else if (count($parts) === 1) {
+                } elseif (count($parts) === 1) {
                     $this->_cachedPairs[$action][$parts[0]] = true;
                 }
             }

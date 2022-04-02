@@ -86,13 +86,8 @@ class TemplateLoader implements LoaderInterface
             return false;
         }
 
-        if (is_string($name)) {
-            $sourceModifiedTime = filemtime($this->_resolveTemplate($name));
-
-            return $sourceModifiedTime <= $time;
-        }
-
-        return false;
+        $sourceModifiedTime = filemtime($this->_resolveTemplate($name));
+        return $sourceModifiedTime <= $time;
     }
 
     /**

@@ -1,4 +1,5 @@
 <?php
+
 // Autoload the fixtures
 use Codeception\Util\Autoload;
 

@@ -44,9 +44,9 @@ class SearchQueryTerm extends BaseObject
     public ?string $attribute = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public string $term;
+    public ?string $term = null;
 
     /**
      * @var bool

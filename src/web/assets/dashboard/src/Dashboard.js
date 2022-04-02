@@ -157,14 +157,14 @@ import './dashboard.scss';
                     type: type
                 };
 
-                Craft.postActionRequest('dashboard/create-widget', data, function(response, textStatus) {
-                    if (textStatus === 'success' && response.success) {
+                Craft.sendActionRequest('POST', 'dashboard/create-widget', {data})
+                    .then((response) => {
                         $container.removeClass('loading');
-                        widget.update(response);
-                    } else {
+                        widget.update(response.data);
+                    })
+                    .catch(({response}) => {
                         widget.destroy();
-                    }
-                });
+                    });
             }
         },
 
@@ -392,35 +392,39 @@ import './dashboard.scss';
             var action = this.$container.hasClass('new') ? 'dashboard/create-widget' : 'dashboard/save-widget-settings',
                 data = this.$settingsForm.serialize();
 
-            Craft.postActionRequest(action, data, (response, textStatus) => {
-                this.$saveBtn.removeClass('loading');
-
-                if (textStatus === 'success') {
+            Craft.sendActionRequest('POST', action, {data})
+                .then((response) => {
                     if (this.$settingsErrorList) {
                         this.$settingsErrorList.remove();
                         this.$settingsErrorList = null;
                     }
 
-                    if (response.success) {
-                        Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
+                    Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
 
-                        // Make sure the widget is still allowed to be shown, just in case
-                        if (!response.info) {
-                            this.destroy();
-                        } else {
-                            this.update(response);
-                            this.hideSettings();
-                        }
+                    // Make sure the widget is still allowed to be shown, just in case
+                    if (!response.data.info) {
+                        this.destroy();
                     } else {
-                        Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
-
-                        if (response.errors) {
-                            this.$settingsErrorList = Craft.ui.createErrorList(response.errors)
-                                .insertAfter(this.$settingsContainer);
-                        }
+                        this.update(response.data);
+                        this.hideSettings();
                     }
-                }
-            });
+                })
+                .catch(({response}) => {
+                    if (this.$settingsErrorList) {
+                        this.$settingsErrorList.remove();
+                        this.$settingsErrorList = null;
+                    }
+
+                    Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
+
+                    if (response.data.errors) {
+                        this.$settingsErrorList = Craft.ui.createErrorList(response.data.errors)
+                            .insertAfter(this.$settingsContainer);
+                    }
+                })
+                .finally(() => {
+                    this.$saveBtn.removeClass('loading');
+                });
         },
 
         update: function(response) {
@@ -552,13 +556,13 @@ import './dashboard.scss';
                         colspan: colspan
                     };
 
-                    Craft.postActionRequest('dashboard/change-widget-colspan', data, (response, textStatus) => {
-                        if (textStatus === 'success' && response.success) {
+                    Craft.sendActionRequest('POST', 'dashboard/change-widget-colspan', {data})
+                        .then((response) => {
                             Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
-                        } else {
+                        })
+                        .catch(({response}) => {
                             Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
-                        }
-                    });
+                        });
                 }
             });
 

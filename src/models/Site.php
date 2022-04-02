@@ -77,14 +77,14 @@ class Site extends Model
     public ?string $uid = null;
 
     /**
-     * @var DateTime Date created
+     * @var DateTime|null Date created
      */
-    public DateTime $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
-     * @var DateTime Date updated
+     * @var DateTime|null Date updated
      */
-    public DateTime $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
      * @var string|null Base URL
@@ -149,21 +149,21 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'name' => function() {
-                    return $this->getName(false);
-                },
-                'baseUrl' => function() {
-                    return $this->getBaseUrl(false);
-                },
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'name' => function() {
+                        return $this->getName(false);
+                    },
+                    'baseUrl' => function() {
+                        return $this->getBaseUrl(false);
+                    },
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**

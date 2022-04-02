@@ -55,6 +55,8 @@ class UpController extends Controller
         $this->stdout("done\n\n", Console::FG_GREEN);
 
         try {
+            $pendingChanges = Craft::$app->getProjectConfig()->areChangesPending();
+
             // Craft + plugin migrations
             if ($this->run('migrate/all', ['noContent' => true]) !== ExitCode::OK) {
                 $this->stderr("\nAborting remaining tasks.\n", Console::FG_RED);
@@ -63,10 +65,12 @@ class UpController extends Controller
             $this->stdout("\n");
 
             // Project Config
-            if ($this->run('project-config/apply') !== ExitCode::OK) {
-                throw new OperationAbortedException();
+            if ($pendingChanges) {
+                if ($this->run('project-config/apply') !== ExitCode::OK) {
+                    throw new OperationAbortedException();
+                }
+                $this->stdout("\n");
             }
-            $this->stdout("\n");
 
             // Content migrations
             if ($this->run('migrate/up', ['track' => MigrationManager::TRACK_CONTENT]) !== ExitCode::OK) {

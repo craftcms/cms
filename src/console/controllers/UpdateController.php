@@ -114,7 +114,7 @@ class UpdateController extends Controller
             if ($pluginUpdate->getHasReleases()) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 if ($pluginInfo['isInstalled']) {
@@ -236,7 +236,7 @@ class UpdateController extends Controller
     /**
      * Returns the new Composer requirements.
      *
-     * @param string[] $handles
+     * @param string ...$handles
      * @return array
      */
     private function _getRequirements(string ...$handles): array
@@ -245,7 +245,7 @@ class UpdateController extends Controller
         if ($handles !== ['all']) {
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                     if ($handle === 'craft') {
                         $handle = 'cms';
@@ -269,7 +269,7 @@ class UpdateController extends Controller
                 if (($latest = $pluginUpdate->getLatest()) !== null) {
                     try {
                         $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                    } catch (InvalidPluginException $e) {
+                    } catch (InvalidPluginException) {
                         continue;
                     }
                     if ($pluginInfo['isInstalled']) {
@@ -279,7 +279,7 @@ class UpdateController extends Controller
             }
         } else {
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                 } else {
                     $to = null;
@@ -292,7 +292,7 @@ class UpdateController extends Controller
                     if (isset($updates->plugins[$handle])) {
                         try {
                             $pluginInfo = $pluginsService->getPluginInfo($handle);
-                        } catch (InvalidPluginException $e) {
+                        } catch (InvalidPluginException) {
                         }
                     }
 
@@ -592,7 +592,7 @@ class UpdateController extends Controller
                 $session->setIdentity(null);
             }
 
-            if (!App::licenseKey()) {
+            if (App::licenseKey() === null) {
                 $this->stderr('License key creation was unsuccessful.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }

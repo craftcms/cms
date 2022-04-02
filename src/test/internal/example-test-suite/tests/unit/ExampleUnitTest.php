@@ -2,16 +2,16 @@
 
 namespace myprojecttests;
 
-use Codeception\Test\Unit;
 use Craft;
+use craft\test\TestCase;
 use UnitTester;
 
-class ExampleUnitTest extends Unit
+class ExampleUnitTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      */

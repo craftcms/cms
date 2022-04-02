@@ -26,5 +26,5 @@ abstract class Resolver
      * @param ResolveInfo $resolveInfo The resolve information
      * @return mixed
      */
-    abstract public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
+    abstract public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed;
 }
