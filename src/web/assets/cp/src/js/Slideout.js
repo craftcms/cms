@@ -114,7 +114,6 @@
             this._cancelTransitionListeners();
 
             if (this.$shade) {
-                this.removeListener(this.$shade, 'click');
                 this.$shade
                     .removeClass('so-visible')
                     .one('transitionend.slideout', () => {
