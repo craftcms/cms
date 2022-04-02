@@ -809,7 +809,7 @@ class Matrix extends Component
      * @param MatrixField $field The Matrix field to duplicate blocks for
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
-     * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
+     * @param bool $checkOtherSites Whether to duplicate blocks for the source element’s other supported sites
      * @param bool $deleteOtherBlocks Whether to delete any blocks that belong to the element, which weren’t included in the duplication
      * @throws Throwable if reasons
      * @since 3.2.0

@@ -1328,7 +1328,7 @@ $.extend(Craft,
         },
 
         /**
-         * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element's index, or -1).
+         * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element’s index, or -1).
          *
          * @param elem
          * @param arr

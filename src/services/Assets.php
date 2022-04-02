@@ -827,7 +827,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the given user's temporary upload folder.
+     * Returns the given user’s temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
      * the current session ID.

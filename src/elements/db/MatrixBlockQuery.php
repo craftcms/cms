@@ -92,13 +92,13 @@ class MatrixBlockQuery extends ElementQuery
      * @var mixed The block type ID(s) that the resulting Matrix blocks must have.
      * ---
      * ```php
-     * // fetch the entry's text blocks
+     * // fetch the entry’s text blocks
      * $blocks = $entry->myMatrixField
      *     ->type('text')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch the entry's text blocks #}
+     * {# fetch the entry’s text blocks #}
      * {% set blocks = entry.myMatrixField
      *   .type('text')
      *   .all() %}

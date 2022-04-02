@@ -154,7 +154,7 @@ JS;
         $users = $query->all();
         $undeletableIds = $this->_getUndeletableUserIds();
 
-        // Are we transferring the user's content to a different user?
+        // Are we transferring the user’s content to a different user?
         if (is_array($this->transferContentTo)) {
             $this->transferContentTo = reset($this->transferContentTo) ?: null;
         }

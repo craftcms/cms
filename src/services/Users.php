@@ -52,12 +52,12 @@ use yii\base\InvalidArgumentException;
 class Users extends Component
 {
     /**
-     * @event UserEvent The event that is triggered before a user's email is verified.
+     * @event UserEvent The event that is triggered before a user’s email is verified.
      */
     public const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
 
     /**
-     * @event UserEvent The event that is triggered after a user's email is verified.
+     * @event UserEvent The event that is triggered after a user’s email is verified.
      */
     public const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
 
@@ -470,7 +470,7 @@ class Users extends Component
      * Removes credentials for a user.
      *
      * @param User $user The user that should have credentials removed.
-     * @return bool Whether the user's credentials were successfully removed.
+     * @return bool Whether the user’s credentials were successfully removed.
      * @throws UserNotFoundException
      * @since 4.0.0
      */
@@ -1079,7 +1079,7 @@ class Users extends Component
     }
 
     /**
-     * Sets a new verification code on the user's record.
+     * Sets a new verification code on the user’s record.
      *
      * @param User $user The user.
      * @return string The user’s brand new verification code.

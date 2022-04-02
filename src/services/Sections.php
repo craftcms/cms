@@ -541,7 +541,7 @@ class Sections extends Component
                 if (!$isNewSection) {
                     foreach ($this->getEntryTypesBySectionId($section->id) as $entryType) {
                         if ($entryType->id === $entry->getTypeId()) {
-                            // This is *the* entry's type. Make sure its name & handle match the section's
+                            // This is *the* entry’s type. Make sure its name & handle match the section’s
                             if ($entryType->name !== $section->name || $entryType->handle !== $section->handle) {
                                 $entryType->name = $section->name;
                                 $entryType->handle = $section->handle;
@@ -550,7 +550,7 @@ class Sections extends Component
 
                             $section->setEntryTypes([$entryType]);
                         } else {
-                            // We don't need this one anymore
+                            // We don’t need this one anymore
                             $this->deleteEntryType($entryType);
                         }
                     }

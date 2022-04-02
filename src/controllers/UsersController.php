@@ -509,7 +509,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Sets a user's password once they've verified they have access to their email.
+     * Sets a user’s password once they’ve verified they have access to their email.
      *
      * @return Response
      */
@@ -1206,7 +1206,7 @@ JS,
         }
 
         // If editing an existing user and either of these properties are being changed,
-        // require the user's current password for additional security
+        // require the user’s current password for additional security
         if (
             !$isNewUser &&
             (!empty($newEmail) || $user->newPassword !== null) &&
@@ -1333,7 +1333,7 @@ JS,
             $userSession->sendUsernameCookie($user);
         }
 
-        // Save the user's photo, if it was submitted
+        // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -1706,7 +1706,7 @@ JS,
             }
         }
 
-        // Are we transferring the user's content to a different user?
+        // Are we transferring the user’s content to a different user?
         $transferContentToId = $this->request->getBodyParam('transferContentTo');
 
         if (is_array($transferContentToId) && isset($transferContentToId[0])) {
@@ -2028,7 +2028,7 @@ JS,
     }
 
     /**
-     * Verifies that the current user's password was submitted with the request.
+     * Verifies that the current user’s password was submitted with the request.
      *
      * @return bool
      */

@@ -360,7 +360,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     }
 
     /**
-     * Returns the field context this element's content uses.
+     * Returns the field context this element’s content uses.
      *
      * @return string
      */

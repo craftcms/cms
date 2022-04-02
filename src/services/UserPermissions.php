@@ -205,7 +205,7 @@ class UserPermissions extends Component
     }
 
     /**
-     * Returns all of a given user's permissions.
+     * Returns all of a given user’s permissions.
      *
      * @param int $userId
      * @return array
@@ -720,7 +720,7 @@ class UserPermissions extends Component
      *
      * @param array $postedPermissions The posted permissions.
      * @param array $groupPermissions Permissions the user is already assigned
-     * to via their group, if we're saving a user's permissions.
+     * to via their group, if we’re saving a user’s permissions.
      * @return array The permissions we'll actually let them save.
      */
     private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array
