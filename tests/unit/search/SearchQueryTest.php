@@ -31,7 +31,6 @@ class SearchQueryTest extends TestCase
         'exact' => false,
         'subLeft' => false,
         'subRight' => true,
-        'attribute' => null,
         'phrase' => false,
     ];
 
@@ -115,7 +114,6 @@ class SearchQueryTest extends TestCase
             'exact' => true,
             'subLeft' => true,
             'subRight' => true,
-            'attribute' => null,
             'phrase' => false,
         ]);
 
@@ -124,7 +122,6 @@ class SearchQueryTest extends TestCase
             'exact' => true,
             'subLeft' => true,
             'subRight' => true,
-            'attribute' => null,
             'term' => 'search',
             'phrase' => false,
         ]));
@@ -145,7 +142,6 @@ class SearchQueryTest extends TestCase
             'exact' => false,
             'subLeft' => false,
             'subRight' => true,
-            'attribute' => null,
             'term' => $search->getQuery(),
             'phrase' => false,
         ]);
