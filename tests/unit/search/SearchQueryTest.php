@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\search;
 
-use Codeception\Test\Unit;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -45,8 +44,7 @@ class SearchQueryTest extends TestCase
     public function getWhatItShouldBe(SearchQueryTerm $token, ?array $configOptions, ?string $index): SearchQueryTerm
     {
         // Get whether the data provider gave us custom config options for this term based on the above searchParam
-        $config = $this->getConfigFromOptions($index, $configOptions);
-
+        $config = $configOptions[$index] ?? self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         return $this->createDefaultSearchQueryTermFromString($token->term, $config);
     }
 
@@ -62,27 +60,6 @@ class SearchQueryTest extends TestCase
         }
 
         return new SearchQueryTerm($config);
-    }
-
-    /**
-     * Essentially a function that sees if the $key exists in the $config options and returns that. If it doesnt exist it returns
-     * self::DEFAULT_SEARCH_QUERY_TERM_CONFIG
-     *
-     * @param string|null $key
-     * @param array|null $configOptions
-     * @return mixed
-     */
-    public function getConfigFromOptions(?string $key = null, array $configOptions = null): mixed
-    {
-        if (!$configOptions) {
-            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
-        }
-
-        if (!array_key_exists($key, $configOptions) || !isset($configOptions[$key])) {
-            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
-        }
-
-        return $configOptions[$key];
     }
 
     /**
@@ -210,8 +187,7 @@ class SearchQueryTest extends TestCase
     {
         $exploded = explode(' ', $query);
         foreach ((new SearchQuery($query))->getTokens() as $index => $token) {
-            $config = $this->getConfigFromOptions($index, $configOptions);
-
+            $config = $configOptions[$index] ?? self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
             $fromExplodedString = $this->createDefaultSearchQueryTermFromString($exploded[$index], $config);
             $this->ensureIdenticalSearchTermObjects($fromExplodedString, $token);
         }
@@ -223,38 +199,35 @@ class SearchQueryTest extends TestCase
     public function searchQueryDataProviders(): array
     {
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
-        $quotedPhraseConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $quotedPhraseConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $quotedPhraseConfig['phrase'] = true;
         $quotedPhraseConfig['term'] = 'Hello';
 
-
-        $excludeTermConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $excludeTermConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $excludeTermConfig['exclude'] = true;
         $excludeTermConfig['term'] = 'Hello';
 
-
-        $subtermLeft = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $subtermLeft = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $subtermLeft['subLeft'] = true;
         $subtermLeft['term'] = 'Hello';
 
-        $subTermRight = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $subTermRight = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $subTermRight['term'] = 'Hello';
 
-        $firstQuote = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $firstQuote = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $firstQuote['term'] = 'i';
         $firstQuote['phrase'] = true;
 
-        $attributeConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $attributeConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $attributeConfig['term'] = 'test';
         $attributeConfig['attribute'] = 'body';
         $attributeConfig['exact'] = true;
         $attributeConfig['subRight'] = false;
 
-
-        $attributePhraseConfig = $attributeConfig;
+        $attributePhraseConfig = array_merge($attributeConfig);
         $attributePhraseConfig['phrase'] = true;
 
-        $emptyConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $emptyConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $emptyConfig['term'] = '';
         $emptyConfig['exclude'] = true;
         $emptyConfig['subRight'] = false;
