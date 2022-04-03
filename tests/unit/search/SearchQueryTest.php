@@ -205,10 +205,16 @@ class SearchQueryTest extends TestCase
 
         $subtermLeft = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $subtermLeft['subLeft'] = true;
+        $subtermLeft['subRight'] = false;
         $subtermLeft['term'] = 'Hello';
 
         $subTermRight = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $subTermRight['term'] = 'Hello';
+
+        $subtermBoth = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
+        $subtermBoth['subLeft'] = true;
+        $subtermBoth['subRight'] = true;
+        $subtermBoth['term'] = 'Hello';
 
         $firstQuote = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $firstQuote['term'] = 'i';
@@ -236,7 +242,7 @@ class SearchQueryTest extends TestCase
             ['i said -Hello', ['2' => $excludeTermConfig], 3],
             ['i said *Hello', ['2' => $subtermLeft], 3],
             ['i said Hello*', ['2' => $subTermRight], 3],
-            ['i said *Hello*', ['2' => $subtermLeft], 3],
+            ['i said *Hello*', ['2' => $subtermBoth], 3],
             ['i said body::"test"', ['2' => $attributePhraseConfig], 3],
             ['i said -body:*', ['2' => $emptyConfig], 3],
             ['i said body::test', ['2' => $attributeConfig], 3],
