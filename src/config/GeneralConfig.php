@@ -484,11 +484,11 @@ class GeneralConfig extends BaseObject
      *
      * Options include:
      *
-     * - `attribute` – The attribute that the term should apply to (e.g. 'title'), if any. (`null` by default)
-     * - `exact` – Whether the term must be an exact match (only applies if `attribute` is set). (`false` by default)
-     * - `exclude` – Whether search results should *exclude* records with this term. (`false` by default)
-     * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it. (`false` by default)
-     * - `subRight` – Whether to include keywords that contain the term, with additional characters after it. (`true` by default)
+     * - `attribute` – The attribute that the term should apply to (e.g. 'title'), if any. (`null` by default)
+     * - `exact` – Whether the term must be an exact match (only applies if `attribute` is set). (`false` by default)
+     * - `exclude` – Whether search results should *exclude* records with this term. (`false` by default)
+     * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it. (`false` by default)
+     * - `subRight` – Whether to include keywords that contain the term, with additional characters after it. (`true` by default)
      *
      * @group System
      */
