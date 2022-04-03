@@ -41,9 +41,12 @@ class ComponentHelperTest extends TestCase
     /**
      * @dataProvider validateComponentClassDataProvider
      * @param bool $expected
-     * @param class-string $class
-     * @param class-string|null $instanceOf
-     * @param class-string $exceptionClass
+     * @param string $class
+     * @phpstan-param class-string $class
+     * @param string|null $instanceOf
+     * @phpstan-param class-string|null $instanceOf
+     * @param string $exceptionClass
+     * @phpstan-param class-string $exceptionClass
      */
     public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = Throwable::class): void
     {

@@ -68,7 +68,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @var class-string<ElementInterface> The name of the [[ElementInterface]] class.
+     * @var string The name of the [[ElementInterface]] class.
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -467,7 +468,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Constructor
      *
-     * @param class-string<ElementInterface> $elementType The element type class associated with this query
+     * @param string $elementType The element type class associated with this query
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $config Configurations to be applied to the newly created query object
      */
     public function __construct(string $elementType, array $config = [])
@@ -1194,7 +1196,8 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();
         }
-        /** @var class-string<ElementInterface>|ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Make sure the siteId param is set
@@ -1648,7 +1651,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $element;
         }
 
-        /** @var class-string<ElementInterface>|ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Instantiate the element
@@ -1978,7 +1982,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Joins the content table into the query being prepared.
      *
-     * @param class-string<ElementInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _joinContentTable(string $class): void
@@ -2055,12 +2060,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'status' param to the query being prepared.
      *
-     * @param class-string<ElementInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _applyStatusParam(string $class): void
     {
-        /** @var class-string<ElementInterface>|ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }
@@ -2148,7 +2155,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the structure params to the query being prepared.
      *
-     * @param class-string<ElementInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _applyStructureParams(string $class): void
@@ -2427,7 +2435,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Normalizes a structure param value to either an Element object or false.
      *
      * @param string $property The parameter’s property name.
-     * @param class-string<ElementInterface> $class The element class
+     * @param string $class The element class
+     * @phpstan-param class-string<ElementInterface> $class
      * @return ElementInterface The normalized element
      * @throws QueryAbortedException if the element can't be found
      */
@@ -2439,7 +2448,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        /** @var class-string<ElementInterface>|ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         if ($element instanceof ElementInterface && !$element->lft) {
             $element = $element->getCanonicalId();
 

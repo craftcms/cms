@@ -297,7 +297,8 @@ class Elements extends Component
      * Creates an element with a given config.
      *
      * @template T of ElementInterface
-     * @param class-string<T>|array{type: class-string<T>} $config The element’s class name, or its config, with a `type` value
+     * @param string|array $config The element’s class name, or its config, with a `type` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element
      */
     public function createElement(mixed $config): ElementInterface
@@ -312,7 +313,8 @@ class Elements extends Component
     /**
      * Creates an element query for a given element type.
      *
-     * @param class-string<ElementInterface> $elementType The element class
+     * @param string $elementType The element class
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @return ElementQueryInterface The element query
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
@@ -423,7 +425,8 @@ class Elements extends Component
     /**
      * Invalidates caches for the given element type.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @since 3.5.0
      */
     public function invalidateCachesForElementType(string $elementType): void
@@ -476,7 +479,8 @@ class Elements extends Component
      *
      * @template T of ElementInterface
      * @param int $elementId The element’s ID.
-     * @param class-string<T>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<T>|null $elementType
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -496,7 +500,8 @@ class Elements extends Component
      *
      * @template T of ElementInterface
      * @param string $uid The element’s UID.
-     * @param class-string<T>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<T>|null $elementType
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -514,7 +519,8 @@ class Elements extends Component
      * @template T of ElementInterface
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
-     * @param class-string<T>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<T>|null $elementType
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -1611,7 +1617,8 @@ class Elements extends Component
      * Deletes an element by its ID.
      *
      * @param int $elementId The element’s ID
-     * @param class-string<ElementInterface>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<ElementInterface>|null $elementType
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
      * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
@@ -1867,7 +1874,8 @@ class Elements extends Component
     /**
      * Returns all available element classes.
      *
-     * @return class-string<ElementInterface>[] The available element classes.
+     * @return string[] The available element classes.
+     * @phpstan-return class-string<ElementInterface>[]
      */
     public function getAllElementTypes(): array
     {
@@ -1897,7 +1905,8 @@ class Elements extends Component
      * Creates an element action with a given config.
      *
      * @template T of ElementActionInterface
-     * @param class-string<T>|array{type: class-string<T>} $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param string|array $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element action
      */
     public function createAction(mixed $config): ElementActionInterface
@@ -1909,7 +1918,8 @@ class Elements extends Component
      * Creates an element exporter with a given config.
      *
      * @template T of ElementExporterInterface
-     * @param class-string<T>|array{type: class-string<T>} $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param string|array $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element exporter
      */
     public function createExporter(mixed $config): ElementExporterInterface
@@ -1933,7 +1943,8 @@ class Elements extends Component
         }
 
         foreach ($this->getAllElementTypes() as $class) {
-            /** @var class-string<ElementInterface>|ElementInterface $class */
+            /** @var string|ElementInterface $class */
+            /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
             if (
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
@@ -2111,7 +2122,8 @@ class Elements extends Component
     /**
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
-     * @param string|array<EagerLoadPlan|array|string> $with
+     * @param string|array $with
+     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
      */
@@ -2209,7 +2221,8 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param class-string<ElementInterface> $elementType The root element type class
+     * @param string $elementType The root element type class
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
@@ -2227,7 +2240,8 @@ class Elements extends Component
     }
 
     /**
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param ElementInterface[][] $elementsBySite
      * @param EagerLoadPlan[] $with
      */

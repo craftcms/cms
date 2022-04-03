@@ -309,14 +309,16 @@ class ResaveController extends Controller
     }
 
     /**
-     * @param class-string<ElementInterface> $elementType The element type that should be resaved
+     * @param string $elementType The element type that should be resaved
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
-        /** @var class-string<ElementInterface>|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {

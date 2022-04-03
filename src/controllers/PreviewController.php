@@ -97,7 +97,8 @@ class PreviewController extends Controller
     /**
      * Substitutes an element for the element being previewed for the remainder of the request, and reroutes the request.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param int $canonicalId
      * @param int $siteId
      * @param int|null $draftId

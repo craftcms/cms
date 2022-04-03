@@ -261,7 +261,8 @@ SQL;
     /**
      * Deletes elements that are missing data in the given element extension table.
      *
-     * @param class-string<ElementInterface> $elementType The element type
+     * @param string $elementType The element type
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
      * @since 3.6.6

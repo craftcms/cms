@@ -20,7 +20,8 @@ use yii\validators\Validator;
 class TemplateValidator extends Validator
 {
     /**
-     * @var View::TEMPLATE_MODE_SITE|View::TEMPLATE_MODE_CP The template mode to use when looking for the template
+     * @var string The template mode to use when looking for the template
+     * @phpstan-var View::TEMPLATE_MODE_SITE|View::TEMPLATE_MODE_CP
      */
     public string $templateMode = View::TEMPLATE_MODE_SITE;
 

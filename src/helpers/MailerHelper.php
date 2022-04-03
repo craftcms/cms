@@ -51,7 +51,8 @@ class MailerHelper
     /**
      * Returns all available mailer transport adapter classes.
      *
-     * @return class-string<TransportAdapterInterface>[]
+     * @return string[]
+     * @phpstan-return class-string<TransportAdapterInterface>[]
      */
     public static function allMailerTransportTypes(): array
     {
@@ -73,7 +74,8 @@ class MailerHelper
      * Creates a transport adapter based on the given mail settings.
      *
      * @template T of TransportAdapterInterface
-     * @param class-string<T> $type
+     * @param string $type
+     * @phpstan-param class-string<T> $type
      * @param array|null $settings
      * @return T
      * @throws MissingComponentException if $type is missing

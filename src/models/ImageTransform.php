@@ -94,7 +94,8 @@ class ImageTransform extends Model
     public ?string $uid = null;
 
     /**
-     * @var class-string<ImageTransformerInterface> The image transformer to use.
+     * @var string The image transformer to use.
+     * @phpstan-var class-string<ImageTransformerInterface>
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
 

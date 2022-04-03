@@ -35,7 +35,8 @@ abstract class BaseContentFixture extends DbFixture
     use FileFixtureTrait;
 
     /**
-     * @var class-string<ElementInterface> The element type this is for
+     * @var string The element type this is for
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 

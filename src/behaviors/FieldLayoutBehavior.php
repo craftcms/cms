@@ -26,7 +26,8 @@ use yii\base\Model;
 class FieldLayoutBehavior extends Behavior
 {
     /**
-     * @var class-string<ElementInterface>|null The element type that the field layout will be associated with
+     * @var string|null The element type that the field layout will be associated with
+     * @phpstan-var class-string<ElementInterface>|null
      */
     public ?string $elementType = null;
 

@@ -107,7 +107,8 @@ class CraftConnector extends Yii2
                 $module = new $moduleClass($moduleId, Craft::$app);
             }
 
-            /** @var class-string<Module>|Module $moduleClass */
+            /** @var string|Module $moduleClass */
+            /** @phpstan-var class-string<Module>|Module $moduleClass */
             $moduleClass::setInstance(
                 $module
             );

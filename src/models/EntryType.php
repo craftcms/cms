@@ -64,7 +64,8 @@ class EntryType extends Model
     public bool $hasTitleField = true;
 
     /**
-     * @var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM Title translation method
+     * @var string Title translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
      * @since 3.5.0
      */
     public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;

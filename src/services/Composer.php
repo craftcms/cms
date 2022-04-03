@@ -289,7 +289,8 @@ class Composer extends Component
     /**
      * Adds an autoloading class to the Composer class map
      *
-     * @param class-string $className
+     * @param string $className
+     * @phpstan-param class-string $className
      */
     public function logComposerClass(string $className): void
     {

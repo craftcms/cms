@@ -41,7 +41,8 @@ interface ElementActionInterface extends ConfigurableComponentInterface
     /**
      * Sets the element type on the action.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      */
     public function setElementType(string $elementType): void;
 

@@ -24,7 +24,7 @@ class SearchQuery
 
     /**
      * @var array
-     * @phpstan-var array{subLeft: bool, subRight: bool, exclude: bool, exact: bool}
+     * @phpstan-var array{subLeft:bool,subRight:bool,exclude:bool,exact:bool}
      */
     private array $_defaultTermOptions;
 
@@ -38,7 +38,7 @@ class SearchQuery
      *
      * @param string $query
      * @param array $defaultTermOptions
-     * @phpstan-param array{subLeft?: bool, subRight?: bool, exclude?: bool, exact?: bool} $defaultTermOptions
+     * @phpstan-param array{subLeft?:bool,subRight?:bool,exclude?:bool,exact?:bool} $defaultTermOptions
      */
     public function __construct(string $query, array $defaultTermOptions = [])
     {

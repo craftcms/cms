@@ -83,7 +83,8 @@ class Section extends Model
     public bool $enableVersioning = true;
 
     /**
-     * @var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM Propagation method
+     * @var string Propagation method
+     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
      *
      * This will be set to one of the following:
      *
@@ -97,7 +98,8 @@ class Section extends Model
     public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
-     * @var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END Default placement
+     * @var string Default placement
+     * @phpstan-var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END
      * @since 3.7.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;

@@ -1449,7 +1449,8 @@ JS;
             throw new BadRequestHttpException('Request missing required param.');
         }
 
-        /** @var class-string<ElementInterface>|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $this->_validateElementType($elementType);
 
         if ($strictSite) {
@@ -1530,7 +1531,8 @@ JS;
     /**
      * Ensures the given element type is valid.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @throws BadRequestHttpException
      */
     private function _validateElementType(string $elementType): void

@@ -426,7 +426,8 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var class-string<ElementInterface>|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
@@ -679,7 +680,8 @@ class Craft extends Yii2
 
     /**
      * @param CodeceptionTestCase $test
-     * @param class-string<Module> $moduleClass
+     * @param string $moduleClass
+     * @phpstan-param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
     protected function addModule(CodeceptionTestCase $test, string $moduleClass): void

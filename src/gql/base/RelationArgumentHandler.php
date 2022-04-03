@@ -27,7 +27,8 @@ abstract class RelationArgumentHandler extends ArgumentHandler
     /**
      * Get the IDs of elements returned by configuring the provided element query with given criteria.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $criteriaList
      * @return int[][]
      */

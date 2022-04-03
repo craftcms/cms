@@ -446,7 +446,8 @@ class Fields extends Component
     /**
      * Returns all available field type classes.
      *
-     * @return class-string<FieldInterface>[] The available field type classes
+     * @return string[] The available field type classes
+     * @phpstan-return class-string<FieldInterface>[]
      */
     public function getAllFieldTypes(): array
     {
@@ -527,7 +528,8 @@ class Fields extends Component
         $types = [];
 
         foreach ($this->getAllFieldTypes() as $class) {
-            /** @var class-string<FieldInterface>|FieldInterface $class */
+            /** @var string|FieldInterface $class */
+            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
             if ($class === get_class($field)) {
                 if ($includeCurrent) {
                     $types[] = $class;
@@ -566,7 +568,8 @@ class Fields extends Component
      * Creates a field with a given config.
      *
      * @template T of FieldInterface
-     * @param class-string<T>|array{type: class-string<T>, id?: int|string, uid?: string} $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param string|array $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int|string,uid?:string} $config
      * @return T The field
      */
     public function createField(mixed $config): FieldInterface
@@ -1096,7 +1099,8 @@ class Fields extends Component
     /**
      * Returns a field layout by its associated element type.
      *
-     * @param class-string<ElementInterface> $type The associated element type
+     * @param string $type The associated element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
@@ -1127,7 +1131,8 @@ class Fields extends Component
     /**
      * Returns all of the field layouts associated with a given element type.
      *
-     * @param class-string<ElementInterface> $type
+     * @param string $type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout[] The field layouts
      * @since 3.5.0
      */
@@ -1252,7 +1257,8 @@ class Fields extends Component
      * Creates a field layout element instance from its config.
      *
      * @template T of FieldLayoutElement
-     * @param array{type: class-string<T>} $config
+     * @param array $config
+     * @phpstan-param array{type:class-string<T>} $config
      * @return T
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
@@ -1482,7 +1488,8 @@ class Fields extends Component
     /**
      * Deletes field layouts associated with a given element type.
      *
-     * @param class-string<ElementInterface> $type The element type
+     * @param string $type The element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool

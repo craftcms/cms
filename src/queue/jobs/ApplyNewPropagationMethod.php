@@ -31,7 +31,8 @@ use craft\services\Structures;
 class ApplyNewPropagationMethod extends BaseJob
 {
     /**
-     * @var class-string<ElementInterface> The element type to use
+     * @var string The element type to use
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -46,7 +47,8 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     public function execute($queue): void
     {
-        /** @var class-string<ElementInterface>|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->site('*')

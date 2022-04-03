@@ -467,7 +467,8 @@ class ImageTransforms extends Component
 
     /**
      * @template T of ImageTransformerInterface
-     * @param class-string<T> $type
+     * @param string $type
+     * @phpstan-param class-string<T> $type
      * @param array $config
      * @return T
      * @throws InvalidConfigException
@@ -556,7 +557,8 @@ class ImageTransforms extends Component
     /**
      * Return all available image transformers.
      *
-     * @return class-string<ImageTransformerInterface>[]
+     * @return string[]
+     * @phpstan-return class-string<ImageTransformerInterface>[]
      */
     public function getAllImageTransformers(): array
     {

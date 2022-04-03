@@ -276,7 +276,8 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Sets the tab’s layout elements.
      *
-     * @param array<FieldLayoutElement|array{type: class-string<FieldLayoutElement>}> $elements
+     * @param array $elements
+     * @phpstan-param array<FieldLayoutElement|array{type:class-string<FieldLayoutElement>}> $elements
      * @since 4.0.0
      */
     public function setElements(array $elements): void

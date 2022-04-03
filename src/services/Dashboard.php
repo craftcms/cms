@@ -85,7 +85,8 @@ class Dashboard extends Component
     /**
      * Returns all available widget type classes.
      *
-     * @return class-string<WidgetInterface>[]
+     * @return string[]
+     * @phpstan-return class-string<WidgetInterface>[]
      */
     public function getAllWidgetTypes(): array
     {
@@ -111,7 +112,8 @@ class Dashboard extends Component
      * Creates a widget with a given config.
      *
      * @template T of WidgetInterface
-     * @param class-string<T>|array{type: class-string<T>} $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param string|array $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T
      */
     public function createWidget(mixed $config): WidgetInterface
@@ -155,7 +157,8 @@ class Dashboard extends Component
     /**
      * Returns whether the current user has a widget of the given type.
      *
-     * @param class-string<WidgetInterface> $type The widget type
+     * @param string $type The widget type
+     * @phpstan-param class-string<WidgetInterface> $type
      * @return bool Whether the current user has a widget of the given type
      */
     public function doesUserHaveWidget(string $type): bool

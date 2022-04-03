@@ -172,7 +172,8 @@ class TestSetup
     }
 
     /**
-     * @param class-string<Migration> $class
+     * @param string $class
+     * @phpstan-param class-string<Migration> $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
      * @return bool
@@ -299,7 +300,8 @@ class TestSetup
 
     /**
      * @param string $preDefinedAppType
-     * @return class-string<ConsoleApplication|WebApplication>
+     * @return string<ConsoleApplication|WebApplication>
+     * @phpstan-return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
@@ -499,7 +501,8 @@ class TestSetup
      * @template T of Module
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param class-string<T>|null $moduleClass
+     * @param string|null $moduleClass
+     * @phpstan-param class-string<T>|null $moduleClass
      * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
@@ -544,7 +547,8 @@ class TestSetup
     /**
      * @template T
      * @param CodeceptionTestCase $test
-     * @param class-string<T> $class
+     * @param string $class
+     * @phpstan-param class-string<T> $class
      * @return T|MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */

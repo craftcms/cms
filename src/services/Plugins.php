@@ -327,7 +327,8 @@ class Plugins extends Component
      *
      * The plugin may not actually be installed.
      *
-     * @param class-string $class
+     * @param string $class
+     * @phpstan-param class-string $class
      * @return string|null The plugin handle, or null if it can’t be determined
      */
     public function getPluginHandleByClass(string $class): ?string
@@ -679,7 +680,8 @@ class Plugins extends Component
     {
         $info = $this->getPluginInfo($handle);
 
-        /** @var class-string<PluginInterface>|PluginInterface $class */
+        /** @var string|PluginInterface $class */
+        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
         $class = $info['class'];
 
         if (!in_array($edition, $class::editions(), true)) {
@@ -904,7 +906,8 @@ class Plugins extends Component
             unset($config['aliases']);
         }
 
-        /** @var class-string<PluginInterface>|PluginInterface $class */
+        /** @var string|PluginInterface $class */
+        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
