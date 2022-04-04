@@ -25,6 +25,9 @@ test('Login accessibility test', async ({ page }) => {
     },
   });
 
-  const finalViolations = violations.filter(violation => violation.tags.indexOf('best-practice') < 0 );
-  expect(finalViolations.length).toEqual(0);
+  // Trying to filter out Best Practice issues since tag config doesn't seem to be working
+  // const finalViolations = violations.filter(violation => violation.tags.indexOf('best-practice') < 0 );
+  // expect(finalViolations.length).toEqual(0);
+
+  expect(violations.length).toEqual(0);
 });
