@@ -29,7 +29,7 @@ import './pluginstore-oauth-callback.scss';
         },
 
         postActionRequest: function() {
-            var fragmentString = window.location.hash.substr(1);
+            var fragmentString = window.location.hash.substring(1);
             var fragments = $.parseFragmentString(fragmentString);
 
             Craft.sendActionRequest('POST', 'plugin-store/save-token', {data: fragments})

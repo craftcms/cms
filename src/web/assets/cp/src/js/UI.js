@@ -358,7 +358,7 @@ Craft.ui =
             });
 
             // Should we include a hidden input first?
-            if (config.name && (config.name.length < 3 || config.name.substr(-2) !== '[]')) {
+            if (config.name && (config.name.length < 3 || config.name.slice(-2) !== '[]')) {
                 return $([
                     $('<input/>', {
                         type: 'hidden',
