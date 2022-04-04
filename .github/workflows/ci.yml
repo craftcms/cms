@@ -19,13 +19,11 @@ jobs:
 
   custom_action_test:
     runs-on: ubuntu-latest
-    name: Test job
+    name: A job to say hello
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
       - name: Hello world action step
-        uses: craftcms/craft-action@1.0.0
         id: hello
+        uses: actions/hello-world-docker-action@v1
         with:
           who-to-greet: 'Mona the Octocat'
       # Use the output from the `hello` step
