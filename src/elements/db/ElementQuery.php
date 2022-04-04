@@ -776,7 +776,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $status
      */
-     public function status(array|string|null $value): self
+    public function status(array|string|null $value): self
     {
         $this->status = $value;
         return $this;
