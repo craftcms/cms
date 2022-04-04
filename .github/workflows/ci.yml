@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - '4.0'
+      - feature/ghaction2
   pull_request:
 
 env:
@@ -15,6 +16,23 @@ env:
   SLACK_NOTIFICATION_GROUP_ID: 'SGFL9NKNZ'
 
 jobs:
+
+  custom_action_test:
+    runs-on: ubuntu-latest
+    name: Test job
+    steps:
+      # To use this repository's private action,
+      # you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Hello world action step
+        uses: ./craft@v1
+        id: hello
+        with:
+          who-to-greet: 'Mona the Octocat'
+      # Use the output from the `hello` step
+      - name: Get the output time
+        run: echo "The time was ${{ steps.hello.outputs.time }}"
 
   # Run ECS checks outside of the matrix
   ecs:
