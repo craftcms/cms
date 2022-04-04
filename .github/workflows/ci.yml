@@ -26,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Hello world action step
-        uses: ./craft@v1
+        uses: ../actions/craft@v1
         id: hello
         with:
           who-to-greet: 'Mona the Octocat'
