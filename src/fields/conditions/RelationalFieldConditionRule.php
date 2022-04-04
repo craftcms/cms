@@ -8,7 +8,6 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\BaseRelationField;
-use craft\web\assets\vue\VueAsset;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
@@ -110,9 +109,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
      */
     protected function inputHtml(): string
     {
-        // Ensure Vue is loaded for relatedTo autosuggest
-        Craft::$app->getView()->registerAssetBundle(VueAsset::class);
-
         return match ($this->operator) {
             self::OPERATOR_RELATED_TO => parent::inputHtml(),
             default => '',

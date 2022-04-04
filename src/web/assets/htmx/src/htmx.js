@@ -4,18 +4,16 @@ htmx.defineExtension('craft-cp', {
             case 'htmx:configRequest':
                 this.configureRequest(evt);
                 break;
-            case 'htmx:load':
-                this.onLoad(evt);
+            case 'htmx:afterProcessNode':
+                this.afterProcessNode(evt);
                 break;
         }
     },
-
     configureRequest: function(evt) {
         // Add the standard Craft headers
         Object.assign(evt.detail.headers, Craft._actionHeaders());
     },
-
-    onLoad: function(evt) {
+    afterProcessNode: function(evt) {
         if (evt.detail.elt === document.body) {
             return;
         }
