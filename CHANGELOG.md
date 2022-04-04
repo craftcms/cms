@@ -18,6 +18,7 @@
 - Craft’s bootstrap script now attempts to create its configured system paths automatically. ([#10562](https://github.com/craftcms/cms/pull/10562))
 - Field layout components’ settings slideouts now have a “Close” button. ([#10587](https://github.com/craftcms/cms/issues/10587))
 - The default `subLeft` and `subRight` search query term options are now only applied to terms that don’t include an asterisk at the beginning/end, e.g. `hello*`. ([#10613](https://github.com/craftcms/cms/discussions/10613))
+- Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
 - `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.
 - `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
