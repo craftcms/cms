@@ -14,3 +14,5 @@ node_modules/
 vendor/
 /bower_components
 cpresources/*
+test-results/
+playwright-report/
