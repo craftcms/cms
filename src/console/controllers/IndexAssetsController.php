@@ -268,7 +268,7 @@ class IndexAssetsController extends Controller
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-
+            /** @var Asset[] $assets */
             $assets = Asset::find()->id($assetIds)->all();
             foreach ($assets as $asset) {
                 Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);

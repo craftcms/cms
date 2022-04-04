@@ -108,9 +108,11 @@ class TypeResolverTest extends TestCase
     /**
      * Run the test.
      *
-     * @param class-string<ElementInterface> $elementType The element class providing the elements
+     * @param string $elementType The element class providing the elements
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $params Querying parameters to use
-     * @param class-string<Resolver> $resolverClass The resolver class being tested
+     * @param string $resolverClass The resolver class being tested
+     * @phpstan-param class-string<Resolver> $resolverClass
      * @param bool $mustNotBeSame Whether the results should differ instead
      * @throws Exception
      */

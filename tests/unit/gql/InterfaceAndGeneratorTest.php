@@ -146,7 +146,8 @@ class InterfaceAndGeneratorTest extends TestCase
      * Test interfaces running type generators.
      *
      * @dataProvider interfaceDataProvider
-     * @param class-string<SingularTypeInterface> $gqlInterfaceClass The interface class being tested
+     * @param string $gqlInterfaceClass The interface class being tested
+     * @phpstan-param class-string<SingularTypeInterface> $gqlInterfaceClass
      * @param callable $getAllContexts The callback that provides an array of all contexts for generated types
      * @param callable $getTypeNameByContext The callback to generate the GQL type name by context
      */

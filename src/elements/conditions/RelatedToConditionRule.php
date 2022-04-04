@@ -22,7 +22,8 @@ use craft\helpers\UrlHelper;
 class RelatedToConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @var class-string<ElementInterface>
+     * @var string
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType = Entry::class;
 
@@ -91,7 +92,8 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     {
         $options = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** @var class-string<ElementInterface>|ElementInterface $elementType */
+            /** @var string|ElementInterface $elementType */
+            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
             if (!is_subclass_of($elementType, BlockElementInterface::class)) {
                 $options[] = [
                     'value' => $elementType,

@@ -139,7 +139,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             return null;
         }
 
-        /** @var class-string<ElementInterface>|ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         return $elementType::find()
             ->id($this->_elementId)
@@ -160,7 +161,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param ElementInterface|int|array<ElementInterface|int>|null $value
+     * @param ElementInterface|int|array|null $value
+     * @phpstan-param ElementInterface|int|array<ElementInterface|int>|null $value
      * @return bool
      */
     protected function matchValue(mixed $value): bool

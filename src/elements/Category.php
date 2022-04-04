@@ -656,7 +656,8 @@ class Category extends Element
                 ]);
             } else {
                 // If the category already has structure data, use it. Otherwise, use its canonical category
-                $parent = static::find()
+                /** @var self|null $parent */
+                $parent = self::find()
                     ->siteId($this->siteId)
                     ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
                     ->ancestorDist(1)
@@ -913,6 +914,7 @@ class Category extends Element
         $structureId = $this->getGroup()->structureId;
 
         // Add the category back into its structure
+        /** @var self|null $parent */
         $parent = self::find()
             ->structureId($structureId)
             ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')

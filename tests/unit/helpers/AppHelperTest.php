@@ -240,7 +240,8 @@ class AppHelperTest extends TestCase
     /**
      * @dataProvider humanizeClassDataProvider
      * @param string $expected
-     * @param class-string $class
+     * @param string $class
+     * @phpstan-param class-string $class
      */
     public function testHumanizeClass(string $expected, string $class): void
     {

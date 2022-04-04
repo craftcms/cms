@@ -25,7 +25,8 @@ class Update extends Model
     public const STATUS_EXPIRED = 'expired';
 
     /**
-     * @var self::STATUS_ELIGIBLE|self::STATUS_BREAKPOINT|self::STATUS_EXPIRED The status of the update (eligible, breakpoint, or expired)
+     * @var string The status of the update (eligible, breakpoint, or expired)
+     * @phpstan-var self::STATUS_ELIGIBLE|self::STATUS_BREAKPOINT|self::STATUS_EXPIRED
      */
     public string $status = self::STATUS_ELIGIBLE;
 

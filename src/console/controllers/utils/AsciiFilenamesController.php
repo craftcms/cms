@@ -52,6 +52,7 @@ EOD;
             $query->andWhere(new Expression("[[filename]] ~ '[^[:ascii:]]'"));
         }
 
+        /** @var Asset[] $assets */
         $assets = $query->all();
         $total = count($assets);
 

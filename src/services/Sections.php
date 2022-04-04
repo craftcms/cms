@@ -866,8 +866,8 @@ class Sections extends Component
             // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
             // there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
-                ->status(null)
-                ->sectionId($sectionRecord->id);
+                ->sectionId($sectionRecord->id)
+                ->status(null);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
                 foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
@@ -1198,6 +1198,7 @@ class Sections extends Component
 
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
+            /** @var Entry[] $entries */
             $entries = Entry::find()
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
@@ -1359,8 +1360,8 @@ class Sections extends Component
             // Delete the entries, including unpublished drafts
             // (loop through all the sites in case there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
-                ->status(null)
                 ->typeId($entryTypeRecord->id)
+                ->status(null)
                 ->drafts(null)
                 ->draftOf(false);
 
@@ -1499,6 +1500,7 @@ class Sections extends Component
         // ---------------------------------------------------------------------
 
         // If there are any existing entries, find the first one with a valid typeId
+        /** @var Entry|null $entry */
         $entry = Entry::find()
             ->typeId($entryTypeIds)
             ->siteId($siteIds)

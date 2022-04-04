@@ -160,7 +160,8 @@ class DirectiveTest extends TestCase
     /**
      * Build the JSON string to be used as a directive object
      *
-     * @param class-string<Directive> $className
+     * @param string $className
+     * @phpstan-param class-string<Directive> $className
      * @param array $arguments
      * @return string
      */
@@ -181,7 +182,8 @@ class DirectiveTest extends TestCase
     /**
      * Register a directive by class name.
      *
-     * @param class-string<Directive> $className
+     * @param string $className
+     * @phpstan-param class-string<Directive> $className
      */
     private function _registerDirective(string $className)
     {

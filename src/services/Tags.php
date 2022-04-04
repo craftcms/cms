@@ -272,6 +272,7 @@ class Tags extends Component
 
         if ($wasTrashed) {
             // Restore the tags that were deleted with the group
+            /** @var Tag[] $tags */
             $tags = Tag::find()
                 ->groupId($tagGroupRecord->id)
                 ->trashed()
@@ -362,6 +363,7 @@ class Tags extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the tags
+            /** @var Tag[] $tags */
             $tags = Tag::find()
                 ->groupId($tagGroupRecord->id)
                 ->status(null)

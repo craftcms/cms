@@ -48,7 +48,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Generate a more specific query class for the provided element type class.
      *
-     * @param class-string<ElementInterface> $elementClass
+     * @param string $elementClass
+     * @phpstan-param class-string<ElementInterface> $elementClass
      * @return ElementQuery
      */
     public static function generateSpecificQueryClass(string $elementClass): ElementQuery

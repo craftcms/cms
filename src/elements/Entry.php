@@ -859,7 +859,7 @@ class Entry extends Element
             $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
         ) {
             if ($this->id) {
-                $currentSites = static::find()
+                $currentSites = self::find()
                     ->status(null)
                     ->id($this->id)
                     ->site('*')
@@ -874,7 +874,7 @@ class Entry extends Element
 
             // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
             if (!empty($this->duplicateOf->id)) {
-                array_push($currentSites, ...static::find()
+                array_push($currentSites, ...self::find()
                     ->status(null)
                     ->id($this->duplicateOf->id)
                     ->site('*')
@@ -1673,7 +1673,8 @@ EOD;
                     ]);
                 } else {
                     // If the entry already has structure data, use it. Otherwise, use its canonical entry
-                    $parent = static::find()
+                    /** @var self|null $parent */
+                    $parent = self::find()
                         ->siteId($this->siteId)
                         ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
                         ->ancestorDist(1)
@@ -1857,6 +1858,7 @@ EOD;
                 ->status(null)
                 ->exists();
             if (!$hasRevisions) {
+                /** @var self|null $currentEntry */
                 $currentEntry = self::find()
                     ->id($this->id)
                     ->site('*')
@@ -2046,6 +2048,7 @@ EOD;
         $section = $this->getSection();
         if ($section->type === Section::TYPE_STRUCTURE) {
             // Add the entry back into its structure
+            /** @var self|null $parent */
             $parent = self::find()
                 ->structureId($section->structureId)
                 ->innerJoin(['j' => Table::ENTRIES], '[[j.parentId]] = [[elements.id]]')
@@ -2075,7 +2078,8 @@ EOD;
 
             // If this is the canonical entry, update its drafts
             if ($this->getIsCanonical()) {
-                $drafts = static::find()
+                /** @var self[] $drafts */
+                $drafts = self::find()
                     ->draftOf($this)
                     ->status(null)
                     ->site('*')

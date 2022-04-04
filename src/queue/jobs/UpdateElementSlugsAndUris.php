@@ -32,7 +32,8 @@ class UpdateElementSlugsAndUris extends BaseJob
     public array|int|null $elementId = null;
 
     /**
-     * @var class-string<ElementInterface> The type of elements to update.
+     * @var string The type of elements to update.
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -90,7 +91,8 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private function _createElementQuery(): ElementQueryInterface
     {
-        /** @var class-string<ElementInterface>|ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         return $class::find()

@@ -19,7 +19,8 @@ use yii\base\Event;
 class DefineSourceTableAttributesEvent extends Event
 {
     /**
-     * @var class-string<ElementInterface> The element type class
+     * @var string The element type class
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 

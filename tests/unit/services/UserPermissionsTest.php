@@ -129,9 +129,11 @@ class UserPermissionsTest extends TestCase
     {
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
+        /** @var User $user */
         $user = User::find()
             ->admin(false)
             ->one();
+        self::assertNotNull($user);
         Craft::$app->getUsers()->assignUserToGroups($user->id, [1000]);
 
         self::assertTrue(
@@ -160,9 +162,12 @@ class UserPermissionsTest extends TestCase
         $this->userPermissions->saveGroupPermissions(1001, ['utility:php-info']);
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp', 'utility:updates']);
 
+        /** @var User $user */
         $user = User::find()
             ->admin(false)
             ->one();
+
+        self::assertNotNull($user);
 
         Craft::$app->getUsers()->assignUserToGroups($user->id, [1000, 1001]);
 
@@ -186,9 +191,13 @@ class UserPermissionsTest extends TestCase
         // Setup user and craft
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
+        /** @var User $user */
         $user = User::find()
             ->admin(false)
             ->one();
+
+        self::assertNotNull($user);
+
         Craft::$app->getUsers()->assignUserToGroups($user->id, [1000]);
 
         self::assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));

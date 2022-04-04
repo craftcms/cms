@@ -323,6 +323,7 @@ class AssetsController extends Controller
                         throw new Exception($targetFilename . ' doesn\'t have the original file extension.');
                     }
 
+                    /** @var Asset|null $assetToReplace */
                     $assetToReplace = Asset::find()
                         ->select(['elements.id'])
                         ->folderId($sourceAsset->folderId)
@@ -566,6 +567,7 @@ class AssetsController extends Controller
 
         if ($this->request->getBodyParam('force')) {
             // Check for a conflicting Asset
+            /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
                 ->select(['elements.id'])
                 ->folderId($folderId)
@@ -665,6 +667,7 @@ class AssetsController extends Controller
             // Get the file transfer list.
             $allSourceFolderIds = array_keys($sourceTree);
             $allSourceFolderIds[] = $folderBeingMovedId;
+            /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
@@ -703,6 +706,7 @@ class AssetsController extends Controller
             // Get file transfer list for the progress bar
             $allSourceFolderIds = array_keys($sourceTree);
             $allSourceFolderIds[] = $folderBeingMovedId;
+            /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
@@ -937,6 +941,7 @@ class AssetsController extends Controller
         $this->requirePostRequest();
 
         $assetIds = $this->request->getRequiredBodyParam('assetId');
+        /** @var Asset[] $assets */
         $assets = Asset::find()
             ->id($assetIds)
             ->all();
@@ -1056,6 +1061,7 @@ class AssetsController extends Controller
         $assetId = $this->request->getRequiredParam('assetId');
         $requestId = $this->request->getRequiredParam('requestId');
 
+        /** @var Asset|null $asset */
         $asset = Asset::find()->id($assetId)->one();
 
         if (!$asset) {
@@ -1115,6 +1121,7 @@ class AssetsController extends Controller
         $assetUid = Craft::$app->getRequest()->getRequiredBodyParam('assetUid');
         $focalData = Craft::$app->getRequest()->getRequiredBodyParam('focal');
 
+        /** @var Asset|null $asset */
         $asset = Asset::find()->uid($assetUid)->one();
 
         if (!$asset) {

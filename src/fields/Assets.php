@@ -161,7 +161,8 @@ class Assets extends BaseRelationField
     public bool $showUnpermittedFiles = false;
 
     /**
-     * @var self::PREVIEW_MODE_FULL|self::PREVIEW_MODE_THUMBS How related assets should be presented within element index views.
+     * @var string How related assets should be presented within element index views.
+     * @phpstan-var self::PREVIEW_MODE_FULL|self::PREVIEW_MODE_THUMBS
      * @since 3.5.11
      */
     public string $previewMode = self::PREVIEW_MODE_FULL;
@@ -567,9 +568,10 @@ class Assets extends BaseRelationField
                 });
             } else {
                 // Find the files with temp sources and just move those.
+                /** @var Asset[] $assetsToMove */
                 $assetsToMove = Asset::find()
-                    ->id(ArrayHelper::getColumn($assets, 'id'))
                     ->volumeId(':empty:')
+                    ->id(ArrayHelper::getColumn($assets, 'id'))
                     ->all();
             }
 

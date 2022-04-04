@@ -72,7 +72,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private Collection $_conditionRules;
 
     /**
-     * @var string[]|array{class: string}[]|array{type: string}[] The available rule types for this condition.
+     * @var string[]|array[] The available rule types for this condition.
+     * @phpstan-var string[]|array{class:string}[]|array{type:string}[]
      * @see getConditionRuleTypes()
      */
     private array $_conditionRuleTypes;
@@ -125,7 +126,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
      *
      * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
      *
-     * @return string[]|array{class: string}[]
+     * @return string[]|array[]
+     * @phpstan-return string[]|array{class:string}[]
      */
     abstract protected function conditionRuleTypes(): array;
 

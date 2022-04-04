@@ -65,7 +65,8 @@ class CategoryGroup extends Model
     public ?int $maxLevels = null;
 
     /**
-     * @var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END Default placement
+     * @var string Default placement
+     * @phpstan-var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END
      * @since 3.7.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;

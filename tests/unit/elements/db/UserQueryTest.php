@@ -70,6 +70,7 @@ class UserQueryTest extends TestCase
     public function testFindAll(): void
     {
         // Our admin user + Our active user + Our locked user are defaults
+        /** @var User[] $all */
         $all = User::find()->all();
         self::assertCount(5, $all);
     }
@@ -158,8 +159,10 @@ class UserQueryTest extends TestCase
     {
         Craft::$app->setEdition(Craft::Pro);
 
+        /** @var User[] $users */
+        $users = User::find()->status(null)->all();
         $results = [];
-        foreach (User::find()->status(null)->all() as $user) {
+        foreach ($users as $user) {
             if ($user->can('accessCp')) {
                 $results[] = $user;
             }
@@ -190,6 +193,7 @@ class UserQueryTest extends TestCase
         foreach ($methodCalls as $methodCall => $value) {
             $result->{$methodCall}($value);
         }
+        /** @var User $result */
         $result = $result->one();
 
         self::assertInstanceOf(

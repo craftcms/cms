@@ -527,7 +527,8 @@ class User extends Element implements IdentityInterface
      */
     public static function findIdentity($id): ?self
     {
-        $user = static::find()
+        /** @var User|null $user */
+        $user = self::find()
             ->addSelect(['users.password'])
             ->id($id)
             ->status(null)
@@ -544,7 +545,8 @@ class User extends Element implements IdentityInterface
 
         // If the current user is being impersonated by an admin, ignore their status
         if ($previousUserId = Session::get(self::IMPERSONATE_KEY)) {
-            $previousUser = static::find()
+            /** @var self|null $previousUser */
+            $previousUser = self::find()
                 ->id($previousUserId)
                 ->status(null)
                 ->one();
@@ -1795,10 +1797,10 @@ class User extends Element implements IdentityInterface
             } else {
                 // Delete the entries
                 $entryQuery = Entry::find()
-                    ->site('*')
-                    ->unique()
                     ->authorId($this->id)
-                    ->status(null);
+                    ->status(null)
+                    ->site('*')
+                    ->unique();
 
                 foreach (Db::each($entryQuery) as $entry) {
                     /** @var Entry $entry */

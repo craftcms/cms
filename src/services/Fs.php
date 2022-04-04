@@ -76,7 +76,8 @@ class Fs extends Component
     /**
      * Returns all registered filesystem types.
      *
-     * @return class-string<FsInterface>[]
+     * @return string[]
+     * @phpstan-return class-string<FsInterface>[]
      */
     public function getAllFilesystemTypes(): array
     {
@@ -167,7 +168,8 @@ class Fs extends Component
      * Creates a filesystem from a given config.
      *
      * @template T as FsInterface
-     * @param class-string<T>|array{type: class-string<T>} $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param string|array $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The filesystem
      */
     public function createFilesystem(mixed $config): FsInterface
@@ -177,7 +179,8 @@ class Fs extends Component
         } catch (MissingComponentException|InvalidConfigException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
-            /** @var array{errorMessage: string, expectedType: string, type: string} $config */
+            /** @var array $config */
+            /** @phpstan-var array{errorMessage:string,expectedType:string,type:string} $config */
             unset($config['type']);
             return new MissingFs($config);
         }

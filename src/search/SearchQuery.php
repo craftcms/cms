@@ -24,8 +24,9 @@ class SearchQuery
 
     /**
      * @var array
+     * @phpstan-var array{subLeft:bool,subRight:bool,exclude:bool,exact:bool}
      */
-    private array $_termOptions;
+    private array $_defaultTermOptions;
 
     /**
      * @var SearchQueryTerm[]|SearchQueryTermGroup[]
@@ -36,12 +37,19 @@ class SearchQuery
      * Constructor
      *
      * @param string $query
-     * @param array $termOptions
+     * @param array $defaultTermOptions
+     * @phpstan-param array{subLeft?:bool,subRight?:bool,exclude?:bool,exact?:bool} $defaultTermOptions
      */
-    public function __construct(string $query, array $termOptions = [])
+    public function __construct(string $query, array $defaultTermOptions = [])
     {
         $this->_query = $query;
-        $this->_termOptions = $termOptions;
+        $this->_defaultTermOptions = $defaultTermOptions + [
+                'subLeft' => false,
+                'subRight' => true,
+                'exclude' => false,
+                'exact' => false,
+            ];
+
         $this->_parse();
     }
 
@@ -95,8 +103,8 @@ class SearchQuery
                 }
             }
 
-            // Instantiate the term w/ default options
-            $term = new SearchQueryTerm($this->_termOptions);
+            // Instantiate the term
+            $term = new SearchQueryTerm();
 
             // Is this an exclude term?
             if (StringHelper::first($token, 1) === '-') {
@@ -141,6 +149,21 @@ class SearchQuery
             } else {
                 // subRight messes `attr:*` queries up
                 $term->subRight = false;
+            }
+
+            // If either subLeft or subRight have been enabled, make sure the other is set to false if not also set
+            // overriding whatever the default subLeft/subRight term options are.
+            // (see https://github.com/craftcms/cms/discussions/10613)
+            if ($term->subLeft || $term->subRight) {
+                $term->subLeft = $term->subLeft ?? false;
+                $term->subRight = $term->subRight ?? false;
+            }
+
+            // Now apply the default options
+            foreach ($this->_defaultTermOptions as $name => $value) {
+                if (!isset($term->$name)) {
+                    $term->$name = $value;
+                }
             }
 
             $term->term = $token;

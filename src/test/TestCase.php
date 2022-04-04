@@ -24,7 +24,8 @@ use yii\test\Fixture;
 class TestCase extends Unit
 {
     /**
-     * @return array{class: class-string<Fixture>}[]
+     * @return array[]
+     * @phpstan-return array{class:class-string<Fixture>}[]
      */
     public function _fixtures(): array
     {
@@ -34,7 +35,8 @@ class TestCase extends Unit
     /**
      * Returns a callable that checks whether the passed in object is an instance of the $class param
      *
-     * @param class-string $class
+     * @param string $class
+     * @phpstan-param class-string $class
      * @return callable
      */
     public function assertObjectIsInstanceOfClassCallback(string $class): callable

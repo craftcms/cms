@@ -78,7 +78,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns the element class associated with this field type.
      *
-     * @return class-string<ElementInterface> The Element class name
+     * @return string The Element class name
+     * @phpstan-return class-string<ElementInterface>
      */
     abstract public static function elementType(): string;
 
@@ -207,7 +208,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected bool $sortable = true;
 
     /**
-     * @var ElementConditionInterface|array{class: class-string<ElementConditionInterface>}|null
+     * @var ElementConditionInterface|array|null
+     * @phpstan-var ElementConditionInterface|array{class:class-string<ElementConditionInterface>}|null
      * @see getSelectionCondition()
      * @see setSelectionCondition()
      */
@@ -444,7 +446,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return $value;
         }
 
-        /** @var class-string<ElementInterface>|ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
@@ -1106,7 +1109,8 @@ JS;
     /**
      * Sets the element condition that should be used to determine which elements are selectable by the field.
      *
-     * @param ElementConditionInterface|string|array{class: string}|null $condition
+     * @param ElementConditionInterface|string|array|null $condition
+     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
      * @since 4.0.0
      */
     public function setSelectionCondition(mixed $condition): void

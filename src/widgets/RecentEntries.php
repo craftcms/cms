@@ -152,7 +152,7 @@ class RecentEntries extends Widget
     /**
      * Returns the recent entries, based on the widget settings and user permissions.
      *
-     * @return array
+     * @return Entry[]
      */
     private function _getEntries(): array
     {
@@ -175,16 +175,16 @@ class RecentEntries extends Widget
             return [];
         }
 
-        $query = Entry::find();
-        $query->status(null);
-        $query->siteId($targetSiteId);
-        $query->sectionId($targetSectionId);
-        $query->editable(true);
-        $query->limit($this->limit ?: 100);
-        $query->with(['author']);
-        $query->orderBy('elements.dateCreated desc');
-
-        return $query->all();
+        /** @var Entry[] */
+        return Entry::find()
+            ->sectionId($targetSectionId)
+            ->editable(true)
+            ->status(null)
+            ->siteId($targetSiteId)
+            ->limit($this->limit ?: 100)
+            ->with(['author'])
+            ->orderBy('elements.dateCreated desc')
+            ->all();
     }
 
     /**

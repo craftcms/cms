@@ -1141,13 +1141,15 @@ class Gql extends Component
      * Return the content arguments based on an element class and contexts for it.
      *
      * @param array $contexts
-     * @param class-string<\craft\base\ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<\craft\base\ElementInterface> $elementType
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
         /** @var FieldLayoutBehavior[] $contexts */
-        /** @var class-string<BaseElementInterface>|BaseElementInterface $elementType */
+        /** @var string|BaseElementInterface $elementType */
+        /** @phpstan-var class-string<BaseElementInterface>|BaseElementInterface $elementType */
         if (!array_key_exists($elementType, $this->_contentFieldCache)) {
             $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
             $contentArguments = [];
@@ -1311,7 +1313,8 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var class-string<SingularTypeInterface>|SingularTypeInterface $type */
+            /** @var string|SingularTypeInterface $type */
+            /** @phpstan-var class-string<SingularTypeInterface>|SingularTypeInterface $type */
             TypeLoader::registerType($type::getName(), "$type::getType");
         }
 

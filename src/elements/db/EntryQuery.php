@@ -247,10 +247,10 @@ class EntryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true): static
+    public function editable(bool $value = true): self
     {
         $this->editable = $value;
         return $this;
@@ -286,10 +286,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $sectionId
      */
-    public function section(mixed $value): static
+    public function section(mixed $value): self
     {
         // If the value is a section handle, swap it with the section
         if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
@@ -345,10 +345,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $sectionId
      */
-    public function sectionId(mixed $value): static
+    public function sectionId(mixed $value): self
     {
         $this->sectionId = $value;
         return $this;
@@ -386,10 +386,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function type(mixed $value): static
+    public function type(mixed $value): self
     {
         if ($value instanceof EntryType) {
             $this->typeId = [$value->id];
@@ -435,10 +435,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function typeId(mixed $value): static
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;
@@ -473,10 +473,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorId
      */
-    public function authorId(mixed $value): static
+    public function authorId(mixed $value): self
     {
         $this->authorId = $value;
         return $this;
@@ -513,10 +513,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroup(mixed $value): static
+    public function authorGroup(mixed $value): self
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
@@ -573,10 +573,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroupId(mixed $value): static
+    public function authorGroupId(mixed $value): self
     {
         $this->authorGroupId = $value;
         return $this;
@@ -616,10 +616,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $postDate
      */
-    public function postDate(mixed $value): static
+    public function postDate(mixed $value): self
     {
         $this->postDate = $value;
         return $this;
@@ -656,10 +656,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $before
      */
-    public function before(mixed $value): static
+    public function before(mixed $value): self
     {
         $this->before = $value;
         return $this;
@@ -696,10 +696,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $after
      */
-    public function after(mixed $value): static
+    public function after(mixed $value): self
     {
         $this->after = $value;
         return $this;
@@ -739,10 +739,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $expiryDate
      */
-    public function expiryDate(mixed $value): static
+    public function expiryDate(mixed $value): self
     {
         $this->expiryDate = $value;
         return $this;
@@ -778,8 +778,9 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status(array|string|null $value): static
+    public function status(array|string|null $value): self
     {
+        /** @var self */
         return parent::status($value);
     }
 

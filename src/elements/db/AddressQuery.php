@@ -106,10 +106,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $administrativeArea
      */
-    public function administrativeArea(array|string|null $value): static
+    public function administrativeArea(array|string|null $value): self
     {
         $this->administrativeArea = $value;
 
@@ -136,10 +136,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param ElementInterface $owner The owner element
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function owner(ElementInterface $owner): static
+    public function owner(ElementInterface $owner): self
     {
         $this->ownerId = [$owner->id];
         return $this;
@@ -174,10 +174,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId(array|int|null $value): static
+    public function ownerId(array|int|null $value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -212,10 +212,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $countryCode
      */
-    public function countryCode(array|string|null $value): static
+    public function countryCode(array|string|null $value): self
     {
         $this->countryCode = $value;
 

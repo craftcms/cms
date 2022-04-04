@@ -322,7 +322,8 @@ interface ElementInterface extends ComponentInterface
      * :::
      *
      * @param string $source The selected source’s key.
-     * @return array<ElementActionInterface|class-string<ElementActionInterface>|array{type: class-string<ElementActionInterface>}> The available element actions.
+     * @return array The available element actions.
+     * @phpstan-return array<ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>}>
      */
     public static function actions(string $source): array;
 

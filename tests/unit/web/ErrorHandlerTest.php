@@ -65,7 +65,8 @@ class ErrorHandlerTest extends TestCase
     /**
      * @dataProvider getTypeUrlDataProvider
      * @param string|null $expected
-     * @param class-string $class
+     * @param string $class
+     * @phpstan-param class-string $class
      * @param string|null $method
      * @throws ReflectionException
      */

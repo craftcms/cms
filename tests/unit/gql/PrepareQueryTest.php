@@ -106,7 +106,8 @@ class PrepareQueryTest extends TestCase
     /**
      * Test relational field query preparation
      *
-     * @param class-string $resolverClass The resolver class to test
+     * @param string $resolverClass The resolver class to test
+     * @phpstan-param class-string $resolverClass
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
      * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions

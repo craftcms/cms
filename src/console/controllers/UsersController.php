@@ -117,6 +117,7 @@ class UsersController extends Controller
      */
     public function actionListAdmins(): int
     {
+        /** @var User[] $users */
         $users = User::find()
             ->admin()
             ->status(null)

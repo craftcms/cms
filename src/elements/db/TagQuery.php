@@ -107,10 +107,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function group(mixed $value): static
+    public function group(mixed $value): self
     {
         if ($value instanceof TagGroup) {
             $this->groupId = [$value->id];
@@ -156,10 +156,10 @@ class TagQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $groupId
      */
-    public function groupId(mixed $value): static
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;

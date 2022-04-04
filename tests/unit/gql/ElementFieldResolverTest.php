@@ -75,7 +75,8 @@ class ElementFieldResolverTest extends TestCase
      * Test resolving fields on entries.
      *
      * @dataProvider entryFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -107,7 +108,8 @@ class ElementFieldResolverTest extends TestCase
      * Test resolving fields on assets.
      *
      * @dataProvider assetFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -129,7 +131,8 @@ class ElementFieldResolverTest extends TestCase
      * Test resolving fields on global sets.
      *
      * @dataProvider globalSetFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -152,7 +155,8 @@ class ElementFieldResolverTest extends TestCase
      * Test resolving fields on categories
      *
      * @dataProvider categoryFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -179,7 +183,8 @@ class ElementFieldResolverTest extends TestCase
      * Test resolving fields on tags
      *
      * @dataProvider tagFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -206,7 +211,8 @@ class ElementFieldResolverTest extends TestCase
      * Test resolving fields on matrix blocks.
      *
      * @dataProvider matrixBlockFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -236,7 +242,8 @@ class ElementFieldResolverTest extends TestCase
      * Test resolving fields on users.
      *
      * @dataProvider userFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
@@ -313,7 +320,8 @@ class ElementFieldResolverTest extends TestCase
      * Run the test on an element for a type class with the property name.
      *
      * @param mixed $element
-     * @param class-string<ObjectType> $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string<ObjectType> $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */

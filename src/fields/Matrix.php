@@ -114,7 +114,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public string $contentTable;
 
     /**
-     * @var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL Propagation method
+     * @var string Propagation method
+     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL
      *
      * This will be set to one of the following:
      *
@@ -1074,6 +1075,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Delete any Matrix blocks that primarily belong to this element
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $elementsService = Craft::$app->getElements();
+            /** @var MatrixBlock[] $matrixBlocks */
             $matrixBlocks = MatrixBlock::find()
                 ->primaryOwnerId($element->id)
                 ->status(null)
@@ -1097,6 +1099,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Also restore any Matrix blocks for this element
         $elementsService = Craft::$app->getElements();
         foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
+            /** @var MatrixBlock[] $blocks */
             $blocks = MatrixBlock::find()
                 ->primaryOwnerId($element->id)
                 ->status(null)
@@ -1218,6 +1221,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Get the old blocks
         if ($element->id) {
+            /** @var MatrixBlock[] $oldBlocksById */
             $oldBlocksById = MatrixBlock::find()
                 ->fieldId($this->id)
                 ->ownerId($element->id)

@@ -47,7 +47,8 @@ class UtilitiesController extends Controller
             array_splice($utilities, $key, 1);
         }
 
-        /** @var class-string<UtilityInterface>|UtilityInterface $firstUtility */
+        /** @var string|UtilityInterface $firstUtility */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
         return $this->redirect('utilities/' . $firstUtility::id());
@@ -70,7 +71,8 @@ class UtilitiesController extends Controller
             throw new NotFoundHttpException('Invalid utility ID: ' . $id);
         }
 
-        /** @var class-string<UtilityInterface>|UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
             throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
@@ -292,7 +294,8 @@ class UtilitiesController extends Controller
         $info = [];
 
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
-            /** @var class-string<UtilityInterface>|UtilityInterface $class */
+            /** @var string|UtilityInterface $class */
+            /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
@@ -308,7 +311,8 @@ class UtilitiesController extends Controller
     /**
      * Returns a utility type’s SVG icon.
      *
-     * @param class-string<UtilityInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -336,12 +340,14 @@ class UtilitiesController extends Controller
     /**
      * Returns the default icon SVG for a given utility type.
      *
-     * @param class-string<UtilityInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var class-string<UtilityInterface>|UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $class::displayName(),
         ]);

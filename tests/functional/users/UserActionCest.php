@@ -65,9 +65,11 @@ class UserActionCest
         Craft::$app->getUsers()->activateUser($user);
         Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ['accessCp']);
 
-        $this->activeUser = User::find()
+        /** @var User|null $user */
+        $user = User::find()
             ->id($user->id)
             ->one();
+        $this->activeUser = $user;
     }
 
     /**
