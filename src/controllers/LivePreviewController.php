@@ -90,6 +90,7 @@ class LivePreviewController extends Controller
         $this->requireToken();
 
         // Switch the identity for this one request
+        /** @var User|null $user */
         $user = User::find()
             ->id($userId)
             ->status([User::STATUS_ACTIVE, User::STATUS_PENDING])

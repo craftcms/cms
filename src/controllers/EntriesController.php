@@ -296,6 +296,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // See if the user happens to have a provisional entry. If so delete it.
+        /** @var Entry|null $provisional */
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
@@ -350,6 +351,7 @@ class EntriesController extends BaseEntriesController
             // Is this a provisional draft?
             $provisional = $this->request->getBodyParam('provisional');
             if ($provisional) {
+                /** @var Entry|null $entry */
                 $entry = Entry::find()
                     ->provisionalDrafts()
                     ->draftOf($entryId)

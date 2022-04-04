@@ -304,6 +304,7 @@ class Assets extends Component
             }
         }
 
+        /** @var Asset[] $assets */
         $assets = Asset::find()->folderId($folderIds)->all();
 
         $elementService = Craft::$app->getElements();

@@ -568,9 +568,10 @@ class Assets extends BaseRelationField
                 });
             } else {
                 // Find the files with temp sources and just move those.
+                /** @var Asset[] $assetsToMove */
                 $assetsToMove = Asset::find()
-                    ->id(ArrayHelper::getColumn($assets, 'id'))
                     ->volumeId(':empty:')
+                    ->id(ArrayHelper::getColumn($assets, 'id'))
                     ->all();
             }
 

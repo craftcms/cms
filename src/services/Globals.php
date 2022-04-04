@@ -225,6 +225,7 @@ class Globals extends Component
             return $this->_allSets($siteId)->firstWhere('id', $globalSetId);
         }
 
+        /** @var GlobalSet|null */
         return GlobalSet::find()
             ->siteId($siteId)
             ->id($globalSetId)
@@ -260,6 +261,7 @@ class Globals extends Component
             return $this->_allSets($siteId)->firstWhere('handle', $globalSetHandle, true);
         }
 
+        /** @var GlobalSet|null */
         return GlobalSet::find()
             ->handle($globalSetHandle)
             ->siteId($siteId)

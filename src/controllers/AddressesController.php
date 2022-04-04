@@ -39,6 +39,7 @@ class AddressesController extends Controller
 
         $addressId = $this->request->getRequiredBodyParam('addressId');
 
+        /** @var Address|null $address */
         $address = Address::find()
             ->id($addressId)
             ->one();

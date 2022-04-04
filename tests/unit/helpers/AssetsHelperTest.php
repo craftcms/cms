@@ -54,6 +54,7 @@ class AssetsHelperTest extends TestCase
             $assetQuery->$key = $value;
         }
 
+        /** @var Asset|null $asset */
         $asset = $assetQuery->one();
         $fs = $asset->getFs();
 

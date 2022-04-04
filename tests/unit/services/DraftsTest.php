@@ -68,9 +68,12 @@ class DraftsTest extends TestCase
      */
     public function testPublishDraft(): void
     {
+        /** @var Entry $entry */
         $entry = Entry::find()
             ->title('Pending 1')
             ->one();
+
+        self::assertNotNull($entry);
 
         $draft = $this->_setupEntryDraft($entry);
 
@@ -82,7 +85,9 @@ class DraftsTest extends TestCase
         $this->drafts->applyDraft($draft);
 
         // Re-get the entry (By the same id)
+        /** @var Entry $newEntry */
         $newEntry = Entry::find()->id($entry->id)->one();
+        self::assertNotNull($newEntry);
 
         // Have the props changed
         self::assertEquals($entry->id, $newEntry->id);
@@ -104,9 +109,12 @@ class DraftsTest extends TestCase
      */
     public function testEntryRevisions(): void
     {
+        /** @var Entry $entry */
         $entry = Entry::find()
             ->title('With versioning')
             ->one();
+
+        self::assertNotNull($entry);
 
         $entry->title = 'With versioning EDITED';
         $entry->revisionNotes = 'I am a change note.';
@@ -118,6 +126,7 @@ class DraftsTest extends TestCase
             throw new InvalidElementException($entry);
         }
 
+        /** @var Entry $revision */
         $revision = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
@@ -150,9 +159,12 @@ class DraftsTest extends TestCase
 
         $this->revisions->revertToRevision($v1, 1);
 
+        /** @var Entry $newEntry */
         $newEntry = Entry::find()
             ->id($entry->id)
             ->one();
+
+        self::assertNotNull($newEntry);
 
         // Old title should now be da one.
         self::assertSame('With versioning', $newEntry->title);
@@ -169,9 +181,12 @@ class DraftsTest extends TestCase
      */
     protected function _setupEntryRevert(string $entryTitle, array $changes = []): array
     {
+        /** @var Entry $entry */
         $entry = Entry::find()
             ->title($entryTitle)
             ->one();
+
+        self::assertNotNull($entry);
 
         foreach ($changes as $paramName => $value) {
             $entry->$paramName = $value;
@@ -184,6 +199,7 @@ class DraftsTest extends TestCase
             throw new InvalidElementException($entry);
         }
 
+        /** @var Entry $v1 */
         $v1 = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
@@ -191,6 +207,8 @@ class DraftsTest extends TestCase
             ->orderBy(['num' => SORT_DESC])
             ->offset(1)
             ->one();
+
+        self::assertNotNull($v1);
 
         return ['entry' => $entry, 'v1' => $v1];
     }

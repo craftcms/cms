@@ -516,10 +516,10 @@ class CategoriesController extends Controller
 
         $categoryIds = $this->request->getParam('categoryIds', []);
 
-        /** @var Category[] $categories */
         $categories = [];
 
         if (!empty($categoryIds)) {
+            /** @var Category[] $categories */
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($this->request->getParam('siteId'))

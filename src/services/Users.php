@@ -165,6 +165,7 @@ class Users extends Component
      */
     public function ensureUserByEmail(string $email): User
     {
+        /** @var User|null $user */
         $user = User::find()
             ->email($email)
             ->status(null)
@@ -240,6 +241,7 @@ class Users extends Component
                 ]);
         }
 
+        /** @var User|null */
         return $query->one();
     }
 
@@ -255,6 +257,7 @@ class Users extends Component
      */
     public function getUserByUid(string $uid): ?User
     {
+        /** @var User|null */
         return User::find()
             ->uid($uid)
             ->status(null)

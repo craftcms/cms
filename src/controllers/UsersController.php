@@ -692,6 +692,7 @@ class UsersController extends Controller
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
+                /** @var User|null $user */
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
                     ->id($userId === 'current' ? $currentUser->id : $userId)
@@ -1097,6 +1098,7 @@ JS,
 
         // Are we editing an existing user?
         if ($userId) {
+            /** @var User|null $user */
             $user = User::find()
                 ->id($userId)
                 ->status(null)
@@ -1510,6 +1512,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
+        /** @var User|null $user */
         $user = User::find()
             ->id($userId)
             ->status(null)

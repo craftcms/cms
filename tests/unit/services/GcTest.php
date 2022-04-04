@@ -194,6 +194,7 @@ class GcTest extends TestCase
     {
         $totalEntries = Entry::find()->trashed()->count();
         $this->gc->run(true);
+        /** @var Entry[] $entries */
         $entries = Entry::find()
             ->trashed()
             ->asArray()
