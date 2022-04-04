@@ -285,6 +285,43 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             this.sortMenu.on('optionselect', this._handleSortChange.bind(this));
         }
 
+        // Set the default status and sort options
+        // ---------------------------------------------------------------------
+
+        const queryParams = Craft.getQueryParams();
+
+        if (queryParams.status) {
+            let selector;
+            switch (queryParams.status) {
+                case 'trashed':
+                    selector = '[data-trashed]';
+                    break;
+                case 'drafts':
+                    selector = '[data-drafts]';
+                    break;
+                default:
+                    selector = `[data-status="${queryParams.status}"]`;
+            }
+
+            const $option = this.statusMenu.$options.filter(selector);
+            if ($option.length) {
+                this.statusMenu.selectOption($option[0]);
+            } else {
+                this.setQueryParam('status', null);
+            }
+        }
+
+        if (queryParams.sort) {
+            const lastDashPos = queryParams.sort.lastIndexOf('-');
+            if (lastDashPos !== -1) {
+                const attr = queryParams.sort.substr(0, lastDashPos);
+                const dir = queryParams.sort.substr(lastDashPos + 1);
+                this.setSortAttribute(attr);
+                this.setSortDirection(dir);
+                this.storeSortAttributeAndDirection();
+            }
+        }
+
         // Initialize the Export button
         // ---------------------------------------------------------------------
 
@@ -949,7 +986,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     },
 
     getSelectedSortDirection: function() {
-        return this.$sortDirectionsList.find('a.sel:first').data('dir');
+        return this.$sortDirectionsList.find('a.sel:first').data('dir') || 'asc';
     },
 
     getSelectedViewMode: function() {
@@ -964,6 +1001,17 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.$sortMenuBtn.attr('data-icon', dir);
         this.$sortDirectionsList.find('a.sel').removeClass('sel');
         this.getSortDirectionOption(dir).addClass('sel');
+    },
+
+    _setSortQueryParam: function() {
+        const attr = this.getSelectedSortAttribute();
+
+        if (attr && attr !== 'score') {
+            const dir = this.getSelectedSortDirection();
+            Craft.setQueryParam('sort', `${attr}-${dir}`);
+        } else {
+            Craft.setQueryParam('sort', null);
+        }
     },
 
     getSourceByKey: function(key) {
@@ -1151,6 +1199,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         this.setSortAttribute(sortAttr);
         this.setSortDirection(sortDir);
+        this._setSortQueryParam();
     },
 
     getDefaultSort: function() {
@@ -1467,15 +1516,19 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.trashed = false;
         this.drafts = false;
         this.status = null;
+        let queryParam = null;
 
         if (Garnish.hasAttr($option, 'data-trashed')) {
             this.trashed = true;
+            queryParam = 'trashed';
         } else if (Garnish.hasAttr($option, 'data-drafts')) {
             this.drafts = true;
+            queryParam = 'drafts';
         } else {
-            this.status = $option.data('status');
+            this.status = queryParam = $option.data('status') || null;
         }
 
+        Craft.setQueryParam('status', queryParam);
         this._updateStructureSortOption();
         this.updateElements();
     },
@@ -1561,6 +1614,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
         this.storeSortAttributeAndDirection();
+        this._setSortQueryParam();
         this.updateElements();
     },
 
@@ -1593,6 +1647,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
                 this.setSortAttribute($firstOption.data('attr'));
                 this.setSortDirection('asc');
+                this._setSortQueryParam();
             }
         } else {
             $option.removeClass('disabled');

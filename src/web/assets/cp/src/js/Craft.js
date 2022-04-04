@@ -532,19 +532,61 @@ $.extend(Craft,
         },
 
         /**
+         * Replaces the page’s current URL.
+         *
+         * The location hash will be left intact, unless the given URL specifies one.
+         *
+         * @param {string} url
+         */
+        setUrl: function(url) {
+            if (typeof history === 'undefined') {
+                return;
+            }
+
+            if (!url.match(/#/)) {
+                url += document.location.hash;
+            }
+
+            history.replaceState({}, '', url);
+        },
+
+        /**
+         * Replaces the page’s current URL based on the given path, leaving the current query string and hash intact.
+         *
+         * @param {string} path
+         */
+        setPath: function(path) {
+            this.path = path;
+            this.setUrl(Craft.getUrl(path, document.location.search));
+        },
+
+        /**
+         * Replaces the page’s current URL based on the given query param name and value, leaving the current URI, other query params, and hash intact.
+         *
+         * @param {string} name
+         * @param value
+         */
+        setQueryParam(name, value) {
+            const baseUrl = document.location.origin + document.location.pathname;
+            const params = this.getQueryParams();
+
+            if (typeof value !== 'undefined' && value !== null && value !== false) {
+                params[name] = value;
+            } else {
+                delete params[name];
+            }
+
+            this.setUrl(Craft.getUrl(baseUrl, params));
+        },
+
+        /**
          * Returns the current URL with a certain page added to it.
          *
          * @param {int} page
          * @return {string}
          */
         getPageUrl: function(page) {
-            let url = document.location.href;
-            if (document.location.search) {
-                url = url.replace(document.location.search, '');
-            }
-            if (document.location.hash) {
-                url = url.replace(document.location.hash, '');
-            }
+            let url = document.location.origin + document.location.pathname;
             url = Craft.rtrim(url, '/');
 
             let qs = document.location.search ? document.location.search.substring(1) : '';
@@ -554,7 +596,7 @@ $.extend(Craft,
                 const pageParam = Craft.pageTrigger.substring(1);
                 // remove the existing page param
                 if (document.location.search) {
-                    const params = $.extend(Object.fromEntries((new URLSearchParams(qs)).entries()), params);
+                    const params = Object.fromEntries((new URLSearchParams(qs)).entries());
                     delete params[pageParam];
                     qs = $.param(params);
                 }
@@ -1406,6 +1448,18 @@ $.extend(Craft,
                 query: m[5] || null,
                 hash: m[6] || null,
             };
+        },
+
+        getQueryParams: function() {
+            return Object.fromEntries((new URLSearchParams(window.location.search)).entries());
+        },
+
+        getQueryParam: function(name) {
+            // h/t https://stackoverflow.com/a/901144/1688568
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+                get: (searchParams, prop) => searchParams.get(prop),
+            });
+            return params[name];
         },
 
         isSameHost: function(url) {

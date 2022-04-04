@@ -12,6 +12,7 @@
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 
 ### Changed
+- Element index pages’ status and sort menu option selections are now coded into the page URL via `status` and `sort` query string params. ([#10669](https://github.com/craftcms/cms/discussions/10669))
 - Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))
 - Image thumbnails now use registered image transformers when available.
 - Craft’s bootstrap script now attempts to create its configured system paths automatically. ([#10562](https://github.com/craftcms/cms/pull/10562))
