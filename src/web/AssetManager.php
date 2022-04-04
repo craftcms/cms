@@ -23,7 +23,7 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
-    const CACHE_TAG = 'assetmanager';
+    private const CACHE_TAG = 'assetmanager';
 
     /**
      * @inheritdoc
