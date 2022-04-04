@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
@@ -120,7 +121,7 @@ class UserQuery extends ElementQuery
     public ?bool $hasPhoto = null;
 
     /**
-     * @var string|int|false|null The permission that the resulting users must have.
+     * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
      * // fetch users with CP access
@@ -136,10 +137,10 @@ class UserQuery extends ElementQuery
      * ```
      * @used-by can()
      */
-    public $can;
+    public mixed $can = null;
 
     /**
-     * @var int|int[]|null The user group ID(s) that the resulting users must belong to.
+     * @var mixed The user group ID(s) that the resulting users must belong to.
      * ---
      * ```php
      * // fetch the authors
@@ -156,44 +157,44 @@ class UserQuery extends ElementQuery
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
-     * @var string|string[]|null The email address that the resulting users must have.
+     * @var mixed The email address that the resulting users must have.
      * @used-by email()
      */
-    public $email;
+    public mixed $email = null;
 
     /**
-     * @var string|string[]|null The username that the resulting users must have.
+     * @var mixed The username that the resulting users must have.
      * @used-by username()
      */
-    public $username;
+    public mixed $username = null;
 
     /**
-     * @var string|string[]|null The full name that the resulting users must have.
+     * @var mixed The full name that the resulting users must have.
      * @used-by fullName()
      * @since 4.0.0
      */
-    public $fullName;
+    public mixed $fullName = null;
 
     /**
-     * @var string|string[]|null The first name that the resulting users must have.
+     * @var mixed The first name that the resulting users must have.
      * @used-by firstName()
      */
-    public $firstName;
+    public mixed $firstName = null;
 
     /**
-     * @var string|string[]|null The last name that the resulting users must have.
+     * @var mixed The last name that the resulting users must have.
      * @used-by lastName()
      */
-    public $lastName;
+    public mixed $lastName = null;
 
     /**
      * @var mixed The date that the resulting users must have last logged in.
      * @used-by lastLoginDate()
      */
-    public $lastLoginDate;
+    public mixed $lastLoginDate = null;
 
     /**
      * @var bool Whether the users’ groups should be eager-loaded.
@@ -366,11 +367,11 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|int|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $can
      */
-    public function can($value): self
+    public function can(mixed $value): self
     {
         $this->can = $value;
         return $this;
@@ -386,6 +387,7 @@ class UserQuery extends ElementQuery
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
      * | `['foo', 'bar']` | in a group with a handle of `foo` or `bar`.
+     * | `['and', 'foo', 'bar']` | in both groups with handles of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not in a group with a handle of `foo` or `bar`.
      * | a [[UserGroup|UserGroup]] object | in a group represented by the object.
      *
@@ -405,22 +407,58 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|UserGroup|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
-    public function group($value): self
+    public function group(mixed $value): self
     {
+        // If the value is a group handle, swap it with the section
+        if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
+            $value = $group;
+        }
+
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
-        } else if ($value !== null) {
-            $this->groupId = (new Query())
-                ->select(['id'])
-                ->from([Table::USERGROUPS])
-                ->where(Db::parseParam('handle', $value))
-                ->column();
-        } else {
+            return $this;
+        }
+
+        if ($value === null) {
             $this->groupId = null;
+            return $this;
+        }
+
+        if (is_array($value)) {
+            // See if it's exclusively made up of user group models, except possibly for the first value
+            $firstVal = reset($value);
+            if (is_string($firstVal) && in_array(strtolower($firstVal), ['and', 'or', 'not'])) {
+                $glue = $firstVal;
+                array_shift($value);
+            } else {
+                $glue = 'or';
+            }
+
+            if (
+                ArrayHelper::onlyContains($value, function($value) {
+                    return $value instanceof UserQuery;
+                })
+            ) {
+                $value = array_map(function(UserGroup $group) {
+                    return $group->id;
+                }, $value);
+                array_unshift($value, $glue);
+                return $this;
+            }
+        }
+
+        $this->groupId = (new Query())
+            ->select(['id'])
+            ->from([Table::USERGROUPS])
+            ->where(Db::parseParam('handle', $value))
+            ->column();
+
+        if ($this->groupId && isset($glue)) {
+            array_unshift($this->groupId, $glue);
         }
 
         return $this;
@@ -436,6 +474,7 @@ class UserQuery extends ElementQuery
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
      * | `[1, 2]` | in a group with an ID of 1 or 2.
+     * | `['and', 1, 2]` | in both groups with IDs of 1 or 2.
      * | `['not', 1, 2]` | not in a group with an ID of 1 or 2.
      *
      * ---
@@ -454,11 +493,11 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value): self
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;
@@ -491,11 +530,11 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $email
      */
-    public function email($value): self
+    public function email(mixed $value): self
     {
         $this->email = $value;
         return $this;
@@ -533,11 +572,11 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $username
      */
-    public function username($value): self
+    public function username(mixed $value): self
     {
         $this->username = $value;
         return $this;
@@ -569,12 +608,12 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fullName
      * @since 4.0.0
      */
-    public function fullName($value): self
+    public function fullName(mixed $value): self
     {
         $this->fullName = $value;
         return $this;
@@ -606,11 +645,11 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $firstName
      */
-    public function firstName($value): self
+    public function firstName(mixed $value): self
     {
         $this->firstName = $value;
         return $this;
@@ -642,11 +681,11 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $lastName
      */
-    public function lastName($value): self
+    public function lastName(mixed $value): self
     {
         $this->lastName = $value;
         return $this;
@@ -687,7 +726,7 @@ class UserQuery extends ElementQuery
      * @return self self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate($value): self
+    public function lastLoginDate(mixed $value): self
     {
         $this->lastLoginDate = $value;
         return $this;
@@ -723,8 +762,9 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value): self
+    public function status(array|string|null $value): self
     {
+        /** @var self */
         return parent::status($value);
     }
 
@@ -762,7 +802,7 @@ class UserQuery extends ElementQuery
      */
     public function withGroups(bool $value = true): self
     {
-        $this->withGroups = true;
+        $this->withGroups = $value;
         return $this;
     }
 
@@ -816,7 +856,7 @@ class UserQuery extends ElementQuery
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ENTRIES)
-                    ->where(['authorId' => new Expression('[[elements.id]]')])
+                    ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }
 
@@ -825,7 +865,7 @@ class UserQuery extends ElementQuery
                 $this->assetUploaders ? 'exists' : 'not exists',
                 (new Query())
                     ->from(Table::ASSETS)
-                    ->where(['uploaderId' => new Expression('[[elements.id]]')])
+                    ->where(['uploaderId' => new Expression('[[elements.id]]')]),
             ]);
         }
 
@@ -843,12 +883,25 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $this->subQuery->andWhere([
-                'exists', (new Query())
-                    ->from(['ugu' => Table::USERGROUPS_USERS])
-                    ->where('[[elements.id]] = [[ugu.userId]]')
-                    ->andWhere(Db::parseNumericParam('groupId', $this->groupId)),
-            ]);
+            // Checking multiple groups?
+            if (
+                is_array($this->groupId) &&
+                is_string(reset($this->groupId)) &&
+                strtolower(reset($this->groupId)) === 'and'
+            ) {
+                $groupIdChecks = array_slice($this->groupId, 1);
+            } else {
+                $groupIdChecks = [$this->groupId];
+            }
+
+            foreach ($groupIdChecks as $i => $groupIdCheck) {
+                $this->subQuery->andWhere([
+                    'exists', (new Query())
+                        ->from(["ugu$i" => Table::USERGROUPS_USERS])
+                        ->where("[[elements.id]] = [[ugu$i.userId]]")
+                        ->andWhere(Db::parseNumericParam('groupId', $groupIdCheck)),
+                ]);
+            }
         }
 
         if ($this->email) {
@@ -881,33 +934,27 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
-        switch ($status) {
-            case User::STATUS_INACTIVE:
-                return [
-                    'users.active' => false,
-                    'users.pending' => false,
-                ];
-            case User::STATUS_ACTIVE:
-                return [
-                    'users.active' => true,
-                ];
-            case User::STATUS_PENDING:
-                return [
-                    'users.pending' => true,
-                ];
-            case User::STATUS_LOCKED:
-                return [
-                    'users.locked' => true,
-                ];
-            case User::STATUS_SUSPENDED:
-                return [
-                    'users.suspended' => true,
-                ];
-            default:
-                return parent::statusCondition($status);
-        }
+        return match ($status) {
+            User::STATUS_INACTIVE => [
+                'users.active' => false,
+                'users.pending' => false,
+            ],
+            User::STATUS_ACTIVE => [
+                'users.active' => true,
+            ],
+            User::STATUS_PENDING => [
+                'users.pending' => true,
+            ],
+            User::STATUS_LOCKED => [
+                'users.locked' => true,
+            ],
+            User::STATUS_SUSPENDED => [
+                'users.suspended' => true,
+            ],
+            default => parent::statusCondition($status),
+        };
     }
 
     /**
@@ -968,6 +1015,7 @@ class UserQuery extends ElementQuery
      */
     public function afterPopulate(array $elements): array
     {
+        /** @var User[] $elements */
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?

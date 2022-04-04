@@ -66,7 +66,7 @@ class Transform extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         $onAssetElement = $value instanceof Asset;
         $onAssetElementList = is_array($value) && !empty($value);
@@ -94,15 +94,11 @@ class Transform extends Directive
             return $value;
         }
 
-        switch ($resolveInfo->fieldName) {
-            case 'height':
-                return $source->getHeight($transform);
-            case 'width':
-                return $source->getWidth($transform);
-            case 'url':
-                return $source->getUrl($transform);
-        }
-
-        return $value;
+        return match ($resolveInfo->fieldName) {
+            'height' => $source->getHeight($transform),
+            'width' => $source->getWidth($transform),
+            'url' => $source->getUrl($transform),
+            default => $value,
+        };
     }
 }

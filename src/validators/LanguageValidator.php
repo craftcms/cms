@@ -55,7 +55,7 @@ class LanguageValidator extends Validator
         $original = $model->$attribute;
         try {
             $value = Localization::normalizeLanguage($original);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $this->addError($model, $attribute, $this->notAllowed);
             return;
         }
@@ -63,11 +63,11 @@ class LanguageValidator extends Validator
         $result = $this->validateValue($value);
         if (!empty($result)) {
             $this->addError($model, $attribute, $result[0], $result[1]);
-        } else if ($value !== $original) {
+        } elseif ($value !== $original) {
             // update the model with the normalized value
             try {
                 $model->$attribute = $value;
-            } catch (UnknownPropertyException $e) {
+            } catch (UnknownPropertyException) {
                 // fine, validate the original value
                 parent::validateAttribute($model, $attribute);
             }

@@ -148,7 +148,9 @@ class SitesController extends Controller
         $group->setName($this->request->getRequiredBodyParam('name'));
 
         if (!Craft::$app->getSites()->saveGroup($group)) {
-            return $this->asFailure(errors: $group->getErrors());
+            return $this->asFailure(data: [
+                'errors' => $group->getFirstErrors(),
+            ]);
         }
 
         $attr = $group->getAttributes();
@@ -170,12 +172,12 @@ class SitesController extends Controller
         $this->requireAcceptsJson();
 
         $groupId = $this->request->getRequiredBodyParam('id');
-        $success = Craft::$app->getSites()->deleteGroupById($groupId);
 
-        if ($success) {
-            return $this->asSuccess(Craft::t('app', 'Group deleted.'));
+        if (!Craft::$app->getSites()->deleteGroupById($groupId)) {
+            return $this->asFailure();
         }
-        return $this->asFailure();
+
+        return $this->asSuccess(Craft::t('app', 'Group deleted.'));
     }
 
     // Sites
@@ -261,14 +263,17 @@ class SitesController extends Controller
         ];
 
         $languageOptions = [];
+        $languageId = Craft::$app->getLocale()->getLanguageID();
 
         foreach (Craft::$app->getI18n()->getAllLocales() as $locale) {
             $languageOptions[] = [
+                'label' => $locale->getDisplayName(Craft::$app->language),
                 'value' => $locale->id,
-                'label' => Craft::t('app', '{id} – {name}', [
-                    'name' => $locale->getDisplayName(Craft::$app->language),
-                    'id' => $locale->id,
-                ]),
+                'data' => [
+                    'data' => [
+                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                    ],
+                ],
             ];
         }
 
@@ -341,6 +346,7 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
+        /** @var int[] $siteIds */
         $siteIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSites()->reorderSites($siteIds);
 

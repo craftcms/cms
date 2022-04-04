@@ -100,7 +100,6 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
-use craft\web\Response as WebResponse;
 use craft\web\View;
 use Yii;
 use yii\base\Application;
@@ -262,7 +261,7 @@ trait ApplicationTrait
     /**
      * @var Info|null
      */
-    private ?Info $_info;
+    private ?Info $_info = null;
 
     /**
      * @var bool
@@ -278,7 +277,7 @@ trait ApplicationTrait
     /**
      * Sets the target application language.
      *
-     * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool|null $useUserLanguage Whether the user’s preferred language should be used.
      * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
     public function updateTargetLanguage(?bool $useUserLanguage = null): void
@@ -305,7 +304,7 @@ trait ApplicationTrait
     /**
      * Returns the target app language.
      *
-     * @param bool $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool $useUserLanguage Whether the user’s preferred language should be used.
      * @return string
      */
     public function getTargetLanguage(bool $useUserLanguage = true): string
@@ -350,7 +349,7 @@ trait ApplicationTrait
         if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
-        } else if (isset($this->_isInstalled)) {
+        } elseif (isset($this->_isInstalled)) {
             return $this->_isInstalled;
         }
 
@@ -372,7 +371,7 @@ trait ApplicationTrait
 
             $info = $this->getInfo(true);
             return $this->_isInstalled = !empty($info->id);
-        } catch (DbException | ServerErrorHttpException $e) {
+        } catch (DbException|ServerErrorHttpException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
             if ($e instanceof DbException && str_contains($e->getMessage(), 'Redis')) {
                 throw $e;
@@ -401,6 +400,7 @@ trait ApplicationTrait
      *
      * @return string
      * @since 3.2.0
+     * @deprecated in 4.0.0
      */
     public function getInstalledSchemaVersion(): string
     {
@@ -436,7 +436,7 @@ trait ApplicationTrait
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
                     ->from([
-                        'x' => (new Query)
+                        'x' => (new Query())
                             ->select([new Expression('1')])
                             ->from([Table::SITES])
                             ->limit(2),
@@ -594,14 +594,13 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        $request = $this->getRequest();
-        if ($request instanceof ConsoleRequest) {
+        if (!$this instanceof WebApplication) {
             return false;
         }
 
         /** @var Cache $cache */
         $cache = $this->getCache();
-        return $cache->get('editionTestableDomain@' . $request->getHostName());
+        return $cache->get(sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName()));
     }
 
     /**
@@ -626,7 +625,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
+        return App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -684,7 +683,7 @@ trait ApplicationTrait
                 ->from([Table::INFO])
                 ->where(['id' => 1])
                 ->one();
-        } catch (DbException | DbConnectException $e) {
+        } catch (DbException|DbConnectException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -746,9 +745,8 @@ trait ApplicationTrait
      */
     public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
-
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
         }
 
         if (!$info->validate($attributeNames)) {
@@ -794,7 +792,7 @@ trait ApplicationTrait
 
         try {
             $name = $this->getSites()->getPrimarySite()->getName();
-        } catch (SiteNotFoundException $e) {
+        } catch (SiteNotFoundException) {
             $name = null;
         }
 
@@ -821,7 +819,7 @@ trait ApplicationTrait
     {
         try {
             $this->getDb()->open();
-        } catch (DbConnectException | InvalidConfigException $e) {
+        } catch (DbConnectException|InvalidConfigException $e) {
             Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
             /** @var ErrorHandler $errorHandler */
             $errorHandler = $this->getErrorHandler();
@@ -1440,7 +1438,7 @@ trait ApplicationTrait
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $request = $this->getRequest();
+        $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1450,9 +1448,8 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        $response = $this->getResponse();
-        if ($response instanceof WebResponse) {
-            $response->setNoCacheHeaders();
+        if ($this instanceof WebApplication) {
+            $this->getResponse()->setNoCacheHeaders();
         }
     }
 
@@ -1521,7 +1518,7 @@ trait ApplicationTrait
      */
     private function _getFallbackLanguage(): string
     {
-        // See if we have the CP translated in one of the user's browsers preferred language(s)
+        // See if we have the CP translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
             $languages = $this->getI18n()->getAppLocaleIds();
             return $this->getRequest()->getPreferredLanguage($languages);

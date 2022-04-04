@@ -19,9 +19,9 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
- * The Conditions service provides APIs for managing conditions
+ * The Conditions service provides APIs for managing conditions.
  *
- * An instance of Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->conditions`]].
+ * An instance of the Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->conditions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -31,12 +31,14 @@ class Conditions extends Component
     /**
      * Creates a condition instance.
      *
-     * @param string|array{class: string} $config The condition class or configuration array
-     * @return ConditionInterface
+     * @template T of ConditionInterface
+     * @param array|string $config The condition class or configuration array
+     * @phpstan-param array{class:class-string<T>}|string $config
+     * @return T
      * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      * @throws InvalidConfigException
      */
-    public function createCondition($config): ConditionInterface
+    public function createCondition(array|string $config): ConditionInterface
     {
         if (is_string($config)) {
             $class = $config;
@@ -70,11 +72,12 @@ class Conditions extends Component
     /**
      * Creates a condition rule instance.
      *
-     * @param string|array{class: string}|array{type: string} $config The condition class or configuration array
+     * @param array|string $config The condition class or configuration array
+     * @phpstan-param array{class: string}|array{type:string}|string $config The condition class or configuration array
      * @return ConditionRuleInterface
      * @throws InvalidArgumentException if the condition rule does not implement [[ConditionRuleInterface]]
      */
-    public function createConditionRule($config): ConditionRuleInterface
+    public function createConditionRule(array|string $config): ConditionRuleInterface
     {
         if (is_string($config)) {
             $class = $config;
@@ -100,7 +103,7 @@ class Conditions extends Component
                             $r1 = new ReflectionProperty($class, $attribute);
                             $r2 = new ReflectionProperty($newClass, $attribute);
                             return $r1->getDeclaringClass()->name === $r2->getDeclaringClass()->name;
-                        } catch (ReflectionException $e) {
+                        } catch (ReflectionException) {
                             return false;
                         }
                     }, ARRAY_FILTER_USE_KEY);

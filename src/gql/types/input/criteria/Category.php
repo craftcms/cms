@@ -22,7 +22,7 @@ class Category extends InputObjectType
     /**
      * @return mixed
      */
-    public static function getType()
+    public static function getType(): mixed
     {
         $typeName = 'CategoryCriteriaInput';
 

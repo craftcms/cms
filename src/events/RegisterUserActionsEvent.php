@@ -21,7 +21,7 @@ class RegisterUserActionsEvent extends Event
     /**
      * @var User|null The user associated with the event
      */
-    public ?User $user;
+    public ?User $user = null;
 
     /**
      * @var array Actions related to the user’s status

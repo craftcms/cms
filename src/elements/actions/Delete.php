@@ -179,7 +179,7 @@ JS;
             }
             if (!isset($deletedElementIds[$element->id])) {
                 if ($withDescendants) {
-                    foreach ($element->getDescendants() as $descendant) {
+                    foreach ($element->getDescendants()->all() as $descendant) {
                         if (!isset($deletedElementIds[$descendant->id]) && $descendant->canDelete($user)) {
                             $elementsService->deleteElement($descendant);
                             $deletedElementIds[$descendant->id] = true;

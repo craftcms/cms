@@ -85,7 +85,7 @@ class User extends \yii\web\User
     /**
      * Sends a username cookie.
      *
-     * This method is used after a user is logged in. It saves the logged-in user's username in a cookie,
+     * This method is used after a user is logged in. It saves the logged-in user’s username in a cookie,
      * so that login forms can remember the initial Username value on login forms.
      *
      * @param UserElement $user
@@ -142,7 +142,7 @@ class User extends \yii\web\User
     /**
      * Returns the user token from the session.
      *
-     * @return string
+     * @return string|null
      * @since 3.6.11
      */
     public function getToken(): ?string
@@ -278,7 +278,7 @@ class User extends \yii\web\User
      * @return int|false The number of seconds left in the current elevated user session
      * or false if it has been disabled.
      */
-    public function getElevatedSessionTimeout()
+    public function getElevatedSessionTimeout(): int|false
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {
@@ -327,6 +327,7 @@ class User extends \yii\web\User
     {
         // If the current user is being impersonated by an admin, get the admin instead
         if ($previousUserId = SessionHelper::get(UserElement::IMPERSONATE_KEY)) {
+            /** @var UserElement $user */
             $user = UserElement::find()
                 ->addSelect(['users.password'])
                 ->id($previousUserId)
@@ -474,7 +475,7 @@ class User extends \yii\web\User
             return;
         }
 
-        // Should we be extending the user's session on this request?
+        // Should we be extending the user’s session on this request?
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
         // Prevent the user session from getting extended?

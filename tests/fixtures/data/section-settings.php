@@ -59,5 +59,5 @@ return [
         'uriFormat' => 'some-uri/{slug}',
         'template' => 'secondtest',
         'enabledByDefault' => true,
-    ]
+    ],
 ];

@@ -263,7 +263,7 @@ class Sites extends Component
 
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
-        } else if (!$group->uid) {
+        } elseif (!$group->uid) {
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
@@ -383,7 +383,7 @@ class Sites extends Component
             return false;
         }
 
-        /** @var SiteGroupRecord $groupRecord */
+        /** @var SiteGroupRecord|null $groupRecord */
         $groupRecord = SiteGroupRecord::find()
             ->where(['id' => $group->id])
             ->one();
@@ -466,7 +466,7 @@ class Sites extends Component
      * @param Site|string|int|null $site the current site, or its handle/ID, or null
      * @throws InvalidArgumentException if $site is invalid
      */
-    public function setCurrentSite($site): void
+    public function setCurrentSite(mixed $site): void
     {
         // In case this was called from the constructor...
         $this->_loadAllSites();
@@ -478,7 +478,7 @@ class Sites extends Component
 
         if ($site instanceof Site) {
             $this->_currentSite = $site;
-        } else if (is_numeric($site)) {
+        } elseif (is_numeric($site)) {
             $this->_currentSite = $this->getSiteById($site, false);
         } else {
             $this->_currentSite = $this->getSiteByHandle($site, false);
@@ -673,7 +673,7 @@ class Sites extends Component
                     ->from([Table::SITES])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
-        } else if (!$site->uid) {
+        } elseif (!$site->uid) {
             $site->uid = Db::uidById(Table::SITES, $site->id);
         }
 
@@ -719,7 +719,7 @@ class Sites extends Component
 
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
-        } catch (SiteNotFoundException $e) {
+        } catch (SiteNotFoundException) {
             $oldPrimarySiteId = null;
         }
 
@@ -824,7 +824,7 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param string[] $siteIds The site IDs in their new order
+     * @param int[] $siteIds The site IDs in their new order
      * @return bool Whether the sites were reordered successfully
      * @throws Throwable if reasons
      */
@@ -1169,9 +1169,7 @@ class Sites extends Component
 
         // Check for results because during installation, the transaction hasn't been committed yet.
         if (!empty($results)) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            foreach ($results as $i => $result) {
+            foreach ($results as $result) {
                 $site = new Site($result);
                 $this->_allSitesById[$site->id] = $site;
                 if ($site->enabled) {
@@ -1210,16 +1208,17 @@ class Sites extends Component
      * @param bool $withTrashed Whether to include trashed site groups in search
      * @return SiteGroupRecord
      */
-    private function _getGroupRecord($criteria, bool $withTrashed = false): SiteGroupRecord
+    private function _getGroupRecord(mixed $criteria, bool $withTrashed = false): SiteGroupRecord
     {
         $query = $withTrashed ? SiteGroupRecord::findWithTrashed() : SiteGroupRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteGroupRecord */
         return $query->one() ?? new SiteGroupRecord();
     }
 
@@ -1249,16 +1248,17 @@ class Sites extends Component
      * @param bool $withTrashed Whether to include trashed sites in search
      * @return SiteRecord
      */
-    private function _getSiteRecord($criteria, bool $withTrashed = false): SiteRecord
+    private function _getSiteRecord(mixed $criteria, bool $withTrashed = false): SiteRecord
     {
         $query = $withTrashed ? SiteRecord::findWithTrashed() : SiteRecord::find();
         if (is_numeric($criteria)) {
             $query->andWhere(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->andWhere(['uid' => $criteria]);
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteRecord */
         return $query->one() ?? new SiteRecord();
     }
 

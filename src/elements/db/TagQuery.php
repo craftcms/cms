@@ -46,7 +46,7 @@ class TagQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null|false The tag group ID(s) that the resulting tags must be in.
+     * @var mixed The tag group ID(s) that the resulting tags must be in.
      * ---
      * ```php
      * // fetch tags in the Topics group
@@ -63,7 +63,7 @@ class TagQuery extends ElementQuery
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @inheritdoc
@@ -106,15 +106,15 @@ class TagQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|TagGroup|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
-    public function group($value): self
+    public function group(mixed $value): self
     {
         if ($value instanceof TagGroup) {
             $this->groupId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])
@@ -155,11 +155,11 @@ class TagQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value): self
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;
@@ -198,9 +198,9 @@ class TagQuery extends ElementQuery
 
         if (empty($this->groupId)) {
             $this->groupId = null;
-        } else if (is_numeric($this->groupId)) {
+        } elseif (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
-        } else if (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])

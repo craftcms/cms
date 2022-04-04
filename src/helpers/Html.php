@@ -253,7 +253,7 @@ class Html extends \yii\helpers\Html
                         }
                         $children[] = $subtag;
                         $cursor = $subtag['end'];
-                    } catch (InvalidHtmlTagException $e) {
+                    } catch (InvalidHtmlTagException) {
                         // We must have just reached the end
                         break;
                     }
@@ -313,7 +313,7 @@ class Html extends \yii\helpers\Html
      * @param int|null $end The end position of the last attribute in the given tag
      * @param bool $decode Whether the attributes should be HTML decoded in the process
      * @return array The parsed HTML tag attributes
-     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @throws InvalidHtmlTagException if `$tag` doesn't contain a valid HTML tag
      * @since 3.3.0
      */
     public static function parseTagAttributes(string $tag, int $offset = 0, ?int &$start = null, ?int &$end = null, bool $decode = false): array
@@ -324,7 +324,11 @@ class Html extends \yii\helpers\Html
         $attributes = [];
 
         do {
-            $attribute = static::parseTagAttribute($tag, $anchor, $attrStart, $attrEnd);
+            try {
+                $attribute = static::parseTagAttribute($tag, $anchor, $attrStart, $attrEnd);
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidHtmlTagException($e->getMessage(), $type, null, $tagStart);
+            }
 
             // Did we just reach the end of the tag?
             if ($attribute === null) {
@@ -393,7 +397,7 @@ class Html extends \yii\helpers\Html
                 if (isset($m[1]) && $m[1] !== '') {
                     $value = $m[1];
                 }
-            } else if (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
+            } elseif (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
                 $value = $m[0];
             }
@@ -448,11 +452,11 @@ class Html extends \yii\helpers\Html
     /**
      * Explodes a `class` attribute into an array.
      *
-     * @param string|string[]|bool|null $value
+     * @param mixed $value
      * @return string[]
      * @since 3.5.0
      */
-    public static function explodeClass($value): array
+    public static function explodeClass(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];
@@ -469,11 +473,11 @@ class Html extends \yii\helpers\Html
     /**
      * Explodes a `style` attribute into an array of property/value pairs.
      *
-     * @param string|string[]|bool|null $value
+     * @param mixed $value
      * @return string[]
      * @since 3.5.0
      */
-    public static function explodeStyle($value): array
+    public static function explodeStyle(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];
@@ -505,7 +509,12 @@ class Html extends \yii\helpers\Html
     {
         // Find the first HTML tag that isn't a DTD or a comment
         if (!preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
-            throw new InvalidHtmlTagException('Could not find an HTML tag in string: ' . $html);
+            throw new InvalidHtmlTagException(
+                "Could not find an HTML tag in string: $html",
+                isset($match[1][0]) ? strtolower($match[1][0]) : null,
+                null,
+                $match[0][1] ?? null
+            );
         }
 
         return [strtolower($match[1][0]), $match[0][1]];
@@ -535,16 +544,13 @@ class Html extends \yii\helpers\Html
             $child = ArrayHelper::firstWhere($info['children'], 'type', $type, true);
 
             if ($child) {
-                switch ($ifExists) {
-                    case 'keep':
-                        return $tag;
-                    case 'replace':
-                        return substr($tag, 0, $child['start']) .
-                            $html .
-                            substr($tag, $child['end']);
-                    default:
-                        throw new InvalidArgumentException('Invalid $ifExists value: ' . $ifExists);
-                }
+                return match ($ifExists) {
+                    'keep' => $tag,
+                    'replace' => substr($tag, 0, $child['start']) .
+                        $html .
+                        substr($tag, $child['end']),
+                    default => throw new InvalidArgumentException('Invalid $ifExists value: ' . $ifExists),
+                };
             }
         }
 
@@ -581,7 +587,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an input name.
      *
      * @param string $inputName The input name
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced input name
      * @since 3.5.0
      */
@@ -598,7 +604,7 @@ class Html extends \yii\helpers\Html
      * Namespaces an ID.
      *
      * @param string $id The ID
-     * @param string $namespace The namespace
+     * @param string|null $namespace The namespace
      * @return string The namespaced ID
      * @since 3.5.0
      */
@@ -659,7 +665,7 @@ class Html extends \yii\helpers\Html
     public static function namespaceInputs(string $html, string $namespace): string
     {
         $markers = self::_escapeTextareas($html);
-        static::_namespaceInputs($html, $namespace);
+        self::_namespaceInputs($html, $namespace);
         return self::_restoreTextareas($html, $markers);
     }
 
@@ -913,13 +919,23 @@ class Html extends \yii\helpers\Html
                 $tag = static::parseTag($html, $offset);
             } catch (InvalidHtmlTagException $e) {
                 if ($e->type === null) {
+                    // No more HTML tags in the string
                     return $return . substr($html, $offset);
                 }
-                $preTagLength = $e->start - $offset;
-                $innerTagOffset = $e->start + 1;
-                $innerTagLength = $e->htmlStart - $innerTagOffset - 1;
-                $return .= sprintf('%s&lt;%s&gt;', substr($html, $offset, $preTagLength), substr($html, $innerTagOffset, $innerTagLength));
-                $offset = $e->htmlStart;
+
+                if ($e->htmlStart) {
+                    $preTagLength = $e->start - $offset;
+                    $innerTagOffset = $e->start + 1;
+                    $innerTagLength = $e->htmlStart - $innerTagOffset - 1;
+                    $return .= sprintf('%s&lt;%s&gt;', substr($html, $offset, $preTagLength), substr($html, $innerTagOffset, $innerTagLength));
+                    $offset = $e->htmlStart;
+                } else {
+                    // Found a tag, but it wasn't closed (e.g. `<input`)
+                    $newOffset = $e->start + strlen($e->type) + 1;
+                    $return .= substr($html, $offset, $newOffset - $offset);
+                    $offset = $newOffset;
+                }
+
                 continue;
             }
 

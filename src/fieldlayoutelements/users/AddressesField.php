@@ -76,6 +76,8 @@ class AddressesField extends BaseNativeField
             return null;
         }
 
-        return Cp::addressCardsHtml($element);
+        return Cp::addressCardsHtml($element->getAddresses(), [
+            'ownerId' => $element->id,
+        ]);
     }
 }

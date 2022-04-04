@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\fixtures;
@@ -24,7 +24,7 @@ use yii\test\ArrayFixture;
  */
 class FsFixture extends ArrayFixture
 {
-    const BASE_URL = 'https://cdn.test.craftcms.test/';
+    public const BASE_URL = 'https://cdn.test.craftcms.test/';
 
     /**
      * @inheritdoc

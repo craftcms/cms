@@ -11,7 +11,7 @@ var elem = React.createElement;
 var search = window.location.search;
 var parameters = {};
 
-search.substr(1).split('&').forEach(function(entry) {
+search.substring(1).split('&').forEach(function(entry) {
     var eq = entry.indexOf('=');
     if (eq >= 0) {
         parameters[decodeURIComponent(entry.slice(0, eq))] =

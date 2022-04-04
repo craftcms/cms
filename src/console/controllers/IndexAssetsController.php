@@ -150,8 +150,6 @@ class IndexAssetsController extends Controller
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
             $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
 
-            $startAt = is_numeric($startAt) ? (int)$startAt : 0;
-
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
             $missingRecords = [];
@@ -183,7 +181,7 @@ class IndexAssetsController extends Controller
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     continue;
-                } catch (AssetDisallowedExtensionException | AssetNotIndexableException $e) {
+                } catch (AssetDisallowedExtensionException|AssetNotIndexableException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 } catch (Throwable $e) {
@@ -270,7 +268,7 @@ class IndexAssetsController extends Controller
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-
+            /** @var Asset[] $assets */
             $assets = Asset::find()->id($assetIds)->all();
             foreach ($assets as $asset) {
                 Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
@@ -316,7 +314,7 @@ class IndexAssetsController extends Controller
             $this->stdout("{$e->volume->name}/{$e->indexEntry->uri}" . PHP_EOL);
         }
 
-        $selection = $this->prompt('>', [
+        $selection = (int)$this->prompt('>', [
             'validator' => function($input) use ($missingRecords) {
                 return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
             },

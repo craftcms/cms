@@ -19,9 +19,10 @@ use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
 use Imagine\Image\AbstractImage;
+use Imagine\Image\AbstractImagine;
 use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
-use Imagine\Image\ImageInterface as Imagine;
+use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
@@ -63,9 +64,9 @@ class Raster extends Image
     private ?AbstractImage $_image = null;
 
     /**
-     * @var Imagine|null
+     * @var AbstractImagine|null
      */
-    private $_instance;
+    private ?AbstractImagine $_instance = null;
 
     /**
      * @var RGB|null
@@ -249,7 +250,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, $cropPosition = 'center-center'): self
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -261,8 +262,8 @@ class Raster extends Image
             $newWidth = round($this->getWidth() / $factor);
 
             $this->resize($newWidth, $newHeight);
-            // If we need to upscale AND that's ok
-        } else if (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
+        // If we need to upscale AND that's ok
+        } elseif (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
             // Figure the crop size reductions
             $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
             $newHeight = $this->getHeight();
@@ -321,7 +322,7 @@ class Raster extends Image
 
                 $y1 = 0;
                 $y2 = $y1 + $targetHeight;
-            } else if ($newHeight - $targetHeight > 0) {
+            } elseif ($newHeight - $targetHeight > 0) {
                 switch ($verticalPosition) {
                     case 'top':
                         $y1 = 0;
@@ -501,7 +502,7 @@ class Raster extends Image
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException) {
             try {
                 // Invalid SVG. Maybe it's missing its DTD?
                 $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . $svgContent;
@@ -678,7 +679,7 @@ class Raster extends Image
      */
     private function _getResizeFilter(): string
     {
-        return (Craft::$app->getImages()->getIsGd() ? Imagine::FILTER_UNDEFINED : Imagine::FILTER_LANCZOS);
+        return (Craft::$app->getImages()->getIsGd() ? ImageInterface::FILTER_UNDEFINED : ImageInterface::FILTER_LANCZOS);
     }
 
     /**

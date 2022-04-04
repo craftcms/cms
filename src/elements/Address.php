@@ -19,7 +19,6 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
-use craft\validators\RequiredFieldAddressValidator;
 use yii\base\InvalidConfigException;
 use yii\validators\RequiredValidator;
 
@@ -32,6 +31,38 @@ use yii\validators\RequiredValidator;
 class Address extends Element implements AddressInterface, BlockElementInterface
 {
     use NameTrait;
+
+    /**
+     * @inheritdoc
+     */
+    public static function displayName(): string
+    {
+        return Craft::t('app', 'Address');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'address');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'addresses');
+    }
 
     /**
      * @inheritdoc
@@ -118,7 +149,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             'locality',
             'dependentLocality',
             'postalCode',
-        ])) {
+        ], true)) {
             $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($countryCode);
             return match ($attribute) {
                 'administrativeArea' => Craft::$app->getAddresses()->getAdministrativeAreaTypeLabel($formatRepo->getAdministrativeAreaType()),
@@ -221,6 +252,19 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        // Don't even allow setting a blank country code
+        if (array_key_exists('countryCode', $values) && empty($values['countryCode'])) {
+            unset($values['countryCode']);
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getAttributeLabel($attribute): string
     {
         return match ($attribute) {
@@ -261,7 +305,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canView(User $user): bool
     {
-        return parent::canView($user) || $this->getOwner()?->getCanonical(true)->canView($user) ?? false;
+        return (
+            parent::canView($user) ||
+            ($this->getOwner()?->getCanonical(true)->canView($user) ?? false)
+        );
     }
 
     /**
@@ -269,7 +316,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canSave(User $user): bool
     {
-        return parent::canSave($user) || $this->getOwner()?->getcanonical(true)->canSave($user) ?? false;
+        return (
+            parent::canSave($user) ||
+            ($this->getOwner()?->getcanonical(true)->canSave($user) ?? false)
+        );
     }
 
     /**
@@ -277,7 +327,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canDelete(User $user): bool
     {
-        return parent::canDelete($user) || $this->getOwner()?->getCanonical(true)->canSave($user) ?? false;
+        return (
+            parent::canDelete($user) ||
+            ($this->getOwner()?->getCanonical(true)->canSave($user) ?? false)
+        );
     }
 
     /**
@@ -337,14 +390,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
-     * @param string|null $sortingCode
-     */
-    public function setSortingCode(?string $sortingCode): void
-    {
-        $this->_sortingCode = $sortingCode;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getAddressLine1(): ?string
@@ -398,6 +443,32 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function getLocale(): string
     {
         return 'und';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeValidate(): bool
+    {
+        $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
+        $usedFields = array_unique([
+            ...$formatter->getUsedFields(),
+            'fullName',
+            'latLong',
+            'organizationTaxId',
+            'organization',
+            'countryCode',
+        ]);
+        $nullFields = array_filter(
+            array_diff(self::_addressAttributes(), $usedFields),
+            fn(string $attribute) => !in_array($attribute, ['givenName', 'familyName', 'additionalName']),
+        );
+
+        foreach ($nullFields as $field) {
+            $this->$field = null;
+        }
+
+        return parent::beforeValidate();
     }
 
     /**
@@ -512,6 +583,6 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getFields()->getLayoutByType(self::class);
+        return Craft::$app->getAddresses()->getLayout();
     }
 }

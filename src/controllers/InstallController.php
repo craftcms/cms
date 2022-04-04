@@ -42,7 +42,7 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     /**
      * @inheritdoc
@@ -50,7 +50,7 @@ class InstallController extends Controller
     public function beforeAction($action): bool
     {
         // Return a 404 if Craft is already installed
-        if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
+        if (!App::devMode() && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
 
@@ -151,19 +151,12 @@ class InstallController extends Controller
             } catch (DbConnectException $e) {
                 /** @var PDOException $pdoException */
                 $pdoException = $e->getPrevious()->getPrevious();
-                switch ($pdoException->getCode()) {
-                    case 1045:
-                        $attr = 'user';
-                        break;
-                    case 1049:
-                        $attr = 'database';
-                        break;
-                    case 2002:
-                        $attr = 'server';
-                        break;
-                    default:
-                        $attr = '*';
-                }
+                $attr = match ($pdoException->getCode()) {
+                    1045 => 'user',
+                    1049 => 'database',
+                    2002 => 'server',
+                    default => '*',
+                };
                 $errors[$attr][] = 'PDO exception: ' . $pdoException->getMessage();
             }
         }
@@ -172,7 +165,9 @@ class InstallController extends Controller
 
         return $validates ?
             $this->asSuccess() :
-            $this->asFailure(errors: $errors);
+            $this->asFailure(data: [
+                'errors' => $errors,
+            ]);
     }
 
     /**
@@ -199,7 +194,9 @@ class InstallController extends Controller
         }
 
         if (!$validates) {
-            return $this->asFailure(errors: $errors);
+            return $this->asFailure(data: [
+                'errors' => $errors,
+            ]);
         }
 
         return $this->asModelSuccess($user);
@@ -252,7 +249,7 @@ class InstallController extends Controller
             } else {
                 $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
                 $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
-                $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
+                $configService->setDotEnvVar('DB_PORT', (string)$dbConfig->port);
                 $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
             }
 
@@ -285,7 +282,7 @@ class InstallController extends Controller
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
                 $siteUrl = '$PRIMARY_SITE_URL';
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine, we'll just store the entered URL
             }
         }

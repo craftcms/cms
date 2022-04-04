@@ -80,6 +80,7 @@ class MyDrafts extends Widget
      */
     public function getBodyHtml(): ?string
     {
+        /** @var Entry[] $drafts */
         $drafts = Entry::find()
             ->drafts()
             ->status(null)

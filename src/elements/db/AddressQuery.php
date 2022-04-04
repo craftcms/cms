@@ -22,6 +22,7 @@ use yii\db\Connection;
  * @method Address|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @doc-path addresses.md
  * @replace {element} address
  * @replace {elements} addresses
  * @replace {myElement} myAddress
@@ -30,14 +31,14 @@ use yii\db\Connection;
 class AddressQuery extends ElementQuery
 {
     /**
-     * @var int|int[]|null The owner element ID(s) that the resulting addresses must belong to.
+     * @var mixed The owner element ID(s) that the resulting addresses must belong to.
      * @used-by owner()
      * @used-by ownerId()
      */
-    public $ownerId;
+    public mixed $ownerId = null;
 
     /**
-     * @var string[]|string|null The address countryCode(s) that the resulting address must be in.
+     * @var mixed The address countryCode(s) that the resulting address must be in.
      * ---
      * ```php
      * // fetch addresses that are located in AU
@@ -54,7 +55,66 @@ class AddressQuery extends ElementQuery
      * @used-by countryCode()
      * @used-by countryCode()
      */
-    public $countryCode;
+    public mixed $countryCode = null;
+
+    /**
+     * @var mixed The address administrativeArea(s) that the resulting address must be in.
+     * ---
+     * ```php
+     * // fetch addresses that are located in AU
+     * $addresses = \craft\elements\Address::find()
+     *     ->administrativeArea('AU')
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch addresses that are located in AU #}
+     * {% set addresses = craft.addresses()
+     *   .administrativeArea('AU')
+     *   .all() %}
+     * ```
+     * @used-by administrativeArea()
+     * @used-by administrativeArea()
+     */
+    public mixed $administrativeArea = null;
+
+    /**
+     * Narrows the query results based on the administrative area the assets belong to.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches addresses…
+     * | - | -
+     * | `'AU'` | with a administrativeArea of `AU`.
+     * | `'not US'` | not in a administrativeArea of `US`.
+     * | `['AU', 'US']` | in a administrativeArea of `AU` or `US`.
+     * | `['not', 'AU', 'US']` | not in a administrativeArea of `AU` or `US`.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch addresses in the AU #}
+     * {% set {elements-var} = {twig-method}
+     *   .administrativeArea('AU')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch addresses in the AU
+     * ${elements-var} = {php-method}
+     *     ->administrativeArea('AU')
+     *     ->all();
+     * ```
+     *
+     * @param string|string[]|null $value The property value
+     * @return self self reference
+     * @uses $administrativeArea
+     */
+    public function administrativeArea(array|string|null $value): self
+    {
+        $this->administrativeArea = $value;
+
+        return $this;
+    }
 
     /**
      * Sets the [[ownerId()]] parameter based on a given owner element.
@@ -117,7 +177,7 @@ class AddressQuery extends ElementQuery
      * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId($value): self
+    public function ownerId(array|int|null $value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -155,7 +215,7 @@ class AddressQuery extends ElementQuery
      * @return self self reference
      * @uses $countryCode
      */
-    public function countryCode($value): self
+    public function countryCode(array|string|null $value): self
     {
         $this->countryCode = $value;
 
@@ -200,6 +260,10 @@ class AddressQuery extends ElementQuery
 
         if ($this->countryCode) {
             $this->subQuery->andWhere(['addresses.countryCode' => $this->countryCode]);
+        }
+
+        if ($this->administrativeArea) {
+            $this->subQuery->andWhere(['addresses.administrativeArea' => $this->administrativeArea]);
         }
 
         return parent::beforePrepare();

@@ -497,7 +497,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
         this.$tr.data('editable-table-row', this);
 
         // Get the row ID, sans prefix
-        var id = parseInt(this.id.substr(this.table.settings.rowIdPrefix.length));
+        var id = parseInt(this.id.substring(this.table.settings.rowIdPrefix.length));
 
         if (id > this.table.biggestId) {
             this.table.biggestId = id;
@@ -641,7 +641,7 @@ Craft.EditableTable.Row = Garnish.Base.extend({
             colIndex = this.table.colum;
             neg = colId[0] === '!';
             if (neg) {
-                colId = colId.substr(1);
+                colId = colId.substring(1);
             }
             if ((checked && !neg) || (!checked && neg)) {
                 $(this.tds[colId])

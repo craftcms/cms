@@ -9,7 +9,6 @@ namespace crafttests\functional\users;
 
 use Craft;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use FunctionalTester;
 
 /**
@@ -24,12 +23,12 @@ class EditUserCest
     /**
      * @var string
      */
-    public $cpTrigger;
+    public string $cpTrigger;
 
     /**
-     * @var
+     * @var User|null
      */
-    public $currentUser;
+    public ?User $currentUser;
 
     /**
      * @param FunctionalTester $I
@@ -49,7 +48,7 @@ class EditUserCest
     /**
      * @param FunctionalTester $I
      */
-    public function testMyAccountPage(FunctionalTester $I)
+    public function testMyAccountPage(FunctionalTester $I): void
     {
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 
@@ -62,13 +61,15 @@ class EditUserCest
         $I->see('User saved');
         $I->seeInTitle('Users');
 
+        /** @var User $user */
+        $user = User::find()
+            ->id($this->currentUser->id)
+            ->one();
+
         // Check that the Db was updated.
         $I->assertSame(
             'IM A CHANGED FULLNAME',
-            User::find()
-                ->id($this->currentUser->id)
-                ->one()->fullName
+            $user->fullName
         );
     }
-
 }

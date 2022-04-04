@@ -24,7 +24,7 @@ interface QueueInterface
      *
      * @return mixed
      */
-    public function run();
+    public function run(): mixed;
 
     /**
      * Re-adds a failed job to the queue.
@@ -79,10 +79,10 @@ interface QueueInterface
     /**
      * Returns the total number of jobs in the queue.
      *
-     * @return int|float
+     * @return int
      * @since 3.4.0
      */
-    public function getTotalJobs();
+    public function getTotalJobs(): int;
 
     /**
      * Returns info about the jobs in the queue.

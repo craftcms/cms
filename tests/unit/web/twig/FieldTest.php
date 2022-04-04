@@ -9,8 +9,8 @@ namespace crafttests\unit\web\twig;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\test\TestCase;
 use craft\web\View;
-use UnitTester;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -19,17 +19,12 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.7.24
  */
-class FieldTest extends Unit
+class FieldTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      *
@@ -64,7 +59,7 @@ TWIG;
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->view = Craft::$app->getView();

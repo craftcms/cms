@@ -7,14 +7,9 @@
 
 namespace crafttests\unit\i18n;
 
-use Craft;
 use Codeception\Test\Unit;
-use craft\elements\User;
-use craft\helpers\Cp;
-use craft\web\twig\TemplateLoaderException;
-use crafttests\fixtures\SitesFixture;
-use UnitTester;
-use yii\base\InvalidArgumentException;
+use Craft;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Formatter class.
@@ -22,20 +17,15 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FormatterTest extends Unit
+class FormatterTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @param string $expected
      * @param mixed $value
      * @param int|null $decimals
      * @dataProvider asPercentDataProvider
      */
-    public function testAsPercent(string $expected, $value, ?int $decimals = null): void
+    public function testAsPercent(string $expected, mixed $value, ?int $decimals = null): void
     {
         self::assertSame($expected, Craft::$app->getFormatter()->asPercent($value, $decimals));
     }

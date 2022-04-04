@@ -113,7 +113,7 @@ class TemplateCaches extends Component
      * @throws Exception if this is a console request and `false` is passed to `$global`
      * @throws Throwable
      */
-    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false): void
+    public function endTemplateCache(string $key, bool $global, ?string $duration, mixed $expiration, string $body, bool $withScripts = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {

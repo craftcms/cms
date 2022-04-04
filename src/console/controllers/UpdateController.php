@@ -114,7 +114,7 @@ class UpdateController extends Controller
             if ($pluginUpdate->getHasReleases()) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 if ($pluginInfo['isInstalled']) {
@@ -236,7 +236,7 @@ class UpdateController extends Controller
     /**
      * Returns the new Composer requirements.
      *
-     * @param string[] $handles
+     * @param string ...$handles
      * @return array
      */
     private function _getRequirements(string ...$handles): array
@@ -269,7 +269,7 @@ class UpdateController extends Controller
                 if (($latest = $pluginUpdate->getLatest()) !== null) {
                     try {
                         $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                    } catch (InvalidPluginException $e) {
+                    } catch (InvalidPluginException) {
                         continue;
                     }
                     if ($pluginInfo['isInstalled']) {
@@ -292,7 +292,7 @@ class UpdateController extends Controller
                     if (isset($updates->plugins[$handle])) {
                         try {
                             $pluginInfo = $pluginsService->getPluginInfo($handle);
-                        } catch (InvalidPluginException $e) {
+                        } catch (InvalidPluginException) {
                         }
                     }
 
@@ -592,7 +592,7 @@ class UpdateController extends Controller
                 $session->setIdentity(null);
             }
 
-            if (!App::licenseKey()) {
+            if (App::licenseKey() === null) {
                 $this->stderr('License key creation was unsuccessful.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }

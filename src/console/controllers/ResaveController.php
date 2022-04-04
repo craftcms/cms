@@ -30,6 +30,8 @@ use yii\helpers\Console;
 /**
  * Allows you to bulk-save elements.
  *
+ * See [Bulk-Resaving Elements](https://craftcms.com/knowledge-base/bulk-resaving-elements) for examples.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.15
  */
@@ -54,9 +56,15 @@ class ResaveController extends Controller
     public bool $provisionalDrafts = false;
 
     /**
-     * @var int|string The ID(s) of the elements to resave.
+     * @var bool Whether to resave element revisions.
+     * @since 3.7.35
      */
-    public $elementId;
+    public bool $revisions = false;
+
+    /**
+     * @var int|string|null The ID(s) of the elements to resave.
+     */
+    public string|int|null $elementId = null;
 
     /**
      * @var string|null The UUID(s) of the elements to resave.
@@ -175,6 +183,7 @@ class ResaveController extends Controller
                 $options[] = 'type';
                 $options[] = 'drafts';
                 $options[] = 'provisionalDrafts';
+                $options[] = 'revisions';
                 break;
             case 'matrix-blocks':
                 $options[] = 'field';
@@ -301,6 +310,7 @@ class ResaveController extends Controller
 
     /**
      * @param string $elementType The element type that should be resaved
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
@@ -308,6 +318,7 @@ class ResaveController extends Controller
     public function resaveElements(string $elementType, array $criteria = []): int
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
@@ -358,6 +369,10 @@ class ResaveController extends Controller
             $criteria['provisionalDrafts'] = true;
         }
 
+        if ($this->revisions) {
+            $criteria['revisions'] = true;
+        }
+
         if ($this->elementId) {
             $criteria['id'] = is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId);
         }
@@ -372,7 +387,7 @@ class ResaveController extends Controller
 
         if ($this->status === 'any') {
             $criteria['status'] = null;
-        } else if ($this->status) {
+        } elseif ($this->status) {
             $criteria['status'] = explode(',', $this->status);
         }
 
@@ -431,7 +446,7 @@ class ResaveController extends Controller
                 if ($e->exception) {
                     $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                } else if ($element->hasErrors()) {
+                } elseif ($element->hasErrors()) {
                     $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {
@@ -443,7 +458,7 @@ class ResaveController extends Controller
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $elementsService->resaveElements($query, true, true, $this->updateSearchIndex);
+        $elementsService->resaveElements($query, true, !$this->revisions, $this->updateSearchIndex);
 
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);

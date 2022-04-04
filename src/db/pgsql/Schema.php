@@ -64,7 +64,8 @@ class Schema extends \yii\db\pgsql\Schema
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            if ($e->getCode() === '25P01' || $e->getCode() === '3B001') {
+            /** @phpstan-ignore-next-line */
+            if (in_array($e->getCode(), ['25P01', '3B001'], true)) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
@@ -110,7 +111,7 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * Returns the default backup command to execute.
      *
-     * @param string[]|null The table names whose data should be excluded from the backup
+     * @param string[]|null $ignoreTables The table names whose data should be excluded from the backup
      * @return string The command to execute
      */
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
@@ -260,42 +261,22 @@ SQL;
 
         foreach ($extendedConstraints as $key => $extendedConstraint) {
             // Find out what to do on update.
-            switch ($extendedConstraint['update_type']) {
-                case 'a':
-                    $updateAction = 'NO ACTION';
-                    break;
-                case 'r':
-                    $updateAction = 'RESTRICT';
-                    break;
-                case 'c':
-                    $updateAction = 'CASCADE';
-                    break;
-                case 'n':
-                    $updateAction = 'SET NULL';
-                    break;
-                default:
-                    $updateAction = 'DEFAULT';
-                    break;
-            }
+            $updateAction = match ($extendedConstraint['update_type']) {
+                'a' => 'NO ACTION',
+                'r' => 'RESTRICT',
+                'c' => 'CASCADE',
+                'n' => 'SET NULL',
+                default => 'DEFAULT',
+            };
 
             // Find out what to do on update.
-            switch ($extendedConstraint['delete_type']) {
-                case 'a':
-                    $deleteAction = 'NO ACTION';
-                    break;
-                case 'r':
-                    $deleteAction = 'RESTRICT';
-                    break;
-                case 'c':
-                    $deleteAction = 'CASCADE';
-                    break;
-                case 'n':
-                    $deleteAction = 'SET NULL';
-                    break;
-                default:
-                    $deleteAction = 'DEFAULT';
-                    break;
-            }
+            $deleteAction = match ($extendedConstraint['delete_type']) {
+                'a' => 'NO ACTION',
+                'r' => 'RESTRICT',
+                'c' => 'CASCADE',
+                'n' => 'SET NULL',
+                default => 'DEFAULT',
+            };
 
             $table->addExtendedForeignKey($key, [
                 'updateType' => $updateAction,

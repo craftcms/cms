@@ -61,25 +61,25 @@ return [
         'authorId' => '1',
         'sectionId' => '1003',
         'typeId' => '1003',
-        'title' => 'Pending 1'
+        'title' => 'Pending 1',
     ],
     [
         'authorId' => '1',
         'sectionId' => '1003',
         'typeId' => '1003',
-        'title' => 'Pending 2'
+        'title' => 'Pending 2',
     ],
     [
         'authorId' => '1',
         'sectionId' => '1004',
         'typeId' => '1004',
-        'title' => 'With versioning'
+        'title' => 'With versioning',
     ],
     [
         'authorId' => '1',
         'sectionId' => '1005',
         'typeId' => '1005',
-        'title' => 'Single entry'
+        'title' => 'Single entry',
     ],
 
 ];

@@ -54,25 +54,25 @@ class MatrixBlockQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|string|false|null The field ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The field ID(s) that the resulting Matrix blocks must belong to.
      * @used-by fieldId()
      */
-    public $fieldId;
+    public mixed $fieldId = null;
 
     /**
-     * @var int|int[]|null The primary owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The primary owner element ID(s) that the resulting Matrix blocks must belong to.
      * @used-by primaryOwner()
      * @used-by primaryOwnerId()
      * @since 4.0.0
      */
-    public $primaryOwnerId;
+    public mixed $primaryOwnerId = null;
 
     /**
-     * @var int|int[]|null The owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The owner element ID(s) that the resulting Matrix blocks must belong to.
      * @used-by owner()
      * @used-by ownerId()
      */
-    public $ownerId;
+    public mixed $ownerId = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
@@ -89,16 +89,16 @@ class MatrixBlockQuery extends ElementQuery
     public ?bool $allowOwnerRevisions = null;
 
     /**
-     * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
+     * @var mixed The block type ID(s) that the resulting Matrix blocks must have.
      * ---
      * ```php
-     * // fetch the entry's text blocks
+     * // fetch the entry’s text blocks
      * $blocks = $entry->myMatrixField
      *     ->type('text')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch the entry's text blocks #}
+     * {# fetch the entry’s text blocks #}
      * {% set blocks = entry.myMatrixField
      *   .type('text')
      *   .all() %}
@@ -106,7 +106,7 @@ class MatrixBlockQuery extends ElementQuery
      * @used-by MatrixBlockQuery::type()
      * @used-by typeId()
      */
-    public $typeId;
+    public mixed $typeId = null;
 
     /**
      * @inheritdoc
@@ -166,16 +166,16 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|MatrixField|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fieldId
      * @since 3.4.0
      */
-    public function field($value): self
+    public function field(mixed $value): self
     {
         if ($value instanceof MatrixField) {
             $this->fieldId = [$value->id];
-        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
+        } elseif (is_string($value) || (is_array($value) && count($value) === 1)) {
             if (!is_string($value)) {
                 $value = reset($value);
             }
@@ -185,7 +185,7 @@ class MatrixBlockQuery extends ElementQuery
             } else {
                 $this->fieldId = false;
             }
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
@@ -227,11 +227,11 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fieldId
      */
-    public function fieldId($value): self
+    public function fieldId(mixed $value): self
     {
         $this->fieldId = $value;
         return $this;
@@ -265,12 +265,12 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $primaryOwnerId
      * @since 4.0.0
      */
-    public function primaryOwnerId($value): self
+    public function primaryOwnerId(mixed $value): self
     {
         $this->primaryOwnerId = $value;
         return $this;
@@ -335,11 +335,11 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId($value): self
+    public function ownerId(mixed $value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -446,15 +446,15 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|MatrixBlockType|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
-    public function type($value): self
+    public function type(mixed $value): self
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::MATRIXBLOCKTYPES])
@@ -495,11 +495,11 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value): self
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;
@@ -540,7 +540,7 @@ class MatrixBlockQuery extends ElementQuery
         // Figure out which content table to use
         $this->contentTable = null;
         if ($this->fieldId && count($this->fieldId) === 1) {
-            /** @var MatrixField $matrixField */
+            /** @var MatrixField|null $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($matrixField) {
                 $this->contentTable = $matrixField->contentTable;
@@ -617,9 +617,9 @@ class MatrixBlockQuery extends ElementQuery
 
         if (empty($this->fieldId)) {
             $this->fieldId = null;
-        } else if (is_numeric($this->fieldId)) {
+        } elseif (is_numeric($this->fieldId)) {
             $this->fieldId = [$this->fieldId];
-        } else if (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
+        } elseif (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])

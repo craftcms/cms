@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -68,17 +69,17 @@ class ImageTransform extends Model
     public ?DateTime $parameterChangeTime = null;
 
     /**
-     * @var string Mode
+     * @var 'crop'|'fit'|'stretch' Mode
      */
     public string $mode = 'crop';
 
     /**
-     * @var string Position
+     * @var 'top-left'|'top-center'|'top-right'|'center-left'|'center-center'|'center-right'|'bottom-left'|'bottom-center'|'bottom-right' Position
      */
     public string $position = 'center-center';
 
     /**
-     * @var string Position
+     * @var 'none'|'line'|'plane'|'partition' Position
      */
     public string $interlace = 'none';
 
@@ -93,9 +94,8 @@ class ImageTransform extends Model
     public ?string $uid = null;
 
     /**
-     * The image transformer to use.
-     *
-     * @var string
+     * @var string The image transformer to use.
+     * @phpstan-var class-string<ImageTransformerInterface>
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
 
@@ -212,16 +212,6 @@ class ImageTransform extends Model
             'fit' => Craft::t('app', 'Scale to fit'),
             'stretch' => Craft::t('app', 'Stretch to fit'),
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'parameterChangeTime';
-        return $attributes;
     }
 
     /**

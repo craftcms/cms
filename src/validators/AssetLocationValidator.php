@@ -51,7 +51,7 @@ class AssetLocationValidator extends Validator
     /**
      * @var string[]|string|null Allowed file extensions. Set to `'*'` to allow all extensions.
      */
-    public $allowedExtensions = null;
+    public string|array|null $allowedExtensions = null;
 
     /**
      * @var string|null User-defined error message used when the extension is disallowed.

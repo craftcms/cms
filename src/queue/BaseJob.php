@@ -30,7 +30,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @var int|float The current progress
      */
-    private $_progress;
+    private int|float $_progress;
 
     /**
      * @var string|null The current progress label
@@ -83,7 +83,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @param float $progress A number between 0 and 1
      * @param string|null $label The progress label
      */
-    protected function setProgress($queue, float $progress, ?string $label = null): void
+    protected function setProgress(\yii\queue\Queue|QueueInterface $queue, float $progress, ?string $label = null): void
     {
         $progress = round(100 * $progress);
 
@@ -99,7 +99,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
             }
 
             if ($queue instanceof QueueInterface) {
-                $queue->setProgress($progress, $label);
+                $queue->setProgress((int)$progress, $label);
             }
         }
     }

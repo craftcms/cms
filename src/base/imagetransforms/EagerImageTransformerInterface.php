@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -12,7 +13,7 @@ use craft\elements\Asset;
 use craft\models\ImageTransform;
 
 /**
- * EagerLoadTransformerInterface defines the common interface to be implemented by all image drivers that can eager-load transforms
+ * EagerLoadTransformerInterface defines the common interface to be implemented by all image drivers that can eager-load transforms.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

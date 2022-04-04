@@ -6,6 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\services\ProjectConfig;
 
 /**
  * m220123_213619_update_permissions migration.
@@ -23,50 +24,61 @@ class m220123_213619_update_permissions extends Migration
             'customizeSources',
         ];
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $volumeConfigs = $projectConfig->get(ProjectConfig::PATH_VOLUMES, true) ?? [];
+        $categoryGroupConfigs = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS, true) ?? [];
+        $sectionConfigs = $projectConfig->get(ProjectConfig::PATH_SECTIONS, true) ?? [];
+
+        foreach (array_keys($volumeConfigs) as $volumeUid) {
             $map += [
-                "viewVolume:$volume->uid" => ["viewAssets:$volume->uid"],
-                "saveAssetInVolume:$volume->uid" => ["saveAssets:$volume->uid"],
-                "deleteFilesAndFoldersInVolume:$volume->uid" => ["deleteAssets:$volume->uid"],
-                "replaceFilesInVolume:$volume->uid" => ["replaceFiles:$volume->uid"],
-                "editImagesInVolume:$volume->uid" => ["editImages:$volume->uid"],
-                "viewPeerFilesInVolume:$volume->uid" => ["viewPeerAssets:$volume->uid"],
-                "editPeerFilesInVolume:$volume->uid" => ["savePeerAssets:$volume->uid"],
-                "replacePeerFilesInVolume:$volume->uid" => ["replacePeerFiles:$volume->uid"],
-                "deletePeerFilesInVolume:$volume->uid" => ["deletePeerAssets:$volume->uid"],
-                "editPeerImagesInVolume:$volume->uid" => ["editPeerImages:$volume->uid"],
-                "createFoldersInVolume:$volume->uid" => ["createFolders:$volume->uid"],
+                "viewVolume:$volumeUid" => ["viewAssets:$volumeUid"],
+                "saveAssetInVolume:$volumeUid" => ["saveAssets:$volumeUid"],
+                "deleteFilesAndFoldersInVolume:$volumeUid" => ["deleteAssets:$volumeUid"],
+                "replaceFilesInVolume:$volumeUid" => ["replaceFiles:$volumeUid"],
+                "editImagesInVolume:$volumeUid" => ["editImages:$volumeUid"],
+                "viewPeerFilesInVolume:$volumeUid" => ["viewPeerAssets:$volumeUid"],
+                "editPeerFilesInVolume:$volumeUid" => ["savePeerAssets:$volumeUid"],
+                "replacePeerFilesInVolume:$volumeUid" => ["replacePeerFiles:$volumeUid"],
+                "deletePeerFilesInVolume:$volumeUid" => ["deletePeerAssets:$volumeUid"],
+                "editPeerImagesInVolume:$volumeUid" => ["editPeerImages:$volumeUid"],
+                "createFoldersInVolume:$volumeUid" => ["createFolders:$volumeUid"],
             ];
         }
 
-        foreach (Craft::$app->getCategories()->getAllGroups() as $group) {
+        foreach (array_keys($categoryGroupConfigs) as $groupUid) {
             $map += [
-                "editCategories:$group->uid" => [
-                    "viewCategories:$group->uid",
-                    "saveCategories:$group->uid",
-                    "deleteCategories:$group->uid",
-                    "viewPeerCategoryDrafts:$group->uid",
-                    "savePeerCategoryDrafts:$group->uid",
-                    "deletePeerCategoryDrafts:$group->uid",
+                "editCategories:$groupUid" => [
+                    "viewCategories:$groupUid",
+                    "saveCategories:$groupUid",
+                    "deleteCategories:$groupUid",
+                    "viewPeerCategoryDrafts:$groupUid",
+                    "savePeerCategoryDrafts:$groupUid",
+                    "deletePeerCategoryDrafts:$groupUid",
                 ],
             ];
         }
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (array_keys($sectionConfigs) as $sectionUid) {
             $map += [
-                "editEntries:$section->uid" => ["viewEntries:$section->uid"],
-                "publishEntries:$section->uid" => ["saveEntries:$section->uid"],
-                "editPeerEntryDrafts:$section->uid" => [
-                    "viewPeerEntryDrafts:$section->uid",
-                    "savePeerEntryDrafts:$section->uid",
+                "editEntries:$sectionUid" => ["viewEntries:$sectionUid"],
+                "publishEntries:$sectionUid" => ["saveEntries:$sectionUid"],
+                "editPeerEntryDrafts:$sectionUid" => [
+                    "viewPeerEntryDrafts:$sectionUid",
+                    "savePeerEntryDrafts:$sectionUid",
                 ],
-                "editPeerEntries:$section->uid" => ["viewPeerEntries:$section->uid"],
-                "publishPeerEntries:$section->uid" => ["savePeerEntries:$section->uid"],
+                "editPeerEntries:$sectionUid" => ["viewPeerEntries:$sectionUid"],
+                "publishPeerEntries:$sectionUid" => ["savePeerEntries:$sectionUid"],
             ];
 
             // Covered by saveEntries (and maybe savePeerEntries) + viewPeerEntryDrafts
-            $delete[] = "publishPeerEntryDrafts:$section->uid";
+            $delete[] = "publishPeerEntryDrafts:$sectionUid";
         }
+
+        // Lowercase everything
+        $map = array_combine(
+            array_map('strtolower', array_keys($map)),
+            array_map(fn($newPermissions) => array_map('strtolower', $newPermissions), array_values($map)));
+        $delete = array_map('strtolower', $delete);
 
         // Now add the new permissions to existing users where applicable
         foreach ($map as $oldPermission => $newPermissions) {
@@ -103,7 +115,6 @@ class m220123_213619_update_permissions extends Migration
         ]);
 
         // Don't make the same config changes twice
-        $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
         if (version_compare($schemaVersion, '4.0.0', '<')) {
@@ -125,7 +136,7 @@ class m220123_213619_update_permissions extends Migration
                 }
 
                 // assignUserGroup:<uid> permissions are explicitly required going forward
-                $groupPermissions["assignUserGroup:$uid"] = true;
+                $groupPermissions[strtolower("assignUserGroup:$uid")] = true;
 
                 $projectConfig->set("users.groups.$uid.permissions", array_keys($groupPermissions));
             }

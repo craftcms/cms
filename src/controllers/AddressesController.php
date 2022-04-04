@@ -39,6 +39,7 @@ class AddressesController extends Controller
 
         $addressId = $this->request->getRequiredBodyParam('addressId');
 
+        /** @var Address|null $address */
         $address = Address::find()
             ->id($addressId)
             ->one();
@@ -61,51 +62,33 @@ class AddressesController extends Controller
     }
 
     /**
-     * Returns address field info, based on a country code.
+     * Returns address fields’ HTML (sans country) for the given country and subdivisions.
      *
+     * @param string $namespace
      * @param string $countryCode
+     * @param string|null $administrativeArea
+     * @param string|null $locality
      * @return Response
      */
-    public function actionFieldInfo(string $countryCode): Response
-    {
-        $addressesService = Craft::$app->getAddresses();
+    public function actionFields(
+        string $namespace,
+        string $countryCode,
+        ?string $administrativeArea = null,
+        ?string $locality = null,
+    ): Response {
+        $address = new Address([
+            'countryCode' => $countryCode,
+            'administrativeArea' => $administrativeArea,
+            'locality' => $locality,
+        ]);
 
-        $formatRepo = $addressesService->getAddressFormatRepository()->get($countryCode);
-        $requiredFields = array_flip($formatRepo->getRequiredFields());
-        $visibleFields = array_flip(array_merge(
-                $formatRepo->getUsedFields(),
-                $formatRepo->getUsedSubdivisionFields(),
-            )) + $requiredFields;
+        $html = $this->getView()->namespaceInputs(fn() => Cp::addressFieldsHtml($address), $namespace);
 
-        $administrativeAreaOptions = [];
-
-        foreach ($addressesService->getSubdivisionRepository()->getList([$countryCode], Craft::$app->language) as $code => $label) {
-            $administrativeAreaOptions[] = ['value' => $code, 'text' => $label];
-        }
-
-        $info = [
-            'administrativeAreaOptions' => $administrativeAreaOptions,
-        ];
-
-        $attributes = [
-            'addressLine1',
-            'addressLine2',
-            'postalCode',
-            'sortingCode',
-            'administrativeArea',
-            'locality',
-            'dependentLocality',
-        ];
-
-        foreach ($attributes as $attribute) {
-            $info['fields'][$attribute] = [
-                'label' => Address::addressAttributeLabel($attribute, $countryCode),
-                'visible' => isset($visibleFields[$attribute]),
-                'required' => isset($requiredFields[$attribute]),
-            ];
-        }
-
-        return $this->asJson($info);
+        return $this->asJson([
+            'fieldsHtml' => $html,
+            'headHtml' => $this->getView()->getHeadHtml(),
+            'bodyHtml' => $this->getView()->getBodyHtml(),
+        ]);
     }
 
     /**
@@ -122,7 +105,7 @@ class AddressesController extends Controller
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Address::class;
         $fieldLayout->reservedFieldHandles = [
-            'address'
+            'address',
         ];
 
         if (!Craft::$app->getAddresses()->saveLayout($fieldLayout)) {

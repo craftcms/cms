@@ -10,8 +10,10 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\db\AddressQuery;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
@@ -55,7 +57,7 @@ class CraftVariable extends ServiceLocator
     /**
      * @var WebApplication|ConsoleApplication|null The Craft application class
      */
-    public $app;
+    public null|WebApplication|ConsoleApplication $app = null;
 
     /**
      * @inheritdoc
@@ -137,6 +139,19 @@ class CraftVariable extends ServiceLocator
 
     // Queries
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns a new [address query](https://craftcms.com/docs/4.x/addresses.html#querying-addresses).
+     *
+     * @param array $criteria
+     * @return AddressQuery
+     */
+    public function addresses(array $criteria = []): AddressQuery
+    {
+        $query = Address::find();
+        Craft::configure($query, $criteria);
+        return $query;
+    }
 
     /**
      * Returns a new [asset query](https://craftcms.com/docs/4.x/assets.html#querying-assets).

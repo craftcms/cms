@@ -36,6 +36,7 @@ class CopyReferenceTag extends ElementAction
     {
         $type = Json::encode(static::class);
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
 
         if (($refHandle = $elementType::refHandle()) === null) {

@@ -64,15 +64,6 @@ class FieldLayout extends Model
     public const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';
 
     /**
-     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the native (not custom) fields for the layout.
-     *
-     * @see getAvailableNativeFields()
-     * @since 3.5.0
-     * @deprecated in 4.0.0. Use [[EVENT_DEFINE_NATIVE_FIELDS]] instead.
-     */
-    public const EVENT_DEFINE_STANDARD_FIELDS = 'defineNativeFields';
-
-    /**
      * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
      *
      * ```php
@@ -169,6 +160,7 @@ class FieldLayout extends Model
 
     /**
      * @var string|null The element type
+     * @phpstan-var class-string<ElementInterface>|null
      */
     public ?string $type = null;
 
@@ -190,7 +182,8 @@ class FieldLayout extends Model
     private array $_availableCustomFields;
 
     /**
-     * @var BaseField[][]
+     * @var array
+     * @phpstan-var array<BaseField|class-string<BaseField>|array{class:class-string<BaseField>}>
      * @see getAvailableNativeFields()
      */
     private array $_availableStandardFields;
@@ -219,7 +212,7 @@ class FieldLayout extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
-        $rules[] = [['fields'], 'validateFields'];
+        $rules[] = [['customFields'], 'validateFields'];
         return $rules;
     }
 
@@ -270,8 +263,8 @@ class FieldLayout extends Model
     /**
      * Sets the layout’s tabs.
      *
-     * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
-     * objects or arrays defining the tab’s attributes.
+     * @param array $tabs An array of the layout’s tabs, which can either be FieldLayoutTab objects or arrays defining the tab’s attributes.
+     * @phpstan-param array<array|FieldLayoutTab> $tabs
      */
     public function setTabs(array $tabs): void
     {
@@ -489,7 +482,8 @@ class FieldLayout extends Model
      * Returns the layout elements of a given type.
      *
      * @template T
-     * @param class-string<T> $class
+     * @param string $class
+     * @phpstan-param class-string<T> $class
      * @return T[]
      * @since 4.0.0
      */
@@ -503,7 +497,8 @@ class FieldLayout extends Model
      * Returns the visible layout elements of a given type, taking conditions into account.
      *
      * @template T
-     * @param class-string<T> $class
+     * @param string $class
+     * @phpstan-param class-string<T> $class
      * @param ElementInterface $element
      * @return T[]
      * @since 4.0.0
@@ -517,8 +512,9 @@ class FieldLayout extends Model
     /**
      * Returns the first layout element of a given type.
      *
-     * @template T
-     * @param class-string<T> $class
+     * @template T of FieldLayoutElement
+     * @param string $class
+     * @phpstan-param class-string<T> $class
      * @return T|null The layout element, or `null` if none were found
      * @since 4.0.0
      */
@@ -531,8 +527,9 @@ class FieldLayout extends Model
     /**
      * Returns the first visible layout element of a given type, taking conditions into account.
      *
-     * @template T
-     * @param class-string<T> $class
+     * @template T of FieldLayoutElement
+     * @param string $class
+     * @phpstan-param class-string<T> $class
      * @param ElementInterface $element
      * @return T|null The layout element, or `null` if none were found
      * @since 4.0.0
@@ -561,17 +558,6 @@ class FieldLayout extends Model
      * @since 4.0.0
      */
     public function getCustomFields(): array
-    {
-        return $this->_customFields();
-    }
-
-    /**
-     * Returns the custom fields included in the layout.
-     *
-     * @return FieldInterface[]
-     * @deprecated in 4.0.0. Use [[getCustomFields()]] instead.
-     */
-    public function getFields(): array
     {
         return $this->_customFields();
     }
@@ -656,7 +642,7 @@ class FieldLayout extends Model
         }
 
         // Any already-included layout elements?
-        $visibleElements = ArrayHelper::remove($config, 'visibleElements') ?? [];
+        $visibleElements = ArrayHelper::remove($config, 'visibleElements');
 
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
@@ -674,33 +660,42 @@ class FieldLayout extends Model
         }
 
         foreach ($tabs as $tab) {
-            $elementHtml = [];
-            $showTab = $tab->showInForm($element);
+            $layoutElements = [];
+            $showTab = !isset($tab->uid) || $tab->showInForm($element);
             $hasVisibleFields = false;
 
             foreach ($tab->getElements() as $layoutElement) {
-                if ($showTab && $layoutElement->showInForm($element)) {
+                // Only tabs + elements that were saved with UUIDs can be conditional
+                $isConditional = isset($tab->uid, $layoutElement->uid);
+
+                if ($showTab && (!$isConditional || $layoutElement->showInForm($element))) {
                     // If it was already included and we just need the missing elements, only keep track that it’s still included
-                    if (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])) {
-                        $elementHtml[$layoutElement->uid] = true;
+                    if (
+                        $visibleElements !== null &&
+                        (!$isConditional || (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])))
+                    ) {
+                        $layoutElements[] = [$layoutElement, $isConditional, true];
                         $hasVisibleFields = true;
                     } else {
                         $html = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
                             return $layoutElement->formHtml($element, $static) ?? '';
                         }, $namespace);
+
                         if ($html) {
-                            $elementHtml[$layoutElement->uid] = Html::modifyTagAttributes($html, [
+                            $html = Html::modifyTagAttributes($html, [
                                 'data' => [
-                                    'layout-element' => $layoutElement->uid,
+                                    'layout-element' => $isConditional ? $layoutElement->uid : true,
                                 ],
                             ]);
+
+                            $layoutElements[] = [$layoutElement, $isConditional, $html];
                             $hasVisibleFields = true;
                         } else {
-                            $elementHtml[$layoutElement->uid] = false;
+                            $layoutElements[] = [$layoutElement, $isConditional, false];
                         }
                     }
                 } else {
-                    $elementHtml[$layoutElement->uid] = false;
+                    $layoutElements[] = [$layoutElement, $isConditional, false];
                 }
             }
 
@@ -708,7 +703,7 @@ class FieldLayout extends Model
                 $form->tabs[] = new FieldLayoutFormTab([
                     'layoutTab' => $tab,
                     'hasErrors' => $element && $tab->elementHasErrors($element),
-                    'elementHtml' => $elementHtml,
+                    'elements' => $layoutElements,
                 ]);
             }
         }
@@ -739,9 +734,9 @@ class FieldLayout extends Model
     private function _elements(callable $filter, ?ElementInterface $element = null): Generator
     {
         foreach ($this->getTabs() as $tab) {
-            if (!$element || $tab->showInForm($element)) {
+            if (!$element || !isset($tab->uid) || $tab->showInForm($element)) {
                 foreach ($tab->getElements() as $layoutElement) {
-                    if ($filter($layoutElement) && (!$element || $layoutElement->showInForm($element))) {
+                    if ($filter($layoutElement) && (!$element || !isset($layoutElement->uid) || $layoutElement->showInForm($element))) {
                         yield $layoutElement;
                     }
                 }

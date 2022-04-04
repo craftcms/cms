@@ -45,9 +45,9 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @var string UUID
+     * @var string|null UUID
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @var string The selected operator.
@@ -141,36 +141,22 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      */
     protected function operatorLabel(string $operator): string
     {
-        switch ($operator) {
-            case self::OPERATOR_EQ:
-                return Craft::t('app', 'equals');
-            case self::OPERATOR_NE:
-                return Craft::t('app', 'does not equal');
-            case self::OPERATOR_LT:
-                return Craft::t('app', 'is less than');
-            case self::OPERATOR_LTE:
-                return Craft::t('app', 'is less than or equals');
-            case self::OPERATOR_GT:
-                return Craft::t('app', 'is greater than');
-            case self::OPERATOR_GTE:
-                return Craft::t('app', 'is greater than or equals');
-            case self::OPERATOR_BEGINS_WITH:
-                return Craft::t('app', 'begins with');
-            case self::OPERATOR_ENDS_WITH:
-                return Craft::t('app', 'ends with');
-            case self::OPERATOR_CONTAINS:
-                return Craft::t('app', 'contains');
-            case self::OPERATOR_IN:
-                return Craft::t('app', 'is one of');
-            case self::OPERATOR_NOT_IN:
-                return Craft::t('app', 'is not one of');
-            case self::OPERATOR_EMPTY:
-                return Craft::t('app', 'is empty');
-            case self::OPERATOR_NOT_EMPTY:
-                return Craft::t('app', 'has a value');
-            default:
-                return $operator;
-        }
+        return match ($operator) {
+            self::OPERATOR_EQ => Craft::t('app', 'equals'),
+            self::OPERATOR_NE => Craft::t('app', 'does not equal'),
+            self::OPERATOR_LT => Craft::t('app', 'is less than'),
+            self::OPERATOR_LTE => Craft::t('app', 'is less than or equals'),
+            self::OPERATOR_GT => Craft::t('app', 'is greater than'),
+            self::OPERATOR_GTE => Craft::t('app', 'is greater than or equals'),
+            self::OPERATOR_BEGINS_WITH => Craft::t('app', 'begins with'),
+            self::OPERATOR_ENDS_WITH => Craft::t('app', 'ends with'),
+            self::OPERATOR_CONTAINS => Craft::t('app', 'contains'),
+            self::OPERATOR_IN => Craft::t('app', 'is one of'),
+            self::OPERATOR_NOT_IN => Craft::t('app', 'is not one of'),
+            self::OPERATOR_EMPTY => Craft::t('app', 'is empty'),
+            self::OPERATOR_NOT_EMPTY => Craft::t('app', 'has a value'),
+            default => $operator,
+        };
     }
 
     /**

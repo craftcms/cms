@@ -26,7 +26,7 @@ class TestsControllerTest extends BaseConsoleTest
     /**
      * @throws InvalidConfigException
      */
-    public function testTestController()
+    public function testTestController(): void
     {
         $this->consoleCommand('tests/test')
             ->stdout('22')
@@ -43,7 +43,7 @@ class TestsControllerTest extends BaseConsoleTest
      * @throws InvalidConfigException
      * @throws Exception
      */
-    public function testSetupWithDefaultPath()
+    public function testSetupWithDefaultPath(): void
     {
         $this->consoleCommand('tests/setup', [], true)
             ->confirm('Are you sure you want to continue?', false, false)
@@ -54,7 +54,7 @@ class TestsControllerTest extends BaseConsoleTest
     /**
      *
      */
-    public function testSetupTestsWithCustomPath()
+    public function testSetupTestsWithCustomPath(): void
     {
         $dst = getcwd() . DIRECTORY_SEPARATOR . StringHelper::randomString();
 

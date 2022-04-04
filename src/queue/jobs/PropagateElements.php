@@ -25,9 +25,10 @@ use craft\services\Elements;
 class PropagateElements extends BaseJob
 {
     /**
-     * @var string|ElementInterface The element type that should be propagated
+     * @var string The element type that should be propagated
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var array|null The element criteria that determines which elements should be propagated
@@ -39,7 +40,7 @@ class PropagateElements extends BaseJob
      *
      * If this is `null`, then elements will be propagated to all supported sites, except the one they were queried in.
      */
-    public $siteId;
+    public array|int|null $siteId = null;
 
     /**
      * @inheritdoc
@@ -88,6 +89,7 @@ class PropagateElements extends BaseJob
     private function _query(): ElementQueryInterface
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -98,7 +100,7 @@ class PropagateElements extends BaseJob
         $query
             ->offset(null)
             ->limit(null)
-            ->orderBy(null);
+            ->orderBy([]);
 
         return $query;
     }

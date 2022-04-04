@@ -19,9 +19,6 @@ use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
-use craft\log\Dispatcher;
-use craft\log\FileTarget;
-use craft\log\StreamLogTarget;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -39,10 +36,6 @@ use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
-use yii\i18n\PhpMessageSource;
-use yii\log\Dispatcher as YiiDispatcher;
-use yii\log\Logger;
-use yii\log\Target;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
 
@@ -63,7 +56,18 @@ class App
      * @var string[]
      * @see isPathAllowed()
      */
-    private static $_basePaths;
+    private static array $_basePaths;
+
+    /**
+     * Returns whether Dev Mode is enabled.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function devMode(): bool
+    {
+        return YII_DEBUG;
+    }
 
     /**
      * Returns an environment variable, falling back to a PHP constant of the same name.
@@ -108,7 +112,7 @@ class App
      * reference an environment variable and/or alias.
      * @since 3.7.29
      */
-    public static function parseEnv(?string $value)
+    public static function parseEnv(?string $value): bool|string|null
     {
         if ($value === null) {
             return null;
@@ -146,7 +150,7 @@ class App
      * @return bool|null
      * @since 3.7.29
      */
-    public static function parseBooleanEnv($value): ?bool
+    public static function parseBooleanEnv(mixed $value): ?bool
     {
         if (is_bool($value)) {
             return $value;
@@ -212,7 +216,7 @@ class App
                 } else {
                     $value = true;
                 }
-            } else if (str_starts_with($item, "$name=")) {
+            } elseif (str_starts_with($item, "$name=")) {
                 $value = substr($item, $nameLen + 1);
             } else {
                 continue;
@@ -263,14 +267,11 @@ class App
      */
     public static function editionHandle(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'solo';
-            case Craft::Pro:
-                return 'pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'solo',
+            Craft::Pro => 'pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -281,14 +282,11 @@ class App
      */
     public static function editionName(int $edition): string
     {
-        switch ($edition) {
-            case Craft::Solo:
-                return 'Solo';
-            case Craft::Pro:
-                return 'Pro';
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition);
-        }
+        return match ($edition) {
+            Craft::Solo => 'Solo',
+            Craft::Pro => 'Pro',
+            default => throw new InvalidArgumentException('Invalid Craft edition ID: ' . $edition),
+        };
     }
 
     /**
@@ -301,14 +299,11 @@ class App
      */
     public static function editionIdByHandle(string $handle): int
     {
-        switch ($handle) {
-            case 'solo':
-                return Craft::Solo;
-            case 'pro':
-                return Craft::Pro;
-            default:
-                throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle);
-        }
+        return match ($handle) {
+            'solo' => Craft::Solo,
+            'pro' => Craft::Pro,
+            default => throw new InvalidArgumentException('Invalid Craft edition handle: ' . $handle),
+        };
     }
 
     /**
@@ -317,7 +312,7 @@ class App
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
      */
-    public static function isValidEdition($edition): bool
+    public static function isValidEdition(mixed $edition): bool
     {
         if ($edition === false || $edition === null) {
             return false;
@@ -402,7 +397,7 @@ class App
      * @return int|float The value normalized into bytes.
      * @since 3.0.38
      */
-    public static function phpConfigValueInBytes(string $var)
+    public static function phpConfigValueInBytes(string $var): float|int
     {
         $value = trim(ini_get($var));
         return static::phpSizeToBytes($value);
@@ -415,7 +410,7 @@ class App
      * @return int|float The value normalized into bytes.
      * @since 3.6.0
      */
-    public static function phpSizeToBytes(string $value)
+    public static function phpSizeToBytes(string $value): float|int
     {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int)$value;
@@ -476,7 +471,7 @@ class App
                     }
                     return $env;
                 }, $path);
-            } catch (InvalidValueException $e) {
+            } catch (InvalidValueException) {
                 // References an env var that doesn’t exist
                 continue;
             }
@@ -540,6 +535,7 @@ class App
         }
 
         $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
+        /** @phpstan-ignore-next-line */
         set_error_handler(function() {
         });
         $result = ini_set('memory_limit', $testValue);
@@ -588,6 +584,7 @@ class App
      * Returns a humanized class name.
      *
      * @param string $class
+     * @phpstan-param class-string $class
      * @return string
      */
     public static function humanizeClass(string $class): string
@@ -663,7 +660,9 @@ class App
                 '#' . $i . ' ' .
                 ($frame['class'] ?? '') .
                 ($frame['type'] ?? '') .
+                /** @phpstan-ignore-next-line */
                 ($frame['function'] ?? '') . '()' .
+                /** @phpstan-ignore-next-line */
                 (isset($frame['file']) ? ' called at [' . ($frame['file'] ?? '') . ':' . ($frame['line'] ?? '') . ']' : '');
         }
 
@@ -769,6 +768,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
+            'enableLogging' => $dbConfig->enableLogging,
+            'enableProfiling' => $dbConfig->enableProfiling,
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],
@@ -776,7 +777,7 @@ class App
                 $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
-            'enableSchemaCache' => !YII_DEBUG,
+            'enableSchemaCache' => !static::devMode(),
         ];
 
         if ($driver === Connection::DRIVER_PGSQL && $dbConfig->setSchemaOnConnect && $dbConfig->schema) {
@@ -806,7 +807,8 @@ class App
      * Returns the `mailer` component config.
      *
      * @param MailSettings|null $settings The system mail settings
-     * @return array{class: class-string<Mailer>}
+     * @return array
+     * @phpstan-return array{class:class-string<Mailer>}
      * @since 3.0.18
      */
     public static function mailerConfig(?MailSettings $settings = null): array
@@ -817,7 +819,7 @@ class App
 
         try {
             $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        } catch (MissingComponentException $e) {
+        } catch (MissingComponentException) {
             // Fallback to the PHP mailer
             $adapter = new Sendmail();
         }
@@ -855,78 +857,6 @@ class App
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
         ];
-    }
-
-    /**
-     * Returns the `log` component config.
-     *
-     * @return array|null
-     * @since 3.0.18
-     * @deprecated in 3.6.0. Override `components.log.targets` instead
-     */
-    public static function logConfig(): ?array
-    {
-        // Using Yii's Dispatcher class here is intentional
-        return [
-            'class' => YiiDispatcher::class,
-            'targets' => array_values(static::defaultLogTargets()),
-        ];
-    }
-
-    /**
-     * Returns the default log targets.
-     *
-     * @return Target[]
-     * @since 3.6.14
-     */
-    public static function defaultLogTargets(): array
-    {
-        // Warning - Don't do anything that could cause something to get logged from here!
-        // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
-        // targets haven’t been instantiated yet.
-
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-
-        // Only log console requests and web requests that aren't getAuthTimeout requests
-        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
-            return [];
-        }
-
-        $targets = [];
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $baseTargetConfig = [
-            'includeUserIp' => $generalConfig->storeUserIps,
-            'except' => [
-                PhpMessageSource::class . ':*',
-            ],
-        ];
-
-        if (self::isStreamLog()) {
-            $targets[Dispatcher::TARGET_STDERR] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => StreamLogTarget::class,
-                'url' => 'php://stderr',
-                'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
-            ]));
-
-            // Don't pollute console request output
-            if (!$isConsoleRequest && YII_DEBUG) {
-                $targets[Dispatcher::TARGET_STDOUT] = Craft::createObject(array_merge($baseTargetConfig, [
-                    'class' => StreamLogTarget::class,
-                    'url' => 'php://stdout',
-                    'levels' => ~Logger::LEVEL_ERROR & ~Logger::LEVEL_WARNING,
-                ]));
-            }
-        } else {
-            $targets[Dispatcher::TARGET_FILE] = Craft::createObject(array_merge($baseTargetConfig, [
-                'class' => FileTarget::class,
-                'fileMode' => $generalConfig->defaultFileMode,
-                'dirMode' => $generalConfig->defaultDirMode,
-                'logFile' => $isConsoleRequest ? '@storage/logs/console.log' : '@storage/logs/web.log',
-                'levels' => YII_DEBUG ? 0 : Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
-            ]));
-        }
-
-        return $targets;
     }
 
     /**

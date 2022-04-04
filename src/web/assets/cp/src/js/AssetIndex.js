@@ -162,28 +162,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             activeDropTargetClass: 'sel',
             helperOpacity: 0.75,
 
-            filter: () => {
-                // Return each of the selected <a>'s parent <li>s, except for top level drag attempts.
-                var $selected = this.sourceSelect.getSelectedItems(),
-                    draggees = [];
-
-                for (var i = 0; i < $selected.length; i++) {
-                    var $source = $selected.eq(i);
-
-                    if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
-                        continue;
-                    }
-
-                    if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
-                        draggees.push($source.parent()[0]);
-                    }
-                }
-
-                return $(draggees);
-            },
-
             helper: $draggeeHelper => {
-                var $helperSidebar = $('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),
+                var $helperSidebar = $('<div class="sidebar drag-helper"/>'),
                     $helperNav = $('<nav/>').appendTo($helperSidebar),
                     $helperUl = $('<ul/>').appendTo($helperNav);
 
@@ -693,6 +673,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             fileuploadstart: this._onUploadStart.bind(this),
             fileuploadprogressall: this._onUploadProgress.bind(this),
             fileuploaddone: this._onUploadComplete.bind(this),
+            fileuploadfail: this._onUploadFailure.bind(this),
         };
 
         if (this.settings.criteria && typeof this.settings.criteria.kind !== 'undefined') {
@@ -766,10 +747,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     _updateUrl: function($source) {
-        if (typeof history === 'undefined') {
-            return;
-        }
-
         // Find all the subfolder sources. At the end, $thisSource will be the root volume source
         let nestedSources = [];
         let $thisSource = $source;
@@ -787,8 +764,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             });
         }
 
-        const url = Craft.getUrl(uri, document.location.search + document.location.hash);
-        history.replaceState({}, '', url);
+        Craft.setPath(uri);
     },
 
     _getVolumeOrFolderUidFromSourceKey: function(sourceKey) {
@@ -880,38 +856,37 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     /**
+     * On Upload Failure.
+     */
+    _onUploadFailure: function(event, data) {
+        const {result} = data;
+        const {message, filename} = result;
+        if (message) {
+            alert(Craft.t('app', 'Upload failed. The error message was: “{message}”', {message}));
+        } else {
+            alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
+        }
+    },
+        /**
      * On Upload Complete.
      */
     _onUploadComplete: function(event, data) {
-        var response = data.result;
-        var filename = data.files[0].name;
+        const {result} = data;
 
-        var doReload = true;
+        // Add the uploaded file to the selected ones, if appropriate
+        this._uploadedAssetIds.push(result.assetId);
 
-        if (response.success || response.conflict) {
-            // Add the uploaded file to the selected ones, if appropriate
-            this._uploadedAssetIds.push(response.assetId);
+        // If there is a prompt, add it to the queue
+        if (result.conflict) {
+            result.prompt = {
+                message: Craft.t('app', result.conflict, {file: result.filename}),
+                choices: this._fileConflictTemplate.choices
+            };
 
-            // If there is a prompt, add it to the queue
-            if (response.conflict) {
-                response.prompt = {
-                    message: Craft.t('app', response.conflict, {file: response.filename}),
-                    choices: this._fileConflictTemplate.choices
-                };
-
-                this.promptHandler.addPrompt(response);
-            }
-
-            Craft.cp.runQueue();
-        } else {
-            if (response.error) {
-                alert(Craft.t('app', 'Upload failed. The error message was: “{error}”', {error: response.error}));
-            } else {
-                alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
-            }
-
-            doReload = false;
+            this.promptHandler.addPrompt(result);
         }
+
+        Craft.cp.runQueue();
 
         // For the last file, display prompts, if any. If not - just update the element view.
         if (this.uploader.isLastUpload()) {
@@ -921,9 +896,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             if (this.promptHandler.getPromptCount()) {
                 this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
             } else {
-                if (doReload) {
-                    this._updateAfterUpload();
-                }
+                this._updateAfterUpload();
             }
         }
     },
@@ -1300,6 +1273,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             Craft.sendActionRequest('POST', 'assets/create-folder', {data})
                 .then((response) => {
+                    const data = response.data;
                     this.setIndexAvailable();
                     this._prepareParentForChildren($parentFolder);
                     var $subfolder = $(
@@ -1478,36 +1452,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     _performBatchRequests: function(parameterArray, finalCallback) {
-        var responseArray = [];
+        const responseArray = [];
+        let activeRequests = parameterArray.length;
 
-        var onResponse = () => {
-            this.progressBar.incrementProcessedItemCount(1);
-            this.progressBar.updateProgressBar();
-        };
-        var doRequest = parameters => {
-            Craft.sendActionRequest('POST', parameters.action, {data: parameters.params})
-                .then((response) => {
-                    onResponse();
-                    responseArray.push(response.data);
+        while (parameterArray.length) {
+            const parameters = parameterArray.shift();
+            Craft.sendActionRequest('POST', parameters.action, {
+                data: parameters.params
+            }).then((response) => {
+                responseArray.push(response.data);
+            }).finally(() => {
+                this.progressBar.incrementProcessedItemCount(1);
+                this.progressBar.updateProgressBar();
 
+                // Was that the last one?
+                if (--activeRequests === 0) {
                     // If assets were just merged we should get the reference tags updated right away
                     Craft.cp.runQueue();
-
-                })
-                .catch(({response}) => {
-                    return onResponse();
-                })
-                .finally(() => {
-                    if (responseArray.length >= parameterArray.length) {
-                        finalCallback(responseArray);
-                    }
-                });
-        };
-
-        for (var i = 0; i < parameterArray.length; i++) {
-            doRequest(parameterArray[i]);
+                    finalCallback(responseArray);
+                }
+            });
         }
-    }
+    },
 });
 
 // Register it!

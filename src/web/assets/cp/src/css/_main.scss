@@ -169,7 +169,7 @@ table.editable textarea {
 .go:after,
 .required:after,
 .preview-btn:before,
-.share-btn:before,
+.view-btn:before,
 [data-icon]:before,
 [data-icon-after]:after {
   @include icon;
@@ -250,7 +250,7 @@ body.rtl [data-icon-after="structure"]:after {
 }
 
 .preview-btn,
-.share-btn {
+.view-btn {
   &:before {
     @include margin-right(var(--xs));
   }
@@ -261,7 +261,7 @@ body.rtl [data-icon-after="structure"]:after {
   content: "view";
 }
 
-.share-btn:before {
+.view-btn:before {
   body.ltr & {
     content: "share";
   }
@@ -1071,11 +1071,12 @@ td.right {
     padding: 10px 0;
     border: none;
     width: 200px;
-    height: calc(100% - 62px);
+    height: calc(100% - 50px);
     box-sizing: border-box;
     background-color: $grey050;
     overflow: auto;
     box-shadow: inset -1px 0 0 $hairlineColor;
+    @include border-top-left-radius($largeBorderRadius);
 
     & > .btn {
       @include margin(10px, 0, 0, 14px);
@@ -1086,7 +1087,7 @@ td.right {
 
   & > .source-settings {
     position: relative;
-    height: calc(100% - 62px);
+    height: calc(100% - 50px);
     box-sizing: border-box;
     padding: 24px;
     overflow: auto;
@@ -1495,7 +1496,7 @@ ul.icons {
       z-index: 1;
     }
 
-    &:not(.dashed):not(:last-child) {
+    &:not(.dashed):not(:last-child):not(.btngroup-btn-last) {
       @include margin-right(1px);
     }
 
@@ -1505,7 +1506,7 @@ ul.icons {
         border-bottom-left-radius: 0;
       }
 
-      &:not(:last-child) {
+      &:not(:last-child):not(.btngroup-btn-last) {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
       }
@@ -1517,7 +1518,7 @@ ul.icons {
         border-bottom-right-radius: 0;
       }
 
-      &:not(:last-child) {
+      &:not(:last-child):not(.btngroup-btn-last) {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
       }
@@ -1561,10 +1562,9 @@ ul.icons {
   align-items: center;
   border: 1px solid $hairlineColor;
   border-radius: $smallBorderRadius;
-  transition: border-color linear 100ms;
   padding: 0 9px;
   cursor: pointer;
-  transition: margin-left linear 100ms, margin-right linear 100ms;
+  color: $mediumTextColor;
 
   input {
     border: 0;
@@ -1574,31 +1574,26 @@ ul.icons {
     background-color: transparent;
     border: none;
     cursor: pointer;
-    color: $textColor;
+    color: $mediumTextColor;
     text-align: center;
   }
 
-  &.light input {
-    color: $mediumTextColor;
-  }
-
   span {
-    opacity: 0;
     padding: 0;
     width: 13px;
     background: none;
-    @include margin-left(-13px);
-    transition: opacity linear 100ms, margin-left linear 100ms,
-      margin-right linear 100ms;
+    margin-top: -3px;
+    @include margin-left(5px);
+    color: $lightTextColor;
   }
 
   &:hover,
   &:focus {
     border-color: $mediumHairlineColor;
+    color: $textColor;
 
-    span {
-      opacity: 1;
-      @include margin-left(3px);
+    input {
+      color: $textColor;
     }
   }
 
@@ -1609,21 +1604,6 @@ ul.icons {
       font-size: 11px !important;
       height: 20px;
     }
-  }
-}
-
-// Prevent the button from jumping if the added width would otherwise bump it down to the next line
-.copytextbtn-expand-r {
-  &:hover,
-  &:focus {
-    @include margin-right(-16px);
-  }
-}
-
-.copytextbtn-expand-l {
-  &:hover,
-  &:focus {
-    @include margin-left(-16px);
   }
 }
 
@@ -1778,7 +1758,7 @@ ul.icons {
 
 .btn.big[data-icon]:before,
 .preview-btn:before,
-.share-btn:before {
+.view-btn:before {
   @include margin-left(-2px);
 }
 
@@ -1867,7 +1847,7 @@ div.btn.submit input {
   border: 1px dashed $mediumHairlineColor;
   background-color: transparent;
 
-  .btngroup &:not(:last-child) {
+  .btngroup &:not(:last-child):not(.btngroup-btn-last) {
     @include border-right(1px solid transparent);
     @include margin-right(-1px);
   }
@@ -2944,15 +2924,14 @@ $checkboxPadding: $checkboxSize + 4;
 /* element select fields */
 .elementselect {
   position: relative;
-  min-height: 37px;
+  min-height: 34px;
   margin-top: -7px;
 
-  &:after {
+  .elements:after {
     @include clearafter;
   }
 
-  .element,
-  .btn {
+  .element {
     @include floatleft;
     @include margin(7px, 7px, 0, 0);
   }
@@ -2984,7 +2963,8 @@ $checkboxPadding: $checkboxSize + 4;
     @include floatleft;
   }
 
-  .flex .btn {
+  .flex {
+    margin-top: 7px;
     float: none !important;
   }
 }
@@ -3173,6 +3153,7 @@ table.editable {
         position: absolute;
         top: 10px;
         @include left(10px);
+        z-index: 1;
       }
 
       .color-hex-indicator {
@@ -3735,6 +3716,7 @@ ul.tree,
 
   & > .field > .heading > label,
   & > fieldset > legend {
+    margin-top: 0;
     font-weight: normal;
     color: $grey600;
   }
@@ -4574,7 +4556,7 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal {
-  padding-bottom: 62px;
+  padding-bottom: 50px;
   user-select: none;
 
   .body {
@@ -4652,7 +4634,7 @@ ul.tree,
     left: 0;
     width: 100%;
     margin: 0;
-    height: 62px;
+    height: 50px;
     box-sizing: border-box;
 
     .spinner {
@@ -4893,6 +4875,7 @@ ul.tree,
         @include menu-option-styles;
         font-size: 14px;
         cursor: default;
+        -webkit-appearance: none;
 
         &:not(.flex) {
           display: block !important;
@@ -5065,6 +5048,9 @@ ul.tree,
 
 table.shadow-box,
 table.editable {
+  border-collapse: separate;
+  border-spacing: 0;
+
   thead:first-child,
   tbody:first-child {
     tr:first-child {

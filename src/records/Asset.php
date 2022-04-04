@@ -9,7 +9,6 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use DateTime;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -26,8 +25,8 @@ use yii\db\ActiveQueryInterface;
  * @property int $width Width
  * @property int $height Height
  * @property int $size Size
- * @property string $focalPoint Focal point coordinates
- * @property DateTime $dateModified Date modified
+ * @property string|null $focalPoint Focal point coordinates
+ * @property string $dateModified Date modified
  * @property Element $element Element
  * @property Volume $volume Volume
  * @property VolumeFolder $folder Folder

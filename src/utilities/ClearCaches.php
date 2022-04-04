@@ -135,13 +135,12 @@ class ClearCaches extends Utility
                 'action' => function() use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
-                        $pathService->getAssetThumbsPath(false),
                         $pathService->getAssetsIconsPath(false),
                     ];
                     foreach ($dirs as $dir) {
                         try {
                             FileHelper::clearDirectory($dir);
-                        } catch (InvalidArgumentException $e) {
+                        } catch (InvalidArgumentException) {
                             // the directory doesn't exist
                         }
                     }

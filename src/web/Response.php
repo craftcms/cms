@@ -16,6 +16,7 @@ use yii\web\HttpException;
 
 /**
  * @inheritdoc
+ * @mixin CpScreenResponseBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -240,7 +241,7 @@ class Response extends \yii\web\Response
         $length = isset($this->content) ? strlen($this->content) : 0;
         $this->getHeaders()
             ->set('Connection', 'close')
-            ->set('Content-Length', $length);
+            ->set('Content-Length', (string)$length);
 
         $this->send();
 

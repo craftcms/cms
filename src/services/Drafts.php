@@ -63,7 +63,7 @@ class Drafts extends Component
      * @var Connection|array|string The database connection to use
      * @since 3.5.4
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @inheritdoc
@@ -104,13 +104,14 @@ class Drafts extends Component
     /**
      * Creates a new draft for the given element.
      *
-     * @param ElementInterface $canonical The element to create a draft for
+     * @template T of ElementInterface
+     * @param T $canonical The element to create a draft for
      * @param int $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
      * @param array $newAttributes any attributes to apply to the draft
      * @param bool $provisional Whether to create a provisional draft
-     * @return ElementInterface The new draft
+     * @return T The new draft
      * @throws Throwable
      */
     public function createDraft(
@@ -119,7 +120,7 @@ class Drafts extends Component
         ?string $name = null,
         ?string $notes = null,
         array $newAttributes = [],
-        bool $provisional = false
+        bool $provisional = false,
     ): ElementInterface {
         // Make sure the canonical element isn't a draft or revision
         if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
@@ -248,8 +249,9 @@ class Drafts extends Component
      *
      * If an unpublished draft is passed, its draft data will simply be removed from it.
      *
-     * @param ElementInterface $draft The draft
-     * @return ElementInterface The canonical element with the draft applied to it
+     * @template T of ElementInterface
+     * @param T $draft The draft
+     * @return T The canonical element with the draft applied to it
      * @throws Throwable
      * @since 3.6.0
      */
@@ -297,7 +299,7 @@ class Drafts extends Component
                     $elementsService->mergeCanonicalChanges($draft);
                 }
 
-                // "Duplicate" the draft with the canonical element's ID, UID, and content ID
+                // "Duplicate" the draft with the canonical element’s ID, UID, and content ID
                 $newCanonical = $elementsService->updateCanonicalElement($draft, [
                     'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
                 ]);
@@ -458,7 +460,7 @@ class Drafts extends Component
         ?int $creatorId = null,
         ?int $canonicalId = null,
         bool $trackChanges = false,
-        bool $provisional = false
+        bool $provisional = false,
     ): int {
         Db::insert(Table::DRAFTS, [
             'canonicalId' => $canonicalId,
@@ -467,7 +469,7 @@ class Drafts extends Component
             'name' => $name,
             'notes' => $notes,
             'trackChanges' => $trackChanges,
-        ], false, $this->db);
-        return $this->db->getLastInsertID(Table::DRAFTS);
+        ], $this->db);
+        return (int)$this->db->getLastInsertID(Table::DRAFTS);
     }
 }

@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\BlockElementInterface;
+use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -62,7 +63,7 @@ class Gc extends Component
      * @var Connection|array|string The database connection to use
      * @since 4.0.0
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var GeneralConfig
@@ -212,7 +213,7 @@ class Gc extends Component
                 [
                     'e.type' => $blockElementTypes,
                     'r.id' => null,
-                ]
+                ],
             ], $params);
 
             if ($this->db->getIsMysql()) {
@@ -240,7 +241,7 @@ SQL;
      *
      * @param string|string[] $tables The table(s) to delete rows from. They must have a `dateDeleted` column.
      */
-    public function hardDelete($tables): void
+    public function hardDelete(array|string $tables): void
     {
         if (!$this->_shouldHardDelete()) {
             return;
@@ -261,6 +262,7 @@ SQL;
      * Deletes elements that are missing data in the given element extension table.
      *
      * @param string $elementType The element type
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
      * @since 3.6.6
@@ -359,6 +361,7 @@ SQL;
     }
 
     /**
+     * @param string|null $tableAlias
      * @return array
      */
     private function _hardDeleteCondition(?string $tableAlias = null): array

@@ -30,10 +30,10 @@ class MoneyHelper
     private static ISOCurrencies $_isoCurrencies;
 
     /**
-     * @param Money|array $value
-     * @return false|Money
+     * @param mixed $value
+     * @return Money|false
      */
-    public static function toMoney($value)
+    public static function toMoney(mixed $value): Money|false
     {
         if ($value instanceof Money) {
             return $value;
@@ -56,10 +56,10 @@ class MoneyHelper
     /**
      * Convert money object to standard decimal string.
      *
-     * @param string|Money $value
-     * @return false|string
+     * @param mixed $value
+     * @return string|false
      */
-    public static function toDecimal($value)
+    public static function toDecimal(mixed $value): string|false
     {
         if (!$value instanceof Money) {
             return false;
@@ -71,11 +71,11 @@ class MoneyHelper
     /**
      * Convert money object to localized currency string.
      *
-     * @param $value
+     * @param mixed $value
      * @param string|null $formatLocale
-     * @return false|string
+     * @return string|false
      */
-    public static function toString($value, ?string $formatLocale = null)
+    public static function toString(mixed $value, ?string $formatLocale = null): string|false
     {
         if (is_string($value)) {
             return $value;
@@ -94,11 +94,11 @@ class MoneyHelper
     /**
      * Convert money object to localized decimal string.
      *
-     * @param $value
+     * @param mixed $value
      * @param string|null $formatLocale
-     * @return false|string
+     * @return string|false
      */
-    public static function toNumber($value, ?string $formatLocale = null)
+    public static function toNumber(mixed $value, ?string $formatLocale = null): string|false
     {
         if (is_string($value)) {
             return $value;

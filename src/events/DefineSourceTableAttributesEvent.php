@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\base\ElementInterface;
 use yii\base\Event;
 
 /**
@@ -19,6 +20,7 @@ class DefineSourceTableAttributesEvent extends Event
 {
     /**
      * @var string The element type class
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 

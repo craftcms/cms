@@ -32,7 +32,7 @@ class ArrayValidator extends Validator
      * @see tooMany for the customized message for a too long array.
      * @see notEqual for the customized message for an array that does not match desired count.
      */
-    public $count;
+    public int|array|null $count = null;
 
     /**
      * @var int|null maximum count. If not set, it means no maximum count limit.

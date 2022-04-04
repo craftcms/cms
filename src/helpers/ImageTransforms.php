@@ -71,7 +71,7 @@ class ImageTransforms
      * Detect the auto web-safe format for the Asset. Returns null, if the Asset is not an image.
      *
      * @param Asset $asset
-     * @return mixed
+     * @return string
      * @throws AssetOperationException If attempting to detect an image format for a non-image.
      */
     public static function detectTransformFormat(Asset $asset): string
@@ -123,7 +123,8 @@ class ImageTransforms
 
             foreach ($parameters as $parameter => $value) {
                 if (in_array($parameter, $whiteList, true)) {
-                    $transform->{$parameter} = $value;
+                    /** @phpstan-ignore-next-line */
+                    $transform->$parameter = $value;
                 }
             }
 
@@ -202,7 +203,7 @@ class ImageTransforms
                     }
                 }
             }
-        } catch (AssetException $exception) {
+        } catch (AssetException) {
             // Make sure we throw a new exception
             $imageSourcePath = false;
         }
@@ -237,11 +238,11 @@ class ImageTransforms
     /**
      * Normalize a transform from handle or a set of properties to an ImageTransform.
      *
-     * @param ImageTransform|string|array|null $transform
+     * @param mixed $transform
      * @return ImageTransform|null
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
-    public static function normalizeTransform($transform): ?ImageTransform
+    public static function normalizeTransform(mixed $transform): ?ImageTransform
     {
         if (!$transform) {
             return null;

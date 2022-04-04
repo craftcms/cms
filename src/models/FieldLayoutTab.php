@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\db\Query;
@@ -154,10 +153,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 
             $this->setElements($layoutElements);
         }
-
-        if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
-        }
     }
 
     /**
@@ -207,6 +202,10 @@ class FieldLayoutTab extends FieldLayoutComponent
             return null;
         }
 
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+
         $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
         return $config;
@@ -222,6 +221,9 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         $elementConfigs = [];
         foreach ($this->getElements() as $layoutElement) {
+            if (!isset($layoutElement->uid)) {
+                $layoutElement->uid = StringHelper::UUID();
+            }
             $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
         }
         return $elementConfigs;
@@ -274,7 +276,8 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Sets the tab’s layout elements.
      *
-     * @param FieldLayoutElement[] $elements
+     * @param array $elements
+     * @phpstan-param array<FieldLayoutElement|array{type:class-string<FieldLayoutElement>}> $elements
      * @since 4.0.0
      */
     public function setElements(array $elements): void
@@ -296,24 +299,6 @@ class FieldLayoutTab extends FieldLayoutComponent
             $layoutElement->setLayout($this->getLayout());
             $this->_elements[] = $layoutElement;
         }
-    }
-
-    /**
-     * Returns the custom fields included in this tab.
-     *
-     * @return FieldInterface[]
-     */
-    public function getFields(): array
-    {
-        $fields = [];
-
-        foreach ($this->getElements() as $layoutElement) {
-            if ($layoutElement instanceof CustomField) {
-                $fields[] = $layoutElement;
-            }
-        }
-
-        return $fields;
     }
 
     /**

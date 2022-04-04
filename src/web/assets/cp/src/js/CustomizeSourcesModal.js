@@ -59,7 +59,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             spinner: true,
         }).appendTo(this.$footerBtnContainer);
 
-        this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
+        this.$loadingSpinner = $('<div class="spinner"/>').appendTo(this.$sourceSettingsContainer);
 
         this.setContainer($container);
         this.show();
@@ -197,7 +197,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             source.updateItemLabel(sourceData.label);
 
             // Select this by default?
-            if ((this.elementIndex.sourceKey + '/').substr(0, sourceData.key.length + 1) === sourceData.key + '/') {
+            if ((this.elementIndex.sourceKey + '/').substring(0, sourceData.key.length + 1) === sourceData.key + '/') {
                 source.select();
             }
         }

@@ -91,7 +91,7 @@ class PluginsController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionEditPluginSettings(string $handle, ?PluginInterface $plugin = null)
+    public function actionEditPluginSettings(string $handle, ?PluginInterface $plugin = null): mixed
     {
         if (
             $plugin === null &&

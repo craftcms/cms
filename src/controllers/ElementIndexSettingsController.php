@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
@@ -47,6 +48,7 @@ class ElementIndexSettingsController extends BaseElementsController
     public function actionGetCustomizeSourcesModalData(): Response
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $conditionsService = Craft::$app->getConditions();
         $view = Craft::$app->getView();
@@ -73,6 +75,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
+                    /** @var ElementConditionInterface $condition */
                     $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";
@@ -158,7 +161,7 @@ class ElementIndexSettingsController extends BaseElementsController
                     'type' => ElementSources::TYPE_HEADING,
                     'heading' => $source['heading'],
                 ];
-            } else if (isset($source['key'])) {
+            } elseif (isset($source['key'])) {
                 $isCustom = str_starts_with($source['key'], 'custom:');
                 $sourceConfig = [
                     'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
@@ -180,9 +183,9 @@ class ElementIndexSettingsController extends BaseElementsController
                             $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
                         }
                     }
-                } else if (isset($oldSourceConfigs[$source['key']])) {
+                } elseif (isset($oldSourceConfigs[$source['key']])) {
                     $sourceConfig += $oldSourceConfigs[$source['key']];
-                } else if ($isCustom) {
+                } elseif ($isCustom) {
                     // Ignore it
                     continue;
                 }

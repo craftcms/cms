@@ -22,7 +22,7 @@ class TableRow extends ObjectType
     /**
      * @inheritdoc
      */
-    protected function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $fieldName = $resolveInfo->fieldName;
 
@@ -41,20 +41,12 @@ class TableRow extends ObjectType
         $contentFields = [];
 
         foreach ($columns as $columnKey => $columnDefinition) {
-            switch ($columnDefinition['type']) {
-                case 'date':
-                case 'time':
-                    $cellType = DateTime::getType();
-                    break;
-                case 'number':
-                    $cellType = Number::getType();
-                    break;
-                case 'lightswitch':
-                    $cellType = Type::boolean();
-                    break;
-                default:
-                    $cellType = Type::string();
-            }
+            $cellType = match ($columnDefinition['type']) {
+                'date', 'time' => DateTime::getType(),
+                'number' => Number::getType(),
+                'lightswitch' => Type::boolean(),
+                default => Type::string(),
+            };
 
             $contentFields[$columnKey] = $cellType;
 

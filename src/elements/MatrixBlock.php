@@ -12,7 +12,6 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
@@ -111,7 +110,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): MatrixBlockQuery
     {
         return new MatrixBlockQuery(static::class);
     }
@@ -119,7 +118,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
         $handleParts = explode(':', $handle);
@@ -157,7 +156,7 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var MatrixBlockTypeModel $context */
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
@@ -261,7 +260,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     {
         try {
             $owner = $this->getOwner();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             $owner = $this->duplicateOf;
         }
 
@@ -361,7 +360,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     }
 
     /**
-     * Returns the field context this element's content uses.
+     * Returns the field context this element’s content uses.
      *
      * @return string
      */
@@ -394,7 +393,7 @@ class MatrixBlock extends Element implements BlockElementInterface
         $blockTypeHandle = $this->getType()->handle . ':' . $handle;
 
         if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
-            return $this->_eagerLoadedBlockTypeElements[$blockTypeHandle];
+            return new Collection($this->_eagerLoadedBlockTypeElements[$blockTypeHandle]);
         }
 
         return parent::getEagerLoadedElements($handle);
@@ -473,14 +472,14 @@ class MatrixBlock extends Element implements BlockElementInterface
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
                         'sortOrder' => $this->sortOrder ?? 0,
-                    ], false);
+                    ]);
                 } else {
                     Db::update(Table::MATRIXBLOCKS_OWNERS, [
                         'sortOrder' => $this->sortOrder ?? 0,
                     ], [
                         'blockId' => $this->id,
                         'ownerId' => $this->ownerId,
-                    ], [], false);
+                    ]);
                 }
             }
         }
@@ -530,6 +529,7 @@ class MatrixBlock extends Element implements BlockElementInterface
     private function _field(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @phpstan-ignore-next-line */
         return Craft::$app->getFields()->getFieldById($this->fieldId);
     }
 }

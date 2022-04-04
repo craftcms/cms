@@ -92,13 +92,13 @@ class CountryCodeField extends BaseNativeField
                 'class' => ['flex', 'flex-nowrap'],
             ]) .
             Cp::selectizeHtml([
-                'id' => 'country-code',
+                'id' => 'countryCode',
                 'name' => 'countryCode',
                 'options' => Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language),
                 'value' => $element->countryCode,
             ]) .
             Html::tag('div', '', [
-                'id' => 'country-code-spinner',
+                'id' => 'countryCode-spinner',
                 'class' => ['spinner', 'hidden'],
             ]) .
             Html::endTag('div');

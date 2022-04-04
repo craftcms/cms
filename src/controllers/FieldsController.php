@@ -354,6 +354,7 @@ JS;
 
         $fieldId = $this->request->getBodyParam('fieldId') ?? $this->request->getRequiredBodyParam('id');
         $fieldsService = Craft::$app->getFields();
+        /** @var FieldInterface|Field|null $field */
         $field = $fieldsService->getFieldById($fieldId);
 
         if (!$field) {

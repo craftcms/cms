@@ -32,6 +32,7 @@ use yii\base\ExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -132,8 +133,9 @@ class Application extends \yii\web\Application
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
+                /** @phpstan-ignore-next-line */
                 new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-            } catch (IntlException $e) {
+            } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
@@ -243,7 +245,7 @@ class Application extends \yii\web\Application
                 // Delete all compiled templates
                 try {
                     FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (ErrorException $e) {
                     Craft::error('Could not delete compiled templates: ' . $e->getMessage());
@@ -294,7 +296,7 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?BaseResponse
     {
         $result = parent::runAction($route, $params);
 
@@ -422,7 +424,7 @@ class Application extends \yii\web\Application
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
         if (!(
             ($user && $user->admin && $user->getPreference($pref)) ||
-            (YII_DEBUG && $request->getHeaders()->get('X-Debug') === 'enable')
+            (App::devMode() && $request->getHeaders()->get('X-Debug') === 'enable')
         )) {
             return;
         }
@@ -501,8 +503,8 @@ class Application extends \yii\web\Application
                         ->from(Table::RESOURCEPATHS)
                         ->where(['hash' => $hash])
                         ->scalar();
-                } catch (DbException $e) {
-                    // Craft is either not installed or not updated to 3.0.3+ yet
+                } catch (DbException) {
+                    // Craft isn't installed yet
                 }
 
                 return false;
@@ -580,7 +582,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (YII_DEBUG) {
+            if (App::devMode()) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
@@ -677,7 +679,7 @@ class Application extends \yii\web\Application
             // Clear the template caches in case they've been compiled since this release was cut.
             try {
                 FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // the directory doesn't exist
             }
 

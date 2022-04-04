@@ -16,6 +16,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Throwable;
@@ -62,7 +63,7 @@ class EntriesController extends BaseEntriesController
         $sitesService = Craft::$app->getSites();
 
         if (!in_array($site->id, $editableSiteIds)) {
-            // If there's more than one possibility and entries doen’t propagate to all sites, let the user choose
+            // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
                 return $this->renderTemplate('_special/sitepicker', [
                     'siteIds' => $editableSiteIds,
@@ -162,7 +163,7 @@ class EntriesController extends BaseEntriesController
                     'structureId' => $section->structureId,
                 ]);
                 Craft::$app->getStructures()->moveBefore($section->structureId, $entry, $nextEntry);
-            } else if ($prevId = $this->request->getParam('after')) {
+            } elseif ($prevId = $this->request->getParam('after')) {
                 $prevEntry = Craft::$app->getEntries()->getEntryById($prevId, $site->id, [
                     'structureId' => $section->structureId,
                 ]);
@@ -171,7 +172,9 @@ class EntriesController extends BaseEntriesController
         }
 
         // Redirect to its edit page
-        return $this->redirect($entry->getCpEditUrl());
+        return $this->redirect(UrlHelper::urlWithParams($entry->getCpEditUrl(), [
+            'fresh' => 1,
+        ]));
     }
 
     /**
@@ -194,7 +197,7 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
         $section = $entry->getSection();
 
-        // Is this another user's entry (and it's not a Single)?
+        // Is this another user’s entry (and it’s not a Single)?
         if (
             $entry->id &&
             !$duplicate &&
@@ -236,6 +239,7 @@ class EntriesController extends BaseEntriesController
                     'entry'
                 );
             } catch (Throwable $e) {
+                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -253,7 +257,7 @@ class EntriesController extends BaseEntriesController
         if ($entry->enabled) {
             if ($entry->id) {
                 $this->requirePermission("saveEntries:$section->uid");
-            } else if (!$currentUser->can("saveEntries:$section->uid")) {
+            } elseif (!$currentUser->can("saveEntries:$section->uid")) {
                 $entry->enabled = false;
             }
         }
@@ -292,6 +296,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // See if the user happens to have a provisional entry. If so delete it.
+        /** @var Entry|null $provisional */
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
@@ -346,6 +351,7 @@ class EntriesController extends BaseEntriesController
             // Is this a provisional draft?
             $provisional = $this->request->getBodyParam('provisional');
             if ($provisional) {
+                /** @var Entry|null $entry */
                 $entry = Entry::find()
                     ->provisionalDrafts()
                     ->draftOf($entryId)

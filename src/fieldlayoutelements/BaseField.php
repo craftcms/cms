@@ -72,7 +72,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param ElementInterface|null $element
      * @return mixed
      */
-    protected function value(?ElementInterface $element = null)
+    protected function value(?ElementInterface $element = null): mixed
     {
         return $element->{$this->attribute()} ?? null;
     }
@@ -512,7 +512,7 @@ abstract class BaseField extends FieldLayoutElement
         if (!Craft::$app->getIsMultiSite()) {
             // Only one site so use its language
             $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
-        } else if (!$element || !$this->translatable($element, $static)) {
+        } elseif (!$element || !$this->translatable($element, $static)) {
             // Not translatable, so use the user’s language
             $locale = Craft::$app->getLocale();
         } else {

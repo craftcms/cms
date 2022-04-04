@@ -19,7 +19,6 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -66,7 +65,8 @@ class DashboardController extends Controller
         $widgetTypeInfo = [];
 
         foreach ($widgetTypes as $widgetType) {
-            /** @var WidgetInterface $widgetType */
+            /** @var string|WidgetInterface $widgetType */
+            /** @phpstan-var class-string<WidgetInterface>|WidgetInterface $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }
@@ -346,7 +346,7 @@ class DashboardController extends Controller
                 if (($composerLockPath = $composerService->getLockPath()) !== null) {
                     $zip->addFile($composerLockPath, 'composer.lock');
                 }
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine
             }
 
@@ -421,7 +421,9 @@ class DashboardController extends Controller
             Craft::$app->getApi()->request('POST', 'support', [
                 RequestOptions::MULTIPART => $parts,
             ]);
-        } catch (RequestException $requestException) {
+        } catch (Throwable $requestException) {
+            Craft::error("Unable to send support request: {$requestException->getMessage()}", __METHOD__);
+            Craft::$app->getErrorHandler()->logException($requestException);
         }
 
         // Delete the zip file
@@ -434,7 +436,9 @@ class DashboardController extends Controller
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
-                    'Support' => [$requestException->getMessage()],
+                    'Support' => [
+                        Craft::t('app', 'A server error occurred.'),
+                    ],
                 ],
             ]);
         }
@@ -452,7 +456,7 @@ class DashboardController extends Controller
      * @param WidgetInterface $widget
      * @return array|false
      */
-    private function _getWidgetInfo(WidgetInterface $widget)
+    private function _getWidgetInfo(WidgetInterface $widget): array|false
     {
         $view = $this->getView();
 
@@ -511,26 +515,20 @@ class DashboardController extends Controller
     {
         $dashboardService = Craft::$app->getDashboard();
 
-        if ($dashboardService->saveWidget($widget)) {
-            $info = $this->_getWidgetInfo($widget);
-            $view = $this->getView();
-
-            return $this->asSuccess(data: [
-                'info' => $info,
-                'headHtml' => $view->getHeadHtml(),
-                'bodyHtml' => $view->getBodyHtml(),
+        if (!$dashboardService->saveWidget($widget)) {
+            return $this->asFailure(data: [
+                'errors' => $widget->getFirstErrors(),
             ]);
         }
 
-        $allErrors = [];
+        $info = $this->_getWidgetInfo($widget);
+        $view = $this->getView();
 
-        foreach ($widget->getErrors() as $attribute => $errors) {
-            foreach ($errors as $error) {
-                $allErrors[] = $error;
-            }
-        }
-
-        return $this->asFailure(errors: $allErrors);
+        return $this->asSuccess(data: [
+            'info' => $info,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     /**

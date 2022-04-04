@@ -79,6 +79,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns the element class associated with this field type.
      *
      * @return string The Element class name
+     * @phpstan-return class-string<ElementInterface>
      */
     abstract public static function elementType(): string;
 
@@ -115,7 +116,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
      */
-    public $sources = '*';
+    public string|array|null $sources = '*';
 
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
@@ -129,7 +130,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
-     *
      * @since 3.5.0
      */
     public bool $showSiteMenu = false;
@@ -209,10 +209,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @var ElementConditionInterface|array|null
+     * @phpstan-var ElementConditionInterface|array{class:class-string<ElementConditionInterface>}|null
      * @see getSelectionCondition()
      * @see setSelectionCondition()
      */
-    private $_selectionCondition = null;
+    private array|null|ElementConditionInterface $_selectionCondition = null;
 
     /**
      * @inheritdoc
@@ -225,19 +226,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         // Config normalization
-        $nullables = [
-            'maxRelations',
-            'minRelations',
-            'selectionLabel',
-            'selectionLabel',
-            'source',
-            'targetSiteId',
-            'viewMode',
-        ];
-        foreach ($nullables as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
+        if (($config['source'] ?? null) === '') {
+            unset($config['source']);
         }
 
         if (array_key_exists('sources', $config) && empty($config['sources'])) {
@@ -437,7 +427,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var ElementQueryInterface|ElementInterface[] $value */
         if ($value instanceof ElementQueryInterface) {
@@ -450,13 +440,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof ElementQueryInterface) {
             return $value;
         }
 
-        /** @var ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
@@ -467,7 +458,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
-        } else if ($value !== '' && $element && $element->id) {
+        } elseif ($value !== '' && $element && $element->id) {
             $query->innerJoin(
                 ['relations' => DbTable::RELATIONS],
                 [
@@ -511,7 +502,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ?ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         /** @var ElementQueryInterface $value */
         return $this->_all($value, $element)->ids();
@@ -520,7 +511,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return RelationalFieldConditionRule::class;
     }
@@ -528,7 +519,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         if (empty($value)) {
             return;
@@ -629,10 +620,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle);
+            $value = $element->getEagerLoadedElements($this->handle)->all();
         } else {
             /** @var ElementQueryInterface $value */
             $value = $this->_all($value, $element);
@@ -647,7 +638,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var ElementQuery $value */
         $titles = [];
@@ -662,7 +653,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         $value = $this->_all($value, $element)->all();
 
@@ -692,7 +683,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->all();
@@ -716,7 +707,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap(array $sourceElements)
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
         $sourceSiteId = $sourceElements[0]->siteId;
 
@@ -764,7 +755,7 @@ JS;
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -839,7 +830,7 @@ JS;
                             'dateUpdated' => $timestamp,
                             'propagated' => $element->propagating,
                             'userId' => $userId,
-                        ], true, [], false);
+                        ]);
                     }
                 }
             }
@@ -877,7 +868,6 @@ JS;
             return null;
         }
 
-        $view = Craft::$app->getView();
         $type = $class::lowerDisplayName();
         $pluralType = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
@@ -998,15 +988,15 @@ JS;
     /**
      * Returns an array of variables that should be passed to the input template.
      *
-     * @param ElementQueryInterface|array|null $value
+     * @param array|ElementQueryInterface|null $value
      * @param ElementInterface|null $element
      * @return array
      */
-    protected function inputTemplateVariables($value = null, ?ElementInterface $element = null): array
+    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value->all();
-        } else if (!is_array($value)) {
+        } elseif (!is_array($value)) {
             $value = [];
         }
 
@@ -1075,9 +1065,9 @@ JS;
      * Returns an array of the source keys the field should be able to select elements from.
      *
      * @param ElementInterface|null $element
-     * @return array|string
+     * @return array|string|null
      */
-    public function getInputSources(?ElementInterface $element = null)
+    public function getInputSources(?ElementInterface $element = null): array|string|null
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -1119,10 +1109,11 @@ JS;
     /**
      * Sets the element condition that should be used to determine which elements are selectable by the field.
      *
-     * @param ElementConditionInterface|string|array{class: string}|null $condition
+     * @param ElementConditionInterface|string|array|null $condition
+     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
      * @since 4.0.0
      */
-    public function setSelectionCondition($condition): void
+    public function setSelectionCondition(mixed $condition): void
     {
         if ($condition instanceof ConditionInterface && !$condition->getConditionRules()) {
             $condition = null;

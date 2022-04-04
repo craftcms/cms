@@ -1,7 +1,6 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "4.0.0-alpha",
   "keywords": [
     "cms",
     "craftcms",
@@ -48,7 +47,9 @@
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
+    "monolog/monolog": "^2.3",
     "pixelandtonic/imagine": "~1.2.4.1",
+    "samdark/yii2-psr-log-target": "^1.1",
     "seld/cli-prompt": "^1.0.4",
     "symfony/http-client": "^6.0.3",
     "symfony/var-dumper": "^5.0|^6.0",
@@ -70,6 +71,7 @@
     "codeception/module-phpbrowser": "^1.0.2",
     "codeception/module-rest": "^1.4.2",
     "codeception/module-yii2": "^1.1.5",
+    "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
     "phpstan/phpstan": "^1.4.6",
@@ -86,17 +88,24 @@
     "league/oauth2-client": "2.4.0"
   },
   "suggest": {
+    "ext-exif": "Adds support for parsing image EXIF data.",
     "ext-imagick": "Adds support for more image processing formats and options.",
     "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8."
   },
   "autoload": {
     "psr-4": {
       "craft\\": "src/",
-      "crafttests\\fixtures\\": "tests/fixtures/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "crafttests\\": "tests/"
+    }
+  },
   "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G"
   },

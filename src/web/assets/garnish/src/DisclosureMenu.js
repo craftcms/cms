@@ -39,6 +39,13 @@ export default Base.extend(
 
       if (!this.$container) return; /* Exit if no disclosure container is found */
 
+      var wrapper = this.$container.closest('[data-wrapper]');
+      if (!wrapper.length) {
+        // Exit if no positioning wrapper is found
+        return;
+      }
+      this.$wrapper = wrapper;
+
       // Is this already a disclosure button?
       if (this.$trigger.data('trigger')) {
         console.warn('Double-instantiating a disclosure menu on an element');
@@ -58,14 +65,9 @@ export default Base.extend(
       // Capture additional alignment element
       var alignmentSelector = this.$container.data('align-to');
       if (alignmentSelector) {
-        this.$alignmentElement = $(alignmentSelector);
+        this.$alignmentElement = this.$trigger.find(alignmentSelector).first();
       } else {
         this.$alignmentElement = this.$trigger;
-      }
-
-      var wrapper = this.$container.closest('[data-wrapper]');
-      if (wrapper) {
-        this.$wrapper = wrapper;
       }
 
       this.addDisclosureMenuEventListeners();
@@ -219,6 +221,7 @@ export default Base.extend(
       const noFlowParent = this.$alignmentElement.parents().toArray().find(p => {
           return ['hidden', 'scroll', 'auto'].includes($(p).css('overflow-x'));
       });
+
       const $viewport = noFlowParent ? $(noFlowParent) : Garnish.$win;
       this._viewportWidth = $viewport.width();
       this._viewportHeight = $viewport.height();
@@ -257,13 +260,13 @@ export default Base.extend(
         this.$container.css({
           top: 'calc(100% + ' + bottomAdjustment + 'px)',
           bottom: 'unset',
-          maxHeight: bottomClearance - this.settings.windowSpacing,
+          maxHeight: (bottomClearance - this.settings.windowSpacing) + 'px',
         });
       } else {
         this.$container.css({
           bottom: 'calc(100% - ' + topAdjustment + 'px)',
           top: 'unset',
-          maxHeight: topClearance - this.settings.windowSpacing,
+          maxHeight: (topClearance - this.settings.windowSpacing) + 'px',
         });
       }
 

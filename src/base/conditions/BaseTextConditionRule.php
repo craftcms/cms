@@ -101,16 +101,12 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
         $value = Db::escapeParam($this->value);
 
-        switch ($this->operator) {
-            case self::OPERATOR_BEGINS_WITH:
-                return "$value*";
-            case self::OPERATOR_ENDS_WITH:
-                return "*$value";
-            case self::OPERATOR_CONTAINS:
-                return "*$value*";
-            default:
-                return "$this->operator $value";
-        }
+        return match ($this->operator) {
+            self::OPERATOR_BEGINS_WITH => "$value*",
+            self::OPERATOR_ENDS_WITH => "*$value",
+            self::OPERATOR_CONTAINS => "*$value*",
+            default => "$this->operator $value",
+        };
     }
 
     /**
@@ -119,33 +115,23 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      * @param mixed $value
      * @return bool
      */
-    protected function matchValue($value): bool
+    protected function matchValue(mixed $value): bool
     {
         if ($this->value === '') {
             return true;
         }
 
-        switch ($this->operator) {
-            case self::OPERATOR_EQ:
-                return $value == $this->value;
-            case self::OPERATOR_NE:
-                return $value != $this->value;
-            case self::OPERATOR_LT:
-                return $value < $this->value;
-            case self::OPERATOR_LTE:
-                return $value <= $this->value;
-            case self::OPERATOR_GT:
-                return $value > $this->value;
-            case self::OPERATOR_GTE:
-                return $value >= $this->value;
-            case self::OPERATOR_BEGINS_WITH:
-                return StringHelper::startsWith($value, $this->value);
-            case self::OPERATOR_ENDS_WITH:
-                return StringHelper::endsWith($value, $this->value);
-            case self::OPERATOR_CONTAINS:
-                return StringHelper::contains($value, $this->value);
-            default:
-                throw new InvalidConfigException("Invalid operator: $this->operator");
-        }
+        return match ($this->operator) {
+            self::OPERATOR_EQ => $value == $this->value,
+            self::OPERATOR_NE => $value != $this->value,
+            self::OPERATOR_LT => $value < $this->value,
+            self::OPERATOR_LTE => $value <= $this->value,
+            self::OPERATOR_GT => $value > $this->value,
+            self::OPERATOR_GTE => $value >= $this->value,
+            self::OPERATOR_BEGINS_WITH => StringHelper::startsWith($value, $this->value),
+            self::OPERATOR_ENDS_WITH => StringHelper::endsWith($value, $this->value),
+            self::OPERATOR_CONTAINS => StringHelper::contains($value, $this->value),
+            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+        };
     }
 }

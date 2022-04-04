@@ -15,9 +15,7 @@ use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\TypeManager;
 use craft\gql\types\elements\Asset;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\Volume;
 
@@ -32,7 +30,7 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
         $gqlTypes = [];
@@ -55,9 +53,8 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
-        /** @var Volume $volume */
         $typeName = AssetElement::gqlTypeNameByContext($context);
         $contentFieldGqlTypes = self::getContentFields($context);
 
@@ -66,7 +63,7 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Asset([
             'name' => $typeName,
             'fields' => function() use ($assetFields, $typeName) {
-                return TypeManager::prepareFieldDefinitions($assetFields, $typeName);
+                return Craft::$app->getGql()->prepareFieldDefinitions($assetFields, $typeName);
             },
         ]));
     }

@@ -21,5 +21,5 @@ interface GeneratorInterface
      * @param mixed $context Context for generated types
      * @return ObjectType[]
      */
-    public static function generateTypes($context = null): array;
+    public static function generateTypes(mixed $context = null): array;
 }

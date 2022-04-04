@@ -22,6 +22,7 @@ use craft\events\ConfigEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use yii\base\Component;
 
 /**
@@ -31,26 +32,26 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  *
- * @property-read \CommerceGuys\Addressing\AddressFormat\AddressFormatRepository $addressFormatRepository
- * @property-read \CommerceGuys\Addressing\Country\CountryRepository $countryRepository
- * @property-read \CommerceGuys\Addressing\Subdivision\SubdivisionRepository $subdivisionRepository
+ * @property-read AddressFormatRepository $addressFormatRepository
+ * @property-read CountryRepository $countryRepository
+ * @property-read SubdivisionRepository $subdivisionRepository
  */
 class Addresses extends Component
 {
     /**
      * @var CountryRepository
      */
-    public CountryRepository $_countryRepository;
+    private CountryRepository $_countryRepository;
 
     /**
      * @var SubdivisionRepository
      */
-    public SubdivisionRepository $_subdivisionRepository;
+    private SubdivisionRepository $_subdivisionRepository;
 
     /**
      * @var AddressFormatRepository
      */
-    public AddressFormatRepository $_addressFormatRepository;
+    private AddressFormatRepository $_addressFormatRepository;
 
     /**
      * @inheritdoc
@@ -112,10 +113,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getLocalityTypeLabel($type): string
+    public function getLocalityTypeLabel(string $type): string
     {
         return match ($type) {
             LocalityType::SUBURB => Craft::t('app', 'Suburb'),
@@ -126,10 +127,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getDependentLocalityTypeLabel($type): string
+    public function getDependentLocalityTypeLabel(string $type): string
     {
         return match ($type) {
             DependentLocalityType::DISTRICT => Craft::t('app', 'District'),
@@ -141,10 +142,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getPostalCodeTypeLabel($type): string
+    public function getPostalCodeTypeLabel(string $type): string
     {
         return match ($type) {
             PostalCodeType::EIR => Craft::t('app', 'Eircode'),
@@ -155,10 +156,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getAdministrativeAreaTypeLabel($type): string
+    public function getAdministrativeAreaTypeLabel(string $type): string
     {
         return match ($type) {
             AdministrativeAreaType::AREA => Craft::t('app', 'Area'),
@@ -175,6 +176,30 @@ class Addresses extends Component
             AdministrativeAreaType::STATE => Craft::t('app', 'State'),
             default => Craft::t('app', 'Province'),
         };
+    }
+
+    /**
+     * Returns the address field layout.
+     *
+     * @return FieldLayout
+     */
+    public function getLayout(): FieldLayout
+    {
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class);
+
+        // Ensure it has at least one tab.
+        // (The only reason this could possibly be null is if a module is removing all our own native fields
+        // via EVENT_DEFINE_NATIVE_FIELDS.)
+        $firstTab = $fieldLayout->getTabs()[0] ?? null;
+        if (!$firstTab) {
+            $firstTab = new FieldLayoutTab([
+                'layout' => $fieldLayout,
+                'name' => Craft::t('app', 'Content'),
+            ]);
+            $fieldLayout->setTabs([$firstTab]);
+        }
+
+        return $fieldLayout;
     }
 
     /**
@@ -220,7 +245,7 @@ class Addresses extends Component
 
         // Save the field layout
         $layout = FieldLayout::createFromConfig($config);
-        $layout->id = $fieldsService->getLayoutByType(Address::class)->id;
+        $layout->id = $this->getLayout()->id;
         $layout->type = Address::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout);

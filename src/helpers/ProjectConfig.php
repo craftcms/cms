@@ -25,11 +25,11 @@ class ProjectConfig
     /**
      * Returns a project config compatible value encoded for storage.
      *
-     * @param $value
+     * @param mixed $value
      * @return string
      * @since 4.0.0
      */
-    public static function encodeValueAsString($value): string
+    public static function encodeValueAsString(mixed $value): string
     {
         return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     }
@@ -71,11 +71,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedFields = true;
+        self::$_processedFields = true;
 
         $allGroups = $projectConfig->get(ProjectConfigService::PATH_FIELD_GROUPS, true) ?? [];
         $allFields = $projectConfig->get(ProjectConfigService::PATH_FIELDS, true) ?? [];
@@ -100,11 +100,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
+        if (self::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
             return;
         }
 
-        static::$_processedSites = true;
+        self::$_processedSites = true;
 
         $allGroups = $projectConfig->get(ProjectConfigService::PATH_SITE_GROUPS, true) ?? [];
         $allSites = $projectConfig->get(ProjectConfigService::PATH_SITES, true) ?? [];
@@ -127,11 +127,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedUserGroups = true;
+        self::$_processedUserGroups = true;
 
         $allGroups = $projectConfig->get(ProjectConfigService::PATH_USER_GROUPS, true);
 
@@ -153,11 +153,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedSections = true;
+        self::$_processedSections = true;
 
         $allSections = $projectConfig->get(ProjectConfigService::PATH_SECTIONS, true);
 
@@ -177,11 +177,11 @@ class ProjectConfig
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
         }
 
-        static::$_processedGqlSchemas = true;
+        self::$_processedGqlSchemas = true;
 
         $allSchemas = $projectConfig->get(ProjectConfigService::PATH_GRAPHQL_SCHEMAS, true);
 
@@ -200,10 +200,10 @@ class ProjectConfig
      */
     public static function reset(): void
     {
-        static::$_processedFields = false;
-        static::$_processedSites = false;
-        static::$_processedUserGroups = false;
-        static::$_processedGqlSchemas = false;
+        self::$_processedFields = false;
+        self::$_processedSites = false;
+        self::$_processedUserGroups = false;
+        self::$_processedGqlSchemas = false;
     }
 
     /**
@@ -238,7 +238,7 @@ class ProjectConfig
      * @return mixed
      * @throws InvalidConfigException
      */
-    private static function _cleanupConfigValue($value)
+    private static function _cleanupConfigValue(mixed $value): mixed
     {
         // Only scalars, arrays and simple objects allowed.
         if ($value instanceof StdClass) {
@@ -416,12 +416,12 @@ class ProjectConfig
     /**
      * Flatten a config array to a dot.based.key array.
      *
-     * @param $array
-     * @param $path
-     * @param $result
+     * @param array $array
+     * @param string $path
+     * @param array $result
      * @since 3.4.0
      */
-    public static function flattenConfigArray($array, $path, &$result): void
+    public static function flattenConfigArray(array $array, string $path, array &$result): void
     {
         foreach ($array as $key => $value) {
             $thisPath = ltrim($path . '.' . $key, '.');
@@ -454,6 +454,52 @@ class ProjectConfig
     }
 
     /**
+     * Traverse a nested data array according to path and perform an action depending on parameters.
+     *
+     * @param array $data A nested array of data to traverse
+     * @param string|string[] $path Path used to traverse the array. Either an array or a dot.based.path
+     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
+     * @param bool $delete Whether to delete the value at the destination or not.
+     * @return mixed
+     * @since 4.0.0
+     */
+    public static function traverseDataArray(array &$data, string|array $path, mixed $value = null, bool $delete = false): mixed
+    {
+        if (is_string($path)) {
+            $path = explode('.', $path);
+        }
+
+        $nextSegment = array_shift($path);
+
+        // Last piece?
+        if (count($path) === 0) {
+            if ($delete) {
+                unset($data[$nextSegment]);
+            } elseif ($value === null) {
+                return $data[$nextSegment] ?? null;
+            } else {
+                $data[$nextSegment] = $value;
+            }
+        } else {
+            if (!isset($data[$nextSegment])) {
+                // If the path doesn't exist, it's fine if we wanted to delete or read
+                if ($delete || $value === null) {
+                    return null;
+                }
+
+                $data[$nextSegment] = [];
+            } elseif (!is_array($data[$nextSegment])) {
+                // If the next part is not an array, but we have to travel further, make it an array.
+                $data[$nextSegment] = [];
+            }
+
+            return self::traverseDataArray($data[$nextSegment], $path, $value, $delete);
+        }
+
+        return null;
+    }
+
+    /**
      * Recursively looks for an array of component configs (sub-arrays indexed by UUIDs), within the given config array.
      *
      * @param array $config
@@ -480,10 +526,10 @@ class ProjectConfig
                     }
                     unset($config[$key]);
                     $split = true;
-                } else if (ArrayHelper::isAssociative($configData)) {
+                } elseif (ArrayHelper::isAssociative($configData)) {
                     // Look deeper
                     $subpath = ($path ? "$path/" : '') . $key;
-                    if (static::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
+                    if (self::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
                         $split = true;
                         // Store whatever's left in the same folder
                         if (!empty($configData)) {
@@ -571,7 +617,7 @@ class ProjectConfig
 
         // Conflict stuff. "bt" = "before timestamp"; "at" = "after timestamp"
         $inMine = $inTheirs = $foundTimestampInConflict = false;
-        $mineMarker = $theirsMarker = null;
+        $mineMarker = null;
         $btMine = $atMine = $btTheirs = $atTheirs = null;
         $conflictDl = "=======\n";
 
@@ -635,13 +681,13 @@ class ProjectConfig
                     $newContents .= $timestampLine;
                     $foundTimestamp = true;
                 }
-            } else if ($inMine) {
+            } elseif ($inMine) {
                 if ($atMine === null) {
                     $btMine .= $line;
                 } else {
                     $atMine .= $line;
                 }
-            } else if ($inTheirs) {
+            } elseif ($inTheirs) {
                 if ($atTheirs === null) {
                     $btTheirs .= $line;
                 } else {

@@ -281,7 +281,7 @@ class ElementHelper
      * @param ElementInterface $element The element to return supported site info for
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
      * @return array
-     * @throws Exception if any of the element's supported sites are invalid
+     * @throws Exception if any of the element’s supported sites are invalid
      */
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
@@ -515,9 +515,9 @@ class ElementHelper
      *
      * @param iterable|ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements($elements): void
+    public static function setNextPrevOnElements(iterable $elements): void
     {
-        /** @var ElementInterface $lastElement */
+        /** @var ElementInterface|null $lastElement */
         $lastElement = null;
 
         foreach ($elements as $element) {
@@ -531,9 +531,7 @@ class ElementHelper
             $lastElement = $element;
         }
 
-        if ($lastElement) {
-            $lastElement->setNext(false);
-        }
+        $lastElement?->setNext(false);
     }
 
     /**
@@ -553,6 +551,7 @@ class ElementHelper
      * Returns an element type's source definition based on a given source key/path and context.
      *
      * @param string $elementType The element type class
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $sourceKey The source key/path
      * @param string $context The context
      * @return array|null The source definition, or null if it cannot be found
@@ -575,7 +574,7 @@ class ElementHelper
             }
 
             if ($source === null) {
-                return null;
+                break;
             }
 
             // Is that the end of the path?
@@ -608,16 +607,12 @@ class ElementHelper
      */
     public static function translationDescription(string $translationMethod): ?string
     {
-        switch ($translationMethod) {
-            case Field::TRANSLATION_METHOD_SITE:
-                return Craft::t('app', 'This field is translated for each site.');
-            case Field::TRANSLATION_METHOD_SITE_GROUP:
-                return Craft::t('app', 'This field is translated for each site group.');
-            case Field::TRANSLATION_METHOD_LANGUAGE:
-                return Craft::t('app', 'This field is translated for each language.');
-            default:
-                return null;
-        }
+        return match ($translationMethod) {
+            Field::TRANSLATION_METHOD_SITE => Craft::t('app', 'This field is translated for each site.'),
+            Field::TRANSLATION_METHOD_SITE_GROUP => Craft::t('app', 'This field is translated for each site group.'),
+            Field::TRANSLATION_METHOD_LANGUAGE => Craft::t('app', 'This field is translated for each language.'),
+            default => null,
+        };
     }
 
     /**

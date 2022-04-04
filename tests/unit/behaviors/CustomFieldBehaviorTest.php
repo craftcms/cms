@@ -12,8 +12,8 @@ use Craft;
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\fields\PlainText;
+use craft\test\TestCase;
 use InvalidArgumentException;
-use UnitTester;
 
 /**
  * Unit tests for CustomFieldBehavior
@@ -22,19 +22,13 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.4.0
  */
-class CustomFieldBehaviorTest extends Unit
+class CustomFieldBehaviorTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    public $tester;
-
-    /**
      * @dataProvider existingFieldHandlesDataProvider
-     *
-     * @param $handle
+     * @param string $handle
      */
-    public function testExistsInCustomFieldBehavior(string $handle)
+    public function testExistsInCustomFieldBehavior(string $handle): void
     {
         // Make sure it exists
         new CustomFieldBehavior();
@@ -47,7 +41,7 @@ class CustomFieldBehaviorTest extends Unit
     /**
      * Test that adding a field doesnt automatically modify the CustomFieldBehavior
      */
-    public function testRetrofittingDontWork()
+    public function testRetrofittingDontWork(): void
     {
         $field = new PlainText();
         $field->name = 'testRetrofittingDontWork1';

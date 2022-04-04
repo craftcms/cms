@@ -107,7 +107,7 @@ class Relations extends Component
                             $sortOrder + 1,
                         ];
                     }
-                    Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values, true, $db);
+                    Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values, $db);
                 }
 
                 if (!empty($deleteIds)) {

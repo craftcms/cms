@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 use yii\db\Expression;
@@ -21,7 +20,7 @@ class m220222_122159_full_names extends Migration
 
         $this->update(Table::USERS, [
             'fullName' => new Expression("TRIM(CONCAT([[firstName]], ' ', [[lastName]]))"),
-        ], new Expression("TRIM(CONCAT([[firstName]], [[lastName]])) <> ''"), [], false);
+        ], new Expression("TRIM(CONCAT([[firstName]], [[lastName]])) <> ''"), updateTimestamp: false);
 
         return true;
     }
