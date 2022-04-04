@@ -10,6 +10,11 @@
 - Added `craft\helpers\App::devMode()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
+- Added the `Craft.getQueryParam()` JavaScript method.
+- Added the `Craft.getQueryParams()` JavaScript method.
+- Added the `Craft.setPath()` JavaScript method.
+- Added the `Craft.setQueryParam()` JavaScript method.
+- Added the `Craft.setUrl()` JavaScript method.
 
 ### Changed
 - Element index pages’ status and sort menu option selections are now coded into the page URL via `status` and `sort` query string params. ([#10669](https://github.com/craftcms/cms/discussions/10669))

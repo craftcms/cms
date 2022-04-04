@@ -362,9 +362,14 @@
 - Added the `Craft.ElementEditor` JavaScript class.
 - Added the `Craft.ElementEditorSlideout` JavaScript class.
 - Added the `Craft.getPageUrl()` JavaScript method.
+- Added the `Craft.getQueryParam()` JavaScript method.
+- Added the `Craft.getQueryParams()` JavaScript method.
 - Added the `Craft.namespaceId()` JavaScript method.
 - Added the `Craft.namespaceInputName()` JavaScript method.
 - Added the `Craft.Queue` JavaScript class.
+- Added the `Craft.setPath()` JavaScript method.
+- Added the `Craft.setQueryParam()` JavaScript method.
+- Added the `Craft.setUrl()` JavaScript method.
 - Added the `Craft.ui.createButton()` JavaScript method.
 - Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
