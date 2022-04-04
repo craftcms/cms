@@ -496,7 +496,7 @@ class Application extends \yii\web\Application
 
         $sourcePath = Craft::$app->getCache()->getOrSet(
             Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
-            function() {
+            function() use ($hash) {
                 try {
                     return (new Query())
                         ->select(['path'])
