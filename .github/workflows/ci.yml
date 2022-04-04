@@ -24,7 +24,7 @@ jobs:
       # To use this repository's private action,
       # you must check out the repository
       - name: Hello world action step
-        uses: craftcms/craft-action:latest
+        uses: craftcms/craft-action:1.0.0
         id: hello
         with:
           who-to-greet: 'Mona the Octocat'
