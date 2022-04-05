@@ -81,7 +81,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Implicit CP request - Craft installed at webroot
+        // Implicit control panel request - Craft installed at webroot
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -95,7 +95,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Explicit CP request w/ CP trigger - Craft installed at webroot
+        // Explicit control panel request with control panel trigger: Craft installed at webroot
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -110,7 +110,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Explicit CP request w/out CP trigger - Craft installed at webroot
+        // Explicit control panel request without control panel trigger: Craft installed at webroot
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -125,7 +125,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('foo/bar/baz', $request->getPathInfo());
 
-        // Site request - Craft installed in subfolder
+        // Site request: Craft installed in subfolder
         // https://github.com/craftcms/cms/issues/6579
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
@@ -136,7 +136,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Site request w/ base URI - Craft installed in subfolder
+        // Site request without base URI: Craft installed in subfolder
         // https://github.com/craftcms/cms/issues/6579
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
@@ -155,7 +155,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('baz', $request->getPathInfo());
 
-        // Implicit CP request - Craft installed in subfolder
+        // Implicit control panel request: Craft installed in subfolder
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/foo/index.php',
@@ -169,7 +169,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('baz', $request->getPathInfo());
 
-        // Explicit CP request w/ CP trigger - Craft installed in subfolder
+        // Explicit control panel request with control panel trigger: Craft installed in subfolder
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/foo/index.php',
@@ -184,7 +184,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('baz', $request->getPathInfo());
 
-        // Explicit CP request w/out CP trigger - Craft installed in subfolder
+        // Explicit control panel request without control panel trigger: Craft installed in subfolder
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/foo/index.php',

@@ -179,7 +179,7 @@ class Application extends \yii\web\Application
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
-            // Tell bots not to index/follow CP and tokenized pages
+            // Tell bots not to index/follow control panel and tokenized pages
             if (
                 $generalConfig->disallowRobots ||
                 $request->getIsCpRequest() ||
@@ -210,7 +210,7 @@ class Application extends \yii\web\Application
                 return $response;
             }
 
-            // Check if the app path has changed.  If so, run the requirements check again.
+            // Check if the app path has changed. If so, run the requirements check again.
             if (($response = $this->_processRequirementsCheck($request)) !== null) {
                 $this->_unregisterDebugModule();
 
@@ -232,13 +232,13 @@ class Application extends \yii\web\Application
                 throw new ServiceUnavailableHttpException();
             }
 
-            // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
-            // If we're in maintenance mode and it's not a site request, show the manual update template.
+            // getIsCraftDbMigrationNeeded will return true if we’re in the middle of a manual or auto-update for Craft itself.
+            // If we’re in maintenance mode and it’s not a site request, show the manual update template.
             if ($this->getUpdates()->getIsCraftUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
-            // If there's a new version, but the schema hasn't changed, just update the info table
+            // If there’s a new version, but the schema hasn’t changed, just update the info table
             if ($this->getUpdates()->getHasCraftVersionChanged()) {
                 $this->getUpdates()->updateCraftVersionInfo();
 
@@ -246,7 +246,7 @@ class Application extends \yii\web\Application
                 try {
                     FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
                 } catch (InvalidArgumentException) {
-                    // the directory doesn't exist
+                    // Directory does not exist
                 } catch (ErrorException $e) {
                     Craft::error('Could not delete compiled templates: ' . $e->getMessage());
                     Craft::$app->getErrorHandler()->logException($e);
@@ -259,7 +259,7 @@ class Application extends \yii\web\Application
             }
 
             // If this is a plugin template request, make sure the user has access to the plugin
-            // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
+            // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
             if (
                 $request->getIsCpRequest() &&
                 !$request->getIsActionRequest() &&
@@ -281,7 +281,7 @@ class Application extends \yii\web\Application
             return $response;
         }
 
-        // If we're still here, finally let Yii do it's thing.
+        // If we’re still here, finally let Yii do its thing.
         try {
             return parent::handleRequest($request);
         } catch (Throwable $e) {
@@ -632,7 +632,7 @@ class Application extends \yii\web\Application
      */
     private function _processRequirementsCheck(Request $request): ?Response
     {
-        // Only run for CP requests and if we're not in the middle of an update.
+        // Only run for control panel requests and if we’re not in the middle of an update.
         if (
             $request->getIsCpRequest() &&
             !(
@@ -663,7 +663,7 @@ class Application extends \yii\web\Application
     {
         $this->_unregisterDebugModule();
 
-        // Let all non-action CP requests through.
+        // Let all non-action control panel requests through.
         if (
             $request->getIsCpRequest() &&
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])

@@ -111,9 +111,9 @@ class User extends \yii\web\User
      */
     public function getReturnUrl($defaultUrl = null): string
     {
-        // Set the default based on the config, if it's not specified
+        // Set the default based on the config, if it’s not specified
         if ($defaultUrl === null) {
-            // Is this a CP request and can they access the CP?
+            // Is this a control panel request and can they access the control panel?
             if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
                 $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
             } else {

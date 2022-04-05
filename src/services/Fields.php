@@ -1652,7 +1652,7 @@ class Fields extends Component
         // Tell the current CustomFieldBehavior class about the field
         CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
-        // For CP save requests, make sure we have all the custom data already saved on the object.
+        // For control panel save requests, make sure we have all the custom data already saved on the object.
         if (isset($this->_savingFields[$fieldUid])) {
             $field = $this->_savingFields[$fieldUid];
 

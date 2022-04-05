@@ -608,7 +608,7 @@ class GeneralConfig extends BaseObject
     public bool $enableCsrfCookie = true;
 
     /**
-     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
+     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
      * @since 3.6.0
      * @group GraphQL
      */
@@ -1738,7 +1738,7 @@ class GeneralConfig extends BaseObject
         // Normalize size settings
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
 
-        // Normalize the default CP language
+        // Normalize the default control panel language
         if (isset($this->defaultCpLanguage)) {
             try {
                 $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
