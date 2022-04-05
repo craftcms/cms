@@ -10,8 +10,10 @@
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
 - Added `craft\base\ModelInterface`.
+- Added `craft\db\Migration::archiveTableIfExists()`. ([#10827](https://github.com/craftcms/cms/discussions/10827))
 - Added `craft\helpers\App::devMode()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
+- Added `craft\services\Gc::removeEmptyTempFolders()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 - Added the `Craft.getQueryParam()` JavaScript method.
 - Added the `Craft.getQueryParams()` JavaScript method.
@@ -29,6 +31,7 @@
 - The default `subLeft` and `subRight` search query term options are now only applied to terms that don’t include an asterisk at the beginning/end, e.g. `hello*`. ([#10613](https://github.com/craftcms/cms/discussions/10613))
 - Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
 - `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
 - `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.
 - `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
