@@ -13,6 +13,7 @@ env:
   SLACK_NOTIFICATION_FOOTER: '<{repo_url}|{repo}>'
   SLACK_NOTIFICATION_ERROR_LEVELS: 'failure,warnings'
   SLACK_NOTIFICATION_GROUP_ID: 'SGFL9NKNZ'
+  PHP_EXTENSIONS: ctype,curl,dom,iconv,imagick,intl,json,mbstring,openssl,pcre,pdo,reflection,spl,zip
 
 jobs:
 
@@ -93,10 +94,6 @@ jobs:
         operating-system: [ 'ubuntu-latest' ]
         php-versions: [ 8.1, 8.0 ]
         db: [ 'mysql', 'pgsql' ]
-
-    name: PHP ${{ matrix.php-versions }} on ${{ matrix.db }}
-    env:
-      PHP_EXTENSIONS: ctype,curl,dom,iconv,imagick,intl,json,mbstring,openssl,pcre,pdo,reflection,spl,zip
 
     services:
 
