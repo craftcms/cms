@@ -5,12 +5,6 @@
 ### Added
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
-- Added `craft\base\FsInterface::write`. ([#10824](https://github.com/craftcms/cms/pull/10824))
-- Added `craft\fs\Local::write`. ([#10824](https://github.com/craftcms/cms/pull/10824))
-- Added `craft\fs\MissingFs::write`. ([#10824](https://github.com/craftcms/cms/pull/10824))
-- Added `craft\base\FsInterface::read`. ([#10824](https://github.com/craftcms/cms/pull/10824))
-- Added `craft\fs\Local::read`. ([#10824](https://github.com/craftcms/cms/pull/10824))
-- Added `craft\fs\MissingFs::read`. ([#10824](https://github.com/craftcms/cms/pull/10824))
 
 ### Removed
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
