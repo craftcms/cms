@@ -66,8 +66,8 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * }
  * ```
  *
- * @property ActiveRecord $this
  * @property string|null $dateDeleted Date deleted
+ * @mixin ActiveRecord
  * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
@@ -80,14 +80,7 @@ trait SoftDeleteTrait
     public static function find(): ActiveQuery
     {
         $query = parent::find();
-
-        if ($query instanceof ActiveQuery) {
-            $alias = $query->getAlias();
-            $column = "$alias.dateDeleted";
-        } else {
-            $column = 'dateDeleted';
-        }
-
+        $column = sprintf('%s.dateDeleted', $query->getAlias());
         return $query->where([$column => null]);
     }
 

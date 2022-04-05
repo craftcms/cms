@@ -77,7 +77,6 @@ class FsController extends Controller
             }
         }
 
-        /** @var FsInterface[] $allFs */
         $allFsTypes = Craft::$app->getFs()->getAllFilesystemTypes();
 
         $fsInstances = [];

@@ -33,7 +33,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
      */
     public function format($response)
     {
-        /** @var CpScreenResponseBehavior $behavior */
+        /** @var CpScreenResponseBehavior|null $behavior */
         $behavior = $response->getBehavior(CpScreenResponseBehavior::NAME);
 
         if (!$behavior) {

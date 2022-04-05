@@ -10,7 +10,6 @@ namespace craft\records;
 use craft\db\ActiveRecord;
 use craft\db\Table;
 use craft\validators\DateTimeValidator;
-use DateTime;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -21,7 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $sessionId Session ID
  * @property string $uri URI
  * @property int $size Size
- * @property DateTime $timestamp Timestamp
+ * @property string $timestamp Timestamp
  * @property bool $inProgress In progress
  * @property bool $completed Is completed
  * @property int $recordId Record ID

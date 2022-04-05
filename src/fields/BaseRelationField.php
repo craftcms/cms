@@ -79,6 +79,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns the element class associated with this field type.
      *
      * @return string The Element class name
+     * @phpstan-return class-string<ElementInterface>
      */
     abstract public static function elementType(): string;
 
@@ -129,7 +130,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
-     *
      * @since 3.5.0
      */
     public bool $showSiteMenu = false;
@@ -209,6 +209,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
     /**
      * @var ElementConditionInterface|array|null
+     * @phpstan-var ElementConditionInterface|array{class:class-string<ElementConditionInterface>}|null
      * @see getSelectionCondition()
      * @see setSelectionCondition()
      */
@@ -445,7 +446,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return $value;
         }
 
-        /** @var ElementInterface $class */
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
@@ -1063,7 +1065,7 @@ JS;
      * Returns an array of the source keys the field should be able to select elements from.
      *
      * @param ElementInterface|null $element
-     * @return array|string
+     * @return array|string|null
      */
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {
@@ -1107,7 +1109,8 @@ JS;
     /**
      * Sets the element condition that should be used to determine which elements are selectable by the field.
      *
-     * @param ElementConditionInterface|string|array{class: string}|null $condition
+     * @param ElementConditionInterface|string|array|null $condition
+     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
      * @since 4.0.0
      */
     public function setSelectionCondition(mixed $condition): void

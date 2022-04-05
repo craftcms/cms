@@ -92,7 +92,7 @@ class GlobalSetQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $handle
      */

@@ -20,7 +20,8 @@ use yii\base\Event;
 class EagerLoadElementsEvent extends Event
 {
     /**
-     * @var class-string<ElementInterface> The source element type
+     * @var string The source element type
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 

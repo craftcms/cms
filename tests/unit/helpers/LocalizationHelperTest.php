@@ -1,14 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Localization;
+use craft\test\TestCase;
 use UnitTester;
 use yii\base\InvalidArgumentException;
 
@@ -19,20 +19,19 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class LocalizationHelperTest extends Unit
+class LocalizationHelperTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider normalizeLanguageDataProvider
-     *
      * @param string $expected
      * @param string $language
      */
-    public function testNormalizeLanguage(string $expected, string $language)
+    public function testNormalizeLanguage(string $expected, string $language): void
     {
         self::assertSame($expected, Localization::normalizeLanguage($language));
     }
@@ -40,7 +39,7 @@ class LocalizationHelperTest extends Unit
     /**
      *
      */
-    public function testLanguageNormalizationExceptions()
+    public function testLanguageNormalizationExceptions(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Localization::normalizeLanguage('dutch');
@@ -52,12 +51,11 @@ class LocalizationHelperTest extends Unit
 
     /**
      * @dataProvider normalizeNumberDataProvider
-     *
      * @param mixed $expected
      * @param mixed $number
      * @param string|null $localeId
      */
-    public function testNormalizeNumber($expected, $number, ?string $localeId)
+    public function testNormalizeNumber(mixed $expected, mixed $number, ?string $localeId): void
     {
         self::assertSame($expected, Localization::normalizeNumber($number, $localeId));
     }

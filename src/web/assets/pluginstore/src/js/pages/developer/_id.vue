@@ -11,12 +11,14 @@
             v-if="developer"
             class="developer-card tw-flex tw-pb-6 tw-items-center"
           >
-            <div class="avatar tw-w-28 tw-h-28 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-8 tw-no-line-height">
-              <img
-                :src="developer.photoUrl"
-                class="tw-w-full tw-h-full"
-              />
-            </div>
+            <template v-if="developer.photoUrl">
+              <div class="avatar tw-w-28 tw-h-28 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-gray-100 tw-mr-8 tw-no-line-height">
+                <img
+                  :src="developer.photoUrl"
+                  class="tw-w-full tw-h-full"
+                />
+              </div>
+            </template>
 
             <div class="tw-flex-1">
               <h1 class="tw-text-lg tw-font-bold">

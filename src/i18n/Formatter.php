@@ -186,7 +186,7 @@ class Formatter extends \yii\i18n\Formatter
 
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
-            $day = $timestamp->format('w');
+            $day = (int)$timestamp->format('w');
             $dayName = Craft::$app->getLocale()->getWeekDayName($day);
             return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
@@ -204,7 +204,7 @@ class Formatter extends \yii\i18n\Formatter
         if (empty($value)) {
             $value = 0;
         } elseif ($decimals === null && is_numeric($value)) {
-            $decimals = strpos(strrev($value * 100), '.') ?: 0;
+            $decimals = strpos(strrev((string)($value * 100)), '.') ?: 0;
         }
 
         return parent::asPercent($value, $decimals, $options, $textOptions);
@@ -237,6 +237,8 @@ class Formatter extends \yii\i18n\Formatter
 
     /**
      * @inheritdoc
+     * @param string|DateTime|null $value
+     * @return string
      */
     public function asText($value): string
     {

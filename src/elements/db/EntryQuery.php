@@ -61,7 +61,7 @@ class EntryQuery extends ElementQuery
     public bool $editable = false;
 
     /**
-     * @var int|int[]|null The section ID(s) that the resulting entries must be in.
+     * @var mixed The section ID(s) that the resulting entries must be in.
      * ---
      * ```php
      * // fetch entries in the News section
@@ -81,7 +81,7 @@ class EntryQuery extends ElementQuery
     public mixed $sectionId = null;
 
     /**
-     * @var int|int[]|null The entry type ID(s) that the resulting entries must have.
+     * @var mixed The entry type ID(s) that the resulting entries must have.
      * ---
      * ```php{4}
      * // fetch Article entries in the News section
@@ -103,13 +103,13 @@ class EntryQuery extends ElementQuery
     public mixed $typeId = null;
 
     /**
-     * @var int|int[]|null The user ID(s) that the resulting entries’ authors must have.
+     * @var mixed The user ID(s) that the resulting entries’ authors must have.
      * @used-by authorId()
      */
     public mixed $authorId = null;
 
     /**
-     * @var int|int[]|null The user group ID(s) that the resulting entries’ authors must be in.
+     * @var mixed The user group ID(s) that the resulting entries’ authors must be in.
      * ---
      * ```php
      * // fetch entries authored by people in the Authors group
@@ -148,7 +148,7 @@ class EntryQuery extends ElementQuery
     public mixed $postDate = null;
 
     /**
-     * @var string|array|DateTime The maximum Post Date that resulting entries can have.
+     * @var mixed The maximum Post Date that resulting entries can have.
      * ---
      * ```php
      * // fetch entries written before 4/4/2018
@@ -167,7 +167,7 @@ class EntryQuery extends ElementQuery
     public mixed $before = null;
 
     /**
-     * @var string|array|DateTime The minimum Post Date that resulting entries can have.
+     * @var mixed The minimum Post Date that resulting entries can have.
      * ---
      * ```php
      * // fetch entries written in the last 7 days
@@ -285,7 +285,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|Section|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $sectionId
      */
@@ -344,7 +344,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $sectionId
      */
@@ -385,7 +385,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|EntryType|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
@@ -434,7 +434,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
@@ -472,7 +472,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $authorId
      */
@@ -512,7 +512,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|UserGroup|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $authorGroupId
      */
@@ -572,7 +572,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $authorGroupId
      */
@@ -655,7 +655,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|DateTime $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $before
      */
@@ -695,7 +695,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|DateTime $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $after
      */
@@ -780,6 +780,7 @@ class EntryQuery extends ElementQuery
      */
     public function status(array|string|null $value): self
     {
+        /** @var self */
         return parent::status($value);
     }
 

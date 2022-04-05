@@ -233,6 +233,30 @@ class Local extends Fs implements LocalFsInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function read(string $path): string
+    {
+        $stream = $this->getFileStream($path);
+        $contents = stream_get_contents($stream);
+        fclose($stream);
+
+        return $contents;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function write(string $path, string $contents, array $config = []): void
+    {
+        $stream = tmpfile();
+        fwrite($stream, $contents);
+        rewind($stream);
+
+        $this->writeFileFromStream($path, $stream, $config);
+    }
+
+    /**
      * @inheritdoc
      */
     public function fileExists(string $path): bool

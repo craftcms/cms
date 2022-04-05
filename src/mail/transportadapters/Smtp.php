@@ -59,7 +59,7 @@ class Smtp extends BaseTransportAdapter
     public ?string $encryptionMethod = null;
 
     /**
-     * @var string The timeout duration (in seconds)
+     * @var string|int The timeout duration (in seconds)
      */
     public string|int $timeout = 10;
 

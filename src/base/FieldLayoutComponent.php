@@ -105,7 +105,8 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Sets the user condition for this layout element.
      *
-     * @param UserCondition|string|array{class: string}|null $userCondition
+     * @param UserCondition|string|array|null $userCondition
+     * @phpstan-param UserCondition|class-string<UserCondition>|array{class:class-string<UserCondition>}|null $userCondition
      */
     public function setUserCondition(mixed $userCondition): void
     {
@@ -125,7 +126,8 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Sets the element condition for this layout element.
      *
-     * @param ElementConditionInterface|string|array{class: string}|null $elementCondition
+     * @param ElementConditionInterface|string|array|null $elementCondition
+     * @phpstan-param ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null $elementCondition
      */
     public function setElementCondition(mixed $elementCondition): void
     {
@@ -135,8 +137,10 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Normalizes a condition.
      *
-     * @param ConditionInterface|string|array{class: string}|null $condition
-     * @return ConditionInterface|null
+     * @template T of ConditionInterface
+     * @param T|string|array|null $condition
+     * @phpstan-param T|class-string<T>|array{class:class-string<T>}|null $condition
+     * @return T|null
      */
     private function _normalizeCondition(mixed $condition): ?ConditionInterface
     {

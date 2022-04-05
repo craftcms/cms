@@ -87,10 +87,10 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $key = -1;
 
         foreach ($values as $key => $value) {
-            $sql .= ' WHEN ' . $schema->quoteColumnName($column) . '=' . $schema->quoteValue($value) . ' THEN ' . $schema->quoteValue($key);
+            $sql .= sprintf(' WHEN %s=%s THEN %s', $schema->quoteColumnName($column), $schema->quoteValue($value), $schema->quoteValue($key));
         }
 
-        $sql .= ' ELSE ' . $schema->quoteValue($key + 1) . ' END';
+        $sql .= sprintf(' ELSE %s END', $schema->quoteValue((string)($key + 1)));
 
         return $sql;
     }

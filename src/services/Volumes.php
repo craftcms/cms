@@ -134,26 +134,6 @@ class Volumes extends Component
     }
 
     /**
-     * Returns all volume IDs that have public URLs.
-     *
-     * @return int[]
-     */
-    public function getPublicVolumeIds(): array
-    {
-        return ArrayHelper::getColumn($this->getPublicVolumes(), 'id', false);
-    }
-
-    /**
-     * Returns all volumes that have public URLs.
-     *
-     * @return Volume[]
-     */
-    public function getPublicVolumes(): array
-    {
-        return $this->_volumes()->where('hasUrls')->all();
-    }
-
-    /**
      * Returns the total number of volumes.
      *
      * @return int
@@ -357,7 +337,7 @@ class Volumes extends Component
                 $layout->id = $volumeRecord->fieldLayoutId;
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $volumeRecord->fieldLayoutId = $layout->id;
             } elseif ($volumeRecord->fieldLayoutId) {
                 // Delete the field layout
@@ -403,6 +383,7 @@ class Volumes extends Component
 
         if ($wasTrashed) {
             // Restore the assets that were deleted with the volume
+            /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeRecord->id)
                 ->trashed()
@@ -538,9 +519,10 @@ class Volumes extends Component
 
         try {
             // Delete the assets
+            /** @var Asset[] $assets */
             $assets = Asset::find()
-                ->status(null)
                 ->volumeId($volumeRecord->id)
+                ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
 
@@ -658,6 +640,7 @@ class Volumes extends Component
         $query = $withTrashed ? AssetVolumeRecord::findWithTrashed() : AssetVolumeRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var AssetVolumeRecord */
         return $query->one() ?? new AssetVolumeRecord();
     }
 }

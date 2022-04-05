@@ -55,7 +55,8 @@ class MemoizableArray implements IteratorAggregate, Countable
     /**
      * Returns all items.
      *
-     * @return array<T>
+     * @return array
+     * @phpstan-return array<T>
      */
     public function all(): array
     {

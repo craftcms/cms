@@ -32,6 +32,7 @@ use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\services\Users;
+use craft\web\Application;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
 use craft\web\Request;
@@ -407,7 +408,7 @@ class UsersController extends Controller
             );
         }
 
-        // Redirect to the login page if this is a CP request
+        // Redirect to the login page if this is a control panel request
         if ($this->request->getIsCpRequest()) {
             return $this->redirect(Request::CP_PATH_LOGIN);
         }
@@ -508,7 +509,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Sets a user's password once they've verified they have access to their email.
+     * Sets a user’s password once they’ve verified they have access to their email.
      *
      * @return Response
      */
@@ -586,9 +587,9 @@ class UsersController extends Controller
             return $this->asSuccess(data: $return);
         }
 
-        // Can they access the CP?
+        // Can they access the control panel?
         if ($user->can('accessCp')) {
-            // Send them to the CP login page
+            // Send them to the control panel login page
             $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         } else {
             // Send them to the 'setPasswordSuccessPath'.
@@ -691,6 +692,7 @@ class UsersController extends Controller
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
+                /** @var User|null $user */
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
                     ->id($userId === 'current' ? $currentUser->id : $userId)
@@ -1096,6 +1098,7 @@ JS,
 
         // Are we editing an existing user?
         if ($userId) {
+            /** @var User|null $user */
             $user = User::find()
                 ->id($userId)
                 ->status(null)
@@ -1200,12 +1203,12 @@ JS,
             if ($isCurrentUser) {
                 // If there was a newPassword input but it was empty, pretend it didn't exist
                 $user->newPassword = $this->request->getBodyParam('newPassword') ?: null;
-                $returnCsrfToken = $returnCsrfToken || $user->newPassword !== null;
+                $returnCsrfToken = $user->newPassword !== null;
             }
         }
 
         // If editing an existing user and either of these properties are being changed,
-        // require the user's current password for additional security
+        // require the user’s current password for additional security
         if (
             !$isNewUser &&
             (!empty($newEmail) || $user->newPassword !== null) &&
@@ -1332,7 +1335,7 @@ JS,
             $userSession->sendUsernameCookie($user);
         }
 
-        // Save the user's photo, if it was submitted
+        // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -1509,6 +1512,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
+        /** @var User|null $user */
         $user = User::find()
             ->id($userId)
             ->status(null)
@@ -1705,7 +1709,7 @@ JS,
             }
         }
 
-        // Are we transferring the user's content to a different user?
+        // Are we transferring the user’s content to a different user?
         $transferContentToId = $this->request->getBodyParam('transferContentTo');
 
         if (is_array($transferContentToId) && isset($transferContentToId[0])) {
@@ -1994,13 +1998,15 @@ JS,
                     $this->request->setIsActionRequest(false);
                 }
 
-                return Craft::$app->handleRequest($this->request, true);
+                /** @var Application $app */
+                $app = Craft::$app;
+                return $app->handleRequest($this->request, true);
             } catch (NotFoundHttpException) {
-                // Just go with the CP template
+                // Just go with the control panel template
             }
         }
 
-        // Otherwise go with the CP's template
+        // Otherwise go with the control panel’s template
         return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
     }
 
@@ -2025,7 +2031,7 @@ JS,
     }
 
     /**
-     * Verifies that the current user's password was submitted with the request.
+     * Verifies that the current user’s password was submitted with the request.
      *
      * @return bool
      */
@@ -2335,7 +2341,7 @@ JS,
      */
     private function _redirectUserToCp(User $user): ?Response
     {
-        // Can they access the CP?
+        // Can they access the control panel?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
             $url = UrlHelper::cpUrl($postCpLoginRedirect);

@@ -19,7 +19,7 @@ use craft\web\Controller;
 class TestController extends Controller
 {
     /**
-     * @var array
+     * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = ['allow-anonymous'];
 

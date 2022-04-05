@@ -233,7 +233,12 @@ body,
     }
 
     .spinner {
-      background: none;
+      animation: none;
+      border: none;
+      display: inline-flex;
+      height: 24px;
+      width: 24px;
+      position: relative;
     }
   }
 }

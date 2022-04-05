@@ -1076,6 +1076,7 @@ td.right {
     background-color: $grey050;
     overflow: auto;
     box-shadow: inset -1px 0 0 $hairlineColor;
+    @include border-top-left-radius($largeBorderRadius);
 
     & > .btn {
       @include margin(10px, 0, 0, 14px);
@@ -2923,7 +2924,7 @@ $checkboxPadding: $checkboxSize + 4;
 /* element select fields */
 .elementselect {
   position: relative;
-  min-height: 37px;
+  min-height: 34px;
   margin-top: -7px;
 
   .elements:after {
@@ -5047,6 +5048,9 @@ ul.tree,
 
 table.shadow-box,
 table.editable {
+  border-collapse: separate;
+  border-spacing: 0;
+
   thead:first-child,
   tbody:first-child {
     tr:first-child {

@@ -59,7 +59,7 @@ class ResaveController extends Controller
      * @var bool Whether to resave element revisions.
      * @since 3.7.35
      */
-    public $revisions = false;
+    public bool $revisions = false;
 
     /**
      * @var int|string|null The ID(s) of the elements to resave.
@@ -309,7 +309,8 @@ class ResaveController extends Controller
     }
 
     /**
-     * @param class-string<ElementInterface> $elementType The element type that should be resaved
+     * @param string $elementType The element type that should be resaved
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
@@ -317,6 +318,7 @@ class ResaveController extends Controller
     public function resaveElements(string $elementType, array $criteria = []): int
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {

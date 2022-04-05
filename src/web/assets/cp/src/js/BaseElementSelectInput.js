@@ -161,19 +161,46 @@ Craft.BaseElementSelectInput = Garnish.Base.extend({
     },
 
     enableAddElementsBtn: function() {
-        this.$addElementBtn.removeClass('hidden');
+        if (this.$addElementBtn) {
+            this.$addElementBtn.removeClass('hidden');
+        }
+
+        this.updateButtonContainer();
     },
 
     disableAddElementsBtn: function() {
-        this.$addElementBtn.addClass('hidden');
+        if (this.$addElementBtn) {
+            this.$addElementBtn.addClass('hidden');
+        }
+
+        this.updateButtonContainer();
     },
 
     showSpinner: function() {
-        this.$spinner.removeClass('hidden');
+        if (this.$spinner) {
+            this.$spinner.removeClass('hidden');
+        }
+
+        this.updateButtonContainer();
     },
 
     hideSpinner: function() {
-        this.$spinner.addClass('hidden');
+        if (this.$spinner) {
+            this.$spinner.addClass('hidden');
+        }
+
+        this.updateButtonContainer();
+    },
+
+    updateButtonContainer: function() {
+        const $container = this.$addElementBtn && this.$addElementBtn.parent('.flex');
+        if ($container && $container.length) {
+            if ($container.children(':not(.hidden)').length) {
+                $container.removeClass('hidden');
+            } else {
+                $container.addClass('hidden');
+            }
+        }
     },
 
     focusNextLogicalElement: function() {

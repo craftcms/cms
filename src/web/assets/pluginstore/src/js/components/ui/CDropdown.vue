@@ -43,7 +43,7 @@ export default {
     id: {
       type: String,
       default: function() {
-        return 'c-dropdown-id-' + Math.random().toString(36).substr(2, 9);
+        return 'c-dropdown-id-' + Math.random().toString(36).substring(2, 11);
       },
     },
     options: {

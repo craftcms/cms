@@ -75,22 +75,11 @@
 
     <!-- Meta data -->
     <dl class="tw-mt-2">
-      <!-- Install with composer -->
-      <meta-stat>
-        <template #title>
-          {{ "Install with Composer"|t('app') }}
-        </template>
-        <template #content>
-          <composer-install :plugin="plugin" />
-        </template>
-      </meta-stat>
+      <install-plugin :plugin="plugin" />
 
-      <!-- TODO: Enable Active Installs -->
-      <!--
       <active-installs
         :plugin="plugin"
       />
-      -->
 
       <div class="tw-grid tw-grid-cols-2">
         <!-- Version -->
@@ -182,15 +171,9 @@
         </template>
       </meta-stat>
 
-      <!-- TODO: Enable GitHub Activity -->
-      <!--
       <github-activity
-        :closed-issues="plugin.githubStats.closedIssues"
-        :new-issues="plugin.githubStats.newIssues"
-        :merged-pull-requests="plugin.githubStats.mergedPullRequests"
-        :open-pull-requests="plugin.githubStats.openPullRequests"
+        :plugin="plugin"
       />
-      -->
 
       <!-- Report an issue -->
       <ul class="tw-list-reset tw-space-y-2 tw-mt-8">
@@ -216,15 +199,15 @@
 import MetaStat from './MetaStat';
 import PluginMetaBuyButton from './PluginMetaBuyButton';
 import {mapState} from 'vuex';
-import ComposerInstall from './ComposerInstall';
-// import GithubActivity from './github-activity/GithubActivity';
-// import ActiveInstalls from './ActiveInstalls';
+import InstallPlugin from './InstallPlugin';
+import GithubActivity from './github-activity/GithubActivity';
+import ActiveInstalls from './ActiveInstalls';
 
 export default {
   components: {
-    // ActiveInstalls,
-    // GithubActivity,
-    ComposerInstall,
+    InstallPlugin,
+    ActiveInstalls,
+    GithubActivity,
     PluginMetaBuyButton,
     MetaStat
   },

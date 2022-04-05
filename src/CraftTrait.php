@@ -17,7 +17,7 @@ use craft\web\Application as WebApplication;
 trait CraftTrait
 {
     /**
-     * @var WebApplication|ConsoleApplication
+     * @var WebApplication|ConsoleApplication|null
      */
-    public static WebApplication|ConsoleApplication $app;
+    public static WebApplication|ConsoleApplication|null $app = null;
 }

@@ -35,6 +35,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
 
     /**
      * @var string
+     * @phpstan-var class-string<ElementInterface>
      * @since 3.0.30
      */
     protected string $elementType;

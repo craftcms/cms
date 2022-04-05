@@ -45,7 +45,7 @@ class AssetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|string|null The volume ID(s) that the resulting assets must be in.
+     * @var mixed The volume ID(s) that the resulting assets must be in.
      * ---
      * ```php
      * // fetch assets in the Logos volume
@@ -65,7 +65,7 @@ class AssetQuery extends ElementQuery
     public mixed $volumeId = null;
 
     /**
-     * @var int|int[]|null The asset folder ID(s) that the resulting assets must be in.
+     * @var mixed The asset folder ID(s) that the resulting assets must be in.
      * @used-by folderId()
      */
     public mixed $folderId = null;
@@ -78,13 +78,13 @@ class AssetQuery extends ElementQuery
     public ?int $uploaderId = null;
 
     /**
-     * @var string|string[]|null The filename(s) that the resulting assets must have.
+     * @var mixed The filename(s) that the resulting assets must have.
      * @used-by filename()
      */
     public mixed $filename = null;
 
     /**
-     * @var string|string[]|null The file kind(s) that the resulting assets must be.
+     * @var mixed The file kind(s) that the resulting assets must be.
      *
      * Supported file kinds:
      * - access
@@ -193,7 +193,7 @@ class AssetQuery extends ElementQuery
     public bool $includeSubfolders = false;
 
     /**
-     * @var string|array|null The asset transform indexes that should be eager-loaded, if they exist
+     * @var mixed The asset transform indexes that should be eager-loaded, if they exist
      * ---
      * ```php{4}
      * // fetch images with their 'thumb' transforms preloaded
@@ -254,7 +254,7 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|Volume|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $volumeId
      */
@@ -305,7 +305,7 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|string|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $volumeId
      */
@@ -349,7 +349,7 @@ class AssetQuery extends ElementQuery
      * This can be combined with [[includeSubfolders()]] if you want to include assets in all the subfolders of a certain folder.
      * :::
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $folderId
      */
@@ -433,7 +433,7 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $filename
      */
@@ -492,7 +492,7 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $kind
      */
@@ -766,6 +766,7 @@ class AssetQuery extends ElementQuery
      */
     public function afterPopulate(array $elements): array
     {
+        /** @var Asset[] $elements */
         $elements = parent::afterPopulate($elements);
 
         // Eager-load transforms?

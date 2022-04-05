@@ -80,7 +80,7 @@ class Tokens extends Component
             $tokenRecord->usageLimit = $usageLimit;
         }
 
-        $tokenRecord->expiryDate = $expiryDate;
+        $tokenRecord->expiryDate = Db::prepareDateForDb($expiryDate);
         $success = $tokenRecord->save();
 
         if ($success) {

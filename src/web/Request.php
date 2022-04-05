@@ -130,12 +130,6 @@ class Request extends \yii\web\Request
      * @var bool
      * @see checkIfActionRequest()
      */
-    private bool $_isSingleActionRequest = false;
-
-    /**
-     * @var bool
-     * @see checkIfActionRequest()
-     */
     private bool $_isLoginRequest = false;
 
     /**
@@ -235,7 +229,7 @@ class Request extends \yii\web\Request
         try {
             $this->sites = Instance::ensure($this->sites, Sites::class);
 
-            // Only check if a site was requested if don't know for sure that it's a CP request
+            // Only check if a site was requested if don’t know for sure that it’s a control panel request
             if ($this->_isCpRequest !== true) {
                 if ($this->sites->getHasCurrentSite()) {
                     $site = $this->sites->getCurrentSite();
@@ -248,19 +242,19 @@ class Request extends \yii\web\Request
                 }
             }
         } catch (SiteNotFoundException $e) {
-            // Fail silently if Craft isn't installed yet or is in the middle of updating
+            // Fail silently if Craft isn’t installed yet or is in the middle of updating
             if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
         }
 
-        // Is the jury still out on whether this is a CP request?
+        // Is the jury still out on whether this is a control panel request?
         if (!isset($this->_isCpRequest)) {
             $this->_isCpRequest = false;
             // Is it a possibility?
             if ($this->generalConfig->cpTrigger || $this->generalConfig->baseCpUrl) {
-                // Figure out the base URL the request must have if this is a CP request
+                // Figure out the base URL the request must have if this is a control panel request
                 $testBaseCpUrls = [];
                 if ($this->generalConfig->baseCpUrl) {
                     $testBaseCpUrls[] = implode('/', array_filter([rtrim($this->generalConfig->baseCpUrl, '/'), $this->generalConfig->cpTrigger]));
@@ -288,7 +282,7 @@ class Request extends \yii\web\Request
             $this->sites->setCurrentSite($site ?? null);
         }
 
-        // If this is a CP request and the path begins with the CP trigger, remove it
+        // If this is a control panel request and the path begins with the control panel trigger, remove it
         if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
             $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
         }
@@ -738,7 +732,9 @@ class Request extends \yii\web\Request
      */
     public function getMimeType(): ?string
     {
-        if (($contentType = parent::getContentType()) === null) {
+        $contentType = parent::getContentType();
+
+        if (!$contentType) {
             return null;
         }
 
@@ -1037,7 +1033,7 @@ class Request extends \yii\web\Request
      * If the parameter does not exist, the second parameter to this method will be returned.
      *
      * @param string $name The parameter name.
-     * @param mixed|null $defaultValue The default parameter value if the parameter does not exist.
+     * @param mixed $defaultValue The default parameter value if the parameter does not exist.
      * @return mixed The parameter value.
      * @see getQueryParam()
      * @see getBodyParam()
@@ -1251,7 +1247,11 @@ class Request extends \yii\web\Request
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
-            if ($regenerate || $token === null || ($this->_craftCsrfToken = $token) === null || !$this->csrfTokenValidForCurrentUser($token)) {
+            if (
+                $regenerate ||
+                $token === null ||
+                !$this->csrfTokenValidForCurrentUser($token)
+            ) {
                 $token = $this->generateCsrfToken();
             }
 
@@ -1454,10 +1454,10 @@ class Request extends \yii\web\Request
             ?? false;
         if ($siteId) {
             $siteId = Craft::$app->getSecurity()->validateData($siteId);
-            if ($siteId === false) {
+            if (!is_numeric($siteId)) {
                 throw new BadRequestHttpException('Invalid site token');
             }
-            $site = $this->sites->getSiteById($siteId, true);
+            $site = $this->sites->getSiteById((int)$siteId, true);
             if (!$site) {
                 throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
             }
@@ -1598,7 +1598,6 @@ class Request extends \yii\web\Request
             // Reset
             $this->_isActionRequest = false;
             $this->_actionSegments = null;
-            $this->_isSingleActionRequest = false;
             $this->_isLoginRequest = false;
         }
 
@@ -1625,7 +1624,6 @@ class Request extends \yii\web\Request
             }
 
             $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-            $this->_isSingleActionRequest = empty($this->_path);
             return true;
         }
 
@@ -1635,7 +1633,6 @@ class Request extends \yii\web\Request
             count($this->getSegments()) > 1
         ) {
             $this->_actionSegments = array_slice($this->getSegments(), 1);
-            $this->_isSingleActionRequest = true;
             return true;
         }
 
@@ -1673,7 +1670,6 @@ class Request extends \yii\web\Request
             foreach ($specialPaths as [$path, $actionSegments]) {
                 if ($path === $this->_path) {
                     $this->_actionSegments = $actionSegments();
-                    $this->_isSingleActionRequest = true;
                     return true;
                 }
             }

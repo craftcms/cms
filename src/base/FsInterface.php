@@ -51,8 +51,27 @@ interface FsInterface extends SavableComponentInterface
      */
     public function getDateModified(string $uri): int;
 
+
     /**
-     * Writes a file to a volume from a given stream.
+     * Writes a string to a file.
+     *
+     * @param string $path The path of the file
+     * @param string $contents The file contents to write
+     * @param array $config Additional config options to pass on
+     * @throws FsException
+     */
+    public function write(string $path, string $contents, array $config = []): void;
+
+    /**
+     * Reads contents of a file to a string.
+     *
+     * @param string $path The path of the file
+     * @return string
+     */
+    public function read(string $path): string;
+
+    /**
+     * Writes a file to a fs from a given stream.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream

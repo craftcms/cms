@@ -61,7 +61,7 @@ class CustomField extends BaseField
      */
     public function requirable(): bool
     {
-        return true;
+        return $this->_field::isRequirable();
     }
 
     /**

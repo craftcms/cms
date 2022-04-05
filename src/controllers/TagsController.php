@@ -176,6 +176,7 @@ class TagsController extends Controller
         $excludeIds = $this->request->getBodyParam('excludeIds', []);
         $allowSimilarTags = Craft::$app->getConfig()->getGeneral()->allowSimilarTags;
 
+        /** @var Tag[] $tags */
         $tags = Tag::find()
             ->groupId($tagGroupId)
             ->title(Db::escapeParam($search) . '*')

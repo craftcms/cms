@@ -65,7 +65,7 @@ class CommandTest
     protected CommandTestItem|array $eventChain = [];
 
     /**
-     * @var integer
+     * @var int
      */
     protected int $currentIndex;
 
@@ -122,10 +122,10 @@ class CommandTest
     }
 
     /**
-     * @param $value
+     * @param int $value
      * @return CommandTest
      */
-    public function exitCode($value): CommandTest
+    public function exitCode(int $value): CommandTest
     {
         $this->desiredExitCode = $value;
         return $this;
@@ -171,11 +171,11 @@ class CommandTest
 
     /**
      * @param string $prompt
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
-    public function prompt(string $prompt, $returnValue, array $options = []): CommandTest
+    public function prompt(string $prompt, mixed $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::PROMPT,
@@ -187,11 +187,11 @@ class CommandTest
 
     /**
      * @param string $message
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param bool $default
      * @return CommandTest
      */
-    public function confirm(string $message, $returnValue, bool $default = false): CommandTest
+    public function confirm(string $message, mixed $returnValue, bool $default = false): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::CONFIRM,
@@ -203,11 +203,11 @@ class CommandTest
 
     /**
      * @param string $prompt
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
-    public function select(string $prompt, $returnValue, array $options = []): CommandTest
+    public function select(string $prompt, mixed $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::SELECT,
@@ -337,11 +337,11 @@ class CommandTest
     }
 
     /**
-     * @param $out
-     * @param $type
+     * @param string $out
+     * @param string $type
      * @return CommandTestItem
      */
-    protected function runHandlerCheck($out, $type): CommandTestItem
+    protected function runHandlerCheck(string $out, string $type): CommandTestItem
     {
         $nextItem = $this->getNextItem();
         if (!$nextItem) {
@@ -374,7 +374,6 @@ class CommandTest
 
     /**
      * @param array $config
-     *
      * @return CommandTest
      */
     protected function addEventChainItem(array $config): CommandTest

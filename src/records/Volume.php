@@ -11,12 +11,13 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Class Volume record.
  *
  * @property int $id ID
- * @property int $fieldLayoutId Field layout ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $fs The filesystem handle, or an environment variable that references it
@@ -26,6 +27,8 @@ use yii\db\ActiveQueryInterface;
  * @property string|null $titleTranslationKeyFormat
  * @property int $sortOrder Sort order
  * @property FieldLayout $fieldLayout Field layout
+ * @mixin SoftDeleteBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

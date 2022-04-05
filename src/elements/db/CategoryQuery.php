@@ -52,7 +52,7 @@ class CategoryQuery extends ElementQuery
     public bool $editable = false;
 
     /**
-     * @var int|int[]|null The category group ID(s) that the resulting categories must be in.
+     * @var mixed The category group ID(s) that the resulting categories must be in.
      * @used-by group()
      * @used-by groupId()
      */
@@ -124,7 +124,7 @@ class CategoryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|CategoryGroup|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
@@ -174,7 +174,7 @@ class CategoryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
