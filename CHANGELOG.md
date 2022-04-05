@@ -52,6 +52,7 @@
 - Fixed an error that occurred if any event handlers were registered for `craft\services\ImageTransforms::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM`, `EVENT_AFTER_SAVE_IMAGE_TRANSFORM`, `EVENT_BEFORE_APPLY_TRANSFORM_DELETE`, `EVENT_AFTER_DELETE_IMAGE_TRANSFORM`, or `EVENT_BEFORE_SAVE_IMAGE_TRANSFORM`. ([#10826](https://github.com/craftcms/cms/issues/10826))
 - Fixed a JavaScript error that could occur when interacting with condition rules. ([#10779](https://github.com/craftcms/cms/issues/10779))
 - Fixed a bug where it wasn’t possible to add, remove, or reorder rows within Table fields. ([#10835](https://github.com/craftcms/cms/issues/10835))
+- Fixed a bug where the context button on unified element editor pages wouldn’t get a label for potentially multi-site elements that were currently only enabled for a single site. ([#10693](https://github.com/craftcms/cms/issues/10693))
 
 ## 4.0.0-beta.3 - 2022-03-22
 
