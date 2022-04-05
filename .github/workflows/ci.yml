@@ -15,4 +15,4 @@ jobs:
     with:
       run_ecs: true
       run_phpstan: true
-      run_codeception: true
+      run_tests: true
