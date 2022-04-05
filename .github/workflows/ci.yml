@@ -11,4 +11,4 @@ on:
 jobs:
 
   call-workflow:
-    uses: craftcms/.github/workflows/ci.yml@v1
+    uses: craftcms/.github/.github/workflows/ci.yml@v1
