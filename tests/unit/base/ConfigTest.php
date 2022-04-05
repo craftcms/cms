@@ -86,6 +86,11 @@ class ConfigTest extends Unit
                 ['CRAFT_DEFAULT_WEEK_START_DAY', '1'],
                 1,
             ],
+            [
+                ['loginPath', ['siteA' => 'a/login', 'siteB' => 'b/login']],
+                ['CRAFT_LOGIN_PATH', false],
+                false,
+            ],
         ];
     }
 }
