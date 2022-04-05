@@ -95,6 +95,8 @@ jobs:
         php-versions: [ 8.1, 8.0 ]
         db: [ 'mysql', 'pgsql' ]
 
+    name: PHP ${{ matrix.php-versions }} on ${{ matrix.db }}
+
     services:
 
       # Install Postgres
