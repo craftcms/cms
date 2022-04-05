@@ -87,8 +87,13 @@ class ConfigTest extends Unit
                 1,
             ],
             [
-                ['loginPath', ['siteA' => 'a/login', 'siteB' => 'b/login']],
-                ['CRAFT_LOGIN_PATH', false],
+                ['loginPath', 'login'],
+                ['CRAFT_LOGIN_PATH', 'login,with,comma'],
+                'login,with,comma',
+            ],
+            [
+                ['loginPath', 'login'],
+                ['CRAFT_LOGIN_PATH', 'false'],
                 false,
             ],
         ];
