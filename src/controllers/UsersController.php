@@ -1121,7 +1121,7 @@ JS;
         // Handle secure properties (email and password)
         // ---------------------------------------------------------------------
 
-        $sendVerificationEmail = false;
+        $sendActivationEmail = false;
 
         // Are they allowed to set the email address?
         if ($isNewUser || $isCurrentUser || $canAdministrateUsers) {
@@ -1135,23 +1135,23 @@ JS;
             if ($newEmail) {
                 // Should we be sending a verification email now?
                 // Even if verification isn't required, send one out on account creation if we don't have a password yet
-                $sendVerificationEmail = (
+                $sendActivationEmail = (
                     (
                         $requireEmailVerification && (
                             $isPublicRegistration ||
                             ($isCurrentUser && !$canAdministrateUsers) ||
-                            $this->request->getBodyParam('sendVerificationEmail')
+                            ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
                         )
                     ) ||
                     (
                         !$requireEmailVerification && $isNewUser && (
                             ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
-                            $this->request->getBodyParam('sendVerificationEmail')
+                            ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
                         )
                     )
                 );
 
-                if ($sendVerificationEmail) {
+                if ($sendActivationEmail) {
                     $user->unverifiedEmail = $newEmail;
                 } else {
                     // Clear out the unverified email if there is one,
@@ -1159,7 +1159,7 @@ JS;
                     $user->unverifiedEmail = null;
                 }
 
-                if (!$sendVerificationEmail || $isNewUser) {
+                if (!$sendActivationEmail || $isNewUser) {
                     $user->email = $newEmail;
                 }
             }
@@ -1344,7 +1344,7 @@ JS;
         }
 
         // Do we need to send a verification email out?
-        if ($sendVerificationEmail && !$user->suspended) {
+        if ($sendActivationEmail && !$user->suspended) {
             // Temporarily set the unverified email on the User so the verification email goes to the
             // right place
             $originalEmail = $user->email;

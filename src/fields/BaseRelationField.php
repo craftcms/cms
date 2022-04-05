@@ -30,11 +30,11 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
-use craft\validators\ArrayValidator;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
+use yii\validators\NumberValidator;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -283,11 +283,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getElementValidationRules(): array
     {
         $rules = [
-            [
-                ArrayValidator::class,
-                'max' => $this->allowLimit && $this->limit ? $this->limit : null,
-                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
-            ],
+            ['validateRelationCount', 'on' => [Element::SCENARIO_LIVE]],
         ];
 
         if ($this->validateRelatedElements) {
@@ -295,6 +291,32 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         return $rules;
+    }
+
+    /**
+     * Validates that the number of related elements are within the min/max relation bounds.
+     *
+     * @param ElementInterface $element
+     */
+    public function validateRelationCount(ElementInterface $element): void
+    {
+        if ($this->allowLimit && $this->limit) {
+            /** @var ElementQueryInterface|ElementInterface[] $value */
+            $value = $element->getFieldValue($this->handle);
+
+            $arrayValidator = new NumberValidator([
+                'max' => $this->limit,
+                'tooBig' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.', [
+                    'attribute' => Craft::t('site', $this->name),
+                    'max' => $this->limit, // Need to pass this in now
+                ]),
+                'skipOnEmpty' => false,
+            ]);
+
+            if (!$arrayValidator->validate($value->count(), $error)) {
+                $element->addError($this->handle, $error);
+            }
+        }
     }
 
     /**

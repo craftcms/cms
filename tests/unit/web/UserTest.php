@@ -134,7 +134,12 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
         // Session must return null
         $this->_sessionGetStub(null);
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $oldValue = $generalConfig->elevatedSessionDuration;
+        $generalConfig->elevatedSessionDuration = 0;
         self::assertSame(false, $this->user->getElevatedSessionTimeout());
+        $generalConfig->elevatedSessionDuration = $oldValue;
 
         Session::reset();
     }

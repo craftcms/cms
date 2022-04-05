@@ -1860,7 +1860,6 @@ return [
     '{section} Entry Types' => '{section} 入力タイプ',
     '{step, number} of {total, number}' => '{step, number}/{total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title}のコピー',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total}件のジョブ',
     '{total} updates available!' => 'アップデート{total}件があります！',

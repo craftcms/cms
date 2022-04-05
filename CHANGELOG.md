@@ -2,10 +2,34 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\ArrayHelper::onlyContains()`.
+- Added `craft\test\Craft::assertNotPushedToQueue()`. ([#10510](https://github.com/craftcms/cms/pull/10510))
+
+### Changed
+- Duplicated elements no longer have “copy” appended to the end of their titles. ([#10707](https://github.com/craftcms/cms/pull/10707))
+- User queries’ `group` and `groupId` params now support passing an array that begins with `and`, to only return users that are in all of the subsequent user groups.
+
+### Fixed
+- Fixed a bug where color pickers weren’t clickbale within Table fields. ([#10775](https://github.com/craftcms/cms/issues/10775))
+- Fixed a bug where multi-site elements weren’t getting all of their titles duplicated correctly. ([#10702](https://github.com/craftcms/cms/issues/10702))
+- Fixed deprecation errors that occurred when validating relational and Matrix fields. ([#10815](https://github.com/craftcms/cms/issues/10815))
+- Fixed an error that occurred if field instructions contained any unclosed HTML tags. ([#10290](https://github.com/craftcms/cms/issues/10290))
+- Fixed a bug where the selected volume subfolder would get included in folder drag-and-drop operations. ([#10745](https://github.com/craftcms/cms/issues/10745))
+- Fixed a bug where `Craft.appendHeadHtml()` wasn’t pruning out `<link>` tags that were already present in the DOM.
+
+## 3.7.37 - 2022-03-16
+
+### Changed
+- Improved the styling of copy buttons in the control panel. ([#10732](https://github.com/craftcms/cms/discussions/10732))
+- In-app Plugin Store purchases are now completed on `id.craftcms.com` rather than within the control panel.
+
 ### Fixed
 - Fixed a bug where two users could be created with the same username and email, if the **Save** button was double-clicked. ([#9835](https://github.com/craftcms/cms/issues/9835), [#10661](https://github.com/craftcms/cms/issues/10661))
 - Fixed an error that could occur when updating from an earlier version than Craft 3.5.6. ([#10685](https://github.com/craftcms/cms/issues/10685))
 - Fixed an error that could occur when rendering an exception view for another error. ([#10712](https://github.com/craftcms/cms/issues/10712))
+- Fixed a bug where pressing <kbd>Spacebar</kbd> on copy buttons in admin tables didn’t activate them.
+- Fixed a style issue for Safari. ([#10748](https://github.com/craftcms/cms/pull/10748))
 
 ## 3.7.36 - 2022-03-03
 

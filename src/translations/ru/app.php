@@ -1861,7 +1861,6 @@ return [
     '{section} Entry Types' => 'Типы записей раздела {section}',
     '{step, number} of {total, number}' => '{step, number} из {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} скопировать.',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} заданий',
     '{total} updates available!' => 'Доступно {total} обновлений!',
