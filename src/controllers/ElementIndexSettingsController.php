@@ -55,7 +55,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
-        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX);
+        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
 
         foreach ($sources as &$source) {
             if ($source['type'] === ElementSources::TYPE_HEADING) {
@@ -153,6 +153,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
         $sourceSettings = $this->request->getBodyParam('sources', []);
         $newSourceConfigs = [];
+        $disabledSourceKeys = [];
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $source) {
@@ -182,9 +183,17 @@ class ElementIndexSettingsController extends BaseElementsController
                         if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
                             $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
                         }
+                    } elseif (isset($postedSettings['enabled'])) {
+                        $sourceConfig['disabled'] = !$postedSettings['enabled'];
+                        if ($sourceConfig['disabled']) {
+                            $disabledSourceKeys[] = $source['key'];
+                        }
                     }
                 } elseif (isset($oldSourceConfigs[$source['key']])) {
                     $sourceConfig += $oldSourceConfigs[$source['key']];
+                    if (!empty($sourceConfig['disabled'])) {
+                        $disabledSourceKeys[] = $source['key'];
+                    }
                 } elseif ($isCustom) {
                     // Ignore it
                     continue;
@@ -195,6 +204,8 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
-        return $this->asSuccess();
+        return $this->asSuccess(data: [
+            'disabledSourceKeys' => $disabledSourceKeys,
+        ]);
     }
 }

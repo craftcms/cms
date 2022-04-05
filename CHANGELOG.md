@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- It’s now possible to disable native element sources from the Customize Sources modal. ([#10676](https://github.com/craftcms/cms/discussions/10676))
 - GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
