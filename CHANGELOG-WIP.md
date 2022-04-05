@@ -96,6 +96,7 @@
 - Added `craft\base\ElementInterface::hasRevisions()`.
 - Added `craft\base\ElementInterface::prepareEditScreen()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
+- Added `craft\base\FieldInterface::isRequirable()`.
 - Added `craft\base\FieldLayoutComponent`.
 - Added `craft\base\Fs`.
 - Added `craft\base\FsInterface`.
@@ -409,6 +410,7 @@
 - Element queries’ `revision` params can now be set to `null` to include normal and revision elements.
 - Element queries can no longer be traversed or accessed like an array. Use a query execution method such as `all()`, `collect()`, or `one()` to fetch the results before working with them.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
+- Lightswitch fields can no longer be marked as required within field layouts. ([#10773](https://github.com/craftcms/cms/issues/10773))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Path options passed to console commands (e.g. `--basePath`) now take precedence over their enivronment variable/PHP constant counterparts.
 - Database backups are now named after the Craft version in the database, rather than the Composer-installed version. ([#9733](https://github.com/craftcms/cms/discussions/9733))

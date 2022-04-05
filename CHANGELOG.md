@@ -6,6 +6,7 @@
 - It’s now possible to disable native element sources from the Customize Sources modal. ([#10676](https://github.com/craftcms/cms/discussions/10676))
 - GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Added `craft\base\FieldInterface::isRequirable()`.
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
 - Added `craft\base\ModelInterface`.
@@ -22,6 +23,7 @@
 - Element index pages’ status and sort menu option selections are now coded into the page URL via `status` and `sort` query string params. ([#10669](https://github.com/craftcms/cms/discussions/10669))
 - Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))
 - Image thumbnails now use registered image transformers when available.
+- Lightswitch fields can no longer be marked as required within field layouts. ([#10773](https://github.com/craftcms/cms/issues/10773))
 - Craft’s bootstrap script now attempts to create its configured system paths automatically. ([#10562](https://github.com/craftcms/cms/pull/10562))
 - Field layout components’ settings slideouts now have a “Close” button. ([#10587](https://github.com/craftcms/cms/issues/10587))
 - The default `subLeft` and `subRight` search query term options are now only applied to terms that don’t include an asterisk at the beginning/end, e.g. `hello*`. ([#10613](https://github.com/craftcms/cms/discussions/10613))
