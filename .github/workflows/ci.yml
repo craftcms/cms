@@ -5,7 +5,7 @@ on:
     branches:
       - develop
       - '4.0'
-      - ghaction2
+      - feature/ghaction2
   pull_request:
 
 jobs:
