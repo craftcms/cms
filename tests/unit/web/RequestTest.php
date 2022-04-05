@@ -53,7 +53,7 @@ class RequestTest extends TestCase
     {
         $oldServer = $_SERVER;
 
-        // Site request - Craft installed at webroot
+        // Site request: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -63,7 +63,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('foo/bar/baz', $request->getPathInfo());
 
-        // Site request w/ base URI - Craft installed at webroot
+        // Site request without base URI: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -81,7 +81,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Implicit control panel request - Craft installed at webroot
+        // Implicit control panel request: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -95,7 +95,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Explicit control panel request with control panel trigger: Craft installed at webroot
+        // Explicit control panel request with control panel trigger: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -110,7 +110,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Explicit control panel request without control panel trigger: Craft installed at webroot
+        // Explicit control panel request without control panel trigger: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
