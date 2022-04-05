@@ -196,7 +196,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                 }
 
                 // Initialize the element index
-                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, $.extend({
+                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, Object.assign({
                     context: 'modal',
                     modal: this,
                     storageKey: this.settings.storageKey,
@@ -242,5 +242,5 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         defaultSource: null,
         bodyAction: 'elements/get-modal-body',
         indexSettings: {},
-    }
+    },
 });
