@@ -300,7 +300,7 @@ class TestSetup
 
     /**
      * @param string $preDefinedAppType
-     * @return string<ConsoleApplication|WebApplication>
+     * @return string
      * @phpstan-return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
